@@ -11,16 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
 
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -28,6 +31,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,7 +71,7 @@ public class SupplierRules {
      * @param vet  the vet
      * @param time the time
      * @return the practice the vet is associated with or {@code null} if the vet is not associated with any practice
-     *         for the time frame
+     * for the time frame
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getReferralVetPractice(Party vet, Date time) {
@@ -80,24 +87,29 @@ public class SupplierRules {
      * @return {@code true} if {@code supplier} supplies {@code product}; otherwise {@code false}
      */
     public boolean isSuppliedBy(Party supplier, Product product) {
-        EntityBean bean = new EntityBean(supplier, service);
-        Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getSourceEquals(product));
-        return bean.getNodeRelationship("products", predicate) != null;
+        EntityBean bean = new EntityBean(product, service);
+        Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(supplier));
+        return bean.getValue("suppliers", predicate) != null;
     }
 
     /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
-     * relationships for a particular supplier.
+     * Returns all active <em>entityLink.productSupplier</em> relationships for a particular supplier.
      *
      * @param supplier the supplier
      * @return the relationships, wrapped in {@link ProductSupplier} instances
      */
     public List<ProductSupplier> getProductSuppliers(Party supplier) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
-        EntityBean bean = new EntityBean(supplier, service);
-        List<EntityRelationship> relationships = bean.getValues("products", isActiveNow(), EntityRelationship.class);
-        for (EntityRelationship relationship : relationships) {
-            result.add(new ProductSupplier(relationship, service));
+        List<ProductSupplier> result = new ArrayList<>();
+        ArchetypeQuery query = new ArchetypeQuery(ProductArchetypes.PRODUCT_SUPPLIER_RELATIONSHIP);
+        query.add(Constraints.eq("target", supplier));
+        Date now = new Date();
+        query.add(Constraints.or(Constraints.lte("activeStartTime", now)));
+        query.add(Constraints.lte("activeStartTime", now));
+        query.add(Constraints.or(Constraints.gte("activeEndTime", now), Constraints.isNull("activeEndTime")));
+        query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
+        IPage<IMObject> page = service.get(query);
+        for (IMObject object : page.getResults()) {
+            result.add(new ProductSupplier((IMObjectRelationship) object, service));
         }
         return result;
     }

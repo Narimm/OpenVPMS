@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -59,8 +59,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     @Test
     public void testUpdateFromMedication() {
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
-                                                   null);
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         checkUpdateFromProduct(product);
     }
 
@@ -109,8 +108,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests update when a newly created product is saved with a relationship
-     * to an existing supplier.
+     * Tests update when a newly created product is saved with a relationship to an existing supplier.
      */
     @Test
     public void testSaveNewProduct() {
@@ -120,8 +118,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
 
     /**
-     * Tests update when an existing product is saved with a relationship
-     * to a new supplier.
+     * Tests update when an existing product is saved with a relationship to a new supplier.
      */
     @Test
     public void testSaveNewSupplier() {
@@ -243,11 +240,10 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Verifies that prices are updated correctly when relationships are
-     * created between products and suppliers.
+     * Verifies that prices are updated correctly when relationships are created between products and suppliers.
      *
-     * @param newProduct       if {@code true} the product is not saved prior to adding the relationship
-     * @param newSupplier      if {@code true} the supplier is not saved prior to adding the relationship
+     * @param newProduct  if {@code true} the product is not saved prior to adding the relationship
+     * @param newSupplier if {@code true} the supplier is not saved prior to adding the relationship
      * @param saveProductFirst if {@code true} the product is saved first in the transaction, otherwise the supplier is.
      *                         This affects the order in which rules are fired
      */
@@ -279,9 +275,6 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         ps.setAutoPriceUpdate(true);
         ps.setNettPrice(new BigDecimal("10.00"));
         ps.setListPrice(new BigDecimal("20.00"));
-        product.addEntityRelationship(ps.getRelationship());
-        supplier.addEntityRelationship(ps.getRelationship());
-
         if (newProduct) {
             assertTrue(product.isNew());
         } else {

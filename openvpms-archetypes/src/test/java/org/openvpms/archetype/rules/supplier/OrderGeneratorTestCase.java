@@ -808,7 +808,8 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
                                                            BigDecimal unitPrice,
                                                            int packageSize) {
         EntityBean bean = new EntityBean(product);
-        ProductSupplier ps = new ProductSupplier(bean.addNodeRelationship("suppliers", supplier));
+        ProductSupplier ps = new ProductSupplier(bean.addNodeTarget("suppliers", supplier),
+                                                 getArchetypeService());
         ps.setPreferred(preferred);
         ps.setPackageSize(packageSize);
         ps.setNettPrice(unitPrice);

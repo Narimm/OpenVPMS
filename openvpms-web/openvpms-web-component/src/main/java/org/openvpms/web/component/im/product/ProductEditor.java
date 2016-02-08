@@ -24,7 +24,6 @@ import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductPriceUpdater;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
@@ -213,8 +212,8 @@ public class ProductEditor extends AbstractIMObjectEditor {
         Collection<IMObjectEditor> currentPrices = prices.getEditors();
         Collection<IMObjectEditor> editors = suppliers.getEditors();
         for (IMObjectEditor editor : editors) {
-            EntityRelationship rel = (EntityRelationship) editor.getObject();
-            ProductSupplier ps = new ProductSupplier(rel);
+            IMObjectRelationship rel = (IMObjectRelationship) editor.getObject();
+            ProductSupplier ps = new ProductSupplier(rel, ServiceHelper.getArchetypeService());
             List<ProductPrice> updated = updater.update((Product) getObject(), ps, false);
             for (ProductPrice price : updated) {
                 updatePriceEditor(price, currentPrices);

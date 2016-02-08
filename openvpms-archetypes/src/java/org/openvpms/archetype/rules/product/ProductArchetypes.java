@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -70,10 +70,9 @@ public class ProductArchetypes {
     public static final String PRICING_GROUP = "lookup.pricingGroup";
 
     /**
-     * Product-supplier entity relationship short name.
+     * Product-supplier relationship short name.
      */
-    public static final String PRODUCT_SUPPLIER_RELATIONSHIP
-            = "entityRelationship.productSupplier";
+    public static final String PRODUCT_SUPPLIER_RELATIONSHIP = "entityLink.productSupplier";
 
     /**
      * Product link entity relationship short name.

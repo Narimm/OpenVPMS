@@ -66,11 +66,9 @@ import static org.openvpms.component.business.service.archetype.functor.IsActive
  * For each item in a delivery/return, updates:
  * <ol>
  * <li>the <em>receivedQuantity</em> node of the associated order (if any)</li>
- * <li>the <em>entityRelationship.productSupplier</em> associated with
- * the product and supplier, if the item is a delivery</li>
- * <li>the <em>quantity</em> node of the
- * <em>entityLink.productStockLocation</em> associated with the
- * product and stock location</li>
+ * <li>the <em>entityLink.productSupplier</em> associated with the product and supplier, if the item is a delivery</li>
+ * <li>the <em>quantity</em> node of the * <em>entityLink.productStockLocation</em> associated with the product and
+ * stock location</li>
  * </ol>
  * If an order item changes status, the delivery status of the parent
  * order is then re-evaluated.
@@ -458,7 +456,7 @@ public class DeliveryProcessor {
     }
 
     /**
-     * Updates an <em>entityRelationship.productSupplier</em> from an <em>act.supplierDeliveryItem</em>, if required.
+     * Updates an <em>entityLink.productSupplier</em> from an <em>act.supplierDeliveryItem</em>, if required.
      *
      * @param product          the product
      * @param deliveryItemBean a bean wrapping the delivery item
