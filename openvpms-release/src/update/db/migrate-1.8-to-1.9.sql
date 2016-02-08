@@ -586,9 +586,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
       FROM entity_links l
       WHERE l.source_id = r.source_id
             AND l.target_id = r.target_id
-            AND
-            (l.active_start_time = r.active_start_time OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
-            AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+            AND l.linkId = r.linkId
             AND l.arch_short_name = 'entityLink.productSupplier');
 
 INSERT INTO entity_link_details (id, name, type, value)
@@ -602,10 +600,9 @@ INSERT INTO entity_link_details (id, name, type, value)
       ON r.entity_relationship_id = d.entity_relationship_id
     JOIN entity_links l
       ON l.arch_short_name = 'entityLink.productSupplier'
-         AND l.source_id = r.source_id AND l.target_id = r.target_id
-         AND
-         (l.active_start_time = r.active_start_time OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
-         AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+         AND l.source_id = r.source_id 
+         AND l.target_id = r.target_id
+		 AND l.linkId = r.linkId
   WHERE r.arch_short_name = 'entityRelationship.productSupplier'
         AND NOT exists(
       SELECT *
@@ -622,4 +619,3 @@ WHERE r.arch_short_name = 'entityRelationship.productSupplier';
 DELETE r
 FROM entity_relationships r
 WHERE r.arch_short_name = 'entityRelationship.productSupplier';
-
