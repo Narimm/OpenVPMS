@@ -279,7 +279,7 @@
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
     <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
-        <constructor-arg value="TestIMObjectEditorFactory.properties"/>
+        <constructor-arg value="IMObjectEditorFactory.properties"/>
     </bean>
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
 

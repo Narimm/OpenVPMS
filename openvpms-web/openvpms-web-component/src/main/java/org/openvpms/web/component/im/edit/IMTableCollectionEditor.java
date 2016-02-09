@@ -23,6 +23,7 @@ import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
@@ -198,17 +199,33 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * @return a new object, or {@code null} if the object can't be created
      */
     public IMObject create() {
+        return create(shortName);
+    }
+
+    /**
+     * Creates a new object, subject to a short name being selected, and
+     * current collection cardinality. This must be registered with the
+     * collection.
+     * <p/>
+     * If an {@link IMObjectCreationListener} is registered, it will be
+     * notified on successful creation of an object.
+     *
+     * @return a new object, or {@code null} if the object can't be created
+     */
+    public IMObject create(String shortName) {
         IMObject object = null;
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        if (shortName != null) {
+        if (shortName != null && ArrayUtils.contains(getCollectionPropertyEditor().getArchetypeRange(), shortName)) {
             int maxSize = editor.getMaxCardinality();
             if (maxSize == -1 || editor.getObjects().size() < maxSize) {
                 object = IMObjectCreator.create(shortName);
+                if (object != null) {
+                    IMObjectCreationListener creationListener = getCreationListener();
+                    if (creationListener != null) {
+                        creationListener.created(object);
+                    }
+                }
             }
-        }
-        IMObjectCreationListener creationListener = getCreationListener();
-        if (creationListener != null) {
-            creationListener.created(object);
         }
         return object;
     }
@@ -219,9 +236,19 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * @return the editor for the item, or {@code null} a new item cannot be created.
      */
     public IMObjectEditor add() {
+        return add(shortName);
+    }
+
+    /**
+     * Adds a new item to the collection, subject to the constraints of {@link #create(String)}.
+     *
+     * @param shortName the archetype to add
+     * @return the editor for the item, or {@code null} a new item cannot be created.
+     */
+    public IMObjectEditor add(String shortName) {
         IMObjectEditor editor = null;
-        if (addCurrentEdits(new DefaultValidator()) && shortName != null) {
-            IMObject object = create();
+        if (addCurrentEdits(new DefaultValidator())) {
+            IMObject object = create(shortName);
             if (object != null) {
                 editor = edit(object);
                 addCurrentEdits(new DefaultValidator()); // add the object to the table if it is valid
