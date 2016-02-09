@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -69,7 +69,7 @@ public class IMObjectProperty extends AbstractProperty
 
 
     /**
-     * Construct a new <tt>IMObjectProperty</tt>.
+     * Constructs an {@link IMObjectProperty}.
      *
      * @param object     the object that the property belongs to
      * @param descriptor the property descriptor
@@ -112,7 +112,7 @@ public class IMObjectProperty extends AbstractProperty
      * value. If the value is set, any listeners will be notified.
      *
      * @param value the property value
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it
+     * @return {@code true} if the value was set, {@code false} if it
      *         cannot be set due to error, or is the same as the existing value
      */
     public boolean setValue(Object value) {
@@ -123,11 +123,11 @@ public class IMObjectProperty extends AbstractProperty
             if (!ObjectHelper.equals(getValue(), value)) {
                 descriptor.setValue(object, value);
                 set = true;
-                modified();
+                refresh();
             } else if (validationErrors != null) {
                 // a previous set triggered an error, and didn't update the value. If a new update occurs
                 // but has the same value, need to clear any errors
-                modified();
+                refresh();
             }
         } catch (DescriptorException exception) {
             invalidate(exception);
@@ -160,7 +160,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Returns the property description.
      *
-     * @return the description. May be <tt>null</tt>
+     * @return the description. May be {@code null}
      */
     public String getDescription() {
         return descriptor.getDescription();
@@ -196,7 +196,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is a boolean.
      *
-     * @return <tt>true</tt> if it is a boolean
+     * @return {@code true} if it is a boolean
      */
     public boolean isBoolean() {
         return descriptor.isBoolean();
@@ -205,7 +205,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is a string.
      *
-     * @return <tt>true</tt> if it is a string
+     * @return {@code true} if it is a string
      */
     public boolean isString() {
         return descriptor.isString();
@@ -214,7 +214,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is numeric.
      *
-     * @return <tt>true</tt> if it is numeric
+     * @return {@code true} if it is numeric
      */
     public boolean isNumeric() {
         return descriptor.isNumeric();
@@ -223,7 +223,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is a date.
      *
-     * @return <tt>true</tt> if it is a date
+     * @return {@code true} if it is a date
      */
     public boolean isDate() {
         return descriptor.isDate();
@@ -232,7 +232,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is a money property.
      *
-     * @return <tt>true</tt> it is a money property
+     * @return {@code true} it is a money property
      */
     public boolean isMoney() {
         return descriptor.isMoney();
@@ -241,7 +241,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is an object reference.
      *
-     * @return <tt>true</tt> if it is an object reference
+     * @return {@code true} if it is an object reference
      */
     public boolean isObjectReference() {
         return descriptor.isObjectReference();
@@ -250,7 +250,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is a lookup.
      *
-     * @return <tt>true</tt> if it is a lookup
+     * @return {@code true} if it is a lookup
      */
     public boolean isLookup() {
         return descriptor.isLookup();
@@ -259,7 +259,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is a collection.
      *
-     * @return <tt>true</tt> if it is a collection
+     * @return {@code true} if it is a collection
      */
     public boolean isCollection() {
         return descriptor.isCollection();
@@ -280,7 +280,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property value is derived from an expression.
      *
-     * @return <tt>true</tt> if the value is derived, otherwise <tt>false</tt>
+     * @return {@code true} if the value is derived, otherwise {@code false}
      */
     public boolean isDerived() {
         return descriptor.isDerived();
@@ -289,7 +289,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is read-only.
      *
-     * @return <tt>true</tt> if the property is read-only
+     * @return {@code true} if the property is read-only
      */
     public boolean isReadOnly() {
         return descriptor.isReadOnly();
@@ -298,7 +298,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is hidden.
      *
-     * @return <tt>true</tt> if the property is hidden; otherwise <tt>false</tt>
+     * @return {@code true} if the property is hidden; otherwise {@code false}
      */
     public boolean isHidden() {
         return descriptor.isHidden();
@@ -307,8 +307,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Determines if the property is required.
      *
-     * @return <tt>true</tt> if the property is required; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the property is required; otherwise {@code false}
      */
     public boolean isRequired() {
         return descriptor.isRequired();
@@ -352,7 +351,7 @@ public class IMObjectProperty extends AbstractProperty
         try {
             value = getTransformer().apply(value);
             descriptor.addChildToCollection(object, value);
-            modified();
+            refresh();
         } catch (ValidationException exception) {
             invalidate(exception);
         } catch (DescriptorException exception) {
@@ -377,7 +376,7 @@ public class IMObjectProperty extends AbstractProperty
             descriptor.removeChildFromCollection(object, value);
             if (size != size()) {
                 result = true;
-                modified();
+                refresh();
             }
         } catch (ValidationException exception) {
             invalidate(exception);
@@ -401,7 +400,7 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * Returns the maximum cardinality.
      *
-     * @return the maximum cardinality, or <tt>-1</tt> if it is unbounded
+     * @return the maximum cardinality, or {@code -1} if it is unbounded
      */
     public int getMaxCardinality() {
         if (descriptor.getMaxCardinality() == NodeDescriptor.UNBOUNDED) {
@@ -414,8 +413,8 @@ public class IMObjectProperty extends AbstractProperty
      * Determines the relationship of the elements of the collection to the
      * object.
      *
-     * @return <tt>true</tt> if the objects are children of the parent object,
-     *         or <tt>false</tt> if they are its peer
+     * @return {@code true} if the objects are children of the parent object,
+     *         or {@code false} if they are its peer
      */
     public boolean isParentChild() {
         return descriptor.isParentChild();
@@ -431,10 +430,21 @@ public class IMObjectProperty extends AbstractProperty
     }
 
     /**
+     * Resets the cached validity state of the object.
+     *
+     * @param descendants if {@code true} reset the validity state of any descendants as well.
+     */
+    @Override
+    protected void resetValid(boolean descendants) {
+        super.resetValid(descendants);
+        validationErrors = null;
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         List<ValidatorError> errors = null;
@@ -520,15 +530,6 @@ public class IMObjectProperty extends AbstractProperty
     }
 
     /**
-     * Invoked when this is modified. Updates flags, and notifies the
-     * listeners.
-     */
-    private void modified() {
-        validationErrors = null;
-        refresh();
-    }
-
-    /**
      * Invoked when an update fails. Marks this as invalid.
      *
      * @param exception the reason for the failure
@@ -590,8 +591,7 @@ public class IMObjectProperty extends AbstractProperty
      * @param message the error message
      */
     private void addError(String message) {
-        addError(new ValidatorError(object.getArchetypeId().getShortName(),
-                                    descriptor.getName(), message));
+        addError(new ValidatorError(object.getArchetypeId().getShortName(), descriptor.getName(), message));
     }
 
     /**
@@ -602,7 +602,7 @@ public class IMObjectProperty extends AbstractProperty
     private void addError(ValidatorError error) {
         resetValid();
         if (validationErrors == null) {
-            validationErrors = new ArrayList<ValidatorError>();
+            validationErrors = new ArrayList<>();
         }
         validationErrors.add(error);
     }

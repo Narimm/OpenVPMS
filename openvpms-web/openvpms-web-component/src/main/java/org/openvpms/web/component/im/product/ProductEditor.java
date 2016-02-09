@@ -34,7 +34,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -138,6 +137,44 @@ public class ProductEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Returns the prices editor.
+     *
+     * @return the prices, or {@code null} if the product doesn't support prices, or the component has not been created
+     */
+    public EditableIMObjectCollectionEditor getPricesEditor() {
+        return (EditableIMObjectCollectionEditor) getEditor(PRICES, false);
+    }
+
+    /**
+     * Returns the suppliers editor.
+     *
+     * @return the prices, or {@code null} if the product doesn't support prices, or the component has not been created
+     */
+    public EditableIMObjectCollectionEditor getSuppliersEditor() {
+        return (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS, false);
+    }
+
+    /**
+     * Returns the product supplier references.
+     *
+     * @return the product supplier references
+     */
+    public List<IMObjectReference> getSuppliers() {
+        List<IMObjectReference> result = new ArrayList<>();
+        EditableIMObjectCollectionEditor suppliers = getSuppliersEditor();
+        if (suppliers != null) {
+            for (IMObject object : suppliers.getCurrentObjects()) {
+                IMObjectRelationship relationship = (IMObjectRelationship) object;
+                IMObjectReference target = relationship.getTarget();
+                if (target != null) {
+                    result.add(target);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -150,26 +187,6 @@ public class ProductEditor extends AbstractIMObjectEditor {
             valid = validateUnitPrices(validator) && validateDoses(validator);
         }
         return valid;
-    }
-
-    /**
-     * Returns the product supplier references.
-     *
-     * @return the product supplier references
-     */
-    public List<IMObjectReference> getSuppliers() {
-        List<IMObjectReference> result = new ArrayList<>();
-        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS);
-        if (suppliers != null) {
-            for (IMObject object : suppliers.getCurrentObjects()) {
-                IMObjectRelationship relationship = (IMObjectRelationship) object;
-                IMObjectReference target = relationship.getTarget();
-                if (target != null) {
-                    result.add(target);
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -193,7 +210,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        IMObjectCollectionEditor editor = (IMObjectCollectionEditor) getEditor(SUPPLIERS);
+        EditableIMObjectCollectionEditor editor = getSuppliersEditor();
         if (editor != null) {
             editor.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
@@ -207,19 +224,32 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * Invoked when a product-supplier relationship changes. This recalculates product prices if required.
      */
     private void onSupplierChanged() {
-        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS);
-        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor(PRICES);
-        Collection<IMObjectEditor> currentPrices = prices.getEditors();
-        Collection<IMObjectEditor> editors = suppliers.getEditors();
-        for (IMObjectEditor editor : editors) {
-            IMObjectRelationship rel = (IMObjectRelationship) editor.getObject();
-            ProductSupplier ps = new ProductSupplier(rel, ServiceHelper.getArchetypeService());
-            List<ProductPrice> updated = updater.update((Product) getObject(), ps, false);
-            for (ProductPrice price : updated) {
-                updatePriceEditor(price, currentPrices);
+        updateUnitPrices();
+    }
+
+    /**
+     * Updates unit prices if one or more product-supplier relationships have autoPriceUpdate set {@code true}.
+     */
+    private void updateUnitPrices() {
+        EditableIMObjectCollectionEditor suppliers = getSuppliersEditor();
+        EditableIMObjectCollectionEditor prices = getPricesEditor();
+        if (prices != null) {
+            IMObjectEditor current = prices.getCurrentEditor();
+            if (current != null && !prices.getCollection().getValues().contains(current.getObject())) {
+                prices.add(current.getObject());
             }
+            Collection<IMObjectEditor> currentPrices = prices.getEditors();
+            Collection<IMObjectEditor> editors = suppliers.getEditors();
+            for (IMObjectEditor editor : editors) {
+                IMObjectRelationship rel = (IMObjectRelationship) editor.getObject();
+                ProductSupplier ps = new ProductSupplier(rel, ServiceHelper.getArchetypeService());
+                List<ProductPrice> updated = updater.update((Product) getObject(), ps, false);
+                for (ProductPrice price : updated) {
+                    updatePriceEditor(price, currentPrices);
+                }
+            }
+            prices.refresh();
         }
-        prices.refresh();
     }
 
     /**
@@ -392,7 +422,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * @return the price editor
      */
     private IMObjectEditor getPriceEditor(ProductPrice price) {
-        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor(PRICES);
+        EditableIMObjectCollectionEditor prices = getPricesEditor();
         return prices.getEditor(price);
     }
 
