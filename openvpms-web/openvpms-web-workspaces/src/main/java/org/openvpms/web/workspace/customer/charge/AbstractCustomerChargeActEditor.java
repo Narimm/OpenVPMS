@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.customer.charge;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.math.MathRules;
@@ -27,15 +26,11 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -61,9 +56,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -97,6 +90,11 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
      * The pharmacy order placer, used to place orders when invoicing.
      */
     private OrderPlacer orderPlacer;
+
+    /**
+     * Tracks unprinted documents.
+     */
+    private CustomerChargeDocuments unprintedDocuments;
 
     /**
      * Constructs an {@link AbstractCustomerChargeActEditor}.
@@ -136,6 +134,7 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
             List<Act> acts = getOrderActs();
             orderPlacer.initialise(acts);
         }
+        unprintedDocuments = new CustomerChargeDocuments(this, context);
     }
 
     /**
@@ -185,45 +184,6 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
      */
     public Party getLocation() {
         return (Party) getParticipant("location");
-    }
-
-    /**
-     * Returns any unprinted documents that are flagged for immediate printing.
-     *
-     * @return the list of unprinted documents
-     */
-    public List<Act> getUnprintedDocuments() {
-        return getUnprintedDocuments(Collections.<Act>emptyList());
-    }
-
-    /**
-     * Returns any unprinted documents that are flagged for immediate printing.
-     *
-     * @param exclude a list of documents to ignore
-     * @return the list of unprinted documents
-     */
-    public List<Act> getUnprintedDocuments(List<Act> exclude) {
-        List<Act> result = new ArrayList<>();
-        ActRelationshipCollectionEditor items = getItems();
-        Set<IMObjectReference> excludeRefs = new HashSet<>();
-        for (Act excluded : exclude) {
-            excludeRefs.add(excluded.getObjectReference());
-        }
-        for (Act item : items.getActs()) {
-            ActBean bean = new ActBean(item);
-            if (bean.hasNode("documents")) {
-                for (ActRelationship rel : bean.getValues("documents", ActRelationship.class)) {
-                    IMObjectReference target = rel.getTarget();
-                    if (target != null && !excludeRefs.contains(target)) {
-                        Act document = (Act) getObject(target);
-                        if (document != null && isPrintImmediate(document)) {
-                            result.add(document);
-                        }
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -368,6 +328,15 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
             ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
             items.getEditorQueue().queue(dialog);
         }
+    }
+
+    /**
+     * Returns the unprinted documents.
+     *
+     * @return the unprinted documents
+     */
+    public CustomerChargeDocuments getUnprintedDocuments() {
+        return unprintedDocuments;
     }
 
     /**
@@ -661,24 +630,4 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
             }
         }
     }
-
-    /**
-     * Determines if a document should be printed immediately.
-     *
-     * @param document the document
-     * @return {@code true} if the document should be printed immediately
-     */
-    private boolean isPrintImmediate(Act document) {
-        ActBean documentBean = new ActBean(document);
-        if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
-            Entity entity = (Entity) getObject(documentBean.getNodeParticipantRef("documentTemplate"));
-            if (entity != null) {
-                DocumentTemplate template = new DocumentTemplate(entity,
-                                                                 ServiceHelper.getArchetypeService());
-                return (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE);
-            }
-        }
-        return false;
-    }
-
 }
