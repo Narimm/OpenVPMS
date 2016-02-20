@@ -24,15 +24,20 @@ import nextapp.echo2.app.filetransfer.UploadListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.DefaultValidator;
@@ -41,6 +46,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
@@ -50,6 +56,8 @@ import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+
+import static org.openvpms.archetype.rules.doc.DocumentArchetypes.EMAIL_TEMPLATE;
 
 
 /**
@@ -80,34 +88,39 @@ public class MailDialog extends PopupDialog {
     private final LayoutContext context;
 
     /**
+     * New button identifier.
+     */
+    private static final String NEW_ID = "button.new";
+
+    /**
      * Don't send button identifier.
      */
-    private static final String DONT_SEND_ID = "dontSend";
+    private static final String DONT_SEND_ID = "button.dontSend";
 
     /**
      * Edit button identifier.
      */
-    private static String EDIT_ID = "edit";
+    private static String EDIT_ID = "button.edit";
 
     /**
      * Attach button identifier.
      */
-    private static final String ATTACH_ID = "attach";
+    private static final String ATTACH_ID = "button.attach";
 
     /**
      * Attach file button identifier.
      */
-    private static final String ATTACH_FILE_ID = "attachFile";
+    private static final String ATTACH_FILE_ID = "button.attachFile";
 
     /**
      * The editor button identifiers.
      */
-    private static final String[] SEND_ATTACH_ALL_CANCEL = {SEND_ID, ATTACH_ID, ATTACH_FILE_ID, CANCEL_ID};
+    private static final String[] NEW_SEND_ATTACH_ALL_CANCEL = {NEW_ID, SEND_ID, ATTACH_ID, ATTACH_FILE_ID, CANCEL_ID};
 
     /**
      * The editor button identifiers.
      */
-    private static final String[] SEND_ATTACH_FILE_CANCEL = {SEND_ID, ATTACH_FILE_ID, CANCEL_ID};
+    private static final String[] NEW_SEND_ATTACH_FILE_CANCEL = {NEW_ID, SEND_ID, ATTACH_FILE_ID, CANCEL_ID};
 
     /**
      * The cancel confirmation button identifiers.
@@ -170,7 +183,7 @@ public class MailDialog extends PopupDialog {
      */
     public MailDialog(String title, MailContext mailContext, Contact preferred, Browser<Act> documents,
                       LayoutContext context) {
-        super(title, "MailDialog", documents != null ? SEND_ATTACH_ALL_CANCEL : SEND_ATTACH_FILE_CANCEL,
+        super(title, "MailDialog", documents != null ? NEW_SEND_ATTACH_ALL_CANCEL : NEW_SEND_ATTACH_FILE_CANCEL,
               context.getHelpContext());
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
@@ -233,7 +246,9 @@ public class MailDialog extends PopupDialog {
      */
     @Override
     protected void onButton(String button) {
-        if (ATTACH_ID.equals(button)) {
+        if (NEW_ID.equals(button)) {
+            newFromTemplate();
+        } else if (ATTACH_ID.equals(button)) {
             attach();
         } else if (ATTACH_FILE_ID.equals(button)) {
             attachFile();
@@ -244,6 +259,58 @@ public class MailDialog extends PopupDialog {
         } else {
             super.onButton(button);
         }
+    }
+
+    /**
+     * Displays a popup of available email templates.
+     * <p/>
+     * If there is already text presents, displays a  warning before proceeding.
+     */
+    private void newFromTemplate() {
+        if (!StringUtils.isBlank(editor.getMessage())) {
+            ConfirmationDialog.show(Messages.get("mail.replace.title"), Messages.get("mail.replace.message"),
+                                    ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                        @Override
+                        public void onYes() {
+                            onNewFromTemplate();
+                        }
+                    });
+        } else {
+            onNewFromTemplate();
+        }
+    }
+
+    /**
+     * Displays a popup of available email templates.
+     */
+    private void onNewFromTemplate() {
+        Query<Entity> query = QueryFactory.create(EMAIL_TEMPLATE, context.getContext());
+        Browser<Entity> browser = BrowserFactory.create(query, context);
+        String title = Messages.format("imobject.select.title", DescriptorHelper.getDisplayName(EMAIL_TEMPLATE));
+        final BrowserDialog<Entity> dialog = new BrowserDialog<>(title, browser, getHelpContext().subtopic("new"));
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                Entity selected = dialog.getSelected();
+                if (selected != null) {
+                    newFromTemplate(selected);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Populates the email from a template.
+     *
+     * @param template the template
+     */
+    private void newFromTemplate(Entity template) {
+        EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
+        String subject = evaluator.getSubject(template);
+        String text = evaluator.getMessage(template, context.getContext());
+        editor.setSubject(subject);
+        editor.setMessage(text);
     }
 
     /**

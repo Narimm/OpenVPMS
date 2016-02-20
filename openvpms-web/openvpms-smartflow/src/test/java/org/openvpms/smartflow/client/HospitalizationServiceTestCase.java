@@ -288,7 +288,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         String url = "http://localhost:" + wireMockRule.port() + "/";
         return new HospitalizationService(url, "foo", "bar", TimeZone.getTimeZone("Australia/Sydney"),
                                           getArchetypeService(), getLookupService(),
-                                          new DocumentHandlers());
+                                          new DocumentHandlers(getArchetypeService()));
     }
 
 }

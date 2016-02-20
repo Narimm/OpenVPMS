@@ -17,8 +17,8 @@
 package org.openvpms.archetype.rules.doc;
 
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,52 +28,50 @@ import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.Unsup
 /**
  * Maintains a set of {@link DocumentHandler} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentHandlers {
 
     /**
      * The list of registered handler.
      */
-    private List<DocumentHandler> handlers
-            = Collections.synchronizedList(new ArrayList<DocumentHandler>());
+    private final List<DocumentHandler> handlers;
 
     /**
      * The fallback handler.
      */
-    private DocumentHandler defaultHandler;
+    private final DocumentHandler defaultHandler;
+
 
 
     /**
-     * Adds a new document handler.
+     * Constructs a {@link DocumentHandlers}.
      *
-     * @param handler the document handler
+     * @param service  the archetype service
      */
-    public void addDocumentHandler(DocumentHandler handler) {
-        handlers.add(handler);
+    public DocumentHandlers(IArchetypeService service) {
+        this(service, Collections.<DocumentHandler>emptyList());
     }
 
     /**
-     * Sets the document handlers.
+     * Constructs a {@link DocumentHandlers}.
      *
-     * @param handlers the document handlers
+     * @param service  the archetype service
+     * @param handlers the handlers
      */
-    public void setDocumentHandlers(List<DocumentHandler> handlers) {
-        this.handlers.clear();
-        this.handlers.addAll(handlers);
+    public DocumentHandlers(IArchetypeService service, List<DocumentHandler> handlers) {
+        defaultHandler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT, service);
+        this.handlers = handlers;
     }
 
     /**
      * Finds a handler for a document.
      *
      * @param document the document
-     * @return a handler for the document, or <code>null</code> if none is found
+     * @return a handler for the document, or {@code null} if none is found
      */
     public DocumentHandler find(Document document) {
-        return find(document.getName(),
-                    document.getArchetypeId().getShortName(),
-                    document.getMimeType());
+        return find(document.getName(), document.getArchetypeId().getShortName(), document.getMimeType());
     }
 
     /**
@@ -93,7 +91,7 @@ public class DocumentHandlers {
      *
      * @param name     the document name
      * @param mimeType the mime type of the document
-     * @return a handler for the document, or <code>null</code> if none is found
+     * @return a handler for the document, or {@code null} if none is found
      */
     public DocumentHandler find(String name, String mimeType) {
         for (DocumentHandler handler : handlers) {
@@ -101,8 +99,8 @@ public class DocumentHandlers {
                 return handler;
             }
         }
-        if (getDefaultHandler().canHandle(name, mimeType)) {
-            return getDefaultHandler();
+        if (defaultHandler.canHandle(name, mimeType)) {
+            return defaultHandler;
         }
         return null;
     }
@@ -124,24 +122,22 @@ public class DocumentHandlers {
         return handler;
     }
 
-
     /**
      * Returns a handler for a document.
      *
      * @param name      the document name
      * @param shortName the document archetype short name
      * @param mimeType  the mime type of the document
-     * @return a handler for the document, or <code>null</code> if none is found
+     * @return a handler for the document, or {@code null} if none is found
      */
-    public DocumentHandler find(String name, String shortName,
-                                String mimeType) {
+    public DocumentHandler find(String name, String shortName, String mimeType) {
         for (DocumentHandler handler : handlers) {
             if (handler.canHandle(name, shortName, mimeType)) {
                 return handler;
             }
         }
-        if (getDefaultHandler().canHandle(name, shortName, mimeType)) {
-            return getDefaultHandler();
+        if (defaultHandler.canHandle(name, shortName, mimeType)) {
+            return defaultHandler;
         }
         return null;
     }
@@ -161,18 +157,6 @@ public class DocumentHandlers {
             throw new DocumentException(UnsupportedDoc, mimeType);
         }
         return handler;
-    }
-
-    /**
-     * Returns the default handler.
-     *
-     * @return the default handler
-     */
-    private synchronized DocumentHandler getDefaultHandler() {
-        if (defaultHandler == null) {
-            defaultHandler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT);
-        }
-        return defaultHandler;
     }
 
 }

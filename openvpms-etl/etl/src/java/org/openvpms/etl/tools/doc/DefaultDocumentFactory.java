@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.etl.tools.doc;
@@ -25,6 +23,7 @@ import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.io.File;
 import java.util.Collection;
@@ -33,8 +32,7 @@ import java.util.Collection;
 /**
  * Default implementation of the {@link DocumentFactory} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class DefaultDocumentFactory implements DocumentFactory {
 
@@ -49,10 +47,10 @@ class DefaultDocumentFactory implements DocumentFactory {
     }
 
     /**
-     * Creates a new <tt>DefaultDocumentFactory</tt>.
+     * Constructs a {@link DefaultDocumentFactory}.
      */
-    public DefaultDocumentFactory() {
-        handlers = new DocumentHandlers();
+    public DefaultDocumentFactory(IArchetypeService service) {
+        handlers = new DocumentHandlers(service);
     }
 
     /**

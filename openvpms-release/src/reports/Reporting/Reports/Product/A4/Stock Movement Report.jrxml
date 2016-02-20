@@ -40,7 +40,7 @@
     </parameter>
     <parameter name="stockLocation" class="java.lang.String">
         <parameterDescription><![CDATA[Stock Location]]></parameterDescription>
-        <defaultValueExpression><![CDATA["EIAH Store"]]></defaultValueExpression>
+        <defaultValueExpression><![CDATA[]]></defaultValueExpression>
     </parameter>
     <parameter name="productType" class="java.lang.String">
         <parameterDescription><![CDATA[Product Type selection]]></parameterDescription>
@@ -68,7 +68,7 @@
     </parameter>
     <parameter name="fromTime" class="java.lang.Integer">
         <parameterDescription><![CDATA[Time from (hhmm)]]></parameterDescription>
-        <defaultValueExpression><![CDATA[]]></defaultValueExpression>
+        <defaultValueExpression><![CDATA[0]]></defaultValueExpression>
     </parameter>
     <parameter name="toDate" class="java.util.Date">
         <parameterDescription><![CDATA[Date to]]></parameterDescription>
@@ -76,7 +76,7 @@
     </parameter>
     <parameter name="toTime" class="java.lang.Integer">
         <parameterDescription><![CDATA[Time to (hhmm)]]></parameterDescription>
-        <defaultValueExpression><![CDATA[]]></defaultValueExpression>
+        <defaultValueExpression><![CDATA[0]]></defaultValueExpression>
     </parameter>
     <parameter name="fromDateTime" class="java.sql.Timestamp" isForPrompting="false">
         <parameterDescription><![CDATA[]]></parameterDescription>
@@ -104,18 +104,18 @@ left join act_details adp on adp.act_id = a.act_id and adp.name = 'packageSize'
 join act_relationships ar on ar.target_id = a.act_id
 join acts ap on ap.act_id = ar.source_id
 
-left join entity_relationships r on e.entity_id = r.target_id and r.arch_short_name = "entityRelationship.productTypeProduct"
-left join entities pt on r.source_id = pt.entity_id
+left join entity_links r on e.entity_id = r.source_id and r.arch_short_name = "entityLink.productType"
+left join entities pt on r.target_id = pt.entity_id
 left join entity_details d on d.entity_id = e.entity_id and d.name = "sellingUnits"
 left join lookups l on l.code = d.value and l.arch_short_name = "lookup.uom"
-left join entity_relationships s on s.source_id = e.entity_id and s.arch_short_name = "entityRelationship.productStockLocation"
-left join entity_relationship_details d2 on s.entity_relationship_id = d2.entity_relationship_id and d2.name = "quantity"
+left join entity_links s on s.source_id = e.entity_id and s.arch_short_name = "entityLink.productStockLocation"
+left join entity_link_details d2 on s.id = d2.id and d2.name = "quantity"
 left join entities sl on sl.entity_id = s.target_id
 
 where ar.parent_child_relationship = 1
 and ap.status = 'POSTED'
 and e.name like concat(ifnull($P{productName},""),"%")
-and e.active = true
+and e.active = 1
 and (p.activity_start_time >= date_add($P{fromDate}, INTERVAL ((60*FLOOR($P{fromTime}/100 ))+MOD( $P{fromTime} ,100)) MINUTE)
      and p.activity_start_time <= date_add($P{toDate}, INTERVAL ((60*FLOOR($P{toTime}/100 ))+MOD( $P{toTime} ,100)) MINUTE))
 and ifnull(pt.name,'-') like concat(ifnull($P{productType},""),"%")
@@ -599,7 +599,7 @@ order by sl.name, e.name, p.activity_start_time;]]>
                 <text><![CDATA[This report is used to to display stock movements during a specified period.  It is primarily designed to reveal any movements between the time the Export Stocktake Report is generated and when the stock is counted. However, it can be used to examine stock movements at any time.
 All the selection fields entered have % added so that leaving them blank will find all, and entering say product %vacc will find all products contain 'vacc' in their product name, and product type e will include all types starting E.  The selection is case insensitive.
 For Product Type selection, omitting the selection will include products with no product type and using the selection '-' will find only those with no product type.
-The Action column will be 'Sale' if the stock movement occured as a result of a customer sale (if it was a credit then the quantity will be negative), 'Stock Adj' for a stock adjustment, 'Stock Trans' for a stock transafer, and 'Deliver' for a delivery.]]></text>
+The Action column will be 'Sale' if the stock movement occurred as a result of a customer sale (if it was a credit then the quantity will be negative), 'Stock Adj' for a stock adjustment, 'Stock Trans' for a stock transfer, and 'Deliver' for a delivery.]]></text>
             </staticText>
             <staticText>
                 <reportElement x="74" y="4" width="387" height="20" isRemoveLineWhenBlank="true"

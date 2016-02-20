@@ -80,6 +80,11 @@ public class DocumentArchetypes {
     public static final String LOGO_PARTICIPATION = "participation.logo";
 
     /**
+     * Email template.
+     */
+    public static final String EMAIL_TEMPLATE = "entity.documentTemplateEmail";
+
+    /**
      * Appointment reminder SMS template.
      */
     public static final String APPOINTMENT_SMS_TEMPLATE = "entity.documentTemplateSMSAppointment";

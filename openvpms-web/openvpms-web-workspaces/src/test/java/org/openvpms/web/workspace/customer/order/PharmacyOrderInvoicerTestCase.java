@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -139,7 +139,8 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         ProductTestHelper.addPharmacy(product, pharmacy);
 
         // add a dose to the product. This should always be overridden
-        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.TEN);
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.TEN,
+                                                   BigDecimal.ONE);
         ProductTestHelper.addDose(product, dose);
 
         clinician = TestHelper.createClinician();

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.supplierReturnItem.1.0" latest="true" primary="false"
@@ -43,7 +43,7 @@
             </assertion>
         </node>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal"
-              defaultValue="1.0"/>
+              defaultValue="1.0" minCardinality="1"/>
         <node name="unitPrice" displayName="Nett Price" path="/unitAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               defaultValue="0.0"/>

@@ -239,7 +239,7 @@ public class ReminderTestHelper extends TestHelper {
         InputStream stream = ReminderTestHelper.class.getResourceAsStream(file);
         assertNotNull(stream);
 
-        DocumentHandlers handlers = new DocumentHandlers();
+        DocumentHandlers handlers = new DocumentHandlers(ArchetypeServiceHelper.getArchetypeService());
         DocumentHandler handler = handlers.get(file, mimeType);
         Document document = handler.create(file, stream, mimeType, -1);
 

@@ -19,6 +19,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OOConnection;
+import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -46,6 +47,27 @@ public class DocumentHelper {
             OpenOfficeHelper.close(connection);
         }
         return document;
+    }
+
+    /**
+     * Exports the document.
+     *
+     * @param mimeType the mime-type of the document format to export to
+     * @return the exported document serialized to a byte array
+     * @throws OpenOfficeException if the document cannot be exported
+     */
+    public static byte[] export(Document document, String mimeType) {
+        byte[] result;
+        OOConnection connection = null;
+        try {
+            DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+            connection = OpenOfficeHelper.getConnectionPool().getConnection();
+            Converter converter = new Converter(connection, handlers);
+            result = converter.export(document, mimeType);
+        } finally {
+            OpenOfficeHelper.close(connection);
+        }
+        return result;
     }
 
 }

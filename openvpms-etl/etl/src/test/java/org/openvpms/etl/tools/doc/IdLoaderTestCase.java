@@ -134,7 +134,7 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         // create a file and associate it with the act. The loader will skip it
         DocumentAct preLoaded = createPatientDocAct();
         File preloadedFile = createFile(preLoaded, source, null);
-        Document doc = DocumentHelper.create(preloadedFile, "image/gif", new DocumentHandlers());
+        Document doc = DocumentHelper.create(preloadedFile, "image/gif", new DocumentHandlers(getArchetypeService()));
         preLoaded.setDocument(doc.getObjectReference());
         preLoaded.setFileName(doc.getName());
         save(doc, preLoaded);
@@ -344,8 +344,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         String[] shortNames = {DocumentArchetypes.DOCUMENT_TEMPLATE_ACT};
         try {
-            new IdLoader(source, shortNames, getArchetypeService(), new DefaultDocumentFactory(), transactionManager,
-                         true, true);
+            new IdLoader(source, shortNames, getArchetypeService(), new DefaultDocumentFactory(getArchetypeService()),
+                         transactionManager, true, true);
             fail("Expected exception to be thrown");
         } catch (Throwable exception) {
             assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "

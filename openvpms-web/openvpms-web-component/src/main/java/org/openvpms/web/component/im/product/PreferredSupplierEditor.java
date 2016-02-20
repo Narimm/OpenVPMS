@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -46,7 +46,7 @@ import java.util.List;
 
 
 /**
- * Editor for the supplier {@link IMObjectReference}s on <em>entityRelationship.productStockLocation</em>.
+ * Editor for the supplier {@link IMObjectReference}s on <em>entityLink.productStockLocation</em>.
  * <p/>
  * This constraints suppliers to those on the related product.
  *

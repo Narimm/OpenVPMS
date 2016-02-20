@@ -405,12 +405,12 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
 
         ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
         ILookupService lookups = getLookupService();
-        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups, new DocumentHandlers(),
-                                                  functions);
+        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups,
+                                                  new DocumentHandlers(getArchetypeService()), functions);
         macros = new LookupMacros(lookups, getArchetypeService(), factory);
 
         // register the macro functions
-        Map properties = new HashMap();
+        Map<String, Object> properties = new HashMap<>();
         properties.put("macro", new TestMacroFunctions(macros));
         new JXPathHelper(properties);
     }

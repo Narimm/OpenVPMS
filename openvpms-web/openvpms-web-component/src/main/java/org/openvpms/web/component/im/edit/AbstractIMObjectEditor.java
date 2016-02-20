@@ -500,11 +500,11 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Resets the cached validity state of the object.
      *
-     * @param elements if {@code true} reset the validity state of the elements as well
+     * @param descendants if {@code true} reset the validity state of any descendants as well
      */
-    protected void resetValid(boolean elements) {
-        super.resetValid(elements);
-        if (elements) {
+    protected void resetValid(boolean descendants) {
+        super.resetValid(descendants);
+        if (descendants) {
             editors.resetValid();
         }
     }

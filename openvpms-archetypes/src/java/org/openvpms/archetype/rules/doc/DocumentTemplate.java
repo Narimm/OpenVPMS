@@ -174,10 +174,10 @@ public class DocumentTemplate {
 
     /**
      * Returns the archetype that the template applies to.
-     * <p>
+     * <p/>
      * The archetype may be an archetype short name, or a 'special' archetype such as
      * <em>GROUPED_REMINDERS</em> or <em>REPORT</em>
-     * <p>
+     * <p/>
      * TODO: this node should be changed to better reflect its usage
      *
      * @return the archetype. May be {@code null}
@@ -197,7 +197,7 @@ public class DocumentTemplate {
 
     /**
      * Returns the user level that the template applies to.
-     * <p>
+     * <p/>
      * TODO - need a better facility for user authorisation
      *
      * @return the user level that the template applies to. May be {@code null}
@@ -254,7 +254,7 @@ public class DocumentTemplate {
 
     /**
      * Returns the paper size.
-     * <p>
+     * <p/>
      * Current legal values are:
      * <ul>
      * <li>{@link #A4}
@@ -280,7 +280,7 @@ public class DocumentTemplate {
 
     /**
      * Returns the print orientation.
-     * <p>
+     * <p/>
      * Current legal values are:
      * <ul>
      * <li>{@link #PORTRAIT}
@@ -322,7 +322,7 @@ public class DocumentTemplate {
 
     /**
      * Returns the paper height.
-     * <p>
+     * <p/>
      * Note that this is only applicable if {@link #getPaperSize()} is {@link #CUSTOM}.
      *
      * @return the paper height
@@ -343,7 +343,7 @@ public class DocumentTemplate {
 
     /**
      * Returns the paper width.
-     * <p>
+     * <p/>
      * Note that this is only applicable if {@link #getPaperSize()} is {@link #CUSTOM}.
      *
      * @return the paper width
@@ -363,7 +363,7 @@ public class DocumentTemplate {
 
     /**
      * Returns the paper units.
-     * <p>
+     * <p/>
      * Legal values are:
      * <ul>
      * <li>{@link #MM}
@@ -386,39 +386,12 @@ public class DocumentTemplate {
     }
 
     /**
-     * Returns the email subject to use when documents generated from the template are emailed.
+     * Returns the email template.
      *
-     * @return the email subject. May be {@code null}
+     * @return the email template. May be {@code null}
      */
-    public String getEmailSubject() {
-        return bean.getString("emailSubject");
-    }
-
-    /**
-     * Sets the email subject to use when documents generated from the template are emailed.
-     *
-     * @param subject the email subject
-     */
-    public void setEmailSubject(String subject) {
-        bean.setValue("emailSubject", subject);
-    }
-
-    /**
-     * Returns the email text to use when documents generated from the template are emailed.
-     *
-     * @return the email text. May be {@code null}
-     */
-    public String getEmailText() {
-        return bean.getString("emailText");
-    }
-
-    /**
-     * Sets the email text to use when documents generated from the template are emailed.
-     *
-     * @param text the text
-     */
-    public void setEmailText(String text) {
-        bean.setValue("emailText", text);
+    public Entity getEmailTemplate() {
+        return bean.getNodeTargetEntity("email");
     }
 
     /**
@@ -476,7 +449,7 @@ public class DocumentTemplate {
      * @return the printers
      */
     public List<DocumentTemplatePrinter> getPrinters() {
-        List<DocumentTemplatePrinter> result = new ArrayList<DocumentTemplatePrinter>();
+        List<DocumentTemplatePrinter> result = new ArrayList<>();
         List<EntityRelationship> printers = bean.getNodeRelationships("printers");
         for (EntityRelationship printer : printers) {
             result.add(new DocumentTemplatePrinter(printer, service));
@@ -611,7 +584,7 @@ public class DocumentTemplate {
         PORTRAIT(OrientationRequested.PORTRAIT),
         LANDSCAPE(OrientationRequested.LANDSCAPE);
 
-        private Orientation(OrientationRequested orientation) {
+        Orientation(OrientationRequested orientation) {
             this.orientation = orientation;
         }
 
@@ -642,7 +615,7 @@ public class DocumentTemplate {
         LETTER(MediaSizeName.NA_LETTER),
         CUSTOM(null);
 
-        private PaperSize(MediaSizeName name) {
+        PaperSize(MediaSizeName name) {
             mediaName = name;
         }
 
@@ -671,7 +644,7 @@ public class DocumentTemplate {
         MM(Size2DSyntax.MM),
         INCH(Size2DSyntax.INCH);
 
-        private Units(int units) {
+        Units(int units) {
             this.units = units;
         }
 

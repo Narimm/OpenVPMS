@@ -190,7 +190,8 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
     private LookupMappings load(String[][] data) throws IOException {
         Document document = createCSV(data);
         LookupMappingImporter importer = new LookupMappingImporter(getArchetypeService(), getLookupService(),
-                                                                   new DocumentHandlers(), SEPARATOR);
+                                                                   new DocumentHandlers(getArchetypeService()),
+                                                                   SEPARATOR);
         return importer.load(document);
     }
 
@@ -242,7 +243,7 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
         }
         csv.close();
 
-        DocumentHandlers handlers = new DocumentHandlers();
+        DocumentHandlers handlers = new DocumentHandlers(getArchetypeService());
         DocumentHandler handler = handlers.get("Dummy.csv", AbstractCSVReader.MIME_TYPE);
         return handler.create("Dummy.csv", new ByteArrayInputStream(writer.toString().getBytes("UTF-8")),
                               AbstractCSVReader.MIME_TYPE, -1);

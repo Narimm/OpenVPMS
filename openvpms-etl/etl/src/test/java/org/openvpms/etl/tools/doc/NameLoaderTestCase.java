@@ -148,7 +148,7 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         // create a file and associate it with the act. The loader will skip it
         DocumentAct preLoaded = createPatientDocAct();
         File preloadedFile = createFile(preLoaded, source, null);
-        Document doc = DocumentHelper.create(preloadedFile, "image/gif", new DocumentHandlers());
+        Document doc = DocumentHelper.create(preloadedFile, "image/gif", new DocumentHandlers(getArchetypeService()));
         preLoaded.setDocument(doc.getObjectReference());
         preLoaded.setFileName(doc.getName());
         save(doc, preLoaded);
@@ -179,7 +179,7 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         try {
             new NameLoader(source, new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE_ACT}, getArchetypeService(),
-                           new DefaultDocumentFactory(), transactionManager, false, false);
+                           new DefaultDocumentFactory(getArchetypeService()), transactionManager, false, false);
             fail("Expected exception to be thrown");
         } catch (Throwable exception) {
             assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "

@@ -69,7 +69,8 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
             }
         };
 
-        ReportFactory factory = new ReportFactory(service, getLookupService(), new DocumentHandlers(), functions);
+        ReportFactory factory = new ReportFactory(service, getLookupService(), new DocumentHandlers(service),
+                                                  functions);
         macros = new LookupMacros(getLookupService(), service, factory);
     }
 

@@ -302,7 +302,7 @@ public abstract class AbstractMailer implements Mailer {
         }
         helper.setSubject(getSubject());
         if (body != null) {
-            helper.setText(body);
+            helper.setText(body, true);
 
         } else {
             helper.setText("");

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -81,7 +81,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         // add a dose. This should be copied.
         Lookup species = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
-        Entity dose = createDose(species, ZERO, TEN, ONE);
+        Entity dose = createDose(species, ZERO, TEN, ONE, ONE);
         ProductTestHelper.addDose(product, dose);
 
         Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
@@ -151,16 +151,16 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
         Lookup feline = TestHelper.getLookup(PatientArchetypes.SPECIES, "FELINE");
 
-        Entity dose1 = createDose(canine, ZERO, TEN, ONE);                                   // canine 0-10kg
-        Entity dose2 = createDose(feline, ZERO, TEN, BigDecimal.valueOf(2));                 // feline 0-10kg
-        Entity dose3 = createDose(null, TEN, BigDecimal.valueOf(20), BigDecimal.valueOf(4)); // all species 10-20kg
+        Entity dose1 = createDose(canine, ZERO, TEN, ONE, ONE);                                      // canine 0-10kg
+        Entity dose2 = createDose(feline, ZERO, TEN, BigDecimal.valueOf(2), BigDecimal.valueOf(2));  // feline 0-10kg
+        Entity dose3 = createDose(null, TEN, BigDecimal.valueOf(20), BigDecimal.valueOf(4), ONE); // all species 10-20kg
 
         ProductTestHelper.addDose(product, dose1);
         ProductTestHelper.addDose(product, dose2);
         ProductTestHelper.addDose(product, dose3);
 
         checkEquals(new BigDecimal("0.5"), rules.getDose(product, new Weight(1), "CANINE"));
-        checkEquals(1, rules.getDose(product, new Weight(1), "FELINE"));
+        checkEquals(2, rules.getDose(product, new Weight(1), "FELINE"));
 
         checkEquals(new BigDecimal(20), rules.getDose(product, new Weight(10), "CANINE")); // picks up all species dose
         checkEquals(ZERO, rules.getDose(product, new Weight(20), "FELINE"));               // no dose for any species
@@ -184,9 +184,9 @@ public class ProductRulesTestCase extends AbstractProductTest {
         BigDecimal rate = BigDecimal.valueOf(4);
 
         // use the same concentration and date, but round to different no. of places for each weight range
-        ProductTestHelper.addDose(product1, createDose(null, ZERO, ONE_HUNDRED, rate, 0));
-        ProductTestHelper.addDose(product2, createDose(null, ZERO, ONE_HUNDRED, rate, 1));
-        ProductTestHelper.addDose(product3, createDose(null, ZERO, ONE_HUNDRED, rate, 2));
+        ProductTestHelper.addDose(product1, createDose(null, ZERO, ONE_HUNDRED, rate, ONE, 0));
+        ProductTestHelper.addDose(product2, createDose(null, ZERO, ONE_HUNDRED, rate, ONE, 1));
+        ProductTestHelper.addDose(product3, createDose(null, ZERO, ONE_HUNDRED, rate, ONE, 2));
 
         Weight weight = new Weight(new BigDecimal("15.5"));
         checkEquals(1, rules.getDose(product1, weight, "CANINE"));

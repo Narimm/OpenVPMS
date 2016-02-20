@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -161,7 +161,7 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     }
 
     /**
-     * The <em>entityRelationship.productSupplier</em> relationship associated with the product. Only populated when
+     * The <em>entityLink.productSupplier</em> relationship associated with the product. Only populated when
      * the user selects the product.
      *
      * @return the product supplier relationship. May be {@code null}

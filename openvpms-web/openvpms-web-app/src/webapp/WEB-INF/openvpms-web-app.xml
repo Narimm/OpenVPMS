@@ -157,4 +157,14 @@
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="macros"/>
     </bean>
+
+    <!-- =========================================================================================================== -->
+    <!-- Email templates                                                                                             -->
+    <!-- =========================================================================================================== -->
+    <bean id="emailTemplateEvaluator" class="org.openvpms.web.component.mail.EmailTemplateEvaluator">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="macros"/>
+    </bean>
+
 </beans>

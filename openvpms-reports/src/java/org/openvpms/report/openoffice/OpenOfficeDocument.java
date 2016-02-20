@@ -69,8 +69,7 @@ import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.Faile
 /**
  * Thin wrapper around an OpenOffice document.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OpenOfficeDocument {
 
@@ -98,8 +97,7 @@ public class OpenOfficeDocument {
      * Prefix for user fields.
      * NOTE: in OO 2.1, <em>fieldmaster</em> was named <em>FieldMaster</em>.
      */
-    private static final String USER_FIELD_PREFIX
-            = "com.sun.star.text.fieldmaster.User.";
+    private static final String USER_FIELD_PREFIX = "com.sun.star.text.fieldmaster.User.";
 
     /**
      * The logger.
@@ -108,7 +106,7 @@ public class OpenOfficeDocument {
 
 
     /**
-     * Creates a new <tt>OpenOfficeDocument</tt>.
+     * Constructs an {@link OpenOfficeDocument}.
      *
      * @param document   the source document
      * @param connection the connection to the OpenOffice service
@@ -129,9 +127,7 @@ public class OpenOfficeDocument {
             IOUtils.closeQuietly(input);
             content = output.toByteArray();
             IOUtils.closeQuietly(output);
-        } catch (DocumentException exception) {
-            throw new OpenOfficeException(exception, FailedToCreateDoc, name);
-        } catch (java.io.IOException exception) {
+        } catch (DocumentException | java.io.IOException exception) {
             throw new OpenOfficeException(exception, FailedToCreateDoc, name);
         }
         XInputStream xstream = new ByteArrayToXInputStreamAdapter(content);
@@ -185,7 +181,7 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the fields cannot be accessed
      */
     public List<String> getUserFieldNames() {
-        return new ArrayList<String>(userFields.keySet());
+        return new ArrayList<>(userFields.keySet());
     }
 
     /**
@@ -227,7 +223,7 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the fields cannot be accessed
      */
     public Map<String, ParameterType> getInputFields() {
-        Map<String, ParameterType> result = new LinkedHashMap<String, ParameterType>();
+        Map<String, ParameterType> result = new LinkedHashMap<>();
         for (Field field : inputFields.values()) {
             ParameterType param = new ParameterType(field.getName(), String.class, field.getValue());
             result.put(field.getName(), param);
@@ -239,7 +235,7 @@ public class OpenOfficeDocument {
      * Determines if an input field exists with the specified name.
      *
      * @param name the input field name
-     * @return <tt>true</tt> if the input field exists, otherwise <tt>false</tt>
+     * @return {@code true} if the input field exists, otherwise {@code false}
      */
     public boolean hasInputField(String name) {
         return inputFields.containsKey(name);
@@ -249,7 +245,7 @@ public class OpenOfficeDocument {
      * Determines if a user field exists with the specified name.
      *
      * @param name the user field name
-     * @return <tt>true</tt> if the user field exists, otherwise <tt>false</tt>
+     * @return {@code true} if the user field exists, otherwise {@code false}
      */
     public boolean hasUserField(String name) {
         return userFields.containsKey(name);
@@ -259,7 +255,7 @@ public class OpenOfficeDocument {
      * Returns the value of an input field.
      *
      * @param name the input field name
-     * @return the input field value. May be <tt>null</tt>
+     * @return the input field value. May be {@code null}
      */
     public String getInputField(String name) {
         Field field = inputFields.get(name);
@@ -273,7 +269,7 @@ public class OpenOfficeDocument {
      * Sets the value of an input field.
      *
      * @param name  the input field name
-     * @param value the input field value. May be <tt>null</tt>
+     * @param value the input field value. May be {@code null}
      */
     public void setInputField(String name, String value) {
         Field field = inputFields.get(name);
@@ -309,17 +305,30 @@ public class OpenOfficeDocument {
         PropertyValue[] properties;
         PropertyValue outputStream = property("OutputStream", stream);
         PropertyValue overwrite = property("Overwrite", true);
-        if (mimeType.equals(DocFormats.PDF_TYPE)) {
-            PropertyValue filter = property("FilterName", "writer_pdf_Export");
-            properties = new PropertyValue[]{outputStream, overwrite, filter};
-        } else if (mimeType.equals(DocFormats.DOC_TYPE)) {
-            PropertyValue filter = property("FilterName", "MS Word 97");
-            properties = new PropertyValue[]{outputStream, overwrite, filter};
-        } else if (mimeType.equals(DocFormats.TEXT_TYPE)) {
-            PropertyValue filter = property("FilterName", "Text");
-            properties = new PropertyValue[]{outputStream, overwrite, filter};
-        } else {
-            properties = new PropertyValue[]{outputStream, overwrite};
+        switch (mimeType) {
+            case DocFormats.PDF_TYPE: {
+                PropertyValue filter = property("FilterName", "writer_pdf_Export");
+                properties = new PropertyValue[]{outputStream, overwrite, filter};
+                break;
+            }
+            case DocFormats.DOC_TYPE: {
+                PropertyValue filter = property("FilterName", "MS Word 97");
+                properties = new PropertyValue[]{outputStream, overwrite, filter};
+                break;
+            }
+            case DocFormats.TEXT_TYPE: {
+                PropertyValue filter = property("FilterName", "Text");
+                properties = new PropertyValue[]{outputStream, overwrite, filter};
+                break;
+            }
+            case DocFormats.HTML_TYPE: {
+                PropertyValue filter = property("FilterName", "HTML (StarWriter)");
+                properties = new PropertyValue[]{outputStream, overwrite, filter};
+                break;
+            }
+            default:
+                properties = new PropertyValue[]{outputStream, overwrite};
+                break;
         }
 
         try {
@@ -338,19 +347,24 @@ public class OpenOfficeDocument {
      * @param mimeType the mime-type of the document format to export to
      * @param name     the document name
      * @return the exported document
-     * @throws OpenOfficeException if the source document cannot be
-     *                             exported
-     * @throws DocumentException   if the target document cannot be
-     *                             created
+     * @throws OpenOfficeException if the source document cannot be exported
+     * @throws DocumentException   if the target document cannot be created
      */
     public Document export(String mimeType, String name) {
         byte[] content = export(mimeType);
-        if (mimeType.equals(DocFormats.PDF_TYPE)) {
-            name = name + "." + DocFormats.PDF_EXT;
-        } else if (mimeType.equals(DocFormats.DOC_TYPE)) {
-            name = name + "." + DocFormats.DOC_EXT;
-        } else if (mimeType.equals(DocFormats.TEXT_TYPE)) {
-            name = name + "." + DocFormats.TEXT_EXT;
+        switch (mimeType) {
+            case DocFormats.PDF_TYPE:
+                name = getFileName(name, DocFormats.PDF_EXT);
+                break;
+            case DocFormats.DOC_TYPE:
+                name = getFileName(name, DocFormats.DOC_EXT);
+                break;
+            case DocFormats.TEXT_TYPE:
+                name = getFileName(name, DocFormats.TEXT_EXT);
+                break;
+            case DocFormats.HTML_TYPE:
+                name = getFileName(name, DocFormats.HTML_EXT);
+                break;
         }
 
         try {
@@ -381,7 +395,7 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the fields can't be accessed
      */
     protected Map<String, Field> getUserTextFields() {
-        Map<String, Field> result = new LinkedHashMap<String, Field>();
+        Map<String, Field> result = new LinkedHashMap<>();
         XNameAccess fields = getTextFieldMasters();
         for (String elementName : fields.getElementNames()) {
             try {
@@ -408,7 +422,7 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the fields can't be accessed
      */
     protected Map<String, Field> getInputTextFields() {
-        Map<String, Field> result = new LinkedHashMap<String, Field>();
+        Map<String, Field> result = new LinkedHashMap<>();
         XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
         XEnumeration en = fields.createEnumeration();
         int seed = 0;
@@ -434,7 +448,7 @@ public class OpenOfficeDocument {
      * Sets the content of a field.
      *
      * @param field the field
-     * @param value the new value. May be <tt>null</tt>
+     * @param value the new value. May be {@code null}
      * @throws OpenOfficeException if the field cannot be updated
      */
     protected void setContent(Field field, String value) {
@@ -450,7 +464,7 @@ public class OpenOfficeDocument {
      * Returns the content of a field.
      *
      * @param field the field
-     * @return the field content. May be <tt>null</tt>
+     * @return the field content. May be {@code null}
      * @throws OpenOfficeException if the field cannot be accessed
      */
     protected String getContent(Field field) {
@@ -458,8 +472,7 @@ public class OpenOfficeDocument {
         try {
             content = field.getPropertySet().getPropertyValue("Content");
         } catch (Exception exception) {
-            throw new OpenOfficeException(exception, FailedToGetField,
-                                          field.getName());
+            throw new OpenOfficeException(exception, FailedToGetField, field.getName());
         }
         return content != null ? content.toString() : null;
     }
@@ -486,7 +499,7 @@ public class OpenOfficeDocument {
      * Determines if a field is an input text field.
      *
      * @param field the field
-     * @return <tt>true</tt> if the field is an input text field
+     * @return {@code true} if the field is an input text field
      */
     protected boolean isInputField(Object field) {
         XServiceInfo info = UnoRuntime.queryInterface(XServiceInfo.class, field);
@@ -496,11 +509,10 @@ public class OpenOfficeDocument {
     /**
      * Determines if a field is an input user text field.
      * <p/>
-     * These fields update the user field identified by their <em>Content</em>
-     * property.
+     * These fields update the user field identified by their <em>Content</em> property.
      *
      * @param field the field
-     * @return <tt>true</tt> if the field is an input text field
+     * @return {@code true} if the field is an input text field
      */
     private boolean isInputUserField(Object field) {
         XServiceInfo info = UnoRuntime.queryInterface(XServiceInfo.class, field);
@@ -516,11 +528,11 @@ public class OpenOfficeDocument {
     }
 
     /**
-     * Helper to create a new <tt>PropertyValue</tt>.
+     * Helper to create a new {@code PropertyValue}.
      *
      * @param name  the property name
      * @param value the property value
-     * @return a new <tt>PropertyValue</tt>
+     * @return a new {@code PropertyValue}
      */
     private PropertyValue property(String name, Object value) {
         PropertyValue property = new PropertyValue();
@@ -534,8 +546,8 @@ public class OpenOfficeDocument {
      * an input field.
      *
      * @param field the field
-     * @return the input field's property set, or <tt>null</tt> if it isn't an
-     *         input field
+     * @return the input field's property set, or {@code null} if it isn't an
+     * input field
      */
     private XPropertySet getInputFieldPropertySet(Object field) {
         XTextField text = UnoRuntime.queryInterface(XTextField.class, field);
@@ -543,6 +555,17 @@ public class OpenOfficeDocument {
             return UnoRuntime.queryInterface(XPropertySet.class, text);
         }
         return null;
+    }
+
+    /**
+     * Concatenates a base name and extension.
+     *
+     * @param name the base name
+     * @param ext  the extension, minus the prefixing period
+     * @return the file name
+     */
+    private String getFileName(String name, String ext) {
+        return name + "." + ext;
     }
 
     /**
@@ -559,7 +582,7 @@ public class OpenOfficeDocument {
         private boolean changed;
 
         /**
-         * Creates a new <tt>Field</tt>.
+         * Constructs a {@link Field}.
          *
          * @param name       the field name
          * @param value      the field value
@@ -601,7 +624,7 @@ public class OpenOfficeDocument {
         /**
          * Determines if the field has changed..
          *
-         * @return <tt>true</tt> if the field has changed
+         * @return {@code true} if the field has changed
          */
         public boolean isChanged() {
             return changed;
@@ -610,7 +633,7 @@ public class OpenOfficeDocument {
         /**
          * Determines if the field has been changed.
          *
-         * @param changed if <tt>true</tt>, indicates that the field has changed
+         * @param changed if {@code true}, indicates that the field has changed
          */
         public void setChanged(boolean changed) {
             this.changed = changed;

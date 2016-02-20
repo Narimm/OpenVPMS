@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.product.stock;
 import org.openvpms.archetype.rules.stock.io.StockData;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -118,14 +118,14 @@ public class StockExportQuery extends QueryAdapter<ObjectSet, StockData> {
             protected IPage<StockData> convert(IPage<ObjectSet> page) {
                 Entity stockLocation = getQuery().getStockLocation();
                 boolean zeroNegativeQuantities = getQuery().getZeroNegativeQuantities();
-                List<StockData> objects = new ArrayList<StockData>();
+                List<StockData> objects = new ArrayList<>();
                 for (ObjectSet set : page.getResults()) {
                     Product product = (Product) set.get("product");
-                    EntityRelationship relationship = (EntityRelationship) set.get("relationship");
+                    EntityLink relationship = (EntityLink) set.get("relationship");
                     StockData data = createStockData(stockLocation, product, relationship, zeroNegativeQuantities);
                     objects.add(data);
                 }
-                return new Page<StockData>(objects, page.getFirstResult(), page.getPageSize(), page.getTotalResults());
+                return new Page<>(objects, page.getFirstResult(), page.getPageSize(), page.getTotalResults());
             }
         };
     }
@@ -140,7 +140,7 @@ public class StockExportQuery extends QueryAdapter<ObjectSet, StockData> {
      *                               if the stock quantity is negative
      * @return a new {@link StockData}
      */
-    private StockData createStockData(Entity stockLocation, Product product, EntityRelationship relationship,
+    private StockData createStockData(Entity stockLocation, Product product, EntityLink relationship,
                                       boolean zeroNegativeQuantities) {
         String sellingUnits = LookupNameHelper.getName(product, "sellingUnits");
         IMObjectBean bean = new IMObjectBean(relationship);

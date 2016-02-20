@@ -41,7 +41,7 @@ import org.openvpms.macro.Macros;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
@@ -54,6 +54,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
@@ -66,7 +67,8 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 import org.openvpms.web.echo.table.DefaultTableCellRenderer;
-import org.openvpms.web.echo.text.TextArea;
+import org.openvpms.web.echo.text.MacroExpander;
+import org.openvpms.web.echo.text.RichTextArea;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -119,7 +121,7 @@ public class MailEditor extends AbstractModifiable {
     /**
      * The document attachment references.
      */
-    private List<DocRef> documents = new ArrayList<DocRef>();
+    private List<DocRef> documents = new ArrayList<>();
 
     /**
      * The listeners.
@@ -153,6 +155,11 @@ public class MailEditor extends AbstractModifiable {
     private DoubleClickMonitor monitor = new DoubleClickMonitor();
 
     /**
+     * The macro expanded.
+     */
+    private final MacroExpander macroExpander;
+
+    /**
      * Constructs a {@link MailEditor}.
      * <p/>
      * If no 'to' addresses are supplied the address will be editable, otherwise it will be read-only.
@@ -166,13 +173,20 @@ public class MailEditor extends AbstractModifiable {
         header = new MailHeader(mailContext, preferredTo, context);
         this.context = context.getContext();
         this.help = context.getHelpContext();
-        Variables variables = mailContext.getVariables();
-        Macros macros = ServiceHelper.getMacros();
+        final Variables variables = mailContext.getVariables();
+        final Macros macros = ServiceHelper.getMacros();
 
-        message = MailHelper.createProperty("message", "mail.message", false, macros, variables);
+        message = new SimpleProperty("message", null, String.class, Messages.get("mail.message"));
+        message.setTransformer(new StringPropertyTransformer(message, false));
         message.setRequired(false);
         message.setMaxLength(-1);     // no maximum length
         // message.addModifiableListener(listener); TODO
+        macroExpander = new MacroExpander() {
+            @Override
+            public String expand(String macro) {
+                return macros.run(macro, null, variables);
+            }
+        };
     }
 
     /**
@@ -257,6 +271,15 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
+     * Sets the message to send.
+     *
+     * @param message the message to send. May be {@code null}
+     */
+    public void setMessage(String message) {
+        this.message.setValue(message);
+    }
+
+    /**
      * Adds an attachment.
      * <p/>
      * If the document is unsaved, it will be saved and deleted on {@link #dispose()}.
@@ -315,7 +338,7 @@ public class MailEditor extends AbstractModifiable {
         if (documents.isEmpty()) {
             result = Collections.emptyList();
         } else {
-            result = new ArrayList<IMObjectReference>();
+            result = new ArrayList<>();
             for (DocRef doc : documents) {
                 result.add(doc.getReference());
             }
@@ -446,8 +469,9 @@ public class MailEditor extends AbstractModifiable {
      * @param message the message property
      * @return a message editor
      */
-    protected TextArea createMessageEditor(Property message) {
-        TextArea result = BoundTextComponentFactory.createTextArea(message);
+    protected RichTextArea createMessageEditor(Property message) {
+        BoundRichTextArea result = new BoundRichTextArea(message);
+        result.setMacroExpander(macroExpander);
         result.setStyleName("MailEditor.message");
         return result;
     }
@@ -545,7 +569,7 @@ public class MailEditor extends AbstractModifiable {
         GridLayoutData rightInset = new GridLayoutData();
         rightInset.setInsets(new Insets(0, 0, inset, 0));
 
-        TextArea messageArea = createMessageEditor(message);
+        RichTextArea messageArea = createMessageEditor(message);
 
         focus.add(header.getFocusGroup());
         focus.add(messageArea);
