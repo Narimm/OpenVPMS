@@ -64,12 +64,12 @@
         <![CDATA[select e.entity_id as pid, e.name as product, l.name as uom, sl.name as stockLocation, convert(ifnull(d2.value,"0.00"),decimal(18,3)) as currentStock
 from
 entities e inner join products p on e.entity_id = p.product_id
-left join entity_relationships r on e.entity_id = r.target_id and r.arch_short_name = "entityRelationship.productTypeProduct"
-left join entities pt on r.source_id = pt.entity_id
+left join entity_links r on e.entity_id = r.source_id and r.arch_short_name = "entityLink.productType"
+left join entities pt on r.target_id = pt.entity_id
 left join entity_details d on d.entity_id = e.entity_id and d.name = "sellingUnits"
 left join lookups l on l.code = d.value and l.arch_short_name = "lookup.uom"
-left outer join entity_relationships s on s.source_id = e.entity_id and s.arch_short_name = "entityRelationship.productStockLocation"
-left join entity_relationship_details d2 on s.entity_relationship_id = d2.entity_relationship_id and d2.name = "quantity"
+left outer join entity_links s on s.source_id = e.entity_id and s.arch_short_name = "entityLink.productStockLocation"
+left join entity_link_details d2 on s.id = d2.id and d2.name = "quantity"
 left join entities sl on sl.entity_id = s.target_id
 left  join entity_classifications productgroup on productgroup.entity_id = e.entity_id
 left  join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id

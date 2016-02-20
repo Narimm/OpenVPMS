@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.appointment;
@@ -532,10 +532,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      */
     private Period getPeriod(IMObjectBean bean, String intervalName, String unitsName, DateUnits defaultUnits) {
         int interval = bean.getInt(intervalName);
-        DateUnits units = DateUnits.fromString(bean.getString(unitsName));
-        if (units == null) {
-            units = defaultUnits;
-        }
+        DateUnits units = DateUnits.fromString(bean.getString(unitsName), defaultUnits);
         return units.toPeriod(interval);
     }
 }

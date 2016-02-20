@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -50,6 +50,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -710,12 +711,19 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
 
         /**
+         * Dummy property used to ensure the duration is displayed after the endTime node.
+         */
+        private SimpleProperty durationProperty = new SimpleProperty(
+                "duration", null, String.class, Messages.get("workflow.scheduling.appointment.duration"));
+
+        /**
          * Constructs an {@link AppointmentLayoutStrategy}.
          */
         public AppointmentLayoutStrategy() {
             super(new ArchetypeNodes());
             addComponent(new ComponentState(getStartTimeEditor()));
             addComponent(new ComponentState(getEndTimeEditor()));
+            addComponent(new ComponentState(duration, durationProperty));
             ArchetypeNodes archetypeNodes = getArchetypeNodes();
             archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
             if (!smsPractice || !scheduleReminders) {
@@ -737,10 +745,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
          */
         @Override
         protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
+            ArchetypeNodes.insert(properties, END_TIME, durationProperty);
             ComponentGrid grid = super.createGrid(object, properties, context);
-            ComponentState state = new ComponentState(duration, null, null,
-                                                      Messages.get("workflow.scheduling.appointment.duration"));
-            grid.add(state);
 
             Property repeat = getProperty("repeat");
             if (seriesEditor != null) {

@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!DOCTYPE hibernate-mapping PUBLIC
@@ -56,7 +56,7 @@
         select  product.entity_id as productId,
                 product.arch_short_name as productShortName,
                 product.linkId as productLinkId,
-                productSupplier.entity_relationship_id as productSupplierId,
+                productSupplier.id as productSupplierId,
                 quantity.value as quantity,
                 idealQty.value as idealQty,
                 criticalQty.value as criticalQty,
@@ -70,66 +70,66 @@
                 o.receivedQty as receivedQty,
                 o.cancelledQty as cancelledQty
         from    entities product
-        join    entity_relationships productStock on product.entity_id = productStock.source_id
-                    and productStock.arch_short_name = "entityRelationship.productStockLocation"
+        join    entity_links productStock on product.entity_id = productStock.source_id
+                    and productStock.arch_short_name = "entityLink.productStockLocation"
                     and productStock.target_id = :stockLocationId
                     and (productStock.active_start_time is null or productStock.active_start_time <= now())
                     and (productStock.active_end_time is null or productStock.active_end_time > now())
         join (
-            select r.source_id, r.entity_relationship_id, preferred.value as preferred
-            from entity_relationships r 
-            join entity_relationship_details preferred 
-                    on preferred.entity_relationship_id = r.entity_relationship_id and preferred.name = "preferred"
-            where  r.arch_short_name = "entityRelationship.productSupplier"
+            select r.source_id, r.id, preferred.value as preferred
+            from entity_links r
+            join entity_link_details preferred
+                    on preferred.id = r.id and preferred.name = "preferred"
+            where r.arch_short_name = "entityLink.productSupplier"
                     and r.target_id = :supplierId
                     and (r.active_start_time is null or r.active_start_time <= now())
                     and (r.active_end_time is null or r.active_end_time > now())
             ) as productSupplier on productSupplier.source_id = product.entity_id
         left join (
-            select r.source_id, r.entity_relationship_id, preferred.value as preferred
-            from entity_relationships r 
-            join entity_relationship_details preferred 
-                    on preferred.entity_relationship_id = r.entity_relationship_id and preferred.name = "preferred"
-            where  r.arch_short_name = "entityRelationship.productSupplier"
+            select r.source_id, r.id, preferred.value as preferred
+            from entity_links r
+            join entity_link_details preferred
+                    on preferred.id = r.id and preferred.name = "preferred"
+            where  r.arch_short_name = "entityLink.productSupplier"
                     and r.target_id = :supplierId
                     and (r.active_start_time is null or r.active_start_time <= now())
                     and (r.active_end_time is null or r.active_end_time > now())
             ) as productSupplier2 on productSupplier2.source_id = product.entity_id 
                 and (productSupplier.preferred < productSupplier2.preferred 
                     or (productSupplier.preferred = productSupplier2.preferred 
-                        and productSupplier.entity_relationship_id > productSupplier2.entity_relationship_id))
-        left join entity_relationship_details supplier
-                    on supplier.entity_relationship_id = productStock.entity_relationship_id
+                        and productSupplier.id > productSupplier2.id))
+        left join entity_link_details supplier
+                    on supplier.id = productStock.id
                     and supplier.name = "supplier"
-        left join entity_relationship_details preferred
-                    on preferred.entity_relationship_id = productSupplier.entity_relationship_id
+        left join entity_link_details preferred
+                    on preferred.id = productSupplier.id
                     and preferred.name = "preferred"
-        left join entity_relationship_details quantity
-                    on quantity.entity_relationship_id = productStock.entity_relationship_id
+        left join entity_link_details quantity
+                    on quantity.id = productStock.id
                     and quantity.name = "quantity"
-        left join entity_relationship_details idealQty
-                    on idealQty.entity_relationship_id = productStock.entity_relationship_id
+        left join entity_link_details idealQty
+                    on idealQty.id = productStock.id
                     and idealQty.name = "idealQty"
-        left join entity_relationship_details criticalQty
-                    on criticalQty.entity_relationship_id = productStock.entity_relationship_id
+        left join entity_link_details criticalQty
+                    on criticalQty.id = productStock.id
                     and criticalQty.name = "criticalQty"
-        left join entity_relationship_details packageSize
-                    on packageSize.entity_relationship_id = productSupplier.entity_relationship_id
+        left join entity_link_details packageSize
+                    on packageSize.id = productSupplier.id
                     and packageSize.name = "packageSize"
-        left join entity_relationship_details packageUnits
-                    on packageUnits.entity_relationship_id = productSupplier.entity_relationship_id
+        left join entity_link_details packageUnits
+                    on packageUnits.id = productSupplier.id
                     and packageUnits.name = "packageUnits"
-        left join entity_relationship_details reorderCode
-                    on reorderCode.entity_relationship_id = productSupplier.entity_relationship_id
+        left join entity_link_details reorderCode
+                    on reorderCode.id = productSupplier.id
                     and reorderCode.name = "reorderCode"
-        left join entity_relationship_details reorderDesc
-                    on reorderDesc.entity_relationship_id = productSupplier.entity_relationship_id
+        left join entity_link_details reorderDesc
+                    on reorderDesc.id = productSupplier.id
                     and reorderDesc.name = "reorderDescription"
-        left join entity_relationship_details nettPrice
-                    on nettPrice.entity_relationship_id = productSupplier.entity_relationship_id
+        left join entity_link_details nettPrice
+                    on nettPrice.id = productSupplier.id
                     and nettPrice.name = "nettPrice"
-        left join entity_relationship_details listPrice
-                    on listPrice.entity_relationship_id = productSupplier.entity_relationship_id
+        left join entity_link_details listPrice
+                    on listPrice.id = productSupplier.id
                     and listPrice.name = "listPrice"
         left join (
             select  productParticipation.entity_id as product_id,

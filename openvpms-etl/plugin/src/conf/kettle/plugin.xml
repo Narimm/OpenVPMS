@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <plugin id="OpenVPMSLoaderPlugin"
@@ -22,9 +22,9 @@
         category="Transform"
         classname="org.openvpms.etl.kettle.LoaderPluginMeta">
     <libraries>
-        <library name="openvpms-archetypes-${pom.version}.jar"/>
-        <library name="openvpms-framework-${pom.version}.jar"/>
-        <library name="openvpms-etl-load-${pom.version}.jar"/>
+        <library name="openvpms-archetypes-${project.version}.jar"/>
+        <library name="openvpms-framework-${project.version}.jar"/>
+        <library name="openvpms-etl-load-${project.version}.jar"/>
         <library name="antlr-${antlr.version}.jar"/>
         <library name="castor-core-${castor.version}.jar"/>
         <library name="castor-xml-${castor.version}.jar"/>

@@ -93,22 +93,22 @@ select
   ifnull(cancelledqty.value,0) as cancelledQty,
   cast(orderpacksize.value as signed) as orderSize
 from entities product
-    join entity_relationships productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityRelationship.productStockLocation"
-    left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id  and currentqty.name = "quantity"
-    left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id  and idealqty.name = "idealQty"
-    left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id  and criticalqty.name = "criticalQty"
+    join entity_links productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityLink.productStockLocation"
+    left outer join entity_link_details currentqty on currentqty.id = productStock.id  and currentqty.name = "quantity"
+    left outer join entity_link_details idealqty on idealqty.id = productStock.id  and idealqty.name = "idealQty"
+    left outer join entity_link_details criticalqty on criticalqty.id = productStock.id  and criticalqty.name = "criticalQty"
     left outer join entities stockLocation on stockLocation.entity_id = productStock.target_id
     left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
     left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
-join entity_relationships productSupplier on product.entity_id = productSupplier.source_id
-	and productSupplier.arch_short_name = "entityRelationship.productSupplier"
+join entity_links productSupplier on product.entity_id = productSupplier.source_id
+	and productSupplier.arch_short_name = "entityLink.productSupplier"
 	and (productSupplier.active_start_time is null or productSupplier.active_start_time < now())
 	and (productSupplier.active_end_time is null or productSupplier.active_end_time > now())
-    left outer join entity_relationship_details packageSize on packageSize.entity_relationship_id = productSupplier.entity_relationship_id  and packageSize.name = "packageSize"
-    left outer join entity_relationship_details preferred on preferred.entity_relationship_id = productSupplier.entity_relationship_id  and preferred.name = "preferred"
-    left outer join entity_relationship_details reorderCode on reorderCode.entity_relationship_id = productSupplier.entity_relationship_id  and reorderCode.name = "reorderCode"
-    left outer join entity_relationship_details reorderDesc on reorderDesc.entity_relationship_id = productSupplier.entity_relationship_id  and reorderDesc.name = "reorderDescription"
-    left outer join entity_relationship_details nettprice on nettprice.entity_relationship_id = productSupplier.entity_relationship_id  and nettprice.name = "nettPrice"
+    left outer join entity_link_details packageSize on packageSize.id = productSupplier.id and packageSize.name = "packageSize"
+    left outer join entity_link_details preferred on preferred.id = productSupplier.id and preferred.name = "preferred"
+    left outer join entity_link_details reorderCode on reorderCode.id = productSupplier.id and reorderCode.name = "reorderCode"
+    left outer join entity_link_details reorderDesc on reorderDesc.id = productSupplier.id and reorderDesc.name = "reorderDescription"
+    left outer join entity_link_details nettprice on nettprice.id = productSupplier.id and nettprice.name = "nettPrice"
     join entities supplier on supplier.entity_id = productSupplier.target_id
     left outer join participations productParticipation on productParticipation.entity_id = product.entity_id
     left outer join acts orderLine on orderLine.act_id = productParticipation.act_id and orderLine.arch_short_name = "act.supplierOrderItem"
@@ -154,22 +154,21 @@ select
   0 as cancelledQty,
   cast(packageSize.value as signed) as orderSize
 from entities product
-    join entity_relationships productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityRelationship.productStockLocation"
-    left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id  and currentqty.name = "quantity"
-    left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id  and idealqty.name = "idealQty"
-    left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id  and criticalqty.name = "criticalQty"
+    join entity_links productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityLink.productStockLocation"
+    left outer join entity_link_details currentqty on currentqty.id = productStock.id  and currentqty.name = "quantity"
+    left outer join entity_link_details idealqty on idealqty.id = productStock.id  and idealqty.name = "idealQty"
+    left outer join entity_link_details criticalqty on criticalqty.id = productStock.id  and criticalqty.name = "criticalQty"
     join entities stockLocation on stockLocation.entity_id = productStock.target_id
     left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
     left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
-    join entity_relationships productSupplier on product.entity_id = productSupplier.source_id and productSupplier.arch_short_name = "entityRelationship.productSupplier"
-	and productSupplier.arch_short_name = "entityRelationship.productSupplier"
+    join entity_links productSupplier on product.entity_id = productSupplier.source_id and productSupplier.arch_short_name = "entityLink.productSupplier"
 	and (productSupplier.active_start_time is null or productSupplier.active_start_time < now())
 	and (productSupplier.active_end_time is null or productSupplier.active_end_time > now())
-    left outer join entity_relationship_details packageSize on packageSize.entity_relationship_id = productSupplier.entity_relationship_id  and packageSize.name = "packageSize"
-    left outer join entity_relationship_details preferred on preferred.entity_relationship_id = productSupplier.entity_relationship_id  and preferred.name = "preferred"
-    left outer join entity_relationship_details reorderCode on reorderCode.entity_relationship_id = productSupplier.entity_relationship_id  and reorderCode.name = "reorderCode"
-    left outer join entity_relationship_details reorderDesc on reorderDesc.entity_relationship_id = productSupplier.entity_relationship_id  and reorderDesc.name = "reorderDescription"
-    left outer join entity_relationship_details nettprice on nettprice.entity_relationship_id = productSupplier.entity_relationship_id  and nettprice.name = "nettPrice"
+    left outer join entity_link_details packageSize on packageSize.id = productSupplier.id and packageSize.name = "packageSize"
+    left outer join entity_link_details preferred on preferred.id = productSupplier.id and preferred.name = "preferred"
+    left outer join entity_link_details reorderCode on reorderCode.id = productSupplier.id  and reorderCode.name = "reorderCode"
+    left outer join entity_link_details reorderDesc on reorderDesc.id = productSupplier.id and reorderDesc.name = "reorderDescription"
+    left outer join entity_link_details nettprice on nettprice.id = productSupplier.id  and nettprice.name = "nettPrice"
     join entities supplier on supplier.entity_id = productSupplier.target_id
 where
   product.name like concat(ifnull( $P{Product},""),"%") and

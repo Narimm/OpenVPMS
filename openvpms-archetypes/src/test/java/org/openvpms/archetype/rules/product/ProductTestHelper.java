@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -73,22 +72,24 @@ public class ProductTestHelper {
      * @param productType the product type
      */
     public static void addProductType(Product product, Entity productType) {
-        EntityBean bean = new EntityBean(productType);
-        bean.addRelationship("entityRelationship.productTypeProduct", product);
-        TestHelper.save(productType, product);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("type", productType);
+        bean.save();
     }
 
     /**
      * Creates an <em>entity.productDose</em> rounding to 2 decimal places.
      *
-     * @param species       the species. May be {@code null}
-     * @param minWeight     the minimum weight, inclusive
-     * @param maxWeight     the maximum weight, exclusive
-     * @param rate          the rate
+     * @param species   the species. May be {@code null}
+     * @param minWeight the minimum weight, inclusive
+     * @param maxWeight the maximum weight, exclusive
+     * @param rate      the rate
+     * @param quantity  the quantity
      * @return a new dose
      */
-    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate) {
-        return createDose(species, minWeight, maxWeight, rate, 2);
+    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate,
+                                    BigDecimal quantity) {
+        return createDose(species, minWeight, maxWeight, rate, quantity, 2);
     }
 
     /**
@@ -98,11 +99,11 @@ public class ProductTestHelper {
      * @param minWeight the minimum weight, inclusive
      * @param maxWeight the maximum weight, exclusive
      * @param rate      the rate
-     * @param roundTo   the no. of decimal places to round to
-     * @return a new dose
+     * @param quantity  the quantity
+     * @param roundTo   the no. of decimal places to round to  @return a new dose
      */
     public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate,
-                                    int roundTo) {
+                                    BigDecimal quantity, int roundTo) {
         Entity dose = (Entity) TestHelper.create(ProductArchetypes.DOSE);
         IMObjectBean bean = new IMObjectBean(dose);
         if (species != null) {
@@ -111,6 +112,7 @@ public class ProductTestHelper {
         bean.setValue("minWeight", minWeight);
         bean.setValue("maxWeight", maxWeight);
         bean.setValue("rate", rate);
+        bean.setValue("quantity", quantity);
         bean.setValue("roundTo", roundTo);
         return dose;
     }
@@ -250,20 +252,20 @@ public class ProductTestHelper {
      * @param product       the product
      * @param stockLocation the stock location
      * @param quantity      the quantity
-     * @return the <em>entityRelationship.productStockLocation</em> relationship
+     * @return the <em>entityLink.productStockLocation</em> relationship
      */
-    public static EntityRelationship setStockQuantity(Product product, Party stockLocation, BigDecimal quantity) {
+    public static IMObjectRelationship setStockQuantity(Product product, Party stockLocation, BigDecimal quantity) {
         EntityBean bean = new EntityBean(product);
-        List<EntityRelationship> stockLocations = bean.getNodeRelationships("stockLocations");
-        EntityRelationship relationship;
+        List<IMObjectRelationship> stockLocations = bean.getValues("stockLocations", IMObjectRelationship.class);
+        IMObjectRelationship relationship;
         if (stockLocations.isEmpty()) {
-            relationship = bean.addNodeRelationship("stockLocations", stockLocation);
+            relationship = bean.addNodeTarget("stockLocations", stockLocation);
         } else {
             relationship = stockLocations.get(0);
         }
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("quantity", quantity);
-        TestHelper.save(product, stockLocation);
+        save(product);
         return relationship;
     }
 

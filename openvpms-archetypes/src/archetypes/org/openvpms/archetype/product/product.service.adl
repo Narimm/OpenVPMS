@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -31,8 +31,8 @@
                 <property name="source" value="lookup.uom"/>
             </assertion>
         </node>
-        <node name="type" path="/targetEntityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="1" filter="entityRelationship.productTypeProduct"/>
+        <node name="type" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.productType"/>
         <node name="templateOnly" displayName="Use only in Templates" path="/details/templateOnly"
               type="java.lang.Boolean" defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
@@ -114,9 +114,9 @@
         <node name="sourceRelationships" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="*" hidden="true"/>
-        <node name="stockLocations" path="/sourceEntityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="0"
-              filter="entityRelationship.productStockLocation" hidden="true">
+        <node name="stockLocations" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="0"
+              filter="entityLink.productStockLocation" hidden="true">
             <!-- dummy node for querying purposes -->
         </node>
     </archetype>

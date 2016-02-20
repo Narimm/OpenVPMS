@@ -17,6 +17,7 @@
 package org.openvpms.web.echo.dialog;
 
 
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 
 /**
@@ -33,7 +34,7 @@ public class ConfirmationDialog extends MessageDialog {
 
 
     /**
-     * Constructs a {@code ConfirmationDialog}.
+     * Constructs a {@link ConfirmationDialog}.
      *
      * @param title   the window title
      * @param message the message
@@ -43,7 +44,7 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Constructs a {@code ConfirmationDialog}.
+     * Constructs a {@link ConfirmationDialog}.
      *
      * @param title   the window title
      * @param message the message
@@ -54,7 +55,7 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Constructs a {@code ConfirmationDialog}.
+     * Constructs a {@link ConfirmationDialog}.
      *
      * @param title   the window title
      * @param message the message
@@ -65,7 +66,7 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Constructs a {@code ConfirmationDialog}.
+     * Constructs a {@link ConfirmationDialog}.
      *
      * @param title   the window title
      * @param message the message
@@ -77,7 +78,7 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Constructs a {@code ConfirmationDialog}.
+     * Constructs a {@link ConfirmationDialog}.
      *
      * @param title             the window title
      * @param message           the message
@@ -91,7 +92,7 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Constructs a {@code ConfirmationDialog}.
+     * Constructs a {@link ConfirmationDialog}.
      *
      * @param title             the window title
      * @param message           the message
@@ -103,6 +104,22 @@ public class ConfirmationDialog extends MessageDialog {
         addButton(OK_ID, disableOKShortcut);
         addButton(CANCEL_ID, false);
         setDefaultButton(CANCEL_ID);
+    }
+
+    /**
+     * Helper to show a new confirmation dialog.
+     *
+     * @param title    the dialog title
+     * @param message  dialog message
+     * @param buttons  the buttons to display
+     * @param listener the listener to notify when the dialog closes. May be {@code null}
+     */
+    public static void show(String title, String message, String[] buttons, WindowPaneListener listener) {
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, buttons);
+        if (listener != null) {
+            dialog.addWindowPaneListener(listener);
+        }
+        dialog.show();
     }
 
 }

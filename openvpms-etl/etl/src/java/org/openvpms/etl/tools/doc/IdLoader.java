@@ -104,7 +104,8 @@ public class IdLoader extends AbstractLoader {
     public IdLoader(File dir, String[] shortNames, IArchetypeService service,
                     PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite,
                     Pattern pattern) {
-        this(dir, shortNames, service, new DefaultDocumentFactory(), transactionManager, recurse, overwrite, pattern);
+        this(dir, shortNames, service, new DefaultDocumentFactory(service), transactionManager, recurse, overwrite,
+             pattern);
     }
 
     /**

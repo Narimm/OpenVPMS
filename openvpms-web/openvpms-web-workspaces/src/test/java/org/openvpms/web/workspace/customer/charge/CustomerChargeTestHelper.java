@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -34,7 +34,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.util.HL7Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -234,8 +233,7 @@ public class CustomerChargeTestHelper {
     public static ProductPrice createPrice(Product product, String shortName, BigDecimal cost, BigDecimal price,
                                            Party practice) {
         ProductPrice result = (ProductPrice) TestHelper.create(shortName);
-        ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService(),
-                                                        LookupServiceHelper.getLookupService());
+        ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService());
         BigDecimal markup = rules.getMarkup(product, cost, price, practice);
         result.setName("XPrice");
         IMObjectBean bean = new IMObjectBean(result);

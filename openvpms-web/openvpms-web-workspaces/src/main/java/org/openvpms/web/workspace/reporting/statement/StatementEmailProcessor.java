@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.statement;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -35,11 +34,13 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.mail.EmailAddress;
+import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 import org.springframework.core.io.InputStreamSource;
@@ -49,7 +50,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.FailedToProcessStatement;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidConfiguration;
@@ -61,8 +61,7 @@ import static org.openvpms.archetype.rules.finance.statement.StatementProcessorE
  *
  * @author Tim Anderson
  */
-public class StatementEmailProcessor
-        extends AbstractStatementProcessorListener {
+public class StatementEmailProcessor extends AbstractStatementProcessorListener {
 
     /**
      * The mail sender.
@@ -80,11 +79,6 @@ public class StatementEmailProcessor
     private final String emailSubject;
 
     /**
-     * The email body.
-     */
-    private final String emailText;
-
-    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
@@ -92,26 +86,40 @@ public class StatementEmailProcessor
     /**
      * The statement document template.
      */
-    private DocumentTemplate template;
+    private DocumentTemplate statementTemplate;
 
     /**
-     * Fields to pass to the report.
+     * The statement email template.
      */
-    private Map<String, Object> fields;
+    private Entity emailTemplate;
+
+    /**
+     * Report context.
+     */
+    private final Context context;
+
+    /**
+     * The email template evaluator.
+     */
+    private final EmailTemplateEvaluator evaluator;
 
 
     /**
      * Constructs a {@link StatementEmailProcessor}.
      *
-     * @param sender   the mail sender
-     * @param practice the practice
-     * @param context  the context
+     * @param sender    the mail sender
+     * @param evaluator the email template evaluator
+     * @param practice  the practice
+     * @param context   the context
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor error
      */
-    public StatementEmailProcessor(JavaMailSender sender, Party practice, Context context) {
+    public StatementEmailProcessor(JavaMailSender sender, EmailTemplateEvaluator evaluator, Party practice,
+                                   Context context) {
         super(practice);
         this.sender = sender;
+        this.evaluator = evaluator;
+        this.context = context;
         addresses = new PracticeEmailAddresses(practice, "BILLING");
         handlers = ServiceHelper.getDocumentHandlers();
         TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
@@ -119,17 +127,12 @@ public class StatementEmailProcessor
         if (entity == null) {
             throw new StatementProcessorException(InvalidConfiguration, "No document template configured");
         }
-        template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
-        String subject = template.getEmailSubject();
-        if (StringUtils.isEmpty(subject)) {
-            subject = entity.getName();
+        statementTemplate = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+        emailTemplate = statementTemplate.getEmailTemplate();
+        if (emailTemplate == null) {
+            throw new StatementProcessorException(InvalidConfiguration, "No email document template configured");
         }
-        emailSubject = subject;
-        emailText = template.getEmailText();
-        if (StringUtils.isEmpty(emailText)) {
-            throw new StatementProcessorException(InvalidConfiguration, "Template has no email text");
-        }
-        fields = ReportContextFactory.create(context);
+        emailSubject = evaluator.getSubject(emailTemplate);
     }
 
     /**
@@ -144,25 +147,29 @@ public class StatementEmailProcessor
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             List<Contact> contacts = statement.getContacts();
             if (contacts.isEmpty()) {
-                throw new StatementProcessorException(NoContact,
-                                                      statement.getCustomer());
+                throw new StatementProcessorException(NoContact, statement.getCustomer());
             }
             Contact contact = contacts.get(0);
             IMObjectBean bean = new IMObjectBean(contact);
             if (!bean.isA(ContactArchetypes.EMAIL)) {
-                throw new StatementProcessorException(NoContact,
-                                                      statement.getCustomer());
+                throw new StatementProcessorException(NoContact, statement.getCustomer());
             }
             String to = bean.getString("emailAddress");
             EmailAddress email = addresses.getAddress(statement.getCustomer());
             helper.setFrom(email.getAddress(), email.getName());
             helper.setTo(to);
             helper.setSubject(emailSubject);
-            helper.setText(emailText);
+            Context local = new LocalContext();
+            local.setCustomer(statement.getCustomer());
+            local.setLocation(context.getLocation());
+            local.setPractice(context.getPractice());
+            local.setUser(context.getUser());
+            String text = evaluator.getMessage(emailTemplate, local);
+            helper.setText(text, true);
             Iterable<IMObject> objects = getActs(statement);
-            Reporter reporter = ReporterFactory.create(objects, template, TemplatedReporter.class);
+            Reporter reporter = ReporterFactory.create(objects, statementTemplate, TemplatedReporter.class);
             reporter.setParameters(getParameters(statement));
-            reporter.setFields(fields);
+            reporter.setFields(ReportContextFactory.create(local));
             final Document doc = reporter.getDocument(DocFormats.PDF_TYPE, true);
 
             final DocumentHandler handler = handlers.get(
@@ -172,10 +179,10 @@ public class StatementEmailProcessor
 
             helper.addAttachment(
                     doc.getName(), new InputStreamSource() {
-                public InputStream getInputStream() {
-                    return handler.getContent(doc);
-                }
-            });
+                        public InputStream getInputStream() {
+                            return handler.getContent(doc);
+                        }
+                    });
             sender.send(message);
             if (!statement.isPreview() && !statement.isPrinted()) {
                 setPrinted(statement);

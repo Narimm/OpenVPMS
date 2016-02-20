@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -25,7 +25,6 @@ import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
@@ -148,9 +147,12 @@ public class ProductRules {
             if (match != null) {
                 BigDecimal converted = weight.convert(matchUnits);
                 BigDecimal rate = match.getBigDecimal("rate", BigDecimal.ZERO);
+                BigDecimal quantity = match.getBigDecimal("quantity", BigDecimal.ONE);
                 int places = match.getInt("roundTo");
-                if (!isZero(concentration) && !isZero(rate)) {
-                    result = converted.multiply(rate).divide(concentration, places, RoundingMode.HALF_UP);
+                if (!isZero(concentration) && !isZero(rate) && !isZero(quantity)) {
+                    // math here is (rate (per weight unit) * concentration (per dispensing unit)) * quantity
+                    result = converted.multiply(rate).divide(concentration, places, RoundingMode.HALF_UP)
+                            .multiply(quantity);
                 }
             }
         }
@@ -158,7 +160,7 @@ public class ProductRules {
     }
 
     /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
+     * Returns all active <em>entityLink.productSupplier</em>
      * relationships for a particular product and supplier.
      *
      * @param product  the product
@@ -169,16 +171,15 @@ public class ProductRules {
         List<ProductSupplier> result = new ArrayList<>();
         EntityBean bean = new EntityBean(product, service);
         Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(supplier));
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("suppliers", predicate);
-        for (EntityRelationship relationship : relationships) {
+        List<EntityLink> relationships = bean.getValues("suppliers", predicate, EntityLink.class);
+        for (EntityLink relationship : relationships) {
             result.add(new ProductSupplier(relationship, service));
         }
         return result;
     }
 
     /**
-     * Returns an <em>entityRelationship.productSupplier</em> relationship
+     * Returns an <em>entityLink.productSupplier</em> relationship
      * for a product, supplier, reorder code, package size and units.
      * <p/>
      * If there is a match on reorder code
@@ -233,7 +234,7 @@ public class ProductRules {
     }
 
     /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
+     * Returns all active <em>entityLink.productSupplier</em>
      * relationships for a particular product.
      *
      * @param product the product
@@ -242,15 +243,15 @@ public class ProductRules {
     public List<ProductSupplier> getProductSuppliers(Product product) {
         List<ProductSupplier> result = new ArrayList<>();
         EntityBean bean = new EntityBean(product, service);
-        List<EntityRelationship> relationships = bean.getNodeRelationships("suppliers", isActiveNow());
-        for (EntityRelationship relationship : relationships) {
+        List<EntityLink> relationships = bean.getValues("suppliers", isActiveNow(), EntityLink.class);
+        for (EntityLink relationship : relationships) {
             result.add(new ProductSupplier(relationship, service));
         }
         return result;
     }
 
     /**
-     * Creates a new <em>entityRelationship.productSupplier</em> relationship
+     * Creates a new <em>entityLink.productSupplier</em> relationship
      * between a supplier and product.
      *
      * @param product  the product
@@ -259,8 +260,7 @@ public class ProductRules {
      */
     public ProductSupplier createProductSupplier(Product product, Party supplier) {
         EntityBean bean = new EntityBean(product, service);
-        EntityRelationship rel = bean.addRelationship(
-                ProductArchetypes.PRODUCT_SUPPLIER_RELATIONSHIP, supplier);
+        IMObjectRelationship rel = bean.addNodeTarget("suppliers", supplier);
         return new ProductSupplier(rel, service);
     }
 

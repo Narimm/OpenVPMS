@@ -36,7 +36,8 @@ public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
      */
     public DocumentTemplateWorkspace(Context context) {
         super("admin", "documentTemplate", context);
-        setArchetypes(Entity.class, DocumentArchetypes.DOCUMENT_TEMPLATE, "entity.documentTemplateSMS*");
+        setArchetypes(Entity.class, DocumentArchetypes.DOCUMENT_TEMPLATE, DocumentArchetypes.EMAIL_TEMPLATE,
+                      "entity.documentTemplateSMS*");
     }
 
     /**

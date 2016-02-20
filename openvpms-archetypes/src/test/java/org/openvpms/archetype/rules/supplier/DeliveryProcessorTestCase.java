@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -251,8 +251,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
     }
 
     /**
-     * Verifies that the <em>entityRelationship.productSupplier</em> is
-     * updated when a delivery is <em>POSTED</em>.
+     * Verifies that the <em>entityLink.productSupplier</em> is updated when a delivery is <em>POSTED</em>.
      */
     @Test
     public void testProductSupplierUpdate() {
@@ -558,8 +557,8 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
     }
 
     /**
-     * Verifies that the <em>entityRelationship.productSupplier</em> associated
-     * with the supplier and product matches that expected.
+     * Verifies that the <em>entityLink.productSupplier</em> associated with the supplier and product matches that
+     * expected.
      *
      * @param packageSize the expected package size, or <tt>-1</tt> if the
      *                    relationship shouldn't exist

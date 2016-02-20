@@ -17,6 +17,7 @@
 package org.openvpms.web.echo.text;
 
 import nextapp.echo2.app.text.Document;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Abstract base class for text-entry components.
@@ -48,6 +49,17 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
     private boolean haveText;
 
     /**
+     * The text, prior to it being updated by {@link #processInput}. This is used to avoid sending
+     * redundant updates back to the client.
+     */
+    private String textPreUpdate;
+
+    /**
+     * Determines if {@link #processInput} is currently being invoked.
+     */
+    private boolean inProcessInput = false;
+
+    /**
      * Constructs a {@link TextComponent} with the specified {@code Document} as its model.
      *
      * @param document the desired model
@@ -69,25 +81,52 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
      */
     @Override
     public void processInput(String inputName, Object inputValue) {
-        if (TEXT_CHANGED_PROPERTY.equals(inputName)) {
-            if (haveCursorPosition) {
-                setText((String) inputValue);
-                haveCursorPosition = false;
+        try {
+            inProcessInput = true;
+            if (TEXT_CHANGED_PROPERTY.equals(inputName)) {
+                if (haveCursorPosition) {
+                    textPreUpdate = (String) inputValue;
+                    setText(textPreUpdate);
+                    haveCursorPosition = false;
+                } else {
+                    pending = (String) inputValue;
+                    haveText = true;
+                }
+            } else if (PROPERTY_CURSOR_POSITION.equals(inputName)) {
+                setProperty(PROPERTY_CURSOR_POSITION, inputValue);
+                if (!commitPending()) {
+                    haveCursorPosition = true;
+                }
             } else {
-                pending = (String) inputValue;
-                haveText = true;
+                if (INPUT_ACTION.equals(inputName)) {
+                    commitPending();
+                    haveCursorPosition = false;
+                }
+                super.processInput(inputName, inputValue);
             }
-        } else if (PROPERTY_CURSOR_POSITION.equals(inputName)) {
-            setProperty(PROPERTY_CURSOR_POSITION, inputValue);
-            if (!commitPending()) {
-                haveCursorPosition = true;
+        } finally {
+            textPreUpdate = null;
+            inProcessInput = false;
+        }
+    }
+
+    /**
+     * Reports a bound property change to <code>PropertyChangeListener</code>s
+     * and to the <code>ApplicationInstance</code>'s update management system.
+     *
+     * @param propertyName the name of the changed property
+     * @param oldValue     the previous value of the property
+     * @param newValue     the present value of the property
+     */
+    @Override
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        if (inProcessInput && TEXT_CHANGED_PROPERTY.equals(propertyName)) {
+            // don't update the client if the text hasn't changed.
+            if (!StringUtils.equals(textPreUpdate, (String) newValue)){
+                super.firePropertyChange(propertyName, oldValue, newValue);
             }
         } else {
-            if (INPUT_ACTION.equals(inputName)) {
-                commitPending();
-                haveCursorPosition = false;
-            }
-            super.processInput(inputName, inputValue);
+            super.firePropertyChange(propertyName, oldValue, newValue);
         }
     }
 
@@ -122,9 +161,11 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
     private boolean commitPending() {
         if (haveText) {
             try {
+                textPreUpdate = pending;
                 setText(pending);
             } finally {
                 pending = null;
+                textPreUpdate = null;
                 haveText = false;
             }
             return true;

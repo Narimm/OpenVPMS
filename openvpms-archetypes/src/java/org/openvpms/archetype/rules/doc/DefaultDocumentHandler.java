@@ -12,35 +12,22 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.doc;
 
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
  * Default implementation of the {@link DocumentHandler} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DefaultDocumentHandler extends AbstractDocumentHandler {
 
     /**
-     * Creates a new <code>DefaultDocumentHandler</code>
-     *
-     * @param shortName the document archetype short name
-     */
-    public DefaultDocumentHandler(String shortName) {
-        this(shortName, ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <code>DefaultDocumentHandler</code>.
+     * Constructs a {@link DefaultDocumentHandler}.
      *
      * @param shortName the document archetype short name
      * @param service   the archetype service

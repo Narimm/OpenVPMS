@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
@@ -50,8 +48,9 @@ import java.util.Map;
 
 
 /**
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * Node descriptor.
+ *
+ * @author Jim Alateras
  */
 public class NodeDescriptor extends Descriptor {
 
@@ -93,8 +92,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Contains a list of {@link AssertionDescriptor} instances
      */
-    private Map<String, AssertionDescriptor> assertionDescriptors =
-            new LinkedHashMap<String, AssertionDescriptor>();
+    private Map<String, AssertionDescriptor> assertionDescriptors = new LinkedHashMap<>();
 
     /**
      * This is an option property, which is required for nodes that represent
@@ -110,19 +108,17 @@ public class NodeDescriptor extends Descriptor {
     private transient Class clazz;
 
     /**
-     * The default value
+     * The default value.
      */
     private String defaultValue;
 
     /**
-     * This is a jxpath expression, which is used to determine the value of the
-     * node
+     * This is a jxpath expression, which is used to determine the value of the node.
      */
     private String derivedValue;
 
     /**
-     * This is the display name, which is only supplied if it is different to
-     * the node name
+     * This is the display name, which is only supplied if it is different to the node name.
      */
     private String displayName;
 
@@ -182,7 +178,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * A node can have other nodeDescriptors to define a nested structure
      */
-    private Map<String, NodeDescriptor> nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
+    private Map<String, NodeDescriptor> nodeDescriptors = new LinkedHashMap<>();
 
     /**
      * The XPath/JXPath expression that is used to resolve this node within the
@@ -338,10 +334,8 @@ public class NodeDescriptor extends Descriptor {
     @Override
     public Object clone() throws CloneNotSupportedException {
         NodeDescriptor copy = (NodeDescriptor) super.clone();
-        copy.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>(
-                this.assertionDescriptors);
-        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(
-                this.nodeDescriptors);
+        copy.assertionDescriptors = new LinkedHashMap<>(this.assertionDescriptors);
+        copy.nodeDescriptors = new LinkedHashMap<>(this.nodeDescriptors);
         return copy;
     }
 
@@ -421,11 +415,9 @@ public class NodeDescriptor extends Descriptor {
      */
     public String[] getArchetypeRange() {
         if (assertionDescriptors.containsKey("archetypeRange")) {
-            ArrayList<String> range = new ArrayList<String>();
-            AssertionDescriptor desc = assertionDescriptors
-                    .get("archetypeRange");
-            PropertyList archetypes = (PropertyList) desc.getPropertyMap()
-                    .getProperties().get("archetypes");
+            ArrayList<String> range = new ArrayList<>();
+            AssertionDescriptor desc = assertionDescriptors.get("archetypeRange");
+            PropertyList archetypes = (PropertyList) desc.getPropertyMap().getProperties().get("archetypes");
             for (NamedProperty archetype : archetypes.getProperties()) {
                 AssertionProperty shortName = (AssertionProperty) ((PropertyMap) archetype)
                         .getProperties().get("shortName");
@@ -464,11 +456,8 @@ public class NodeDescriptor extends Descriptor {
      * @return the assertion descriptors, ordered on index
      */
     public List<AssertionDescriptor> getAssertionDescriptorsInIndexOrder() {
-        List<AssertionDescriptor> adescs =
-                new ArrayList<AssertionDescriptor>(
-                        assertionDescriptors.values());
+        List<AssertionDescriptor> adescs = new ArrayList<>(assertionDescriptors.values());
         Collections.sort(adescs, new AssertionDescriptorIndexComparator());
-
         return adescs;
     }
 
@@ -478,8 +467,7 @@ public class NodeDescriptor extends Descriptor {
      * @return the assertion descriptors
      */
     public AssertionDescriptor[] getAssertionDescriptorsAsArray() {
-        return assertionDescriptors.values().toArray(
-                new AssertionDescriptor[assertionDescriptors.size()]);
+        return assertionDescriptors.values().toArray(new AssertionDescriptor[assertionDescriptors.size()]);
     }
 
     /**
@@ -502,23 +490,19 @@ public class NodeDescriptor extends Descriptor {
     @Deprecated
     public List<IMObject> getCandidateChildren(IMObject context) {
         List<IMObject> result = null;
-        AssertionDescriptor descriptor = assertionDescriptors
-                .get("candidateChildren");
+        AssertionDescriptor descriptor = assertionDescriptors.get("candidateChildren");
 
-        if ((descriptor == null) ||
-                (!descriptor.getPropertyMap().getProperties().containsKey(
-                        "path"))) {
-            return result;
+        if (descriptor == null || !descriptor.getPropertyMap().getProperties().containsKey("path")) {
+            return null;
         }
 
-        String path = (String) descriptor.getPropertyMap().getProperties().get(
-                "path").getValue();
+        String path = (String) descriptor.getPropertyMap().getProperties().get("path").getValue();
         try {
             Object obj = JXPathHelper.newContext(context).getValue(path);
             if (obj == null) {
-                result = new ArrayList<IMObject>();
+                result = new ArrayList<>();
             } else if (obj instanceof Collection) {
-                result = new ArrayList<IMObject>((Collection) obj);
+                result = new ArrayList<>((Collection) obj);
             } else {
                 log.warn("getCandidateChildren for path " + path
                         + " returned object of type "
@@ -550,17 +534,15 @@ public class NodeDescriptor extends Descriptor {
         List<IMObject> children = null;
         if (isCollection()) {
             try {
-                Object obj = JXPathHelper.newContext(target).getValue(
-                        getPath());
+                Object obj = JXPathHelper.newContext(target).getValue(getPath());
                 if (obj == null) {
-                    children = new ArrayList<IMObject>();
+                    children = new ArrayList<>();
                 } else if (obj instanceof Collection) {
-                    children = new ArrayList<IMObject>((Collection) obj);
+                    children = new ArrayList<>((Collection) obj);
                 } else if (obj instanceof PropertyCollection) {
-                    children = new ArrayList<IMObject>(
-                            ((PropertyCollection) obj).values());
+                    children = new ArrayList<>(((PropertyCollection) obj).values());
                 } else if (obj instanceof Map) {
-                    children = new ArrayList<IMObject>(((Map) obj).values());
+                    children = new ArrayList<>(((Map) obj).values());
                 }
 
                 // filter the children
@@ -570,9 +552,6 @@ public class NodeDescriptor extends Descriptor {
                         DescriptorException.ErrorCode.FailedToGetChildren,
                         exception, target.getName(), getName(), getPath());
             }
-
-            return children;
-
         }
 
         return children;
@@ -593,7 +572,7 @@ public class NodeDescriptor extends Descriptor {
         }
 
         // otherwise filter on
-        List<IMObject> filteredSet = new ArrayList<IMObject>();
+        List<IMObject> filteredSet = new ArrayList<>();
         for (IMObject obj : children) {
             if (obj.getArchetypeId().getShortName().matches(modFilter)) {
                 filteredSet.add(obj);
@@ -841,8 +820,12 @@ public class NodeDescriptor extends Descriptor {
     public Object getValue(IMObject context) {
         Object value;
         if (isDerived()) {
-            value = JXPathHelper.newContext(context).getValue(
-                    getDerivedValue());
+            String derivedValue = getDerivedValue();
+            if (derivedValue != null) {
+                value = JXPathHelper.newContext(context).getValue(derivedValue);
+            } else {
+                value = null;
+            }
         } else {
             if (isCollection()) {
                 value = getChildren(context);
@@ -1206,7 +1189,7 @@ public class NodeDescriptor extends Descriptor {
     @Deprecated
     public void setAssertionDescriptorsAsArray(
             AssertionDescriptor[] assertionDescriptors) {
-        this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
+        this.assertionDescriptors = new LinkedHashMap<>();
         int index = 0;
         for (AssertionDescriptor descriptor : assertionDescriptors) {
             descriptor.setIndex(index++);
@@ -1331,7 +1314,7 @@ public class NodeDescriptor extends Descriptor {
      */
     @Deprecated
     public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
-        this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
+        this.nodeDescriptors = new LinkedHashMap<>();
         int index = 0;
         for (NodeDescriptor node : nodes) {
             node.setIndex(index++);

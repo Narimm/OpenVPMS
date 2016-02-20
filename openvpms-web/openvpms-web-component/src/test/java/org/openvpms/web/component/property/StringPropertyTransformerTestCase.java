@@ -96,7 +96,8 @@ public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
         Property property = new IMObjectProperty(person, descriptor);
         ILookupService lookups = getLookupService();
         ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
-        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups, new DocumentHandlers(), functions);
+        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups,
+                                                  new DocumentHandlers(getArchetypeService()), functions);
         Macros macros = new LookupMacros(lookups, getArchetypeService(), factory);
         StringPropertyTransformer handler = new StringPropertyTransformer(property, macros);
 

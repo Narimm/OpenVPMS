@@ -65,7 +65,7 @@ public class StockDataImporterTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        handlers = new DocumentHandlers();
+        handlers = new DocumentHandlers(getArchetypeService());
         importer = new StockDataImporter(getArchetypeService(), handlers, ',');
         user = TestHelper.createUser();
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -49,7 +49,7 @@ public class PagedIMTableModel<T, K> extends DelegatingIMTableModel<T, K>
     /**
      * The sort column.
      */
-    private int sortColumn;
+    private int sortColumn = -1;
 
     /**
      * The default sort column, or {@code -1} if no column is sortable.
@@ -57,7 +57,7 @@ public class PagedIMTableModel<T, K> extends DelegatingIMTableModel<T, K>
     private int defaultSortColumn;
 
     /**
-     * Determines if the default sort column short sort ascending or descending.
+     * Determines if the default sort column should sort ascending or descending.
      */
     private boolean defaultSortAscending;
 
@@ -263,7 +263,7 @@ public class PagedIMTableModel<T, K> extends DelegatingIMTableModel<T, K>
     /**
      * Returns the sort column.
      *
-     * @return the sort column
+     * @return the sort column, or {@code -1} if no column is sorted.
      */
     public int getSortColumn() {
         return sortColumn;

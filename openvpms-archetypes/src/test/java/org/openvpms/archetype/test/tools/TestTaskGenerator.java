@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -99,7 +100,7 @@ public class TestTaskGenerator {
         InputStream stream = TestReminderGenerator.class.getResourceAsStream(file);
         assertNotNull(stream);
 
-        DocumentHandlers handlers = new DocumentHandlers();
+        DocumentHandlers handlers = new DocumentHandlers(ArchetypeServiceHelper.getArchetypeService());
         DocumentHandler handler = handlers.get(file, mimeType);
         Document document = handler.create(file, stream, mimeType, -1);
 

@@ -83,8 +83,9 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        handlers = new DocumentHandlers();
-        handlers.addDocumentHandler(new JRXMLDocumentHandler(getArchetypeService()));
+        IArchetypeService service = getArchetypeService();
+        handlers = new DocumentHandlers(service, Collections.<DocumentHandler>singletonList(
+                new JRXMLDocumentHandler(service)));
     }
 
     /**

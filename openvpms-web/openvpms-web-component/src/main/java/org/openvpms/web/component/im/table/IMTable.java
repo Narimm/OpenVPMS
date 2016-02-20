@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -29,13 +29,12 @@ import java.util.List;
 /**
  * Table for domain objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMTable<T> extends KeyTable {
 
     /**
-     * Constructs a new <tt>IMTable</tt>.
+     * Constructs an {@link IMTable}.
      *
      * @param model the table model
      */
@@ -68,7 +67,7 @@ public class IMTable<T> extends KeyTable {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <tt>null</tt> if no object is selected
+     * @return the selected object, or {@code null} if no object is selected
      */
     public T getSelected() {
         T result = null;
@@ -114,7 +113,7 @@ public class IMTable<T> extends KeyTable {
     }
 
     /**
-     * Sets the <tt>TableModel</tt> being visualized.
+     * Sets the {@code TableModel} being visualized.
      *
      * @param model the new model (may not be null)
      */
@@ -155,6 +154,9 @@ public class IMTable<T> extends KeyTable {
             public void tableChanged(TableModelEvent event) {
                 if (event.getType() == TableModelEvent.STRUCTURE_CHANGED) {
                     initialise(model);
+                } else if (event.getFirstRow() != event.getLastRow()) {
+                    // clear any selection
+                    setSelected(null);
                 }
             }
         });

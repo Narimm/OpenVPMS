@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -58,5 +58,16 @@ public enum DateUnits {
      */
     public static DateUnits fromString(String value) {
         return value != null ? valueOf(value) : null;
+    }
+
+    /**
+     * Converts a string to a date unit, ignoring nulls.
+     *
+     * @param value        the string value. May be {@code null}
+     * @param defaultValue the default value if {@code value} is {@code null}
+     * @return the corresponding unit, or {@code defaultValue} if {@code value} is {@code null}
+     */
+    public static DateUnits fromString(String value, DateUnits defaultValue) {
+        return (value != null) ? fromString(value) : defaultValue;
     }
 }

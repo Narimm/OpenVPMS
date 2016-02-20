@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -24,7 +24,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -109,7 +109,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             if (productSupplier == null || supplier == null
                 || !ObjectUtils.equals(supplier.getObjectReference(), productSupplier.getSupplierRef())
                 || !ObjectUtils.equals(product.getObjectReference(), productSupplier.getProductRef())) {
-                List<EntityRelationship> relationships = getSupplierRelationships(product);
+                List<EntityLink> relationships = getSupplierRelationships(product);
                 if (relationships.isEmpty()) {
                     setProductSupplier(null);
                 } else if (relationships.size() == 1) {
@@ -195,10 +195,9 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * Updates the product details.
      *
      * @param product      the product. May be {@code null}
-     * @param relationship the product supplier relationship. May be
-     *                     {@code null}
+     * @param relationship the product supplier relationship. May be {@code null}
      */
-    private void setProduct(Product product, EntityRelationship relationship) {
+    private void setProduct(Product product, EntityLink relationship) {
         setProductSupplier(relationship);
         setObject(product);
     }
@@ -208,9 +207,9 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      *
      * @param relationship the relationship. May be {@code null}
      */
-    private void setProductSupplier(EntityRelationship relationship) {
+    private void setProductSupplier(EntityLink relationship) {
         if (relationship != null) {
-            editor.setProductSupplier(new ProductSupplier(relationship));
+            editor.setProductSupplier(new ProductSupplier(relationship, ServiceHelper.getArchetypeService()));
         } else {
             editor.setProductSupplier(null);
         }
@@ -279,35 +278,31 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * Determines if there is product supplier relationships for the current
      * supplier and specified product.
      * <p/>
-     * If there is more than one, pops up a dialog prompting to select one
-     * of them.
+     * If there is more than one, pops up a dialog prompting to select one of them.
      *
      * @param product the product
      */
     private void checkProductSupplierRelationships(final Product product) {
         // find all relationships for the product and supplier
-        List<EntityRelationship> relationships = getSupplierRelationships(product);
+        List<EntityLink> relationships = getSupplierRelationships(product);
 
         if (relationships.isEmpty()) {
             setProduct(product, null);
         } else if (relationships.size() == 1) {
             setProduct(product, relationships.get(0));
         } else {
-            // pop up a browser displaying the relationships, with the
-            // preferred one selected
-            EntityRelationship preferred = getPreferred(relationships);
-            Query<EntityRelationship> query = new ListQuery<>(relationships, "entityRelationship.productSupplier",
-                                                              EntityRelationship.class);
+            // pop up a browser displaying the relationships, with the preferred one selected
+            EntityLink preferred = getPreferred(relationships);
+            Query<EntityLink> query = new ListQuery<>(relationships, "entityLink.productSupplier", EntityLink.class);
             String title = Messages.get("product.supplier.type");
             LayoutContext context = new DefaultLayoutContext(getLayoutContext());
             context.setComponentFactory(new TableComponentFactory(context));
-            final Browser<EntityRelationship> browser = new ProductSupplierBrowser(query, context);
-            final BrowserDialog<EntityRelationship> dialog
-                    = new BrowserDialog<>(title, browser, context.getHelpContext());
+            final Browser<EntityLink> browser = new ProductSupplierBrowser(query, context);
+            final BrowserDialog<EntityLink> dialog = new BrowserDialog<>(title, browser, context.getHelpContext());
 
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
-                    EntityRelationship selected = browser.getSelected();
+                    EntityLink selected = browser.getSelected();
                     if (selected != null) {
                         setProduct(product, selected);
                     } else {
@@ -329,9 +324,8 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * @return the preferred relationship, or the first if none is preferred,
      * or {@code null} if there are no relationships
      */
-    private EntityRelationship getPreferred(
-            List<EntityRelationship> relationships) {
-        EntityRelationship result = null;
+    private EntityLink getPreferred(List<EntityLink> relationships) {
+        EntityLink result = null;
         if (!relationships.isEmpty()) {
             Predicate preferred = new NodeEquals("preferred", true);
             result = CollectionHelper.find(relationships, preferred);
@@ -349,18 +343,18 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * @param product the product
      * @return the active relationships
      */
-    private List<EntityRelationship> getSupplierRelationships(Product product) {
+    private List<EntityLink> getSupplierRelationships(Product product) {
         EntityBean bean = new EntityBean(product);
         Party supplier = editor.getSupplier();
         Predicate predicate = new AndPredicate(IsActiveRelationship.isActiveNow(), RefEquals.getTargetEquals(supplier));
-        return bean.getNodeRelationships("suppliers", predicate);
+        return bean.getValues("suppliers", predicate, EntityLink.class);
     }
 
     /**
      * Browser to display a product supplier relationships.
      */
     private static class ProductSupplierBrowser
-            extends AbstractQueryBrowser<EntityRelationship> {
+            extends AbstractQueryBrowser<EntityLink> {
 
         /**
          * Constructs a ProductSupplierBrowser that queries objects using the specified query, displaying them in the
@@ -369,7 +363,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
          * @param query   the query
          * @param context the layout context
          */
-        public ProductSupplierBrowser(Query<EntityRelationship> query, LayoutContext context) {
+        public ProductSupplierBrowser(Query<EntityLink> query, LayoutContext context) {
             super(query, null, new ProductSupplierTableModel(query.getShortNames(), context, true), context);
         }
 

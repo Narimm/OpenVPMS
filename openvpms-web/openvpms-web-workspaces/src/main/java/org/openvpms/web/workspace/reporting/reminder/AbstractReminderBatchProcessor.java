@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -130,8 +130,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
         for (ReminderEvent reminder : reminders) {
             IMObjectReference ref = reminder.getReminder().getObjectReference();
             if (update && !completed.contains(ref)) {
-                Act act = reminder.getReminder();
-                if (ReminderHelper.update(act, date)) {
+                if (updateReminder(reminder, date)) {
                     statistics.increment(reminder);
                     completed.add(ref);
                 } else {
@@ -141,6 +140,18 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
                 statistics.increment(reminder);
             }
         }
+    }
+
+    /**
+     * Updates a reminder.
+     *
+     * @param reminder the reminder to update
+     * @param date     the last-sent date
+     * @return {@code true} if the reminder was updated
+     */
+    protected boolean updateReminder(ReminderEvent reminder, Date date) {
+        Act act = reminder.getReminder();
+        return ReminderHelper.update(act, date);
     }
 
     /**

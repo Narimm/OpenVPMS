@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -125,7 +125,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         practice = context.getContext().getPractice();
         cachingService = new CachingReadOnlyArchetypeService(context.getCache(), ServiceHelper.getArchetypeService());
         ILookupService lookups = ServiceHelper.getLookupService();
-        priceRules = new ProductPriceRules(cachingService, lookups);
+        priceRules = new ProductPriceRules(cachingService);
         taxRules = new CustomerTaxRules(practice, cachingService, lookups);
         discountRules = new DiscountRules(cachingService, lookups);
         currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);

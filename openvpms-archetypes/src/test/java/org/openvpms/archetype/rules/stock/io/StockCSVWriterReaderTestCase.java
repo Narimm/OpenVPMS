@@ -54,7 +54,7 @@ public class StockCSVWriterReaderTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        handlers = new DocumentHandlers();
+        handlers = new DocumentHandlers(getArchetypeService());
     }
 
     /**

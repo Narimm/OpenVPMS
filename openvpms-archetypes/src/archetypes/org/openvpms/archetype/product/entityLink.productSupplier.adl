@@ -11,12 +11,12 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
-    <archetype name="entityRelationship.productSupplier.1.0"
+    <archetype name="entityLink.productSupplier.1.0"
                latest="true"
-               type="org.openvpms.component.business.domain.im.common.EntityRelationship"
+               type="org.openvpms.component.business.domain.im.common.EntityLink"
                displayName="Product Supplier">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
@@ -44,7 +44,6 @@
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.uom"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="minimumQty" displayName="Minimum Order Qty" path="/details/minimumOrderQty" type="java.lang.Integer"
@@ -62,7 +61,6 @@
                     <property name="WEEKS" value="weeks"/>
                     <property name="MONTHS" value="months"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="listPrice" path="/details/listPrice"
@@ -86,19 +84,15 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="product.medication"/>
+                        <property name="shortName" value="product.medication"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="product.merchandise"/>
+                        <property name="shortName" value="product.merchandise"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="product.service"/>
+                        <property name="shortName" value="product.service"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="target" displayName="Supplier" path="/target"
@@ -106,15 +100,12 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="party.supplierorganisation"/>
+                        <property name="shortName" value="party.supplierorganisation"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="party.supplierperson"/>
+                        <property name="shortName" value="party.supplierperson"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
     </archetype>

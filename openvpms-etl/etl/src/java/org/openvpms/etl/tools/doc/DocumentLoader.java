@@ -155,7 +155,7 @@ public class DocumentLoader {
             if (service == null) {
                 service = (IArchetypeService) getContext().getBean("archetypeService");
             }
-            DocumentFactory factory = new DefaultDocumentFactory();
+            DocumentFactory factory = new DefaultDocumentFactory(service);
             LoaderListener listener = (config.getBoolean("verbose"))
                                       ? new LoggingLoaderListener(log, target, error, rename)
                                       : new DefaultLoaderListener(target, error, rename);

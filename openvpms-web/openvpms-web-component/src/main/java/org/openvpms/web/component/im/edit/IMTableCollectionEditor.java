@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -23,6 +23,7 @@ import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
@@ -128,8 +129,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(
-            IMTableCollectionEditor.class);
+    private static final Log log = LogFactory.getLog(IMTableCollectionEditor.class);
 
     /**
      * The 'add' button identifier.
@@ -192,24 +192,40 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * Creates a new object, subject to a short name being selected, and
      * current collection cardinality. This must be registered with the
      * collection.
-     * <p>
+     * <p/>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
      * @return a new object, or {@code null} if the object can't be created
      */
     public IMObject create() {
+        return create(shortName);
+    }
+
+    /**
+     * Creates a new object, subject to a short name being selected, and
+     * current collection cardinality. This must be registered with the
+     * collection.
+     * <p/>
+     * If an {@link IMObjectCreationListener} is registered, it will be
+     * notified on successful creation of an object.
+     *
+     * @return a new object, or {@code null} if the object can't be created
+     */
+    public IMObject create(String shortName) {
         IMObject object = null;
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        if (shortName != null) {
+        if (shortName != null && ArrayUtils.contains(getCollectionPropertyEditor().getArchetypeRange(), shortName)) {
             int maxSize = editor.getMaxCardinality();
             if (maxSize == -1 || editor.getObjects().size() < maxSize) {
                 object = IMObjectCreator.create(shortName);
+                if (object != null) {
+                    IMObjectCreationListener creationListener = getCreationListener();
+                    if (creationListener != null) {
+                        creationListener.created(object);
+                    }
+                }
             }
-        }
-        IMObjectCreationListener creationListener = getCreationListener();
-        if (creationListener != null) {
-            creationListener.created(object);
         }
         return object;
     }
@@ -220,9 +236,19 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * @return the editor for the item, or {@code null} a new item cannot be created.
      */
     public IMObjectEditor add() {
+        return add(shortName);
+    }
+
+    /**
+     * Adds a new item to the collection, subject to the constraints of {@link #create(String)}.
+     *
+     * @param shortName the archetype to add
+     * @return the editor for the item, or {@code null} a new item cannot be created.
+     */
+    public IMObjectEditor add(String shortName) {
         IMObjectEditor editor = null;
-        if (addCurrentEdits(new DefaultValidator()) && shortName != null) {
-            IMObject object = create();
+        if (addCurrentEdits(new DefaultValidator())) {
+            IMObject object = create(shortName);
             if (object != null) {
                 editor = edit(object);
                 addCurrentEdits(new DefaultValidator()); // add the object to the table if it is valid
@@ -248,6 +274,11 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         CollectionPropertyEditor collection = getCollectionPropertyEditor();
         boolean present = collection.getObjects().contains(object);
         boolean removed = collection.remove(object);
+        if (removed) {
+            if (selectNext() == null) {
+                selectPrevious();
+            }
+        }
         refresh();
         if (!(present && removed)) {
             // the object was not committed, so no notification has been generated yet
@@ -263,10 +294,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * Refreshes the collection display.
      */
     public void refresh() {
-        if (table != null) {
-            populateTable();
-            enableNavigation(true);
-        }
+        refresh(true);
     }
 
     /**
@@ -288,6 +316,24 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     protected abstract IMTableModel<T> createTableModel(LayoutContext context);
 
     /**
+     * Refreshes the collection display.
+     *
+     * @param preserveSelection if {@code true}, preserve the current selection
+     */
+    protected void refresh(boolean preserveSelection) {
+        if (table != null) {
+            if (preserveSelection) {
+                IMObject object = getSelected();
+                populateTable();
+                setSelected(object);
+            } else {
+                populateTable();
+            }
+            enableNavigation(true);
+        }
+    }
+
+    /**
      * Selects an object in the table.
      *
      * @param object the object to select
@@ -303,10 +349,10 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Returns the target of a selection.
-     * <p>
+     * <p/>
      * This is to support situations where a selection path from a viewer uses a related object to that used by the
      * editor.
-     * <p>
+     * <p/>
      * This implementation returns {@code object}.
      *
      * @param object the selected object
@@ -450,7 +496,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Adds the object being edited to the collection, if it doesn't exist.
-     * <p>
+     * <p/>
      * The object will be selected if visible in the table.
      *
      * @param editor the editor
@@ -463,7 +509,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             if (editor == getCurrentEditor()) {
                 editorModified = false;
             }
-            refresh();  // refresh the table
+            refresh(false);  // refresh the table, without preserving the current selection
         }
         IMObject object = editor.getObject();
         setSelected(object);
@@ -603,14 +649,25 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * Populates the table.
      */
     protected void populateTable() {
+        IMTableModel<T> model = table.getTable().getModel();
+        int sortColumn = -1;
+        boolean ascending = (table.getResultSet() != null) && table.getResultSet().isSortedAscending();
+        if (model instanceof SortableTableModel) {
+            SortableTableModel sortable = ((SortableTableModel) model);
+            sortColumn = sortable.getSortColumn();
+        }
+
         ResultSet<T> set = createResultSet();
         table.setResultSet(set);
-        IMTableModel<T> model = table.getTable().getModel();
         if (model instanceof SortableTableModel) {
-            // if no column is currently sorted, sort on the default (if any)
+            // if no column is currently sorted, sort using the prior sort, or the default (if any)
             SortableTableModel sortable = ((SortableTableModel) model);
-            if (sortable.getSortColumn() == -1 && model.getDefaultSortColumn() != -1) {
-                sortable.sort(model.getDefaultSortColumn(), model.getDefaultSortAscending());
+            if (sortable.getSortColumn() == -1) {
+                if (sortColumn != -1) {
+                    sortable.sort(sortColumn, ascending);
+                } else if (model.getDefaultSortColumn() != -1) {
+                    sortable.sort(model.getDefaultSortColumn(), model.getDefaultSortAscending());
+                }
             }
         }
     }
@@ -626,7 +683,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Sets the current editor.
-     * <p>
+     * <p/>
      * This registers a listener so that {@link #onCurrentEditorModified()} is invoked when the editor changes.
      * If there is an existing editor, its listener is removed.
      *
@@ -709,7 +766,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Enable/disables the buttons.
-     * <p>
+     * <p/>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
@@ -720,9 +777,9 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Enable/disables the buttons.
-     * <p>
+     * <p/>
      * This allows the Add button to be enabled independently of the other buttons.
-     * <p>
+     * <p/>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable    if {@code true}, enable buttons (subject to criteria), otherwise disable them
@@ -753,7 +810,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Changes the focus group to that belonging to the specified editor.
-     * <p>
+     * <p/>
      * The focus is moved to the default focus component for the editor.
      *
      * @param editor the editor

@@ -42,7 +42,7 @@ public class LookupMappingReaderWriterTestCase extends AbstractLookupMappingTest
      */
     @Test
     public void testReadWrite() {
-        DocumentHandlers handlers = new DocumentHandlers();
+        DocumentHandlers handlers = new DocumentHandlers(getArchetypeService());
 
         Lookup species1 = getSpecies("SPECIES_1", "species1");
         Lookup species2 = getSpecies("SPECIES_2", "species2");

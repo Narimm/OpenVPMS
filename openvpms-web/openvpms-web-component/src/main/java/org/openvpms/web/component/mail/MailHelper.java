@@ -32,18 +32,6 @@ class MailHelper {
     /**
      * Helper to create a mandatory property.
      *
-     * @param name the property name
-     * @param key  the message resource bundle key
-     * @param trim if {@code true} trim the string of leading and trailing spaces, new lines
-     * @return a new property
-     */
-    static SimpleProperty createProperty(String name, String key, boolean trim) {
-        return createProperty(name, key, trim, null, null);
-    }
-
-    /**
-     * Helper to create a mandatory property.
-     *
      * @param name      the property name
      * @param key       the message resource bundle key
      * @param trim      if {@code true} trim the string of leading and trailing spaces, new lines

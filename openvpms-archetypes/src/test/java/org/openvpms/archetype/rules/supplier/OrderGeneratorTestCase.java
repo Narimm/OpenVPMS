@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -24,7 +24,7 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -71,7 +71,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         Party practice = (Party) create(PracticeArchetypes.PRACTICE);
         gst = TestHelper.createTaxType(BigDecimal.TEN);
         practice.addClassification(gst);
-        taxRules = new TaxRules(practice, getArchetypeService(), getLookupService());
+        taxRules = new TaxRules(practice, getArchetypeService());
     }
 
     /**
@@ -166,7 +166,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         addRelationships(product1, stockLocation, supplier1, true, 1, 10, 6);
         ProductSupplier ps = addRelationships(product2, stockLocation, supplier1, true, 2, 10, 5);
         addProductSupplierRelationship(product3, supplier1, true, BigDecimal.ONE, 1);
-        EntityRelationship er = addProductStockLocationRelationship(product3, stockLocation, null, 1, 10, 5);
+        EntityLink er = addProductStockLocationRelationship(product3, stockLocation, null, 1, 10, 5);
 
         supplier1 = get(supplier1);
         List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation, false);
@@ -808,7 +808,8 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
                                                            BigDecimal unitPrice,
                                                            int packageSize) {
         EntityBean bean = new EntityBean(product);
-        ProductSupplier ps = new ProductSupplier(bean.addNodeRelationship("suppliers", supplier));
+        ProductSupplier ps = new ProductSupplier(bean.addNodeTarget("suppliers", supplier),
+                                                 getArchetypeService());
         ps.setPreferred(preferred);
         ps.setPackageSize(packageSize);
         ps.setNettPrice(unitPrice);
@@ -827,8 +828,8 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      * @param criticalQty   the critical quantity
      * @return a new relationship
      */
-    private EntityRelationship addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
-                                                                   int quantity, int idealQty, int criticalQty) {
+    private EntityLink addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
+                                                           int quantity, int idealQty, int criticalQty) {
         return addProductStockLocationRelationship(product, stockLocation, supplier, BigDecimal.valueOf(quantity),
                                                    idealQty, criticalQty);
     }
@@ -844,10 +845,10 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      * @param criticalQty   the critical quantity
      * @return a new relationship
      */
-    private EntityRelationship addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
-                                                                   BigDecimal quantity, int idealQty, int criticalQty) {
+    private EntityLink addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
+                                                           BigDecimal quantity, int idealQty, int criticalQty) {
         EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.addNodeRelationship("stockLocations", stockLocation);
+        EntityLink relationship = (EntityLink) bean.addNodeTarget("stockLocations", stockLocation);
         IMObjectBean productStockLocation = new IMObjectBean(relationship);
         if (supplier != null) {
             productStockLocation.setValue("supplier", supplier.getObjectReference());

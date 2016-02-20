@@ -129,4 +129,13 @@ public class DocFormats {
      */
     public static final String TEXT_EXT = "txt";
 
+    /**
+     * HTML mime type.
+     */
+    public static final String HTML_TYPE = "text/html";
+
+    /**
+     * HTML file extension.
+     */
+    public static final String HTML_EXT = "html";
 }

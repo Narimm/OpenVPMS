@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.service.PracticeMailService;
 import org.openvpms.web.echo.help.HelpContext;
@@ -169,8 +170,9 @@ class StatementGenerator extends AbstractStatementGenerator {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
         } else {
-            StatementEmailProcessor mailer = new StatementEmailProcessor(
-                    ServiceHelper.getBean(PracticeMailService.class), practice, context);
+            PracticeMailService mailService = ServiceHelper.getBean(PracticeMailService.class);
+            EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
+            StatementEmailProcessor mailer = new StatementEmailProcessor(mailService, evaluator, practice, context);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
     }

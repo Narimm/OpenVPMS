@@ -89,8 +89,8 @@ from
   join acts ca on ar.target_id = ca.act_id and ca.arch_short_name like 'act.customerAccount%Item'
   join participations pp on ca.act_id = pp.act_id
   join entities pr on pr.entity_id = pp.entity_id and pr.arch_short_name like 'product.%'
-  left join entity_relationships rp on rp.target_id = pr.entity_id and rp.arch_short_name = 'entityRelationship.productTypeProduct'
-  left join entities pt on pt.entity_id = rp.source_id
+  left join entity_links rp on rp.source_id = pr.entity_id and rp.arch_short_name = 'entityLink.productType'
+  left join entities pt on pt.entity_id = rp.target_id
   join participations pap on ca.act_id = pap.act_id and pap.arch_short_name = 'participation.patient'
   join entities p on p.entity_id = pap.entity_id
   join participations cp on pa.act_id = cp.act_id and cp.arch_short_name = 'participation.customer'

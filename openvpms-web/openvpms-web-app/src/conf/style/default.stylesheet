@@ -867,7 +867,7 @@
         </properties>
     </style>
 
-    <style name="MailEditor.message" type="org.openvpms.web.echo.text.TextArea" base-name="default">
+    <style name="MailEditor.message" type="org.openvpms.web.echo.text.RichTextArea" base-name="default">
         <properties>
             <property name="width" value="100%"/>
             <property name="height" value="${MailEditor.message.height}"/>

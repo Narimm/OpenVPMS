@@ -58,10 +58,12 @@
     </resources>
 
     <resources os="Mac OS X" arch="x86_64">
+        <j2se java-vm-args="-XstartOnFirstThread"/>
         <jar href="org.eclipse.swt.cocoa.macosx.x86_64-${swt.version}.jar"/>
     </resources>
 
     <resources os="Mac OS X" arch="i386">
+        <j2se java-vm-args="-XstartOnFirstThread"/>
         <jar href="org.eclipse.swt.cocoa.macosx-${swt.version}.jar"/>
     </resources>
 

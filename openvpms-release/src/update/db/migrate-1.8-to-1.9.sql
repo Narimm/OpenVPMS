@@ -50,7 +50,7 @@ DROP TABLE new_authorities;
 
 #
 # Ensure idealQty >= criticalQty for OVPMS-1678 Add validation to idealQty and criticalQty nodes of
-# entityRelationship.productStockLocation
+# entityLink.productStockLocation
 #
 DROP TABLE IF EXISTS ideal_critical_qty;
 CREATE TEMPORARY TABLE ideal_critical_qty (
@@ -71,7 +71,7 @@ INSERT INTO ideal_critical_qty (id, idealQty, criticalQty)
     JOIN entity_relationship_details idealQty
       ON r.entity_relationship_id = idealQty.entity_relationship_id
          AND idealQty.name = 'idealQty'
-  WHERE r.arch_short_name = 'entityRelationship.productStockLocation'
+  WHERE r.arch_short_name = 'entityLink.productStockLocation'
         AND cast(idealQty.value AS DECIMAL(18, 3)) < cast(criticalQty.value AS DECIMAL(18, 3));
 
 UPDATE entity_relationships r
@@ -245,7 +245,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
   WHERE NOT exists(
       SELECT *
       FROM entity_links l
-      WHERE l.source_id = t.location_id and l.arch_short_name = 'entityLink.organisationMailServer');
+      WHERE l.source_id = t.location_id AND l.arch_short_name = 'entityLink.organisationMailServer');
 
 #
 # Link the practice to the first mail server
@@ -321,10 +321,9 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
       SELECT *
       FROM entity_links l
       WHERE l.source_id = schedule.entity_id
-            AND l.target_id = location.entity_id
             AND l.arch_short_name = 'entityLink.scheduleLocation')
   GROUP BY schedule.entity_id
-  HAVING count(location.entity_id) = 1;
+  HAVING count(*) = 1;
 
 #
 # Set up a default entity.documentTemplateSMSAppointment, if one isn't present
@@ -361,7 +360,7 @@ INSERT INTO entity_details (entity_id, name, type, value)
     e.entity_id,
     'expression',
     'string',
-    'concat(expr:if(expr:var(''patient.name'') != '''', concat(expr:var(''patient.name''), ''&quot;s''), ''Your''),
+    'concat(expr:if(expr:var(''patient.name'') != '''', concat(expr:var(''patient.name''), ''&apos;s''), ''Your''),
                      '' appointment at '' , $location.name,'' is confirmed for '', date:formatDate($appointment.startTime, ''short''),
                      '' @ '', date:formatTime($appointment.startTime, ''short''), $nl,
                      ''Call us on '', party:getTelephone($location), '' if you need to change the appointment'')'
@@ -383,7 +382,348 @@ INSERT INTO entity_details (entity_id, name, type, value)
     'boolean',
     'true'
   FROM entities e
-  WHERE e.arch_short_name in ('entity.HL7Mapping', 'entity.HL7MappingCubex', 'entity.HL7MappingIDEXX') AND NOT exists(SELECT *
-                                                                                   FROM entity_details d
-                                                                                   WHERE d.entity_id = e.entity_id AND
-                                                                                         d.name = 'sendADT');
+  WHERE e.arch_short_name IN ('entity.HL7Mapping', 'entity.HL7MappingCubex', 'entity.HL7MappingIDEXX') AND
+        NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = e.entity_id AND
+                         d.name = 'sendADT');
+#
+# Update entity.productDose to include a quantity node for OVPMS-1677 Add dose number to product dosing
+#
+# This only applies to sites that have installed a pre-release version of OpenVPMS 1.9
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'quantity',
+    'big-decimal',
+    '1.00'
+  FROM entities e
+  WHERE e.arch_short_name = 'entity.productDose' AND
+        NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = e.entity_id AND d.name = 'quantity');
+
+#
+# Rename roundType -> roundTo as per the entity.productDose archetype
+#
+UPDATE entity_details d
+  JOIN entities e
+    ON d.entity_id = e.entity_id
+       AND e.arch_short_name = "entity.productDose"
+       AND d.name = "roundType"
+SET d.name = "roundTo";
+
+
+#
+# Replace entityRelationship.productStockLocation with entityLink.productStockLocation
+# for OVPMS-1570 Replace entity relationships between products and stock locations with an entity link
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    version,
+    linkId,
+    'entityLink.productStockLocation',
+    '1.0',
+    name,
+    description,
+    active_start_time,
+    active_end_time,
+    sequence,
+    source_id,
+    target_id
+  FROM entity_relationships r
+  WHERE r.arch_short_name = 'entityRelationship.productStockLocation'
+        AND NOT exists(SELECT *
+                       FROM entity_links l
+                       WHERE l.source_id = r.source_id
+                             AND l.target_id = r.target_id
+                             AND (l.active_start_time = r.active_start_time OR
+                                  (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+                             AND (l.active_end_time = r.active_end_time OR
+                                  (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+                             AND l.arch_short_name = 'entityLink.productStockLocation');
+
+INSERT INTO entity_link_details (id, name, type, value)
+  SELECT
+    l.id,
+    d.name,
+    d.type,
+    d.value
+  FROM entity_relationships r
+    JOIN entity_relationship_details d
+      ON r.entity_relationship_id = d.entity_relationship_id
+    JOIN entity_links l
+      ON l.arch_short_name = 'entityLink.productStockLocation'
+         AND l.source_id = r.source_id AND l.target_id = r.target_id
+         AND (l.active_start_time = r.active_start_time
+              OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+         AND (l.active_end_time = r.active_end_time
+              OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+  WHERE r.arch_short_name = 'entityRelationship.productStockLocation'
+        AND NOT exists(SELECT *
+                       FROM entity_link_details ld
+                       WHERE ld.id = l.id AND ld.name = d.name);
+
+# Remove the old relationships
+DELETE d
+FROM entity_relationship_details d
+  JOIN entity_relationships r
+    ON d.entity_relationship_id = r.entity_relationship_id
+WHERE r.arch_short_name = 'entityRelationship.productStockLocation';
+
+DELETE r
+FROM entity_relationships r
+WHERE r.arch_short_name = 'entityRelationship.productStockLocation';
+
+#
+# Replace entityRelationship.productTypeProduct with entityLink.productType for
+# OVPMS-1567 Replace entity relationship between products and product types with an entity link
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    version,
+    linkId,
+    'entityLink.productType',
+    '1.0',
+    name,
+    description,
+    active_start_time,
+    active_end_time,
+    sequence,
+    target_id,
+    source_id
+  FROM entity_relationships r
+  WHERE r.arch_short_name = 'entityRelationship.productTypeProduct'
+        AND NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = r.target_id
+            AND l.target_id = r.source_id
+            AND
+            (l.active_start_time = r.active_start_time OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+            AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+            AND l.arch_short_name = 'entityLink.productType');
+
+INSERT INTO entity_link_details (id, name, type, value)
+  SELECT
+    l.id,
+    d.name,
+    d.type,
+    d.value
+  FROM entity_relationships r
+    JOIN entity_relationship_details d
+      ON r.entity_relationship_id = d.entity_relationship_id
+    JOIN entity_links l
+      ON l.arch_short_name = 'entityLink.productType'
+         AND l.source_id = r.target_id AND l.target_id = r.source_id
+         AND
+         (l.active_start_time = r.active_start_time OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+         AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+  WHERE r.arch_short_name = 'entityRelationship.productTypeProduct'
+        AND NOT exists(
+      SELECT *
+      FROM entity_link_details ld
+      WHERE ld.id = l.id AND ld.name = d.name);
+
+# Remove the old relationships
+DELETE d
+FROM entity_relationship_details d
+  JOIN entity_relationships r
+    ON d.entity_relationship_id = r.entity_relationship_id
+WHERE r.arch_short_name = 'entityRelationship.productTypeProduct';
+
+DELETE r
+FROM entity_relationships r
+WHERE r.arch_short_name = 'entityRelationship.productTypeProduct';
+
+#
+# OBF-239 Increase length of node_descriptors defaultValue and derivedValue fields
+#
+DELIMITER $$
+CREATE PROCEDURE OBF239_modify_node_descriptors()
+  BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT count(*)
+                  FROM INFORMATION_SCHEMA.COLUMNS
+                  WHERE
+                    TABLE_NAME = "node_descriptors" AND TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = "default_value" AND
+                    CHARACTER_MAXIMUM_LENGTH < 5000);
+    IF _count = 1
+    THEN
+      ALTER TABLE node_descriptors MODIFY default_value VARCHAR(5000);
+      ALTER TABLE node_descriptors MODIFY derived_value VARCHAR(5000);
+    END IF;
+  END $$
+DELIMITER ;
+
+CALL OBF239_modify_node_descriptors();
+DROP PROCEDURE OBF239_modify_node_descriptors;
+
+#
+# OVPMS-1569 Replace entity relationships between products and suppliers with an entity link
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    version,
+    linkId,
+    'entityLink.productSupplier',
+    '1.0',
+    name,
+    description,
+    active_start_time,
+    active_end_time,
+    sequence,
+    source_id,
+    target_id
+  FROM entity_relationships r
+  WHERE r.arch_short_name = 'entityRelationship.productSupplier'
+        AND NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = r.source_id
+            AND l.target_id = r.target_id
+            AND l.linkId = r.linkId
+            AND l.arch_short_name = 'entityLink.productSupplier');
+
+INSERT INTO entity_link_details (id, name, type, value)
+  SELECT
+    l.id,
+    d.name,
+    d.type,
+    d.value
+  FROM entity_relationships r
+    JOIN entity_relationship_details d
+      ON r.entity_relationship_id = d.entity_relationship_id
+    JOIN entity_links l
+      ON l.arch_short_name = 'entityLink.productSupplier'
+         AND l.source_id = r.source_id 
+         AND l.target_id = r.target_id
+		 AND l.linkId = r.linkId
+  WHERE r.arch_short_name = 'entityRelationship.productSupplier'
+        AND NOT exists(
+      SELECT *
+      FROM entity_link_details ld
+      WHERE ld.id = l.id AND ld.name = d.name);
+
+# Remove the old relationships
+DELETE d
+FROM entity_relationship_details d
+  JOIN entity_relationships r
+    ON d.entity_relationship_id = r.entity_relationship_id
+WHERE r.arch_short_name = 'entityRelationship.productSupplier';
+
+DELETE r
+FROM entity_relationships r
+WHERE r.arch_short_name = 'entityRelationship.productSupplier';
+
+#
+# Migrate entity.docuemntTemplate emailSubject and
+#
+drop table if exists tmp_email_templates;
+create temporary table tmp_email_templates (
+	linkId varchar(36) primary key,
+    source_id bigint(20) not null,
+    entity_id bigint(20),
+    name varchar(255),
+    subject varchar(5000),
+    text varchar(5000),
+    active bit(1)    
+);
+
+insert into tmp_email_templates (linkId, source_id, name, subject, text, active)
+select e.linkId, e.entity_id, e.name, if(isnull(emailSubject.value), e.name, emailSubject.value), emailText.value, e.active
+from entities e 
+left join entity_details emailSubject
+	on e.entity_id = emailSubject.entity_id
+		and emailSubject.name = "emailSubject" 
+join entity_details emailText
+	on e.entity_id = emailText.entity_id
+		and emailText.name = "emailText"
+where e.arch_short_name = "entity.documentTemplate";
+
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
+  SELECT
+    1,
+    linkId,
+    'entity.documentTemplateEmail',
+    '1.0',
+    name,
+    active
+  FROM tmp_email_templates t
+  WHERE NOT exists(
+      SELECT *
+      FROM entities e
+      WHERE e.arch_short_name = 'entity.documentTemplateEmail'
+            AND e.linkId = t.linkId);
+
+update tmp_email_templates t
+  JOIN entities e
+    ON t.linkId = e.linkId 
+		AND e.arch_short_name = 'entity.documentTemplateEmail'
+SET t.entity_id = e.entity_id;
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'subject',
+    'string',
+    t.subject
+  FROM tmp_email_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'subject');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'contentType',
+    'string',
+    'TEXT'
+  FROM tmp_email_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'contentType');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'content',
+    'string',
+    t.text
+  FROM tmp_email_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'content');
+
+#
+# Link the templates to their email templates
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    linkId,
+    'entityLink.documentTemplateEmail',
+    '1.0',
+    'Email Template',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    t.source_id,
+    t.entity_id
+  FROM tmp_email_templates t
+  WHERE NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = t.source_id AND l.arch_short_name = 'entityLink.documentTemplateEmail');
+
+DELETE d
+FROM entity_details d
+  JOIN tmp_email_templates t
+    ON d.entity_id = t.source_id
+       AND d.name IN ('emailSubject', 'emailText');

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
@@ -24,13 +24,10 @@ import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -191,7 +188,7 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
      */
     @Test
     public void testMultipleStockUpdatesInTxn() {
-        final List<FinancialAct> acts = new ArrayList<FinancialAct>(createInvoice());
+        final List<FinancialAct> acts = new ArrayList<>(createInvoice());
         final FinancialAct item1 = acts.get(1);
         final FinancialAct item2 = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient,
                                                                         product, BigDecimal.ONE);
@@ -273,7 +270,7 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
     }
 
     /**
-     * Verifies that stock is updated when for a charge.
+     * Verifies that stock is updated for a charge when it is saved.
      *
      * @param acts the charge act and item
      */
@@ -283,8 +280,7 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
         BigDecimal quantity = BigDecimal.valueOf(5);
         Product product2 = TestHelper.createProduct();
 
-        boolean credit = TypeHelper.isA(
-                item, CustomerAccountArchetypes.CREDIT_ITEM);
+        boolean credit = TypeHelper.isA(item, CustomerAccountArchetypes.CREDIT_ITEM);
         BigDecimal expected = getQuantity(initialQuantity, quantity, credit);
 
         item.setQuantity(quantity);
@@ -391,17 +387,6 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
     private BigDecimal getQuantity(BigDecimal current, BigDecimal change,
                                    boolean credit) {
         return (credit) ? current.add(change) : current.subtract(change);
-    }
-
-    private BigDecimal getStock(Party location, Product product) {
-        product = get(product);
-        EntityBean prodBean = new EntityBean(product);
-        EntityRelationship rel = prodBean.getRelationship(location);
-        if (rel != null) {
-            IMObjectBean relBean = new IMObjectBean(rel);
-            return relBean.getBigDecimal("quantity");
-        }
-        return BigDecimal.ZERO;
     }
 
 }
