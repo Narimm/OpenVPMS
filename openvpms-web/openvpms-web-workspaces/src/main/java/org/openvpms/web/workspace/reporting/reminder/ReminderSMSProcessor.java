@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -50,6 +50,11 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
     private final SMSService service;
 
     /**
+     * The communication logger. May be {@code null}
+     */
+    private final ReminderCommunicationLogger logger;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(ReminderSMSProcessor.class);
@@ -60,10 +65,13 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
      * @param service       the SMS service
      * @param groupTemplate the template for grouped reminders
      * @param context       the context
+     * @param logger        if specified, logs SMS reminders
      */
-    public ReminderSMSProcessor(SMSService service, DocumentTemplate groupTemplate, Context context) {
+    public ReminderSMSProcessor(SMSService service, DocumentTemplate groupTemplate, Context context,
+                                ReminderCommunicationLogger logger) {
         super(groupTemplate, context);
         this.service = service;
+        this.logger = logger;
     }
 
     /**
@@ -93,6 +101,9 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
             try {
                 service.send(phoneNumber, text, event.getCustomer(), event.getPatient(), contact,
                              getContext().getLocation());
+                if (logger != null) {
+                    logger.logSMS(events, getContext().getLocation());
+                }
             } catch (Throwable exception) {
                 throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
             }

@@ -20,10 +20,12 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderExporter;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -35,13 +37,29 @@ import java.util.List;
 public class ReminderExportProcessor extends AbstractReminderBatchProcessor {
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * The logger.
+     */
+    private final ReminderCommunicationLogger logger;
+
+
+    /**
      * Constructs a {@link ReminderExportProcessor}.
      *
      * @param reminders  the reminders
      * @param statistics the reminder statistics
+     * @param context    the context
+     * @param logger     if specified, log exported reminders
      */
-    public ReminderExportProcessor(List<List<ReminderEvent>> reminders, Statistics statistics) {
+    public ReminderExportProcessor(List<List<ReminderEvent>> reminders, Statistics statistics, Context context,
+                                   ReminderCommunicationLogger logger) {
         super(reminders, statistics);
+        this.context = context;
+        this.logger = logger;
     }
 
     /**
@@ -81,6 +99,22 @@ public class ReminderExportProcessor extends AbstractReminderBatchProcessor {
     }
 
     /**
+     * Updates a reminder.
+     *
+     * @param reminder the reminder to update
+     * @param date     the last-sent date
+     * @return {@code true} if the reminder was updated
+     */
+    @Override
+    protected boolean updateReminder(ReminderEvent reminder, Date date) {
+        boolean updated = super.updateReminder(reminder, date);
+        if (updated && logger != null) {
+            logger.logExport(reminder, context.getLocation());
+        }
+        return updated;
+    }
+
+    /**
      * Notifies the listener (if any) of processing completion.
      */
     @Override
@@ -101,6 +135,5 @@ public class ReminderExportProcessor extends AbstractReminderBatchProcessor {
         setStatus(Messages.get("reporting.reminder.export.status.failed"));
         super.notifyError(exception);
     }
-
 
 }

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -90,6 +90,8 @@
               type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="ignoreListPriceDecreases" path="/details/ignoreListPriceDecreases"
               type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="logCommunication" path="/details/logCommunication" type="java.lang.Boolean"
+              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
