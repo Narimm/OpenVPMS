@@ -11,18 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -33,6 +36,8 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -53,7 +58,8 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
-import org.openvpms.web.workspace.customer.note.CustomerAlertQuery;
+import org.openvpms.web.workspace.customer.communication.CommunicationArchetypes;
+import org.openvpms.web.workspace.customer.communication.CustomerAlertQuery;
 import org.openvpms.web.workspace.summary.PartySummary;
 
 import java.math.BigDecimal;
@@ -190,8 +196,23 @@ public class CustomerSummary extends PartySummary {
      * @param customer the customer
      * @return the customer identifier component
      */
-    protected Component getCustomerId(Party customer) {
-        return createLabel("customer.id", customer.getId());
+    protected Component getCustomerId(final Party customer) {
+        Component customerId = createLabel("customer.id", customer.getId());
+        Button communication = ButtonFactory.create(null, "button.communication", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
+                ContextHelper.setCustomer(instance.getContext(), customer);
+                instance.switchTo(CommunicationArchetypes.ACTS);
+            }
+        });
+        Row right = RowFactory.create(communication);
+
+        RowLayoutData rightLayout = new RowLayoutData();
+        rightLayout.setAlignment(Alignment.ALIGN_RIGHT);
+        rightLayout.setWidth(Styles.FULL_WIDTH);
+        right.setLayoutData(rightLayout);
+
+        return RowFactory.create(Styles.WIDE_CELL_SPACING, customerId, right);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -74,6 +74,10 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      */
     private Map<String, Object> fields;
 
+    /**
+     * The communication logger. May be {@code null}
+     */
+    private final ReminderCommunicationLogger logger;
 
     /**
      * Constructs a {@link ReminderEmailProcessor}.
@@ -82,12 +86,13 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      * @param practice      the practice
      * @param groupTemplate the template for grouped reminders
      * @param context       the context
+     * @param logger        if specified, logs email reminders
      */
     public ReminderEmailProcessor(MailerFactory factory, Party practice, DocumentTemplate groupTemplate,
-                                  Context context) {
+                                  Context context, ReminderCommunicationLogger logger) {
         super(groupTemplate, context);
         this.factory = factory;
-
+        this.logger = logger;
         addresses = new PracticeEmailAddresses(practice, "REMINDER");
         fields = ReportContextFactory.create(getContext());
     }
@@ -119,6 +124,9 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
             throw exception;
         } catch (Throwable exception) {
             throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
+        }
+        if (logger != null) {
+            logger.logEmail(events, getContext().getLocation(), mailer);
         }
     }
 

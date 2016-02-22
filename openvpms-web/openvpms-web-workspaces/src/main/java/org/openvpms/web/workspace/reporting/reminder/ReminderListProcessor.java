@@ -31,6 +31,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -52,6 +53,10 @@ public class ReminderListProcessor extends AbstractReminderBatchProcessor {
      */
     private final HelpContext help;
 
+    /**
+     * The communication logger. May be {@code null}
+     */
+    private final ReminderCommunicationLogger logger;
 
     /**
      * Constructs an {@code ReminderListProcessor}.
@@ -60,12 +65,14 @@ public class ReminderListProcessor extends AbstractReminderBatchProcessor {
      * @param statistics the reminder statistics
      * @param context    the context
      * @param help       the help context
+     * @param logger     if specified, logs listed reminders
      */
     public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics, Context context,
-                                 HelpContext help) {
+                                 HelpContext help, ReminderCommunicationLogger logger) {
         super(reminders, statistics);
         this.context = context;
         this.help = help;
+        this.logger = logger;
     }
 
     /**
@@ -130,6 +137,22 @@ public class ReminderListProcessor extends AbstractReminderBatchProcessor {
      */
     public void restart() {
         // no-op
+    }
+
+    /**
+     * Updates a reminder.
+     *
+     * @param reminder the reminder to update
+     * @param date     the last-sent date
+     * @return {@code true} if the reminder was updated
+     */
+    @Override
+    protected boolean updateReminder(ReminderEvent reminder, Date date) {
+        boolean updated = super.updateReminder(reminder, date);
+        if (updated && logger != null) {
+            logger.logList(reminder, getContext().getLocation());
+        }
+        return updated;
     }
 
     /**

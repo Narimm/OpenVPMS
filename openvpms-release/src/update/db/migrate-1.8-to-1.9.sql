@@ -600,9 +600,9 @@ INSERT INTO entity_link_details (id, name, type, value)
       ON r.entity_relationship_id = d.entity_relationship_id
     JOIN entity_links l
       ON l.arch_short_name = 'entityLink.productSupplier'
-         AND l.source_id = r.source_id 
+         AND l.source_id = r.source_id
          AND l.target_id = r.target_id
-		 AND l.linkId = r.linkId
+         AND l.linkId = r.linkId
   WHERE r.arch_short_name = 'entityRelationship.productSupplier'
         AND NOT exists(
       SELECT *
@@ -619,3 +619,129 @@ WHERE r.arch_short_name = 'entityRelationship.productSupplier';
 DELETE r
 FROM entity_relationships r
 WHERE r.arch_short_name = 'entityRelationship.productSupplier';
+
+#
+# Customer communications changes
+#
+INSERT INTO document_acts (document_act_id, doc_version, file_name, mime_type, printed, document_id)
+  SELECT
+    a.act_id,
+    0,
+    NULL,
+    'text/plain',
+    FALSE,
+    NULL
+  FROM acts a
+  WHERE a.arch_short_name = 'act.customerNote'
+        AND NOT exists(SELECT *
+                       FROM document_acts d
+                       WHERE document_act_id = a.act_id);
+
+UPDATE participations p
+SET p.act_arch_short_name = 'act.customerCommunicationNote'
+WHERE p.act_arch_short_name = 'act.customerNote';
+
+UPDATE act_details d
+  JOIN acts a
+    ON a.act_id = d.act_id
+SET d.name = 'message'
+WHERE a.arch_short_name = 'act.customerNote' AND d.name = 'note';
+
+UPDATE act_details d
+  JOIN acts a
+    ON a.act_id = d.act_id
+SET d.name = 'reason'
+WHERE a.arch_short_name = 'act.customerNote' AND d.name = 'category';
+
+UPDATE acts a
+SET a.arch_short_name = 'act.customerCommunicationNote'
+WHERE a.arch_short_name = 'act.customerNote';
+
+UPDATE acts a
+  JOIN act_details d
+    ON a.act_id = d.act_id
+       AND d.name = 'message'
+       AND a.arch_short_name = 'act.customerCommunicationNote'
+SET a.description = CASE
+                    WHEN locate('\n', d.value) > 255
+                      THEN concat(substring(d.value, 1, 252), '...')
+                    WHEN locate('\n', d.value) > 0
+                      THEN substring(d.value, 1, locate('\n', d.value))
+                    WHEN char_length(d.value) > 255
+                      THEN concat(substring(d.value, 1, 252), '...')
+                    ELSE
+                      d.value
+                    END
+WHERE a.description IS NULL;
+
+UPDATE lookups l
+SET l.arch_short_name = 'lookup.customerCommunicationReason'
+WHERE l.arch_short_name = 'lookup.customerNoteCategory';
+
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.customerCommunicationReason',
+    1,
+    '1.0',
+    'AD_HOC_EMAIL',
+    'Ad-hoc Email',
+    null,
+    0
+  from dual
+  WHERE NOT exists(SELECT
+                     *
+                   FROM lookups e
+                   WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'AD_HOC_EMAIL');
+
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.customerCommunicationReason',
+    1,
+    '1.0',
+    'AD_HOC_SMS',
+    'Ad-hoc SMS',
+    null,
+    0
+  from dual
+  WHERE NOT exists(SELECT
+                     *
+                   FROM lookups e
+                   WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'AD_HOC_SMS');
+
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.customerCommunicationReason',
+    1,
+    '1.0',
+    'PATIENT_REMINDER',
+    'Patient reminder',
+    null,
+    0
+  from dual
+  WHERE NOT exists(SELECT
+                     *
+                   FROM lookups e
+                   WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'PATIENT_REMINDER');
+
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.customerCommunicationReason',
+    1,
+    '1.0',
+    'FORWARDED_DOCUMENT',
+    'Forwarded Document',
+    null,
+    0
+  from dual
+  WHERE NOT exists(SELECT
+                     *
+                   FROM lookups e
+                   WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'FORWARDED_DOCUMENT');
