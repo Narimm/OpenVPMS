@@ -16,13 +16,11 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.mail.Mailer;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
@@ -61,12 +59,10 @@ public class ReminderCommunicationLogger {
     public void logEmail(List<ReminderEvent> reminders, Party location, Mailer mailer) {
         String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
         for (ReminderEvent reminder : reminders) {
-            DocumentTemplate template = new DocumentTemplate(reminder.getDocumentTemplate(),
-                                                             ServiceHelper.getArchetypeService());
             String notes = getNote(reminder);
 
             service.logEmail(reminder.getCustomer(), reminder.getPatient(), mailer.getTo(), mailer.getCc(),
-                             mailer.getBcc(), template.getEmailSubject(), PATIENT_REMINDER, template.getEmailText(),
+                             mailer.getBcc(), mailer.getSubject(), PATIENT_REMINDER, mailer.getBody(),
                              notes, attachments, location);
         }
     }
@@ -79,12 +75,11 @@ public class ReminderCommunicationLogger {
      */
     public void logMail(List<ReminderEvent> reminders, Party location) {
         for (ReminderEvent reminder : reminders) {
-            DocumentTemplate template = new DocumentTemplate(reminder.getDocumentTemplate(),
-                                                             ServiceHelper.getArchetypeService());
+            String subject = Messages.get("reminder.log.mail.subject");
             String notes = getNote(reminder);
 
             service.logMail(reminder.getCustomer(), reminder.getPatient(), reminder.getContact().getDescription(),
-                            template.getEmailSubject(), PATIENT_REMINDER, template.getEmailText(), notes, location);
+                            subject, PATIENT_REMINDER, null, notes, location);
         }
     }
 
@@ -95,8 +90,8 @@ public class ReminderCommunicationLogger {
      * @param location the practice location. May be {@code null}
      */
     public void logExport(ReminderEvent reminder, Party location) {
-        String notes = getNote(reminder);
         String subject = Messages.get("reminder.log.export.subject");
+        String notes = getNote(reminder);
         service.logMail(reminder.getCustomer(), reminder.getPatient(), reminder.getContact().getDescription(),
                         subject, PATIENT_REMINDER, null, notes, location);
     }
@@ -108,8 +103,8 @@ public class ReminderCommunicationLogger {
      * @param location the practice location. May be {@code null}
      */
     public void logList(ReminderEvent reminder, Party location) {
-        String notes = getNote(reminder);
         String subject = Messages.get("reminder.log.list.subject");
+        String notes = getNote(reminder);
         Party customer = reminder.getCustomer();
         String contact = (reminder.getContact() != null) ? reminder.getContact().getDescription() : "";
         if (customer != null) {
@@ -121,17 +116,16 @@ public class ReminderCommunicationLogger {
     /**
      * Logs SMS reminders.
      *
+     * @param text      the SMS text
      * @param reminders the reminders
      * @param location  the practice location. May be {@code null}
      */
-    public void logSMS(List<ReminderEvent> reminders, Party location) {
+    public void logSMS(String text, List<ReminderEvent> reminders, Party location) {
+        String subject = Messages.get("reminder.log.sms.subject");
         for (ReminderEvent reminder : reminders) {
-            DocumentTemplate template = new DocumentTemplate(reminder.getDocumentTemplate(),
-                                                             ServiceHelper.getArchetypeService());
             String notes = getNote(reminder);
-
             service.logSMS(reminder.getCustomer(), reminder.getPatient(), reminder.getContact().getDescription(),
-                           template.getEmailSubject(), PATIENT_REMINDER, template.getSMS(), notes, location);
+                           subject, PATIENT_REMINDER, text, notes, location);
         }
     }
 
@@ -144,7 +138,6 @@ public class ReminderCommunicationLogger {
     protected String getNote(ReminderEvent reminder) {
         ActBean bean = new ActBean(reminder.getReminder());
         int reminderCount = bean.getInt("reminderCount");
-        return "Reminder Type: " + reminder.getReminderType().getName()
-               + "\nReminder Count: " + reminderCount;
+        return Messages.format("reminder.log.note", reminder.getReminderType().getName(), reminderCount);
     }
 }
