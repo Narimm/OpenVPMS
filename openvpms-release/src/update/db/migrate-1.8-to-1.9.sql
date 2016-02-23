@@ -621,7 +621,7 @@ FROM entity_relationships r
 WHERE r.arch_short_name = 'entityRelationship.productSupplier';
 
 #
-# Customer communications changes
+# OVPMS-1722 Customer communications log
 #
 INSERT INTO document_acts (document_act_id, doc_version, file_name, mime_type, printed, document_id)
   SELECT
@@ -745,3 +745,8 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
                      *
                    FROM lookups e
                    WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'FORWARDED_DOCUMENT');
+
+# Migrate granted_authorities
+UPDATE granted_authorities g
+SET archetype = 'act.customerCommunication*'
+WHERE archetype = 'act.customerNote';
