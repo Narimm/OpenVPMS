@@ -162,6 +162,12 @@ public class CommunicationLogger {
         if (message != null && message.length() > length) {
             Document document = handler.create(fileName, message);
             bean.setValue("document", document.getObjectReference());
+            if (bean.hasNode("mimeType")) {
+                bean.setValue("mimeType", document.getMimeType());
+            }
+            if (bean.hasNode("fileName")) {
+                bean.setValue("fileName", document.getName());
+            }
             service.save(Arrays.asList(bean.getAct(), document));
         } else {
             bean.setValue("message", message);
