@@ -102,7 +102,7 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
                 service.send(phoneNumber, text, event.getCustomer(), event.getPatient(), contact,
                              getContext().getLocation());
                 if (logger != null) {
-                    logger.logSMS(events, getContext().getLocation());
+                    logger.logSMS(text, events, getContext().getLocation());
                 }
             } catch (Throwable exception) {
                 throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
