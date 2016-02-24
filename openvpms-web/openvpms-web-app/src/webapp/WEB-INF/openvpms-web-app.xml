@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -138,14 +138,24 @@
 
     <bean id="reminderGeneratorFactory" class="org.openvpms.web.workspace.reporting.reminder.ReminderGeneratorFactory"/>
 
-    <bean id="mailerFactory" class="org.openvpms.web.component.mail.MailerFactory"/>
+    <bean id="mailerFactory" class="org.openvpms.web.workspace.customer.communication.LoggingMailerFactory">
+        <constructor-arg ref="communicationLogger"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        SMS                                         -->
     <!-- ================================================================== -->
-    <bean id="smsService" class="org.openvpms.web.component.service.SMSService">
+    <bean id="smsService" class="org.openvpms.web.workspace.customer.communication.LoggingSMSService">
         <constructor-arg ref="smsConnectionFactory"/>
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="communicationLogger"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
+
+    <bean id="communicationLogger" class="org.openvpms.web.workspace.customer.communication.CommunicationLogger">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="userRules"/>
     </bean>
 
     <!-- =========================================================================================================== -->

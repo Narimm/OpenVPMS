@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -31,6 +31,7 @@ import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -41,6 +42,8 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.patient.communication.PatientCommunicationCRUDWindow;
+import org.openvpms.web.workspace.patient.communication.PatientCommunicationQuery;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
@@ -83,6 +86,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private final ProblemBrowser problems;
 
     /**
+     * The communication act browser.
+     */
+    private final Browser<Act> communication;
+
+    /**
      * History browser tab index.
      */
     private final int historyIndex;
@@ -111,6 +119,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * Prescription browser tab index.
      */
     private int prescriptionIndex;
+
+    /**
+     * The communication browser tab index.
+     */
+    private int communicationIndex = -1;
 
     /**
      * Patient charges shortnames supported by the workspace.
@@ -174,6 +187,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         chargesIndex = addBrowser(Messages.get("button.charges"), createChargeBrowser(patient, layout));
         prescriptionIndex = addBrowser(Messages.get("button.prescriptions"),
                                        createPrescriptionBrowser(patient, layout));
+        communication = createCommunicationBrowser(patient, context, help);
+        communicationIndex = addBrowser(Messages.get("button.communication"), communication);
     }
 
     /**
@@ -210,6 +225,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
             result = createChargesCRUDWindow(context, help);
         } else if (index == prescriptionIndex) {
             result = createPrescriptionCRUDWindow(context, help);
+        } else if (index == communicationIndex) {
+            result = new PatientCommunicationCRUDWindow(context, help);
         } else {
             result = createHistoryCRUDWindow(context, help);
         }
@@ -323,12 +340,12 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         // todo - should be able to register ReminderActTableModel in IMObjectTableFactory.properties for
         // act.patientReminder and act.patientAlert
         String[] shortNames = {ReminderArchetypes.REMINDER, PatientArchetypes.ALERT};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
-                                                              REMINDER_STATUSES);
+        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
+                                                           REMINDER_STATUSES);
         query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         IMObjectTableModel<Act> model = new ReminderActTableModel(query.getShortNames(), layout);
-        return new DefaultIMObjectTableBrowser<Act>(query, model, layout);
+        return new DefaultIMObjectTableBrowser<>(query, model, layout);
     }
 
     /**
@@ -350,7 +367,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @return a new document browser
      */
     protected Browser<Act> createDocumentBrowser(Party patient, LayoutContext layout) {
-        return BrowserFactory.create(new PatientDocumentQuery<Act>(patient), layout);
+        return BrowserFactory.create(new PatientDocumentQuery<>(patient), layout);
     }
 
     /**
@@ -374,12 +391,12 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     protected Browser<Act> createChargeBrowser(Party patient, LayoutContext layout) {
         String[] statuses = {};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION,
-                                                              CHARGES_SHORT_NAMES, false, statuses);
+        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION,
+                                                           CHARGES_SHORT_NAMES, false, statuses);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         query.setMaxResults(10);
         IMObjectTableModel<Act> chargeModel = new ChargesActTableModel(query.getShortNames(), layout);
-        return new DefaultIMObjectTableBrowser<Act>(query, chargeModel, layout);
+        return new DefaultIMObjectTableBrowser<>(query, chargeModel, layout);
     }
 
     /**
@@ -413,6 +430,34 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     protected CRUDWindow<Act> createPrescriptionCRUDWindow(Context context, HelpContext help) {
         return new PatientPrescriptionCRUDWindow(prescriptionArchetypes, context, help.subtopic("prescription"));
+    }
+
+    /**
+     * Creates the communication browser.
+     *
+     * @param patient the patient to browser communication logs for
+     * @param context the context
+     * @param help    the help context
+     * @return a new browser
+     */
+    protected Browser<Act> createCommunicationBrowser(Party patient, Context context, HelpContext help) {
+        ActQuery<Act> query = new PatientCommunicationQuery(patient);
+        return BrowserFactory.create(query, new DefaultLayoutContext(context, help));
+    }
+
+    /**
+     * Invoked when a browser is selected.
+     * <p/>
+     * This notifies any registered listener.
+     *
+     * @param selected the selected index
+     */
+    @Override
+    protected void onBrowserSelected(int selected) {
+        if (selected == communicationIndex) {
+            query(communication); // always refresh
+        }
+        super.onBrowserSelected(selected);
     }
 
     /**

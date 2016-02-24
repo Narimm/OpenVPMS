@@ -32,7 +32,8 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Font;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Style;
-import nextapp.echo2.app.text.*;
+import nextapp.echo2.app.text.Document;
+import nextapp.echo2.app.text.StringDocument;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -122,6 +123,7 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
         setWidth(width);
         setHeight(height);
         setSpellCheckInProgress(false);
+        setSupportsCursorPosition(false);
     }
 
     /**
