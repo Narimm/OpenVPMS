@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -73,18 +73,25 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
     private final HelpContext help;
 
     /**
+     * The communication logger. May be {@code null}
+     */
+    private final ReminderCommunicationLogger logger;
+
+    /**
      * Constructs a {@link ReminderPrintProcessor}.
      *
      * @param groupTemplate the grouped reminder document template
      * @param context       the context
      * @param mailContext   the mail context, used when printing interactively. May be {@code null}
      * @param help          the help context
+     * @param logger        if specified, logs printed reminders
      */
     public ReminderPrintProcessor(DocumentTemplate groupTemplate, Context context, MailContext mailContext,
-                                  HelpContext help) {
+                                  HelpContext help, ReminderCommunicationLogger logger) {
         super(groupTemplate, context);
         this.mailContext = mailContext;
         this.help = help;
+        this.logger = logger;
     }
 
     /**
@@ -149,6 +156,9 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
      * @param reminders the printed reminders
      */
     protected void onPrinted(String printer, List<ReminderEvent> reminders) {
+        if (logger != null) {
+            logger.logMail(reminders, getContext().getLocation());
+        }
         if (fallbackPrinter == null) {
             fallbackPrinter = printer;
         }

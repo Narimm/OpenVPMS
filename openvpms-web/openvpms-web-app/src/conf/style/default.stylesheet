@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <stylesheet>
@@ -172,6 +172,14 @@
             <property name="width" value="${dialog.large.width}"/>
             <!-- NOTE: need large width -->
             <property name="height" value="${dialog.medium.height}"/>
+        </properties>
+    </style>
+
+    <style name="button.communication" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/communication.png"/>
+            </property>
         </properties>
     </style>
 

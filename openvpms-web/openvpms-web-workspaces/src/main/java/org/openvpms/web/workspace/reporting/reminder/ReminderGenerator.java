@@ -35,6 +35,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.mail.MailContext;
@@ -59,6 +60,10 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
+import org.openvpms.web.workspace.customer.communication.LoggingMailerFactory;
+import org.openvpms.web.workspace.customer.communication.LoggingSMSService;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.ArrayList;
@@ -118,6 +123,21 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * Determines if reminders can be sent via SMS.
      */
     private final boolean sms;
+
+    /**
+     * The mailer factory.
+     */
+    private MailerFactory factory;
+
+    /**
+     * The SMS service.
+     */
+    private SMSService service;
+
+    /**
+     * The communication logger, if communications logging is enabled.
+     */
+    private ReminderCommunicationLogger logger;
 
     /**
      * Constructs a {@link ReminderGenerator} to process a single reminder.
@@ -274,6 +294,10 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
         }
         sms = !StringUtils.isEmpty(groupTemplate.getSMS()) && SMSHelper.isSMSEnabled(context.getPractice());
+
+        if (CommunicationHelper.isLoggingEnabled(practice)) {
+            logger = new ReminderCommunicationLogger(ServiceHelper.getBean(CommunicationLogger.class));
+        }
     }
 
     /**
@@ -331,20 +355,33 @@ public class ReminderGenerator extends AbstractBatchProcessor {
 
     /**
      * Returns the SMS service.
+     * <p/>
+     * Note that the default service isn't used as it could be an instance of {@link LoggingSMSService};
+     * logging is handled by the {@link ReminderCommunicationLogger} when logging is enabled.
      *
      * @return the SMS service
      */
     protected SMSService getSMSService() {
-        return ServiceHelper.getBean(SMSService.class);
+        if (service == null) {
+            service = new SMSService(ServiceHelper.getBean(ConnectionFactory.class),
+                                     ServiceHelper.getArchetypeService());
+        }
+        return service;
     }
 
     /**
      * Returns the mailer factory.
+     * <p/>
+     * Note that the default factory isn't used as it could be an instance of {@link LoggingMailerFactory};
+     * logging is handled by the {@link ReminderCommunicationLogger} when logging is enabled.
      *
      * @return the mailer factory
      */
     protected MailerFactory getMailerFactory() {
-        return ServiceHelper.getBean(MailerFactory.class);
+        if (factory == null) {
+            factory = new MailerFactory();
+        }
+        return factory;
     }
 
     /**
@@ -363,6 +400,15 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected MailContext getMailContext() {
         return mailContext;
+    }
+
+    /**
+     * Returns the reminder communication logger.
+     *
+     * @return the logger, or {@code null} if logging is disabled
+     */
+    protected ReminderCommunicationLogger getLogger() {
+        return logger;
     }
 
     /**
@@ -386,7 +432,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected ReminderEmailProcessor createEmailProcessor(Party practice, DocumentTemplate groupTemplate,
                                                           Context context) {
-        return new ReminderEmailProcessor(getMailerFactory(), practice, groupTemplate, context);
+        return new ReminderEmailProcessor(getMailerFactory(), practice, groupTemplate, context, logger);
     }
 
     /**
@@ -417,7 +463,8 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     protected ReminderPrintProcessor createPrintProcessor(DocumentTemplate groupTemplate, Context context,
                                                           MailContext mailContext, HelpContext help,
                                                           boolean interactive) {
-        ReminderPrintProcessor processor = new ReminderPrintProcessor(groupTemplate, context, mailContext, help);
+        ReminderPrintProcessor processor = new ReminderPrintProcessor(groupTemplate, context, mailContext, help,
+                                                                      logger);
         processor.setInteractiveAlways(interactive);
         return processor;
     }
@@ -441,7 +488,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     protected ReminderSMSProcessor createSMSProcessor(DocumentTemplate groupTemplate, Context context) {
-        return new ReminderSMSProcessor(getSMSService(), groupTemplate, context);
+        return new ReminderSMSProcessor(getSMSService(), groupTemplate, context, logger);
     }
 
     /**
@@ -463,7 +510,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected ReminderExportProcessor createExportProcessor(List<List<ReminderEvent>> reminders,
                                                             Statistics statistics) {
-        return new ReminderExportProcessor(reminders, statistics);
+        return new ReminderExportProcessor(reminders, statistics, context, logger);
     }
 
     /**
@@ -487,7 +534,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected ReminderListProcessor createListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics,
                                                         Context context, HelpContext help) {
-        return new ReminderListProcessor(reminders, statistics, context, help);
+        return new ReminderListProcessor(reminders, statistics, context, help, logger);
     }
 
     /**

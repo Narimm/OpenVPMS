@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.text;
@@ -42,6 +42,11 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
      * Determines if the cursor position has been received from the client.
      */
     private boolean haveCursorPosition;
+
+    /**
+     * Determines if the component supports cursor positioning.
+     */
+    private boolean supportsCursorPosition = true;
 
     /**
      * Determines if the text has been received from the client. Note that the text may be null.
@@ -84,7 +89,7 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
         try {
             inProcessInput = true;
             if (TEXT_CHANGED_PROPERTY.equals(inputName)) {
-                if (haveCursorPosition) {
+                if (!supportsCursorPosition || haveCursorPosition) {
                     textPreUpdate = (String) inputValue;
                     setText(textPreUpdate);
                     haveCursorPosition = false;
@@ -122,7 +127,7 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         if (inProcessInput && TEXT_CHANGED_PROPERTY.equals(propertyName)) {
             // don't update the client if the text hasn't changed.
-            if (!StringUtils.equals(textPreUpdate, (String) newValue)){
+            if (!StringUtils.equals(textPreUpdate, (String) newValue)) {
                 super.firePropertyChange(propertyName, oldValue, newValue);
             }
         } else {
@@ -151,6 +156,15 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
         } else {
             setProperty(PROPERTY_CURSOR_POSITION, position);
         }
+    }
+
+    /**
+     * Determines if the component supports cursor positioning.
+     *
+     * @param supportsCursorPosition if {@code true}, the component supports cursor positioning
+     */
+    protected void setSupportsCursorPosition(boolean supportsCursorPosition) {
+        this.supportsCursorPosition = supportsCursorPosition;
     }
 
     /**

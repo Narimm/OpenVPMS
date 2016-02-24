@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -21,7 +21,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
@@ -32,8 +31,6 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
-
-import java.util.List;
 
 
 /**
@@ -295,9 +292,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     private void saveCharge(boolean close) {
-        CustomerChargeActEditor editor = getEditor();
-        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor, getHelpContext());
-        List<Act> existing = docs.getUnprinted();
         if (save()) {
             ActionListener printListener = null;
             if (close) {
@@ -308,7 +302,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
                     }
                 };
             }
-            if (!docs.printNew(existing, printListener)) {
+            if (!getEditor().getUnprintedDocuments().printNew(printListener)) {
                 if (close) {
                     // nothing to print, so close now
                     close(OK_ID);
