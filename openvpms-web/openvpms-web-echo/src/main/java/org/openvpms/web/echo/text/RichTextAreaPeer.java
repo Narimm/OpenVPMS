@@ -494,7 +494,7 @@ public class RichTextAreaPeer extends AbstractEchoPointPeer implements PropertyU
         ////////////////////////////////////////////////////////
         // Toolbar
         ////////////////////////////////////////////////////////
-        HtmlTable tableToolbarContainer = new HtmlTable(rc.getDocument(), 0, 0, 0);
+        HtmlTable tableToolbarContainer = new HtmlTable(rc.getDocument(), 0, 1, 0);
         tableToolbarContainer.setAttribute("style", styleToolbarContainer);
         Element td = tableToolbarContainer.getTD();
         int cellCount = 0;

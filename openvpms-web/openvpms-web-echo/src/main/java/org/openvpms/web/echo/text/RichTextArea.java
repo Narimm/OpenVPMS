@@ -34,6 +34,7 @@ import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Style;
 import nextapp.echo2.app.text.Document;
 import nextapp.echo2.app.text.StringDocument;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -86,6 +87,9 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
 
     private Map<String, Object> attributeMap;
 
+    /**
+     * Expands macros. May be {@code null}.
+     */
     private MacroExpander macros;
 
     /**
@@ -298,7 +302,7 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
             // toggle the spell check
             setSpellCheckInProgress(!isSpellCheckInProgress());
         } else if ("macro".equals(inputName) && macros != null) {
-            firePropertyChange(PROPERTY_MACRO_EXPANSION, null, macros.expand((String) inputValue));
+            firePropertyChange(PROPERTY_MACRO_EXPANSION, null, expand((String) inputValue));
         }
     }
 
@@ -467,6 +471,17 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
      */
     public void setToolBarBackground(Color newValue) {
         setProperty(PROPERTY_TOOLBAR_BACKGROUND, newValue);
+    }
+
+    /**
+     * Expands a macro, escaping any characters using HTML entities.
+     *
+     * @param macro the macro to expand
+     * @return the result of the expansion. May be {@code null}
+     */
+    protected String expand(String macro) {
+        String expansion = macros.expand(macro);
+        return StringEscapeUtils.escapeHtml(expansion);
     }
 
 }

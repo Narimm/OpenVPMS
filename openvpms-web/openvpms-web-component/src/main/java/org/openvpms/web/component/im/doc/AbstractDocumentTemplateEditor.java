@@ -79,6 +79,12 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
     private final DocReferenceMgr refMgr;
 
     /**
+     * Determines if the document should be deleted on save.
+     */
+    private boolean deleteDocOnSave;
+
+
+    /**
      * Constructs a {@link DocumentTemplateEditor}.
      *
      * @param template    the object to edit
@@ -93,8 +99,8 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
         super(template, parent, context);
         setDocumentRequired(docRequired);
         this.handler = handler;
+        refMgr = new DocReferenceMgr(context.getContext());
         getDocumentAct();
-        refMgr = new DocReferenceMgr(act.getDocument(), context.getContext());
         content.setValue(act.getDocument());
 
         selector = new BasicSelector<>("button.upload");
@@ -151,6 +157,8 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
                 act = createDocumentAct();
                 ActBean bean = new ActBean(act);
                 bean.addNodeParticipation("template", (Entity) getObject());
+            } else {
+                refMgr.add(act.getObjectReference());
             }
         }
         return act;
@@ -186,6 +194,24 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Determines if the document is required.
+     *
+     * @return {@code true} if the document is required
+     */
+    protected boolean isDocumentRequired() {
+        return content.isRequired();
+    }
+
+    /**
+     * Determines if the document should be deleted on save.
+     *
+     * @param delete if {@code true}, delete the document on save
+     */
+    protected void setDeleteDocument(boolean delete) {
+        deleteDocOnSave = delete;
+    }
+
+    /**
      * Save any modified child Saveable instances.
      *
      * @throws OpenVPMSException if the save fails
@@ -193,9 +219,20 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
     @Override
     protected void saveChildren() {
         super.saveChildren();
-        if (docModified || act.isNew()) {
-            ServiceHelper.getArchetypeService().save(act);
-            refMgr.commit();
+        if (deleteDocOnSave) {
+            if (isDocumentRequired()) {
+                throw new IllegalStateException("Document is required but has been flagged for deletion");
+            }
+            if (act != null && !act.isNew()) {
+                ServiceHelper.getArchetypeService().remove(act);
+                act = null;
+            }
+            refMgr.delete();
+        } else if (act != null) {
+            if (docModified || act.isNew()) {
+                ServiceHelper.getArchetypeService().save(act);
+                refMgr.commit();
+            }
         }
     }
 
@@ -207,6 +244,7 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
     @Override
     protected void doDelete() {
         ServiceHelper.getArchetypeService().remove(act);
+        act = null;
         super.doDelete();
     }
 
@@ -230,7 +268,9 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
         return new ComponentState(selector.getComponent(), content);
     }
 
-
+    /**
+     * Invoked to upload a document.
+     */
     protected void onSelect() {
         UploadListener listener = new DocumentUploadListener(handler) {
             protected void upload(Document doc) {
@@ -249,6 +289,7 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
     protected void onUpload(Document document) {
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         service.save(document);
+        getDocumentAct(); // make sure there is a current act.
         populateDocumentAct(act, document);
         replaceDocReference(document);
         updateDisplay(act);

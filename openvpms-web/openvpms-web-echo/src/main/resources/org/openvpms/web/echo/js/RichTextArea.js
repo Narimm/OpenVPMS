@@ -420,7 +420,7 @@ EPRTAColorChooser.prototype.showNextTo = function (nextToHtmlId, colorToUse) {
         x = 100;
         y = 100;
     } else {
-        y += +EP.getHeight(nextTo);
+        y += +EP.getHeight(nextToE);
     }
     EPRTA.showNextTo(ccE, nextToE, x, y);
 };
@@ -614,9 +614,21 @@ EPToolBarItem.prototype.updateState = function () {
         var value = null;
         if (this.rta.queryCommandEnabled(cmd)) {
             value = this.rta.queryCommandValue(cmd);
+            if (!value) {
+                // tima - if its a fontname or fontsize, try and get the computed value
+                if (cmd == "fontname") {
+                    value = this.getPropertyForSelection("fontname");
+                } else if (cmd == "fontsize") {
+                    value = this.getPropertyForSelection("fontsize");
+                }
+            }
+            // Chrome wraps values in quotes, if they contain spaces...
+            if (value && value.charAt(0) === "'" && value.charAt(value.length - 1) === "'") {
+                value = value.substring(1, value.length - 1);
+            }
         }
         if (value && select.options) {
-            curVal = ("" + value).toLowerCase();
+            var curVal = ("" + value).toLowerCase();
             // try and find a select option that matches that value
             for (i = 0; i < select.options.length; i++) {
                 var opval = ("" + select.options[i].value).toLowerCase();
@@ -628,16 +640,30 @@ EPToolBarItem.prototype.updateState = function () {
                 }
             }
             if (!foundVal) {
-                //
-                // no good! try and find a select option that matches option
-                // text
-                for (i = 0; i < select.options.length; i++) {
-                    var opval = ("" + select.options[i].text).toLowerCase();
-                    var opSubVal = ( curVal.length <= opval.length ? opval : opval.substr(0, curVal.length));
-                    if (opval == curVal || opSubVal == curVal) {
-                        select.selectedIndex = i;
-                        foundVal = true;
-                        break;
+                if (cmd == "fontname") {
+                    // tima - handle the case where the browser reports the default font as 'Serif'
+                    for (i = 0; i < select.options.length; ++i) {
+                        var fonts = ("" + select.options[i].value).toLowerCase().split(",");
+                        for (var j = 0; j < fonts.length; j++) {
+                            if (curVal == fonts[j]) {
+                                select.selectedIndex = i;
+                                foundVal = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!foundVal) {
+                    //
+                    // no good! try and find a select option that matches option text
+                    for (i = 0; i < select.options.length; i++) {
+                        opval = ("" + select.options[i].text).toLowerCase();
+                        opSubVal = ( curVal.length <= opval.length ? opval : opval.substr(0, curVal.length));
+                        if (opval == curVal || opSubVal == curVal) {
+                            select.selectedIndex = i;
+                            foundVal = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -649,6 +675,38 @@ EPToolBarItem.prototype.updateState = function () {
             select.selectedIndex = select.options.length - 1;
         }
     }
+};
+
+// tima
+EPToolBarItem.prototype.getPropertyForSelection = function (propName) {
+    var element = this.getSelectedContainer();
+    return (element) ? this.getComputedStyleProperty(element, propName) : null;
+};
+
+EPToolBarItem.prototype.getComputedStyleProperty = function (element, propName) {
+    if (this.rta.rtaWin.getComputedStyle) {
+        return this.rta.rtaWin.getComputedStyle(element, null)[propName];
+    } else if (element.currentStyle) {
+        return element.currentStyle[propName];
+    }
+};
+
+EPToolBarItem.prototype.getSelectedContainer = function () {
+    var element;
+    var selection;
+    if (this.rta.rtaWin.getSelection) {
+        selection = this.rta.rtaWin.getSelection();
+        if (selection.rangeCount) {
+            element = selection.getRangeAt(0).commonAncestorContainer;
+            // Make sure we have an element rather than a text node
+            if (element.nodeType == 3) {
+                element = element.parentNode;
+            }
+        }
+    } else if ((selection = this.rta.rtaDoc.selection) && selection.type != "Control") {
+        element = selection.createRange().parentElement();
+    }
+    return element;
 };
 
 
@@ -929,7 +987,7 @@ EPRTA.prototype.showMacroPopup = function () {
         input = doc.createElement('input');
         input.id = this.elementId + '|Macro';
         input.type = 'text';
-        input.addEventListener('blur', function() {
+        input.addEventListener('blur', function () {
             EP.setDisplayed(macroBox, false);
         });
         input.addEventListener('keydown', function () {
@@ -939,7 +997,7 @@ EPRTA.prototype.showMacroPopup = function () {
             }
         });
         var elementId = this.elementId;
-        input.addEventListener('keypress', function(event) {
+        input.addEventListener('keypress', function (event) {
             if (event.keyCode == 13) {
                 input.blur();
                 EchoClientMessage.setActionValue(elementId, "macro", input.value);
@@ -1096,8 +1154,8 @@ EPRTA.prototype.setMacroExpansion = function (macro) {
         range.insertNode(frag);
         range = range.cloneRange();
         range.setStartAfter(range.startContainer);
-        range.move("character",-1); // hack for Firefox 44.0.2 which can jump the caret back to the start of the
-        range.move("character",1);  // text, even if the caret was correctly displayed at the end of the new macro text
+        range.move("character", -1); // hack for Firefox 44.0.2 which can jump the caret back to the start of the
+        range.move("character", 1);  // text, even if the caret was correctly displayed at the end of the new macro text
 
         selection.removeAllRanges();
         selection.addRange(range);

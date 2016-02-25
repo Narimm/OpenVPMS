@@ -18,7 +18,10 @@ package org.openvpms.web.component.mail;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
@@ -40,16 +43,10 @@ import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.system.ServiceHelper;
 
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.parser.ParserDelegator;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Enumeration;
 
 /**
  * Evaluates the content of an <em>entity.documentTemplateEmail</em> based on its <em>contentType</em>.
@@ -72,6 +69,11 @@ public class EmailTemplateEvaluator {
      * The macros.
      */
     private final Macros macros;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(EmailTemplateEvaluator.class);
 
     /**
      * Constructs an {@link EmailTemplateEvaluator}.
@@ -101,8 +103,8 @@ public class EmailTemplateEvaluator {
      * Returns the email message.
      *
      * @param template the template
-     * @param context the context, used to locate the object to report on
-     * @return thhe email message
+     * @param context  the context, used to locate the object to report on
+     * @return the email message, as HTML or an HTML fragment, or {@code null} if no content was present
      */
     public String getMessage(Entity template, Context context) {
         String result;
@@ -110,7 +112,7 @@ public class EmailTemplateEvaluator {
         String type = bean.getString("contentType", "TEXT");
         switch (type) {
             case "TEXT":
-                result = bean.getString("content");
+                result = evaluateText(bean);
                 break;
             case "MACRO":
                 result = evaluateMacros(bean, context);
@@ -124,12 +126,37 @@ public class EmailTemplateEvaluator {
         return result;
     }
 
+    /**
+     * Evaluates the template content as text.
+     *
+     * @param template the template
+     * @return the text, with any HTML characters escaped
+     */
+    private String evaluateText(IMObjectBean template) {
+        return StringEscapeUtils.escapeHtml(template.getString("content"));
+    }
+
+    /**
+     * Evaluates the template content as macros.
+     *
+     * @param template the template
+     * @param context  the context
+     * @return the expanded text, with any HTML characters escaped
+     */
     private String evaluateMacros(IMObjectBean template, Context context) {
         String content = template.getString("content");
         MacroVariables variables = new MacroVariables(context, service, lookups);
-        return macros.runAll(content, null, variables, null, true);
+        String expansion = macros.runAll(content, null, variables, null, true);
+        return StringEscapeUtils.escapeHtml(expansion);
     }
 
+    /**
+     * Evaluates the template content as a JXPath expression.
+     *
+     * @param template the template
+     * @param context  the context
+     * @return the result of the expression, with any HTML characters escaped
+     */
     private String evaluateXPath(IMObjectBean template, Context context) {
         String content = template.getString("content");
         MacroVariables variables = new MacroVariables(context, service, lookups);
@@ -140,14 +167,15 @@ public class EmailTemplateEvaluator {
         }
         JXPathContext jxPathContext = JXPathHelper.newContext(contextBean);
         jxPathContext.setVariables(variables);
-        return (String) jxPathContext.getValue(content, String.class);
+        String value = (String) jxPathContext.getValue(content, String.class);
+        return StringEscapeUtils.escapeHtml(value);
     }
 
     /**
      * Evaluates a document template, returning the content as HTML.
      *
      * @param template the template
-     * @param context the context
+     * @param context  the context
      * @return the document as HTML
      */
     private String evaluateDocument(IMObjectBean template, Context context) {
@@ -160,11 +188,10 @@ public class EmailTemplateEvaluator {
                 DocumentHandler handler = handlers.get(document);
                 try {
                     ByteArrayOutputStream stream = new ByteArrayOutputStream(document.getDocSize());
-                    String html = new String(stream.toByteArray(), StandardCharsets.UTF_8);
                     IOUtils.copy(handler.getContent(document), stream);
-                    result = filter(html);
-                } catch (IOException ignore) {
-
+                    result = new String(stream.toByteArray(), StandardCharsets.UTF_8);
+                } catch (IOException exception) {
+                    log.error("Failed to get HTML document, id=" + document.getId(), exception);
                 }
             } else if (contextBean instanceof IMObject) {
                 ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
@@ -176,8 +203,7 @@ public class EmailTemplateEvaluator {
                 result = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
             } else if (Converter.canConvert(document, DocFormats.HTML_TYPE)) {
                 byte[] converted = DocumentHelper.export(document, DocFormats.HTML_TYPE);
-                String html = new String(converted, StandardCharsets.UTF_8);
-                result = filter(html);
+                result = new String(converted, StandardCharsets.UTF_8);
             }
         }
         return result;
@@ -205,70 +231,4 @@ public class EmailTemplateEvaluator {
         return result;
     }
 
-    /**
-     * Filters html to extract the inner html of the body tag. This is required by the rich text area editor.
-     *
-     * @param html the html to filter
-     * @return the filtered html
-     */
-    private String filter(String html) {
-        String result;
-        // also see http://stackoverflow.com/questions/9022140/using-xpath-contains-against-html-in-java
-        // for an xpath version
-        ParserDelegator delegator = new ParserDelegator();
-        final StringBuilder buffer = new StringBuilder();
-        try {
-            delegator.parse(new StringReader(html), new HTMLEditorKit.ParserCallback() {
-                @Override
-                public void handleStartTag(HTML.Tag tag, MutableAttributeSet a, int pos) {
-                    if (!filter(tag)) {
-                        buffer.append('<').append(tag.toString()).append('>');
-                    }
-                }
-
-                @Override
-                public void handleText(char[] data, int pos) {
-                    buffer.append(new String(data));
-                }
-
-                @Override
-                public void handleEndTag(HTML.Tag tag, int pos) {
-                    if (!filter(tag)) {
-                        buffer.append("</").append(tag.toString()).append(">");
-                    }
-                }
-
-                @Override
-                public void handleSimpleTag(HTML.Tag tag, MutableAttributeSet a, int pos) {
-                    if (!filter(tag)) {
-                        buffer.append("<").append(tag.toString());
-                        append(a);
-                        buffer.append("/>");
-                    }
-                }
-
-                protected boolean filter(HTML.Tag tag) {
-                    return tag == HTML.Tag.HTML || tag == HTML.Tag.HEAD || tag == HTML.Tag.BODY
-                           || tag == HTML.Tag.META || tag == HTML.Tag.STYLE || tag == HTML.Tag.TITLE
-                           || tag == HTML.Tag.SCRIPT;
-                }
-
-                private void append(MutableAttributeSet a) {
-                    Enumeration<?> names = a.getAttributeNames();
-                    if (names.hasMoreElements()) {
-                        buffer.append(' ');
-                        while (names.hasMoreElements()) {
-                            String name = names.nextElement().toString();
-                            buffer.append(name).append('=').append(a.getAttribute(name));
-                        }
-                    }
-                }
-            }, true);
-            result = buffer.toString();
-        } catch (IOException exception) {
-            // do nothing
-            result = null;
-        }
-        return result;
-    }
 }

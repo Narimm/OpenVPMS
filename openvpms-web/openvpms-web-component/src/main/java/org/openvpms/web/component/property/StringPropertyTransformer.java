@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -157,10 +157,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         String result = null;
         if (object instanceof String) {
             String str = (String) object;
-            if (TextHelper.hasControlChars(str)) {
-                String msg = Messages.format("property.error.invalidchars", property.getDisplayName());
-                throw new PropertyException(property, msg);
-            }
+            checkCharacters(str);
             if (expandMacros && macros != null) {
                 result = macros.runAll(str, context, variables, position);
             } else {
@@ -185,6 +182,20 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         }
 
         return result;
+    }
+
+    /**
+     * Throws an exception if the input string has invalid characters.
+     *
+     * @param string the string to check
+     * @throws PropertyException if the string contains invalid characters
+     */
+    protected void checkCharacters(String string) {
+        if (TextHelper.hasControlChars(string)) {
+            Property property = getProperty();
+            String msg = Messages.format("property.error.invalidchars", property.getDisplayName());
+            throw new PropertyException(property, msg);
+        }
     }
 
     /**

@@ -30,6 +30,8 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.jasper.JRXMLDocumentHandler;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.io.InputStream;
@@ -43,6 +45,11 @@ import java.io.InputStream;
 public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor {
 
     /**
+     * Document content type.
+     */
+    private static final String DOCUMENT_CONTENT = "DOCUMENT";
+
+    /**
      * Constructs a {@link EmailDocumentTemplateEditor}.
      *
      * @param template the object to edit
@@ -52,6 +59,23 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
      */
     public EmailDocumentTemplateEditor(Entity template, IMObject parent, LayoutContext context) {
         super(template, parent, false, new EmailDocumentHandler(), context);
+        updateDocumentState();
+        getProperty("contentType").addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onContentTypeChanged();
+            }
+        });
+
+    }
+
+    /**
+     * Returns the content type.
+     *
+     * @return the content type. May be {@code null}
+     */
+    protected String getContentType() {
+        return getProperty("contentType").getString();
     }
 
     /**
@@ -62,6 +86,44 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new EmailDocumentTemplateLayoutStrategy(getSelector());
+    }
+
+    /**
+     * Save any edits.
+     * <p/>
+     * This uses {@link #saveChildren()} to save the children prior to invoking {@link #saveObject()}.
+     *
+     * @throws OpenVPMSException if the save fails
+     */
+    @Override
+    protected void doSave() {
+        super.doSave();
+    }
+
+    /**
+     * Invoked when the content type changes.
+     * <p/>
+     * This changes the layout to switch between document and text content.
+     */
+    private void onContentTypeChanged() {
+        String type = getContentType();
+        if (type != null) {
+            // NOTE: select fields deselect the current value before selecting the new one, so need to check to
+            // see if a value is present before changing layout
+            updateDocumentState();
+            onLayout();
+        }
+    }
+
+    /**
+     * Invoked to update how the document is handled.
+     * <p/>
+     * If the content type is DOCUMENT, then the document is required, otherwise it will be deleted on save.
+     */
+    private void updateDocumentState() {
+        boolean isDocument = DOCUMENT_CONTENT.equals(getContentType());
+        setDocumentRequired(isDocument);
+        setDeleteDocument(!isDocument);
     }
 
     private static class EmailDocumentHandler implements DocumentHandler {
