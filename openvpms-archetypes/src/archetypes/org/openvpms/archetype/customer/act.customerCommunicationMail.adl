@@ -16,10 +16,10 @@
 
 <archetypes>
     <archetype name="act.customerCommunicationMail.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.DocumentAct" displayName="Mail">
+               type="org.openvpms.component.business.domain.im.act.DocumentAct" displayName="Mail Log">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Mail Communication'"/>
+              derivedValue="'Mail Log'"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
         <node displayName="Subject" name="description" type="java.lang.String" path="/description" minCardinality="0"

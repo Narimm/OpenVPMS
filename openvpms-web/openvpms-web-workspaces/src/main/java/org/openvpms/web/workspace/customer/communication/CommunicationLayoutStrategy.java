@@ -295,7 +295,7 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
                 public void onAction(ActionEvent event) {
                     Contact contact = table.getSelected();
                     if (contact != null) {
-                        property.setValue(contact.getDescription());
+                        property.setValue(formatContact(contact));
                     }
                     contactDropDown.setExpanded(false);
                 }
@@ -310,6 +310,18 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
         } else {
             addComponent(addressComponent);
         }
+    }
+
+    /**
+     * Formats a contact.
+     * <p/>
+     * This version returns the contact description
+     *
+     * @param contact the contact to format
+     * @return the formatted contact
+     */
+    protected String formatContact(Contact contact) {
+        return contact.getDescription();
     }
 
     /**

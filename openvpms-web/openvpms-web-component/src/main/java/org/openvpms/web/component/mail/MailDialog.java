@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -88,9 +88,9 @@ public class MailDialog extends PopupDialog {
     private final LayoutContext context;
 
     /**
-     * New button identifier.
+     * Template button identifier.
      */
-    private static final String NEW_ID = "button.new";
+    private static final String TEMPLATE_ID = "button.template";
 
     /**
      * Don't send button identifier.
@@ -115,12 +115,13 @@ public class MailDialog extends PopupDialog {
     /**
      * The editor button identifiers.
      */
-    private static final String[] NEW_SEND_ATTACH_ALL_CANCEL = {NEW_ID, SEND_ID, ATTACH_ID, ATTACH_FILE_ID, CANCEL_ID};
+    private static final String[] NEW_SEND_ATTACH_ALL_CANCEL = {SEND_ID, TEMPLATE_ID, ATTACH_ID, ATTACH_FILE_ID,
+                                                                CANCEL_ID};
 
     /**
      * The editor button identifiers.
      */
-    private static final String[] NEW_SEND_ATTACH_FILE_CANCEL = {NEW_ID, SEND_ID, ATTACH_FILE_ID, CANCEL_ID};
+    private static final String[] NEW_SEND_ATTACH_FILE_CANCEL = {SEND_ID, TEMPLATE_ID, ATTACH_FILE_ID, CANCEL_ID};
 
     /**
      * The cancel confirmation button identifiers.
@@ -246,7 +247,7 @@ public class MailDialog extends PopupDialog {
      */
     @Override
     protected void onButton(String button) {
-        if (NEW_ID.equals(button)) {
+        if (TEMPLATE_ID.equals(button)) {
             newFromTemplate();
         } else if (ATTACH_ID.equals(button)) {
             attach();
@@ -272,18 +273,18 @@ public class MailDialog extends PopupDialog {
                                     ConfirmationDialog.YES_NO, new PopupDialogListener() {
                         @Override
                         public void onYes() {
-                            onNewFromTemplate();
+                            onTemplate();
                         }
                     });
         } else {
-            onNewFromTemplate();
+            onTemplate();
         }
     }
 
     /**
-     * Displays a popup of available email templates.
+     * Displays a popup of available email templates to select from.
      */
-    private void onNewFromTemplate() {
+    private void onTemplate() {
         Query<Entity> query = QueryFactory.create(EMAIL_TEMPLATE, context.getContext());
         Browser<Entity> browser = BrowserFactory.create(query, context);
         String title = Messages.format("imobject.select.title", DescriptorHelper.getDisplayName(EMAIL_TEMPLATE));

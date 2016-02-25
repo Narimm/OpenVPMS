@@ -171,7 +171,7 @@ public class CommunicationWorkspace extends CustomerActWorkspace<Act> {
          * @param context        the layout context
          */
         public Browser(Query<Act> communications, Query<Act> alerts, LayoutContext context) {
-            addBrowser(Messages.get("workspace.customer.communication"),
+            addBrowser(Messages.get("customer.communication.communications"),
                        BrowserFactory.create(communications, context));
             alertsIndex = addBrowser(Messages.get("customer.communication.alerts"),
                                      BrowserFactory.create(alerts, context));
