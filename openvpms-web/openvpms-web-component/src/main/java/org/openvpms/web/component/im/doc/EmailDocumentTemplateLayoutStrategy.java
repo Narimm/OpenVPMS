@@ -16,7 +16,12 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.PropertySet;
 
 
 /**
@@ -40,6 +45,32 @@ public class EmailDocumentTemplateLayoutStrategy extends AbstractDocumentTemplat
      */
     public EmailDocumentTemplateLayoutStrategy(ComponentState content) {
         super(content);
+    }
+
+    /**
+     * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a {@code Component}, using a factory to create the child components.
+     *
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param parent     the parent object. May be {@code null}
+     * @param context    the layout context
+     * @return the component containing the rendered {@code object}
+     */
+    @Override
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+        IMObjectBean bean = new IMObjectBean(object);
+        if ("DOCUMENT".equals(bean.getString("contentType"))) {
+            ComponentState content = getContent();
+            if (content == null) {
+                content = initContent((Entity) object);
+            }
+            addComponent(content);
+            // NOTE: this replaces the default "content" node. The pseudo node for the
+            // document content must therefore have the same name as the "content" node
+        }
+        return super.apply(object, properties, parent, context);
     }
 
 }

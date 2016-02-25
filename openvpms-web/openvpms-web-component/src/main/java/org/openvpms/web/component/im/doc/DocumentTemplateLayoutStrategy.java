@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.bound.SpinBox;
+import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.sms.BoundCountedTextArea;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -27,6 +29,8 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextArea;
+
+import java.util.List;
 
 
 /**
@@ -55,8 +59,7 @@ public class DocumentTemplateLayoutStrategy extends AbstractDocumentTemplateLayo
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a {@code Component}, using a factory to
-     * create the child components.
+     * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
@@ -80,7 +83,24 @@ public class DocumentTemplateLayoutStrategy extends AbstractDocumentTemplateLayo
             textArea.setEnabled(false);
         }
         addComponent(new ComponentState(RowFactory.create(textArea), sms));
+        if (getContent() == null) {
+            initContent((Entity) object);
+        }
         return super.apply(object, properties, parent, context);
+    }
+
+    /**
+     * Lays out components in a grid.
+     *
+     * @param object     the object to lay out
+     * @param properties the properties
+     * @param context    the layout context
+     */
+    @Override
+    protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
+        ComponentGrid grid = super.createGrid(object, properties, context);
+        grid.add(getContent());
+        return grid;
     }
 
 }

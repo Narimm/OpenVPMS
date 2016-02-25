@@ -22,16 +22,12 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.List;
 
 /**
  * Layout strategy for <em>entity.documentTemplate*</em> entities.
@@ -74,33 +70,54 @@ public class AbstractDocumentTemplateLayoutStrategy extends AbstractLayoutStrate
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        if (content == null) {
-            TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
-            DocumentAct act = helper.getDocumentAct((Entity) object);
-            Label component = LabelFactory.create();
-            if (act != null) {
-                component.setText(act.getFileName());
-            }
-            content = new ComponentState(component);
-        }
-        if (!content.hasLabel()) {
+        if (content != null && !content.hasLabel()) {
             content.setDisplayName(Messages.get("document.template.content"));
         }
         return super.apply(object, properties, parent, context);
     }
 
     /**
-     * Lays out components in a grid.
+     * Returns a component representing the template document.
      *
-     * @param object     the object to lay out
-     * @param properties the properties
-     * @param context    the layout context
+     * @param object the template
+     * @return a component representing the template document
      */
-    @Override
-    protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
-        ComponentGrid grid = super.createGrid(object, properties, context);
-        grid.add(content);
-        return grid;
+    protected ComponentState getContent(Entity object) {
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
+        DocumentAct act = helper.getDocumentAct(object);
+        Label component = LabelFactory.create();
+        if (act != null) {
+            component.setText(act.getFileName());
+        }
+        return new ComponentState(component);
     }
 
+    /**
+     * Initialises the content component.
+     *
+     * @param object the template
+     * @return the content component
+     */
+    protected ComponentState initContent(Entity object) {
+        setContent(getContent(object));
+        return content;
+    }
+
+    /**
+     * Registers a component representing the template document.
+     *
+     * @param content the content. May be {@code null}
+     */
+    protected void setContent(ComponentState content) {
+        this.content = content;
+    }
+
+    /**
+     * Returns the content component.
+     *
+     * @return the content component. May be {@code null}
+     */
+    protected ComponentState getContent() {
+        return content;
+    }
 }
