@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.customer.communication;
 
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -47,6 +46,6 @@ public class SMSCommunicationEditor extends AbstractCommunicationEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new CommunicationLayoutStrategy(null, ContactArchetypes.PHONE, getShowPatient());
+        return new PhoneCommunicationLayoutStrategy(null, getShowPatient());
     }
 }

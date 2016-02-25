@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -99,12 +99,30 @@ public class ContactHelper {
     }
 
     /**
+     * Returns the default value for the <em>contact.phoneNumber</em> name node.
+     *
+     * @return the default value for the name node
+     */
+    public static String getDefaultPhoneName() {
+        return getDefaultContactName(ContactArchetypes.PHONE);
+    }
+
+    /**
      * Returns the default value for the <em>contact.email</em> name node.
      *
-     * @return the default email name
+     * @return the default value for the name node
      */
     public static String getDefaultEmailName() {
-        ArchetypeDescriptor archetypeDescriptor = DescriptorHelper.getArchetypeDescriptor(ContactArchetypes.EMAIL);
+        return getDefaultContactName(ContactArchetypes.EMAIL);
+    }
+
+    /**
+     * Returns the default value for a contact's name node.
+     *
+     * @return the default value for the name node
+     */
+    protected static String getDefaultContactName(String shortName) {
+        ArchetypeDescriptor archetypeDescriptor = DescriptorHelper.getArchetypeDescriptor(shortName);
         String value = null;
         if (archetypeDescriptor != null) {
             NodeDescriptor descriptor = archetypeDescriptor.getNodeDescriptor("name");
