@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.communication;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
@@ -37,5 +38,15 @@ public class PhoneCommunicationEditor extends DocumentCommunicationEditor {
      */
     public PhoneCommunicationEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context, ContactArchetypes.PHONE);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new PhoneCommunicationLayoutStrategy(getMessage(), getShowPatient());
     }
 }
