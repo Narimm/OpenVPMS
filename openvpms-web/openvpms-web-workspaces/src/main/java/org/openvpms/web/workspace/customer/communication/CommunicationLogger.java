@@ -223,7 +223,7 @@ public class CommunicationLogger {
      * @param value the value
      */
     private void setValue(ActBean bean, String name, String value) {
-        if (value != null) {
+        if (value != null && !StringUtils.isEmpty(value)) {
             bean.setValue(name, truncate(value, getLength(bean, name)));
         }
     }
