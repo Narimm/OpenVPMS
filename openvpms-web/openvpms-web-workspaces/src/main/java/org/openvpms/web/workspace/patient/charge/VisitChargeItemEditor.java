@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -26,6 +27,7 @@ import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeEditContext;
 
 
 /**
@@ -36,15 +38,15 @@ import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
 
     /**
-     * Constructs a {@code VisitChargeActItemEditor}.
+     * Constructs a {@link VisitChargeItemEditor}.
      * <p/>
      * This recalculates the tax amount.
      *
      * @param act     the act to edit
      * @param parent  the parent act
-     * @param context the layout context
+     * @param context the edit context
      */
-    public VisitChargeItemEditor(Act act, Act parent, LayoutContext context) {
+    public VisitChargeItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context) {
         super(act, parent, context);
         initParticipant("patient", context.getContext().getPatient());
     }

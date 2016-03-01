@@ -16,34 +16,25 @@
 
 package org.openvpms.web.workspace.customer;
 
-import org.openvpms.archetype.rules.finance.discount.DiscountRules;
-import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
-import org.openvpms.archetype.rules.math.Currency;
-import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
-import org.openvpms.web.component.im.product.ProductHelper;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.charge.PriceActEditContext;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -67,16 +58,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private ProductPrice unitProductPrice;
 
     /**
-     * The practice.
-     */
-    private final Party practice;
-
-    /**
-     * The practice currency, used for rounding.
-     */
-    private final Currency currency;
-
-    /**
      * If {@code true}, disable discounts.
      */
     private boolean disableDiscounts;
@@ -87,48 +68,20 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private BigDecimal serviceRatio;
 
     /**
-     * The dose manager.
+     * The edit context.
      */
-    private DoseManager doseManager;
-
-    /**
-     * The product price rules.
-     */
-    private final ProductPriceRules priceRules;
-
-    /**
-     * The discount rules.
-     */
-    private final DiscountRules discountRules;
-
-    /**
-     * Customer tax rules.
-     */
-    private final CustomerTaxRules taxRules;
-
-    /**
-     * Caching read-only archetype service.
-     */
-    private final IArchetypeService cachingService;
-
+    private final PriceActEditContext editContext;
 
     /**
      * Constructs a {@link PriceActItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act. May be {@code null}
-     * @param context the layout context
+     * @param context the context
      */
-    public PriceActItemEditor(Act act, Act parent, LayoutContext context) {
-        super(act, parent, context);
-
-        practice = context.getContext().getPractice();
-        cachingService = new CachingReadOnlyArchetypeService(context.getCache(), ServiceHelper.getArchetypeService());
-        ILookupService lookups = ServiceHelper.getLookupService();
-        priceRules = new ProductPriceRules(cachingService);
-        taxRules = new CustomerTaxRules(practice, cachingService, lookups);
-        discountRules = new DiscountRules(cachingService, lookups);
-        currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);
+    public PriceActItemEditor(Act act, Act parent, PriceActEditContext context) {
+        super(act, parent, context.getLayoutContext());
+        this.editContext = context;
 
         Product product = getProduct();
         Party location = getLocation();
@@ -136,7 +89,8 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
         Property fixedPrice = getProperty("fixedPrice");
 
-        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup(), currency, priceRules);
+        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup(), editContext.getCurrency(),
+                                           editContext.getPriceRules());
         fixedEditor.setProduct(product, serviceRatio);
     }
 
@@ -156,15 +110,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     public BigDecimal getServiceRatio() {
         return serviceRatio;
-    }
-
-    /**
-     * Sets the dose manager.
-     *
-     * @param doseManager the dose manager
-     */
-    public void setDoseManager(DoseManager doseManager) {
-        this.doseManager = doseManager;
     }
 
     /**
@@ -228,6 +173,15 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Returns the edit context.
+     *
+     * @return the edit context
+     */
+    protected PriceActEditContext getEditContext() {
+        return editContext;
+    }
+
+    /**
      * Returns the dose of a product for a patient, based on the patient's weight.
      *
      * @param product the product
@@ -235,7 +189,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the dose, or {@code 0} if no dose exists for the patient weight
      */
     protected BigDecimal getDose(Product product, Party patient) {
-        return doseManager.getDose(product, patient);
+        return editContext.getDose(product, patient);
     }
 
     /**
@@ -387,9 +341,8 @@ public abstract class PriceActItemEditor extends ActItemEditor {
                     Act parent = (Act) getParent();
                     startTime = parent.getActivityStartTime();
                 }
-                amount = discountRules.calculateDiscount(startTime, practice, customer, patient, product,
-                                                         fixedCost, unitCost, fixedPrice, unitPrice, quantity,
-                                                         fixedPriceMaxDiscount, unitPriceMaxDiscount);
+                amount = editContext.getDiscount(startTime, customer, patient, product, fixedCost, unitCost, fixedPrice,
+                                                 unitPrice, quantity, fixedPriceMaxDiscount, unitPriceMaxDiscount);
             }
         }
         return amount;
@@ -449,7 +402,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     protected BigDecimal getServiceRatio(Product product, Party location) {
         BigDecimal result = BigDecimal.ONE;
         if (product != null && location != null) {
-            result = priceRules.getServiceRatio(product, location);
+            result = editContext.getPriceRules().getServiceRatio(product, location);
         }
         return result;
     }
@@ -467,8 +420,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the price, minus any tax exclusions
      */
     protected BigDecimal getPrice(Product product, ProductPrice price) {
-        BigDecimal amount = ProductHelper.getPrice(price, getServiceRatio(), currency);
-        return taxRules.getTaxExAmount(amount, product, getCustomer());
+        return editContext.getPrice(product, price, getServiceRatio(), getCustomer());
     }
 
     /**
@@ -481,7 +433,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected BigDecimal calculateTax(Party customer) {
         FinancialAct act = (FinancialAct) getObject();
-        return taxRules.calculateTax(act, customer);
+        return editContext.getTax(act, customer);
     }
 
     /**
@@ -503,7 +455,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return a caching archetype service
      */
     protected IArchetypeService getCachingService() {
-        return cachingService;
+        return editContext.getCachingArchetypeService();
     }
 
     /**

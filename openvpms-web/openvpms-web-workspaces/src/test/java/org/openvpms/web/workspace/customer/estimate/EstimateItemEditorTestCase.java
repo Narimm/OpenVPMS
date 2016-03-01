@@ -25,10 +25,8 @@ import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.WeightUnits;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -46,7 +44,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.DoseManager;
+import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
@@ -91,11 +89,6 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
      */
     private LayoutContext layout;
 
-    /**
-     * The dose manager.
-     */
-    private DoseManager doseManager;
-
 
     /**
      * Sets up the test case.
@@ -124,9 +117,6 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         context.setLocation(TestHelper.createLocation());
         context.setUser(author);
         layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
-
-        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
-                                      ServiceHelper.getBean(ProductRules.class));
     }
 
     /**
@@ -149,8 +139,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -209,8 +198,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -252,8 +240,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -306,8 +293,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -366,8 +352,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
         editor.getComponent();
 
         // populate quantity, patient, clinician.
@@ -414,8 +399,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
         editor.getComponent();
         assertFalse(editor.isValid());
 

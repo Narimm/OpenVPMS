@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -24,11 +24,15 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
+import org.openvpms.web.workspace.customer.charge.AlertListener;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -84,6 +88,7 @@ public class EstimateInvoicer extends AbstractInvoicer {
         ActBean bean = new ActBean(estimate);
         ActRelationshipCollectionEditor items = editor.getItems();
 
+        int outOfStock = 0;
         for (Act estimationItem : bean.getNodeActs("items")) {
             ActBean itemBean = new ActBean(estimationItem);
             CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
@@ -99,6 +104,10 @@ public class EstimateInvoicer extends AbstractInvoicer {
             itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
             itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
             itemEditor.setDiscount(itemBean.getBigDecimal("highDiscount"));
+            BigDecimal stock = itemEditor.getStock();
+            if (stock != null && stock.compareTo(BigDecimal.ZERO) <= 0) {
+                outOfStock++;
+            }
         }
         items.refresh();
         ActRelationshipCollectionEditor customerNotes = editor.getCustomerNotes();
@@ -115,6 +124,12 @@ public class EstimateInvoicer extends AbstractInvoicer {
                 IMObjectEditor documentsEditor = documents.getEditor(document);
                 documentsEditor.getComponent();
                 documents.addEdited(documentsEditor);
+            }
+        }
+        if (outOfStock != 0) {
+            AlertListener listener = editor.getAlertListener();
+            if (listener != null) {
+                listener.onAlert(Messages.format("customer.charge.outofstock", outOfStock));
             }
         }
     }

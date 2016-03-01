@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -38,7 +38,9 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.charge.AlertListener;
 import org.openvpms.web.workspace.customer.charge.OrderChargeManager;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
@@ -104,6 +106,10 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     private boolean autoChargeOrders = true;
 
+    /**
+     * The current alert. May be {@code null}
+     */
+    private InformationMessage currentAlert;
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -167,6 +173,13 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             } else {
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
+
+                editor.setAlertListener(new AlertListener() {
+                    @Override
+                    public void onAlert(String message) {
+                        showAlert(message);
+                    }
+                });
                 editor.setAddItemListener(new Runnable() {
                     @Override
                     public void run() {
@@ -376,6 +389,19 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             buttons.setEnabled(COMPLETED_ID, enable);
             buttons.setEnabled(INVOICE_ORDERS_ID, enable);
         }
+    }
+
+    /**
+     * Display an alert.
+     *
+     * @param message the message to display
+     */
+    protected void showAlert(String message) {
+        if (currentAlert != null) {
+            container.remove(currentAlert);
+        }
+        currentAlert = new InformationMessage(message);
+        container.add(currentAlert, 0);
     }
 
     /**

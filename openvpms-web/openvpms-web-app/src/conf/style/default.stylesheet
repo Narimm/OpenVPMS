@@ -524,6 +524,30 @@
         </properties>
     </style>
 
+    <style name="OutOfStock" base-name="default" type="nextapp.echo2.app.text.TextComponent">
+        <properties>
+            <property name="foreground" value="#ffffff"/>
+            <property name="background" value="#ff6666"/>
+        </properties>
+    </style>
+
+    <style name="OutOfStock.Table" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="foreground" value="#ffffff"/>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.small} ${padding.tiny}"/>
+                        <property name="background" value="#ff6666"/>
+                        <property name="alignment">
+                            <alignment horizontal="right"/>
+                        </property>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="EstimatesViewer" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>

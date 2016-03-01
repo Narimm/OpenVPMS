@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -19,20 +19,30 @@ package org.openvpms.web.workspace.customer.charge;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.StockOnHand;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
 
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -50,24 +60,19 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     private Date lastItemDate = null;
 
     /**
-     * The popup editor manager.
+     * The edit context.
      */
-    private EditorQueue editorQueue;
-
-    /**
-     * The prescriptions.
-     */
-    private final Prescriptions prescriptions;
-
-    /**
-     * The charge context.
-     */
-    private final ChargeContext chargeContext;
+    private final CustomerChargeEditContext editContext;
 
     /**
      * Listener invoked when {@link #onAdd()} is invoked.
      */
     private Runnable listener;
+
+    /**
+     * Listener to handle alerts. May be {@code null}
+     */
+    private AlertListener alertListener;
 
     /**
      * The start time node name.
@@ -95,22 +100,23 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                   CollectionResultSetFactory factory) {
         super(property, act, context, factory);
-        editorQueue = new DefaultEditorQueue(context.getContext());
+        editContext = new CustomerChargeEditContext(context);
+        Prescriptions prescriptions;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
         } else {
             prescriptions = null;
         }
-        chargeContext = new ChargeContext();
+        editContext.setPrescriptions(prescriptions);
     }
 
     /**
-     * Returns the charge context.
+     * Returns the save context.
      *
-     * @return the charge context
+     * @return the save context
      */
-    public ChargeContext getChargeContext() {
-        return chargeContext;
+    public ChargeSaveContext getSaveContext() {
+        return editContext.getSaveContext();
     }
 
     /**
@@ -119,7 +125,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @param queue the popup editor manager. May be {@code null}
      */
     public void setEditorQueue(EditorQueue queue) {
-        editorQueue = queue;
+        editContext.setEditorQueue(queue);
     }
 
     /**
@@ -128,21 +134,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @return the popup editor manager. May be {@code null}
      */
     public EditorQueue getEditorQueue() {
-        return editorQueue;
-    }
-
-    /**
-     * Creates a new editor.
-     *
-     * @param object  the object to edit
-     * @param context the layout context
-     * @return an editor to edit {@code object}
-     */
-    @Override
-    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        final IMObjectEditor editor = super.createEditor(object, context);
-        initialiseEditor(editor);
-        return editor;
+        return editContext.getEditorQueue();
     }
 
     /**
@@ -153,14 +145,17 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     @Override
     public void remove(IMObject object) {
         super.remove(object);
+        FinancialAct act = (FinancialAct) object;
+        editContext.getStock().remove(act);
+        Prescriptions prescriptions = editContext.getPrescriptions();
         if (prescriptions != null) {
-            prescriptions.removeItem((Act) object);
+            prescriptions.removeItem(act);
         }
     }
 
     /**
      * Registers a listener that is invoked when the user adds an item.
-     * <p>
+     * <p/>
      * Note that this is not invoked for template expansion.
      *
      * @param listener the listener to invoke. May be {@code null}
@@ -197,19 +192,51 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     }
 
     /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit {@code object}
+     */
+    @Override
+    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+        return initialiseEditor(new DefaultCustomerChargeActItemEditor((FinancialAct) object, (Act) getObject(),
+                                                                       editContext));
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    public void setAlertListener(AlertListener listener) {
+        this.alertListener = listener;
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    public AlertListener getAlertListener() {
+        return alertListener;
+    }
+
+    /**
+     * Returns the edit context.
+     *
+     * @return the edit context
+     */
+    protected CustomerChargeEditContext getEditContext() {
+        return editContext;
+    }
+
+    /**
      * Initialises an editor.
      *
      * @param editor the editor
      */
-    protected void initialiseEditor(final IMObjectEditor editor) {
-        if (editor instanceof CustomerChargeActItemEditor) {
-            CustomerChargeActItemEditor itemEditor = (CustomerChargeActItemEditor) editor;
-            itemEditor.setEditorQueue(editorQueue);
-            itemEditor.setPrescriptions(prescriptions);
-            itemEditor.setChargeContext(chargeContext);
-            itemEditor.setDoseManager(getDoseManager());
-        }
-
+    protected CustomerChargeActItemEditor initialiseEditor(final CustomerChargeActItemEditor editor) {
         // Set startTime to to last used value
         if (lastItemDate != null) {
             editor.getProperty(START_TIME).setValue(lastItemDate);
@@ -222,6 +249,47 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
             }
         };
         editor.getProperty(START_TIME).addModifiableListener(startTimeListener);
+        editor.setProductListener(getProductListener()); // register the listener to expand templates
+        return editor;
+    }
+
+    /**
+     * Edit an object.
+     *
+     * @param object the object to edit
+     * @return the editor
+     */
+    @Override
+    protected IMObjectEditor edit(IMObject object) {
+        CustomerChargeActItemEditor editor = (CustomerChargeActItemEditor) super.edit(object);
+        editor.updateOnHandQuantity();
+        return editor;
+    }
+
+    /**
+     * Copies an act item for each product referred to in its template.
+     *
+     * @param editor   the editor
+     * @param template the product template
+     * @return the acts generated from the template
+     */
+    @Override
+    protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
+        List<Act> acts = super.createTemplateActs(editor, template);
+        if (alertListener != null && !acts.isEmpty()) {
+            int outOfStock = 0;
+            StockOnHand stock = editContext.getStock();
+            for (Act act : acts) {
+                BigDecimal quantity = stock.getStock((FinancialAct) act);
+                if (quantity != null && BigDecimal.ZERO.compareTo(quantity) >= 0) {
+                    ++outOfStock;
+                }
+            }
+            if (outOfStock != 0) {
+                alertListener.onAlert(Messages.format("customer.charge.outofstock", outOfStock));
+            }
+        }
+        return acts;
     }
 
     /**
@@ -231,10 +299,31 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      */
     @Override
     protected void doSave() {
+        Prescriptions prescriptions = editContext.getPrescriptions();
         if (prescriptions != null) {
             prescriptions.save();
         }
         // Need to save prescriptions first, as invoice item deletion can cause StaleObjectStateExceptions otherwise
         super.doSave();
+
+        // clear the stock on hand so it is recreated from saved state
+        editContext.getStock().clear();
     }
+
+    /**
+     * Create a new table model.
+     *
+     * @param context the layout context
+     * @return a new table model
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
+        context = new DefaultLayoutContext(context);
+        context.setComponentFactory(new TableComponentFactory(context));
+        ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
+                                                              editContext.getStock(), context);
+        return (IMTableModel) model;
+    }
+
 }
