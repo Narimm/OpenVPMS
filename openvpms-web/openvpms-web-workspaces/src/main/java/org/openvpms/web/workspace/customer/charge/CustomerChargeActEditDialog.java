@@ -29,13 +29,14 @@ import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 
 
 /**
  * An edit dialog for {@link CustomerChargeActEditor} editors.
- * <p>
+ * <p/>
  * This performs printing of unprinted documents that have their <em>interactive</em> flag set to {@code true}
  * when <em>Apply</em> or <em>OK</em> is pressed.
  *
@@ -59,9 +60,9 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     private final boolean autoChargeOrders;
 
     /**
-     * Listener to be invoked to auto-save the charge.
+     * The current alert. May be {@code null}
      */
-    private Runnable autoSaveListener;
+    private InformationMessage currentAlert;
 
     /**
      * Completed button identifier.
@@ -147,7 +148,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p>
+     * <p/>
      * This delegates to {@link #prepare(boolean)}.
      */
     @Override
@@ -157,7 +158,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p>
+     * <p/>
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     @Override
@@ -190,24 +191,33 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         CustomerChargeActEditor existing = getEditor();
         if (existing != null) {
             existing.setAddItemListener(null);
+            existing.setAlertListener(null);
         }
         super.setEditor(editor);
         if (editor != null) {
-            if (autoSaveListener == null) {
-                autoSaveListener = new Runnable() {
-                    @Override
-                    public void run() {
-                        autoSave();
-                    }
-                };
-            }
-            ((CustomerChargeActEditor) editor).setAddItemListener(autoSaveListener);
+            CustomerChargeActEditor chargeActEditor = (CustomerChargeActEditor) editor;
+
+            // register a listener to handle alerts
+            chargeActEditor.setAlertListener(new AlertListener() {
+                @Override
+                public void onAlert(String message) {
+                    showAlert(message);
+                }
+            });
+
+            // register a listener to auto-save charges
+            chargeActEditor.setAddItemListener(new Runnable() {
+                @Override
+                public void run() {
+                    autoSave();
+                }
+            });
         }
     }
 
     /**
      * Invoked to reload the object being edited when save fails.
-     * <p>
+     * <p/>
      * This implementation reloads the editor, but returns {@code false} if the act has been POSTED.
      *
      * @param editor the editor
@@ -268,10 +278,10 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Prepares to save the charge.
-     * <p>
+     * <p/>
      * This determines if an invoice is being posted, and if so, displays a confirmation dialog if there are
      * any orders waiting to be dispensed.
-     * <p>
+     * <p/>
      * If not, or the user confirms that the save should go ahead, delegates to {@link #saveCharge(boolean)}.
      *
      * @param close if {@code true}, closes the dialog when the save is successful
@@ -288,7 +298,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p>
+     * <p/>
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     private void saveCharge(boolean close) {
@@ -315,7 +325,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Invoked when the 'In Progress' button is pressed.
-     * <p>
+     * <p/>
      * If the act hasn't been POSTED, then this sets the status to IN_PROGRESS, and attempts to save and close the
      * dialog.
      */
@@ -329,7 +339,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Invoked when the 'Completed' button is pressed.
-     * <p>
+     * <p/>
      * If the act hasn't been POSTED, then this sets the status to COMPLETED, and attempts to save and close the
      * dialog.
      */
@@ -348,6 +358,19 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         if (!isPosted()) {
             manager.chargeSelected(getEditor());
         }
+    }
+
+    /**
+     * Invoked to display an alert.
+     *
+     * @param message the alert message
+     */
+    private void showAlert(String message) {
+        if (currentAlert != null) {
+            getEditorContainer().remove(currentAlert);
+        }
+        currentAlert = new InformationMessage(message);
+        getEditorContainer().add(currentAlert, 0);
     }
 
     /**

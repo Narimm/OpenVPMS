@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -155,9 +154,8 @@ public class ChargeStockUpdater {
      * @param quantity the quantity to add/remove
      * @param credit   determines if the act is a credit
      */
-    private void updateStockQuantities(StockQty stock, BigDecimal quantity,
-                                       boolean credit) {
-        Party location = stock.getLocation();
+    private void updateStockQuantities(StockQty stock, BigDecimal quantity, boolean credit) {
+        IMObjectReference location = stock.getLocation();
         Product product = stock.getProduct();
         if (location != null && product != null && TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
             if (!credit) {
@@ -299,8 +297,8 @@ public class ChargeStockUpdater {
          * @return the stock location, or {@code null} if none is found
          * @throws ArchetypeServiceException for any archetype service error
          */
-        public Party getLocation() {
-            return (Party) get(location);
+        public IMObjectReference getLocation() {
+            return location;
         }
 
         /**

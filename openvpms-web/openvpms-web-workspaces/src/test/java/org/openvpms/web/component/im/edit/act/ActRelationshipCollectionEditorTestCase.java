@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -28,8 +28,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -38,7 +38,8 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.workspace.customer.charge.ChargeContext;
+import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
+import org.openvpms.web.workspace.customer.charge.ChargeSaveContext;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -70,6 +71,7 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
 
         CustomerChargeActItemEditor editor1 = (CustomerChargeActItemEditor) itemsEditor.getCurrentEditor();
         assertNotNull(editor1);
+        editor1.setEditorQueue(null); // disable popups
         Product product = TestHelper.createProduct();
         Party patient = TestHelper.createPatient();
         editor1.setProduct(product);
@@ -200,20 +202,21 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
         boolean result = template.execute(new TransactionCallback<Boolean>() {
             public Boolean doInTransaction(TransactionStatus status) {
-                PatientHistoryChanges changes = new PatientHistoryChanges(null, null, getArchetypeService());
-                ChargeContext context = new ChargeContext();
-                context.setHistoryChanges(changes);
-                for (IMObjectEditor editor : itemsEditor.getEditors()) {
-                    if (editor instanceof CustomerChargeActItemEditor) {
-                        ((CustomerChargeActItemEditor) editor).setChargeContext(context);
-                    }
+                ChargeSaveContext context = null;
+                if (itemsEditor instanceof ChargeItemRelationshipCollectionEditor) {
+                    PatientHistoryChanges changes = new PatientHistoryChanges(null, null, getArchetypeService());
+                    context = ((ChargeItemRelationshipCollectionEditor) itemsEditor).getSaveContext();
+                    assertNotNull(context);
+                    context.setHistoryChanges(changes);
                 }
                 boolean saved = SaveHelper.save(parent);
                 itemsEditor.save();
-                if (saved) {
-                    context.save();
+                if (context != null) {
+                    if (saved) {
+                        context.save();
+                    }
+                    context.setHistoryChanges(null);
                 }
-                context.setHistoryChanges(null);
                 return saved;
             }
         });
@@ -237,7 +240,13 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         CollectionProperty items = (CollectionProperty) set.get("items");
         assertNotNull(items);
         assertEquals(minCardinality, items.getMinCardinality());
-        ActRelationshipCollectionEditor result = new ActRelationshipCollectionEditor(items, parent, context);
+        ActRelationshipCollectionEditor result;
+        if (TypeHelper.isA(parent, CustomerAccountArchetypes.INVOICE)) {
+            // required as invoice item editors share a CustomerChargeEditContext
+            result = new ChargeItemRelationshipCollectionEditor(items, parent, context);
+        } else {
+            result = new ActRelationshipCollectionEditor(items, parent, context);
+        }
         result.getComponent(); // ensure it is rendered
         return result;
     }

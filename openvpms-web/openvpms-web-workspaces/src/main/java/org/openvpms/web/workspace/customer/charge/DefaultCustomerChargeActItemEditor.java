@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id:CustomerInvoiceItemEditor.java 2287 2007-08-13 07:56:33Z tanderson $
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -28,21 +27,29 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * <em>act.customerAccountCreditItem</em>
  * or <em>act.customerAccountCounterItem</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public class DefaultCustomerChargeActItemEditor extends CustomerChargeActItemEditor {
 
     /**
-     * Constructs a <tt>CustomerChargeActItemEditor</tt>.
-     * <p/>
-     * This recalculates the tax amount.
+     * Constructs a {@link DefaultCustomerChargeActItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act
-     * @param context the layout context
+     * @param context the edit context
      */
-    public DefaultCustomerChargeActItemEditor(Act act, Act parent, LayoutContext context) {
+    public DefaultCustomerChargeActItemEditor(FinancialAct act, Act parent, LayoutContext context) {
+        this(act, parent, new CustomerChargeEditContext(context));
+    }
+
+    /**
+     * Constructs a {@link DefaultCustomerChargeActItemEditor}.
+     *
+     * @param act     the act to edit
+     * @param parent  the parent act
+     * @param context the edit context
+     */
+    public DefaultCustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context) {
         super(act, parent, context);
     }
 

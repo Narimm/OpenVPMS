@@ -340,6 +340,29 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
     }
 
     /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    public void setAlertListener(AlertListener listener) {
+        if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
+            ((ChargeItemRelationshipCollectionEditor) getItems()).setAlertListener(listener);
+        }
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    public AlertListener getAlertListener() {
+        if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
+            return ((ChargeItemRelationshipCollectionEditor) getItems()).getAlertListener();
+        }
+        return null;
+    }
+
+    /**
      * Save any edits.
      * <p>
      * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
@@ -350,7 +373,7 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
     @Override
     protected void doSave() {
         List<Act> reminders = getNewReminders();
-        ChargeContext chargeContext = null;
+        ChargeSaveContext chargeContext = null;
         try {
             PatientHistoryChanges changes = null;
 
@@ -359,7 +382,7 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
                                                     getLayoutContext().getContext().getLocation(),
                                                     ServiceHelper.getArchetypeService());
                 ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
-                chargeContext = items.getChargeContext();
+                chargeContext = items.getSaveContext();
                 chargeContext.setHistoryChanges(changes);
             }
 

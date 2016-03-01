@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.stock;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -101,6 +102,30 @@ public class StockRulesTestCase extends AbstractStockTest {
         // remove stock and verify it is removed
         rules.updateStock(product, stockLocation, quantity.negate());
         checkEquals(BigDecimal.ZERO, rules.getStock(product, stockLocation));
+    }
+
+    /**
+     * Tests the {@link StockRules#getStock(IMObjectReference, IMObjectReference)} method.
+     */
+    @Test
+    public void testQueryStock() {
+        BigDecimal quantity = new BigDecimal("10.00");
+
+        Party stockLocation = createStockLocation();
+        Product product = TestHelper.createProduct();
+
+        // no product-stock location relationship to begin with
+        IMObjectReference productRef = product.getObjectReference();
+        IMObjectReference stockRef = stockLocation.getObjectReference();
+        checkEquals(BigDecimal.ZERO, rules.getStock(productRef, stockRef));
+
+        // add stock and verify it is added
+        rules.updateStock(product, stockLocation, quantity);
+        checkEquals(quantity, rules.getStock(productRef, stockRef));
+
+        // remove stock and verify it is removed
+        rules.updateStock(product, stockLocation, quantity.negate());
+        checkEquals(BigDecimal.ZERO, rules.getStock(productRef, stockRef));
     }
 
     /**

@@ -17,11 +17,13 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -38,8 +40,13 @@ import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.echo.table.TableHelper;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.StockOnHand;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -50,6 +57,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableModel<T> {
+
+    /**
+     * Used to display stock on hand. May be {@code null} if no On Hand column is to be rendered.
+     */
+    private final StockOnHand stock;
 
     /**
      * Determines if the template column should be shown.
@@ -92,6 +104,11 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private int clinicianIndex;
 
     /**
+     * The on-hand column index, or {@code -1} if it is not displayed.
+     */
+    private int onHandIndex = -1;
+
+    /**
      * The template column.
      */
     private TableColumn template;
@@ -132,6 +149,11 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private static final String BATCH = "batch";
 
     /**
+     * The quantity node.
+     */
+    private static final String QUANTITY = "quantity";
+
+    /**
      * The clinician node name.
      */
     private static final String CLINICIAN = "clinician";
@@ -149,7 +171,19 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      * @param context    the layout context
      */
     public ChargeItemTableModel(String[] shortNames, LayoutContext context) {
+        this(shortNames, null, context);
+    }
+
+    /**
+     * Constructs a {@link ChargeItemTableModel}.
+     *
+     * @param shortNames the archetype short names
+     * @param stock      if non-null, used to display a stock-on-hand column
+     * @param context    the layout context
+     */
+    public ChargeItemTableModel(String[] shortNames, StockOnHand stock, LayoutContext context) {
         super(context);
+        this.stock = stock;
         UserPreferences preferences = ServiceHelper.getPreferences();
         showTemplate = preferences.getShowTemplateDuringCharging();
         showProductType = preferences.getShowProductTypeDuringCharging();
@@ -255,6 +289,8 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     protected Object getValue(T object, TableColumn column, int row) {
         if (column.getModelIndex() == productTypeIndex) {
             return getProductType(object);
+        } else if (column.getModelIndex() == onHandIndex) {
+            return getOnHand(object);
         }
         return super.getValue(object, column, row);
     }
@@ -282,6 +318,13 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
             }
         } else {
             beforeBatchIndex = -1;
+        }
+        if (stock != null) {
+            onHandIndex = getNextModelIndex(model);
+            TableColumn onHand = new TableColumn(onHandIndex);
+            onHand.setHeaderValue(Messages.get("customer.charge.onhand"));
+            TableColumn quantity = getColumn(model, QUANTITY);
+            addColumnAfter(onHand, quantity.getModelIndex(), model);
         }
         productTypeIndex = templateIndex + 1;
         productType = new TableColumn(productTypeIndex);
@@ -321,6 +364,28 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
             }
         }
         return null;
+    }
+
+    /**
+     * Retuurns a component representing the stock on hand.
+     *
+     * @param object the act
+     * @return a component representing the stock on
+     */
+    private Component getOnHand(IMObject object) {
+        Component result = null;
+        FinancialAct act = (FinancialAct) object;
+        BigDecimal value = stock.getStock(act);
+        if (value != null) {
+            Label label = TableHelper.rightAlign(NumberFormatter.format(value));
+            if (value.compareTo(BigDecimal.ZERO) <= 0) {
+                TableHelper.mergeStyle(label, "OutOfStock.Table");
+                // need to explicitly set the style, as the cell renderer styles take precedence
+                // label.setStyle(ApplicationInstance.getActive().getStyle(Label.class, "OutOfStock.Table"));
+            }
+            result = label;
+        }
+        return result;
     }
 
     /**
@@ -368,16 +433,28 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      */
     private boolean show(TableColumn column, boolean show, int after, DefaultTableColumnModel model) {
         if (show) {
-            model.addColumn(column);
-            int columnOffset = getColumnOffset(model, after);
-            if (columnOffset != -1) {
-                model.moveColumn(model.getColumnCount() - 1, columnOffset + 1);
-            }
+            addColumnAfter(column, after, model);
         } else {
             model.removeColumn(column);
         }
         fireTableStructureChanged();
         return show;
     }
+
+    /**
+     * Adds a column after the specified column.
+     *
+     * @param column the column to add
+     * @param after  the column model index to add after
+     * @param model  the model
+     */
+    private void addColumnAfter(TableColumn column, int after, DefaultTableColumnModel model) {
+        model.addColumn(column);
+        int columnOffset = getColumnOffset(model, after);
+        if (columnOffset != -1) {
+            model.moveColumn(model.getColumnCount() - 1, columnOffset + 1);
+        }
+    }
+
 
 }
