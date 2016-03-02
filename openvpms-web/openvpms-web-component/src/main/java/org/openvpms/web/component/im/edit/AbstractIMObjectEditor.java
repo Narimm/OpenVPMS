@@ -186,7 +186,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         });
     }
 
-
     /**
      * Disposes of the editor.
      * <br/>
@@ -733,7 +732,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Change the layout.
      */
     protected void onLayout() {
-        Component oldValue = getComponent();
         disposeOnChangeLayout();
         if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
             ExpandableLayoutStrategy expandable = (ExpandableLayoutStrategy) getView().getLayout();
@@ -754,8 +752,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                 }
             }
         }
-        Component newValue = getComponent();
-        firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);
+        firePropertyChange(COMPONENT_CHANGED_PROPERTY, null, this);
     }
 
     /**
