@@ -177,7 +177,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
         componentListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
-                onComponentChange(event);
+                onComponentChange();
             }
         };
 
@@ -738,15 +738,12 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Invoked when the editor changes components.
-     *
-     * @param event the property change event
      */
-    protected void onComponentChange(PropertyChangeEvent event) {
-        Component oldValue = (Component) event.getOldValue();
-        Component newValue = (Component) event.getNewValue();
-        editBox.remove(oldValue);
-        editBox.add(newValue);
-        changeFocusGroup(getCurrentEditor());
+    protected void onComponentChange() {
+        editBox.removeAll();
+        IMObjectEditor editor = getCurrentEditor();
+        editBox.add(editor.getComponent());
+        changeFocusGroup(editor);
     }
 
     /**
