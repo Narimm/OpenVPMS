@@ -356,7 +356,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
     private void setViewer(IMObjectViewer viewer, List<Selection> path) {
         IMObjectViewer previous = this.viewer;
         if (previous != null) {
-            removeComponent(previous.getFocusGroup());
+            removeComponent();
         }
         this.viewer = viewer;
         if (viewer != null) {

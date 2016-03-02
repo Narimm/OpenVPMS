@@ -80,6 +80,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private final Context context;
 
     /**
+     * The current component.
+     */
+    private Component current;
+
+    /**
+     * The current component focus group.
+     */
+    private FocusGroup currentGroup;
+
+    /**
      * The current help context.
      */
     private HelpContext helpContext;
@@ -319,7 +329,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
             editor.addPropertyChangeListener(
                     IMObjectEditor.COMPONENT_CHANGED_PROPERTY, new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent event) {
-                            onComponentChange(event);
+                            onComponentChange();
                         }
                     });
         }
@@ -404,7 +414,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected void removeEditor(IMObjectEditor editor) {
         editor.setAlertListener(null);
-        removeComponent(editor.getFocusGroup());
+        removeComponent();
     }
 
     /**
@@ -415,23 +425,44 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param context   the help context
      */
     protected void setComponent(Component component, FocusGroup group, HelpContext context) {
+        setComponent(component, group, context, true);
+    }
+
+    /**
+     * Sets the component.
+     *
+     * @param component the component
+     * @param group     the focus group
+     * @param context   the help context
+     * @param focus     if {@code true}, move the focus
+     */
+    protected void setComponent(Component component, FocusGroup group, HelpContext context, boolean focus) {
+        if (current != null) {
+            container.remove(current);
+        }
+        if (currentGroup != null) {
+            getFocusGroup().remove(currentGroup);
+        }
         container.add(component);
         getFocusGroup().add(0, group);
-        if (getParent() != null) {
+        if (focus && getParent() != null) {
             // focus in the component
             group.setFocus();
         }
+        current = component;
+        currentGroup = group;
         helpContext = context;
     }
 
     /**
-     * Removes the existing component.
-     *
-     * @param group the focus group
+     * Removes the existing component and any alerts.
      */
-    protected void removeComponent(FocusGroup group) {
+    protected void removeComponent() {
         container.removeAll();
-        getFocusGroup().remove(group);
+        if (currentGroup != null) {
+            getFocusGroup().remove(currentGroup);
+        }
+        currentGroup = null;
         helpContext = null;
     }
 
@@ -441,7 +472,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @return the alert listener
      */
     protected AlertListener getAlertListener() {
-        return  alerts.getListener();
+        return alerts.getListener();
     }
 
     /**
@@ -451,16 +482,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected Context getContext() {
         return context;
-    }
-
-    /**
-     * Invoked when the component changes.
-     *
-     * @param event the component change event
-     */
-    protected void onComponentChange(PropertyChangeEvent event) {
-        container.remove((Component) event.getOldValue());
-        container.add((Component) event.getNewValue());
     }
 
     /**
@@ -506,6 +527,13 @@ public abstract class AbstractEditDialog extends PopupDialog {
         } else {
             return OK;
         }
+    }
+
+    /**
+     * Invoked when the editor component changes.
+     */
+    private void onComponentChange() {
+        setComponent(editor.getComponent(), editor.getFocusGroup(), editor.getHelpContext(), false);
     }
 
     /**
