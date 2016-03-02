@@ -14,10 +14,10 @@
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.customer.charge;
+package org.openvpms.web.component.edit;
 
 /**
- * A listener to receive alerts during charge editing.
+ * A listener to receive alerts during editing.
  *
  * @author Tim Anderson
  */
@@ -27,6 +27,14 @@ public interface AlertListener {
      * Invoked to notify of an alert.
      *
      * @param message the message
+     * @return an identifier that may be used to subsequently cancel the alert
      */
-    void onAlert(String message);
+    long onAlert(String message);
+
+    /**
+     * Cancels an alert.
+     *
+     * @param id the alert identifier
+     */
+    void cancel(long id);
 }

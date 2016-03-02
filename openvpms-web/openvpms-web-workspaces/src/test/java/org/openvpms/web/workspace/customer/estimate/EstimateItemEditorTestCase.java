@@ -139,7 +139,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -198,7 +198,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -240,7 +240,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -293,7 +293,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -352,7 +352,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
         editor.getComponent();
 
         // populate quantity, patient, clinician.
@@ -399,7 +399,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout));
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 

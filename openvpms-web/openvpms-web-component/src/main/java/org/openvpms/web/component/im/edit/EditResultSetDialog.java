@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -180,6 +180,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
      * @throws OpenVPMSException if the save fails
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void doSave(IMObjectEditor editor) {
         super.doSave(editor);
         if (editor != null) {
@@ -355,7 +356,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
     private void setViewer(IMObjectViewer viewer, List<Selection> path) {
         IMObjectViewer previous = this.viewer;
         if (previous != null) {
-            removeComponent(previous.getComponent(), previous.getFocusGroup());
+            removeComponent(previous.getFocusGroup());
         }
         this.viewer = viewer;
         if (viewer != null) {

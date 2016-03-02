@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,6 +37,7 @@ import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.workspace.supplier.SupplierHelper;
 
@@ -97,6 +99,18 @@ public class OrderEditor extends FinancialActEditor {
         super.onItemsChanged();
         List<Act> acts = getItems().getCurrentActs();
         checkDeliveryStatus(acts);
+    }
+
+    /**
+     * Creates a collection editor for the items collection.
+     *
+     * @param act   the act
+     * @param items the items collection
+     * @return a new collection editor
+     */
+    @Override
+    protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
+        return super.createItemsEditor(act, items);
     }
 
     /**

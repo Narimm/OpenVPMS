@@ -108,7 +108,8 @@ public class VisitEstimateItemRelationshipCollectionEditor extends EstimateActRe
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        return initialiseEditor(new VisitEstimateItemEditor((Act) object, (Act) getObject(), getEditContext()));
+        return initialiseEditor(new VisitEstimateItemEditor((Act) object, (Act) getObject(), getEditContext(),
+                                                            context));
     }
 
 }

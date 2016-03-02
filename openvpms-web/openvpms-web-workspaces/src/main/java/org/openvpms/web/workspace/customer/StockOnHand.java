@@ -62,11 +62,13 @@ public class StockOnHand {
 
     /**
      * Returns the stock available for an act.
+     * <p/>
+     * This uses the on-hand quantity, excluding any uncommitted changes.
      *
      * @param act the act
      * @return the available stock, or {@code null} if the act doesn't have a stock location and product
      */
-    public BigDecimal getStock(FinancialAct act) {
+    public BigDecimal getAvailableStock(FinancialAct act) {
         ActBean bean = new ActBean(act);
         IMObjectReference product = bean.getNodeParticipantRef("product");
         IMObjectReference stockLocation = bean.getNodeParticipantRef("stockLocation");
@@ -92,6 +94,28 @@ public class StockOnHand {
         return null;
     }
 
+    /**
+     * Returns the stock for a product and stock location.
+     * <p/>
+     * This returns the on-hand quantity, ignoring any uncommitted changes.
+     *
+     * @param product       the product
+     * @param stockLocation the stock location
+     * @return the on-hand stock
+     */
+    public BigDecimal getStock(IMObjectReference product, IMObjectReference stockLocation) {
+        Key key = new Key(product, stockLocation);
+        Stock stock = getStock(key);
+        return stock.getStock();
+    }
+
+    /**
+     * Removes an act.
+     * <p/>
+     * Any stock it used or returned will no longer be included in stock calculations.
+     *
+     * @param act the act to remove
+     */
     public void remove(FinancialAct act) {
         State state = states.remove(act);
         if (state != null) {
@@ -261,7 +285,7 @@ public class StockOnHand {
          * @return the stock
          */
         public BigDecimal getStock() {
-            return stock.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : stock;
+            return stock;
         }
 
         /**

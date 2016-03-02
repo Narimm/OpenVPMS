@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.AlertManager;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorSaver;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -38,9 +39,7 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.AlertListener;
 import org.openvpms.web.workspace.customer.charge.OrderChargeManager;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
@@ -107,9 +106,9 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     private boolean autoChargeOrders = true;
 
     /**
-     * The current alert. May be {@code null}
+     * The alert manager.
      */
-    private InformationMessage currentAlert;
+    private final AlertManager alerts;
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -125,7 +124,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
         OrderCharger charger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
                                                 help.subtopic("order"));
-        manager = new OrderChargeManager(charger, container);
+        alerts = new AlertManager(container);
+        manager = new OrderChargeManager(charger, alerts.getListener());
     }
 
     /**
@@ -174,12 +174,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
 
-                editor.setAlertListener(new AlertListener() {
-                    @Override
-                    public void onAlert(String message) {
-                        showAlert(message);
-                    }
-                });
+                editor.setAlertListener(alerts.getListener());
                 editor.setAddItemListener(new Runnable() {
                     @Override
                     public void run() {
@@ -389,19 +384,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             buttons.setEnabled(COMPLETED_ID, enable);
             buttons.setEnabled(INVOICE_ORDERS_ID, enable);
         }
-    }
-
-    /**
-     * Display an alert.
-     *
-     * @param message the message to display
-     */
-    protected void showAlert(String message) {
-        if (currentAlert != null) {
-            container.remove(currentAlert);
-        }
-        currentAlert = new InformationMessage(message);
-        container.add(currentAlert, 0);
     }
 
     /**

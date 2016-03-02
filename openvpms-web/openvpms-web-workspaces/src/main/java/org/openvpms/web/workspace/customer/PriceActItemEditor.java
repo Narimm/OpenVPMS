@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.customer;
 
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -28,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -75,12 +77,13 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     /**
      * Constructs a {@link PriceActItemEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act. May be {@code null}
-     * @param context the context
+     * @param act           the act to edit
+     * @param parent        the parent act. May be {@code null}
+     * @param context       the context
+     * @param layoutContext the layout context
      */
-    public PriceActItemEditor(Act act, Act parent, PriceActEditContext context) {
-        super(act, parent, context.getLayoutContext());
+    public PriceActItemEditor(Act act, Act parent, PriceActEditContext context, LayoutContext layoutContext) {
+        super(act, parent, layoutContext);
         this.editContext = context;
 
         Product product = getProduct();
@@ -114,10 +117,10 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Save any edits.
-     * <p>
+     * <p/>
      * This implementation saves the current object before children, to ensure deletion of child acts
      * don't result in StaleObjectStateException exceptions.
-     * <p>
+     * <p/>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
@@ -284,7 +287,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Calculates the discount amount, updating the 'discount' node.
-     * <p>
+     * <p/>
      * If discounts are disabled, any existing discount will be set to {@code 0}.
      *
      * @return {@code true} if the discount was updated
@@ -341,8 +344,10 @@ public abstract class PriceActItemEditor extends ActItemEditor {
                     Act parent = (Act) getParent();
                     startTime = parent.getActivityStartTime();
                 }
-                amount = editContext.getDiscount(startTime, customer, patient, product, fixedCost, unitCost, fixedPrice,
-                                                 unitPrice, quantity, fixedPriceMaxDiscount, unitPriceMaxDiscount);
+                DiscountRules rules = editContext.getDiscountRules();
+                amount = rules.calculateDiscount(startTime, editContext.getPractice(), customer, patient, product,
+                                                 fixedCost, unitCost, fixedPrice, unitPrice, quantity,
+                                                 fixedPriceMaxDiscount, unitPriceMaxDiscount);
             }
         }
         return amount;
@@ -409,7 +414,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Returns the price of a product.
-     * <p>
+     * <p/>
      * This:
      * <ul>
      * <li>applies any service ratio to the price</li>
@@ -433,7 +438,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected BigDecimal calculateTax(Party customer) {
         FinancialAct act = (FinancialAct) getObject();
-        return editContext.getTax(act, customer);
+        return editContext.getTaxRules().calculateTax(act, customer);
     }
 
     /**

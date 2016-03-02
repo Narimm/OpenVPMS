@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.patient.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
@@ -33,13 +34,14 @@ public class VisitEstimateItemEditor extends EstimateItemEditor {
     /**
      * Constructs an {@link VisitEstimateItemEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the layout context
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
      */
-    public VisitEstimateItemEditor(Act act, Act parent, ChargeEditContext context) {
-        super(act, parent, context);
-        initParticipant("patient", context.getContext().getPatient());
+    public VisitEstimateItemEditor(Act act, Act parent, ChargeEditContext context, LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
+        initParticipant("patient", layoutContext.getContext().getPatient());
     }
 
     /**

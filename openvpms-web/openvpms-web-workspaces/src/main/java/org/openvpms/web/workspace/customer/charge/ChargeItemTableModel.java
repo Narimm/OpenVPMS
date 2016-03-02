@@ -322,7 +322,7 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
         if (stock != null) {
             onHandIndex = getNextModelIndex(model);
             TableColumn onHand = new TableColumn(onHandIndex);
-            onHand.setHeaderValue(Messages.get("customer.charge.onhand"));
+            onHand.setHeaderValue(Messages.get("product.stock.onhand"));
             TableColumn quantity = getColumn(model, QUANTITY);
             addColumnAfter(onHand, quantity.getModelIndex(), model);
         }
@@ -367,7 +367,7 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     }
 
     /**
-     * Retuurns a component representing the stock on hand.
+     * Returns a component representing the stock on hand.
      *
      * @param object the act
      * @return a component representing the stock on
@@ -375,7 +375,7 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private Component getOnHand(IMObject object) {
         Component result = null;
         FinancialAct act = (FinancialAct) object;
-        BigDecimal value = stock.getStock(act);
+        BigDecimal value = stock.getAvailableStock(act);
         if (value != null) {
             Label label = TableHelper.rightAlign(NumberFormatter.format(value));
             if (value.compareTo(BigDecimal.ZERO) <= 0) {
@@ -440,21 +440,5 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
         fireTableStructureChanged();
         return show;
     }
-
-    /**
-     * Adds a column after the specified column.
-     *
-     * @param column the column to add
-     * @param after  the column model index to add after
-     * @param model  the model
-     */
-    private void addColumnAfter(TableColumn column, int after, DefaultTableColumnModel model) {
-        model.addColumn(column);
-        int columnOffset = getColumnOffset(model, after);
-        if (columnOffset != -1) {
-            model.moveColumn(model.getColumnCount() - 1, columnOffset + 1);
-        }
-    }
-
 
 }

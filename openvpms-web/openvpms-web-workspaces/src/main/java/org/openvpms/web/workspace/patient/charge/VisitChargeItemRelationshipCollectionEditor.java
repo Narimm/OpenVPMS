@@ -13,6 +13,7 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
@@ -104,7 +105,8 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        return initialiseEditor(new VisitChargeItemEditor((FinancialAct) object, (Act) getObject(), getEditContext()));
+        return initialiseEditor(new VisitChargeItemEditor((FinancialAct) object, (Act) getObject(), getEditContext(),
+                                                          context));
     }
 
     /**

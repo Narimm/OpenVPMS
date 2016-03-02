@@ -264,7 +264,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         CustomerChargeEditContext editContext = createEditContext(layout);
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
 
         // populate quantity, patient, clinician.
@@ -492,7 +492,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         editContext.setEditorQueue(null); // disable popups
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -604,20 +604,23 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      */
     private TestCustomerChargeActItemEditor createEditor(FinancialAct charge, FinancialAct item,
                                                          LayoutContext context) {
-        return createEditor(charge, item, createEditContext(context));
+        return createEditor(charge, item, createEditContext(context), context);
     }
 
     /**
      * Creates a charge item editor.
      *
-     * @param charge  the charge
-     * @param item    the charge item
-     * @param context the edit context
+     * @param charge        the charge
+     * @param item          the charge item
+     * @param context       the edit context
+     * @param layoutContext the layout context
      * @return a new editor
      */
     private TestCustomerChargeActItemEditor createEditor(FinancialAct charge, FinancialAct item,
-                                                         CustomerChargeEditContext context) {
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, context);
+                                                         CustomerChargeEditContext context,
+                                                         LayoutContext layoutContext) {
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, context,
+                                                                                     layoutContext);
         editor.getComponent();
         return editor;
     }
@@ -718,7 +721,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create the editor
         CustomerChargeEditContext editContext = createEditContext(layout);
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
 
         // populate quantity, patient, product. If product1 is a medication, it should trigger a patient medication
@@ -872,8 +875,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.getContext().setUser(author); // to propagate to acts
         context.getContext().setClinician(clinician);
 
-        CustomerChargeActItemEditor editor = new DefaultCustomerChargeActItemEditor(item, charge,
-                                                                                    createEditContext(context));
+        CustomerChargeActItemEditor editor = new DefaultCustomerChargeActItemEditor(
+                item, charge, createEditContext(context), context);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -932,7 +935,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.setEditorQueue(null); // disable popups
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, context);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, context, layout);
         assertFalse(editor.isValid());
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -1000,7 +1003,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         // create the editor
         CustomerChargeEditContext editContext = createEditContext(layout);
         editContext.setEditorQueue(null);  // disable popups
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
 
         assertFalse((editor.isDefaultQuantity()));
@@ -1077,12 +1080,14 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
          * <p/>
          * This recalculates the tax amount.
          *
-         * @param act     the act to edit
-         * @param parent  the parent act
-         * @param context the edit context
+         * @param act           the act to edit
+         * @param parent        the parent act
+         * @param context       the edit context
+         * @param layoutContext the layout context
          */
-        public TestCustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context) {
-            super(act, parent, context);
+        public TestCustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context,
+                                               LayoutContext layoutContext) {
+            super(act, parent, context, layoutContext);
         }
 
         @Override
