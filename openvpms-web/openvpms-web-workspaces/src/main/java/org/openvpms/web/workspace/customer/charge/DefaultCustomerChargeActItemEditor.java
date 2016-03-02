@@ -36,21 +36,23 @@ public class DefaultCustomerChargeActItemEditor extends CustomerChargeActItemEdi
      *
      * @param act     the act to edit
      * @param parent  the parent act
-     * @param context the edit context
+     * @param context the layout context
      */
     public DefaultCustomerChargeActItemEditor(FinancialAct act, Act parent, LayoutContext context) {
-        this(act, parent, new CustomerChargeEditContext(context));
+        this(act, parent, new CustomerChargeEditContext(context), context);
     }
 
     /**
      * Constructs a {@link DefaultCustomerChargeActItemEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the edit context
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
      */
-    public DefaultCustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context) {
-        super(act, parent, context);
+    public DefaultCustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context,
+                                              LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
     }
 
 }

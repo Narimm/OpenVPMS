@@ -57,7 +57,8 @@ public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemR
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        return initialiseEditor(new EstimateItemEditor((Act) object, (Act) getObject(), getEditContext()));
+        return initialiseEditor(new EstimateItemEditor((Act) object, (Act) getObject(), getEditContext(),
+                                                       context));
     }
 
     /**

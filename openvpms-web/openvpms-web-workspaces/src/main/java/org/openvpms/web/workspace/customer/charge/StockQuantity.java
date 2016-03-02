@@ -38,7 +38,7 @@ public class StockQuantity {
      * The on-hand property.
      */
     private final SimpleProperty property = new SimpleProperty("onHand", null, BigDecimal.class,
-                                                               Messages.get("customer.charge.onhand"), true);
+                                                               Messages.get("product.stock.onhand"), true);
 
     /**
      * The component.
@@ -83,12 +83,12 @@ public class StockQuantity {
      */
     public void refresh() {
         Component component = state.getComponent();
-        BigDecimal stock = stockOnHand.getStock(act);
+        BigDecimal stock = stockOnHand.getAvailableStock(act);
         property.setValue(stock);
         if (stock != null && stock.compareTo(BigDecimal.ZERO) <= 0) {
             component.setStyleName("OutOfStock");
         } else {
-            component.setStyleName(Styles.DEFAULT);
+            component.setStyleName(Styles.EDIT); // to highlight read-only status
         }
     }
 

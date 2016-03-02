@@ -153,18 +153,19 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param context the layout context
      */
     public EstimateItemEditor(Act act, Act parent, LayoutContext context) {
-        this(act, parent, new ChargeEditContext(context));
+        this(act, parent, new ChargeEditContext(context), context);
     }
 
     /**
      * Constructs an {@link EstimateItemEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the edit context
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
      */
-    public EstimateItemEditor(Act act, Act parent, ChargeEditContext context) {
-        super(act, parent, context);
+    public EstimateItemEditor(Act act, Act parent, ChargeEditContext context, LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
@@ -639,7 +640,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
         /**
          * Apply the layout strategy.
-         * <p>
+         * <p/>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply

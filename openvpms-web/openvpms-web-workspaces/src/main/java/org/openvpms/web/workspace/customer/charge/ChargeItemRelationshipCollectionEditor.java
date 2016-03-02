@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -70,9 +71,9 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     private Runnable listener;
 
     /**
-     * Listener to handle alerts. May be {@code null}
+     * The alert identifier, used to cancel any existing alert.
      */
-    private AlertListener alertListener;
+    private long alertId = -1;
 
     /**
      * The start time node name.
@@ -201,25 +202,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         return initialiseEditor(new DefaultCustomerChargeActItemEditor((FinancialAct) object, (Act) getObject(),
-                                                                       editContext));
-    }
-
-    /**
-     * Registers a listener to be notified of alerts.
-     *
-     * @param listener the listener. May be {@code null}
-     */
-    public void setAlertListener(AlertListener listener) {
-        this.alertListener = listener;
-    }
-
-    /**
-     * Returns the listener to be notified of alerts.
-     *
-     * @return the listener. May be {@code null}
-     */
-    public AlertListener getAlertListener() {
-        return alertListener;
+                                                                       editContext, context));
     }
 
     /**
@@ -276,17 +259,22 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     @Override
     protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
         List<Act> acts = super.createTemplateActs(editor, template);
+        AlertListener alertListener = getAlertListener();
         if (alertListener != null && !acts.isEmpty()) {
             int outOfStock = 0;
             StockOnHand stock = editContext.getStock();
             for (Act act : acts) {
-                BigDecimal quantity = stock.getStock((FinancialAct) act);
+                BigDecimal quantity = stock.getAvailableStock((FinancialAct) act);
                 if (quantity != null && BigDecimal.ZERO.compareTo(quantity) >= 0) {
                     ++outOfStock;
                 }
             }
             if (outOfStock != 0) {
-                alertListener.onAlert(Messages.format("customer.charge.outofstock", outOfStock));
+                if (alertId != -1) {
+                    alertListener.cancel(alertId);
+                    alertId = -1;
+                }
+                alertId = alertListener.onAlert(Messages.format("customer.charge.outofstock", outOfStock));
             }
         }
         return acts;

@@ -42,13 +42,15 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
      * <p/>
      * This recalculates the tax amount.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the edit context
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
      */
-    public VisitChargeItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context) {
-        super(act, parent, context);
-        initParticipant("patient", context.getContext().getPatient());
+    public VisitChargeItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context,
+                                 LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
+        initParticipant("patient", layoutContext.getContext().getPatient());
     }
 
     /**

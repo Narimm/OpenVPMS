@@ -16,8 +16,6 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
@@ -27,9 +25,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 
@@ -45,11 +41,6 @@ import org.openvpms.web.workspace.customer.order.OrderCharger;
 public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
-     * The message and editor container.
-     */
-    private Column container;
-
-    /**
      * Manages charging orders and returns.
      */
     private final OrderChargeManager manager;
@@ -58,11 +49,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * Determines if customer orders are automatically charged.
      */
     private final boolean autoChargeOrders;
-
-    /**
-     * The current alert. May be {@code null}
-     */
-    private InformationMessage currentAlert;
 
     /**
      * Completed button identifier.
@@ -111,7 +97,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
             charger = new OrderCharger(getContext().getCustomer(), rules, context, help);
         }
         this.autoChargeOrders = autoChargeOrders;
-        manager = new OrderChargeManager(charger, getEditorContainer());
+        manager = new OrderChargeManager(charger, getAlertListener());
     }
 
     /**
@@ -195,17 +181,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         }
         super.setEditor(editor);
         if (editor != null) {
-            CustomerChargeActEditor chargeActEditor = (CustomerChargeActEditor) editor;
-
-            // register a listener to handle alerts
-            chargeActEditor.setAlertListener(new AlertListener() {
-                @Override
-                public void onAlert(String message) {
-                    showAlert(message);
-                }
-            });
-
             // register a listener to auto-save charges
+            CustomerChargeActEditor chargeActEditor = (CustomerChargeActEditor) editor;
             chargeActEditor.setAddItemListener(new Runnable() {
                 @Override
                 public void run() {
@@ -247,33 +224,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         } else {
             super.onButton(button);
         }
-    }
-
-    /**
-     * Sets the component.
-     *
-     * @param component the component
-     * @param group     the focus group
-     * @param context   the help context
-     */
-    @Override
-    protected void setComponent(Component component, FocusGroup group, HelpContext context) {
-        Column container = getEditorContainer();
-        container.add(component);
-        super.setComponent(container, group, context);
-    }
-
-    /**
-     * Removes the component.
-     *
-     * @param component the component
-     * @param group     the focus group
-     */
-    @Override
-    protected void removeComponent(Component component, FocusGroup group) {
-        Column container = getEditorContainer();
-        container.removeAll();
-        super.removeComponent(container, group);
     }
 
     /**
@@ -361,19 +311,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
-     * Invoked to display an alert.
-     *
-     * @param message the alert message
-     */
-    private void showAlert(String message) {
-        if (currentAlert != null) {
-            getEditorContainer().remove(currentAlert);
-        }
-        currentAlert = new InformationMessage(message);
-        getEditorContainer().add(currentAlert, 0);
-    }
-
-    /**
      * Auto save the invoice if it is valid, isn't new and isn't POSTED.
      */
     private void autoSave() {
@@ -384,18 +321,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
                 save();
             }
         }
-    }
-
-    /**
-     * Returns the message and editor container.
-     *
-     * @return the message and editor container
-     */
-    private Column getEditorContainer() {
-        if (container == null) {
-            container = new Column();
-        }
-        return container;
     }
 
 }

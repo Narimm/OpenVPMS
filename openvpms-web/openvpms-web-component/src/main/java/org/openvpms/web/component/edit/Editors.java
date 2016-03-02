@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
@@ -61,6 +61,11 @@ public class Editors extends AbstractModifiable {
     private ErrorListener errorListener;
 
     /**
+     * Listener to handle alerts. May be {@code null}
+     */
+    private AlertListener alertListener;
+
+    /**
      * The properties.
      */
     private final PropertySet properties;
@@ -68,12 +73,12 @@ public class Editors extends AbstractModifiable {
     /**
      * The set of editors.
      */
-    private final Set<Editor> editors = new HashSet<Editor>();
+    private final Set<Editor> editors = new HashSet<>();
 
     /**
      * The set of editors associated with properties, keyed on property name.
      */
-    private final Map<String, Editor> propertyEditors = new HashMap<String, Editor>();
+    private final Map<String, Editor> propertyEditors = new HashMap<>();
 
     /**
      * Used to determine if the editors have changed while validation is in progress. If so, validation needs
@@ -178,7 +183,7 @@ public class Editors extends AbstractModifiable {
      * @return a list of modified save-able objects.
      */
     public List<Saveable> getModifiedSaveable() {
-        List<Saveable> result = new ArrayList<Saveable>();
+        List<Saveable> result = new ArrayList<>();
         for (Modifiable modifiable : editors) {
             if ((modifiable instanceof Saveable) && modifiable.isModified()) {
                 result.add((Saveable) modifiable);
@@ -193,7 +198,7 @@ public class Editors extends AbstractModifiable {
      * @return a list of all Cancellable editors.
      */
     public List<Cancellable> getCancellable() {
-        List<Cancellable> result = new ArrayList<Cancellable>();
+        List<Cancellable> result = new ArrayList<>();
         for (Modifiable modifiable : editors) {
             if (modifiable instanceof Cancellable) {
                 result.add((Cancellable) modifiable);
@@ -208,7 +213,7 @@ public class Editors extends AbstractModifiable {
      * @return a list of all Deletable editors.
      */
     public List<Deletable> getDeletable() {
-        List<Deletable> result = new ArrayList<Deletable>();
+        List<Deletable> result = new ArrayList<>();
         for (Modifiable modifiable : editors) {
             if (modifiable instanceof Deletable) {
                 result.add((Deletable) modifiable);
@@ -227,10 +232,12 @@ public class Editors extends AbstractModifiable {
             for (Modifiable modifiable : editors) {
                 if (modifiable.isModified()) {
                     modified = true;
-                    return modified;
+                    break;
                 }
             }
-            modified = properties.isModified();
+            if (!modified) {
+                modified = properties.isModified();
+            }
         }
         return modified;
     }
@@ -292,6 +299,27 @@ public class Editors extends AbstractModifiable {
     @Override
     public ErrorListener getErrorListener() {
         return errorListener;
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    public void setAlertListener(AlertListener listener) {
+        this.alertListener = listener;
+        for (Editor editor : editors) {
+            editor.setAlertListener(listener);
+        }
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    public AlertListener getAlertListener() {
+        return alertListener;
     }
 
     /**
@@ -388,6 +416,7 @@ public class Editors extends AbstractModifiable {
         }
         editors.add(editor);
         editor.addModifiableListener(listener);
+        editor.setAlertListener(alertListener);
     }
 
 }

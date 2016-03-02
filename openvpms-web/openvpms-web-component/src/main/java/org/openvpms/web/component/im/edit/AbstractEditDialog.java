@@ -11,19 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -51,6 +53,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * The editor.
      */
     private IMObjectEditor editor;
+
+    /**
+     * The message and editor container.
+     */
+    private Column container = new Column();
+
+    /**
+     * The alert manager.
+     */
+    private final AlertManager alerts;
 
     /**
      * Determines if the dialog should save when apply and OK are pressed.
@@ -121,6 +133,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
                                  Context context, HelpContext help) {
         super(title, STYLE, buttons, help);
         this.context = context;
+        container = new Column();
+        getLayout().add(container);
+        alerts = new AlertManager(container);
         setModal(true);
         setEditor(editor);
         this.save = save;
@@ -147,7 +162,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the current object, if saving is enabled.
-     * <p>
+     * <p/>
      * If it is, and the object is valid, then {@link #doSave(IMObjectEditor)} is called.
      * If {@link #doSave(IMObjectEditor)} fails (i.e returns {@code false}), then {@link #saveFailed()} is called.
      *
@@ -180,7 +195,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the editor, optionally closing the dialog.
-     * <p>
+     * <p/>
      * If the the save fails, the dialog will remain open.
      *
      * @param close if {@code true} close the dialog
@@ -210,6 +225,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 buttons.remove(button);
             }
         }
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        return (helpContext != null) ? helpContext : super.getHelpContext();
     }
 
     /**
@@ -270,7 +295,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Sets the editor.
-     * <p>
+     * <p/>
      * If there is an existing editor, its selection path will be set on the editor.
      *
      * @param editor the editor. May be {@code null}
@@ -343,7 +368,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Invoked by {@link #save} when saving fails.
-     * <p>
+     * <p/>
      * This implementation disables saves.
      * TODO - this is a workaround for OVPMS-855
      */
@@ -367,6 +392,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected void addEditor(IMObjectEditor editor) {
         setComponent(editor.getComponent(), editor.getFocusGroup(), editor.getHelpContext());
+
+        // register a listener to handle alerts
+        editor.setAlertListener(getAlertListener());
     }
 
     /**
@@ -375,7 +403,8 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param editor the editor to remove
      */
     protected void removeEditor(IMObjectEditor editor) {
-        removeComponent(editor.getComponent(), editor.getFocusGroup());
+        editor.setAlertListener(null);
+        removeComponent(editor.getFocusGroup());
     }
 
     /**
@@ -386,7 +415,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param context   the help context
      */
     protected void setComponent(Component component, FocusGroup group, HelpContext context) {
-        getContainer().add(component);
+        container.add(component);
         getFocusGroup().add(0, group);
         if (getParent() != null) {
             // focus in the component
@@ -396,26 +425,23 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
-     * Removes the component.
+     * Removes the existing component.
      *
-     * @param component the component
-     * @param group     the focus group
+     * @param group the focus group
      */
-    protected void removeComponent(Component component, FocusGroup group) {
-        getContainer().remove(component);
+    protected void removeComponent(FocusGroup group) {
+        container.removeAll();
         getFocusGroup().remove(group);
         helpContext = null;
     }
 
     /**
-     * Returns the component containing the editor.
-     * <p>
-     * This implementation returns {@link #getLayout()}.
+     * Returns the alert listener.
      *
-     * @return the editor container
+     * @return the alert listener
      */
-    protected Component getContainer() {
-        return getLayout();
+    protected AlertListener getAlertListener() {
+        return  alerts.getListener();
     }
 
     /**
@@ -433,7 +459,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param event the component change event
      */
     protected void onComponentChange(PropertyChangeEvent event) {
-        Component container = getContainer();
         container.remove((Component) event.getOldValue());
         container.add((Component) event.getNewValue());
     }
@@ -453,16 +478,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected boolean isSaveDisabled() {
         return savedDisabled;
-    }
-
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    @Override
-    public HelpContext getHelpContext() {
-        return (helpContext != null) ? helpContext : super.getHelpContext();
     }
 
     /**

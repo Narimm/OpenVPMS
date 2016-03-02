@@ -263,12 +263,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <p/>
      * This recalculates the tax amount.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the edit context
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
      */
-    public CustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context) {
-        super(act, parent, context);
+    public CustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context,
+                                       LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
         if (!TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM,
                             CustomerAccountArchetypes.CREDIT_ITEM,
                             CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -475,7 +477,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * unset
      */
     public BigDecimal getStock() {
-        return getEditContext().getStock().getStock((FinancialAct) getObject());
+        return getEditContext().getStock().getAvailableStock((FinancialAct) getObject());
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ErrorListener;
@@ -233,6 +234,26 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     @Override
     public ErrorListener getErrorListener() {
         return editor.getErrorListener();
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        editor.setAlertListener(listener);
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public AlertListener getAlertListener() {
+        return editor.getAlertListener();
     }
 
     /**
