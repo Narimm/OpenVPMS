@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -50,6 +50,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
+import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 import org.openvpms.web.workspace.customer.charge.Quantity;
 
 import java.math.BigDecimal;
@@ -152,7 +153,19 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param context the layout context
      */
     public EstimateItemEditor(Act act, Act parent, LayoutContext context) {
-        super(act, parent, context);
+        this(act, parent, new ChargeEditContext(context), context);
+    }
+
+    /**
+     * Constructs an {@link EstimateItemEditor}.
+     *
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
+     */
+    public EstimateItemEditor(Act act, Act parent, ChargeEditContext context, LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
@@ -627,7 +640,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
         /**
          * Apply the layout strategy.
-         * <p>
+         * <p/>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -95,7 +95,7 @@ public class OrderItemEditorTestCase extends AbstractSupplierStockItemEditorTest
     public void testCreateProductSupplierRelationship() {
         Act order = (Act) create(SupplierArchetypes.ORDER);
         FinancialAct item = (FinancialAct) create(SupplierArchetypes.ORDER_ITEM);
-        OrderItemEditor editor = new OrderItemEditor(item, order, context);
+        OrderItemEditor editor = new OrderItemEditor(item, order, new OrderEditContext(), context);
         checkCreateProductSupplierRelationship(editor);
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -77,7 +77,6 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
@@ -102,6 +101,8 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
+import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
 
 
 /**
@@ -128,11 +129,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Reminders act editor. May be {@code null}
      */
     private ActRelationshipCollectionEditor reminders;
-
-    /**
-     * The medication, investigation and reminder act editor manager.
-     */
-    private EditorQueue editorQueue;
 
     /**
      * Listener for changes to the quantity.
@@ -180,14 +176,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private final Quantity quantity;
 
     /**
+     * The stock on hand.
+     */
+    private final StockQuantity stockQuantity;
+
+    /**
      * Selling units label.
      */
     private Label sellingUnits;
-
-    /**
-     * The prescriptions.
-     */
-    private Prescriptions prescriptions;
 
     /**
      * If {@code true}, prompt to use prescriptions.
@@ -198,11 +194,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * If {@code true}, enable medication editing to be cancelled when it is being dispensed from a prescription.
      */
     private boolean cancelPrescription;
-
-    /**
-     * The charge context.
-     */
-    private ChargeContext chargeContext;
 
     /**
      * Dispensing node name.
@@ -269,15 +260,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Constructs a {@link CustomerChargeActItemEditor}.
-     * <p>
+     * <p/>
      * This recalculates the tax amount.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the layout context
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
      */
-    public CustomerChargeActItemEditor(Act act, Act parent, LayoutContext context) {
-        super(act, parent, context);
+    public CustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context,
+                                       LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
         if (!TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM,
                             CustomerAccountArchetypes.CREDIT_ITEM,
                             CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -286,6 +279,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         Property quantityProperty = getProperty(QUANTITY);
         quantity = new Quantity(quantityProperty, act, getLayoutContext());
+        stockQuantity = new StockQuantity(act, context.getStock(), getLayoutContext());
 
         setDisableDiscounts(getDisableDiscounts(getLocation()));
         dispensing = createDispensingCollectionEditor();
@@ -307,6 +301,19 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         };
         if (dispensing != null) {
             dispensing.addModifiableListener(dispensingListener);
+            dispensing.setPrescriptions(context.getPrescriptions());
+        }
+
+        // register the context to delete acts after everything else has been saved to avoid Hibernate errors.
+        ChargeSaveContext saveContext = context.getSaveContext();
+        if (dispensing != null) {
+            dispensing.getEditor().setRemoveHandler(saveContext);
+        }
+        if (investigations != null) {
+            investigations.getEditor().setRemoveHandler(saveContext);
+        }
+        if (reminders != null) {
+            reminders.getEditor().setRemoveHandler(saveContext);
         }
 
         sellingUnits = LabelFactory.create();
@@ -354,6 +361,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateMedicationBatch(getStockLocationRef());
             }
         };
+        updateOnHandQuantity();
     }
 
     /**
@@ -463,6 +471,16 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns the available stock for the product and stock location.
+     *
+     * @return the available stock, or {@code null} if stock is not being tracked or the product or stock location are
+     * unset
+     */
+    public BigDecimal getStock() {
+        return getEditContext().getStock().getAvailableStock((FinancialAct) getObject());
+    }
+
+    /**
      * Disposes of the editor.
      * <br/>
      * Once disposed, the behaviour of invoking any method is undefined.
@@ -490,16 +508,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     public boolean validate(Validator validator) {
-        return (editorQueue == null || editorQueue.isComplete()) && super.validate(validator);
+        EditorQueue queue = getEditorQueue();
+        return (queue == null || queue.isComplete()) && super.validate(validator);
     }
 
     /**
      * Sets the popup editor manager.
      *
-     * @param manager the popup editor manager
+     * @param queue the popup editor manager
      */
-    public void setEditorQueue(EditorQueue manager) {
-        editorQueue = manager;
+    public void setEditorQueue(EditorQueue queue) {
+        getEditContext().setEditorQueue(queue);
     }
 
     /**
@@ -508,19 +527,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the popup editor manager
      */
     public EditorQueue getEditorQueue() {
-        return editorQueue;
-    }
-
-    /**
-     * Sets the prescriptions.
-     *
-     * @param prescriptions the prescriptions. May be {@code null}
-     */
-    public void setPrescriptions(Prescriptions prescriptions) {
-        this.prescriptions = prescriptions;
-        if (dispensing != null) {
-            dispensing.setPrescriptions(prescriptions);
-        }
+        return getEditContext().getEditorQueue();
     }
 
     /**
@@ -529,7 +536,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the prescriptions. May be {@code null}
      */
     public Prescriptions getPrescriptions() {
-        return prescriptions;
+        return getEditContext().getPrescriptions();
     }
 
     /**
@@ -569,27 +576,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Sets the charge context.
-     *
-     * @param context the charge context
-     */
-    public void setChargeContext(ChargeContext context) {
-        this.chargeContext = context;
-        // register the context to delete acts after everything else has been saved to avoid Hibernate errors.
-        if (dispensing != null) {
-            dispensing.getEditor().setRemoveHandler(context);
-        }
-        if (investigations != null) {
-            investigations.getEditor().setRemoveHandler(context);
-        }
-        if (reminders != null) {
-            reminders.getEditor().setRemoveHandler(context);
-        }
-    }
-
-    /**
      * Notifies the editor that the product has been ordered via a pharmacy.
-     * <p>
+     * <p/>
      * This refreshes the display to make the patient and product read-only, and display the received and returned
      * nodes if required.
      */
@@ -598,8 +586,27 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns the edit context.
+     *
+     * @return the edit context
+     */
+    @Override
+    public CustomerChargeEditContext getEditContext() {
+        return (CustomerChargeEditContext) super.getEditContext();
+    }
+
+    /**
+     * Returns the save context.
+     *
+     * @return the save context
+     */
+    public ChargeSaveContext getSaveContext() {
+        return getEditContext().getSaveContext();
+    }
+
+    /**
      * Updates the discount and checks that it isn't less than the total cost.
-     * <p>
+     * <p/>
      * If so, gives the user the opportunity to remove the discount.
      *
      * @return {@code true} if the discount was updated
@@ -634,7 +641,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             super.onYes();
                         }
                     });
-                    editorQueue.queue(dialog);
+                    getEditorQueue().queue(dialog);
                 }
             }
         }
@@ -643,10 +650,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Save any edits.
-     * <p>
+     * <p/>
      * This implementation saves the current object before children, to ensure deletion of child acts
      * don't result in StaleObjectStateException exceptions.
-     * <p>
+     * <p/>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
@@ -657,16 +664,18 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     protected void doSave() {
         if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
-            if (chargeContext.getHistoryChanges() == null) {
+            ChargeSaveContext saveContext = getSaveContext();
+            if (saveContext.getHistoryChanges() == null) {
                 throw new IllegalStateException("PatientHistoryChanges haven't been registered");
             }
         }
         super.doSave();
+        getEditContext().getStock().remove((FinancialAct) getObject());
     }
 
     /**
      * Saves the object.
-     * <p>
+     * <p/>
      * For invoice items, this implementation also creates/deletes document acts related to the document templates
      * associated with the product, using {@link ChargeItemDocumentLinker}.
      *
@@ -677,11 +686,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         IArchetypeService service = ServiceHelper.getArchetypeService();
 
         if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
-            if (chargeContext == null) {
-                throw new IllegalStateException("PatientHistoryChanges haven't been registered");
-            }
             ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker((FinancialAct) getObject(), service);
-            linker.prepare(chargeContext.getHistoryChanges());
+            ChargeSaveContext saveContext = getSaveContext();
+            linker.prepare(saveContext.getHistoryChanges());
         }
         super.saveObject();
     }
@@ -826,6 +833,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updatePatientMedication(product);
         updateInvestigations(product);
         updateReminders(product);
+        updateOnHandQuantity();
 
         boolean showPrint = updatePrint(product);
 
@@ -906,13 +914,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes to update patient medications.
-     * <p>
+     * <p/>
      * If the new product is a medication and there is:
      * <ul>
      * <li>an existing act, the existing act will be updated.
      * <li>no existing act, a new medication will be created
      * </ul>
-     * <p>
+     * <p/>
      * If the product is null, any existing act will be removed
      *
      * @param product the product. May be {@code null}
@@ -957,6 +965,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private Act getPrescription() {
         Party patient = getPatient();
         Product product = getProduct();
+        Prescriptions prescriptions = getPrescriptions();
         return prescriptions != null && patient != null && product != null ?
                prescriptions.getPrescription(patient, product) : null;
     }
@@ -984,7 +993,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     createMedicationEditor(product, medication);
                 }
             });
-            editorQueue.queue(dialog);
+            getEditorQueue().queue(dialog);
         } else {
             createPrescriptionMedicationEditor(medication, prescription);
         }
@@ -1024,7 +1033,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes to update investigation acts.
-     * <p>
+     * <p/>
      * This removes any existing investigations, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1057,7 +1066,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes, to update reminders acts.
-     * <p>
+     * <p/>
      * This removes any existing reminders, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1144,17 +1153,18 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void updateLayout(Product product, boolean showPrint) {
         ArchetypeNodes currentNodes = getArchetypeNodes();
         ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
+        EditorQueue queue = getEditorQueue();
         if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
             Component popupFocus = null;
             Component focus = FocusHelper.getFocus();
             Property focusProperty = null;
-            if (editorQueue != null && !editorQueue.isComplete()) {
+            if (queue != null && !queue.isComplete()) {
                 popupFocus = focus;
             } else if (focus instanceof BoundProperty) {
                 focusProperty = ((BoundProperty) focus).getProperty();
             }
             changeLayout(expectedFilter);  // this can move the focus away from the popups, if any
-            if (editorQueue != null && editorQueue.isComplete()) {
+            if (queue != null && queue.isComplete()) {
                 // no current popups, so move focus to the original property if possible, otherwise move it to the
                 // product
                 if (focusProperty != null) {
@@ -1210,7 +1220,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to return the investigation types for a product.
-     * <p>
+     * <p/>
      * If there are multiple investigation types, these will be sorted on name.
      *
      * @param product the product
@@ -1229,7 +1239,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to return the reminder types and their relationships for a product.
-     * <p>
+     * <p/>
      * If there are multiple reminder types, these will be sorted on name.
      *
      * @param product the product
@@ -1247,7 +1257,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Queues an editor for display in a popup dialog.
      * Use this when there may be multiple editors requiring display.
-     * <p>
+     * <p/>
      * NOTE: all objects should be added to the collection prior to them being edited. If they are skipped,
      * they will subsequently be removed. This is necessary as the layout excludes nodes based on elements being
      * present.
@@ -1259,13 +1269,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private void queuePatientActEditor(final IMObjectEditor editor, boolean skip, boolean cancel,
                                        final ActRelationshipCollectionEditor collection) {
-        if (editorQueue != null) {
-            editorQueue.queue(editor, skip, cancel, new EditorQueue.Listener() {
+        final EditorQueue queue = getEditorQueue();
+        if (queue != null) {
+            queue.queue(editor, skip, cancel, new EditorQueue.Listener() {
                 public void completed(boolean skipped, boolean cancelled) {
                     if (skipped || cancelled) {
                         collection.remove(editor.getObject());
                     }
-                    if (editorQueue.isComplete()) {
+                    if (queue.isComplete()) {
                         moveFocusToProduct();
 
                         // force the parent collection editor to re-check the validation status of
@@ -1299,6 +1310,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 dispensing.addModifiableListener(dispensingListener);
             }
         }
+        updateOnHandQuantity();
     }
 
     /**
@@ -1328,6 +1340,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         } finally {
             property.addModifiableListener(quantityListener);
         }
+        updateOnHandQuantity();
+    }
+
+    /**
+     * Updates the on-hand quantity.
+     */
+    public void updateOnHandQuantity() {
+        stockQuantity.refresh();
     }
 
     /**
@@ -1394,6 +1414,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void changePrescription(final PrescriptionMedicationActEditor editor) {
         Act prescription = getPrescription();
         if (prescription != null) {
+            final EditorQueue queue = getEditorQueue();
             if (promptForPrescription) {
                 Product product = getProduct();
                 String title = Messages.get("customer.charge.prescription.title");
@@ -1402,12 +1423,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
-                        editorQueue.queue(editor, true, cancelPrescription, null);
+                        queue.queue(editor, true, cancelPrescription, null);
                     }
                 });
-                editorQueue.queue(dialog);
+                queue.queue(dialog);
             } else {
-                editorQueue.queue(editor, true, cancelPrescription, null);
+                queue.queue(editor, true, cancelPrescription, null);
             }
         }
     }
@@ -1531,7 +1552,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Returns a node filter for the specified product reference.
-     * <p>
+     * <p/>
      * This excludes:
      * <ul>
      * <li>the dispensing node if the product isn't a <em>product.medication</em>
@@ -1624,7 +1645,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to create a collection editor for an act relationship node, if the node exists.
-     * <p>
+     * <p/>
      * The returned editor is configured to not exclude default value objects.
      *
      * @param name the collection node name
@@ -1686,7 +1707,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         /**
          * Apply the layout strategy.
-         * <p>
+         * <p/>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply
@@ -1697,7 +1718,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
          */
         @Override
         public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-            Row row = RowFactory.create(Styles.CELL_SPACING, quantity.getComponent(), sellingUnits);
+            Row onHand = RowFactory.create(CELL_SPACING, RowFactory.rightAlign(),
+                                           stockQuantity.getComponent().getLabel(),
+                                           stockQuantity.getComponent().getComponent());
+            Row row = RowFactory.create(WIDE_CELL_SPACING,
+                                        RowFactory.create(CELL_SPACING, quantity.getComponent(), sellingUnits), onHand);
             addComponent(new ComponentState(row, quantity.getProperty()));
             if (dispensing != null) {
                 addComponent(new ComponentState(dispensing));

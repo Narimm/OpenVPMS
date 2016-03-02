@@ -16,8 +16,6 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
@@ -27,7 +25,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
@@ -35,18 +32,13 @@ import org.openvpms.web.workspace.customer.order.OrderCharger;
 
 /**
  * An edit dialog for {@link CustomerChargeActEditor} editors.
- * <p>
+ * <p/>
  * This performs printing of unprinted documents that have their <em>interactive</em> flag set to {@code true}
  * when <em>Apply</em> or <em>OK</em> is pressed.
  *
  * @author Tim Anderson
  */
 public class CustomerChargeActEditDialog extends ActEditDialog {
-
-    /**
-     * The message and editor container.
-     */
-    private Column container;
 
     /**
      * Manages charging orders and returns.
@@ -57,11 +49,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * Determines if customer orders are automatically charged.
      */
     private final boolean autoChargeOrders;
-
-    /**
-     * Listener to be invoked to auto-save the charge.
-     */
-    private Runnable autoSaveListener;
 
     /**
      * Completed button identifier.
@@ -110,7 +97,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
             charger = new OrderCharger(getContext().getCustomer(), rules, context, help);
         }
         this.autoChargeOrders = autoChargeOrders;
-        manager = new OrderChargeManager(charger, getEditorContainer());
+        manager = new OrderChargeManager(charger, getAlertListener());
     }
 
     /**
@@ -147,7 +134,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p>
+     * <p/>
      * This delegates to {@link #prepare(boolean)}.
      */
     @Override
@@ -157,7 +144,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p>
+     * <p/>
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     @Override
@@ -190,24 +177,24 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         CustomerChargeActEditor existing = getEditor();
         if (existing != null) {
             existing.setAddItemListener(null);
+            existing.setAlertListener(null);
         }
         super.setEditor(editor);
         if (editor != null) {
-            if (autoSaveListener == null) {
-                autoSaveListener = new Runnable() {
-                    @Override
-                    public void run() {
-                        autoSave();
-                    }
-                };
-            }
-            ((CustomerChargeActEditor) editor).setAddItemListener(autoSaveListener);
+            // register a listener to auto-save charges
+            CustomerChargeActEditor chargeActEditor = (CustomerChargeActEditor) editor;
+            chargeActEditor.setAddItemListener(new Runnable() {
+                @Override
+                public void run() {
+                    autoSave();
+                }
+            });
         }
     }
 
     /**
      * Invoked to reload the object being edited when save fails.
-     * <p>
+     * <p/>
      * This implementation reloads the editor, but returns {@code false} if the act has been POSTED.
      *
      * @param editor the editor
@@ -240,38 +227,11 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
-     * Sets the component.
-     *
-     * @param component the component
-     * @param group     the focus group
-     * @param context   the help context
-     */
-    @Override
-    protected void setComponent(Component component, FocusGroup group, HelpContext context) {
-        Column container = getEditorContainer();
-        container.add(component);
-        super.setComponent(container, group, context);
-    }
-
-    /**
-     * Removes the component.
-     *
-     * @param component the component
-     * @param group     the focus group
-     */
-    @Override
-    protected void removeComponent(Component component, FocusGroup group) {
-        Column container = getEditorContainer();
-        container.removeAll();
-        super.removeComponent(container, group);
-    }
-
-    /**
      * Prepares to save the charge.
-     * <p>
+     * <p/>
      * This determines if an invoice is being posted, and if so, displays a confirmation dialog if there are
      * any orders waiting to be dispensed.
-     * <p>
+     * <p/>
      * If not, or the user confirms that the save should go ahead, delegates to {@link #saveCharge(boolean)}.
      *
      * @param close if {@code true}, closes the dialog when the save is successful
@@ -288,7 +248,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p>
+     * <p/>
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     private void saveCharge(boolean close) {
@@ -315,7 +275,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Invoked when the 'In Progress' button is pressed.
-     * <p>
+     * <p/>
      * If the act hasn't been POSTED, then this sets the status to IN_PROGRESS, and attempts to save and close the
      * dialog.
      */
@@ -329,7 +289,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Invoked when the 'Completed' button is pressed.
-     * <p>
+     * <p/>
      * If the act hasn't been POSTED, then this sets the status to COMPLETED, and attempts to save and close the
      * dialog.
      */
@@ -361,18 +321,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
                 save();
             }
         }
-    }
-
-    /**
-     * Returns the message and editor container.
-     *
-     * @return the message and editor container
-     */
-    private Column getEditorContainer() {
-        if (container == null) {
-            container = new Column();
-        }
-        return container;
     }
 
 }

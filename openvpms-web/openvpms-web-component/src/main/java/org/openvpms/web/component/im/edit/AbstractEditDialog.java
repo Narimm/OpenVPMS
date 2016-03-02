@@ -11,19 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -53,6 +55,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private IMObjectEditor editor;
 
     /**
+     * The message and editor container.
+     */
+    private Column container = new Column();
+
+    /**
+     * The alert manager.
+     */
+    private final AlertManager alerts;
+
+    /**
      * Determines if the dialog should save when apply and OK are pressed.
      */
     private final boolean save;
@@ -66,6 +78,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * The context.
      */
     private final Context context;
+
+    /**
+     * The current component.
+     */
+    private Component current;
+
+    /**
+     * The current component focus group.
+     */
+    private FocusGroup currentGroup;
 
     /**
      * The current help context.
@@ -121,6 +143,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
                                  Context context, HelpContext help) {
         super(title, STYLE, buttons, help);
         this.context = context;
+        container = new Column();
+        getLayout().add(container);
+        alerts = new AlertManager(container);
         setModal(true);
         setEditor(editor);
         this.save = save;
@@ -147,7 +172,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the current object, if saving is enabled.
-     * <p>
+     * <p/>
      * If it is, and the object is valid, then {@link #doSave(IMObjectEditor)} is called.
      * If {@link #doSave(IMObjectEditor)} fails (i.e returns {@code false}), then {@link #saveFailed()} is called.
      *
@@ -180,7 +205,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the editor, optionally closing the dialog.
-     * <p>
+     * <p/>
      * If the the save fails, the dialog will remain open.
      *
      * @param close if {@code true} close the dialog
@@ -210,6 +235,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 buttons.remove(button);
             }
         }
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        return (helpContext != null) ? helpContext : super.getHelpContext();
     }
 
     /**
@@ -270,7 +305,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Sets the editor.
-     * <p>
+     * <p/>
      * If there is an existing editor, its selection path will be set on the editor.
      *
      * @param editor the editor. May be {@code null}
@@ -294,7 +329,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
             editor.addPropertyChangeListener(
                     IMObjectEditor.COMPONENT_CHANGED_PROPERTY, new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent event) {
-                            onComponentChange(event);
+                            onComponentChange();
                         }
                     });
         }
@@ -343,7 +378,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Invoked by {@link #save} when saving fails.
-     * <p>
+     * <p/>
      * This implementation disables saves.
      * TODO - this is a workaround for OVPMS-855
      */
@@ -367,6 +402,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected void addEditor(IMObjectEditor editor) {
         setComponent(editor.getComponent(), editor.getFocusGroup(), editor.getHelpContext());
+
+        // register a listener to handle alerts
+        editor.setAlertListener(getAlertListener());
     }
 
     /**
@@ -375,7 +413,8 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param editor the editor to remove
      */
     protected void removeEditor(IMObjectEditor editor) {
-        removeComponent(editor.getComponent(), editor.getFocusGroup());
+        editor.setAlertListener(null);
+        removeComponent();
     }
 
     /**
@@ -386,36 +425,54 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param context   the help context
      */
     protected void setComponent(Component component, FocusGroup group, HelpContext context) {
-        getContainer().add(component);
+        setComponent(component, group, context, true);
+    }
+
+    /**
+     * Sets the component.
+     *
+     * @param component the component
+     * @param group     the focus group
+     * @param context   the help context
+     * @param focus     if {@code true}, move the focus
+     */
+    protected void setComponent(Component component, FocusGroup group, HelpContext context, boolean focus) {
+        if (current != null) {
+            container.remove(current);
+        }
+        if (currentGroup != null) {
+            getFocusGroup().remove(currentGroup);
+        }
+        container.add(component);
         getFocusGroup().add(0, group);
-        if (getParent() != null) {
+        if (focus && getParent() != null) {
             // focus in the component
             group.setFocus();
         }
+        current = component;
+        currentGroup = group;
         helpContext = context;
     }
 
     /**
-     * Removes the component.
-     *
-     * @param component the component
-     * @param group     the focus group
+     * Removes the existing component and any alerts.
      */
-    protected void removeComponent(Component component, FocusGroup group) {
-        getContainer().remove(component);
-        getFocusGroup().remove(group);
+    protected void removeComponent() {
+        container.removeAll();
+        if (currentGroup != null) {
+            getFocusGroup().remove(currentGroup);
+        }
+        currentGroup = null;
         helpContext = null;
     }
 
     /**
-     * Returns the component containing the editor.
-     * <p>
-     * This implementation returns {@link #getLayout()}.
+     * Returns the alert listener.
      *
-     * @return the editor container
+     * @return the alert listener
      */
-    protected Component getContainer() {
-        return getLayout();
+    protected AlertListener getAlertListener() {
+        return alerts.getListener();
     }
 
     /**
@@ -425,17 +482,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected Context getContext() {
         return context;
-    }
-
-    /**
-     * Invoked when the component changes.
-     *
-     * @param event the component change event
-     */
-    protected void onComponentChange(PropertyChangeEvent event) {
-        Component container = getContainer();
-        container.remove((Component) event.getOldValue());
-        container.add((Component) event.getNewValue());
     }
 
     /**
@@ -453,16 +499,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected boolean isSaveDisabled() {
         return savedDisabled;
-    }
-
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    @Override
-    public HelpContext getHelpContext() {
-        return (helpContext != null) ? helpContext : super.getHelpContext();
     }
 
     /**
@@ -491,6 +527,13 @@ public abstract class AbstractEditDialog extends PopupDialog {
         } else {
             return OK;
         }
+    }
+
+    /**
+     * Invoked when the editor component changes.
+     */
+    private void onComponentChange() {
+        setComponent(editor.getComponent(), editor.getFocusGroup(), editor.getHelpContext(), false);
     }
 
     /**

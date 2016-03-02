@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
@@ -184,7 +185,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             }
         });
     }
-
 
     /**
      * Disposes of the editor.
@@ -366,6 +366,26 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     @Override
     public ErrorListener getErrorListener() {
         return editors.getErrorListener();
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        editors.setAlertListener(listener);
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public AlertListener getAlertListener() {
+        return editors.getAlertListener();
     }
 
     /**
@@ -712,7 +732,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Change the layout.
      */
     protected void onLayout() {
-        Component oldValue = getComponent();
         disposeOnChangeLayout();
         if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
             ExpandableLayoutStrategy expandable = (ExpandableLayoutStrategy) getView().getLayout();
@@ -733,8 +752,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                 }
             }
         }
-        Component newValue = getComponent();
-        firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);
+        firePropertyChange(COMPONENT_CHANGED_PROPERTY, null, this);
     }
 
     /**

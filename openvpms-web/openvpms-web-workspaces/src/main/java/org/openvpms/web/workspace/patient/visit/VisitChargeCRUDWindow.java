@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.AlertManager;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorSaver;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -104,6 +105,10 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     private boolean autoChargeOrders = true;
 
+    /**
+     * The alert manager.
+     */
+    private final AlertManager alerts;
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -119,7 +124,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
         OrderCharger charger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
                                                 help.subtopic("order"));
-        manager = new OrderChargeManager(charger, container);
+        alerts = new AlertManager(container);
+        manager = new OrderChargeManager(charger, alerts.getListener());
     }
 
     /**
@@ -167,6 +173,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             } else {
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
+
+                editor.setAlertListener(alerts.getListener());
                 editor.setAddItemListener(new Runnable() {
                     @Override
                     public void run() {

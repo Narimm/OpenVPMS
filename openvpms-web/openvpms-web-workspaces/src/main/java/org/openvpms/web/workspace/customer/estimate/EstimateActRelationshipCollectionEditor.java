@@ -11,15 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.AbstractChargeItemRelationshipCollectionEditor;
+import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 
 /**
  * Estimate item collection editor.
@@ -27,6 +30,11 @@ import org.openvpms.web.workspace.customer.charge.AbstractChargeItemRelationship
  * @author Tim Anderson
  */
 public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemRelationshipCollectionEditor {
+
+    /**
+     * The edit context.
+     */
+    private ChargeEditContext editContext;
 
     /**
      * Constructs an {@link EstimateActRelationshipCollectionEditor}.
@@ -37,6 +45,40 @@ public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemR
      */
     public EstimateActRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
+        editContext = new ChargeEditContext(context);
+    }
+
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit {@code object}
+     */
+    @Override
+    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+        return initialiseEditor(new EstimateItemEditor((Act) object, (Act) getObject(), getEditContext(),
+                                                       context));
+    }
+
+    /**
+     * Initialises an editor.
+     *
+     * @param editor the editor
+     * @return the editor
+     */
+    protected IMObjectEditor initialiseEditor(EstimateItemEditor editor) {
+        editor.setProductListener(getProductListener()); // register the listener to expand templates
+        return editor;
+    }
+
+    /**
+     * Returns the edit context.
+     *
+     * @return the edit context
+     */
+    protected ChargeEditContext getEditContext() {
+        return editContext;
     }
 
 }

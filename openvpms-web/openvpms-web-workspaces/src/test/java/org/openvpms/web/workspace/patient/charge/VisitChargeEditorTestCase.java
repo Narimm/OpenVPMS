@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.charge;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.app.LocalContext;
@@ -45,7 +46,9 @@ public class VisitChargeEditorTestCase extends AbstractAppTest {
     public void testNewInstance() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         Act event = (Act) create(PatientArchetypes.CLINICAL_EVENT);
-        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        LocalContext localContext = new LocalContext();
+        localContext.setPractice(TestHelper.getPractice());
+        LayoutContext context = new DefaultLayoutContext(localContext, new HelpContext("foo", null));
         VisitChargeEditor editor = new VisitChargeEditor(charge, event, context);
 
         IMObjectEditor newInstance = editor.newInstance();

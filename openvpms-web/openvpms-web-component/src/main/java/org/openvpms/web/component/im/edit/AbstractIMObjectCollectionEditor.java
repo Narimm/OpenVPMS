@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -78,6 +79,11 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * The error listener.
      */
     private ErrorListener errorListener;
+
+    /**
+     * The alert listener.
+     */
+    private AlertListener alertListener;
 
     /**
      * Constructs an {@link AbstractIMObjectCollectionEditor}.
@@ -222,6 +228,26 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     @Override
     public ErrorListener getErrorListener() {
         return errorListener;
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        this.alertListener = listener;
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public AlertListener getAlertListener() {
+        return alertListener;
     }
 
     /**
