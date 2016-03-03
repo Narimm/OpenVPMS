@@ -11,19 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
@@ -45,13 +45,12 @@ import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.workflow.checkin.AbstractPrintPatientDocumentsTask;
-import org.openvpms.web.workspace.workflow.checkin.NewFlowSheetTask;
+import org.openvpms.web.workspace.workflow.checkin.AddFlowSheetTask;
 import org.openvpms.web.workspace.workflow.checkin.PrintPatientActTask;
 
 
@@ -63,20 +62,9 @@ import org.openvpms.web.workspace.workflow.checkin.PrintPatientActTask;
 public class TransferWorkflow extends WorkflowImpl {
 
     /**
-     * The task.
-     */
-    private final Act task;
-
-    /**
      * The initial context.
      */
     private TaskContext initial;
-
-    /**
-     * The flow sheet service factory.
-     */
-    private final FlowSheetServiceFactory factory;
-
 
     /**
      * Constructs a {@link TransferWorkflow}.
@@ -87,9 +75,6 @@ public class TransferWorkflow extends WorkflowImpl {
      */
     public TransferWorkflow(Act task, Context context, HelpContext help) {
         super(help);
-        this.task = task;
-        factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-
         ActBean bean = new ActBean(task);
         Party customer = (Party) bean.getNodeParticipant("customer");
         Party patient = (Party) bean.getNodeParticipant("patient");
@@ -103,6 +88,7 @@ public class TransferWorkflow extends WorkflowImpl {
         context.setCustomer(customer);
         context.setPatient(patient);
         context.setLocation(location);
+        context.setObject(PatientArchetypes.CLINICAL_EVENT, null); // use the current visit for the patient
 
         initial = new DefaultTaskContext(context, help);
 
@@ -112,8 +98,9 @@ public class TransferWorkflow extends WorkflowImpl {
         addTask(new SelectIMObjectTask<>(query, help.topic("worklist")));
         addTask(new UpdateWorkListTask(task));
 
+        FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
         if (location != null && factory.supportsSmartFlowSheet(location)) {
-            addTask(new AddFlowSheetTask(help));
+            addTask(new AddFlowSheetTask(task, factory, help));
         }
 
         addTask(new PrintPatientDocumentsTask(getHelpContext()));
@@ -153,40 +140,6 @@ public class TransferWorkflow extends WorkflowImpl {
             super.edit(editor, context);
             if (editor instanceof TaskActEditor) {
                 ((TaskActEditor) editor).setWorkList(context.getWorkList());
-            }
-        }
-    }
-
-    private class AddFlowSheetTask extends Tasks {
-
-        /**
-         * Constructs a {@link AddFlowSheetTask}.
-         *
-         * @param help the help context
-         */
-        public AddFlowSheetTask(HelpContext help) {
-            super(help);
-        }
-
-        /**
-         * Initialise any tasks.
-         *
-         * @param context the task context
-         */
-        @Override
-        protected void initialise(TaskContext context) {
-            Party workList = context.getWorkList();
-            if (workList != null) {
-                IMObjectBean bean = new IMObjectBean(workList);
-                if (bean.getBoolean("createFlowSheet")) {
-                    MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-                    Act visit = rules.getEventForAddition(context.getPatient().getObjectReference(),
-                                                          task.getActivityStartTime(), null);
-                    if (!visit.isNew()) {
-                        addTask(new NewFlowSheetTask(task, visit, true, context.getLocation(), factory,
-                                                     context.getHelpContext()));
-                    }
-                }
             }
         }
     }
@@ -267,12 +220,14 @@ public class TransferWorkflow extends WorkflowImpl {
          */
         @Override
         protected Act getEvent(Act document, TaskContext context) {
-            Act event = null;
-            ActBean bean = new ActBean(document);
-            IMObjectReference patient = bean.getNodeParticipantRef("patient");
-            if (patient != null) {
-                MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-                event = rules.getEvent(patient, document.getActivityStartTime());
+            Act event = super.getEvent(document, context);
+            if (event == null) {
+                ActBean bean = new ActBean(document);
+                IMObjectReference patient = bean.getNodeParticipantRef("patient");
+                if (patient != null) {
+                    MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+                    event = rules.getEvent(patient, document.getActivityStartTime());
+                }
             }
             return event;
         }
