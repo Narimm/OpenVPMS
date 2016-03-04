@@ -92,62 +92,87 @@ public class EmailTemplateEvaluator {
      * Returns the email subject.
      *
      * @param template the template
-     * @return the email subject
+     * @param object   the object to evaluate expressions against
+     * @param context  the context, used to locate the object to evaluate
+     * @return the email subject. May be {@code null}
      */
-    public String getSubject(Entity template) {
-        IMObjectBean bean = new IMObjectBean(template, service);
-        return bean.getString("subject");
+    public String getSubject(Entity template, Object object, Context context) {
+        return evaluate(template, "subject", "subjectType", object, context);
     }
 
     /**
      * Returns the email message.
      *
      * @param template the template
+     * @param object   the object to evaluate expressions against
      * @param context  the context, used to locate the object to report on
      * @return the email message, as HTML or an HTML fragment, or {@code null} if no content was present
      */
-    public String getMessage(Entity template, Context context) {
-        String result;
-        IMObjectBean bean = new IMObjectBean(template, service);
-        String type = bean.getString("contentType", "TEXT");
-        switch (type) {
-            case "TEXT":
-                result = evaluateText(bean);
-                break;
-            case "MACRO":
-                result = evaluateMacros(bean, context);
-                break;
-            case "XPATH":
-                result = evaluateXPath(bean, context);
-                break;
-            default:
-                result = evaluateDocument(bean, context);
+    public String getMessage(Entity template, Object object, Context context) {
+        String result = evaluate(template, "content", "contentType", object, context);
+        if (result != null) {
+            result = StringEscapeUtils.escapeHtml(result);
         }
         return result;
     }
 
     /**
-     * Evaluates the template content as text.
+     * Evaluates a node.
      *
      * @param template the template
-     * @return the text, with any HTML characters escaped
+     * @param name     the content node name
+     * @param typeName the content type node name
+     * @param object   the object to evaluate expressions against
+     * @param context  the context, used to locate the object to report on
+     * @return the result of the evaluation. May be {@code null}
      */
-    private String evaluateText(IMObjectBean template) {
-        return StringEscapeUtils.escapeHtml(template.getString("content"));
+    private String evaluate(Entity template, String name, String typeName, Object object, Context context) {
+        String result;
+        IMObjectBean bean = new IMObjectBean(template, service);
+        String type = bean.getString(typeName, "TEXT");
+        switch (type) {
+            case "TEXT":
+                result = evaluateText(bean, name);
+                break;
+            case "MACRO":
+                result = evaluateMacros(bean, name, object, context);
+                break;
+            case "XPATH":
+                result = evaluateXPath(bean, name, object, context);
+                break;
+            case "DOCUMENT":
+                result = evaluateDocument(bean, object, context);
+                break;
+            default:
+                result = null;
+        }
+        return result;
+    }
+
+    /**
+     * Evaluates the content as plain text.
+     *
+     * @param template the template
+     * @param name     the content node name
+     * @return the text. May be {@code null}
+     */
+    private String evaluateText(IMObjectBean template, String name) {
+        return template.getString(name);
     }
 
     /**
      * Evaluates the template content as macros.
      *
      * @param template the template
+     * @param name     the content node name
+     * @param object   the object to evaluate against
      * @param context  the context
-     * @return the expanded text, with any HTML characters escaped
+     * @return the expanded text. May be {@code null}
      */
-    private String evaluateMacros(IMObjectBean template, Context context) {
-        String content = template.getString("content");
+    private String evaluateMacros(IMObjectBean template, String name, Object object, Context context) {
+        String content = template.getString(name);
         MacroVariables variables = new MacroVariables(context, service, lookups);
-        String expansion = macros.runAll(content, null, variables, null, true);
-        return StringEscapeUtils.escapeHtml(expansion);
+        return macros.runAll(content, object, variables, null, true);
     }
 
     /**
@@ -157,11 +182,11 @@ public class EmailTemplateEvaluator {
      * @param context  the context
      * @return the result of the expression, with any HTML characters escaped
      */
-    private String evaluateXPath(IMObjectBean template, Context context) {
-        String content = template.getString("content");
+    private String evaluateXPath(IMObjectBean template, String name, Object object, Context context) {
+        String content = template.getString(name);
         MacroVariables variables = new MacroVariables(context, service, lookups);
         variables.declareVariable("nl", "\n");     // to make expressions with newlines simpler
-        Object contextBean = getContextBean(template, context);
+        Object contextBean = getContextBean(template, object, context);
         if (contextBean == null) {
             contextBean = new Object();
         }
@@ -178,9 +203,9 @@ public class EmailTemplateEvaluator {
      * @param context  the context
      * @return the document as HTML
      */
-    private String evaluateDocument(IMObjectBean template, Context context) {
+    private String evaluateDocument(IMObjectBean template, Object object, Context context) {
         String result = null;
-        Object contextBean = getContextBean(template, context);
+        Object contextBean = getContextBean(template, object, context);
         Document document = new TemplateHelper(service).getDocumentFromTemplate((Entity) template.getObject());
         if (document != null) {
             if (DocFormats.HTML_TYPE.equals(document.getMimeType())) {
@@ -195,10 +220,10 @@ public class EmailTemplateEvaluator {
                 }
             } else if (contextBean instanceof IMObject) {
                 ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
-                IMObject object = (IMObject) contextBean;
                 IMReport<IMObject> report = factory.createIMObjectReport(document);
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                report.generate(Collections.singletonList(object), Collections.<String, Object>emptyMap(),
+                report.generate(Collections.singletonList((IMObject) contextBean),
+                                Collections.<String, Object>emptyMap(),
                                 ReportContextFactory.create(context), DocFormats.HTML_TYPE, bytes);
                 result = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
             } else if (Converter.canConvert(document, DocFormats.HTML_TYPE)) {
@@ -210,23 +235,26 @@ public class EmailTemplateEvaluator {
     }
 
     /**
-     * Returns the bean to supply to xpath expressions and documents.
+     * Returns the bean to supply to macros, xpath expressions and documents.
+     * <p/>
+     * If the expression node is populated, it will be evaluated against the object and context, and the result
+     * returned, otherwise the object will be returned.
      *
      * @param template the template
+     * @param object   the object to evaluate against
      * @param context  the context
-     * @return the context bean
+     * @return the context bean.
      */
-    private Object getContextBean(IMObjectBean template, Context context) {
-        Object result = null;
+    private Object getContextBean(IMObjectBean template, Object object, Context context) {
+        Object result;
         String expression = template.getString("expression");
         if (!StringUtils.isBlank(expression)) {
             MacroVariables variables = new MacroVariables(context, service, lookups);
-            JXPathContext jxPathContext = JXPathHelper.newContext(new Object());
-            jxPathContext.setVariables(variables);
-            result = jxPathContext.getValue(expression);
-        }
-        if (result == null) {
-            result = new Object();
+            JXPathContext xpathContext = JXPathHelper.newContext(object);
+            xpathContext.setVariables(variables);
+            result = xpathContext.getValue(expression);
+        } else {
+            result = object;
         }
         return result;
     }

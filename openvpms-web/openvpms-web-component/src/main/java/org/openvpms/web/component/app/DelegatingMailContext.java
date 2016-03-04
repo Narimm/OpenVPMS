@@ -14,70 +14,105 @@
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.mail;
+package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.mail.AddressFormatter;
+import org.openvpms.web.component.mail.MailContext;
 
 import java.util.List;
 
-
 /**
- * Context information to pass to the mail editor.
+ * A {@link MailContext} that delegates to another.
  *
  * @author Tim Anderson
  */
-public interface MailContext {
+public class DelegatingMailContext implements MailContext {
+
+    /**
+     * The context to delegate to.
+     */
+    private final MailContext context;
+
+    /**
+     * Constructs an {@link DelegatingMailContext}.
+     *
+     * @param context the context to delegate to
+     */
+    public DelegatingMailContext(MailContext context) {
+        this.context = context;
+    }
 
     /**
      * Returns the available 'from' email addresses.
      *
      * @return the 'from' email addresses
      */
-    List<Contact> getFromAddresses();
+    @Override
+    public List<Contact> getFromAddresses() {
+        return context.getFromAddresses();
+    }
 
     /**
      * Returns the available 'to' email addresses.
      *
      * @return the 'to' email addresses
      */
-    List<Contact> getToAddresses();
-
+    @Override
+    public List<Contact> getToAddresses() {
+        return context.getToAddresses();
+    }
 
     /**
      * Returns a browser for documents that may be attached to mails.
      *
      * @return a new browser. May be {@code null}
      */
-    Browser<Act> createAttachmentBrowser();
+    @Override
+    public Browser<Act> createAttachmentBrowser() {
+        return context.createAttachmentBrowser();
+    }
 
     /**
      * Returns the object to evaluate macros against.
      *
      * @return the object to evaluate macros against. May be {@code null}
      */
-    Object getMacroContext();
+    @Override
+    public Object getMacroContext() {
+        return context.getMacroContext();
+    }
 
     /**
      * Returns variables to be used in macro expansion.
      *
      * @return variables to use in macro expansion. May be {@code null}
      */
-    Variables getVariables();
+    @Override
+    public Variables getVariables() {
+        return context.getVariables();
+    }
 
     /**
      * Returns a formatter to format 'from' addresses.
      *
      * @return the 'from' address formatter
      */
-    AddressFormatter getFromAddressFormatter();
+    @Override
+    public AddressFormatter getFromAddressFormatter() {
+        return context.getFromAddressFormatter();
+    }
 
     /**
      * Returns a formatter to format 'to' addresses.
      *
      * @return the 'to' address formatter
      */
-    AddressFormatter getToAddressFormatter();
+    @Override
+    public AddressFormatter getToAddressFormatter() {
+        return context.getToAddressFormatter();
+    }
 }

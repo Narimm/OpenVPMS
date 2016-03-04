@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -196,6 +197,16 @@ public abstract class Reporter<T> {
      */
     public void setFields(Map<String, Object> fields) {
         this.fields = fields;
+    }
+
+    /**
+     * Returns the document template.
+     *
+     * @return the document template, or {@code null} if this report isn't generated from a template
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public DocumentTemplate getTemplate() {
+        return null;
     }
 
     /**

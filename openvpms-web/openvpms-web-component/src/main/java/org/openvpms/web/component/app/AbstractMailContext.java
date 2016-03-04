@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -34,18 +34,14 @@ import org.openvpms.web.component.mail.ToAddressFormatter;
 public abstract class AbstractMailContext implements MailContext {
 
     /**
+     * The object to evaluate macros against. May be {@code null}
+     */
+    private Object macroContext;
+
+    /**
      * The attachment browser factory. May be {@code null}
      */
     private AttachmentBrowserFactory factory;
-
-    /**
-     * Registers a factory for attachment browsers.
-     *
-     * @param factory the factory. May be {@code null}
-     */
-    public void setAttachmentBrowserFactory(AttachmentBrowserFactory factory) {
-        this.factory = factory;
-    }
 
     /**
      * Returns a browser for documents that may be attached to mails.
@@ -54,6 +50,16 @@ public abstract class AbstractMailContext implements MailContext {
      */
     public Browser<Act> createAttachmentBrowser() {
         return (factory != null) ? factory.createBrowser(this) : null;
+    }
+
+    /**
+     * Returns the object to evaluate macros against.
+     *
+     * @return the object to evaluate macros against. May be {@code null}
+     */
+    @Override
+    public Object getMacroContext() {
+        return macroContext;
     }
 
     /**
@@ -82,4 +88,23 @@ public abstract class AbstractMailContext implements MailContext {
     public AddressFormatter getToAddressFormatter() {
         return new ToAddressFormatter();
     }
+
+    /**
+     * Registers a factory for attachment browsers.
+     *
+     * @param factory the factory. May be {@code null}
+     */
+    protected void setAttachmentBrowserFactory(AttachmentBrowserFactory factory) {
+        this.factory = factory;
+    }
+
+    /**
+     * Registers an object to evaluate macros against.
+     *
+     * @param object the object. May be {@code null}
+     */
+    protected void setMacroContext(Object object) {
+        this.macroContext = object;
+    }
+
 }

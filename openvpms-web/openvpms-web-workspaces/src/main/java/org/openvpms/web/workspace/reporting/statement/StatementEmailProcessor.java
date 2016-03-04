@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -74,11 +74,6 @@ public class StatementEmailProcessor extends AbstractStatementProcessorListener 
     private final PracticeEmailAddresses addresses;
 
     /**
-     * The email subject.
-     */
-    private final String emailSubject;
-
-    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
@@ -132,7 +127,6 @@ public class StatementEmailProcessor extends AbstractStatementProcessorListener 
         if (emailTemplate == null) {
             throw new StatementProcessorException(InvalidConfiguration, "No email document template configured");
         }
-        emailSubject = evaluator.getSubject(emailTemplate);
     }
 
     /**
@@ -158,13 +152,14 @@ public class StatementEmailProcessor extends AbstractStatementProcessorListener 
             EmailAddress email = addresses.getAddress(statement.getCustomer());
             helper.setFrom(email.getAddress(), email.getName());
             helper.setTo(to);
-            helper.setSubject(emailSubject);
             Context local = new LocalContext();
             local.setCustomer(statement.getCustomer());
             local.setLocation(context.getLocation());
             local.setPractice(context.getPractice());
             local.setUser(context.getUser());
-            String text = evaluator.getMessage(emailTemplate, local);
+            String subject = evaluator.getSubject(emailTemplate, statement.getCustomer(), context);
+            String text = evaluator.getMessage(emailTemplate, statement.getCustomer(), local);
+            helper.setSubject(subject);
             helper.setText(text, true);
             Iterable<IMObject> objects = getActs(statement);
             Reporter reporter = ReporterFactory.create(objects, statementTemplate, TemplatedReporter.class);
