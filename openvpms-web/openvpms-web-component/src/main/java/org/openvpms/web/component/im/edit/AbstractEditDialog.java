@@ -18,8 +18,8 @@ package org.openvpms.web.component.im.edit;
 
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,11 +53,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * The editor.
      */
     private IMObjectEditor editor;
-
-    /**
-     * The message and editor container.
-     */
-    private Column container = new Column();
 
     /**
      * The alert manager.
@@ -143,9 +138,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
                                  Context context, HelpContext help) {
         super(title, STYLE, buttons, help);
         this.context = context;
-        container = new Column();
-        getLayout().add(container);
-        alerts = new AlertManager(container);
+        alerts = new AlertManager(getContentPane(), 2);
         setModal(true);
         setEditor(editor);
         this.save = save;
@@ -437,13 +430,14 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param focus     if {@code true}, move the focus
      */
     protected void setComponent(Component component, FocusGroup group, HelpContext context, boolean focus) {
+        SplitPane layout = getLayout();
         if (current != null) {
-            container.remove(current);
+            layout.remove(current);
         }
         if (currentGroup != null) {
             getFocusGroup().remove(currentGroup);
         }
-        container.add(component);
+        layout.add(component);
         getFocusGroup().add(0, group);
         if (focus && getParent() != null) {
             // focus in the component
@@ -458,11 +452,15 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Removes the existing component and any alerts.
      */
     protected void removeComponent() {
-        container.removeAll();
+        if (current != null) {
+            getLayout().remove(current);
+            current = null;
+        }
+        alerts.clear();
         if (currentGroup != null) {
             getFocusGroup().remove(currentGroup);
+            currentGroup = null;
         }
-        currentGroup = null;
         helpContext = null;
     }
 
