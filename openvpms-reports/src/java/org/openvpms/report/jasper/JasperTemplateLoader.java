@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -49,8 +49,7 @@ import static org.openvpms.report.ReportException.ErrorCode.FailedToFindSubRepor
 /**
  * Helper for loading and compiling jasper report templates.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class JasperTemplateLoader {
 
@@ -62,33 +61,30 @@ public class JasperTemplateLoader {
     /**
      * The sub-reports.
      */
-    private final List<JasperReport> subReports = new ArrayList<JasperReport>();
+    private final List<JasperReport> subReports = new ArrayList<>();
 
     /**
      * Report parameters.
      */
-    private final Map<String, Object> parameters = new HashMap<String, Object>();
+    private final Map<String, Object> parameters = new HashMap<>();
 
 
     /**
-     * Constructs a <tt>JasperTemplateLoader</tt>.
+     * Constructs a {@link JasperTemplateLoader}.
      *
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
      * @throws ReportException if the report cannot be created
      */
-    public JasperTemplateLoader(Document template, IArchetypeService service,
-                                DocumentHandlers handlers) {
+    public JasperTemplateLoader(Document template, IArchetypeService service, DocumentHandlers handlers) {
         InputStream stream = null;
         try {
             DocumentHandler handler = handlers.get(template);
             stream = handler.getContent(template);
             JasperDesign report = JRXmlLoader.load(stream);
             init(template.getName(), report, service, handlers);
-        } catch (DocumentException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
-        } catch (JRException exception) {
+        } catch (DocumentException | JRException exception) {
             throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
         } finally {
             IOUtils.closeQuietly(stream);
@@ -96,7 +92,7 @@ public class JasperTemplateLoader {
     }
 
     /**
-     * Constructs a new <code>JasperTemplateLoader</code>.
+     * Constructs a {@link JasperTemplateLoader}.
      *
      * @param design   the master report design
      * @param service  the archetype service
@@ -145,13 +141,8 @@ public class JasperTemplateLoader {
      */
     protected void init(String name, JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
         try {
-            if (design.getDetailSection() != null) {
-                for (JRBand band : design.getDetailSection().getBands()) {
-                    compileSubReports(band, design, name, service, handlers);
-                }
-            }
-            if (design.getSummary() != null) {
-                compileSubReports(design.getSummary(), design, name, service, handlers);
+            for (JRBand band : design.getAllBands()) {
+                compileSubReports(band, design, name, service, handlers);
             }
             report = JasperCompileManager.compileReport(design);
         } catch (JRException exception) {
@@ -183,7 +174,6 @@ public class JasperTemplateLoader {
                 // replace the original expression with a parameter
                 JRDesignExpression expression = new JRDesignExpression();
                 expression.setText("$P{" + reportName + "}");
-                expression.setValueClass(JasperReport.class);
                 subReport.setExpression(expression);
 
                 JasperReport compiled = JasperCompileManager.compileReport(report);
@@ -203,7 +193,7 @@ public class JasperTemplateLoader {
      * Returns the name from a report.
      *
      * @param report the report
-     * @return the report name. May be <tt>null</tt>
+     * @return the report name. May be {@code null}
      */
     private String getReportName(JRDesignSubreport report) {
         JRExpression expression = report.getExpression();
