@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
@@ -145,7 +145,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      */
     protected void scheduleJobs() {
         ArchetypeQuery query = new ArchetypeQuery(JOB_SHORT_NAME, true);
-        Iterator<IMObject> iterator = new IMObjectQueryIterator<IMObject>(query);
+        Iterator<IMObject> iterator = new IMObjectQueryIterator<>(query);
         while (iterator.hasNext()) {
             try {
                 schedule(iterator.next());
@@ -174,7 +174,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
         } catch (ClassNotFoundException exception) {
             throw new SchedulerException(exception);
         }
-        Class runner = type.isAssignableFrom(StatefulJob.class) ? StatefulJobRunner.class : JobRunner.class;
+        Class runner = StatefulJob.class.isAssignableFrom(type) ? StatefulJobRunner.class : JobRunner.class;
         job.setJobClass(runner);
         job.getJobDataMap().put("Configuration", configuration);
         job.getJobDataMap().put("ApplicationContext", context);

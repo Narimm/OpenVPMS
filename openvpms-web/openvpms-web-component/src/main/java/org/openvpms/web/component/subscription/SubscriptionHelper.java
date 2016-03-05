@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.subscription;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -61,7 +62,7 @@ public class SubscriptionHelper {
     /**
      * Formats the current subscription, if any.
      *
-     * @return the subscription message
+     * @return the subscription message, possibly containing HTML
      */
     public static String formatSubscription(IArchetypeService service) {
         Subscription subscription = getSubscription(service);
@@ -166,8 +167,10 @@ public class SubscriptionHelper {
             if (user == null) {
                 user = name;
             }
+            user = StringEscapeUtils.escapeHtml(user);
             if (expiryDate != null) {
                 String date = DateFormatter.getFullDateFormat().format(expiryDate);
+                date = StringEscapeUtils.escapeHtml(date);
                 if (DateRules.compareDates(expiryDate, now) < 0) {
                     result = Messages.format("subscription.summary.expired", user, date);
                 } else if (Days.daysBetween(new DateTime(now), new DateTime(expiryDate)).getDays() <= 21) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -80,6 +80,7 @@ import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentRemin
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesState;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
+import org.openvpms.web.workspace.workflow.checkin.TransferWorkflow;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
 
 import java.util.Date;
@@ -118,6 +119,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * SMS reminder button identifier.
      */
     private static final String REMIND_ID = "button.sms.remind";
+
+    /**
+     * The transfer button.
+     */
+    private static final String TRANSFER_ID = "button.transfer";
 
     /**
      * Constructs an {@link AppointmentCRUDWindow}.
@@ -322,6 +328,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.add(checkIn);
         buttons.add(createConsultButton());
         buttons.add(createCheckOutButton());
+        buttons.add(TRANSFER_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onTransfer();
+            }
+        });
         buttons.add(createOverTheCounterButton());
         buttons.add(createFlowSheetButton());
         buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'C', new ActionListener() {
@@ -361,6 +372,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         super.enableButtons(buttons, enable);
         boolean checkInEnabled = false;
         boolean checkoutConsultEnabled = false;
+        boolean transferEnabled = false;
         boolean smsEnabled = false;
         if (enable) {
             Act act = getObject();
@@ -372,14 +384,14 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 checkInEnabled = false;
                 checkoutConsultEnabled = true;
             }
-            if (actions.canSMS(act)) {
-                smsEnabled = true;
-            }
+            transferEnabled = actions.canTransfer(act);
+            smsEnabled = actions.canSMS(act);
         }
         buttons.setEnabled(NEW_ID, canCreateAppointment());
         buttons.setEnabled(CHECKIN_ID, checkInEnabled);
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
+        buttons.setEnabled(TRANSFER_ID, transferEnabled);
         buttons.setEnabled(OVER_THE_COUNTER_ID, browser.isAppointmentsSelected());
         buttons.setEnabled(REMIND_ID, smsEnabled);
     }
@@ -431,6 +443,19 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                     onRefresh(getObject());
                 }
             });
+            workflow.start();
+        } else {
+            onRefresh(getObject());
+        }
+    }
+
+    /**
+     * Invoked when the 'transfer' button is pressed.
+     */
+    private void onTransfer() {
+        Act act = IMObjectHelper.reload(getObject());
+        if (act != null && getActions().canTransfer(act)) {
+            TransferWorkflow workflow = new TransferWorkflow(act, getContext(), getHelpContext());
             workflow.start();
         } else {
             onRefresh(getObject());
@@ -777,6 +802,21 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             return AppointmentStatus.PENDING.equals(act.getStatus())
                    && DateRules.compareDateToToday(act.getActivityStartTime()) >= 0
                    && SMSHelper.canSMS((Party) bean.getNodeParticipant("customer"));
+        }
+
+        /**
+         * Determines if a patient can't be transferred to a work list.
+         *
+         * @param act the act
+         * @return {@code true} if the patient can be transferred
+         */
+        public boolean canTransfer(Act act) {
+            String status = act.getStatus();
+            return AppointmentStatus.CHECKED_IN.equals(status)
+                   || AppointmentStatus.IN_PROGRESS.equals(status)
+                   || AppointmentStatus.ADMITTED.equals(status)
+                   || AppointmentStatus.BILLED.equals(status)
+                   || AppointmentStatus.COMPLETED.equals(status);
         }
     }
 

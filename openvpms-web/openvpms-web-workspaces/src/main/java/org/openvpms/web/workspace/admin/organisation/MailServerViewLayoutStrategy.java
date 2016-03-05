@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -29,8 +29,7 @@ public class MailServerViewLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Exclude the password node from display.
      */
-    private static final ArchetypeNodes NODES
-            = new ArchetypeNodes().exclude("mailPassword");
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("password");
 
     /**
      * Constructs an {@link MailServerViewLayoutStrategy}.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -68,22 +68,33 @@ public class TemplateHelper {
      *
      * @param name the document name
      * @return the document associated with an <em>act.documentTemplate</em>
-     *         having the specified name, or {@code null} if none is found
+     * having the specified name, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocument(String name) {
         Document result = null;
+        DocumentAct act = getDocumentAct(name);
+        if (act != null) {
+            result = (Document) get(act.getDocument());
+        }
+        return result;
+    }
+
+    /**
+     * Retrieves a document template act with matching name.
+     *
+     * @param name the name
+     * @return the first <em>act.documentTemplate</em> having the specified name, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public DocumentAct getDocumentAct(String name) {
         ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT, false, true);
         query.add(Constraints.eq("name", name));
         query.add(Constraints.sort("id"));
         query.setFirstResult(0);
         query.setMaxResults(1);
         Iterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
-        if (iterator.hasNext()) {
-            DocumentAct act = iterator.next();
-            result = (Document) get(act.getDocument());
-        }
-        return result;
+        return (iterator.hasNext()) ? iterator.next() : null;
     }
 
     /**
@@ -92,7 +103,7 @@ public class TemplateHelper {
      *
      * @param shortName the archetype short name
      * @return the template corresponding to {@code shortName} or {@code null}
-     *         if none can be found
+     * if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTemplateForArchetype(String shortName) {
@@ -174,7 +185,7 @@ public class TemplateHelper {
      *
      * @param shortName the archetype short name
      * @return the template corresponding to {@code shortName} or {@code null}
-     *         if none can be found
+     * if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocumentForArchetype(String shortName) {
