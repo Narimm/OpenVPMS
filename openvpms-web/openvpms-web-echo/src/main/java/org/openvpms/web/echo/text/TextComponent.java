@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.text;
 
 import nextapp.echo2.app.text.Document;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Abstract base class for text-entry components.
@@ -43,9 +44,25 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
     private boolean haveCursorPosition;
 
     /**
+     * Determines if the component supports cursor positioning.
+     */
+    private boolean supportsCursorPosition = true;
+
+    /**
      * Determines if the text has been received from the client. Note that the text may be null.
      */
     private boolean haveText;
+
+    /**
+     * The text, prior to it being updated by {@link #processInput}. This is used to avoid sending
+     * redundant updates back to the client.
+     */
+    private String textPreUpdate;
+
+    /**
+     * Determines if {@link #processInput} is currently being invoked.
+     */
+    private boolean inProcessInput = false;
 
     /**
      * Constructs a {@link TextComponent} with the specified {@code Document} as its model.
@@ -69,25 +86,52 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
      */
     @Override
     public void processInput(String inputName, Object inputValue) {
-        if (TEXT_CHANGED_PROPERTY.equals(inputName)) {
-            if (haveCursorPosition) {
-                setText((String) inputValue);
-                haveCursorPosition = false;
+        try {
+            inProcessInput = true;
+            if (TEXT_CHANGED_PROPERTY.equals(inputName)) {
+                if (!supportsCursorPosition || haveCursorPosition) {
+                    textPreUpdate = (String) inputValue;
+                    setText(textPreUpdate);
+                    haveCursorPosition = false;
+                } else {
+                    pending = (String) inputValue;
+                    haveText = true;
+                }
+            } else if (PROPERTY_CURSOR_POSITION.equals(inputName)) {
+                setProperty(PROPERTY_CURSOR_POSITION, inputValue);
+                if (!commitPending()) {
+                    haveCursorPosition = true;
+                }
             } else {
-                pending = (String) inputValue;
-                haveText = true;
+                if (INPUT_ACTION.equals(inputName)) {
+                    commitPending();
+                    haveCursorPosition = false;
+                }
+                super.processInput(inputName, inputValue);
             }
-        } else if (PROPERTY_CURSOR_POSITION.equals(inputName)) {
-            setProperty(PROPERTY_CURSOR_POSITION, inputValue);
-            if (!commitPending()) {
-                haveCursorPosition = true;
+        } finally {
+            textPreUpdate = null;
+            inProcessInput = false;
+        }
+    }
+
+    /**
+     * Reports a bound property change to <code>PropertyChangeListener</code>s
+     * and to the <code>ApplicationInstance</code>'s update management system.
+     *
+     * @param propertyName the name of the changed property
+     * @param oldValue     the previous value of the property
+     * @param newValue     the present value of the property
+     */
+    @Override
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        if (inProcessInput && TEXT_CHANGED_PROPERTY.equals(propertyName)) {
+            // don't update the client if the text hasn't changed.
+            if (!StringUtils.equals(textPreUpdate, (String) newValue)) {
+                super.firePropertyChange(propertyName, oldValue, newValue);
             }
         } else {
-            if (INPUT_ACTION.equals(inputName)) {
-                commitPending();
-                haveCursorPosition = false;
-            }
-            super.processInput(inputName, inputValue);
+            super.firePropertyChange(propertyName, oldValue, newValue);
         }
     }
 
@@ -115,6 +159,15 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
     }
 
     /**
+     * Determines if the component supports cursor positioning.
+     *
+     * @param supportsCursorPosition if {@code true}, the component supports cursor positioning
+     */
+    protected void setSupportsCursorPosition(boolean supportsCursorPosition) {
+        this.supportsCursorPosition = supportsCursorPosition;
+    }
+
+    /**
      * Commits any pending text.
      *
      * @return if there was pending text
@@ -122,9 +175,11 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
     private boolean commitPending() {
         if (haveText) {
             try {
+                textPreUpdate = pending;
                 setText(pending);
             } finally {
                 pending = null;
+                textPreUpdate = null;
                 haveText = false;
             }
             return true;

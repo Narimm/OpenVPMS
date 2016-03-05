@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
 
 import org.apache.commons.io.IOUtils;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -90,7 +91,7 @@ public class DocumentTestHelper {
      * @return a new template
      */
     public static Entity createDocumentTemplate(String archetype, Document document) {
-        Entity entity = (Entity) TestHelper.create("entity.documentTemplate");
+        Entity entity = (Entity) TestHelper.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         IMObjectBean template = new IMObjectBean(entity);
         template.setValue("name", document.getName());
         template.setValue("archetype", archetype);
@@ -125,6 +126,24 @@ public class DocumentTestHelper {
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("template", template);
         TestHelper.save(Arrays.asList(act, template, document));
+    }
+
+    /**
+     * Creates a text <em>entity.documentTemplateEmail</em>.
+     *
+     * @param subject the email subject
+     * @param message the email message
+     * @return a new template
+     */
+    public static Entity createEmailTemplate(String subject, String message) {
+        Entity entity = (Entity) TestHelper.create(DocumentArchetypes.EMAIL_TEMPLATE);
+        IMObjectBean template = new IMObjectBean(entity);
+        template.setValue("name", subject);
+        template.setValue("subject", subject);
+        template.setValue("contentType", "TEXT");
+        template.setValue("content", message);
+        TestHelper.save(entity);
+        return entity;
     }
 
     /**

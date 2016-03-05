@@ -34,7 +34,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -163,11 +162,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Before
     public void setUp() {
-        ILookupService lookups = getLookupService();
         rules = new ProductPriceRules(getArchetypeService());
         Party practice = TestHelper.getPractice();
         taxRules = new TaxRules(practice, getArchetypeService());
-        handlers = new DocumentHandlers();
+        handlers = new DocumentHandlers(getArchetypeService());
 
         Date today = DateRules.getToday();
         Date tomorrow = DateRules.getTomorrow();

@@ -107,7 +107,8 @@ public class SubscriptionHelper {
         if (act != null && act.getDocument() != null) {
             Document document = (Document) service.get(act.getDocument());
             if (document != null) {
-                DocumentHandler documentHandler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT);
+                DocumentHandler documentHandler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT,
+                                                                             service);
                 InputStream content = documentHandler.getContent(document);
                 result = SubscriptionFactory.create(content);
             }

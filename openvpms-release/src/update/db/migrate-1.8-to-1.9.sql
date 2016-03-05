@@ -410,9 +410,9 @@ INSERT INTO entity_details (entity_id, name, type, value)
 UPDATE entity_details d
   JOIN entities e
     ON d.entity_id = e.entity_id
-       AND e.arch_short_name = "entity.productDose"
-       AND d.name = "roundType"
-SET d.name = "roundTo";
+       AND e.arch_short_name = 'entity.productDose'
+       AND d.name = 'roundType'
+SET d.name = 'roundTo';
 
 
 #
@@ -549,7 +549,7 @@ CREATE PROCEDURE OBF239_modify_node_descriptors()
     SET _count = (SELECT count(*)
                   FROM INFORMATION_SCHEMA.COLUMNS
                   WHERE
-                    TABLE_NAME = "node_descriptors" AND TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = "default_value" AND
+                    TABLE_NAME = 'node_descriptors' AND TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = 'default_value' AND
                     CHARACTER_MAXIMUM_LENGTH < 5000);
     IF _count = 1
     THEN
@@ -687,11 +687,10 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
     '1.0',
     'AD_HOC_EMAIL',
     'Ad-hoc Email',
-    null,
+    NULL,
     0
-  from dual
-  WHERE NOT exists(SELECT
-                     *
+  FROM dual
+  WHERE NOT exists(SELECT *
                    FROM lookups e
                    WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'AD_HOC_EMAIL');
 
@@ -704,11 +703,10 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
     '1.0',
     'AD_HOC_SMS',
     'Ad-hoc SMS',
-    null,
+    NULL,
     0
-  from dual
-  WHERE NOT exists(SELECT
-                     *
+  FROM dual
+  WHERE NOT exists(SELECT *
                    FROM lookups e
                    WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'AD_HOC_SMS');
 
@@ -721,11 +719,10 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
     '1.0',
     'PATIENT_REMINDER',
     'Patient reminder',
-    null,
+    NULL,
     0
-  from dual
-  WHERE NOT exists(SELECT
-                     *
+  FROM dual
+  WHERE NOT exists(SELECT *
                    FROM lookups e
                    WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'PATIENT_REMINDER');
 
@@ -738,15 +735,132 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
     '1.0',
     'FORWARDED_DOCUMENT',
     'Forwarded Document',
-    null,
+    NULL,
     0
-  from dual
-  WHERE NOT exists(SELECT
-                     *
+  FROM dual
+  WHERE NOT exists(SELECT *
                    FROM lookups e
-                   WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'FORWARDED_DOCUMENT');
+                   WHERE e.arch_short_name = 'lookup.customerCommunicationReason'
+                         AND e.code = 'FORWARDED_DOCUMENT');
 
 # Migrate granted_authorities
 UPDATE granted_authorities g
 SET archetype = 'act.customerCommunication*'
 WHERE archetype = 'act.customerNote';
+
+#
+# Migrate entity.documentTemplate emailSubject and emailText for to entity.documentTemplateEmail for
+# OVPMS-1729 HTML emails
+#
+DROP TABLE IF EXISTS tmp_email_templates;
+CREATE TEMPORARY TABLE tmp_email_templates (
+  linkId    VARCHAR(36) PRIMARY KEY,
+  source_id BIGINT(20) NOT NULL,
+  entity_id BIGINT(20),
+  name      VARCHAR(255),
+  subject   VARCHAR(5000),
+  text      VARCHAR(5000),
+  active    BIT(1)
+);
+
+INSERT INTO tmp_email_templates (linkId, source_id, name, subject, text, active)
+  SELECT
+    e.linkId,
+    e.entity_id,
+    e.name,
+    if(isnull(emailSubject.value), e.name, emailSubject.value),
+    emailText.value,
+    e.active
+  FROM entities e
+    LEFT JOIN entity_details emailSubject
+      ON e.entity_id = emailSubject.entity_id
+         AND emailSubject.name = 'emailSubject'
+    JOIN entity_details emailText
+      ON e.entity_id = emailText.entity_id
+         AND emailText.name = 'emailText'
+  WHERE e.arch_short_name = 'entity.documentTemplate';
+
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
+  SELECT
+    1,
+    linkId,
+    'entity.documentTemplateEmail',
+    '1.0',
+    name,
+    active
+  FROM tmp_email_templates t
+  WHERE NOT exists(
+      SELECT *
+      FROM entities e
+      WHERE e.arch_short_name = 'entity.documentTemplateEmail'
+            AND e.linkId = t.linkId);
+
+UPDATE tmp_email_templates t
+  JOIN entities e
+    ON t.linkId = e.linkId
+       AND e.arch_short_name = 'entity.documentTemplateEmail'
+SET t.entity_id = e.entity_id;
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'subject',
+    'string',
+    t.subject
+  FROM tmp_email_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'subject');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'contentType',
+    'string',
+    'TEXT'
+  FROM tmp_email_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'contentType');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'content',
+    'string',
+    t.text
+  FROM tmp_email_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'content');
+
+#
+# Link the templates to their email templates
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    linkId,
+    'entityLink.documentTemplateEmail',
+    '1.0',
+    'Email Template',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    t.source_id,
+    t.entity_id
+  FROM tmp_email_templates t
+  WHERE NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = t.source_id AND l.arch_short_name = 'entityLink.documentTemplateEmail');
+
+DELETE d
+FROM entity_details d
+  JOIN tmp_email_templates t
+    ON d.entity_id = t.source_id
+       AND d.name IN ('emailSubject', 'emailText');
+
+DROP TABLE tmp_email_templates;

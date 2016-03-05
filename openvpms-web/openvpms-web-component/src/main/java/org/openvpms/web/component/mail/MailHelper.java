@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -28,18 +28,6 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 class MailHelper {
-
-    /**
-     * Helper to create a mandatory property.
-     *
-     * @param name the property name
-     * @param key  the message resource bundle key
-     * @param trim if {@code true} trim the string of leading and trailing spaces, new lines
-     * @return a new property
-     */
-    static SimpleProperty createProperty(String name, String key, boolean trim) {
-        return createProperty(name, key, trim, null, null);
-    }
 
     /**
      * Helper to create a mandatory property.

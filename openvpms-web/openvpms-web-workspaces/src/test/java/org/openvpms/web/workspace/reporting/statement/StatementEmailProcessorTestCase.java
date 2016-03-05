@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -41,6 +41,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
+import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.OpenVPMSApp;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -86,13 +87,15 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         IMObjectBean bean = new IMObjectBean(entity);
         bean.setValue("name", "Statement");
         bean.setValue("archetype", CustomerAccountArchetypes.OPENING_BALANCE);
-        bean.setValue("emailSubject", "Statement email");
-        bean.setValue("emailText", "Statement text");
         if (entity.isNew() || helper.getDocumentAct(entity) == null) {
             DocumentTestHelper.createDocumentTemplate(entity);
-        } else {
             bean.save();
         }
+        if (bean.getNodeTargetObjectRef("email") == null) {
+            bean.addNodeTarget("email", DocumentTestHelper.createEmailTemplate("Statement Email", "Statement Text"));
+            bean.save();
+        }
+        bean.save();
     }
 
     /**
@@ -126,7 +129,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         assertEquals(1, acts.size());
         checkAct(acts.get(0), invoice1.get(0), POSTED);
 
-        final List<Statement> statements = new ArrayList<Statement>();
+        final List<Statement> statements = new ArrayList<>();
         StatementProcessor processor = new StatementProcessor(statementDate, practice, getArchetypeService(),
                                                               getLookupService(),
                                                               ServiceHelper.getBean(CustomerAccountRules.class));
@@ -137,7 +140,10 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         });
         processor.process(customer);
         assertEquals(1, statements.size());
-        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, practice, new LocalContext());
+        EmailTemplateEvaluator evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(),
+                                                                      ServiceHelper.getMacros());
+        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, evaluator, practice,
+                                                                             new LocalContext());
         emailProcessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
     }

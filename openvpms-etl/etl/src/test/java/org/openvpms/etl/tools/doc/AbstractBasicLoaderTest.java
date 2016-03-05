@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -58,7 +58,8 @@ public abstract class AbstractBasicLoaderTest extends AbstractLoaderTest {
      */
     protected LoaderListener load(File source, String shortName, File target, boolean overwrite) {
         String[] shortNames = shortName != null ? new String[]{shortName} : null;
-        Loader loader = createLoader(source, shortNames, getArchetypeService(), new DefaultDocumentFactory(),
+        Loader loader = createLoader(source, shortNames, getArchetypeService(),
+                                     new DefaultDocumentFactory(getArchetypeService()),
                                      transactionManager, overwrite);
         LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
         load(loader, listener);

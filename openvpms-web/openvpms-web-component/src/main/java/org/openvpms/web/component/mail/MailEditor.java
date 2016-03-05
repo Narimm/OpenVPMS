@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -31,6 +31,9 @@ import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableModel;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -41,7 +44,7 @@ import org.openvpms.macro.Macros;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
@@ -54,6 +57,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
@@ -66,14 +70,22 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 import org.openvpms.web.echo.table.DefaultTableCellRenderer;
-import org.openvpms.web.echo.text.TextArea;
+import org.openvpms.web.echo.text.MacroExpander;
+import org.openvpms.web.echo.text.RichTextArea;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
+import java.io.IOException;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import static org.openvpms.web.echo.style.Styles.LARGE_INSET;
@@ -119,7 +131,7 @@ public class MailEditor extends AbstractModifiable {
     /**
      * The document attachment references.
      */
-    private List<DocRef> documents = new ArrayList<DocRef>();
+    private List<DocRef> documents = new ArrayList<>();
 
     /**
      * The listeners.
@@ -153,6 +165,21 @@ public class MailEditor extends AbstractModifiable {
     private DoubleClickMonitor monitor = new DoubleClickMonitor();
 
     /**
+     * The message editor.
+     */
+    private RichTextArea messageEditor;
+
+    /**
+     * The macro expanded.
+     */
+    private final MacroExpander macroExpander;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(MailEditor.class);
+
+    /**
      * Constructs a {@link MailEditor}.
      * <p/>
      * If no 'to' addresses are supplied the address will be editable, otherwise it will be read-only.
@@ -166,13 +193,33 @@ public class MailEditor extends AbstractModifiable {
         header = new MailHeader(mailContext, preferredTo, context);
         this.context = context.getContext();
         this.help = context.getHelpContext();
-        Variables variables = mailContext.getVariables();
-        Macros macros = ServiceHelper.getMacros();
+        final Variables variables = mailContext.getVariables();
+        final Macros macros = ServiceHelper.getMacros();
 
-        message = MailHelper.createProperty("message", "mail.message", false, macros, variables);
+        message = new SimpleProperty("message", null, String.class, Messages.get("mail.message"));
+        message.setTransformer(new StringPropertyTransformer(message, false) {
+            protected void checkCharacters(String string) {
+                // no-op. OpenOffice doesn't use HTML entities for ASCII characters used by Word (e.g 226 for emdash)
+                // They seem to be translated correctly in the browser however.
+            }
+        });
         message.setRequired(false);
         message.setMaxLength(-1);     // no maximum length
+        message.setValue(" ");        // hack so that Firefox displays the correct font size etc
         // message.addModifiableListener(listener); TODO
+        macroExpander = new MacroExpander() {
+            @Override
+            public String expand(String macro) {
+                String result = null;
+                try {
+                    result = macros.run(macro, null, variables);
+                } catch (Throwable exception) {
+                    log.info("Failed to expand macro: " + macro, exception);
+                }
+                return result;
+            }
+        };
+        messageEditor = createMessageEditor(message);
     }
 
     /**
@@ -250,10 +297,28 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Returns the message to send.
      *
-     * @return the message to send
+     * @return the message to send. May be {@code null}
      */
     public String getMessage() {
-        return (String) message.getValue();
+        String result = null;
+        String value = message.getString();
+        if (!StringUtils.isBlank(value)) {
+            // make sure the result is well formed html.
+            result = "<html><body>" + value + "</body></html>";
+        }
+        return result;
+    }
+
+    /**
+     * Sets the message to send.
+     *
+     * @param message the message to send. May be {@code null}
+     */
+    public void setMessage(String message) {
+        if (message != null) {
+            message = filter(message);
+        }
+        this.message.setValue(message);
     }
 
     /**
@@ -315,7 +380,7 @@ public class MailEditor extends AbstractModifiable {
         if (documents.isEmpty()) {
             result = Collections.emptyList();
         } else {
-            result = new ArrayList<IMObjectReference>();
+            result = new ArrayList<>();
             for (DocRef doc : documents) {
                 result.add(doc.getReference());
             }
@@ -431,6 +496,15 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
+     * Returns the listener for keyboard shortcuts.
+     *
+     * @return the listener
+     */
+    public KeyStrokeListener getKeyStrokeListener() {
+        return messageEditor.getListener();
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -446,18 +520,11 @@ public class MailEditor extends AbstractModifiable {
      * @param message the message property
      * @return a message editor
      */
-    protected TextArea createMessageEditor(Property message) {
-        TextArea result = BoundTextComponentFactory.createTextArea(message);
+    protected RichTextArea createMessageEditor(Property message) {
+        BoundRichTextArea result = new BoundRichTextArea(message);
+        result.setMacroExpander(macroExpander);
         result.setStyleName("MailEditor.message");
         return result;
-    }
-
-    /**
-     * Invoked when the address or message updates. Refreshes the display and notifies listeners.
-     */
-    protected void onModified() {
-        modified = true;
-        listeners.notifyListeners(this);
     }
 
     /**
@@ -545,14 +612,11 @@ public class MailEditor extends AbstractModifiable {
         GridLayoutData rightInset = new GridLayoutData();
         rightInset.setInsets(new Insets(0, 0, inset, 0));
 
-        TextArea messageArea = createMessageEditor(message);
-
         focus.add(header.getFocusGroup());
-        focus.add(messageArea);
+        focus.add(messageEditor);
         focus.setDefault(header.getFocusGroup().getDefaultFocus());
-
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "MailEditor", header.getComponent(),
-                                       ColumnFactory.create(LARGE_INSET, messageArea));
+                                       ColumnFactory.create(LARGE_INSET, messageEditor));
     }
 
     /**
@@ -633,6 +697,73 @@ public class MailEditor extends AbstractModifiable {
     private String getSize(long size, long divisor, String key) {
         BigDecimal result = new BigDecimal(size).divide(BigDecimal.valueOf(divisor), BigDecimal.ROUND_CEILING);
         return Messages.format(key, result);
+    }
+
+    /**
+     * Filters html to extract the inner html of the body tag. This is required by the rich text area editor.
+     *
+     * @param html the html to filter
+     * @return the filtered html
+     */
+    private String filter(String html) {
+        String result;
+        // also see http://stackoverflow.com/questions/9022140/using-xpath-contains-against-html-in-java
+        // for an xpath version
+        ParserDelegator delegator = new ParserDelegator();
+        final StringBuilder buffer = new StringBuilder();
+        try {
+            delegator.parse(new StringReader(html), new HTMLEditorKit.ParserCallback() {
+                @Override
+                public void handleStartTag(HTML.Tag tag, MutableAttributeSet a, int pos) {
+                    if (!filter(tag)) {
+                        buffer.append('<').append(tag.toString()).append('>');
+                    }
+                }
+
+                @Override
+                public void handleText(char[] data, int pos) {
+                    buffer.append(new String(data));
+                }
+
+                @Override
+                public void handleEndTag(HTML.Tag tag, int pos) {
+                    if (!filter(tag)) {
+                        buffer.append("</").append(tag.toString()).append(">");
+                    }
+                }
+
+                @Override
+                public void handleSimpleTag(HTML.Tag tag, MutableAttributeSet a, int pos) {
+                    if (!filter(tag)) {
+                        buffer.append("<").append(tag.toString());
+                        append(a);
+                        buffer.append("/>");
+                    }
+                }
+
+                protected boolean filter(HTML.Tag tag) {
+                    return tag == HTML.Tag.HTML || tag == HTML.Tag.HEAD || tag == HTML.Tag.BODY
+                           || tag == HTML.Tag.META || tag == HTML.Tag.STYLE || tag == HTML.Tag.TITLE
+                           || tag == HTML.Tag.SCRIPT;
+                }
+
+                private void append(MutableAttributeSet a) {
+                    Enumeration<?> names = a.getAttributeNames();
+                    if (names.hasMoreElements()) {
+                        buffer.append(' ');
+                        while (names.hasMoreElements()) {
+                            String name = names.nextElement().toString();
+                            buffer.append(name).append('=').append(a.getAttribute(name));
+                        }
+                    }
+                }
+            }, true);
+            result = buffer.toString();
+        } catch (IOException exception) {
+            // do nothing
+            result = null;
+        }
+        return result;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.macro;
@@ -30,6 +30,7 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.text.RichTextArea;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -111,26 +112,50 @@ public class MacroDialog extends PopupDialog {
         if (component != null && component instanceof TextComponent) {
             TextComponent text = (TextComponent) component;
             if (text.isEnabled() && text.isVisible()) {
-                int position = text.getCursorPosition();
-                String value = text.getText();
-                String code = macro.getCode();
-                if (value != null) {
-                    if (position < value.length()) {
-                        value = value.substring(0, position) + code + value.substring(position);
-                    } else {
-                        value += code;
-                    }
+                if (text instanceof RichTextArea) {
+                    expandMacro((RichTextArea) text, macro);
                 } else {
-                    value = code;
+                    insertMacro(text, macro);
                 }
-                text.setText(value);
-
-                // move the cursor along to either the end of the macro (if it fails to expand), or the end of
-                // the macro expansion
-                text.setCursorPosition(text.getCursorPosition() + code.length());
             }
         }
         onClose();
+    }
+
+    /**
+     * Expands a macro at the current cursor position within a rich text area
+     *
+     * @param text  the rich text area
+     * @param macro the macro
+     */
+    private void expandMacro(RichTextArea text, Lookup macro) {
+        text.insertMacro(macro.getCode());
+    }
+
+    /**
+     * Inserts a macro at the current cursor position within a text field.
+     *
+     * @param text  the text field
+     * @param macro the macro
+     */
+    private void insertMacro(TextComponent text, Lookup macro) {
+        int position = text.getCursorPosition();
+        String value = text.getText();
+        String code = macro.getCode();
+        if (value != null) {
+            if (position < value.length()) {
+                value = value.substring(0, position) + code + value.substring(position);
+            } else {
+                value += code;
+            }
+        } else {
+            value = code;
+        }
+        text.setText(value);
+
+        // move the cursor along to either the end of the macro (if it fails to expand), or the end of
+        // the macro expansion
+        text.setCursorPosition(text.getCursorPosition() + code.length());
     }
 
 }

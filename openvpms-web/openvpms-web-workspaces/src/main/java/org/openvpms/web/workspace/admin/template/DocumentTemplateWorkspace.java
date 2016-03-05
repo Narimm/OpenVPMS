@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.template;
@@ -36,7 +36,8 @@ public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
      */
     public DocumentTemplateWorkspace(Context context) {
         super("admin", "documentTemplate", context);
-        setArchetypes(Entity.class, DocumentArchetypes.DOCUMENT_TEMPLATE, "entity.documentTemplateSMS*");
+        setArchetypes(Entity.class, DocumentArchetypes.DOCUMENT_TEMPLATE, DocumentArchetypes.EMAIL_TEMPLATE,
+                      "entity.documentTemplateSMS*");
     }
 
     /**
