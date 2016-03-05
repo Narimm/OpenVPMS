@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="participation.document.1.0"
@@ -23,11 +23,12 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entity.documentTemplate"/>
+                        <property name="shortName" value="entity.documentTemplate"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.documentTemplateEmail"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node displayName="Document" name="act" path="/act" minCardinality="1" maxCardinality="1"
@@ -35,11 +36,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="act.documentTemplate"/>
+                        <property name="shortName" value="act.documentTemplate"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
     </archetype>

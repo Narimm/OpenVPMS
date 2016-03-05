@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -129,4 +129,13 @@ public class DocFormats {
      */
     public static final String TEXT_EXT = "txt";
 
+    /**
+     * HTML mime type.
+     */
+    public static final String HTML_TYPE = "text/html";
+
+    /**
+     * HTML file extension.
+     */
+    public static final String HTML_EXT = "html";
 }

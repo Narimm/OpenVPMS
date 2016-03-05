@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock.io;
@@ -54,7 +54,7 @@ public class StockCSVWriterReaderTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        handlers = new DocumentHandlers();
+        handlers = new DocumentHandlers(getArchetypeService());
     }
 
     /**

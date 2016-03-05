@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -155,7 +155,7 @@ public class DocumentLoader {
             if (service == null) {
                 service = (IArchetypeService) getContext().getBean("archetypeService");
             }
-            DocumentFactory factory = new DefaultDocumentFactory();
+            DocumentFactory factory = new DefaultDocumentFactory(service);
             LoaderListener listener = (config.getBoolean("verbose"))
                                       ? new LoggingLoaderListener(log, target, error, rename)
                                       : new DefaultLoaderListener(target, error, rename);

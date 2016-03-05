@@ -189,14 +189,15 @@
     </bean>
 
     <bean id="documentHandlers" class="org.openvpms.archetype.rules.doc.DocumentHandlers">
-        <property name="documentHandlers">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg>
             <list>
                 <ref bean="imageDocumentHandler"/>
                 <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
                     <constructor-arg ref="archetypeRuleService"/>
                 </bean>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
 </beans>

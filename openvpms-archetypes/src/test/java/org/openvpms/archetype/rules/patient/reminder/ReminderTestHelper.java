@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -239,7 +239,7 @@ public class ReminderTestHelper extends TestHelper {
         InputStream stream = ReminderTestHelper.class.getResourceAsStream(file);
         assertNotNull(stream);
 
-        DocumentHandlers handlers = new DocumentHandlers();
+        DocumentHandlers handlers = new DocumentHandlers(ArchetypeServiceHelper.getArchetypeService());
         DocumentHandler handler = handlers.get(file, mimeType);
         Document document = handler.create(file, stream, mimeType, -1);
 

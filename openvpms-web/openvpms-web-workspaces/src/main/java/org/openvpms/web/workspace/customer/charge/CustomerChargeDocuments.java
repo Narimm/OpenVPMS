@@ -13,6 +13,7 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.event.ActionEvent;

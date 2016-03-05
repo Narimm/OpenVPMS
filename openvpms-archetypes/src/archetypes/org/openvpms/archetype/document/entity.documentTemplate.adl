@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -138,11 +138,9 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="emailSubject" path="/details/emailSubject" type="java.lang.String" minCardinality="0"
-              maxLength="80"/>
-        <node name="emailText" displayName="Email Body" path="/details/emailText" type="java.lang.String"
-              minCardinality="0"
-              maxLength="1000"/>
+        <node name="email" displayName="Email Template" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.documentTemplateEmail"/>
         <node name="sms" displayName="SMS" path="/details/sms" type="java.lang.String"
               minCardinality="0" maxLength="160"/>
         <node name="fileNameFormat" path="/classifications" parentChild="false" type="java.util.HashSet"
