@@ -748,13 +748,14 @@ EPRTA = function (elementId) {
 
     this.currentHTML = null;
     this.toolbarItems = [];
+    this.keyCombinations = [];
     EP.ObjectMap.put(elementId, this);
 };
 
 //------------------------------------------------------------
 // Delayed load of RTA features.
 //------------------------------------------------------------
-EPRTA.prototype.create = function (rtaDoc, rtaWin, rtaIFrame, initialHTML, spellCheckInProgress) {
+EPRTA.prototype.create = function (rtaDoc, rtaWin, rtaIFrame, initialHTML, spellCheckInProgress, keyCombinations) {
     this.rtaDoc = rtaDoc;
     this.rtaWin = rtaWin;
     this.rtaIFrame = rtaIFrame;
@@ -763,12 +764,17 @@ EPRTA.prototype.create = function (rtaDoc, rtaWin, rtaIFrame, initialHTML, spell
     this.macroBox = null;
     this.macroInput = null;
     this.macroPrompt = 'Enter macro';
+    this.keyCombinations = keyCombinations;
+    this.lastKeyCode = 0;
 
     //
     // single event handler handles multiple events
     EPRTA.addEventHandler("keydown", rtaDoc, this, rtaWin);
     EPRTA.addEventHandler("keypress", rtaDoc, this, rtaWin);
+    EPRTA.addEventHandler("keyup", rtaDoc, this, rtaWin);
     EPRTA.addEventHandler("click", rtaDoc, this, rtaWin);
+    EPRTA.addEventHandler("focus", rtaDoc, this, rtaWin);
+    EPRTA.addEventHandler("blur", rtaDoc, this, rtaWin);
 
     //
     // now create all our previously registered toolbar items
@@ -932,9 +938,8 @@ EPRTA.prototype.updateToolBar = function () {
 //------------------------------------------------------------
 
 EPRTA.prototype.onkey = function (echoEvent) {
-    EP.debug('onkey called')
+    var cmd = null;
     if (echoEvent.ctrlKey) {
-        var cmd = null;
         var key = String.fromCharCode(EP.isIE ? echoEvent.keyCode : echoEvent.charCode).toLowerCase();
         if (key == 'b') {
             cmd = "bold";
@@ -967,6 +972,116 @@ EPRTA.prototype.onkey = function (echoEvent) {
             }
         }
     }
+    // tima
+    if (!cmd && this.keyCombinations && this.keyCombinations.length > 0) {
+        this.processShortcuts(echoEvent);
+    }
+};
+
+// tima - keystroke handling taken from EPKeyStroke
+EPRTA.prototype.processShortcuts = function (echoEvent) {
+    var doAction = false;
+    var keyCode = echoEvent.keyCode;
+    if (echoEvent.type == 'keydown') {
+        keyCode = this.applyMask(echoEvent, keyCode, EPKeyStroke.SHIFT_MASK | EPKeyStroke.CONTROL_MASK | EPKeyStroke.ALT_MASK);
+        doAction = this.hasKeyCombo(keyCode);
+        if (doAction) {
+            this.lastKeyCode = keyCode;
+        }
+    }
+    if (echoEvent.type == 'keyup') {
+        // we only handle shift / control / alt on key up and then only if the last keyCode handled
+        // did not involve some shift / control / alt
+        if (keyCode == 16 || keyCode == 17 || keyCode == 18) {
+            var doKeyTest = false;
+            if (keyCode == 16) {
+                if ((this.lastKeyCode & EPKeyStroke.SHIFT_MASK) != EPKeyStroke.SHIFT_MASK) {
+                    keyCode = this.applyMask(echoEvent, keyCode, EPKeyStroke.CONTROL_MASK | EPKeyStroke.ALT_MASK);
+                    doKeyTest = true;
+                }
+                this.lastKeyCode = this.lastKeyCode && (~EPKeyStroke.SHIFT_MASK);
+            }
+            if (keyCode == 17) {
+                if ((this.lastKeyCode & EPKeyStroke.CONTROL_MASK) != EPKeyStroke.CONTROL_MASK) {
+                    keyCode = this.applyMask(echoEvent, keyCode, EPKeyStroke.SHIFT_MASK | EPKeyStroke.ALT_MASK);
+                    doKeyTest = true;
+                }
+                this.lastKeyCode = this.lastKeyCode && (~EPKeyStroke.CONTROL_MASK);
+            }
+            if (keyCode == 18) {
+                if ((this.lastKeyCode & EPKeyStroke.ALT_MASK) != EPKeyStroke.ALT_MASK) {
+                    keyCode = this.applyMask(echoEvent, keyCode, EPKeyStroke.SHIFT_MASK | EPKeyStroke.CONTROL_MASK);
+                    doKeyTest = true;
+                }
+                this.lastKeyCode = this.lastKeyCode && (~EPKeyStroke.ALT_MASK);
+            }
+            if (doKeyTest) {
+                this.lastKeyCode = 0;
+                doAction = this.hasKeyCombo(keyCode);
+            }
+        }
+    }
+
+    if (doAction) {
+        //debugger;
+        EP.Event.cancelEvent(echoEvent);
+        EchoClientMessage.setActionValue(this.elementId, "keyStroke", '' + keyCode);
+        //
+        // we make the AJAX request asynch so that the keystroke can travel
+        // through the keyboard system and go do its rightful target
+        window.setTimeout("EchoServerTransaction.connect()", 150);
+    }
+};
+
+/**
+ * Applies the given set of masks to the keyCode if the echoevent
+ * actually has the given shit/control/alt combination in effect
+ * at the time of the keystroke
+ */
+EPRTA.prototype.applyMask = function (echoEvent, keyCode, keyMask) {
+    if (((keyMask & EPKeyStroke.SHIFT_MASK) == EPKeyStroke.SHIFT_MASK) && echoEvent.shiftKey) {
+        keyCode = EPKeyStroke.SHIFT_MASK | keyCode;
+    }
+    if (((keyMask & EPKeyStroke.CONTROL_MASK) == EPKeyStroke.CONTROL_MASK) && echoEvent.ctrlKey) {
+        keyCode = EPKeyStroke.CONTROL_MASK | keyCode;
+    }
+    if (((keyMask & EPKeyStroke.ALT_MASK) == EPKeyStroke.ALT_MASK) && echoEvent.altKey) {
+        keyCode = EPKeyStroke.ALT_MASK | keyCode;
+    }
+    return keyCode;
+};
+
+/**
+ * Returns true if the given key combo is handled
+ */
+EPRTA.prototype.hasKeyCombo = function (keyCode) {
+    for (x in this.keyCombinations) {
+        var testKey = this.keyCombinations[x];
+        if (testKey == keyCode) {
+            return true;
+        }
+    }
+    return false;
+};
+
+/**
+ * Handle a focus event.
+ *
+ * @param echoEvent
+ */
+EPRTA.prototype.processFocus = function (echoEvent) {
+    this.updateState();
+    EchoFocusManager.setFocusedState(this.elementId, true);
+};
+
+/**
+ * Handle a blur event.
+ *
+ * @param echoEvent
+ */
+EPRTA.prototype.processBlur = function (echoEvent) {
+    this.updateState();
+    EchoFocusManager.setFocusedState(this.elementId, false);
 };
 
 /**
@@ -1121,8 +1236,12 @@ EPRTA.prototype.eventHandler = function (echoEvent) {
     if (!EchoClientEngine.verifyInput(this.elementId)) {
         return;
     }
-    if (echoEvent.type == "keypress" || echoEvent.type == "keydown") {
+    if (echoEvent.type == "keypress" || echoEvent.type == "keydown" || echoEvent.type == "keyup") {
         this.onkey(echoEvent);
+    } else if (echoEvent.type == "focus") {
+        this.processFocus(echoEvent);
+    } else if (echoEvent.type == "blur") {
+        this.processBlur(echoEvent);
     }
     EPSP.hideSpellingBox(this);
     this.getColorChooser().hide();
@@ -1169,7 +1288,7 @@ EPRTA.prototype.setMacroExpansion = function (macro) {
 // Creates a rich text object for a given elementId by
 // turning the IFRAME into design mode
 //------------------------------------------------------------
-EPRTA.initEditing = function (elementId, htmlDocument, initialText, spellCheckInProgress) {
+EPRTA.initEditing = function (elementId, htmlDocument, initialText, spellCheckInProgress, keyCombinations) {
     var rtaIFrame = document.getElementById(elementId + "IFrame");
     var rtaWin = rtaIFrame.contentWindow;
     var rtaDoc = rtaIFrame.contentWindow.document;
@@ -1192,7 +1311,7 @@ EPRTA.initEditing = function (elementId, htmlDocument, initialText, spellCheckIn
     // get a previously created EPRTA object for load it up with
     // the new values. This implies that it was
     var rta = EP.ObjectMap.get(elementId);
-    rta.create(rtaDoc, rtaWin, rtaIFrame, initialText, spellCheckInProgress);
+    rta.create(rtaDoc, rtaWin, rtaIFrame, initialText, spellCheckInProgress, keyCombinations);
 
     try {
         rta.execCommand("bold", true);
@@ -1249,7 +1368,10 @@ EPRTA.prototype.destroy = function () {
     this.colorChooser.destroy();
     EP.Event.removeHandler("keydown", this.rtaDoc);
     EP.Event.removeHandler("keypress", this.rtaDoc);
+    EP.Event.removeHandler("keyup", this.rtaDoc);
     EP.Event.removeHandler("click", this.rtaDoc);
+    EP.Event.removeHandler("focus", this.rtaDoc);
+    EP.Event.removeHandler("blur", this.rtaDoc);
 };
 
 
@@ -1340,7 +1462,9 @@ EPRTA.MessageProcessor.processInit = function (messageElement) {
         var initialText = item.getAttribute("initialText");
         var spellCheckInProgress = (item.getAttribute("spellCheckInProgress") == "true");
 
-        EPRTA.initEditing(elementId, htmlDocument, initialText, spellCheckInProgress);
+        var keyCombinations = item.getAttribute("keyCombinations").split("|");
+
+        EPRTA.initEditing(elementId, htmlDocument, initialText, spellCheckInProgress, keyCombinations);
 
         // initialise spelling support
         var spelling = item.getElementsByTagName("spelling");
