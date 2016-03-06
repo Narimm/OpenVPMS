@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * Charge context, used to defer manipulation of relationships to patient history until the charge items are saved.
- * <p>
+ * <p/>
  * At save, the approach is:
  * <ol>
  * <li>save charge</li>
@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
+public class ChargeSaveContext implements CollectionPropertyEditor.RemoveHandler {
 
     /**
      * The patient history changes. These exist only as long as a save is in progress.
@@ -61,7 +61,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
     /**
      * Default constructor.
      */
-    public ChargeContext() {
+    public ChargeSaveContext() {
         super();
     }
 
@@ -85,7 +85,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
 
     /**
      * Invoked to remove an object.
-     * <p>
+     * <p/>
      * Removal is deferred until {@link #save()} is invoked.
      *
      * @param object the object to remove
@@ -97,7 +97,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
 
     /**
      * Invoked to remove an object.
-     * <p>
+     * <p/>
      * Removal is deferred until {@link #save()} is invoked.
      *
      * @param editor the object editor

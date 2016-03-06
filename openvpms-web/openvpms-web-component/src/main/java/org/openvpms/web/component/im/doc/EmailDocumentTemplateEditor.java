@@ -142,7 +142,6 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
             handler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT, service);
             jrxmlHandler = new JRXMLDocumentHandler(service);
         }
-
         /**
          * Determines if this handler supports a document.
          *

@@ -86,6 +86,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
         stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
+        save(stockLocation);
         stockRules.updateStock(product, stockLocation, TEN);
 
         // add a linked product. This should *not* be copied

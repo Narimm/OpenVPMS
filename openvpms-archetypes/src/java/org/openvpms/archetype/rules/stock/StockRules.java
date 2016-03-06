@@ -20,6 +20,7 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -28,6 +29,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -80,7 +84,7 @@ public class StockRules {
             Party stockLocation = null;
             for (Entity stockLoc : entities) {
                 stockLocation = (Party) stockLoc;
-                if (getStockRelationship(product, stockLocation) != null) {
+                if (getStockRelationship(product, stockLocation.getObjectReference()) != null) {
                     result = stockLocation;
                     break;
                 }
@@ -93,7 +97,33 @@ public class StockRules {
     }
 
     /**
+     * Returns the stock for a product and stock location.
+     * <p/>
+     * NOTE: this implementation queries persistent values.
+     *
+     * @param product       the product reference
+     * @param stockLocation the stock location
+     * @return the stock
+     */
+    public BigDecimal getStock(IMObjectReference product, IMObjectReference stockLocation) {
+        BigDecimal result = BigDecimal.ZERO;
+        ArchetypeQuery q = new ArchetypeQuery("entityLink.productStockLocation", false, false);
+        q.add(Constraints.eq("source", product));
+        q.add(Constraints.eq("target", stockLocation));
+        q.add(Constraints.sort("id"));  // shouldn't be required as there should only ever be one
+        q.setMaxResults(1);
+        IMObjectQueryIterator<IMObject> iterator = new IMObjectQueryIterator<>(service, q);
+        if (iterator.hasNext()) {
+            IMObjectBean bean = new IMObjectBean(iterator.next());
+            result = bean.getBigDecimal("quantity", BigDecimal.ZERO);
+        }
+        return result;
+    }
+
+    /**
      * Returns the quantity of a product at the specified stock location.
+     * <p/>
+     * NOTE: this implementation returns cached values.
      *
      * @param product       the product
      * @param stockLocation the stock location
@@ -102,7 +132,7 @@ public class StockRules {
      */
     public BigDecimal getStock(Product product, Party stockLocation) {
         BigDecimal result = BigDecimal.ZERO;
-        IMObjectRelationship relationship = getStockRelationship(product, stockLocation);
+        IMObjectRelationship relationship = getStockRelationship(product, stockLocation.getObjectReference());
         if (relationship != null) {
             IMObjectBean bean = new IMObjectBean(relationship, service);
             result = bean.getBigDecimal("quantity", BigDecimal.ZERO);
@@ -111,8 +141,7 @@ public class StockRules {
     }
 
     /**
-     * Updates the stock quantity for a product at the specified stock
-     * location.
+     * Updates the stock quantity for a product at the specified stock location.
      *
      * @param product       the product
      * @param stockLocation the stock location
@@ -120,7 +149,7 @@ public class StockRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void updateStock(Product product, Party stockLocation, BigDecimal quantity) {
-        List<IMObject> toSave = calcStock(product, stockLocation, quantity);
+        List<IMObject> toSave = calcStock(product, stockLocation.getObjectReference(), quantity);
         service.save(toSave);
     }
 
@@ -147,7 +176,7 @@ public class StockRules {
      * @return the corresponding relationship, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObjectRelationship getStockRelationship(Product product, Party stockLocation) {
+    protected IMObjectRelationship getStockRelationship(Product product, IMObjectReference stockLocation) {
         EntityBean prodBean = new EntityBean(product, service);
         Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
         return (IMObjectRelationship) prodBean.getValue("stockLocations", predicate);
@@ -164,8 +193,8 @@ public class StockRules {
      */
     protected List<IMObject> transfer(Product product, Party from, Party to, BigDecimal quantity) {
         List<IMObject> result = new ArrayList<>();
-        result.addAll(calcStock(product, from, quantity.negate()));
-        result.addAll(calcStock(product, to, quantity));
+        result.addAll(calcStock(product, from.getObjectReference(), quantity.negate()));
+        result.addAll(calcStock(product, to.getObjectReference(), quantity));
         return result;
     }
 
@@ -177,14 +206,13 @@ public class StockRules {
      * @param quantity      the quantity to add/remove
      * @return the list of updated objects
      */
-    protected List<IMObject> calcStock(Product product, Party stockLocation, BigDecimal quantity) {
+    protected List<IMObject> calcStock(Product product, IMObjectReference stockLocation, BigDecimal quantity) {
         EntityBean prodBean = new EntityBean(product, service);
         IMObjectRelationship relationship = getStockRelationship(product, stockLocation);
         List<IMObject> toSave = new ArrayList<>();
         if (relationship == null) {
             relationship = prodBean.addNodeTarget("stockLocations", stockLocation);
             toSave.add(product);
-            toSave.add(stockLocation);
         } else {
             toSave.add(relationship);
         }

@@ -11,16 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
-import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 
@@ -39,25 +38,25 @@ public class OrderChargeManager {
     private final OrderCharger charger;
 
     /**
-     * The container to hold messages.
+     * The listener to notify of pending orders.
      */
-    private final Component container;
+    private final AlertListener listener;
 
     /**
-     * The current order message.
+     * The current alert identifier, used to cancel any existing alert.
      */
-    private Component message;
+    private long alertId = -1;
 
 
     /**
      * Constructs an {@link OrderChargeManager}.
      *
-     * @param charger   the charger
-     * @param container the container
+     * @param charger  the charger
+     * @param listener the listener to notify of pending orders
      */
-    public OrderChargeManager(OrderCharger charger, Component container) {
+    public OrderChargeManager(OrderCharger charger, AlertListener listener) {
         this.charger = charger;
-        this.container = container;
+        this.listener = listener;
     }
 
     /**
@@ -65,14 +64,9 @@ public class OrderChargeManager {
      * If so, adds a message to the container.
      */
     public void check() {
-        if (message != null) {
-            container.remove(message);
-            message = null;
-        }
+        cancelAlert();
         if (charger.hasOrders()) {
-            message = new InformationMessage(Messages.format("customer.order.pending",
-                                                             charger.getCustomer().getName()));
-            container.add(message, 0);
+            alertId = listener.onAlert(Messages.format("customer.order.pending", charger.getCustomer().getName()));
         }
     }
 
@@ -106,10 +100,7 @@ public class OrderChargeManager {
      * A message will be added to the container indicating if there are incomplete orders.
      */
     public void chargeCompleted(AbstractCustomerChargeActEditor editor) {
-        if (message != null) {
-            container.remove(message);
-            message = null;
-        }
+        cancelAlert();
         int before = 0;
         int after = 0;
         if (editor != null) {
@@ -129,8 +120,7 @@ public class OrderChargeManager {
             buffer.append(Messages.format("customer.order.charged", after - before));
         }
         if (buffer.length() != 0) {
-            message = new InformationMessage(buffer.toString());
-            container.add(message, 0);
+            alertId = listener.onAlert(buffer.toString());
         }
     }
 
@@ -164,6 +154,16 @@ public class OrderChargeManager {
      */
     public void clear() {
         charger.clear();
+    }
+
+    /**
+     * Cancels any existing message.
+     */
+    private void cancelAlert() {
+        if (alertId != -1) {
+            listener.cancel(alertId);
+            alertId = -1;
+        }
     }
 
 }

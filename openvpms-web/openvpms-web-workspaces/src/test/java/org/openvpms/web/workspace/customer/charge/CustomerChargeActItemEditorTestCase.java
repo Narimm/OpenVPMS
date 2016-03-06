@@ -29,11 +29,9 @@ import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -55,7 +53,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.DoseManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -96,11 +93,6 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     private Context context;
 
     /**
-     * The dose manager.
-     */
-    private DoseManager doseManager;
-
-    /**
      * Sets up the test case.
      */
     @Before
@@ -124,9 +116,6 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.setPractice(getPractice());
         Party location = TestHelper.createLocation();
         context.setLocation(location);
-
-        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
-                                      ServiceHelper.getBean(ProductRules.class));
 
         // set a minimum price for calculated prices. This should only apply to prices calculated using a service ratio
         Lookup currency = TestHelper.getLookup(Currencies.LOOKUP, "AUD");
@@ -272,8 +261,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         // set up the context
         layout.getContext().setUser(author); // to propagate to acts
 
+        CustomerChargeEditContext editContext = createEditContext(layout);
+
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
 
         // populate quantity, patient, clinician.
@@ -497,9 +488,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.setUser(author);
         context.setClinician(clinician);
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        CustomerChargeEditContext editContext = createEditContext(layout);
+        editContext.setEditorQueue(null); // disable popups
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -587,17 +580,47 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     }
 
     /**
+     * Creates an edit context.
+     *
+     * @param layout the layout context
+     * @return a new edit context
+     */
+    private CustomerChargeEditContext createEditContext(LayoutContext layout) {
+        CustomerChargeEditContext editContext = new CustomerChargeEditContext(layout);
+
+        // register a handler for act popups
+        ChargeEditorQueue mgr = new ChargeEditorQueue();
+        editContext.setEditorQueue(mgr);
+        return editContext;
+    }
+
+    /**
      * Creates a charge item editor.
      *
-     * @param charge the charge
-     * @param item   the charge item
-     * @param layout the layout context
+     * @param charge  the charge
+     * @param item    the charge item
+     * @param context the layout context
      * @return a new editor
      */
-    private TestCustomerChargeActItemEditor createEditor(FinancialAct charge, FinancialAct item, LayoutContext layout) {
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
-        editor.setChargeContext(new ChargeContext());
-        editor.setDoseManager(doseManager);
+    private TestCustomerChargeActItemEditor createEditor(FinancialAct charge, FinancialAct item,
+                                                         LayoutContext context) {
+        return createEditor(charge, item, createEditContext(context), context);
+    }
+
+    /**
+     * Creates a charge item editor.
+     *
+     * @param charge        the charge
+     * @param item          the charge item
+     * @param context       the edit context
+     * @param layoutContext the layout context
+     * @return a new editor
+     */
+    private TestCustomerChargeActItemEditor createEditor(FinancialAct charge, FinancialAct item,
+                                                         CustomerChargeEditContext context,
+                                                         LayoutContext layoutContext) {
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, context,
+                                                                                     layoutContext);
         editor.getComponent();
         return editor;
     }
@@ -697,12 +720,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         layout.getContext().setClinician(clinician1);
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
+        CustomerChargeEditContext editContext = createEditContext(layout);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
-
-        // register a handler for act popups
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        editor.setEditorQueue(mgr);
 
         // populate quantity, patient, product. If product1 is a medication, it should trigger a patient medication
         // editor popup
@@ -714,6 +734,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         }
         editor.setProduct(product1);
 
+        ChargeEditorQueue mgr = (ChargeEditorQueue) editContext.getEditorQueue();
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
             if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
                 // invoice items have a dispensing node
@@ -854,15 +875,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.getContext().setUser(author); // to propagate to acts
         context.getContext().setClinician(clinician);
 
-        CustomerChargeActItemEditor editor = new DefaultCustomerChargeActItemEditor(item, charge, context);
-        editor.setChargeContext(new ChargeContext());
-        editor.setDoseManager(doseManager);
+        CustomerChargeActItemEditor editor = new DefaultCustomerChargeActItemEditor(
+                item, charge, createEditContext(context), context);
         editor.getComponent();
         assertFalse(editor.isValid());
-
-        // register a handler for act popups
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        editor.setEditorQueue(mgr);
 
         // populate quantity, patient, product
         editor.setQuantity(quantity);
@@ -915,9 +931,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.setUser(author);
         context.setClinician(clinician);
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        CustomerChargeEditContext context = createEditContext(layout);
+        context.setEditorQueue(null); // disable popups
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, context, layout);
         assertFalse(editor.isValid());
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -983,7 +1001,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         layout.getContext().setUser(author); // to propagate to acts
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
+        CustomerChargeEditContext editContext = createEditContext(layout);
+        editContext.setEditorQueue(null);  // disable popups
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
         assertFalse(editor.isValid());
 
         assertFalse((editor.isDefaultQuantity()));
@@ -1040,9 +1060,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         return template.execute(new TransactionCallback<Boolean>() {
             public Boolean doInTransaction(TransactionStatus status) {
                 PatientHistoryChanges changes = new PatientHistoryChanges(null, null, getArchetypeService());
-                ChargeContext context = new ChargeContext();
+                ChargeSaveContext context = editor.getSaveContext();
                 context.setHistoryChanges(changes);
-                editor.setChargeContext(context);
                 boolean saved = SaveHelper.save(charge);
                 editor.save();
                 if (saved) {
@@ -1061,12 +1080,14 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
          * <p/>
          * This recalculates the tax amount.
          *
-         * @param act     the act to edit
-         * @param parent  the parent act
-         * @param context the layout context
+         * @param act           the act to edit
+         * @param parent        the parent act
+         * @param context       the edit context
+         * @param layoutContext the layout context
          */
-        public TestCustomerChargeActItemEditor(Act act, Act parent, LayoutContext context) {
-            super(act, parent, context);
+        public TestCustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context,
+                                               LayoutContext layoutContext) {
+            super(act, parent, context, layoutContext);
         }
 
         @Override

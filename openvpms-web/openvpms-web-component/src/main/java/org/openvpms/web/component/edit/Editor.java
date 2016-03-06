@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
@@ -41,6 +41,20 @@ public interface Editor extends Modifiable {
      * @return the focus group, or {@code null} if the editor hasn't been rendered
      */
     FocusGroup getFocusGroup();
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    void setAlertListener(AlertListener listener);
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    AlertListener getAlertListener();
 
     /**
      * Disposes of the editor.

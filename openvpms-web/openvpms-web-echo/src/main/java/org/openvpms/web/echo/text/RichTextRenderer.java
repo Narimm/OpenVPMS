@@ -31,7 +31,7 @@ public interface RichTextRenderer extends Serializable {
 
     /**
      * <code>CommandAppearance</code> controls what a command
-     * image looks like when it is rolled over or currently
+     * image looks like when it is rolled over or currently 
      * in a selected state.
      */
     public static interface CommandAppearance {
@@ -86,50 +86,47 @@ public interface RichTextRenderer extends Serializable {
      */
     public static final String CMD_HINT_NEWLINE = "hintNewLine";
     /**
-     * A rendering hint that puts the spacer within the
+     * A rendering hint that puts the spacer within the 
      * RichTextArea toolbar.
      */
     public static final String CMD_HINT_SPACER = "hintSpacer";
 
     /**
-     * This returns a String[n][2] array of font name values and
+     * This returns a String[n][2] array of font name values and 
      * descriptive names.  If null is returned, then the
      * Font Names select field will not be rendered by the
      * RickTextArea.
-     * <p/>
-     * For example {"courier new,courier,monospace","Courier New"},
      *
-     * @param rta       - the RichTextArea component in question
-     * @param userAgent - the user agent string of the client
-     * @return - a [n][2] sized array mapping values to descriptive names.
+     * For example {"courier new,courier,monospace","Courier New"},   
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping values to descriptive names.
      */
     public String[][] getFontNames(RichTextArea rta, String userAgent);
 
     /**
-     * This returns a String[n][2] array of font size values and
+     * This returns a String[n][2] array of font size values and 
      * descriptive names.  If null is returned, then the
      * Font Sizes select field will not be rendered by the
      * RickTextArea.
-     * <p/>
-     * For example {"5","Size 5"},
      *
-     * @param rta       - the RichTextArea component in question
-     * @param userAgent - the user agent string of the client
-     * @return - a [n][2] sized array mapping values to descriptive names.
+     * For example {"5","Size 5"},   
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping values to descriptive names.
      */
     public String[][] getFontSizes(RichTextArea rta, String userAgent);
 
     /**
-     * This returns a String[n][2] array of paragraph style values and
+     * This returns a String[n][2] array of paragraph style values and 
      * descriptive names.  If null is returned, then the
      * Paragraph Styles select field will not be rendered by the
      * RickTextArea.
-     * <p/>
-     * For example {"h1","Heading 1"},
      *
-     * @param rta       - the RichTextArea component in question
-     * @param userAgent - the user agent string of the client
-     * @return - a [n][2] sized array mapping values to descriptive names.
+     * For example {"h1","Heading 1"},   
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping values to descriptive names.
      */
     public String[][] getParagraphStyles(RichTextArea rta, String userAgent);
 
@@ -138,25 +135,24 @@ public interface RichTextRenderer extends Serializable {
      * This returns a String[n][2] array of supported commands and descriptive names.
      * If null is returned, then no commands buttons will be rendered by the
      * RickTextArea.
-     * <p/>
-     * The order of the array is the order in which the commands will be rendered.  The
+     * <p>
+     * The order of the array is the order in which the commands will be rendered.  The 
      * special markers
-     *
-     * @param rta       - the RichTextArea component in question
-     * @param userAgent - the user agent string of the client
-     * @return - a [n][2] sized array mapping command values to descriptive names.
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping command values to descriptive names.
      */
     public String[][] getSupportedCommands(RichTextArea rta, String userAgent);
 
     /**
      * This returns an image for a given RTA command.
-     * <p/>
+     * <p> 
      * This function will only be called for commands that have been allowed via
      * a previous call to the getSupportedCommands method.
      *
-     * @param rta       - the RichTextArea component in question
-     * @param userAgent - the user agent string of the client
-     * @param command   - the command in question
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @param command - the command in question
      * @return - an ImageReference for the command
      */
     public ImageReference getCommandImage(RichTextArea rta, String userAgent, String command);
@@ -165,10 +161,10 @@ public interface RichTextRenderer extends Serializable {
     /**
      * This returns the appearance of the command button images.  This denotes
      * the standard borders and backgrounds and well as rollover and stateful
-     * appearance.
+     * appearance.  
      *
-     * @param rta       - the RichTextArea component in question
-     * @param userAgent - the user agent string of the client
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
      * @return - an CommandAppearance instance
      */
     public CommandAppearance getCommandAppearance(RichTextArea rta, String userAgent);

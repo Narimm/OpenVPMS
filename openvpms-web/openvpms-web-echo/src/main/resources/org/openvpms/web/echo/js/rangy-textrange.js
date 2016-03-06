@@ -1,19 +1,3 @@
-/*
- * Version: 1.0
- *
- * The contents of this file are subject to the OpenVPMS License Version
- * 1.0 (the 'License'); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.openvpms.org/license/
- *
- * Software distributed under the License is distributed on an 'AS IS' basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
- */
-
 /**
  * Text range module for Rangy.
  * Text-based manipulation and searching of ranges and selections.
@@ -79,20 +63,20 @@
  * Problem is whether Rangy should ever acknowledge the space and if so, when. Another problem is whether this can be
  * feature-tested
  */
-(function (factory, root) {
+(function(factory, root) {
     if (typeof define == "function" && define.amd) {
         // AMD. Register as an anonymous module with a dependency on Rangy.
         define(["./rangy-core"], factory);
     } else if (typeof module != "undefined" && typeof exports == "object") {
         // Node/CommonJS style
-        module.exports = factory(require("rangy"));
+        module.exports = factory( require("rangy") );
     } else {
         // No AMD or CommonJS support so we use the rangy property of root (probably the global variable)
         // factory(root.rangy);
         factory(window.rangy); // tima
     }
-})(function (rangy) {
-    rangy.createModule("TextRange", ["WrappedSelection"], function (api, module) {
+})(function(rangy) {
+    rangy.createModule("TextRange", ["WrappedSelection"], function(api, module) {
         var UNDEF = "undefined";
         var CHARACTER = "character", WORD = "word";
         var dom = api.dom, util = api.util;
@@ -118,7 +102,7 @@
         var trailingSpaceBeforeBlockCollapses = false;
         var trailingSpaceBeforeLineBreakInPreLineCollapses = true;
 
-        (function () {
+        (function() {
             var el = dom.createTestElement(document, "<p>1 </p><p></p>", true);
             var p = el.firstChild;
             var sel = api.getSelection();
@@ -147,12 +131,12 @@
             var word = chars.join(""), result, tokenRanges = [];
 
             function createTokenRange(start, end, isWord) {
-                tokenRanges.push({start: start, end: end, isWord: isWord});
+                tokenRanges.push( { start: start, end: end, isWord: isWord } );
             }
 
             // Match words and mark characters
             var lastWordEnd = 0, wordStart, wordEnd;
-            while ((result = wordOptions.wordRegex.exec(word))) {
+            while ( (result = wordOptions.wordRegex.exec(word)) ) {
                 wordStart = result.index;
                 wordEnd = wordStart + result[0].length;
 
@@ -163,7 +147,7 @@
 
                 // Get trailing space characters for word
                 if (wordOptions.includeTrailingSpace) {
-                    while (nonLineBreakWhiteSpaceRegex.test(chars[wordEnd])) {
+                    while ( nonLineBreakWhiteSpaceRegex.test(chars[wordEnd]) ) {
                         ++wordEnd;
                     }
                 }
@@ -184,7 +168,7 @@
             var token = {
                 isWord: tokenRange.isWord,
                 chars: tokenChars,
-                toString: function () {
+                toString: function() {
                     return tokenChars.join("");
                 }
             };
@@ -197,8 +181,8 @@
         function tokenize(chars, wordOptions, tokenizer) {
             var tokenRanges = tokenizer(chars, wordOptions);
             var tokens = [];
-            for (var i = 0, tokenRange; tokenRange = tokenRanges[i++];) {
-                tokens.push(convertCharRangeToToken(chars, tokenRange));
+            for (var i = 0, tokenRange; tokenRange = tokenRanges[i++]; ) {
+                tokens.push( convertCharRangeToToken(chars, tokenRange) );
             }
             return tokens;
         }
@@ -217,7 +201,7 @@
 
             // Normalize ignored characters into a string consisting of characters in ascending order of character code
             var ignoredCharsArray = (typeof ignoredChars == "string") ? ignoredChars.split("") : ignoredChars;
-            ignoredCharsArray.sort(function (char1, char2) {
+            ignoredCharsArray.sort(function(char1, char2) {
                 return char1.charCodeAt(0) - char2.charCodeAt(0);
             });
 
@@ -302,7 +286,7 @@
 
         // Test for old IE's incorrect display properties
         var tableCssDisplayBlock;
-        (function () {
+        (function() {
             var table = document.createElement("table");
             var body = getBody(document);
             body.appendChild(table);
@@ -330,7 +314,7 @@
             return (display == "block" &&
                     tableCssDisplayBlock &&
                     defaultDisplayValueForTag.hasOwnProperty(tagName)) ?
-                   defaultDisplayValueForTag[tagName] : display;
+                defaultDisplayValueForTag[tagName] : display;
         }
 
         function isHidden(node) {
@@ -347,20 +331,20 @@
         function isVisibilityHiddenTextNode(textNode) {
             var el;
             return textNode.nodeType == 3 &&
-                   (el = textNode.parentNode) &&
-                   getComputedStyleProperty(el, "visibility") == "hidden";
+                (el = textNode.parentNode) &&
+                getComputedStyleProperty(el, "visibility") == "hidden";
         }
 
         /*----------------------------------------------------------------------------------------------------------------*/
 
-
+    
         // "A block node is either an Element whose "display" property does not have
         // resolved value "inline" or "inline-block" or "inline-table" or "none", or a
         // Document, or a DocumentFragment."
         function isBlockNode(node) {
             return node &&
-                   ((node.nodeType == 1 && !/^(inline(-block|-table)?|none)$/.test(getComputedDisplay(node))) ||
-                    node.nodeType == 9 || node.nodeType == 11);
+                ((node.nodeType == 1 && !/^(inline(-block|-table)?|none)$/.test(getComputedDisplay(node))) ||
+                node.nodeType == 9 || node.nodeType == 11);
         }
 
         function getLastDescendantOrSelf(node) {
@@ -369,7 +353,8 @@
         }
 
         function containsPositions(node) {
-            return dom.isCharacterDataNode(node) || !/^(area|base|basefont|br|col|frame|hr|img|input|isindex|link|meta|param)$/i.test(node.nodeName);
+            return dom.isCharacterDataNode(node) ||
+                !/^(area|base|basefont|br|col|frame|hr|img|input|isindex|link|meta|param)$/i.test(node.nodeName);
         }
 
         function getAncestors(node) {
@@ -441,7 +426,7 @@
             var computedWhiteSpace = getComputedStyleProperty(node.parentNode, "whiteSpace");
 
             return (/^[\t\n\r ]+$/.test(text) && /^(normal|nowrap)$/.test(computedWhiteSpace)) ||
-                   (/^[\t\r ]+$/.test(text) && computedWhiteSpace == "pre-line");
+                (/^[\t\r ]+$/.test(text) && computedWhiteSpace == "pre-line");
         }
 
         // Adpated from Aryeh's code.
@@ -477,18 +462,18 @@
         function isCollapsedNode(node) {
             var type = node.nodeType;
             return type == 7 /* PROCESSING_INSTRUCTION */ ||
-                   type == 8 /* COMMENT */ ||
-                   isHidden(node) ||
-                   /^(script|style)$/i.test(node.nodeName) ||
-                   isVisibilityHiddenTextNode(node) ||
-                   isCollapsedWhitespaceNode(node);
+                type == 8 /* COMMENT */ ||
+                isHidden(node) ||
+                /^(script|style)$/i.test(node.nodeName) ||
+                isVisibilityHiddenTextNode(node) ||
+                isCollapsedWhitespaceNode(node);
         }
 
         function isIgnoredNode(node, win) {
             var type = node.nodeType;
             return type == 7 /* PROCESSING_INSTRUCTION */ ||
-                   type == 8 /* COMMENT */ ||
-                   (type == 1 && getComputedDisplay(node, win) == "none");
+                type == 8 /* COMMENT */ ||
+                (type == 1 && getComputedDisplay(node, win) == "none");
         }
 
         /*----------------------------------------------------------------------------------------------------------------*/
@@ -500,11 +485,11 @@
         }
 
         Cache.prototype = {
-            get: function (key) {
+            get: function(key) {
                 return this.store.hasOwnProperty(key) ? this.store[key] : null;
             },
 
-            set: function (key, value) {
+            set: function(key, value) {
                 return this.store[key] = value;
             }
         };
@@ -512,7 +497,7 @@
         var cachedCount = 0, uncachedCount = 0;
 
         function createCachingGetter(methodName, func, objProperty) {
-            return function (args) {
+            return function(args) {
                 var cache = this.cache;
                 if (cache.hasOwnProperty(methodName)) {
                     cachedCount++;
@@ -536,12 +521,12 @@
         }
 
         var nodeProto = {
-            getPosition: function (offset) {
+            getPosition: function(offset) {
                 var positions = this.positions;
                 return positions.get(offset) || positions.set(offset, new Position(this, offset));
             },
 
-            toString: function () {
+            toString: function() {
                 return "[NodeWrapper(" + dom.inspectNode(this.node) + ")]";
             }
         };
@@ -549,15 +534,15 @@
         NodeWrapper.prototype = nodeProto;
 
         var EMPTY = "EMPTY",
-                NON_SPACE = "NON_SPACE",
-                UNCOLLAPSIBLE_SPACE = "UNCOLLAPSIBLE_SPACE",
-                COLLAPSIBLE_SPACE = "COLLAPSIBLE_SPACE",
-                TRAILING_SPACE_BEFORE_BLOCK = "TRAILING_SPACE_BEFORE_BLOCK",
-                TRAILING_SPACE_IN_BLOCK = "TRAILING_SPACE_IN_BLOCK",
-                TRAILING_SPACE_BEFORE_BR = "TRAILING_SPACE_BEFORE_BR",
-                PRE_LINE_TRAILING_SPACE_BEFORE_LINE_BREAK = "PRE_LINE_TRAILING_SPACE_BEFORE_LINE_BREAK",
-                TRAILING_LINE_BREAK_AFTER_BR = "TRAILING_LINE_BREAK_AFTER_BR",
-                INCLUDED_TRAILING_LINE_BREAK_AFTER_BR = "INCLUDED_TRAILING_LINE_BREAK_AFTER_BR";
+            NON_SPACE = "NON_SPACE",
+            UNCOLLAPSIBLE_SPACE = "UNCOLLAPSIBLE_SPACE",
+            COLLAPSIBLE_SPACE = "COLLAPSIBLE_SPACE",
+            TRAILING_SPACE_BEFORE_BLOCK = "TRAILING_SPACE_BEFORE_BLOCK",
+            TRAILING_SPACE_IN_BLOCK = "TRAILING_SPACE_IN_BLOCK",
+            TRAILING_SPACE_BEFORE_BR = "TRAILING_SPACE_BEFORE_BR",
+            PRE_LINE_TRAILING_SPACE_BEFORE_LINE_BREAK = "PRE_LINE_TRAILING_SPACE_BEFORE_LINE_BREAK",
+            TRAILING_LINE_BREAK_AFTER_BR = "TRAILING_LINE_BREAK_AFTER_BR",
+            INCLUDED_TRAILING_LINE_BREAK_AFTER_BR = "INCLUDED_TRAILING_LINE_BREAK_AFTER_BR";
 
         extend(nodeProto, {
             isCharacterDataNode: createCachingGetter("isCharacterDataNode", dom.isCharacterDataNode, "node"),
@@ -572,7 +557,7 @@
             next: createCachingGetter("nextPos", nextNode, "node"),
             previous: createCachingGetter("previous", previousNode, "node"),
 
-            getTextNodeInfo: createCachingGetter("textNodeInfo", function (textNode) {
+            getTextNodeInfo: createCachingGetter("textNodeInfo", function(textNode) {
                 var spaceRegex = null, collapseSpaces = false;
                 var cssWhitespace = getComputedStyleProperty(textNode.parentNode, "whiteSpace");
                 var preLine = (cssWhitespace == "pre-line");
@@ -593,7 +578,7 @@
                 };
             }, "node"),
 
-            hasInnerText: createCachingGetter("hasInnerText", function (el, backward) {
+            hasInnerText: createCachingGetter("hasInnerText", function(el, backward) {
                 var session = this.session;
                 var posAfterEl = session.getPosition(el.parentNode, this.getNodeIndex() + 1);
                 var firstPosInEl = session.getPosition(el, 0);
@@ -645,7 +630,7 @@
                 return false;
             }, "node"),
 
-            isRenderedBlock: createCachingGetter("isRenderedBlock", function (el) {
+            isRenderedBlock: createCachingGetter("isRenderedBlock", function(el) {
                 // Ensure that a block element containing a <br> is considered to have inner text
                 var brs = el.getElementsByTagName("br");
                 for (var i = 0, len = brs.length; i < len; ++i) {
@@ -656,7 +641,7 @@
                 return this.hasInnerText();
             }, "node"),
 
-            getTrailingSpace: createCachingGetter("trailingSpace", function (el) {
+            getTrailingSpace: createCachingGetter("trailingSpace", function(el) {
                 if (el.tagName.toLowerCase() == "br") {
                     return "";
                 } else {
@@ -685,7 +670,7 @@
                 return "";
             }, "node"),
 
-            getLeadingSpace: createCachingGetter("leadingSpace", function (el) {
+            getLeadingSpace: createCachingGetter("leadingSpace", function(el) {
                 switch (this.getComputedDisplay()) {
                     case "inline":
                     case "inline-block":
@@ -722,11 +707,11 @@
             isBr: false,
 
             /*
-             This method:
-             - Fully populates positions that have characters that can be determined independently of any other characters.
-             - Populates most types of space positions with a provisional character. The character is finalized later.
+            This method:
+            - Fully populates positions that have characters that can be determined independently of any other characters.
+            - Populates most types of space positions with a provisional character. The character is finalized later.
              */
-            prepopulateChar: function () {
+            prepopulateChar: function() {
                 var pos = this;
                 if (!pos.prepopulatedChar) {
                     var node = pos.node, offset = pos.offset;
@@ -796,13 +781,13 @@
                 }
             },
 
-            isDefinitelyNonEmpty: function () {
+            isDefinitelyNonEmpty: function() {
                 var charType = this.characterType;
                 return charType == NON_SPACE || charType == UNCOLLAPSIBLE_SPACE;
             },
 
             // Resolve leading and trailing spaces, which may involve prepopulating other positions
-            resolveLeadingAndTrailingSpaces: function () {
+            resolveLeadingAndTrailingSpaces: function() {
                 if (!this.prepopulatedChar) {
                     this.prepopulateChar();
                 }
@@ -826,9 +811,9 @@
                 }
             },
 
-            getPrecedingUncollapsedPosition: function (characterOptions) {
+            getPrecedingUncollapsedPosition: function(characterOptions) {
                 var pos = this, character;
-                while ((pos = pos.previousVisible())) {
+                while ( (pos = pos.previousVisible()) ) {
                     character = pos.getCharacter(characterOptions);
                     if (character !== "") {
                         return pos;
@@ -838,7 +823,7 @@
                 return null;
             },
 
-            getCharacter: function (characterOptions) {
+            getCharacter: function(characterOptions) {
                 this.resolveLeadingAndTrailingSpaces();
 
                 var thisChar = this.character, returnChar;
@@ -885,7 +870,7 @@
                     // Disallow a collapsible space that follows a trailing space or line break, or is the first character,
                     // or follows a collapsible included space
                     else if (thisChar == " " &&
-                             (!getPreviousPos() || previousPos.isTrailingSpace || previousPos.character == "\n" || (previousPos.character == " " && previousPos.characterType == COLLAPSIBLE_SPACE))) {
+                            (!getPreviousPos() || previousPos.isTrailingSpace || previousPos.character == "\n" || (previousPos.character == " " && previousPos.characterType == COLLAPSIBLE_SPACE))) {
                     }
                     // Allow a leading line break unless it follows a line break
                     else if (thisChar == "\n" && this.isLeadingSpace) {
@@ -946,13 +931,13 @@
                 return character;
             },
 
-            equals: function (pos) {
+            equals: function(pos) {
                 return !!pos && this.node === pos.node && this.offset === pos.offset;
             },
 
             inspect: inspectPosition,
 
-            toString: function () {
+            toString: function() {
                 return this.character;
             }
         };
@@ -960,7 +945,7 @@
         Position.prototype = positionProto;
 
         extend(positionProto, {
-            next: createCachingGetter("nextPos", function (pos) {
+            next: createCachingGetter("nextPos", function(pos) {
                 var nodeWrapper = pos.nodeWrapper, node = pos.node, offset = pos.offset, session = nodeWrapper.session;
                 if (!node) {
                     return null;
@@ -990,7 +975,7 @@
                 return nextNode ? session.getPosition(nextNode, nextOffset) : null;
             }),
 
-            previous: createCachingGetter("previous", function (pos) {
+            previous: createCachingGetter("previous", function(pos) {
                 var nodeWrapper = pos.nodeWrapper, node = pos.node, offset = pos.offset, session = nodeWrapper.session;
                 var previousNode, previousOffset, child;
                 if (offset == 0) {
@@ -1021,7 +1006,7 @@
              - Hidden (CSS visibility/display) elements
              - Script and style elements
              */
-            nextVisible: createCachingGetter("nextVisible", function (pos) {
+            nextVisible: createCachingGetter("nextVisible", function(pos) {
                 var next = pos.next();
                 if (!next) {
                     return null;
@@ -1035,9 +1020,9 @@
                 return newPos;
             }),
 
-            nextUncollapsed: createCachingGetter("nextUncollapsed", function (pos) {
+            nextUncollapsed: createCachingGetter("nextUncollapsed", function(pos) {
                 var nextPos = pos;
-                while ((nextPos = nextPos.nextVisible())) {
+                while ( (nextPos = nextPos.nextVisible()) ) {
                     nextPos.resolveLeadingAndTrailingSpaces();
                     if (nextPos.character !== "") {
                         return nextPos;
@@ -1046,7 +1031,7 @@
                 return null;
             }),
 
-            previousVisible: createCachingGetter("previousVisible", function (pos) {
+            previousVisible: createCachingGetter("previousVisible", function(pos) {
                 var previous = pos.previous();
                 if (!previous) {
                     return null;
@@ -1065,15 +1050,15 @@
 
         var currentSession = null;
 
-        var Session = (function () {
+        var Session = (function() {
             function createWrapperCache(nodeProperty) {
                 var cache = new Cache();
 
                 return {
-                    get: function (node) {
+                    get: function(node) {
                         var wrappersByProperty = cache.get(node[nodeProperty]);
                         if (wrappersByProperty) {
-                            for (var i = 0, wrapper; wrapper = wrappersByProperty[i++];) {
+                            for (var i = 0, wrapper; wrapper = wrappersByProperty[i++]; ) {
                                 if (wrapper.node === node) {
                                     return wrapper;
                                 }
@@ -1082,7 +1067,7 @@
                         return null;
                     },
 
-                    set: function (nodeWrapper) {
+                    set: function(nodeWrapper) {
                         var property = nodeWrapper.node[nodeProperty];
                         var wrappersByProperty = cache.get(property) || cache.set(property, []);
                         wrappersByProperty.push(nodeWrapper);
@@ -1097,16 +1082,16 @@
             }
 
             Session.prototype = {
-                initCaches: function () {
-                    this.elementCache = uniqueIDSupported ? (function () {
+                initCaches: function() {
+                    this.elementCache = uniqueIDSupported ? (function() {
                         var elementsCache = new Cache();
 
                         return {
-                            get: function (el) {
+                            get: function(el) {
                                 return elementsCache.get(el.uniqueID);
                             },
 
-                            set: function (elWrapper) {
+                            set: function(elWrapper) {
                                 elementsCache.set(elWrapper.node.uniqueID, elWrapper);
                             }
                         };
@@ -1117,7 +1102,7 @@
                     this.otherNodeCache = createWrapperCache("nodeName");
                 },
 
-                getNodeWrapper: function (node) {
+                getNodeWrapper: function(node) {
                     var wrapperCache;
                     switch (node.nodeType) {
                         case 1:
@@ -1139,16 +1124,16 @@
                     return wrapper;
                 },
 
-                getPosition: function (node, offset) {
+                getPosition: function(node, offset) {
                     return this.getNodeWrapper(node).getPosition(offset);
                 },
 
-                getRangeBoundaryPosition: function (range, isStart) {
+                getRangeBoundaryPosition: function(range, isStart) {
                     var prefix = isStart ? "start" : "end";
                     return this.getPosition(range[prefix + "Container"], range[prefix + "Offset"]);
                 },
 
-                detach: function () {
+                detach: function() {
                     this.elementCache = this.textNodeCache = this.otherNodeCache = null;
                 }
             };
@@ -1225,13 +1210,13 @@
             var previousTextPos, returnPreviousTextPos = false;
 
             return {
-                next: function () {
+                next: function() {
                     if (returnPreviousTextPos) {
                         returnPreviousTextPos = false;
                         return previousTextPos;
                     } else {
                         var pos, character;
-                        while ((pos = next())) {
+                        while ( (pos = next()) ) {
                             character = pos.getCharacter(characterOptions);
                             if (character) {
                                 previousTextPos = pos;
@@ -1242,7 +1227,7 @@
                     }
                 },
 
-                rewind: function () {
+                rewind: function() {
                     if (previousTextPos) {
                         returnPreviousTextPos = true;
                     } else {
@@ -1250,24 +1235,24 @@
                     }
                 },
 
-                dispose: function () {
+                dispose: function() {
                     startPos = endPos = null;
                 }
             };
         }
 
         var arrayIndexOf = Array.prototype.indexOf ?
-                           function (arr, val) {
-                               return arr.indexOf(val);
-                           } :
-                           function (arr, val) {
-                               for (var i = 0, len = arr.length; i < len; ++i) {
-                                   if (arr[i] === val) {
-                                       return i;
-                                   }
-                               }
-                               return -1;
-                           };
+            function(arr, val) {
+                return arr.indexOf(val);
+            } :
+            function(arr, val) {
+                for (var i = 0, len = arr.length; i < len; ++i) {
+                    if (arr[i] === val) {
+                        return i;
+                    }
+                }
+                return -1;
+            };
 
         // Provides a pair of iterators over text positions, tokenized. Transparently requests more text when next()
         // is called and there is no more tokenized text
@@ -1283,7 +1268,7 @@
 
                 var passedWordBoundary = false, insideWord = false;
 
-                while ((pos = it.next())) {
+                while ( (pos = it.next()) ) {
                     textChar = pos.character;
 
 
@@ -1314,10 +1299,10 @@
 
             // Create initial token buffers
             var forwardTokensBuffer = forwardChars.length ?
-                                      tokens.slice(arrayIndexOf(tokens, forwardChars[0].token)) : [];
+                tokens.slice(arrayIndexOf(tokens, forwardChars[0].token)) : [];
 
             var backwardTokensBuffer = backwardChars.length ?
-                                       tokens.slice(0, arrayIndexOf(tokens, backwardChars.pop().token) + 1) : [];
+                tokens.slice(0, arrayIndexOf(tokens, backwardChars.pop().token) + 1) : [];
 
             function inspectBuffer(buffer) {
                 var textPositions = ["[" + buffer.length + "]"];
@@ -1329,13 +1314,14 @@
 
 
             return {
-                nextEndToken: function () {
+                nextEndToken: function() {
                     var lastToken, forwardChars;
 
                     // If we're down to the last token, consume character chunks until we have a word or run out of
                     // characters to consume
-                    while (forwardTokensBuffer.length == 1 && !(lastToken = forwardTokensBuffer[0]).isWord &&
-                           (forwardChars = consumeWord(true)).length > 0) {
+                    while ( forwardTokensBuffer.length == 1 &&
+                        !(lastToken = forwardTokensBuffer[0]).isWord &&
+                        (forwardChars = consumeWord(true)).length > 0) {
 
                         // Merge trailing non-word into next word and tokenize
                         forwardTokensBuffer = tokenize(lastToken.chars.concat(forwardChars), wordOptions, tokenizer);
@@ -1344,13 +1330,14 @@
                     return forwardTokensBuffer.shift();
                 },
 
-                previousStartToken: function () {
+                previousStartToken: function() {
                     var lastToken, backwardChars;
 
                     // If we're down to the last token, consume character chunks until we have a word or run out of
                     // characters to consume
-                    while (backwardTokensBuffer.length == 1 && !(lastToken = backwardTokensBuffer[0]).isWord &&
-                           (backwardChars = consumeWord(false)).length > 0) {
+                    while ( backwardTokensBuffer.length == 1 &&
+                        !(lastToken = backwardTokensBuffer[0]).isWord &&
+                        (backwardChars = consumeWord(false)).length > 0) {
 
                         // Merge leading non-word into next word and tokenize
                         backwardTokensBuffer = tokenize(backwardChars.reverse().concat(lastToken.chars), wordOptions, tokenizer);
@@ -1359,7 +1346,7 @@
                     return backwardTokensBuffer.pop();
                 },
 
-                dispose: function () {
+                dispose: function() {
                     forwardIterator.dispose();
                     backwardIterator.dispose();
                     forwardTokensBuffer = backwardTokensBuffer = null;
@@ -1375,7 +1362,7 @@
                 switch (unit) {
                     case CHARACTER:
                         charIterator = createCharacterIterator(pos, backward, null, characterOptions);
-                        while ((currentPos = charIterator.next()) && unitsMoved < absCount) {
+                        while ( (currentPos = charIterator.next()) && unitsMoved < absCount ) {
                             ++unitsMoved;
                             newPos = currentPos;
                         }
@@ -1386,7 +1373,7 @@
                         var tokenizedTextProvider = createTokenizedTextProvider(pos, characterOptions, wordOptions);
                         var next = backward ? tokenizedTextProvider.previousStartToken : tokenizedTextProvider.nextEndToken;
 
-                        while ((token = next()) && unitsMoved < absCount) {
+                        while ( (token = next()) && unitsMoved < absCount ) {
                             if (token.isWord) {
                                 ++unitsMoved;
                                 newPos = backward ? token.chars[0] : token.chars[token.chars.length - 1];
@@ -1438,7 +1425,7 @@
         function getRangeCharacters(session, range, characterOptions) {
 
             var chars = [], it = createRangeCharacterIterator(session, range, characterOptions), pos;
-            while ((pos = it.next())) {
+            while ( (pos = it.next()) ) {
                 chars.push(pos);
             }
 
@@ -1449,16 +1436,16 @@
         function isWholeWord(startPos, endPos, wordOptions) {
             var range = api.createRange(startPos.node);
             range.setStartAndEnd(startPos.node, startPos.offset, endPos.node, endPos.offset);
-            return !range.expand("word", {wordOptions: wordOptions});
+            return !range.expand("word", { wordOptions: wordOptions });
         }
 
         function findTextFromPosition(initialPos, searchTerm, isRegex, searchScopeRange, findOptions) {
             var backward = isDirectionBackward(findOptions.direction);
             var it = createCharacterIterator(
-                    initialPos,
-                    backward,
-                    initialPos.session.getRangeBoundaryPosition(searchScopeRange, backward),
-                    findOptions.characterOptions
+                initialPos,
+                backward,
+                initialPos.session.getRangeBoundaryPosition(searchScopeRange, backward),
+                findOptions.characterOptions
             );
             var text = "", chars = [], pos, currentChar, matchStartIndex, matchEndIndex;
             var result, insideRegexMatch;
@@ -1476,7 +1463,7 @@
                 };
             }
 
-            while ((pos = it.next())) {
+            while ( (pos = it.next()) ) {
                 currentChar = pos.character;
                 if (!isRegex && !findOptions.caseSensitive) {
                     currentChar = currentChar.toLowerCase();
@@ -1505,7 +1492,7 @@
                             insideRegexMatch = true;
                         }
                     }
-                } else if ((matchStartIndex = text.indexOf(searchTerm)) != -1) {
+                } else if ( (matchStartIndex = text.indexOf(searchTerm)) != -1 ) {
                     returnValue = handleMatch(matchStartIndex, matchStartIndex + searchTerm.length);
                     break;
                 }
@@ -1521,10 +1508,10 @@
         }
 
         function createEntryPointFunction(func) {
-            return function () {
+            return function() {
                 var sessionRunning = !!currentSession;
                 var session = getSession();
-                var args = [session].concat(util.toArray(arguments));
+                var args = [session].concat( util.toArray(arguments) );
                 var returnValue = func.apply(this, args);
                 if (!sessionRunning) {
                     endSession();
@@ -1548,47 +1535,47 @@
              - collapseSpaceBeforeLineBreak
              */
             return createEntryPointFunction(
-                    function (session, unit, count, moveOptions) {
-                        if (typeof count == UNDEF) {
-                            count = unit;
-                            unit = CHARACTER;
-                        }
-                        moveOptions = createNestedOptions(moveOptions, defaultMoveOptions);
-
-                        var boundaryIsStart = isStart;
-                        if (collapse) {
-                            boundaryIsStart = (count >= 0);
-                            this.collapse(!boundaryIsStart);
-                        }
-                        var moveResult = movePositionBy(session.getRangeBoundaryPosition(this, boundaryIsStart), unit, count, moveOptions.characterOptions, moveOptions.wordOptions);
-                        var newPos = moveResult.position;
-                        this[boundaryIsStart ? "setStart" : "setEnd"](newPos.node, newPos.offset);
-                        return moveResult.unitsMoved;
+                function(session, unit, count, moveOptions) {
+                    if (typeof count == UNDEF) {
+                        count = unit;
+                        unit = CHARACTER;
                     }
+                    moveOptions = createNestedOptions(moveOptions, defaultMoveOptions);
+
+                    var boundaryIsStart = isStart;
+                    if (collapse) {
+                        boundaryIsStart = (count >= 0);
+                        this.collapse(!boundaryIsStart);
+                    }
+                    var moveResult = movePositionBy(session.getRangeBoundaryPosition(this, boundaryIsStart), unit, count, moveOptions.characterOptions, moveOptions.wordOptions);
+                    var newPos = moveResult.position;
+                    this[boundaryIsStart ? "setStart" : "setEnd"](newPos.node, newPos.offset);
+                    return moveResult.unitsMoved;
+                }
             );
         }
 
         function createRangeTrimmer(isStart) {
             return createEntryPointFunction(
-                    function (session, characterOptions) {
-                        characterOptions = createOptions(characterOptions, defaultCharacterOptions);
-                        var pos;
-                        var it = createRangeCharacterIterator(session, this, characterOptions, !isStart);
-                        var trimCharCount = 0;
-                        while ((pos = it.next()) && allWhiteSpaceRegex.test(pos.character)) {
-                            ++trimCharCount;
-                        }
-                        it.dispose();
-                        var trimmed = (trimCharCount > 0);
-                        if (trimmed) {
-                            this[isStart ? "moveStart" : "moveEnd"](
-                                    "character",
-                                    isStart ? trimCharCount : -trimCharCount,
-                                    {characterOptions: characterOptions}
-                            );
-                        }
-                        return trimmed;
+                function(session, characterOptions) {
+                    characterOptions = createOptions(characterOptions, defaultCharacterOptions);
+                    var pos;
+                    var it = createRangeCharacterIterator(session, this, characterOptions, !isStart);
+                    var trimCharCount = 0;
+                    while ( (pos = it.next()) && allWhiteSpaceRegex.test(pos.character) ) {
+                        ++trimCharCount;
                     }
+                    it.dispose();
+                    var trimmed = (trimCharCount > 0);
+                    if (trimmed) {
+                        this[isStart ? "moveStart" : "moveEnd"](
+                            "character",
+                            isStart ? trimCharCount : -trimCharCount,
+                            { characterOptions: characterOptions }
+                        );
+                    }
+                    return trimmed;
+                }
             );
         }
 
@@ -1604,183 +1591,183 @@
             trimEnd: createRangeTrimmer(false),
 
             trim: createEntryPointFunction(
-                    function (session, characterOptions) {
-                        var startTrimmed = this.trimStart(characterOptions), endTrimmed = this.trimEnd(characterOptions);
-                        return startTrimmed || endTrimmed;
-                    }
+                function(session, characterOptions) {
+                    var startTrimmed = this.trimStart(characterOptions), endTrimmed = this.trimEnd(characterOptions);
+                    return startTrimmed || endTrimmed;
+                }
             ),
 
             expand: createEntryPointFunction(
-                    function (session, unit, expandOptions) {
-                        var moved = false;
-                        expandOptions = createNestedOptions(expandOptions, defaultExpandOptions);
-                        var characterOptions = expandOptions.characterOptions;
-                        if (!unit) {
-                            unit = CHARACTER;
-                        }
-                        if (unit == WORD) {
-                            var wordOptions = expandOptions.wordOptions;
-                            var startPos = session.getRangeBoundaryPosition(this, true);
-                            var endPos = session.getRangeBoundaryPosition(this, false);
-
-                            var startTokenizedTextProvider = createTokenizedTextProvider(startPos, characterOptions, wordOptions);
-                            var startToken = startTokenizedTextProvider.nextEndToken();
-                            var newStartPos = startToken.chars[0].previousVisible();
-                            var endToken, newEndPos;
-
-                            if (this.collapsed) {
-                                endToken = startToken;
-                            } else {
-                                var endTokenizedTextProvider = createTokenizedTextProvider(endPos, characterOptions, wordOptions);
-                                endToken = endTokenizedTextProvider.previousStartToken();
-                            }
-                            newEndPos = endToken.chars[endToken.chars.length - 1];
-
-                            if (!newStartPos.equals(startPos)) {
-                                this.setStart(newStartPos.node, newStartPos.offset);
-                                moved = true;
-                            }
-                            if (newEndPos && !newEndPos.equals(endPos)) {
-                                this.setEnd(newEndPos.node, newEndPos.offset);
-                                moved = true;
-                            }
-
-                            if (expandOptions.trim) {
-                                if (expandOptions.trimStart) {
-                                    moved = this.trimStart(characterOptions) || moved;
-                                }
-                                if (expandOptions.trimEnd) {
-                                    moved = this.trimEnd(characterOptions) || moved;
-                                }
-                            }
-
-                            return moved;
-                        } else {
-                            return this.moveEnd(CHARACTER, 1, expandOptions);
-                        }
+                function(session, unit, expandOptions) {
+                    var moved = false;
+                    expandOptions = createNestedOptions(expandOptions, defaultExpandOptions);
+                    var characterOptions = expandOptions.characterOptions;
+                    if (!unit) {
+                        unit = CHARACTER;
                     }
+                    if (unit == WORD) {
+                        var wordOptions = expandOptions.wordOptions;
+                        var startPos = session.getRangeBoundaryPosition(this, true);
+                        var endPos = session.getRangeBoundaryPosition(this, false);
+
+                        var startTokenizedTextProvider = createTokenizedTextProvider(startPos, characterOptions, wordOptions);
+                        var startToken = startTokenizedTextProvider.nextEndToken();
+                        var newStartPos = startToken.chars[0].previousVisible();
+                        var endToken, newEndPos;
+
+                        if (this.collapsed) {
+                            endToken = startToken;
+                        } else {
+                            var endTokenizedTextProvider = createTokenizedTextProvider(endPos, characterOptions, wordOptions);
+                            endToken = endTokenizedTextProvider.previousStartToken();
+                        }
+                        newEndPos = endToken.chars[endToken.chars.length - 1];
+
+                        if (!newStartPos.equals(startPos)) {
+                            this.setStart(newStartPos.node, newStartPos.offset);
+                            moved = true;
+                        }
+                        if (newEndPos && !newEndPos.equals(endPos)) {
+                            this.setEnd(newEndPos.node, newEndPos.offset);
+                            moved = true;
+                        }
+
+                        if (expandOptions.trim) {
+                            if (expandOptions.trimStart) {
+                                moved = this.trimStart(characterOptions) || moved;
+                            }
+                            if (expandOptions.trimEnd) {
+                                moved = this.trimEnd(characterOptions) || moved;
+                            }
+                        }
+
+                        return moved;
+                    } else {
+                        return this.moveEnd(CHARACTER, 1, expandOptions);
+                    }
+                }
             ),
 
             text: createEntryPointFunction(
-                    function (session, characterOptions) {
-                        return this.collapsed ?
-                               "" : getRangeCharacters(session, this, createOptions(characterOptions, defaultCharacterOptions)).join("");
-                    }
+                function(session, characterOptions) {
+                    return this.collapsed ?
+                        "" : getRangeCharacters(session, this, createOptions(characterOptions, defaultCharacterOptions)).join("");
+                }
             ),
 
             selectCharacters: createEntryPointFunction(
-                    function (session, containerNode, startIndex, endIndex, characterOptions) {
-                        var moveOptions = {characterOptions: characterOptions};
-                        if (!containerNode) {
-                            containerNode = getBody(this.getDocument());
-                        }
-                        this.selectNodeContents(containerNode);
-                        this.collapse(true);
-                        this.moveStart("character", startIndex, moveOptions);
-                        this.collapse(true);
-                        this.moveEnd("character", endIndex - startIndex, moveOptions);
+                function(session, containerNode, startIndex, endIndex, characterOptions) {
+                    var moveOptions = { characterOptions: characterOptions };
+                    if (!containerNode) {
+                        containerNode = getBody( this.getDocument() );
                     }
+                    this.selectNodeContents(containerNode);
+                    this.collapse(true);
+                    this.moveStart("character", startIndex, moveOptions);
+                    this.collapse(true);
+                    this.moveEnd("character", endIndex - startIndex, moveOptions);
+                }
             ),
 
             // Character indexes are relative to the start of node
             toCharacterRange: createEntryPointFunction(
-                    function (session, containerNode, characterOptions) {
-                        if (!containerNode) {
-                            containerNode = getBody(this.getDocument());
-                        }
-                        var parent = containerNode.parentNode, nodeIndex = dom.getNodeIndex(containerNode);
-                        var rangeStartsBeforeNode = (dom.comparePoints(this.startContainer, this.endContainer, parent, nodeIndex) == -1);
-                        var rangeBetween = this.cloneRange();
-                        var startIndex, endIndex;
-                        if (rangeStartsBeforeNode) {
-                            rangeBetween.setStartAndEnd(this.startContainer, this.startOffset, parent, nodeIndex);
-                            startIndex = -rangeBetween.text(characterOptions).length;
-                        } else {
-                            rangeBetween.setStartAndEnd(parent, nodeIndex, this.startContainer, this.startOffset);
-                            startIndex = rangeBetween.text(characterOptions).length;
-                        }
-                        endIndex = startIndex + this.text(characterOptions).length;
-
-                        return {
-                            start: startIndex,
-                            end: endIndex
-                        };
+                function(session, containerNode, characterOptions) {
+                    if (!containerNode) {
+                        containerNode = getBody( this.getDocument() );
                     }
+                    var parent = containerNode.parentNode, nodeIndex = dom.getNodeIndex(containerNode);
+                    var rangeStartsBeforeNode = (dom.comparePoints(this.startContainer, this.endContainer, parent, nodeIndex) == -1);
+                    var rangeBetween = this.cloneRange();
+                    var startIndex, endIndex;
+                    if (rangeStartsBeforeNode) {
+                        rangeBetween.setStartAndEnd(this.startContainer, this.startOffset, parent, nodeIndex);
+                        startIndex = -rangeBetween.text(characterOptions).length;
+                    } else {
+                        rangeBetween.setStartAndEnd(parent, nodeIndex, this.startContainer, this.startOffset);
+                        startIndex = rangeBetween.text(characterOptions).length;
+                    }
+                    endIndex = startIndex + this.text(characterOptions).length;
+
+                    return {
+                        start: startIndex,
+                        end: endIndex
+                    };
+                }
             ),
 
             findText: createEntryPointFunction(
-                    function (session, searchTermParam, findOptions) {
-                        // Set up options
-                        findOptions = createNestedOptions(findOptions, defaultFindOptions);
+                function(session, searchTermParam, findOptions) {
+                    // Set up options
+                    findOptions = createNestedOptions(findOptions, defaultFindOptions);
 
-                        // Create word options if we're matching whole words only
-                        if (findOptions.wholeWordsOnly) {
-                            // We don't ever want trailing spaces for search results
-                            findOptions.wordOptions.includeTrailingSpace = false;
+                    // Create word options if we're matching whole words only
+                    if (findOptions.wholeWordsOnly) {
+                        // We don't ever want trailing spaces for search results
+                        findOptions.wordOptions.includeTrailingSpace = false;
+                    }
+
+                    var backward = isDirectionBackward(findOptions.direction);
+
+                    // Create a range representing the search scope if none was provided
+                    var searchScopeRange = findOptions.withinRange;
+                    if (!searchScopeRange) {
+                        searchScopeRange = api.createRange();
+                        searchScopeRange.selectNodeContents(this.getDocument());
+                    }
+
+                    // Examine and prepare the search term
+                    var searchTerm = searchTermParam, isRegex = false;
+                    if (typeof searchTerm == "string") {
+                        if (!findOptions.caseSensitive) {
+                            searchTerm = searchTerm.toLowerCase();
                         }
+                    } else {
+                        isRegex = true;
+                    }
 
-                        var backward = isDirectionBackward(findOptions.direction);
+                    var initialPos = session.getRangeBoundaryPosition(this, !backward);
 
-                        // Create a range representing the search scope if none was provided
-                        var searchScopeRange = findOptions.withinRange;
-                        if (!searchScopeRange) {
-                            searchScopeRange = api.createRange();
-                            searchScopeRange.selectNodeContents(this.getDocument());
-                        }
+                    // Adjust initial position if it lies outside the search scope
+                    var comparison = searchScopeRange.comparePoint(initialPos.node, initialPos.offset);
 
-                        // Examine and prepare the search term
-                        var searchTerm = searchTermParam, isRegex = false;
-                        if (typeof searchTerm == "string") {
-                            if (!findOptions.caseSensitive) {
-                                searchTerm = searchTerm.toLowerCase();
-                            }
-                        } else {
-                            isRegex = true;
-                        }
+                    if (comparison === -1) {
+                        initialPos = session.getRangeBoundaryPosition(searchScopeRange, true);
+                    } else if (comparison === 1) {
+                        initialPos = session.getRangeBoundaryPosition(searchScopeRange, false);
+                    }
 
-                        var initialPos = session.getRangeBoundaryPosition(this, !backward);
+                    var pos = initialPos;
+                    var wrappedAround = false;
 
-                        // Adjust initial position if it lies outside the search scope
-                        var comparison = searchScopeRange.comparePoint(initialPos.node, initialPos.offset);
+                    // Try to find a match and ignore invalid ones
+                    var findResult;
+                    while (true) {
+                        findResult = findTextFromPosition(pos, searchTerm, isRegex, searchScopeRange, findOptions);
 
-                        if (comparison === -1) {
-                            initialPos = session.getRangeBoundaryPosition(searchScopeRange, true);
-                        } else if (comparison === 1) {
-                            initialPos = session.getRangeBoundaryPosition(searchScopeRange, false);
-                        }
-
-                        var pos = initialPos;
-                        var wrappedAround = false;
-
-                        // Try to find a match and ignore invalid ones
-                        var findResult;
-                        while (true) {
-                            findResult = findTextFromPosition(pos, searchTerm, isRegex, searchScopeRange, findOptions);
-
-                            if (findResult) {
-                                if (findResult.valid) {
-                                    this.setStartAndEnd(findResult.startPos.node, findResult.startPos.offset, findResult.endPos.node, findResult.endPos.offset);
-                                    return true;
-                                } else {
-                                    // We've found a match that is not a whole word, so we carry on searching from the point immediately
-                                    // after the match
-                                    pos = backward ? findResult.startPos : findResult.endPos;
-                                }
-                            } else if (findOptions.wrap && !wrappedAround) {
-                                // No result found but we're wrapping around and limiting the scope to the unsearched part of the range
-                                searchScopeRange = searchScopeRange.cloneRange();
-                                pos = session.getRangeBoundaryPosition(searchScopeRange, !backward);
-                                searchScopeRange.setBoundary(initialPos.node, initialPos.offset, backward);
-                                wrappedAround = true;
+                        if (findResult) {
+                            if (findResult.valid) {
+                                this.setStartAndEnd(findResult.startPos.node, findResult.startPos.offset, findResult.endPos.node, findResult.endPos.offset);
+                                return true;
                             } else {
-                                // Nothing found and we can't wrap around, so we're done
-                                return false;
+                                // We've found a match that is not a whole word, so we carry on searching from the point immediately
+                                // after the match
+                                pos = backward ? findResult.startPos : findResult.endPos;
                             }
+                        } else if (findOptions.wrap && !wrappedAround) {
+                            // No result found but we're wrapping around and limiting the scope to the unsearched part of the range
+                            searchScopeRange = searchScopeRange.cloneRange();
+                            pos = session.getRangeBoundaryPosition(searchScopeRange, !backward);
+                            searchScopeRange.setBoundary(initialPos.node, initialPos.offset, backward);
+                            wrappedAround = true;
+                        } else {
+                            // Nothing found and we can't wrap around, so we're done
+                            return false;
                         }
                     }
+                }
             ),
 
-            pasteHtml: function (html) {
+            pasteHtml: function(html) {
                 this.deleteContents();
                 if (html) {
                     var frag = this.createContextualFragment(html);
@@ -1797,40 +1784,40 @@
 
         function createSelectionTrimmer(methodName) {
             return createEntryPointFunction(
-                    function (session, characterOptions) {
-                        var trimmed = false;
-                        this.changeEachRange(function (range) {
-                            trimmed = range[methodName](characterOptions) || trimmed;
-                        });
-                        return trimmed;
-                    }
+                function(session, characterOptions) {
+                    var trimmed = false;
+                    this.changeEachRange(function(range) {
+                        trimmed = range[methodName](characterOptions) || trimmed;
+                    });
+                    return trimmed;
+                }
             );
         }
 
         extend(api.selectionPrototype, {
             expand: createEntryPointFunction(
-                    function (session, unit, expandOptions) {
-                        this.changeEachRange(function (range) {
-                            range.expand(unit, expandOptions);
-                        });
-                    }
+                function(session, unit, expandOptions) {
+                    this.changeEachRange(function(range) {
+                        range.expand(unit, expandOptions);
+                    });
+                }
             ),
 
             move: createEntryPointFunction(
-                    function (session, unit, count, options) {
-                        var unitsMoved = 0;
-                        if (this.focusNode) {
-                            this.collapse(this.focusNode, this.focusOffset);
-                            var range = this.getRangeAt(0);
-                            if (!options) {
-                                options = {};
-                            }
-                            options.characterOptions = createOptions(options.characterOptions, defaultCaretCharacterOptions);
-                            unitsMoved = range.move(unit, count, options);
-                            this.setSingleRange(range);
+                function(session, unit, count, options) {
+                    var unitsMoved = 0;
+                    if (this.focusNode) {
+                        this.collapse(this.focusNode, this.focusOffset);
+                        var range = this.getRangeAt(0);
+                        if (!options) {
+                            options = {};
                         }
-                        return unitsMoved;
+                        options.characterOptions = createOptions(options.characterOptions, defaultCaretCharacterOptions);
+                        unitsMoved = range.move(unit, count, options);
+                        this.setSingleRange(range);
                     }
+                    return unitsMoved;
+                }
             ),
 
             trimStart: createSelectionTrimmer("trimStart"),
@@ -1838,53 +1825,53 @@
             trim: createSelectionTrimmer("trim"),
 
             selectCharacters: createEntryPointFunction(
-                    function (session, containerNode, startIndex, endIndex, direction, characterOptions) {
-                        var range = api.createRange(containerNode);
-                        range.selectCharacters(containerNode, startIndex, endIndex, characterOptions);
-                        this.setSingleRange(range, direction);
-                    }
+                function(session, containerNode, startIndex, endIndex, direction, characterOptions) {
+                    var range = api.createRange(containerNode);
+                    range.selectCharacters(containerNode, startIndex, endIndex, characterOptions);
+                    this.setSingleRange(range, direction);
+                }
             ),
 
             saveCharacterRanges: createEntryPointFunction(
-                    function (session, containerNode, characterOptions) {
-                        var ranges = this.getAllRanges(), rangeCount = ranges.length;
-                        var rangeInfos = [];
+                function(session, containerNode, characterOptions) {
+                    var ranges = this.getAllRanges(), rangeCount = ranges.length;
+                    var rangeInfos = [];
 
-                        var backward = rangeCount == 1 && this.isBackward();
+                    var backward = rangeCount == 1 && this.isBackward();
 
-                        for (var i = 0, len = ranges.length; i < len; ++i) {
-                            rangeInfos[i] = {
-                                characterRange: ranges[i].toCharacterRange(containerNode, characterOptions),
-                                backward: backward,
-                                characterOptions: characterOptions
-                            };
-                        }
-
-                        return rangeInfos;
+                    for (var i = 0, len = ranges.length; i < len; ++i) {
+                        rangeInfos[i] = {
+                            characterRange: ranges[i].toCharacterRange(containerNode, characterOptions),
+                            backward: backward,
+                            characterOptions: characterOptions
+                        };
                     }
+
+                    return rangeInfos;
+                }
             ),
 
             restoreCharacterRanges: createEntryPointFunction(
-                    function (session, containerNode, saved) {
-                        this.removeAllRanges();
-                        for (var i = 0, len = saved.length, range, rangeInfo, characterRange; i < len; ++i) {
-                            rangeInfo = saved[i];
-                            characterRange = rangeInfo.characterRange;
-                            range = api.createRange(containerNode);
-                            range.selectCharacters(containerNode, characterRange.start, characterRange.end, rangeInfo.characterOptions);
-                            this.addRange(range, rangeInfo.backward);
-                        }
+                function(session, containerNode, saved) {
+                    this.removeAllRanges();
+                    for (var i = 0, len = saved.length, range, rangeInfo, characterRange; i < len; ++i) {
+                        rangeInfo = saved[i];
+                        characterRange = rangeInfo.characterRange;
+                        range = api.createRange(containerNode);
+                        range.selectCharacters(containerNode, characterRange.start, characterRange.end, rangeInfo.characterOptions);
+                        this.addRange(range, rangeInfo.backward);
                     }
+                }
             ),
 
             text: createEntryPointFunction(
-                    function (session, characterOptions) {
-                        var rangeTexts = [];
-                        for (var i = 0, len = this.rangeCount; i < len; ++i) {
-                            rangeTexts[i] = this.getRangeAt(i).text(characterOptions);
-                        }
-                        return rangeTexts.join("");
+                function(session, characterOptions) {
+                    var rangeTexts = [];
+                    for (var i = 0, len = this.rangeCount; i < len; ++i) {
+                        rangeTexts[i] = this.getRangeAt(i).text(characterOptions);
                     }
+                    return rangeTexts.join("");
+                }
             )
         });
 
@@ -1892,14 +1879,14 @@
 
         // Extensions to the core rangy object
 
-        api.innerText = function (el, characterOptions) {
+        api.innerText = function(el, characterOptions) {
             var range = api.createRange(el);
             range.selectNodeContents(el);
             var text = range.text(characterOptions);
             return text;
         };
 
-        api.createWordIterator = function (startNode, startOffset, iteratorOptions) {
+        api.createWordIterator = function(startNode, startOffset, iteratorOptions) {
             var session = getSession();
             iteratorOptions = createNestedOptions(iteratorOptions, defaultWordIteratorOptions);
             var startPos = session.getPosition(startNode, startOffset);
@@ -1907,21 +1894,20 @@
             var backward = isDirectionBackward(iteratorOptions.direction);
 
             return {
-                next: function () {
+                next: function() {
                     return backward ? tokenizedTextProvider.previousStartToken() : tokenizedTextProvider.nextEndToken();
                 },
 
-                dispose: function () {
+                dispose: function() {
                     tokenizedTextProvider.dispose();
-                    this.next = function () {
-                    };
+                    this.next = function() {};
                 }
             };
         };
 
         /*----------------------------------------------------------------------------------------------------------------*/
 
-        api.noMutation = function (func) {
+        api.noMutation = function(func) {
             var session = getSession();
             func(session);
             endSession();
@@ -1934,12 +1920,12 @@
             isCollapsedWhitespaceNode: isCollapsedWhitespaceNode,
 
             createPosition: createEntryPointFunction(
-                    function (session, node, offset) {
-                        return session.getPosition(node, offset);
-                    }
+                function(session, node, offset) {
+                    return session.getPosition(node, offset);
+                }
             )
         };
     });
-
+    
     return rangy;
 }, this);

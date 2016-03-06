@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -36,6 +36,11 @@ import org.openvpms.web.echo.pane.ContentPane;
  * @author Tim Anderson
  */
 public abstract class PopupWindow extends WindowPane {
+
+    /**
+     * The root pane.
+     */
+    private ContentPane root;
 
     /**
      * The layout pane.
@@ -87,7 +92,7 @@ public abstract class PopupWindow extends WindowPane {
 
         row = new ButtonRow(focusGroup, "DialogButtonRow", ButtonRow.BUTTON_STYLE);
 
-        ContentPane root = new ContentPane();
+        root = new ContentPane();
         layout = createSplitPane();
         layout.add(row);
         root.add(layout);
@@ -105,6 +110,15 @@ public abstract class PopupWindow extends WindowPane {
         if (defaultButton != null) {
             getButtons().setFocus(defaultButton);
         }
+    }
+
+    /**
+     * Returns the root content pane.
+     *
+     * @return the content pane
+     */
+    protected ContentPane getContentPane() {
+        return root;
     }
 
     /**
