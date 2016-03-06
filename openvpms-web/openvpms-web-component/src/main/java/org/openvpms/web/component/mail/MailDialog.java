@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.mail;
 
+import echopointng.KeyStrokeListener;
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
@@ -44,6 +45,8 @@ import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.button.ShortcutButtons;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -199,11 +202,13 @@ public class MailDialog extends PopupDialog {
                 onCancel(action);
             }
         });
-        getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
+        ButtonSet buttons = getButtons();
+        buttons.addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onMacro();
             }
         });
+        registerShortcuts();
         editor.getFocusGroup().setFocus();
     }
 
@@ -278,6 +283,35 @@ public class MailDialog extends PopupDialog {
                     });
         } else {
             onTemplate();
+        }
+    }
+
+    /**
+     * Registers any dialog keyboard shortcuts directly on the mail editor.
+     * <p/>
+     * This is required as the events would otherwise be swallowed by the editor.
+     */
+    protected void registerShortcuts() {
+        final ShortcutButtons buttons = getButtons().getButtons();
+        KeyStrokeListener listener = editor.getKeyStrokeListener();
+        KeyStrokeListener shortcutListener = buttons.getKeyStrokeListener();
+        int[] keys = shortcutListener.getKeyCombinations();
+        if (keys.length > 0) {
+            for (int key : keys) {
+                String command = shortcutListener.getKeyCombinationCommand(key);
+                if (command != null) {
+                    listener.addKeyCombination(key, command);
+                } else {
+                    listener.addKeyCombination(key);
+                }
+            }
+            // register a listener to pass events through to the dialog
+            listener.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    buttons.processInput(event);
+                }
+            });
         }
     }
 
