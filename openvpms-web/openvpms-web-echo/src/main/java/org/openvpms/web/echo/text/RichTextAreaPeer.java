@@ -18,10 +18,12 @@ package org.openvpms.web.echo.text;
 
 import echopointng.ButtonEx;
 import echopointng.EPNG;
+import echopointng.KeyStrokeListener;
 import echopointng.richtext.RichTextSpellChecker;
 import echopointng.ui.resource.Resources;
 import echopointng.ui.syncpeer.AbstractEchoPointPeer;
 import echopointng.ui.syncpeer.ColorChooserPeer;
+import echopointng.ui.syncpeer.KeyStrokeListenerPeer;
 import echopointng.ui.util.CssStyleEx;
 import echopointng.ui.util.HtmlNodeLexer;
 import echopointng.ui.util.HtmlTable;
@@ -53,10 +55,8 @@ import nextapp.echo2.webrender.util.DomUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import static org.openvpms.web.echo.text.TextComponent.PROPERTY_CURSOR_POSITION;
-
 /**
- * Port of the EPNG RichTextAreaPeer to support macro expansion.
+ * Port of the EPNG RichTextAreaPeer to support macro expansion, keyboard shortcuts, and focus traversal.
  *
  * @author Tim Anderson
  */
@@ -178,7 +178,13 @@ public class RichTextAreaPeer extends AbstractEchoPointPeer implements PropertyU
     public void processAction(ContainerInstance ci, Component component, Element actionElement) {
         String actionName = actionElement.getAttribute(ACTION_NAME);
         String actionValue = actionElement.getAttribute(ACTION_VALUE);
-        ci.getUpdateManager().getClientUpdateManager().setComponentAction(component, actionName, actionValue);
+        Object value;
+        if (KeyStrokeListener.KEYSTROKE_CHANGED_PROPERTY.equals(actionName)) {
+            value = Integer.valueOf(actionValue);
+        } else {
+            value = actionValue;
+        }
+        ci.getUpdateManager().getClientUpdateManager().setComponentAction(component, actionName, value);
 
     }
 
@@ -440,6 +446,7 @@ public class RichTextAreaPeer extends AbstractEchoPointPeer implements PropertyU
         rc.addLibrary(RANGY_TEXT_RANGE_SERVICE); // tima
         rc.addLibrary(Resources.EP_SCRIPT_SERVICE);
         rc.addLibrary(RICH_TEXT_SERVICE);
+        rc.addLibrary(KeyStrokeListenerPeer.KEYSTROKE_SERVICE); // tima
         rc.addLibrary(ColorChooserPeer.CC_SERVICE);
 
 
@@ -878,10 +885,6 @@ public class RichTextAreaPeer extends AbstractEchoPointPeer implements PropertyU
         itemElement.setAttribute("initialText", htmlText);
         itemElement.setAttribute("spellCheckInProgress", String.valueOf(spellCheckInProgress));
 
-        // tima
-        Integer cursorPosition = (Integer) rta.getRenderProperty(PROPERTY_CURSOR_POSITION);
-        itemElement.setAttribute("cursorPosition", cursorPosition != null ? cursorPosition.toString() : "0");
-
         //
         // look and feel objects
         Element landfItem;
@@ -999,6 +1002,18 @@ public class RichTextAreaPeer extends AbstractEchoPointPeer implements PropertyU
         if (rtaRenderer.getParagraphStyles(rta, userAgent) != null) {
             createSelectCommand(rc, itemElement, "formatblock");
         }
+
+        // tima
+        StringBuilder keyCombinations = new StringBuilder();
+        int keys[] = rta.getListener().getKeyCombinations();
+        for (int i = 0; i < keys.length; i++) {
+            int key = keys[i];
+            keyCombinations.append(key);
+            if (i < keys.length - 1) {
+                keyCombinations.append('|');
+            }
+        }
+        itemElement.setAttribute("keyCombinations", keyCombinations.toString());
     }
 
     private void createButtonCommand(RenderingContext rc, Element parentE, String cmd, boolean isStateful) {

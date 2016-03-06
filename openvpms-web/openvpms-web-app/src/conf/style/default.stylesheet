@@ -2465,6 +2465,16 @@
         </properties>
     </style>
 
+    <style name="InformationMessage" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="titleHeight" value="0px"/>
+            <property name="border">
+                <fill-image-border content-insets="3px" border-insets="3px" color="#7b68ee">
+                </fill-image-border>
+            </property>
+        </properties>
+    </style>
+
     <style name="InformationMessage.row" type="nextapp.echo2.app.Row">
         <properties>
             <property name="border">

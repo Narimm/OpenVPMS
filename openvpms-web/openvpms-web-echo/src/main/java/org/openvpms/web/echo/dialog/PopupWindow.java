@@ -56,6 +56,7 @@ public abstract class PopupWindow extends WindowPane {
      * The default button.
      */
     private String defaultButton;
+    private ContentPane root;
 
 
     /**
@@ -87,7 +88,7 @@ public abstract class PopupWindow extends WindowPane {
 
         row = new ButtonRow(focusGroup, "DialogButtonRow", ButtonRow.BUTTON_STYLE);
 
-        ContentPane root = new ContentPane();
+        root = new ContentPane();
         layout = createSplitPane();
         layout.add(row);
         root.add(layout);
@@ -105,6 +106,15 @@ public abstract class PopupWindow extends WindowPane {
         if (defaultButton != null) {
             getButtons().setFocus(defaultButton);
         }
+    }
+
+    /**
+     * Returns the root content pane.
+     *
+     * @return the content pane
+     */
+    protected ContentPane getContentPane() {
+        return root;
     }
 
     /**
