@@ -165,6 +165,11 @@ public class MailEditor extends AbstractModifiable {
     private DoubleClickMonitor monitor = new DoubleClickMonitor();
 
     /**
+     * The message editor.
+     */
+    private RichTextArea messageEditor;
+
+    /**
      * The macro expanded.
      */
     private final MacroExpander macroExpander;
@@ -214,6 +219,7 @@ public class MailEditor extends AbstractModifiable {
                 return result;
             }
         };
+        messageEditor = createMessageEditor(message);
     }
 
     /**
@@ -490,6 +496,15 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
+     * Returns the listener for keyboard shortcuts.
+     *
+     * @return the listener
+     */
+    public KeyStrokeListener getKeyStrokeListener() {
+        return messageEditor.getListener();
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -597,14 +612,11 @@ public class MailEditor extends AbstractModifiable {
         GridLayoutData rightInset = new GridLayoutData();
         rightInset.setInsets(new Insets(0, 0, inset, 0));
 
-        RichTextArea messageArea = createMessageEditor(message);
-
         focus.add(header.getFocusGroup());
-        focus.add(messageArea);
+        focus.add(messageEditor);
         focus.setDefault(header.getFocusGroup().getDefaultFocus());
-
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "MailEditor", header.getComponent(),
-                                       ColumnFactory.create(LARGE_INSET, messageArea));
+                                       ColumnFactory.create(LARGE_INSET, messageEditor));
     }
 
     /**

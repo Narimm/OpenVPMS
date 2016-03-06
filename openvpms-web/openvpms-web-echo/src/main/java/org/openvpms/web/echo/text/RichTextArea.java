@@ -17,6 +17,7 @@
 package org.openvpms.web.echo.text;
 
 import echopointng.ComponentEx;
+import echopointng.KeyStrokeListener;
 import echopointng.MutableStyleEx;
 import echopointng.able.Attributeable;
 import echopointng.able.Borderable;
@@ -41,7 +42,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Port of the EPNG RichTextArea to support macro expansion.
+ * Port of the EPNG RichTextArea to support macro expansion and keyboard shortcuts.
  */
 public class RichTextArea extends TextComponent implements Sizeable, Insetable, MouseCursorable, Borderable, Attributeable {
 
@@ -91,6 +92,12 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
      * Expands macros. May be {@code null}.
      */
     private MacroExpander macros;
+
+    /**
+     * The listener to handle keyboard shortcuts.
+     */
+    private KeyStrokeListener listener = new KeyStrokeListener();
+
 
     /**
      * Constructs a RichTextArea with the default size.
@@ -294,16 +301,29 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
      * @see nextapp.echo2.app.text.TextComponent#processInput(java.lang.String, java.lang.Object)
      */
     public void processInput(String inputName, Object inputValue) {
-        if (TEXT_CHANGED_PROPERTY.equals(inputName)) {
-            inputValue = makeValidXHTML(new StringBuffer((String) inputValue));
+        if (KeyStrokeListener.KEYSTROKE_CHANGED_PROPERTY.equals(inputName)) {
+            listener.processInput(inputName, inputValue);
+        } else {
+            if (TEXT_CHANGED_PROPERTY.equals(inputName)) {
+                inputValue = makeValidXHTML(new StringBuffer((String) inputValue));
+            }
+            super.processInput(inputName, inputValue);
+            if ("spellcheck".equals(inputName)) {
+                // toggle the spell check
+                setSpellCheckInProgress(!isSpellCheckInProgress());
+            } else if ("macro".equals(inputName) && macros != null) {
+                insertMacro((String) inputValue);
+            }
         }
-        super.processInput(inputName, inputValue);
-        if ("spellcheck".equals(inputName)) {
-            // toggle the spell check
-            setSpellCheckInProgress(!isSpellCheckInProgress());
-        } else if ("macro".equals(inputName) && macros != null) {
-            firePropertyChange(PROPERTY_MACRO_EXPANSION, null, expand((String) inputValue));
-        }
+    }
+
+    /**
+     * Expands a macro at the current cursor position.
+     *
+     * @param macro the macro code
+     */
+    public void insertMacro(String macro) {
+        firePropertyChange(PROPERTY_MACRO_EXPANSION, null, expand(macro));
     }
 
     /**
@@ -313,6 +333,15 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
      */
     public void setMacroExpander(MacroExpander macros) {
         this.macros = macros;
+    }
+
+    /**
+     * Returns the listener for keyboard short cuts.
+     *
+     * @return the listener
+     */
+    public KeyStrokeListener getListener() {
+        return listener;
     }
 
     /**

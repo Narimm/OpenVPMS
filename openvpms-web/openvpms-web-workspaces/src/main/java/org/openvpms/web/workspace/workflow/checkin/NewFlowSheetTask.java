@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -119,8 +119,9 @@ public class NewFlowSheetTask extends Tasks {
      *
      * @param act            the appointment/task
      * @param visit          the patient visit. May be {@code null}
-     * @param location       the practice location
      * @param ignoreExisting if {@code true}, ignore any existing hospitalisation, otherwise display a note
+     * @param location       the practice location
+     * @param factory        the FlowSheet service factory
      * @param help           the help context
      */
     public NewFlowSheetTask(Act act, Act visit, boolean ignoreExisting, Party location, FlowSheetServiceFactory factory,
