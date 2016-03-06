@@ -38,6 +38,11 @@ import org.openvpms.web.echo.pane.ContentPane;
 public abstract class PopupWindow extends WindowPane {
 
     /**
+     * The root pane.
+     */
+    private ContentPane root;
+
+    /**
      * The layout pane.
      */
     private final SplitPane layout;
@@ -56,7 +61,6 @@ public abstract class PopupWindow extends WindowPane {
      * The default button.
      */
     private String defaultButton;
-    private ContentPane root;
 
 
     /**

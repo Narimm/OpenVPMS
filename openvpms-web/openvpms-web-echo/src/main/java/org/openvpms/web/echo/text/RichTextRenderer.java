@@ -98,10 +98,9 @@ public interface RichTextRenderer extends Serializable {
      * RickTextArea.
      *
      * For example {"courier new,courier,monospace","Courier New"},   
-     * @param rta 	- the RichTextArea component in question
-     * @param userAgent	- the user agent string of the client 
-     *
-     * @return 		- a [n][2] sized array mapping values to descriptive names.
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping values to descriptive names.
      */
     public String[][] getFontNames(RichTextArea rta, String userAgent);
 
@@ -112,10 +111,9 @@ public interface RichTextRenderer extends Serializable {
      * RickTextArea.
      *
      * For example {"5","Size 5"},   
-     * @param rta 	- the RichTextArea component in question
-     * @param userAgent	- the user agent string of the client 
-     *
-     * @return 		- a [n][2] sized array mapping values to descriptive names.
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping values to descriptive names.
      */
     public String[][] getFontSizes(RichTextArea rta, String userAgent);
 
@@ -126,10 +124,9 @@ public interface RichTextRenderer extends Serializable {
      * RickTextArea.
      *
      * For example {"h1","Heading 1"},   
-     * @param rta 	- the RichTextArea component in question
-     * @param userAgent	- the user agent string of the client 
-     *
-     * @return 		- a [n][2] sized array mapping values to descriptive names.
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping values to descriptive names.
      */
     public String[][] getParagraphStyles(RichTextArea rta, String userAgent);
 
@@ -141,10 +138,9 @@ public interface RichTextRenderer extends Serializable {
      * <p>
      * The order of the array is the order in which the commands will be rendered.  The 
      * special markers
-     * @param rta 	- the RichTextArea component in question
-     * @param userAgent	- the user agent string of the client 
-     *
-     * @return 		- a [n][2] sized array mapping command values to descriptive names.
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
+     * @return        - a [n][2] sized array mapping command values to descriptive names.
      */
     public String[][] getSupportedCommands(RichTextArea rta, String userAgent);
 
@@ -154,10 +150,9 @@ public interface RichTextRenderer extends Serializable {
      * This function will only be called for commands that have been allowed via
      * a previous call to the getSupportedCommands method.
      *
-     * @param rta 	- the RichTextArea component in question
-     * @param userAgent	- the user agent string of the client 
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
      * @param command - the command in question
-     *
      * @return - an ImageReference for the command
      */
     public ImageReference getCommandImage(RichTextArea rta, String userAgent, String command);
@@ -168,9 +163,8 @@ public interface RichTextRenderer extends Serializable {
      * the standard borders and backgrounds and well as rollover and stateful
      * appearance.  
      *
-     * @param rta 	- the RichTextArea component in question
-     * @param userAgent	- the user agent string of the client 
-     *
+     * @param rta    - the RichTextArea component in question
+     * @param userAgent    - the user agent string of the client
      * @return - an CommandAppearance instance
      */
     public CommandAppearance getCommandAppearance(RichTextArea rta, String userAgent);
