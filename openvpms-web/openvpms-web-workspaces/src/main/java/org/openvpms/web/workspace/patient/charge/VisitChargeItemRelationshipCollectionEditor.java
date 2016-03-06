@@ -11,11 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -38,7 +40,7 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     /**
      * The templates.
      */
-    private List<TemplateChargeItems> templates = new ArrayList<TemplateChargeItems>();
+    private List<TemplateChargeItems> templates = new ArrayList<>();
 
     /**
      * Constructs a {@link VisitChargeItemRelationshipCollectionEditor}.
@@ -103,10 +105,8 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        VisitChargeItemEditor editor = new VisitChargeItemEditor((Act) object, (Act) getObject(), context);
-        initialiseEditor(editor);
-        editor.setProductListener(getProductListener());
-        return editor;
+        return initialiseEditor(new VisitChargeItemEditor((FinancialAct) object, (Act) getObject(), getEditContext(),
+                                                          context));
     }
 
     /**

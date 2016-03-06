@@ -350,7 +350,7 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
     @Override
     protected void doSave() {
         List<Act> reminders = getNewReminders();
-        ChargeContext chargeContext = null;
+        ChargeSaveContext chargeContext = null;
         try {
             PatientHistoryChanges changes = null;
 
@@ -359,7 +359,7 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
                                                     getLayoutContext().getContext().getLocation(),
                                                     ServiceHelper.getArchetypeService());
                 ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
-                chargeContext = items.getChargeContext();
+                chargeContext = items.getSaveContext();
                 chargeContext.setHistoryChanges(changes);
             }
 

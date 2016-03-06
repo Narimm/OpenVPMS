@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * Port of the EPNG RichTextAreaPeer to support macro expansion.
- * <p/>
+ *
  * The <code>DefaultRichTextRenderer</code> is the default RichTextArea
  * renderer.
  * <p/>

@@ -139,7 +139,7 @@ class PreferredSupplierEditor extends AbstractIMObjectReferenceEditor<Party> {
                         @Override
                         protected ArchetypeQuery createQuery() {
                             ArchetypeQuery query = super.createQuery();
-                            query.add(Constraints.in("id", suppliers.toArray(new Long[suppliers.size()])));
+                            query.add(Constraints.in("id", (Long[]) suppliers.toArray(new Long[suppliers.size()])));
                             return query;
                         }
                     };

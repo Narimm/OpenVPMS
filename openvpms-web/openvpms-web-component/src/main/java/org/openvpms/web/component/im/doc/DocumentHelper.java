@@ -13,6 +13,7 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.doc;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;

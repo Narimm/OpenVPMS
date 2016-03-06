@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -36,11 +36,6 @@ import org.openvpms.web.system.ServiceHelper;
  * @author Tim Anderson
  */
 public class TestChargeEditor extends CustomerChargeActEditor {
-
-    /**
-     * The editor queue.
-     */
-    private ChargeEditorQueue queue;
 
     /**
      * The pharmacy order service.
@@ -97,10 +92,7 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      * @return the editor queue
      */
     public ChargeEditorQueue getQueue() {
-        if (queue == null) {
-            queue = new ChargeEditorQueue();
-        }
-        return queue;
+        return (ChargeEditorQueue) getItems().getEditorQueue();
     }
 
     /**
@@ -143,7 +135,7 @@ public class TestChargeEditor extends CustomerChargeActEditor {
         TestChargeItemRelationshipCollectionEditor editor
                 = new TestChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
         // register a handler for act popups
-        editor.setEditorQueue(getQueue());
+        editor.setEditorQueue(new ChargeEditorQueue());
         return editor;
     }
 

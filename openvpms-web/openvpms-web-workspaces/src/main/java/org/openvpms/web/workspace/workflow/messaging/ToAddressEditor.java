@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -226,6 +227,26 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
      */
     @Override
     public ErrorListener getErrorListener() {
+        return null;
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        // no-op
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public AlertListener getAlertListener() {
         return null;
     }
 

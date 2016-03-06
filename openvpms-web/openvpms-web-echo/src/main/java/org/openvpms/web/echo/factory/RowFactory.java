@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -22,6 +22,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.LayoutData;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**
@@ -53,14 +54,29 @@ public final class RowFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new row with a specific style, and containing a set of
-     * components.
+     * Create a new row with a specific style, and containing a set of components.
      *
+     * @param style      the row style
+     * @param components the components to add
      * @return a new row
      */
     public static Row create(String style, Component... components) {
         Row row = create(components);
         setStyle(row, style);
+        return row;
+    }
+
+    /**
+     * Create a new row with a specific style and layout, and containing a set of components.
+     *
+     * @param style      the row style
+     * @param layout     the layout data
+     * @param components the components to add
+     * @return a new row
+     */
+    public static Row create(String style, LayoutData layout, Component... components) {
+        Row row = create(style, components);
+        row.setLayoutData(layout);
         return row;
     }
 
@@ -99,6 +115,16 @@ public final class RowFactory extends ComponentFactory {
         RowLayoutData result = layout(alignment);
         result.setWidth(width);
         return result;
+    }
+
+    /**
+     * Creates a right-aligned layout with full width. This can be used to right align a {@code Row} within
+     * another {@code Row}.
+     *
+     * @return new layout data
+     */
+    public static RowLayoutData rightAlign() {
+        return layout(Alignment.ALIGN_RIGHT, Styles.FULL_WIDTH);
     }
 
 }
