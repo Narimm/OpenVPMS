@@ -52,33 +52,33 @@ public interface RichTextRenderer extends Serializable {
     /**
      * Available RichTextArea Commands
      */
-    public static final String CMD_BOLD = "bold";
-    public static final String CMD_COPY = "copy";
-    public static final String CMD_CREATELINK = "createlink";
-    public static final String CMD_CUT = "cut";
-    public static final String CMD_FORECOLOR = "forecolor";
-    public static final String CMD_BACKCOLOR = "hilitecolor";
-    public static final String CMD_INDENT = "indent";
-    public static final String CMD_INSERTHR = "inserthorizontalrule";
-    public static final String CMD_INSERTIMAGE = "insertimage";
-    public static final String CMD_NUMBERS = "insertorderedlist";
-    public static final String CMD_INSERTTABLE = "inserttable";
-    public static final String CMD_BULLETS = "insertunorderedlist";
-    public static final String CMD_ITALIC = "italic";
+    public static final String CMD_BOLD 		= "bold";
+    public static final String CMD_COPY 		= "copy";
+    public static final String CMD_CREATELINK	= "createlink";
+    public static final String CMD_CUT 			= "cut";
+    public static final String CMD_FORECOLOR	= "forecolor";
+    public static final String CMD_BACKCOLOR	= "hilitecolor";
+    public static final String CMD_INDENT 		= "indent";
+    public static final String CMD_INSERTHR 	= "inserthorizontalrule";
+    public static final String CMD_INSERTIMAGE 	= "insertimage";
+    public static final String CMD_NUMBERS 		= "insertorderedlist";
+    public static final String CMD_INSERTTABLE 	= "inserttable";
+    public static final String CMD_BULLETS 		= "insertunorderedlist";
+    public static final String CMD_ITALIC 		= "italic";
     public static final String CMD_ALIGN_CENTER = "justifycenter";
-    public static final String CMD_JUSTIFY = "justifyfull";
-    public static final String CMD_ALIGN_LEFT = "justifyleft";
-    public static final String CMD_ALIGN_RIGHT = "justifyright";
-    public static final String CMD_OUTDENT = "outdent";
-    public static final String CMD_PASTE = "paste";
-    public static final String CMD_REDO = "redo";
+    public static final String CMD_JUSTIFY 		= "justifyfull";
+    public static final String CMD_ALIGN_LEFT 	= "justifyleft";
+    public static final String CMD_ALIGN_RIGHT 	= "justifyright";
+    public static final String CMD_OUTDENT 		= "outdent";
+    public static final String CMD_PASTE 		= "paste";
+    public static final String CMD_REDO 		= "redo";
     public static final String CMD_REMOVEFORMAT = "removeformat";
-    public static final String CMD_SELECTALL = "selectall";
-    public static final String CMD_SPELLCHECK = "spellcheck";
-    public static final String CMD_SUBSCRIPT = "subscript";
-    public static final String CMD_SUPERSCRIPT = "superscript";
-    public static final String CMD_UNDERLINE = "underline";
-    public static final String CMD_UNDO = "undo";
+    public static final String CMD_SELECTALL	= "selectall";
+    public static final String CMD_SPELLCHECK	= "spellcheck";
+    public static final String CMD_SUBSCRIPT 	= "subscript";
+    public static final String CMD_SUPERSCRIPT 	= "superscript";
+    public static final String CMD_UNDERLINE 	= "underline";
+    public static final String CMD_UNDO 		= "undo";
 
     /**
      * A rendering hint that puts the command on a new line
@@ -89,7 +89,7 @@ public interface RichTextRenderer extends Serializable {
      * A rendering hint that puts the spacer within the 
      * RichTextArea toolbar.
      */
-    public static final String CMD_HINT_SPACER = "hintSpacer";
+    public static final String CMD_HINT_SPACER	= "hintSpacer";
 
     /**
      * This returns a String[n][2] array of font name values and 

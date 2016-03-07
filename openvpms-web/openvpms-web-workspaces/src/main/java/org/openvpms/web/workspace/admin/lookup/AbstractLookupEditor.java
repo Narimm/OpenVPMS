@@ -27,8 +27,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertyTransformer;
-import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
@@ -43,8 +41,7 @@ import org.openvpms.web.system.ServiceHelper;
  * The derived value is the name with letters converted to uppercase, and
  * anything it is not in the range [A-Z,0-9] replaced with underscores.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
 
@@ -55,10 +52,10 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Constructs an <tt>AbstractLookupEditor</tt>.
+     * Constructs an {@link AbstractLookupEditor}.
      *
      * @param object        the object to edit
-     * @param parent        the parent object. May be <tt>null</tt>
+     * @param parent        the parent object. May be {@code null}
      * @param layoutContext the layout context
      */
     public AbstractLookupEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
@@ -151,7 +148,7 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
      * avoid duplicate lookup errors.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the code is valid
+     * @return {@code true} if the code is valid
      */
     protected boolean validateCode(Validator validator) {
         boolean result = true;
@@ -202,21 +199,6 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
             code = code.replaceAll("[^A-Z0-9]+", "_");
         }
         return code;
-    }
-
-    /**
-     * Disables macro expansion of a node, to avoid it expanding itself.
-     *
-     * @param name the node name
-     */
-    protected void disableMacroExpansion(String name) {
-        Property property = getProperty(name);
-        if (property != null) {
-            PropertyTransformer transformer = property.getTransformer();
-            if (transformer instanceof StringPropertyTransformer) {
-                ((StringPropertyTransformer) transformer).setExpandMacros(false);
-            }
-        }
     }
 
 }

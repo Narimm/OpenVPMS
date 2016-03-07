@@ -51,6 +51,7 @@ public class ProductEditorTestCase extends AbstractAppTest {
      */
     @Test
     public void testCalculateUnitPrice() {
+        TestHelper.getPractice(); // make sure the tax rates are removed
         Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, false);
         Party supplier = TestHelper.createSupplier();
 

@@ -34,6 +34,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -59,6 +60,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -189,7 +191,7 @@ public class MailEditor extends AbstractModifiable {
      * @param preferredTo the preferred 'to' address. May be {@code null}
      * @param context     the context
      */
-    public MailEditor(MailContext mailContext, Contact preferredTo, LayoutContext context) {
+    public MailEditor(final MailContext mailContext, Contact preferredTo, LayoutContext context) {
         header = new MailHeader(mailContext, preferredTo, context);
         this.context = context.getContext();
         this.help = context.getHelpContext();
@@ -212,9 +214,9 @@ public class MailEditor extends AbstractModifiable {
             public String expand(String macro) {
                 String result = null;
                 try {
-                    result = macros.run(macro, null, variables);
+                    result = macros.run(macro, mailContext.getMacroContext(), variables);
                 } catch (Throwable exception) {
-                    log.info("Failed to expand macro: " + macro, exception);
+                    log.error("Failed to expand macro: " + macro, exception);
                 }
                 return result;
             }
@@ -319,6 +321,25 @@ public class MailEditor extends AbstractModifiable {
             message = filter(message);
         }
         this.message.setValue(message);
+    }
+
+    /**
+     * Sets the mail subject and message from a template.
+     *
+     * @param template the template
+     * @param object   the object to evaluate the template against. May be {@code null}
+     */
+    public void setContent(Entity template, Object object) {
+        try {
+            EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
+            String subject = evaluator.getSubject(template, object, context);
+            String text = evaluator.getMessage(template, object, context);
+            setSubject(subject);
+            setMessage(text);
+        } catch (Throwable exception) {
+            ErrorHelper.show(Messages.format("mail.template.error", template.getName(), exception.getMessage()));
+            log.error("Failed to expand email template: " + template.getName(), exception);
+        }
     }
 
     /**

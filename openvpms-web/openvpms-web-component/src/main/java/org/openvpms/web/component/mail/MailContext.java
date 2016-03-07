@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -45,12 +45,6 @@ public interface MailContext {
      */
     List<Contact> getToAddresses();
 
-    /**
-     * Registers a factory for attachment browsers.
-     *
-     * @param factory the factory. May be {@code null}
-     */
-    void setAttachmentBrowserFactory(AttachmentBrowserFactory factory);
 
     /**
      * Returns a browser for documents that may be attached to mails.
@@ -58,6 +52,13 @@ public interface MailContext {
      * @return a new browser. May be {@code null}
      */
     Browser<Act> createAttachmentBrowser();
+
+    /**
+     * Returns the object to evaluate macros against.
+     *
+     * @return the object to evaluate macros against. May be {@code null}
+     */
+    Object getMacroContext();
 
     /**
      * Returns variables to be used in macro expansion.

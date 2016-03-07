@@ -26,6 +26,7 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.ReportContext;
+import net.sf.jasperreports.engine.export.HtmlExporter;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
@@ -42,6 +43,7 @@ import net.sf.jasperreports.export.OutputStreamExporterOutput;
 import net.sf.jasperreports.export.ReportExportConfiguration;
 import net.sf.jasperreports.export.SimpleCsvExporterConfiguration;
 import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimplePrintServiceExporterConfiguration;
 import net.sf.jasperreports.export.SimpleWriterExporterOutput;
@@ -564,6 +566,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         if (DocFormats.PDF_TYPE.equals(mimeType)) {
             exportToPDF(report, stream);
             ext = DocFormats.PDF_EXT;
+        } else if (DocFormats.HTML_TYPE.equals(mimeType)) {
+            exportToHTML(report, stream);
+            ext = DocFormats.HTML_EXT;
         } else if (DocFormats.RTF_TYPE.equals(mimeType)) {
             exportToRTF(report, stream);
             ext = DocFormats.RTF_EXT;
@@ -594,6 +599,20 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private void exportToPDF(JasperPrint report, OutputStream stream) throws JRException {
         exportStream(report, stream, new JRPdfExporter());
+    }
+
+    /**
+     * Exports a generated jasper report to HTML.
+     *
+     * @param report the report
+     * @param stream the stream to write to
+     * @throws JRException if the export fails
+     */
+    private void exportToHTML(JasperPrint report, OutputStream stream) throws JRException {
+        HtmlExporter exporter = new HtmlExporter();
+        exporter.setExporterInput(new SimpleExporterInput(report));
+        exporter.setExporterOutput(new SimpleHtmlExporterOutput(stream));
+        exporter.exportReport();
     }
 
     /**

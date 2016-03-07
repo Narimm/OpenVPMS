@@ -16,12 +16,15 @@
 
 package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.Extent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.echo.text.TextArea;
 
 
 /**
@@ -70,7 +73,29 @@ public class EmailDocumentTemplateLayoutStrategy extends AbstractDocumentTemplat
             // NOTE: this replaces the default "content" node. The pseudo node for the
             // document content must therefore have the same name as the "content" node
         }
+        // restrict the height of the subject and source nodes
+        addTextArea("subject", properties, object, context);
+        addTextArea("subjectSource", properties, object, context);
+        addTextArea("contentSource", properties, object, context);
         return super.apply(object, properties, parent, context);
+    }
+
+    /**
+     * Adds a text area for a node, restricting its height to 2 EM.
+     *
+     * @param name       the node name
+     * @param properties the properties
+     * @param object     the object
+     * @param context    the layout context
+     */
+    private void addTextArea(String name, PropertySet properties, IMObject object, LayoutContext context) {
+        Property property = properties.get(name);
+        ComponentState state = context.getComponentFactory().create(property, object);
+        if (state.getComponent() instanceof TextArea) {
+            TextArea component = (TextArea) state.getComponent();
+            component.setHeight(new Extent(2, Extent.EM));
+        }
+        addComponent(state);
     }
 
 }

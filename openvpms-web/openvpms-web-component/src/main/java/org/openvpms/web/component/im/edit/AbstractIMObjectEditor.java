@@ -54,6 +54,8 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertyTransformer;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -928,6 +930,21 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             }
         }
         return result;
+    }
+
+    /**
+     * Disables macro expansion of a node, to avoid it expanding itself.
+     *
+     * @param name the node name
+     */
+    protected void disableMacroExpansion(String name) {
+        Property property = getProperty(name);
+        if (property != null) {
+            PropertyTransformer transformer = property.getTransformer();
+            if (transformer instanceof StringPropertyTransformer) {
+                ((StringPropertyTransformer) transformer).setExpandMacros(false);
+            }
+        }
     }
 
     private class ComponentFactory extends NodeEditorFactory {

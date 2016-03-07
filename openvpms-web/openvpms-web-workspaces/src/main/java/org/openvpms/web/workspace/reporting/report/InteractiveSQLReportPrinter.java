@@ -16,11 +16,14 @@
 
 package org.openvpms.web.workspace.reporting.report;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.print.InteractiveExportPrinter;
 import org.openvpms.web.component.print.PrintDialog;
 import org.openvpms.web.echo.help.HelpContext;
@@ -118,6 +121,23 @@ public class InteractiveSQLReportPrinter extends InteractiveExportPrinter {
     @Override
     protected String getTitle() {
         return Messages.format("reporting.run.title", getDisplayName());
+    }
+
+    /**
+     * Shows the mail dialog.
+     * <p/>
+     * This implementation pre-fills the email with the template associated with the document being printed, if any.
+     *
+     * @param dialog the dialog
+     */
+    @Override
+    protected void show(MailDialog dialog) {
+        super.show(dialog);
+        DocumentTemplate template = getPrinter().getTemplate();
+        Entity emailTemplate = template.getEmailTemplate();
+        if (emailTemplate != null) {
+            dialog.getMailEditor().setContent(emailTemplate, null);
+        }
     }
 
     /**

@@ -149,7 +149,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      */
     protected void send(Party customer, Contact contact, List<ReminderEvent> events, DocumentTemplate reminderTemplate,
                         Entity emailTemplate, Mailer mailer, Context context) {
-        String body = evaluator.getMessage(emailTemplate, context);
+        String body = evaluator.getMessage(emailTemplate, customer, context);
         if (StringUtils.isEmpty(body)) {
             throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
         }
@@ -160,7 +160,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         mailer.setFrom(from.toString(true));
         mailer.setTo(new String[]{to});
 
-        String subject = evaluator.getSubject(emailTemplate);
+        String subject = evaluator.getSubject(emailTemplate, customer, context);
         if (StringUtils.isEmpty(subject)) {
             subject = reminderTemplate.getName();
         }

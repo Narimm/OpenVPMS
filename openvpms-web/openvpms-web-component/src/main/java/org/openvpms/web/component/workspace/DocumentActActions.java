@@ -128,7 +128,7 @@ public class DocumentActActions extends ActActions<DocumentAct> {
      */
     private DocumentAct getDocumentAct(Entity template) {
         DocumentAct result = null;
-        if (TypeHelper.isA(template, DocumentArchetypes.DOCUMENT_TEMPLATE)) {
+        if (TypeHelper.isA(template, DocumentArchetypes.DOCUMENT_TEMPLATE, DocumentArchetypes.EMAIL_TEMPLATE) ) {
             DocumentTemplate documentTemplate = new DocumentTemplate(template, ServiceHelper.getArchetypeService());
             result = documentTemplate.getDocumentAct();
         }

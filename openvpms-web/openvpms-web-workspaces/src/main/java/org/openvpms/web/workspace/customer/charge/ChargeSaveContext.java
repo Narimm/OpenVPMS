@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * Charge context, used to defer manipulation of relationships to patient history until the charge items are saved.
- * <p/>
+ * <p>
  * At save, the approach is:
  * <ol>
  * <li>save charge</li>
@@ -85,7 +85,7 @@ public class ChargeSaveContext implements CollectionPropertyEditor.RemoveHandler
 
     /**
      * Invoked to remove an object.
-     * <p/>
+     * <p>
      * Removal is deferred until {@link #save()} is invoked.
      *
      * @param object the object to remove
@@ -97,7 +97,7 @@ public class ChargeSaveContext implements CollectionPropertyEditor.RemoveHandler
 
     /**
      * Invoked to remove an object.
-     * <p/>
+     * <p>
      * Removal is deferred until {@link #save()} is invoked.
      *
      * @param editor the object editor
