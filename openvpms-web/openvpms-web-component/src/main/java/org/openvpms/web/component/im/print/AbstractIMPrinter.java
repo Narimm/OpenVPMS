@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.print;
@@ -54,6 +54,15 @@ public abstract class AbstractIMPrinter<T>
      */
     public Iterable<T> getObjects() {
         return reporter.getObjects();
+    }
+
+    /**
+     * Returns the reporter.
+     *
+     * @return the reporter
+     */
+    public Reporter<T> getReporter() {
+        return reporter;
     }
 
     /**
@@ -134,12 +143,4 @@ public abstract class AbstractIMPrinter<T>
         return reporter.getObject();
     }
 
-    /**
-     * Returns the reporter.
-     *
-     * @return the reporter
-     */
-    protected Reporter<T> getReporter() {
-        return reporter;
-    }
 }

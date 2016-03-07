@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.print;
@@ -110,6 +110,16 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
     }
 
     /**
+     * Returns the reporter.
+     *
+     * @return the reporter
+     */
+    @Override
+    public TemplatedReporter<T> getReporter() {
+        return (TemplatedReporter<T>) super.getReporter();
+    }
+
+    /**
      * Returns the print properties for an object.
      *
      * @param printer the printer
@@ -121,15 +131,6 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
         return getProperties(printer, getTemplate(), context);
     }
 
-    /**
-     * Returns the reporter.
-     *
-     * @return the reporter
-     */
-    @Override
-    protected TemplatedReporter<T> getReporter() {
-        return (TemplatedReporter<T>) super.getReporter();
-    }
 
     /**
      * Returns the document template.

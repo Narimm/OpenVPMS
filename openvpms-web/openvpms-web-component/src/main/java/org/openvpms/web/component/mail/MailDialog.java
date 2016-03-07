@@ -187,13 +187,36 @@ public class MailDialog extends PopupDialog {
      */
     public MailDialog(String title, MailContext mailContext, Contact preferred, Browser<Act> documents,
                       LayoutContext context) {
+        this(title, new MailEditor(mailContext, preferred, context), documents, context);
+    }
+
+    /**
+     * Constructs a {@link MailDialog}.
+     *
+     * @param editor    the mail editor
+     * @param documents the document browser. May be {@code null}
+     * @param context   the layout context
+     */
+    public MailDialog(MailEditor editor, Browser<Act> documents, LayoutContext context) {
+        this(Messages.get("mail.write"), editor, documents, context);
+    }
+
+    /**
+     * Constructs a {@link MailDialog}.
+     *
+     * @param title     the window title
+     * @param editor    the mail editor
+     * @param documents the document browser. May be {@code null}
+     * @param context   the layout context
+     */
+    public MailDialog(String title, MailEditor editor, Browser<Act> documents, LayoutContext context) {
         super(title, "MailDialog", documents != null ? NEW_SEND_ATTACH_ALL_CANCEL : NEW_SEND_ATTACH_FILE_CANCEL,
               context.getHelpContext());
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
         this.documents = documents;
         this.context = context;
-        editor = new MailEditor(mailContext, preferred, context);
+        this.editor = editor;
 
         getLayout().add(editor.getComponent());
         getFocusGroup().add(editor.getFocusGroup());
@@ -328,24 +351,11 @@ public class MailDialog extends PopupDialog {
             public void onOK() {
                 Entity selected = dialog.getSelected();
                 if (selected != null) {
-                    newFromTemplate(selected);
+                    editor.setContent(selected, null);
                 }
             }
         });
         dialog.show();
-    }
-
-    /**
-     * Populates the email from a template.
-     *
-     * @param template the template
-     */
-    private void newFromTemplate(Entity template) {
-        EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
-        String subject = evaluator.getSubject(template);
-        String text = evaluator.getMessage(template, context.getContext());
-        editor.setSubject(subject);
-        editor.setMessage(text);
     }
 
     /**

@@ -93,7 +93,7 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Constructs an {@link SQLReportPrinter}.
      *
-     * @param template the teplate
+     * @param template the template
      * @param document the document
      * @param context  the context
      * @throws SQLReportException        for any report error
@@ -115,6 +115,15 @@ public class SQLReportPrinter extends AbstractPrinter {
         connectionName = connectionParam.getName();
 
         setInteractive(getInteractive(template, getDefaultPrinter(), context));
+    }
+
+    /**
+     * Returns the document template.
+     *
+     * @return the document template
+     */
+    public DocumentTemplate getTemplate() {
+        return template;
     }
 
     /**
@@ -259,11 +268,12 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @return the report parameters
      */
     private Map<String, Object> getParameters(boolean email) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         if (parameters != null) {
             result.putAll(parameters);
         }
         result.put(Reporter.IS_EMAIL, email);
         return result;
     }
+
 }

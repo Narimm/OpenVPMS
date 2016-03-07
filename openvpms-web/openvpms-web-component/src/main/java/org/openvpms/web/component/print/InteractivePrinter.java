@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -22,6 +22,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
@@ -522,12 +523,8 @@ public class InteractivePrinter implements Printer {
      * @param parent   the parent print dialog
      */
     protected void mail(Document document, final PrintDialog parent) {
-        final MailDialog dialog = new MailDialog(mailContext,
-                                                 new DefaultLayoutContext(context, help.subtopic("email")));
-        MailEditor editor = dialog.getMailEditor();
-        editor.setSubject(getDisplayName());
-        editor.addAttachment(document);
-        dialog.show();
+        DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, help.subtopic("email"));
+        final MailDialog dialog = createMailDialog(document, mailContext, layoutContext);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             @Override
             public void onClose(WindowPaneEvent event) {
@@ -539,6 +536,34 @@ public class InteractivePrinter implements Printer {
                 }
             }
         });
+        show(dialog);
+        dialog.show();
+    }
+
+    /**
+     * Creates a dialog to email a document as an attachment.
+     * <p/>
+     * If emailed, then the print dialog is closed.
+     *
+     * @param document      the document to mail
+     * @param mailContext   the mail context
+     * @param layoutContext the layout context
+     */
+    protected MailDialog createMailDialog(Document document, MailContext mailContext, LayoutContext layoutContext) {
+        final MailDialog dialog = new MailDialog(mailContext, layoutContext);
+        MailEditor editor = dialog.getMailEditor();
+        editor.setSubject(getDisplayName());
+        editor.addAttachment(document);
+        return dialog;
+    }
+
+    /**
+     * Shows the dialog.
+     *
+     * @param dialog the dialog
+     */
+    protected void show(MailDialog dialog) {
+        dialog.show();
     }
 
 }

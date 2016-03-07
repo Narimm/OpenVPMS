@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.doc;
 
+import org.apache.commons.lang.mutable.MutableInt;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -114,8 +115,9 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      */
     public Document create(String name, InputStream stream, String mimeType, int size) {
         CRC32 checksum = new CRC32();
-        byte[] data = getContent(name, stream, size, checksum);
-        return create(name, data, mimeType, size, checksum.getValue());
+        MutableInt actualSize = new MutableInt(size);
+        byte[] data = getContent(name, stream, actualSize, checksum);
+        return create(name, data, mimeType, actualSize.intValue(), checksum.getValue());
     }
 
     /**
@@ -129,11 +131,12 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
     @Override
     public void update(Document document, InputStream stream, String mimeType, int size) {
         CRC32 checksum = new CRC32();
-        byte[] content = getContent(document.getName(), stream, size, checksum);
+        MutableInt actualSize = new MutableInt(size);
+        byte[] content = getContent(document.getName(), stream, actualSize, checksum);
         if (mimeType == null) {
             mimeType = document.getMimeType();
         }
-        update(document, document.getName(), content, mimeType, size, checksum.getValue());
+        update(document, document.getName(), content, mimeType, actualSize.intValue(), checksum.getValue());
     }
 
     /**
@@ -218,7 +221,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
 
     /**
      * Returns a stream to write the document to.
-     * <p>
+     * <p/>
      * If compression is enabled, this returns an {@link DeflaterOutputStream}, otherwise it returns the stream
      * unchanged.
      *
@@ -231,7 +234,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
 
     /**
      * Returns a stream to read the document from.
-     * <p>
+     * <p/>
      * If compression is enabled, this returns an {@link InflaterInputStream}, otherwise it returns the stream
      * unchanged.
      *
@@ -269,15 +272,17 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      *
      * @param name     the document name, for error reporting
      * @param stream   a stream representing the document content
-     * @param size     the size of stream, or {@code -1} if the size is not known
+     * @param size     the size of stream, or {@code -1} if the size is not known. This will be updated with the actual
+     *                 size on return
      * @param checksum updated with the uncompressed document CRC32 checksum
-     * @return the
+     * @return the content
      */
-    private byte[] getContent(String name, InputStream stream, int size, CRC32 checksum) {
+    private byte[] getContent(String name, InputStream stream, MutableInt size, CRC32 checksum) {
         byte[] buffer = new byte[1024];
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         OutputStream output = getOutputStream(bytes);
         int read = 0;
+        int initialSize = size.intValue();
         int length;
         try {
             while ((length = stream.read(buffer)) != -1) {
@@ -285,13 +290,14 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
                 output.write(buffer, 0, length);
                 read += length;
             }
-            if (size != -1 && read != size) {
+            if (initialSize != -1 && read != initialSize) {
                 throw new DocumentException(ReadError, name);
             }
             output.close();
         } catch (IOException exception) {
             throw new DocumentException(ReadError, exception, name);
         }
+        size.setValue(read);
         return bytes.toByteArray();
     }
 

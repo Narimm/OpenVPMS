@@ -16,29 +16,35 @@
 
 <archetypes>
     <archetype name="entity.documentTemplateEmail.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Email Document Template">
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Email Template">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1"  maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
-        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="subject" path="/details/subject" type="java.lang.String" minCardinality="1" maxLength="80"/>
-        <node name="reportType" displayName="Report Type" path="/details/reportType" type="java.lang.String"
-              minCardinality="0">
-            <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="source" value="lookup.reportType"/>
-            </assertion>
-        </node>
-        <node name="contentType" path="/details/contentType" type="java.lang.String"
-              defaultValue="'TEXT'" minCardinality="1">
+        <node name="subjectType" path="/details/subjectType" type="java.lang.String" defaultValue="'TEXT'"
+              minCardinality="1">
             <assertion name="lookup.local">
                 <propertyList name="entries">
-                    <property name="TEXT" value="Text"/>
+                    <property name="TEXT" value="Plain text"/>
+                    <property name="MACRO" value="Macro"/>
+                    <property name="XPATH" value="Expression"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="subject" path="/details/subject" type="java.lang.String" minCardinality="1" maxLength="5000"/>
+        <node name="subjectSource" path="/details/subjectSource" type="java.lang.String" minCardinality="0" maxLength="5000"/>
+        <node name="contentType" path="/details/contentType" type="java.lang.String" defaultValue="'TEXT'"
+              minCardinality="1">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="TEXT" value="Plain text"/>
+                    <property name="MACRO" value="Macro"/>
+                    <property name="XPATH" value="Expression"/>
                     <property name="DOCUMENT" value="Document"/>
                 </propertyList>
             </assertion>
         </node>
         <node name="content" path="/details/content" type="java.lang.String" minCardinality="0" maxLength="5000"/>
-        <node name="expression" path="/details/expression" type="java.lang.String" minCardinality="0" maxLength="5000"/>
+        <node name="contentSource" path="/details/contentSource" type="java.lang.String" minCardinality="0" maxLength="5000"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>

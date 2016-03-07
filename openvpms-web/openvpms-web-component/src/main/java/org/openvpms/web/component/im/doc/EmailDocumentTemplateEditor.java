@@ -50,6 +50,11 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
     private static final String DOCUMENT_CONTENT = "DOCUMENT";
 
     /**
+     * The content type node name.
+     */
+    private static final String CONTENT_TYPE = "contentType";
+
+    /**
      * Constructs a {@link EmailDocumentTemplateEditor}.
      *
      * @param template the object to edit
@@ -60,7 +65,11 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
     public EmailDocumentTemplateEditor(Entity template, IMObject parent, LayoutContext context) {
         super(template, parent, false, new EmailDocumentHandler(), context);
         updateDocumentState();
-        getProperty("contentType").addModifiableListener(new ModifiableListener() {
+        disableMacroExpansion("subject");
+        disableMacroExpansion("subjectSource");
+        disableMacroExpansion("content");
+        disableMacroExpansion("contentSource");
+        getProperty(CONTENT_TYPE).addModifiableListener(new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
                 onContentTypeChanged();
@@ -75,7 +84,7 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
      * @return the content type. May be {@code null}
      */
     protected String getContentType() {
-        return getProperty("contentType").getString();
+        return getProperty(CONTENT_TYPE).getString();
     }
 
     /**
@@ -239,7 +248,7 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
         }
 
         private boolean isSupportedMimeType(String mimeType) {
-            for (String type : SUPPORTED_MIME_TYPES) {
+            for (String type: SUPPORTED_MIME_TYPES) {
                 if (type.equalsIgnoreCase(mimeType)) {
                     return true;
                 }
