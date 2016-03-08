@@ -18,8 +18,10 @@ package org.openvpms.web.workspace.workflow.appointment;
 
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Table;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
@@ -59,10 +61,19 @@ public class MultiDayTableCellRenderer extends ScheduleTableCellRenderer {
         if (value instanceof Component && model.isScheduleColumn(column)) {
             String style = getFreeStyle(model, row);
             TableLayoutDataEx layout = TableHelper.getTableLayoutDataEx(style);
+            layout.setRowSpan(model.getRows(column, row));
+            layout.setAlignment(Alignment.ALIGN_TOP);
             result = (Component) value;
             result.setLayoutData(layout);
         } else {
             result = super.getComponent(table, value, column, row);
+            if (result == null) {
+                result = LabelFactory.create();
+                String style = getFreeStyle(model, row);
+                TableLayoutDataEx layout = TableHelper.getTableLayoutDataEx(style);
+                layout.setRowSpan(model.getRows(column, row));
+                result.setLayoutData(layout);
+            }
         }
         return result;
     }
@@ -111,13 +122,26 @@ public class MultiDayTableCellRenderer extends ScheduleTableCellRenderer {
     }
 
     /**
+     * Returns the style for a free row.
+     *
+     * @param model the schedule table model
+     * @param row   the row
+     * @return a style for the row
+     */
+    @Override
+    protected String getFreeStyle(ScheduleTableModel model, int row) {
+        Schedule schedule = model.getSchedule(0, row);
+        return (schedule.getRenderEven()) ? "ScheduleTable.Even" : "ScheduleTable.Odd";
+    }
+
+    /**
      * This method is called to determine which cells within a row can cause an
      * action to be raised on the server when clicked.
      * <p/>
      * By default if a Table has attached actionListeners then any click on any
      * cell within a row will cause the action to fire.
      * <p/>
-     * This method allows this to be overrriden and only certain cells within a
+     * This method allows this to be overridden and only certain cells within a
      * row can cause an action event to be raise.
      *
      * @param table  the Table in question

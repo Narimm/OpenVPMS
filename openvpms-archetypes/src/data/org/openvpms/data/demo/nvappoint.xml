@@ -33,26 +33,569 @@
           slotUnits="MINUTES" allowDoubleBooking="false" startTime="1/1/1970 08:00:00" endTime="1/1/1970 18:00:00">
         <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS4" target="id:OL2"/>
     </data>
-    <data id="OS5" archetype="party.organisationSchedule" name="Dog Run" slotSize="1" slotUnits="HOURS"
+
+    <!-- Appointment types -->
+    <data id="AT1" archetype="entity.appointmentType" name="Standard Consult" description="Standard Consultation"/>
+    <data id="AT2" archetype="entity.appointmentType" name="Long Consult" description="Long Consultation"
+          colour="0xd1ffb1"/>
+    <data id="AT3" archetype="entity.appointmentType" name="New Patient" description="New Patient" colour="0xffb1c6"/>
+    <data id="AT4" archetype="entity.appointmentType" name="Short Consult" description="Short Consult"
+          colour="0xffecb1"/>
+    <data id="AT5" archetype="entity.appointmentType" name="Boarding" description="Boarding" colour="0xffb1c6"/>
+    <data id="AT6" archetype="entity.appointmentType" name="Hospital" description="Hospital" colour="0xd1ffb1"/>
+
+    <!-- Cage types -->
+    <data id="CT1" archetype="entity.cageType" name="Small Kennel" description="Small dog kennel"/>
+    <data id="CT2" archetype="entity.cageType" name="Medium Kennel" description="Medium dog kennel"/>
+    <data id="CT3" archetype="entity.cageType" name="Large Kennel" description="Large dog kennel"/>
+    <data id="CT4" archetype="entity.cageType" name="Small Cage" description="Small cat cage"/>
+    <data id="CT5" archetype="entity.cageType" name="Medium Cage" description="Medium cat cage"/>
+    <data id="CT6" archetype="entity.cageType" name="Large Cage" description="Large cat cage"/>
+
+    <!-- Dog boarding schedules -->
+    <data id="OS5" archetype="party.organisationSchedule" name="Small Kennel 1" slotSize="1" slotUnits="HOURS"
           allowDoubleBooking="false">
         <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS5" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS5" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS5" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS5" target="id:AT6"/>
     </data>
-    <data id="OS6" archetype="party.organisationSchedule" name="Dog Lg Cage" slotSize="1" slotUnits="HOURS"
+    <data id="OS6" archetype="party.organisationSchedule" name="Small Kennel 2" slotSize="1" slotUnits="HOURS"
           allowDoubleBooking="false">
         <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS6" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS6" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS6" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS6" target="id:AT6"/>
     </data>
-    <data id="OS7" archetype="party.organisationSchedule" name="Dog Med Cage" slotSize="1" slotUnits="HOURS"
+    <data id="OS7" archetype="party.organisationSchedule" name="Small Kennel 3" slotSize="1" slotUnits="HOURS"
           allowDoubleBooking="false">
         <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS7" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS7" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS7" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS7" target="id:AT6"/>
     </data>
-    <data id="OS8" archetype="party.organisationSchedule" name="Dog Sm Cage" slotSize="1" slotUnits="HOURS"
+    <data id="OS8" archetype="party.organisationSchedule" name="Small Kennel 4" slotSize="1" slotUnits="HOURS"
           allowDoubleBooking="false">
         <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS8" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS8" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS8" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS8" target="id:AT6"/>
     </data>
-    <data id="OS9" archetype="party.organisationSchedule" name="Cat Cage" slotSize="1" slotUnits="HOURS"
-          allowDoubleBooking="true">
+    <data id="OS9" archetype="party.organisationSchedule" name="Small Kennel 5" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
         <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS9" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS9" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS9" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS9" target="id:AT6"/>
     </data>
+    <data id="OS10" archetype="party.organisationSchedule" name="Small Kennel 6" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS10" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS10" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS10" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS10" target="id:AT6"/>
+    </data>
+    <data id="OS11" archetype="party.organisationSchedule" name="Small Kennel 7" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS11" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS11" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS11" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS11" target="id:AT6"/>
+    </data>
+    <data id="OS12" archetype="party.organisationSchedule" name="Small Kennel 8" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS12" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS12" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS12" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS12" target="id:AT6"/>
+    </data>
+    <data id="OS13" archetype="party.organisationSchedule" name="Small Kennel 9" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS13" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS13" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS13" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS13" target="id:AT6"/>
+    </data>
+    <data id="OS14" archetype="party.organisationSchedule" name="Small Kennel 10" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS14" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS14" target="id:CT1"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS14" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS14" target="id:AT6"/>
+    </data>
+    <data id="OS15" archetype="party.organisationSchedule" name="Medium Kennel 1" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS15" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS15" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS15" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS15" target="id:AT6"/>
+    </data>
+    <data id="OS16" archetype="party.organisationSchedule" name="Medium Kennel 2" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS16" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS16" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS16" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS16" target="id:AT6"/>
+    </data>
+    <data id="OS17" archetype="party.organisationSchedule" name="Medium Kennel 3" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS17" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS17" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS17" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS17" target="id:AT6"/>
+    </data>
+    <data id="OS18" archetype="party.organisationSchedule" name="Medium Kennel 4" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS18" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS18" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS18" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS18" target="id:AT6"/>
+    </data>
+    <data id="OS19" archetype="party.organisationSchedule" name="Medium Kennel 5" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS19" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS19" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS19" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS19" target="id:AT6"/>
+    </data>
+    <data id="OS20" archetype="party.organisationSchedule" name="Medium Kennel 6" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS20" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS20" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS20" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS20" target="id:AT6"/>
+    </data>
+    <data id="OS21" archetype="party.organisationSchedule" name="Medium Kennel 7" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS21" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS21" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS21" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS21" target="id:AT6"/>
+    </data>
+    <data id="OS22" archetype="party.organisationSchedule" name="Medium Kennel 8" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS22" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS22" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS22" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS22" target="id:AT6"/>
+    </data>
+    <data id="OS23" archetype="party.organisationSchedule" name="Medium Kennel 9" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS23" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS23" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS23" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS23" target="id:AT6"/>
+    </data>
+    <data id="OS24" archetype="party.organisationSchedule" name="Medium Kennel 10" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS24" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS24" target="id:CT2"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS24" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS24" target="id:AT6"/>
+    </data>
+    <data id="OS25" archetype="party.organisationSchedule" name="Large Kennel 1" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS25" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS25" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS25" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS25" target="id:AT6"/>
+    </data>
+    <data id="OS26" archetype="party.organisationSchedule" name="Large Kennel 2" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS26" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS26" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS26" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS26" target="id:AT6"/>
+    </data>
+    <data id="OS27" archetype="party.organisationSchedule" name="Large Kennel 3" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS27" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS27" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS27" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS27" target="id:AT6"/>
+    </data>
+    <data id="OS28" archetype="party.organisationSchedule" name="Large Kennel 4" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS28" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS28" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS28" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS28" target="id:AT6"/>
+    </data>
+    <data id="OS29" archetype="party.organisationSchedule" name="Large Kennel 5" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS29" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS29" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS29" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS29" target="id:AT6"/>
+    </data>
+    <data id="OS30" archetype="party.organisationSchedule" name="Large Kennel 6" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS30" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS30" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS30" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS30" target="id:AT6"/>
+    </data>
+    <data id="OS31" archetype="party.organisationSchedule" name="Large Kennel 7" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS31" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS31" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS31" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS31" target="id:AT6"/>
+    </data>
+    <data id="OS32" archetype="party.organisationSchedule" name="Large Kennel 8" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS32" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS32" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS32" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS32" target="id:AT6"/>
+    </data>
+    <data id="OS33" archetype="party.organisationSchedule" name="Large Kennel 9" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS33" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS33" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS33" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS33" target="id:AT6"/>
+    </data>
+    <data id="OS34" archetype="party.organisationSchedule" name="Large Kennel 10" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS34" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS34" target="id:CT3"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS34" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS34" target="id:AT6"/>
+    </data>
+
+    <!-- Cat boarding schedules -->
+    <data id="OS35" archetype="party.organisationSchedule" name="Small Cage 1" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS35" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS35" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS35" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS35" target="id:AT6"/>
+    </data>
+    <data id="OS36" archetype="party.organisationSchedule" name="Small Cage 2" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS36" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS36" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS36" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS36" target="id:AT6"/>
+    </data>
+    <data id="OS37" archetype="party.organisationSchedule" name="Small Cage 3" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS37" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS37" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS37" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS37" target="id:AT6"/>
+    </data>
+    <data id="OS38" archetype="party.organisationSchedule" name="Small Cage 4" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS38" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS38" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS38" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS38" target="id:AT6"/>
+    </data>
+    <data id="OS39" archetype="party.organisationSchedule" name="Small Cage 5" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS39" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS39" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS39" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS39" target="id:AT6"/>
+    </data>
+    <data id="OS40" archetype="party.organisationSchedule" name="Small Cage 6" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS40" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS40" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS40" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS40" target="id:AT6"/>
+    </data>
+    <data id="OS41" archetype="party.organisationSchedule" name="Small Cage 7" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS41" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS41" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS41" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS41" target="id:AT6"/>
+    </data>
+    <data id="OS42" archetype="party.organisationSchedule" name="Small Cage 8" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS42" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS42" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS42" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS42" target="id:AT6"/>
+    </data>
+    <data id="OS43" archetype="party.organisationSchedule" name="Small Cage 9" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS43" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS43" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS43" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS43" target="id:AT6"/>
+    </data>
+    <data id="OS44" archetype="party.organisationSchedule" name="Small Cage 10" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS44" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS44" target="id:CT4"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS44" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS44" target="id:AT6"/>
+    </data>
+    <data id="OS45" archetype="party.organisationSchedule" name="Medium Cage 1" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS45" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS45" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS45" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS45" target="id:AT6"/>
+    </data>
+    <data id="OS46" archetype="party.organisationSchedule" name="Medium Cage 2" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS46" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS46" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS46" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS46" target="id:AT6"/>
+    </data>
+    <data id="OS47" archetype="party.organisationSchedule" name="Medium Cage 3" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS47" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS47" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS47" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS47" target="id:AT6"/>
+    </data>
+    <data id="OS48" archetype="party.organisationSchedule" name="Medium Cage 4" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS48" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS48" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS48" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS48" target="id:AT6"/>
+    </data>
+    <data id="OS49" archetype="party.organisationSchedule" name="Medium Cage 5" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS49" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS49" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS49" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS49" target="id:AT6"/>
+    </data>
+    <data id="OS50" archetype="party.organisationSchedule" name="Medium Cage 6" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS50" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS50" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS50" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS50" target="id:AT6"/>
+    </data>
+    <data id="OS51" archetype="party.organisationSchedule" name="Medium Cage 7" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS51" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS51" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS51" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS51" target="id:AT6"/>
+    </data>
+    <data id="OS52" archetype="party.organisationSchedule" name="Medium Cage 8" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS52" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS52" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS52" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS52" target="id:AT6"/>
+    </data>
+    <data id="OS53" archetype="party.organisationSchedule" name="Medium Cage 9" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS53" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS53" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS53" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS53" target="id:AT6"/>
+    </data>
+    <data id="OS54" archetype="party.organisationSchedule" name="Medium Cage 10" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS54" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS54" target="id:CT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS54" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS54" target="id:AT6"/>
+    </data>
+    <data id="OS55" archetype="party.organisationSchedule" name="Large Cage 1" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS55" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS55" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS55" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS55" target="id:AT6"/>
+    </data>
+    <data id="OS56" archetype="party.organisationSchedule" name="Large Cage 2" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS56" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS56" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS56" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS56" target="id:AT6"/>
+    </data>
+    <data id="OS57" archetype="party.organisationSchedule" name="Large Cage 3" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS57" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS57" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS57" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS57" target="id:AT6"/>
+    </data>
+    <data id="OS58" archetype="party.organisationSchedule" name="Large Cage 4" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS58" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS58" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS58" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS58" target="id:AT6"/>
+    </data>
+    <data id="OS59" archetype="party.organisationSchedule" name="Large Cage 5" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS59" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS59" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS59" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS59" target="id:AT6"/>
+    </data>
+    <data id="OS60" archetype="party.organisationSchedule" name="Large Cage 6" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS60" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS60" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS60" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS60" target="id:AT6"/>
+    </data>
+    <data id="OS61" archetype="party.organisationSchedule" name="Large Cage 7" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS61" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS61" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS61" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS61" target="id:AT6"/>
+    </data>
+    <data id="OS62" archetype="party.organisationSchedule" name="Large Cage 8" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS62" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS62" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS62" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS62" target="id:AT6"/>
+    </data>
+    <data id="OS63" archetype="party.organisationSchedule" name="Large Cage 9" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS63" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS63" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS63" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS63" target="id:AT6"/>
+    </data>
+    <data id="OS64" archetype="party.organisationSchedule" name="Large Cage 10" slotSize="1" slotUnits="HOURS"
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS64" target="id:OL1"/>
+        <data collection="cageType" archetype="entityLink.scheduleCageType" source="id:OS64" target="id:CT6"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS64" target="id:AT5"/>
+        <data collection="appointmentTypes" archetype="entityRelationship.scheduleAppointmentType" noSlots="1"
+              source="id:OS64" target="id:AT6"/>
+    </data>
+
     <data id="VS1" archetype="entity.organisationScheduleView" name="Main Schedule View">
         <data archetype="entityRelationship.viewSchedule" source="id:VS1" target="id:OS1" sequence="0"/>
         <data archetype="entityRelationship.viewSchedule" source="id:VS1" target="id:OS3" sequence="1"/>
@@ -69,6 +612,61 @@
         <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS7" sequence="2"/>
         <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS8" sequence="3"/>
         <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS9" sequence="4"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS10" sequence="5"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS11" sequence="6"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS12" sequence="7"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS13" sequence="8"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS14" sequence="9"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS15" sequence="10"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS16" sequence="11"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS17" sequence="12"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS18" sequence="13"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS19" sequence="14"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS20" sequence="15"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS21" sequence="16"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS22" sequence="17"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS23" sequence="18"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS24" sequence="19"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS25" sequence="20"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS26" sequence="21"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS27" sequence="22"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS28" sequence="23"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS29" sequence="24"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS30" sequence="25"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS31" sequence="26"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS32" sequence="27"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS33" sequence="28"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS34" sequence="29"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS35" sequence="30"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS36" sequence="31"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS37" sequence="32"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS38" sequence="33"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS39" sequence="34"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS40" sequence="35"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS41" sequence="36"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS42" sequence="37"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS43" sequence="38"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS44" sequence="39"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS45" sequence="40"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS46" sequence="41"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS47" sequence="42"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS48" sequence="43"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS49" sequence="44"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS50" sequence="45"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS51" sequence="46"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS52" sequence="47"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS53" sequence="48"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS54" sequence="49"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS55" sequence="50"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS56" sequence="51"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS57" sequence="52"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS58" sequence="53"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS59" sequence="54"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS60" sequence="55"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS61" sequence="56"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS62" sequence="57"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS63" sequence="58"/>
+        <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS64" sequence="59"/>
         <data archetype="entityRelationship.locationView" source="id:OL1" target="id:VS3"/>
     </data>
     <data id="OW1" archetype="party.organisationWorkList" name="Main Waiting List" maxSlots="100"/>
@@ -85,14 +683,6 @@
         <data archetype="entityRelationship.viewWorkList" source="id:VW2" target="id:OW4" sequence="1"/>
         <data archetype="entityRelationship.locationWorkListView" source="id:OL2" target="id:VW2"/>
     </data>
-    <data id="AT1" archetype="entity.appointmentType" name="Standard Consult" description="Standard Consultation"/>
-    <data id="AT2" archetype="entity.appointmentType" name="Long Consult" description="Long Consultation"
-          colour="0xd1ffb1"/>
-    <data id="AT3" archetype="entity.appointmentType" name="New Patient" description="New Patient" colour="0xffb1c6"/>
-    <data id="AT4" archetype="entity.appointmentType" name="Short Consult" description="Short Consult"
-          colour="0xffecb1"/>
-    <data id="AT5" archetype="entity.appointmentType" name="Boarding" description="Boarding" colour="0xffb1c6"/>
-    <data id="AT6" archetype="entity.appointmentType" name="Hospital" description="Hospital" colour="0xd1ffb1"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT1" noSlots="1"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT2" noSlots="2"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT3" noSlots="2"/>
@@ -104,15 +694,6 @@
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS3" target="id:AT1" noSlots="1"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS3" target="id:AT2" noSlots="2"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS5" target="id:AT5" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS5" target="id:AT6" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS6" target="id:AT5" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS6" target="id:AT6" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS7" target="id:AT5" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS7" target="id:AT6" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS8" target="id:AT5" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS8" target="id:AT6" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS9" target="id:AT5" noSlots="1"/>
-    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS9" target="id:AT6" noSlots="1"/>
     <data id="TT1" archetype="entity.taskType" name="Consultation" description="Consultation"/>
     <data id="TT2" archetype="entity.taskType" name="Surgery" description="Surgery"/>
     <data id="TT3" archetype="entity.taskType" name="Day Procedure" description="New Patient"/>

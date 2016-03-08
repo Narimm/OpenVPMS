@@ -57,6 +57,11 @@ public class Schedule {
     private int slotSize;
 
     /**
+     * Determines
+     */
+    private boolean renderEven = true;
+
+    /**
      * The events.
      */
     private List<PropertySet> events = new ArrayList<PropertySet>();
@@ -236,6 +241,24 @@ public class Schedule {
     }
 
     /**
+     * Determines if the even or odd rendering style should be used.
+     *
+     * @param renderEven if {@code true} use the even rendering style, otherwise use the odd style
+     */
+    public void setRenderEven(boolean renderEven) {
+        this.renderEven = renderEven;
+    }
+
+    /**
+     * Determines if the even or odd rendering style should be used.
+     *
+     * @return {@code true} to use the even rendering style, {@code false} to use the odd style
+     */
+    public boolean getRenderEven() {
+        return renderEven;
+    }
+
+    /**
      * Comparator used to locate events starting at particular time.
      */
     private class StartTimeComparator implements Comparator<PropertySet> {
@@ -254,7 +277,7 @@ public class Schedule {
          * @param o1 the first object to be compared.
          * @param o2 the second object to be compared.
          * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or
-         *         greater than the second.
+         * greater than the second.
          */
         public int compare(PropertySet o1, PropertySet o2) {
             Date startTime1 = o1.getDate(ScheduleEvent.ACT_START_TIME);

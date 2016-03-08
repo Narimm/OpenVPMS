@@ -26,6 +26,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
@@ -38,6 +39,7 @@ import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Appointment table model for appointments that span multiple days.
@@ -87,11 +89,12 @@ public class MultiDayTableModel extends ScheduleTableModel {
     @Override
     public Object getValueAt(int column, int row) {
         Object result = null;
+        Schedule schedule = getSchedule(column, row);
+        Entity entity = (schedule != null) ? schedule.getSchedule() : null;
         if (column == SCHEDULE_INDEX) {
-            Schedule schedule = getSchedule(column, row);
-            if (schedule != null) {
+            if (entity != null) {
                 Label label = LabelFactory.create(null, Styles.BOLD);
-                label.setText(schedule.getName());
+                label.setText(entity.getName());
                 result = label;
             }
         } else {
@@ -150,6 +153,33 @@ public class MultiDayTableModel extends ScheduleTableModel {
     public ScheduleEventGrid.Availability getAvailability(int column, int row) {
         return (isScheduleColumn(column)) ? ScheduleEventGrid.Availability.UNAVAILABLE
                                           : super.getAvailability(column, row);
+    }
+
+    /**
+     * Returns the number of rows spanned by a cell.
+     *
+     * @param column the cell column
+     * @param row    the cell row
+     * @return the number of spanned rows
+     */
+    public int getRows(int column, int row) {
+        int rowSpan = 1;
+        Entity entity = getSchedule(0, row).getSchedule();
+        List<Schedule> schedules = getSchedules();
+        if (isScheduleColumn(column)) {
+            for (int i = row + 1; i < schedules.size() && schedules.get(i).getSchedule().equals(entity); ++i) {
+                rowSpan++;
+            }
+        } else {
+            for (int i = row + 1; i < schedules.size() && schedules.get(i).getSchedule().equals(entity); ++i) {
+                if (getEvent(column, i) == null) {
+                    rowSpan++;
+                } else {
+                    break;
+                }
+            }
+        }
+        return rowSpan;
     }
 
     /**
