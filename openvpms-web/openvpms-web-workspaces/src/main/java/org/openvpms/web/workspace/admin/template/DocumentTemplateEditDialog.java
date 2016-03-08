@@ -59,6 +59,7 @@ public class DocumentTemplateEditDialog extends EditResultSetDialog<Entity> {
                 onExternalEdit();
             }
         });
+        enableButtons();
     }
 
     /**
