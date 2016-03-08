@@ -83,7 +83,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     private boolean newPrompt = false;
 
     /**
-     * Creates a new <tt>ScheduleTableCellRenderer</tt>.
+     * Creates a new {@code ScheduleTableCellRenderer}.
      *
      * @param scheduleTypeShortName the schedule type archetype short name
      */
@@ -96,9 +96,8 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * Returns a component that will be displayed at the specified coordinate in
      * the table.
      *
-     * @param table  the <tt>Table</tt> for which the rendering is
-     *               occurring
-     * @param value  the value retrieved from the <tt>TableModel</tt> for the specified coordinate
+     * @param table  the {@code Table} for which the rendering is occurring
+     * @param value  the value retrieved from the {@code TableModel} for the specified coordinate
      * @param column the column index to render
      * @param row    the row index to render
      * @return a component representation  of the value.
@@ -163,9 +162,8 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * Returns a component for a value.
      *
-     * @param table  the <tt>Table</tt> for which the rendering is
-     *               occurring
-     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     * @param table  the {@code Table} for which the rendering is occurring
+     * @param value  the value retrieved from the {@code TableModel} for the
      *               specified coordinate
      * @param column the column
      * @param row    the row
@@ -495,10 +493,10 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return a map of the matching objects and their 'colour' node  values
      */
     private Map<IMObjectReference, String> getColours(String shortName) {
-        Map<IMObjectReference, String> result = new HashMap<IMObjectReference, String>();
+        Map<IMObjectReference, String> result = new HashMap<>();
         ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<IMObject> iter = new IMObjectQueryIterator<IMObject>(query);
+        Iterator<IMObject> iter = new IMObjectQueryIterator<>(query);
         while (iter.hasNext()) {
             IMObject object = iter.next();
             IMObjectBean bean = new IMObjectBean(object);
@@ -540,12 +538,12 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * Sets the foreground colour of a component based on a background colour.
      * <p/>
-     * If the component is a <tt>Row</tt>, the request will be propagated to the child components.
+     * If the component is a {@code Row}, the request will be propagated to the child components.
      * <p/>
      * If the component is a BalloonHelp, or a child of a row is a BalloonHelp, the foreground colour change will
      * be ignored.
      * <p/>
-     * NOTE: this is a workaround to ensure that rows containing <tt>BalloonHelp</tt> components are rendered correctly
+     * NOTE: this is a workaround to ensure that rows containing {@code BalloonHelp} components are rendered correctly
      * when the background is black.
      * <p/>
      * TODO - don't render components within the model - move all of this out to the renderer(s)

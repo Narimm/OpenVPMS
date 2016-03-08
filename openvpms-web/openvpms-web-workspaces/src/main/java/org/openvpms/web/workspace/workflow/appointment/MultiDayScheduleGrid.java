@@ -1,5 +1,6 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -123,7 +124,7 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
     /**
      * Returns the no. of slots at an appointment occupies, from the specified
      * slot.
-     * <p/>
+     * <p>
      * If the appointment begins prior to the slot, the remaining slots will
      * be returned.
      *
@@ -156,9 +157,17 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      * @param appointments the appointments, keyed on schedule
      */
     private void setAppointments(Map<Entity, List<PropertySet>> appointments) {
-        List<Schedule> schedules = new ArrayList<Schedule>();
-        for (Entity schedule : appointments.keySet()) {
-            schedules.add(new Schedule(schedule, 0, 24 * 60, 24 * 60));
+        List<Schedule> schedules = new ArrayList<>();
+        int index = -1;
+        Entity last = null;
+        for (Entity entity : appointments.keySet()) {
+            Schedule schedule = new Schedule(entity, 0, 24 * 60, 24 * 60);
+            if (!ObjectUtils.equals(last, entity)) {
+                index++;
+            }
+            last = entity;
+            schedule.setRenderEven(index % 2 == 0);
+            schedules.add(schedule);
         }
         setSchedules(schedules);
 
@@ -175,7 +184,7 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
 
     /**
      * Adds an appointment.
-     * <p/>
+     * <p>
      * If the corresponding Schedule already has an appointment that intersects
      * the appointment, a new Schedule will be created with the same start and
      * end times, and the appointment added to that.

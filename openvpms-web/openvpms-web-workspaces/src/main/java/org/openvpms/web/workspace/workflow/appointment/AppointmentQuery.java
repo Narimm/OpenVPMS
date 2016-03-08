@@ -92,7 +92,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     public enum DateRange {
-        DAY, WEEK, MONTH
+        DAY, WEEK, FORTNIGHT, MONTH
     }
 
     /**
@@ -219,6 +219,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
 
         String[] dwm = {Messages.get("workflow.scheduling.dates.day"),
                         Messages.get("workflow.scheduling.dates.week"),
+                        Messages.get("workflow.scheduling.dates.fortnight"),
                         Messages.get("workflow.scheduling.dates.month")};
         dateSelector = SelectFieldFactory.create(dwm);
         dateSelector.addActionListener(new ActionListener() {
@@ -293,6 +294,9 @@ class AppointmentQuery extends ScheduleServiceQuery {
             case WEEK:
                 setDateNavigator(DateNavigator.WEEK);
                 break;
+            case FORTNIGHT:
+                setDateNavigator(DateNavigator.FORTNIGHT);
+                break;
             case MONTH:
                 setDateNavigator(DateNavigator.MONTH);
                 break;
@@ -325,6 +329,9 @@ class AppointmentQuery extends ScheduleServiceQuery {
             case WEEK:
                 days = 7;
                 break;
+            case FORTNIGHT:
+                days = 14;
+                break;
             default:
                 days = DateRules.getDaysInMonth(date);
         }
@@ -337,7 +344,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
         DateRange range;
         Entity view = getScheduleView();
         if (AppointmentHelper.isMultiDayView(view)) {
-            range = DateRange.MONTH;
+            range = DateRange.FORTNIGHT;
             if (datesContainer.getComponentCount() == 0) {
                 labelContainer.add(LabelFactory.create("workflow.scheduling.dates"));
                 datesContainer.add(dateSelector);
