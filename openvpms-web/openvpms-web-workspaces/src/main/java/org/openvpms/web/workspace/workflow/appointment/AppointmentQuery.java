@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -95,6 +95,10 @@ class AppointmentQuery extends ScheduleServiceQuery {
         DAY, WEEK, FORTNIGHT, MONTH
     }
 
+    public enum Show {
+        ALL, CAGE
+    }
+
     /**
      * Time range selector.
      */
@@ -118,12 +122,32 @@ class AppointmentQuery extends ScheduleServiceQuery {
     /**
      * The container for the Dates label.
      */
-    private Component labelContainer = new Row();
+    private final Component datesLabelContainer = new Row();
 
     /**
      * The container for the Dates selector.
      */
-    private Component datesContainer = new Row();
+    private final Component datesContainer = new Row();
+
+    /**
+     * The selected show type.
+     */
+    private Show show = Show.ALL;
+
+    /**
+     * The show selector.
+     */
+    private SelectField showSelector;
+
+    /**
+     * The container for the Show label.
+     */
+    private final Component showLabelContainer = new Row();
+
+    /**
+     * The container for the show selector.
+     */
+    private final Component showContainer = new Row();
 
     /**
      * Constructs an {@link AppointmentQuery}.
@@ -183,6 +207,15 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     /**
+     * Returns the selected show type.
+     *
+     * @return the show type
+     */
+    public Show getShow() {
+        return show;
+    }
+
+    /**
      * Creates a container to lay out the component.
      *
      * @return a new container
@@ -229,11 +262,23 @@ class AppointmentQuery extends ScheduleServiceQuery {
             }
         });
 
+        String[] show = {Messages.get("workflow.scheduling.show.all"),
+                         Messages.get("workflow.scheduling.show.cage")};
+        showSelector = SelectFieldFactory.create(show);
+        showSelector.addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onShowChanged();
+            }
+        });
+
         container.add(LabelFactory.create("workflow.scheduling.time"));
         container.add(timeSelector);
         getFocusGroup().add(timeSelector);
-        container.add(labelContainer, 6);
+        container.add(datesLabelContainer, 6);
         container.add(datesContainer, 7);
+        container.add(showLabelContainer, 14);
+        container.add(showContainer, 15);
         updateDatesFilter();
     }
 
@@ -256,13 +301,24 @@ class AppointmentQuery extends ScheduleServiceQuery {
 
     /**
      * Invoked when the schedule view changes.
-     * <p/>
+     * <p>
      * Notifies any listener to perform a query.
      */
     @Override
     protected void onViewChanged() {
         updateDatesFilter();
         super.onViewChanged();
+    }
+
+    /**
+     * Invoked when the date changes.
+     * <p>
+     * This implementation invokes {@link #onQuery()}.
+     */
+    @Override
+    protected void onDateChanged() {
+        updateDays(getDate(), dateRange);
+        super.onDateChanged();
     }
 
     /**
@@ -305,14 +361,14 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     /**
-     * Invoked when the date changes.
-     * <p/>
-     * This implementation invokes {@link #onQuery()}.
+     * Invoked when the show selector changes.
      */
-    @Override
-    protected void onDateChanged() {
-        updateDays(getDate(), dateRange);
-        super.onDateChanged();
+    private void onShowChanged() {
+        int index = showSelector.getSelectedIndex();
+        if (index >= 0 && index < Show.values().length) {
+            show = Show.values()[index];
+            onQuery();
+        }
     }
 
     /**
@@ -346,13 +402,19 @@ class AppointmentQuery extends ScheduleServiceQuery {
         if (AppointmentHelper.isMultiDayView(view)) {
             range = DateRange.FORTNIGHT;
             if (datesContainer.getComponentCount() == 0) {
-                labelContainer.add(LabelFactory.create("workflow.scheduling.dates"));
+                datesLabelContainer.add(LabelFactory.create("workflow.scheduling.dates"));
                 datesContainer.add(dateSelector);
+            }
+            if (showContainer.getComponentCount() == 0) {
+                showLabelContainer.add(LabelFactory.create("workflow.scheduling.show"));
+                showContainer.add(showSelector);
             }
         } else {
             range = DateRange.DAY;
-            labelContainer.removeAll();
+            datesLabelContainer.removeAll();
             datesContainer.removeAll();
+            showLabelContainer.removeAll();
+            showContainer.removeAll();
         }
         setDateRange(range);
         dateSelector.setSelectedIndex(dateRange.ordinal());

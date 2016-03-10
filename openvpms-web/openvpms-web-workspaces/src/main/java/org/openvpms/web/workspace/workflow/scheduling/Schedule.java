@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -42,6 +42,11 @@ public class Schedule {
     private final Entity schedule;
 
     /**
+     * The cage type.
+     */
+    private final Entity cageType;
+
+    /**
      * The schedule start time, as minutes since midnight.
      */
     private int startMins;
@@ -57,14 +62,14 @@ public class Schedule {
     private int slotSize;
 
     /**
-     * Determines
+     * Determines if the even or odd rendering style should be used.
      */
     private boolean renderEven = true;
 
     /**
      * The events.
      */
-    private List<PropertySet> events = new ArrayList<PropertySet>();
+    private List<PropertySet> events = new ArrayList<>();
 
     /**
      * The comparator to detect intersecting events.
@@ -76,21 +81,24 @@ public class Schedule {
      * Constructs a {@link Schedule}.
      *
      * @param schedule the event schedule
+     * @param cageType the cage type. May be {@code null}
      */
-    public Schedule(Entity schedule) {
-        this(schedule, -1, -1, 0);
+    public Schedule(Entity schedule, Entity cageType) {
+        this(schedule, cageType, -1, -1, 0);
     }
 
     /**
      * Constructs an {@link Schedule}.
      *
      * @param schedule  the event schedule
+     * @param cageType  the cage type. May be {@code null}
      * @param startMins the schedule start time, as minutes since midnight
      * @param endMins   the schedule end time, as minutes since midnight
      * @param slotSize  the schedule slot size, in minutes
      */
-    public Schedule(Entity schedule, int startMins, int endMins, int slotSize) {
+    public Schedule(Entity schedule, Entity cageType, int startMins, int endMins, int slotSize) {
         this.schedule = schedule;
+        this.cageType = cageType;
         this.startMins = startMins;
         this.endMins = endMins;
         this.slotSize = slotSize;
@@ -99,13 +107,13 @@ public class Schedule {
 
     /**
      * Creates a schedule from an existing schedule.
-     * <p/>
+     * <p>
      * The events are not copied.
      *
      * @param source the source schedule
      */
     public Schedule(Schedule source) {
-        this(source.getSchedule(), source.getStartMins(), source.getEndMins(),
+        this(source.getSchedule(), source.getCageType(), source.getStartMins(), source.getEndMins(),
              source.getSlotSize());
     }
 
@@ -116,6 +124,15 @@ public class Schedule {
      */
     public Entity getSchedule() {
         return schedule;
+    }
+
+    /**
+     * Returns the cage type.
+     *
+     * @return the cage type. May be {@code null}
+     */
+    public Entity getCageType() {
+        return cageType;
     }
 
     /**

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import echopointng.LabelEx;
 import echopointng.TabbedPane;
-import echopointng.TableEx;
+import echopointng.table.TableActionEventEx;
 import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
@@ -28,8 +28,10 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.ColumnLayoutData;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -43,14 +45,16 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.table.StyleTableCellRenderer;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CageScheduleGrid;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CageTableModel;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
@@ -72,7 +76,7 @@ import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.D
 
 /**
  * Appointment browser.
- * <p/>
+ * <p>
  * This provides two tabs:
  * <ol><li>Appointments<br/>
  * Provides a query to select appointments, and renders blocks of appointments in different hours a
@@ -92,6 +96,16 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * The layout context.
      */
     private final LayoutContext context;
+
+    /**
+     * The appointment colours.
+     */
+    private final ScheduleColours appointmentColours;
+
+    /**
+     * The clinician colours.
+     */
+    private final ScheduleColours clinicianColours;
 
     /**
      * Displays the selected schedule view, schedule and date above the
@@ -149,16 +163,6 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     private int lastTab;
 
-    /**
-     * The default cell renderer.
-     */
-    private final AppointmentTableCellRenderer defaultRenderer;
-
-    /**
-     * The multi-day cell renderer.
-     */
-    private final MultiDayTableCellRenderer multiDayRenderer;
-
 
     /**
      * Constructs an {@link AppointmentBrowser}.
@@ -179,9 +183,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
     public AppointmentBrowser(AppointmentQuery query, LayoutContext context) {
         super(query, context.getContext());
         this.context = context;
-        defaultRenderer = new AppointmentTableCellRenderer();
-        multiDayRenderer = new MultiDayTableCellRenderer();
         rules = ServiceHelper.getBean(AppointmentRules.class);
+        appointmentColours = new ScheduleColours(ScheduleArchetypes.APPOINTMENT_TYPE);
+        clinicianColours = new ScheduleColours(UserArchetypes.USER);
     }
 
     /**
@@ -253,7 +257,11 @@ public class AppointmentBrowser extends ScheduleBrowser {
         AppointmentQuery.DateRange dateRange = query.getDateRange();
         if (dateRange != DAY && AppointmentHelper.isMultiDayView(scheduleView)) {
             int days = query.getDays();
-            grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
+            if (query.getShow() == AppointmentQuery.Show.CAGE) {
+                grid = new CageScheduleGrid(scheduleView, date, days, events);
+            } else {
+                grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
+            }
         } else {
             if (schedules.size() == 1) {
                 Party schedule = (Party) schedules.iterator().next();
@@ -281,30 +289,19 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
         ScheduleTableModel model;
-        if (grid instanceof MultiDayScheduleGrid) {
-            model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext());
+        if (grid instanceof CageScheduleGrid) {
+            model = new CageTableModel((CageScheduleGrid) grid, getContext(), appointmentColours, clinicianColours);
+        } else if (grid instanceof MultiDayScheduleGrid) {
+            model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext(), appointmentColours,
+                                           clinicianColours);
         } else if (grid.getSchedules().size() == 1) {
-            model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext());
+            model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext(), appointmentColours,
+                                                 clinicianColours);
         } else {
-            model = new MultiScheduleTableModel((AppointmentGrid) grid, getContext());
+            model = new MultiScheduleTableModel((AppointmentGrid) grid, getContext(), appointmentColours,
+                                                clinicianColours);
         }
         return model;
-    }
-
-    /**
-     * Initialises a table.
-     *
-     * @param table the table
-     */
-    @Override
-    protected void initTable(TableEx table) {
-        if (table.getModel() instanceof MultiDayTableModel) {
-            table.setDefaultHeaderRenderer(new StyleTableCellRenderer("Table.Header"));
-            table.setDefaultRenderer(multiDayRenderer);
-        } else {
-            table.setDefaultHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
-            table.setDefaultRenderer(defaultRenderer);
-        }
     }
 
     /**
@@ -355,6 +352,27 @@ public class AppointmentBrowser extends ScheduleBrowser {
         LabelEx spacer = new LabelEx(new XhtmlFragment(TableHelper.SPACER));
         // add a spacer so that popup notes in the first line of the table won't be clipped
         component.add(ColumnFactory.create(Styles.INSET_CELL_SPACING, spacer, table));
+    }
+
+    /**
+     * Invoked when a cell is selected.
+     * <p>
+     * Notifies listeners of the selection.
+     *
+     * @param event the event
+     */
+    @Override
+    protected void onSelected(TableActionEventEx event) {
+        if (getModel() instanceof CageTableModel) {
+            CageTableModel model = (CageTableModel) getModel();
+            if (model.isCageType(event.getRow())) {
+                model.toggle(event.getRow());
+            } else {
+                super.onSelected(event);
+            }
+        } else {
+            super.onSelected(event);
+        }
     }
 
     /**
@@ -437,7 +455,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
         int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, rules);
         IntersectComparator comparator = new IntersectComparator(slotSize);
-        List<PropertySet> list = new ArrayList<PropertySet>();
+        List<PropertySet> list = new ArrayList<>();
 
         for (PropertySet event : events) {
             if (Collections.binarySearch(list, event, comparator) >= 0) {
