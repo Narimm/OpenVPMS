@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -8,7 +24,11 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.cache.IMObjectCache;
+import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
 import java.util.ArrayList;
@@ -63,7 +83,7 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
     public PropertySet getEvent(Schedule schedule, int slot) {
         Date time = getStartTime(schedule, slot);
         PropertySet result = schedule.getEvent(time, 24 * 60);
-        if (result == null && slot == 0) {
+        if (result == null) {
             result = schedule.getIntersectingEvent(time);
         }
         return result;
@@ -158,10 +178,14 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      */
     private void setAppointments(Map<Entity, List<PropertySet>> appointments) {
         List<Schedule> schedules = new ArrayList<>();
+        IMObjectCache cageTypes = new SoftRefIMObjectCache(ServiceHelper.getArchetypeService());
+
         int index = -1;
         Entity last = null;
         for (Entity entity : appointments.keySet()) {
-            Schedule schedule = new Schedule(entity, 0, 24 * 60, 24 * 60);
+            IMObjectBean bean = new IMObjectBean(entity);
+            Entity cageType = (Entity) cageTypes.get(bean.getNodeTargetObjectRef("cageType"));
+            Schedule schedule = new Schedule(entity, cageType, 0, 24 * 60, 24 * 60);
             if (!ObjectUtils.equals(last, entity)) {
                 index++;
             }

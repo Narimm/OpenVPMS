@@ -17,18 +17,18 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 /**
- * TableCellRender for {@link MultiDayTableModel}.
+ * Single schedule appointment table cell renderer.
  *
  * @author Tim Anderson
  */
-public class MultiDayTableCellRenderer extends AbstractMultiDayTableCellRenderer {
+public class SingleScheduleTableCellRenderer extends AppointmentTableCellRenderer {
 
     /**
-     * Constructs a {@link MultiDayTableModel}.
+     * Constructs an {@link AppointmentTableCellRenderer}.
      *
-     * @param model the table model
+     * @param model the model
      */
-    public MultiDayTableCellRenderer(MultiDayTableModel model) {
+    public SingleScheduleTableCellRenderer(AppointmentTableModel model) {
         super(model);
     }
 

@@ -11,32 +11,31 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
-import nextapp.echo2.app.Alignment;
+import echopointng.table.TableCellRendererEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.layout.RowLayoutData;
+import nextapp.echo2.app.Table;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.StyleTableCellRenderer;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
-import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.util.Date;
 import java.util.List;
@@ -46,37 +45,19 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class MultiDayTableModel extends ScheduleTableModel {
-
-    /**
-     * The schedule column index.
-     */
-    private static final int SCHEDULE_INDEX = 0;
+public class MultiDayTableModel extends AbstractMultiDayTableModel {
 
     /**
      * Constructs a {@link MultiDayTableModel}.
      *
-     * @param grid    the appointment grid
-     * @param context the context
+     * @param grid             the appointment grid
+     * @param context          the context
+     * @param eventColours     the event colours
+     * @param clinicianColours the clinician colours
      */
-    public MultiDayTableModel(MultiDayScheduleGrid grid, Context context) {
-        super(grid, context, false);
-    }
-
-    /**
-     * Returns the slot of the specified event.
-     *
-     * @param schedule the schedule
-     * @param eventRef the event reference
-     * @return the slot, or {@code -1} if the event is not found
-     */
-    @Override
-    public int getSlot(Schedule schedule, IMObjectReference eventRef) {
-        PropertySet event = schedule.getEvent(eventRef);
-        if (event != null) {
-            return getGrid().getSlot(event.getDate(ScheduleEvent.ACT_START_TIME));
-        }
-        return -1;
+    public MultiDayTableModel(MultiDayScheduleGrid grid, Context context, ScheduleColours eventColours,
+                              ScheduleColours clinicianColours) {
+        super(grid, context, eventColours, clinicianColours);
     }
 
     /**
@@ -88,20 +69,12 @@ public class MultiDayTableModel extends ScheduleTableModel {
      */
     @Override
     public Object getValueAt(int column, int row) {
-        Object result = null;
+        Object result;
         Schedule schedule = getSchedule(column, row);
-        Entity entity = (schedule != null) ? schedule.getSchedule() : null;
         if (column == SCHEDULE_INDEX) {
-            if (entity != null) {
-                Label label = LabelFactory.create(null, Styles.BOLD);
-                label.setText(entity.getName());
-                result = label;
-            }
+            result = schedule;
         } else {
-            PropertySet set = getEvent(column, row);
-            if (set != null) {
-                result = getEvent(set, column);
-            }
+            result = getEvent(column, row);
         }
         return result;
     }
@@ -115,44 +88,11 @@ public class MultiDayTableModel extends ScheduleTableModel {
      */
     @Override
     public PropertySet getEvent(int column, int row) {
-        if (column == 0) {
+        if (column == 0) { // first column is the schedule column
             return null;
         }
         Schedule schedule = getSchedule(column, row);
         return (schedule != null) ? getGrid().getEvent(schedule, column - 1) : null;
-    }
-
-    /**
-     * Returns the grid.
-     *
-     * @return the grid
-     */
-    @Override
-    public MultiDayScheduleGrid getGrid() {
-        return (MultiDayScheduleGrid) super.getGrid();
-    }
-
-    /**
-     * Determines if the specified column is the schedule column.
-     *
-     * @param column the column
-     * @return {@code true} if the column is the schedule column
-     */
-    public boolean isScheduleColumn(int column) {
-        return column == SCHEDULE_INDEX;
-    }
-
-    /**
-     * Returns the availability of the specified cell.
-     *
-     * @param column the column
-     * @param row    the row
-     * @return the availability of the cell
-     */
-    @Override
-    public ScheduleEventGrid.Availability getAvailability(int column, int row) {
-        return (isScheduleColumn(column)) ? ScheduleEventGrid.Availability.UNAVAILABLE
-                                          : super.getAvailability(column, row);
     }
 
     /**
@@ -166,17 +106,11 @@ public class MultiDayTableModel extends ScheduleTableModel {
         int rowSpan = 1;
         Entity entity = getSchedule(0, row).getSchedule();
         List<Schedule> schedules = getSchedules();
-        if (isScheduleColumn(column)) {
-            for (int i = row + 1; i < schedules.size() && schedules.get(i).getSchedule().equals(entity); ++i) {
+        for (int i = row + 1; i < schedules.size() && schedules.get(i).getSchedule().equals(entity); ++i) {
+            if (getEvent(column, i) == null) {
                 rowSpan++;
-            }
-        } else {
-            for (int i = row + 1; i < schedules.size() && schedules.get(i).getSchedule().equals(entity); ++i) {
-                if (getEvent(column, i) == null) {
-                    rowSpan++;
-                } else {
-                    break;
-                }
+            } else {
+                break;
             }
         }
         return rowSpan;
@@ -193,124 +127,100 @@ public class MultiDayTableModel extends ScheduleTableModel {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
         Date start = grid.getStartDate();
         int modelIndex = 0;
-        result.addColumn(new Column(modelIndex++, Messages.get("workflow.scheduling.type")));
+
+        // add the schedule column
+        Column scheduleColumn = new Column(modelIndex++, Messages.get("workflow.scheduling.type"));
+        scheduleColumn.setHeaderRenderer(new StyleTableCellRenderer("Table.Header"));
+        scheduleColumn.setCellRenderer(new ScheduleColumnCellRenderer());
+        result.addColumn(scheduleColumn);
+
+        // add a column for each day
+        MultiDayTableCellRenderer renderer = new MultiDayTableCellRenderer(this);
         for (int i = 0; i < grid.getSlots(); ++i) {
-            result.addColumn(new DateColumn(modelIndex++, DateRules.getDate(start, i, DateUnits.DAYS)));
+            DateColumn column = new DateColumn(modelIndex++, DateRules.getDate(start, i, DateUnits.DAYS));
+            column.setCellRenderer(renderer);
+            result.addColumn(column);
         }
         return result;
     }
 
-    /**
-     * Returns the slot of a cell.
-     *
-     * @param column the column
-     * @param row    the row
-     * @return the slot
-     */
-    @Override
-    protected int getSlot(int column, int row) {
-        return column - 1;
-    }
-
-    /**
-     * Returns the cell column corresponding to a slot.
-     *
-     * @param slot the slot
-     * @return the column
-     */
-    @Override
-    protected int getCellColumn(int slot) {
-        return slot + 1;
-    }
-
-    /**
-     * Returns a component representing an event.
-     *
-     * @param event  the event
-     * @param column the starting column
-     * @return a new component
-     */
-    private Component getEvent(PropertySet event, int column) {
-        Component result;
-        Label next = null;
-        Label previous = null;
-        result = getEvent(event);
-        Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
-        int slot = column - 1; // first column is the schedule
-        MultiDayScheduleGrid grid = getGrid();
-        if (DateRules.compareDates(startTime, grid.getDate(slot)) < 0) {
-            previous = LabelFactory.create(null, "navigation.previous");
+    private static class ScheduleColumnCellRenderer implements TableCellRendererEx {
+        /**
+         * Returns a {@code XhtmlFragment} that will be displayed as the content at the specified co-ordinate in the table.
+         *
+         * @param table  the {@code Table} for which the rendering is occurring
+         * @param value  the value retrieved from the {@code TableModel} for the specified coordinate
+         * @param column the column index to render
+         * @param row    the row index to render
+         * @return a {@code XhtmlFragment} representation of the value
+         */
+        @Override
+        public XhtmlFragment getTableCellRendererContent(Table table, Object value, int column, int row) {
+            return null;
         }
-        int span = grid.getSlots(event, column - 1);
-        if (span > 1) {
-            if (column + span > getColumnCount()) {
-                next = LabelFactory.create(null, "navigation.next");
-                RowLayoutData newValue = new RowLayoutData();
-                newValue.setAlignment(Alignment.ALIGN_RIGHT);
-                newValue.setWidth(Styles.FULL_WIDTH);
-                next.setLayoutData(newValue);
-            }
-        }
-        if (previous != null || next != null) {
-            Row container = RowFactory.create();
-            if (previous != null) {
-                container.add(previous);
-            }
-            container.add(result);
-            if (next != null) {
-                container.add(next);
-            }
-            result = container;
-        }
-        if (span > 1) {
-            setColumnSpan(result, span);
-        }
-        return result;
-    }
 
-    /**
-     * Returns a component representing an event.
-     *
-     * @param event the event
-     * @return a new component
-     */
-    private Component getEvent(PropertySet event) {
-        String text = evaluate(event);
-        if (text == null) {
-            String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
-            String patient = event.getString(ScheduleEvent.PATIENT_NAME);
-            String status = AppointmentTableModel.getStatus(event);
-            String reason = event.getString(ScheduleEvent.ACT_REASON_NAME);
-            if (reason == null) {
-                // fall back to the code
-                reason = event.getString(ScheduleEvent.ACT_REASON);
-            }
+        /**
+         * This method allows you to "restrict" the cells (within a row) that will
+         * cause selection of the row to occur. By default any cell will cause
+         * selection of a row. If this methods returns false then only certain cells
+         * within the row will cause selection when clicked on.
+         *
+         * @param table  the table
+         * @param column the column
+         * @param row    the row
+         * @return {@code true} if the cell causes selection
+         */
+        @Override
+        public boolean isSelectionCausingCell(Table table, int column, int row) {
+            return false;
+        }
 
-            if (patient == null) {
-                text = Messages.format("workflow.scheduling.appointment.table.customer",
-                                       customer, reason, status);
+        /**
+         * This method is called to determine which cells within a row can cause an
+         * action to be raised on the server when clicked.
+         * <p>
+         * By default if a Table has attached actionListeners then any click on any
+         * cell within a row will cause the action to fire.
+         * <p>
+         * This method allows this to be overridden and only certain cells within a
+         * row can cause an action event to be raise.
+         *
+         * @param table  the Table in question
+         * @param column the column in question
+         * @param row    the row in question
+         * @return true means that the cell can cause actions while false means the cells can not cause action events.
+         */
+        @Override
+        public boolean isActionCausingCell(Table table, int column, int row) {
+            return false;
+        }
+
+        /**
+         * Returns a component that will be displayed at the specified coordinate in
+         * the table.
+         *
+         * @param table  the {@code Table} for which the rendering is occurring
+         * @param value  the value retrieved from the {@code TableModel} for
+         *               the specified coordinate
+         * @param column the column index to render
+         * @param row    the row index to render
+         * @return a component representation  of the value.
+         */
+        @Override
+        public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
+            Component result;
+            Schedule schedule = (Schedule) value;
+            Entity entity = schedule.getSchedule();
+            if (entity != null) {
+                Label label = LabelFactory.create(null, Styles.BOLD);
+                label.setText(entity.getName());
+                result = label;
             } else {
-                text = Messages.format("workflow.scheduling.appointment.table.customerpatient",
-                                       customer, patient, reason, status);
+                result = new Label();
             }
-        }
-
-        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        return createLabelWithNotes(text, notes, event.getBoolean(ScheduleEvent.SEND_REMINDER),
-                                    event.getDate(ScheduleEvent.REMINDER_SENT),
-                                    event.getString(ScheduleEvent.REMINDER_ERROR));
-    }
-
-    /**
-     * Date column.
-     */
-    static class DateColumn extends Column {
-
-        public DateColumn(int modelIndex, Date startTime) {
-            super(modelIndex, null);
-            setHeaderValue(startTime);
-            setHeaderRenderer(MultiDayTableHeaderRenderer.INSTANCE);
+            String styleName = schedule.getRenderEven() ? "ScheduleTable.Even" : "ScheduleTable.Odd";
+            TableHelper.mergeStyle(result, styleName);
+            return result;
         }
     }
-
 }

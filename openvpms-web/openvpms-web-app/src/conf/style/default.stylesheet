@@ -601,6 +601,28 @@
         </properties>
     </style>
 
+    <style name="CageTable.plus" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/plus.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="CageTable.minus" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/minus.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="CageTable.spacer" type="echopointng.LabelEx">
+        <properties>
+            <property name="width" value="16px"/>
+        </properties>
+    </style>
+
     <style name="AppointmentActEditor.Alerts" base-name="CellSpacing" type="nextapp.echo2.app.Column">
         <properties>
             <property name="layoutData">
@@ -730,12 +752,38 @@
         </properties>
     </style>
 
+    <style name="ScheduleTable.Even-InsetX" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.large} ${padding.tiny}"/>
+                        <property name="background" value="#d1d1d1"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="ScheduleTable.Odd" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="ScheduleTable.Odd-InsetX" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.large} ${padding.tiny}"/>
                         <property name="background" value="#ffffff"/>
                     </properties>
                 </layout-data>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -22,18 +22,22 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.Date;
@@ -91,13 +95,16 @@ class SingleScheduleTableModel extends AppointmentTableModel {
 
 
     /**
-     * Constructs a {@code SingleScheduleTableModel}.
+     * Constructs a {@link SingleScheduleTableModel}.
      *
-     * @param grid    the appointment grid
-     * @param context the context
+     * @param grid             the appointment grid
+     * @param context          the context
+     * @param eventColours     the event colours
+     * @param clinicianColours the clinician colours
      */
-    public SingleScheduleTableModel(AppointmentGrid grid, Context context) {
-        super(grid, context);
+    public SingleScheduleTableModel(AppointmentGrid grid, Context context, ScheduleColours eventColours,
+                                    ScheduleColours clinicianColours) {
+        super(grid, context, eventColours, clinicianColours);
     }
 
     /**
@@ -158,7 +165,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                     }
                     result = label;
                 }
-                setRowSpan((Component) result, rowSpan);
+                ((Component) result).setLayoutData(TableFactory.rowSpan(rowSpan));
             }
         }
         return result;
@@ -210,7 +217,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
     }
 
     /**
-     * Creates a column model to display a list of schedules.
+     * Creates a column model to display a single schedule.
      *
      * @param grid the appointment grid
      * @return a new column model
@@ -220,8 +227,17 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         List<Schedule> schedules = grid.getSchedules();
         Schedule schedule = schedules.get(0);
         String[] names = getColumnNames();
-        for (int i = 0; i < names.length; ++i) {
+
+        // the first column is the start time
+        ScheduleColumn startTime = new ScheduleColumn(0, schedule, names[0]);
+        startTime.setCellRenderer(new TimeColumnCellRenderer());
+        result.addColumn(startTime);
+
+        // add the node columns
+        SingleScheduleTableCellRenderer renderer = new SingleScheduleTableCellRenderer(this);
+        for (int i = 1; i < names.length; ++i) {
             ScheduleColumn column = new ScheduleColumn(i, schedule, names[i]);
+            column.setCellRenderer(renderer);
             result.addColumn(column);
         }
         return result;
@@ -239,7 +255,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         Date reminderSent = event.getDate(ScheduleEvent.REMINDER_SENT);
         String reminderError = event.getString(ScheduleEvent.REMINDER_ERROR);
         if (sendReminder || reminderSent != null || reminderError != null) {
-            Label reminder = createReminderIcon(reminderSent, reminderError);
+            Label reminder = AbstractAppointmentTableCellRender.createReminderIcon(reminderSent, reminderError);
             reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
             result = RowFactory.create(Styles.CELL_SPACING, result, reminder);
         }
@@ -255,7 +271,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         if (columnNames == null) {
             columnNames = new String[NODE_NAMES.length];
             columnNames[0] = Messages.get("workflow.scheduling.table.time");
-            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerAppointment");
+            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(ScheduleArchetypes.APPOINTMENT);
             if (archetype != null) {
                 for (int i = 1; i < NODE_NAMES.length; ++i) {
                     columnNames[i] = getDisplayName(archetype, NODE_NAMES[i]);
@@ -264,5 +280,18 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         }
         return columnNames;
     }
+
+    /**
+     * Returns the display name of the specified node.
+     *
+     * @param archetype the archetype descriptor
+     * @param name      the node name
+     * @return the display name, or {@code null} if the node doesn't exist
+     */
+    protected String getDisplayName(ArchetypeDescriptor archetype, String name) {
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+        return (descriptor != null) ? descriptor.getDisplayName() : null;
+    }
+
 
 }
