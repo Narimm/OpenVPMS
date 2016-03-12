@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.appointment.boarding;
 
 import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableCellRenderer;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -40,39 +41,17 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class CageTableModel extends AbstractMultiDayTableModel {
-
-    public static class CageState extends State {
-
-        private List<Group> groups = new ArrayList<>();
-
-        private static class Group {
-            private final IMObjectReference cageType;
-            private final boolean expanded;
-
-            public Group(CageScheduleGroup group) {
-                cageType = (group.getCageType() != null) ? group.getCageType().getObjectReference() : null;
-                expanded = group.isExpanded();
-            }
-        }
-
-        public CageState(CageTableModel model) {
-            super(model);
-            for (CageScheduleGroup group : model.getGrid().getGroups()) {
-                groups.add(new Group(group));
-            }
-        }
-    }
+public abstract class CageTableModel extends AbstractMultiDayTableModel {
 
     /**
-     * Constructs a {@link CageTableModel}.
+     * Constructs an {@link CageTableModel}.
      *
      * @param grid             the appointment grid
      * @param context          the context
      * @param eventColours     the event colours
      * @param clinicianColours the clinician colours
      */
-    public CageTableModel(CageScheduleGrid grid, Context context, ScheduleColours eventColours,
+    public CageTableModel(ScheduleEventGrid grid, Context context, ScheduleColours eventColours,
                           ScheduleColours clinicianColours) {
         super(grid, context, eventColours, clinicianColours);
     }
@@ -255,7 +234,7 @@ public class CageTableModel extends AbstractMultiDayTableModel {
         result.addColumn(cageSchedule);
 
         // add a column for each date
-        CageTableCellRenderer renderer = new CageTableCellRenderer(this);
+        TableCellRenderer renderer = createEventRenderer();
         for (int i = 0; i < grid.getSlots(); ++i) {
             DateColumn column = new DateColumn(modelIndex++, DateRules.getDate(start, i, DateUnits.DAYS));
             column.setCellRenderer(renderer);
@@ -264,4 +243,32 @@ public class CageTableModel extends AbstractMultiDayTableModel {
         return result;
     }
 
+    /**
+     * Returns a renderer to render event cells.
+     *
+     * @return a new renderer
+     */
+    protected abstract TableCellRenderer createEventRenderer();
+
+    protected static class CageState extends State {
+
+        private List<Group> groups = new ArrayList<>();
+
+        private static class Group {
+            private final IMObjectReference cageType;
+            private final boolean expanded;
+
+            public Group(CageScheduleGroup group) {
+                cageType = (group.getCageType() != null) ? group.getCageType().getObjectReference() : null;
+                expanded = group.isExpanded();
+            }
+        }
+
+        public CageState(CageTableModel model) {
+            super(model);
+            for (CageScheduleGroup group : model.getGrid().getGroups()) {
+                groups.add(new Group(group));
+            }
+        }
+    }
 }

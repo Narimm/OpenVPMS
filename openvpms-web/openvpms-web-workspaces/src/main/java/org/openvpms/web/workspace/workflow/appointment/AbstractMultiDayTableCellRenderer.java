@@ -79,12 +79,7 @@ public abstract class AbstractMultiDayTableCellRenderer extends AbstractAppointm
     protected Component getComponent(Table table, Object value, int column, int row) {
         Component result = super.getComponent(table, value, column, row);
         if (result == null) {
-            AbstractMultiDayTableModel model = getModel();
-            result = LabelFactory.create();
-            String style = getFreeStyle(model, row);
-            TableLayoutDataEx layout = TableHelper.getTableLayoutDataEx(style);
-            layout.setRowSpan(model.getRows(column, row));
-            result.setLayoutData(layout);
+            result = getFreeSlot(column, row);
         }
         return result;
     }
@@ -125,7 +120,7 @@ public abstract class AbstractMultiDayTableCellRenderer extends AbstractAppointm
     @Override
     protected String getFreeStyle(ScheduleTableModel model, int row) {
         Schedule schedule = model.getSchedule(0, row);
-        return (schedule.getRenderEven()) ? "ScheduleTable.Even" : "ScheduleTable.Odd";
+        return (schedule.getRenderEven()) ? EVEN_ROW_STYLE : ODD_ROW_STYLE;
     }
 
     /**
@@ -174,6 +169,24 @@ public abstract class AbstractMultiDayTableCellRenderer extends AbstractAppointm
             result.setLayoutData(TableFactory.columnSpan(span));
         }
         styleEvent(event, result, table);
+        return result;
+    }
+
+    /**
+     * Renders a free slot.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return a component representing the free slot
+     */
+    protected Component getFreeSlot(int column, int row) {
+        Component result;
+        AbstractMultiDayTableModel model = getModel();
+        result = LabelFactory.create();
+        String style = getFreeStyle(model, row);
+        TableLayoutDataEx layout = TableHelper.getTableLayoutDataEx(style);
+        layout.setRowSpan(model.getRows(column, row));
+        result.setLayoutData(layout);
         return result;
     }
 

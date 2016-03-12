@@ -30,7 +30,7 @@ import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableCellRenderer;
 
 /**
- * Renderer for the cage/schedule column of {@link CageTableModel}.
+ * Renderer for the cage/schedule column of {@link DefaultCageTableModel}.
  *
  * @author Tim Anderson
  */

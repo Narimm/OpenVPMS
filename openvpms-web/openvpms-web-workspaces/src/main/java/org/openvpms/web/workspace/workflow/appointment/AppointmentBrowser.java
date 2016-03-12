@@ -50,7 +50,9 @@ import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.appointment.boarding.CageScheduleGrid;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CageSummaryTableModel;
 import org.openvpms.web.workspace.workflow.appointment.boarding.CageTableModel;
+import org.openvpms.web.workspace.workflow.appointment.boarding.DefaultCageTableModel;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
@@ -257,7 +259,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
         AppointmentQuery.DateRange dateRange = query.getDateRange();
         if (dateRange != DAY && AppointmentHelper.isMultiDayView(scheduleView)) {
             int days = query.getDays();
-            if (query.getShow() == AppointmentQuery.Show.CAGE) {
+            if (query.getShow() == AppointmentQuery.Show.CAGE
+                || query.getShow() == AppointmentQuery.Show.SUMMARY) {
                 grid = new CageScheduleGrid(scheduleView, date, days, events);
             } else {
                 grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
@@ -290,7 +293,12 @@ public class AppointmentBrowser extends ScheduleBrowser {
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
         ScheduleTableModel model;
         if (grid instanceof CageScheduleGrid) {
-            model = new CageTableModel((CageScheduleGrid) grid, getContext(), appointmentColours, clinicianColours);
+            CageScheduleGrid cageGrid = (CageScheduleGrid) grid;
+            if (getQuery().getShow() == AppointmentQuery.Show.CAGE) {
+                model = new DefaultCageTableModel(cageGrid, getContext(), appointmentColours, clinicianColours);
+            } else {
+                model = new CageSummaryTableModel(cageGrid, getContext(), appointmentColours, clinicianColours);
+            }
         } else if (grid instanceof MultiDayScheduleGrid) {
             model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext(), appointmentColours,
                                            clinicianColours);
