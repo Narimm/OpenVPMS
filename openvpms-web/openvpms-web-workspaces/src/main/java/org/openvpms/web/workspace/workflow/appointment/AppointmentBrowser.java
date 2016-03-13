@@ -52,6 +52,11 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.appointment.boarding.CageScheduleGrid;
 import org.openvpms.web.workspace.workflow.appointment.boarding.CageSummaryTableModel;
 import org.openvpms.web.workspace.workflow.appointment.boarding.CageTableModel;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CheckInOutTableModel;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CheckInScheduleGrid;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CheckInTableModel;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CheckOutScheduleGrid;
+import org.openvpms.web.workspace.workflow.appointment.boarding.CheckOutTableModel;
 import org.openvpms.web.workspace.workflow.appointment.boarding.DefaultCageTableModel;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
@@ -259,9 +264,14 @@ public class AppointmentBrowser extends ScheduleBrowser {
         AppointmentQuery.DateRange dateRange = query.getDateRange();
         if (dateRange != DAY && AppointmentHelper.isMultiDayView(scheduleView)) {
             int days = query.getDays();
-            if (query.getShow() == AppointmentQuery.Show.CAGE
-                || query.getShow() == AppointmentQuery.Show.SUMMARY) {
+            AppointmentQuery.Show show = query.getShow();
+            if (show == AppointmentQuery.Show.CAGE
+                || show == AppointmentQuery.Show.SUMMARY) {
                 grid = new CageScheduleGrid(scheduleView, date, days, events);
+            } else if (show == AppointmentQuery.Show.CHECKIN) {
+                grid = new CheckInScheduleGrid(scheduleView, date, days, events);
+            } else if (show == AppointmentQuery.Show.CHECKOUT) {
+                grid = new CheckOutScheduleGrid(scheduleView, date, days, events);
             } else {
                 grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
             }
@@ -301,6 +311,12 @@ public class AppointmentBrowser extends ScheduleBrowser {
             }
         } else if (grid instanceof MultiDayScheduleGrid) {
             model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext(), appointmentColours,
+                                           clinicianColours);
+        } else if (grid instanceof CheckInScheduleGrid) {
+            model = new CheckInTableModel((CheckInScheduleGrid) grid, getContext(), appointmentColours,
+                                          clinicianColours);
+        } else if (grid instanceof CheckOutScheduleGrid) {
+            model = new CheckOutTableModel((CheckOutScheduleGrid) grid, getContext(), appointmentColours,
                                            clinicianColours);
         } else if (grid.getSchedules().size() == 1) {
             model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext(), appointmentColours,
@@ -371,12 +387,21 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     @Override
     protected void onSelected(TableActionEventEx event) {
-        if (getModel() instanceof CageTableModel) {
-            CageTableModel model = (CageTableModel) getModel();
-            if (model.isCageType(event.getRow())) {
-                model.toggle(event.getRow());
+        ScheduleTableModel model = getModel();
+        if (model instanceof CageTableModel) {
+            CageTableModel cageModel = (CageTableModel) model;
+            if (cageModel.isCageType(event.getRow())) {
+                cageModel.toggle(event.getRow());
+                getTable().getSelectionModel().clearSelection();
             } else {
                 super.onSelected(event);
+            }
+        } else if (model instanceof CheckInOutTableModel) {
+            CheckInOutTableModel checkInOutTableModel = (CheckInOutTableModel) model;
+            if (!checkInOutTableModel.isEmpty()) {
+                super.onSelected(event);
+            } else {
+                getTable().getSelectionModel().clearSelection();
             }
         } else {
             super.onSelected(event);

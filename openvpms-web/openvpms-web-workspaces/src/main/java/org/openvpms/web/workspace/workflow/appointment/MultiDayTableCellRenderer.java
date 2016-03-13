@@ -24,7 +24,7 @@ package org.openvpms.web.workspace.workflow.appointment;
 public class MultiDayTableCellRenderer extends AbstractMultiDayTableCellRenderer {
 
     /**
-     * Constructs a {@link MultiDayTableModel}.
+     * Constructs a {@link MultiDayTableCellRenderer}.
      *
      * @param model the table model
      */

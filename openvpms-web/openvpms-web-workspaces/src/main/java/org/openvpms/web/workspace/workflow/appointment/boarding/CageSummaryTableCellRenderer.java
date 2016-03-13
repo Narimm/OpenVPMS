@@ -24,8 +24,8 @@ import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayTableModel;
-import org.openvpms.web.workspace.workflow.appointment.MultiDayScheduleGrid;
 
 import java.util.Date;
 
@@ -80,7 +80,7 @@ class CageSummaryTableCellRenderer extends AbstractCageTableCellRenderer {
         Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
         int slot = column - 1; // first column is the schedule
         AbstractMultiDayTableModel model = getModel();
-        MultiDayScheduleGrid grid = model.getGrid();
+        AbstractMultiDayScheduleGrid grid = model.getGrid();
         Label label = LabelFactory.create();
         Date startDate = DateRules.getDate(startTime);
         Date endDate = DateRules.getDate(endTime);

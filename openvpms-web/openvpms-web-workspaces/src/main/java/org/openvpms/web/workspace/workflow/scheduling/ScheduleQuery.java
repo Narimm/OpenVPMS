@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -31,7 +31,6 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -155,7 +154,7 @@ public abstract class ScheduleQuery {
      */
     public List<Entity> getSelectedSchedules() {
         Entity schedule = getSchedule();
-        return (schedule != null) ? Arrays.asList(schedule) : getViewSchedules();
+        return (schedule != null) ? Collections.singletonList(schedule) : getViewSchedules();
     }
 
     /**

@@ -86,8 +86,8 @@ public abstract class AbstractMultiDayTableModel extends ScheduleTableModel {
      * @return the grid
      */
     @Override
-    public MultiDayScheduleGrid getGrid() {
-        return (MultiDayScheduleGrid) super.getGrid();
+    public AbstractMultiDayScheduleGrid getGrid() {
+        return (AbstractMultiDayScheduleGrid) super.getGrid();
     }
 
     /**
