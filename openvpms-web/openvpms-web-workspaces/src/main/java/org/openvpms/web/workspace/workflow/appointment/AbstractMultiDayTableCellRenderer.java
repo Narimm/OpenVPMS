@@ -140,7 +140,7 @@ public abstract class AbstractMultiDayTableCellRenderer extends AbstractAppointm
         Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
         int slot = column - 1; // first column is the schedule
         AbstractMultiDayTableModel model = getModel();
-        MultiDayScheduleGrid grid = model.getGrid();
+        AbstractMultiDayScheduleGrid grid = model.getGrid();
         if (DateRules.compareDates(startTime, grid.getDate(slot)) < 0) {
             previous = LabelFactory.create(null, "navigation.previous");
         }

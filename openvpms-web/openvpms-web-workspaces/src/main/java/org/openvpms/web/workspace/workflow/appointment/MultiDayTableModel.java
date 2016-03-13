@@ -55,7 +55,7 @@ public class MultiDayTableModel extends AbstractMultiDayTableModel {
      * @param eventColours     the event colours
      * @param clinicianColours the clinician colours
      */
-    public MultiDayTableModel(MultiDayScheduleGrid grid, Context context, ScheduleColours eventColours,
+    public MultiDayTableModel(AbstractMultiDayScheduleGrid grid, Context context, ScheduleColours eventColours,
                               ScheduleColours clinicianColours) {
         super(grid, context, eventColours, clinicianColours);
     }

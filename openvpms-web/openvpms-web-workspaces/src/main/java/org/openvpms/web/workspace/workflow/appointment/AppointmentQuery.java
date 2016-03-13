@@ -96,7 +96,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     public enum Show {
-        ALL, CAGE, SUMMARY
+        ALL, CAGE, SUMMARY, CHECKIN, CHECKOUT
     }
 
     /**
@@ -264,7 +264,10 @@ class AppointmentQuery extends ScheduleServiceQuery {
 
         String[] show = {Messages.get("workflow.scheduling.show.all"),
                          Messages.get("workflow.scheduling.show.cage"),
-                         Messages.get("workflow.scheduling.show.summary")};
+                         Messages.get("workflow.scheduling.show.summary"),
+                         Messages.get("workflow.scheduling.show.checkin"),
+                         Messages.get("workflow.scheduling.show.checkout")
+        };
         showSelector = SelectFieldFactory.create(show);
         showSelector.addActionListener(new ActionListener() {
             @Override

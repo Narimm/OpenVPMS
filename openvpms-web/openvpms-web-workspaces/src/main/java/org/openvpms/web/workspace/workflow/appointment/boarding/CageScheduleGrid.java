@@ -20,7 +20,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.web.workspace.workflow.appointment.MultiDayScheduleGrid;
+import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class CageScheduleGrid extends MultiDayScheduleGrid {
+public class CageScheduleGrid extends AbstractMultiDayScheduleGrid {
 
     /**
      * The groups.
