@@ -44,6 +44,7 @@ import org.openvpms.web.component.bound.BoundTimeFieldFactory;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.DateRange;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -398,7 +399,9 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
             cageLabelContainer.removeAll();
             cageContainer.removeAll();
         } else {
-            IMObjectListModel model = new IMObjectListModel(new ArrayList<>(cageTypes.values()), true, false);
+            List<IMObject> objects = new ArrayList<>(cageTypes.values());
+            Collections.sort(objects, IMObjectSorter.getNameComparator(true));
+            IMObjectListModel model = new IMObjectListModel(objects, true, false);
             cageSelector = SelectFieldFactory.create(model);
             cageSelector.setCellRenderer(IMObjectListCellRenderer.NAME);
             cageSelector.addActionListener(new ActionListener() {

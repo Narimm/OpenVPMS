@@ -36,7 +36,6 @@ import java.util.Date;
  */
 class CageSummaryTableCellRenderer extends AbstractCageTableCellRenderer {
 
-
     /**
      * Indicates a pet staying for the day.
      */
@@ -84,7 +83,8 @@ class CageSummaryTableCellRenderer extends AbstractCageTableCellRenderer {
         Label label = LabelFactory.create();
         Date startDate = DateRules.getDate(startTime);
         Date endDate = DateRules.getDate(endTime);
-        if (startDate.equals(endDate)) {
+        if (startDate.equals(endDate) || DateRules.compareTo(endTime, DateRules.getNextDate(startDate)) == 0) {
+            // if the appointment is on the same day, or ends a midnight, it is a day board
             label.setText(day);
         } else {
             Date date = grid.getDate(slot);
