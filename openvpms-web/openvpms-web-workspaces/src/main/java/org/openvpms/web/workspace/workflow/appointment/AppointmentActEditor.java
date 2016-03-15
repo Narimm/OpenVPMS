@@ -233,8 +233,9 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * @param schedule the schedule
      */
     public void setSchedule(Entity schedule) {
-        setParticipant("schedule", schedule);
-        onScheduleChanged(schedule);
+        if (setParticipant("schedule", schedule)) {
+            onScheduleChanged(schedule);
+        }
         calculateEndTime();
     }
 
@@ -357,10 +358,9 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     @Override
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
-
         Entity schedule = getSchedule();
-        AppointmentTypeParticipationEditor editor = onScheduleChanged(schedule);
-        editor.addModifiableListener(new ModifiableListener() {
+        initSchedule(schedule);
+        getAppointmentTypeEditor().addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onAppointmentTypeChanged();
             }
@@ -461,17 +461,27 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * size.
      *
      * @param schedule the schedule. May be {@code null}
-     * @return the appointment type editor
      */
-    private AppointmentTypeParticipationEditor onScheduleChanged(Entity schedule) {
+    private void onScheduleChanged(Entity schedule) {
+        initSchedule(schedule);
+        updateSendReminder(sendReminder.isSelected());
+    }
+
+    /**
+     * Initialises the appointment type editor with the schedule, updates the slot size, and determines if schedule
+     * reminders are enabled.
+     *
+     * @param schedule the schedule. May be {@code null}
+     */
+    private void initSchedule(Entity schedule) {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
         if (schedule != null) {
             slotSize = rules.getSlotSize((Party) schedule);
+            scheduleReminders = rules.isScheduleRemindersEnabled(schedule);
+        } else {
+            scheduleReminders = false;
         }
-        scheduleReminders = rules.isScheduleRemindersEnabled(schedule);
-        updateSendReminder(true);
-        return editor;
     }
 
     /**
