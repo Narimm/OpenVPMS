@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.StyleTableCellRenderer;
 import org.openvpms.web.echo.table.TableHelper;
@@ -39,6 +40,9 @@ import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.Date;
 import java.util.List;
+
+import static org.openvpms.web.workspace.workflow.scheduling.ScheduleTableCellRenderer.EVEN_ROW_STYLE;
+import static org.openvpms.web.workspace.workflow.scheduling.ScheduleTableCellRenderer.ODD_ROW_STYLE;
 
 /**
  * Appointment table model for appointments that span multiple days.
@@ -212,13 +216,28 @@ public class MultiDayTableModel extends AbstractMultiDayTableModel {
             Schedule schedule = (Schedule) value;
             Entity entity = schedule.getSchedule();
             if (entity != null) {
+                MultiDayTableModel model = (MultiDayTableModel) table.getModel();
                 Label label = LabelFactory.create(null, Styles.BOLD);
                 label.setText(entity.getName());
+                row++;
+                int span = 1;
+                while (row < model.getRowCount()) {
+                    Schedule next = model.getSchedule(0, row);
+                    if (next != null && next.getSchedule().equals(entity)) {
+                        span++;
+                        row++;
+                    } else {
+                        break;
+                    }
+                }
+                if (span > 1) {
+                    label.setLayoutData(TableFactory.rowSpan(span));
+                }
                 result = label;
             } else {
                 result = new Label();
             }
-            String styleName = schedule.getRenderEven() ? "ScheduleTable.Even" : "ScheduleTable.Odd";
+            String styleName = schedule.getRenderEven() ? EVEN_ROW_STYLE : ODD_ROW_STYLE;
             TableHelper.mergeStyle(result, styleName);
             return result;
         }

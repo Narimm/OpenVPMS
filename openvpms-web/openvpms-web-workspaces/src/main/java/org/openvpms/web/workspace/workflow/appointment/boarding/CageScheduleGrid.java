@@ -89,14 +89,14 @@ public class CageScheduleGrid extends AbstractMultiDayScheduleGrid {
     }
 
     /**
-     * Returns the count of schedules within the grid.
+     * Returns the count of unique schedules within the grid.
      *
      * @return the schedule count
      */
     public int getScheduleCount() {
         int result = 0;
         for (CageScheduleGroup group : groups) {
-            result += group.getSchedules().size();
+            result += group.getScheduleCount();
         }
         return result;
     }

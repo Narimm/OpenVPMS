@@ -272,12 +272,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @return the edit dialog
      */
     @Override
-    protected EditDialog edit(IMObjectEditor editor, List<Selection> path) {
+    protected AppointmentEditDialog edit(IMObjectEditor editor, List<Selection> path) {
         Date startTime = browser.getSelectedTime();
         if (startTime != null && editor.getObject().isNew() && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
-        return super.edit(editor, path);
+        return (AppointmentEditDialog) super.edit(editor, path);
     }
 
     /**
@@ -707,8 +707,10 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         localContext.setClinician(null);
         DefaultLayoutContext context = new DefaultLayoutContext(localContext, edit);
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, series != null, context);
-        EditDialog dialog = edit(editor, null);  // NOTE: need to update the start time after dialog is created
-        editor.setSchedule(schedule);            //       See AppointmentEditDialog.timesModified().
+        AppointmentEditDialog dialog = edit(editor, null);
+        // NOTE: need to update the start time after dialog is created
+        //       See AppointmentEditDialog.timesModified().
+        editor.setSchedule(schedule);
         editor.setStartTime(startTime);   // will recalc end time. May be rounded to nearest slot
         startTime = editor.getStartTime();
         Date endTime = editor.getEndTime();
@@ -725,7 +727,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         } else {
             editor.getSeries().setUpdateTimesOnly(true);
         }
-        dialog.save(true);              // checks for overlapping appointments
+        dialog.setAlwaysCheckOverlap(true); // checks for overlapping appointments
+        dialog.save(true);
         browser.setSelected(browser.getEvent(appointment));
     }
 
