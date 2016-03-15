@@ -117,12 +117,12 @@ public class CageScheduleGrid extends AbstractMultiDayScheduleGrid {
     }
 
     /**
-     * Returns the no. of rows.
+     * Returns the rows.
      *
-     * @return the no. of rows
+     * @return the rows
      */
-    public int getRows() {
-        return rows.size();
+    public List<CageRow> getRows() {
+        return rows;
     }
 
     /**

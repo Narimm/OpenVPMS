@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
 
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
@@ -93,6 +94,16 @@ class CageRow {
      */
     public Schedule getSchedule() {
         return schedule;
+    }
+
+    /**
+     * Determines if the row is for a particular schedule.
+     *
+     * @param scheduleRef the schedule reference
+     * @return {@code true} if the row is for the schedule
+     */
+    public boolean isSchedule(IMObjectReference scheduleRef) {
+        return (schedule != null && schedule.getSchedule().getObjectReference().equals(scheduleRef));
     }
 
     /**

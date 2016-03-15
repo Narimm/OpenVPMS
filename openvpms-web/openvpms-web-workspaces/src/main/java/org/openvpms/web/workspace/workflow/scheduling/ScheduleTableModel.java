@@ -287,6 +287,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
                 if (slot != -1) {
                     int row = getCellRow(slot);
                     result = new Cell(column.getModelIndex(), row);
+                    break;
                 }
             }
         } else {
@@ -296,6 +297,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
                 if (slot != -1) {
                     int column = getCellColumn(slot);
                     result = new Cell(column, row.getRow());
+                    break;
                 }
             }
         }
@@ -849,6 +851,24 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
+     * Returns all rows that a schedule appears in.
+     *
+     * @param scheduleRef the schedule reference
+     * @return the rows
+     */
+    protected List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
+        List<ScheduleRow> result = new ArrayList<>();
+        int index = 0;
+        for (Schedule schedule : grid.getSchedules()) {
+            if (schedule.getSchedule().getId() == scheduleRef.getId()) {
+                result.add(new ScheduleRow(schedule, index));
+            }
+            ++index;
+        }
+        return result;
+    }
+
+    /**
      * Returns all columns that a schedule appears in.
      *
      * @param scheduleRef the schedule reference
@@ -863,24 +883,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
                     result.add(column);
                 }
             }
-        }
-        return result;
-    }
-
-    /**
-     * Returns all rows that a schedule appears in.
-     *
-     * @param scheduleRef the schedule reference
-     * @return the rows
-     */
-    private List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
-        List<ScheduleRow> result = new ArrayList<>();
-        int index = 0;
-        for (Schedule schedule : grid.getSchedules()) {
-            if (schedule.getSchedule().getId() == scheduleRef.getId()) {
-                result.add(new ScheduleRow(schedule, index));
-            }
-            ++index;
         }
         return result;
     }

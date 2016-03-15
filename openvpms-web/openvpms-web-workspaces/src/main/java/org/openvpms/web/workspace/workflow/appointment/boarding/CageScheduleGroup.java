@@ -96,8 +96,18 @@ class CageScheduleGroup {
      * @param schedule the schedule to add
      */
     public void add(Schedule schedule) {
+        Schedule previous = schedules.size() > 0 ? schedules.get(schedules.size() - 1) : null;
         schedules.add(schedule);
-        boolean even = schedules.size() % 2 == 0;
+        boolean even;
+        if (previous == null) {
+            even = false;
+        } else {
+            if (previous.getSchedule().equals(schedule.getSchedule())) {
+                even = previous.getRenderEven();
+            } else {
+                even = !previous.getRenderEven();
+            }
+        }
         schedule.setRenderEven(even);
     }
 
@@ -117,7 +127,7 @@ class CageScheduleGroup {
      */
     public int getScheduleCount() {
         Set<Entity> set = new HashSet<>();
-        for (Schedule schedule: schedules) {
+        for (Schedule schedule : schedules) {
             set.add(schedule.getSchedule());
         }
         return set.size();
