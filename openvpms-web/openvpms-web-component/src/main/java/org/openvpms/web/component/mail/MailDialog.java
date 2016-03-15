@@ -345,7 +345,7 @@ public class MailDialog extends PopupDialog {
         Query<Entity> query = QueryFactory.create(EMAIL_TEMPLATE, context.getContext());
         Browser<Entity> browser = BrowserFactory.create(query, context);
         String title = Messages.format("imobject.select.title", DescriptorHelper.getDisplayName(EMAIL_TEMPLATE));
-        final BrowserDialog<Entity> dialog = new BrowserDialog<>(title, browser, getHelpContext().subtopic("new"));
+        final BrowserDialog<Entity> dialog = new BrowserDialog<>(title, browser, getHelpContext().subtopic("template"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
