@@ -315,7 +315,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     public Act getAct(PropertySet event) {
         if (event != null) {
             IMObjectReference actRef = event.getReference(ScheduleEvent.ACT_REFERENCE);
-            return (Act) IMObjectHelper.getObject(actRef, context);
+            return (Act) IMObjectHelper.getObject(actRef, null);
         }
         return null;
     }

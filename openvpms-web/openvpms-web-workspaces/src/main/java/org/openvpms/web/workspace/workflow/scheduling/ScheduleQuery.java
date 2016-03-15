@@ -118,8 +118,7 @@ public abstract class ScheduleQuery {
         if (viewField == null || !ObjectUtils.equals(viewField.getSelectedItem(), view)) {
             getComponent();
             viewField.setSelectedItem(view);
-            viewSchedules = null;
-            updateScheduleField();
+            updateViewSchedules();
         }
     }
 
@@ -237,6 +236,24 @@ public abstract class ScheduleQuery {
     }
 
     /**
+     * Invoked when the schedule view changes.
+     * <p/>
+     * Notifies any listener to perform a query.
+     */
+    protected void onViewChanged() {
+        updateViewSchedules();
+        onQuery();
+    }
+
+    /**
+     * Invoked to update the view schedules.
+     */
+    protected void updateViewSchedules() {
+        viewSchedules = null;
+        updateScheduleField();
+    }
+
+    /**
      * Creates a new field to select a schedule view.
      *
      * @return a new select field
@@ -295,14 +312,4 @@ public abstract class ScheduleQuery {
         return new IMObjectListModel(schedules, true, false);
     }
 
-    /**
-     * Invoked when the schedule view changes.
-     * <p/>
-     * Notifies any listener to perform a query.
-     */
-    protected void onViewChanged() {
-        viewSchedules = null;
-        updateScheduleField();
-        onQuery();
-    }
 }

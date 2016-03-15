@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -243,7 +243,7 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      */
     private Map<Entity, List<PropertySet>> getEvents() {
         Date date = getDate();
-        Map<Entity, List<PropertySet>> result = new LinkedHashMap<Entity, List<PropertySet>>();
+        Map<Entity, List<PropertySet>> result = new LinkedHashMap<>();
         for (Entity schedule : getSelectedSchedules()) {
             List<PropertySet> events = getEvents(schedule, date);
             result.put(schedule, events);

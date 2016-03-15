@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -36,7 +36,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
@@ -142,23 +142,23 @@ class FreeSlotIterator implements Iterator<Slot> {
      */
     private Iterator<Slot> createFirstLastFreeSlotIterator(Iterator<Slot> iterator, Entity schedule, Date fromDate,
                                                            Date toDate, IArchetypeService service) {
-        IteratorChain<Slot> result = new IteratorChain<Slot>();
+        IteratorChain<Slot> result = new IteratorChain<>();
         Date appointmentBefore = getAppointmentBefore(schedule, fromDate, toDate, service);
         Date appointmentAfter = getAppointmentAfter(schedule, fromDate, toDate, service);
         if (appointmentBefore != null || appointmentAfter != null) {
-            if (appointmentBefore != null) {
+            if (appointmentBefore != null && appointmentBefore.compareTo(fromDate) > 0) {
                 Slot slot = new Slot(schedule.getId(), fromDate, appointmentBefore);
-                result.addIterator(Arrays.asList(slot).iterator());
+                result.addIterator(Collections.singletonList(slot).iterator());
             }
             result.addIterator(iterator);
-            if (appointmentAfter != null) {
+            if (appointmentAfter != null && appointmentAfter.compareTo(toDate) < 0) {
                 Slot slot = new Slot(schedule.getId(), appointmentAfter, toDate);
-                result.addIterator(Arrays.asList(slot).iterator());
+                result.addIterator(Collections.singletonList(slot).iterator());
             }
         } else {
             // no appointments
             Slot slot = new Slot(schedule.getId(), fromDate, toDate);
-            result.addIterator(Arrays.asList(slot).iterator());
+            result.addIterator(Collections.singletonList(slot).iterator());
         }
         return result;
     }
@@ -214,10 +214,7 @@ class FreeSlotIterator implements Iterator<Slot> {
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         if (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            Date startTime = set.getDate("a.startTime");
-            if (DateRules.compareTo(startTime, fromDate) > 0) {
-                result = startTime;
-            }
+            result = set.getDate("a.startTime");
         }
         return result;
     }
@@ -238,10 +235,7 @@ class FreeSlotIterator implements Iterator<Slot> {
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         if (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            Date endTime = set.getDate("a.endTime");
-            if (DateRules.compareTo(endTime, toDate) < 0) {
-                result = endTime;
-            }
+            result = set.getDate("a.endTime");
         }
         return result;
     }
@@ -300,7 +294,7 @@ class FreeSlotIterator implements Iterator<Slot> {
          * The underlying iterator. A push-back iterator is used to handle the case where a free slot spans multiple
          * time ranges. In this case, the slot is split into two or more slots, and pushed back onto the iterator.
          */
-        private final Deque<Slot> slots = new ArrayDeque<Slot>();
+        private final Deque<Slot> slots = new ArrayDeque<>();
 
         /**
          * The start of the time range, in milliseconds, or {@code -1} if there is no start (in which case, the range
@@ -322,7 +316,7 @@ class FreeSlotIterator implements Iterator<Slot> {
          * @param rangeEnd   the end of the time range
          */
         public TimeRangeSlotIterator(Iterator<Slot> iterator, long rangeStart, long rangeEnd) {
-            filter = new FilterIterator<Slot>(iterator, new TimeRangePredicate());
+            filter = new FilterIterator<>(iterator, new TimeRangePredicate());
             this.rangeStart = rangeStart;
             this.rangeEnd = rangeEnd;
         }
