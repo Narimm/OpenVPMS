@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -318,9 +318,20 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
     @Test
     public void testFindFreeSlotFor24HourSchedule() {
         Party schedule = createSchedule("00:00:00", "24:00:00");
-        Iterator<Slot> query = createIterator("2014-01-01", "2014-01-03", schedule);
-        checkSlot(query, schedule, "2014-01-01 00:00:00", "2014-01-03 00:00:00");
-        assertFalse(query.hasNext());
+        Iterator<Slot> query1 = createIterator("2014-01-01", "2014-01-03", schedule);
+        checkSlot(query1, schedule, "2014-01-01 00:00:00", "2014-01-03 00:00:00");
+        assertFalse(query1.hasNext());
+
+        Act appointment1 = createAppointment(getDate("2014-01-01"), getDate("2014-01-02"), schedule);
+        save(appointment1);
+        Iterator<Slot> query2 = createIterator("2014-01-01", "2014-01-03", schedule);
+        checkSlot(query2, schedule, "2014-01-02 00:00:00", "2014-01-03 00:00:00");
+
+        Act appointment2 = createAppointment(getDate("2014-01-02"), getDate("2014-01-03"), schedule);
+        save(appointment2);
+        Iterator<Slot> query3 = createIterator("2014-01-01", "2014-01-03", schedule);
+        assertFalse(query3.hasNext());
+
     }
 
     /**
@@ -345,6 +356,31 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         checkSlot(query, schedule, "2014-01-01 09:00:00", "2014-01-02 00:00:00");
         checkSlot(query, schedule, "2014-01-02 09:00:00", "2014-01-03 00:00:00");
         assertFalse(query.hasNext());
+    }
+
+    /**
+     * Verifies that slots can be filtered by cage type.
+     */
+    @Test
+    public void testFindFreeSlotForCageType() {
+        Entity cageType1 = ScheduleTestHelper.createCageType("X Cage Type 1");
+        Entity cageType2 = ScheduleTestHelper.createCageType("X Cage Type 2");
+        Party schedule = createSchedule("09:00:00", "24:00:00", cageType1);
+        FreeSlotQuery query = createQuery("2014-01-01", "2014-01-03", schedule);
+        query.setCageType(cageType1);
+
+        Iterator<Slot> iterator1 = createIterator(query);
+        checkSlot(iterator1, schedule, "2014-01-01 09:00:00", "2014-01-02 00:00:00");
+        checkSlot(iterator1, schedule, "2014-01-02 09:00:00", "2014-01-03 00:00:00");
+
+        query.setCageType(cageType2);
+        Iterator<Slot> iterator2 = createIterator(query);
+        assertFalse(iterator2.hasNext());
+
+        query.setCageType(null);
+        Iterator<Slot> iterator3 = createIterator(query);
+        checkSlot(iterator3, schedule, "2014-01-01 09:00:00", "2014-01-02 00:00:00");
+        checkSlot(iterator3, schedule, "2014-01-02 09:00:00", "2014-01-03 00:00:00");
     }
 
     /**
@@ -446,6 +482,22 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(schedule);
         bean.setValue("startTime", (startTime != null) ? Time.valueOf(startTime) : null);
         bean.setValue("endTime", (endTime != null) ? Time.valueOf(endTime) : null);
+        bean.save();
+        return schedule;
+    }
+
+    /**
+     * Creates a schedule.
+     *
+     * @param startTime the schedule start time. May be {@code null}
+     * @param endTime   the schedule end time. May be {@code null}
+     * @param cageType  the cage type
+     * @return the schedule
+     */
+    private Party createSchedule(String startTime, String endTime, Entity cageType) {
+        Party schedule = createSchedule(startTime, endTime);
+        IMObjectBean bean = new IMObjectBean(schedule);
+        bean.addNodeTarget("cageType", cageType);
         bean.save();
         return schedule;
     }

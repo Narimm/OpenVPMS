@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.query.DateNavigator;
 import org.openvpms.web.echo.event.ActionListener;
@@ -315,6 +316,15 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     /**
+     * Invoked to update the view schedules.
+     */
+    @Override
+    protected void updateViewSchedules() {
+        super.updateViewSchedules();
+        updateShowSelector();
+    }
+
+    /**
      * Invoked when the date changes.
      * <p>
      * This implementation invokes {@link #onQuery()}.
@@ -372,6 +382,26 @@ class AppointmentQuery extends ScheduleServiceQuery {
         if (index >= 0 && index < Show.values().length) {
             show = Show.values()[index];
             onQuery();
+        }
+    }
+
+    /**
+     * Invoked to update the show selector when the view changes.
+     */
+    private void updateShowSelector() {
+        boolean hasCageType = false;
+        if (getShow() == Show.ALL) {
+            for (Entity schedule : getSelectedSchedules()) {
+                IMObjectBean bean = new IMObjectBean(schedule);
+                if (bean.getNodeTargetObjectRef("cageType") != null) {
+                    hasCageType = true;
+                    break;
+                }
+            }
+            if (hasCageType) {
+                show = Show.CAGE;
+                showSelector.setSelectedIndex(show.ordinal());
+            }
         }
     }
 
