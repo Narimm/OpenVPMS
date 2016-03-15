@@ -60,12 +60,15 @@ public class CheckOutScheduleGrid extends AbstractMultiDayScheduleGrid {
                                                                      Date date) {
         Map<Entity, List<PropertySet>> map = new LinkedHashMap<>();
         for (Map.Entry<Entity, List<PropertySet>> appointmentsBySchedule : appointments.entrySet()) {
+            Date midnight = DateRules.getNextDate(date);
             if (!appointmentsBySchedule.getValue().isEmpty()) {
                 List<PropertySet> onDate = new ArrayList<>();        // check-outs on date
                 List<PropertySet> afterDate = new ArrayList<>();     // check-outs after date
                 for (PropertySet set : appointmentsBySchedule.getValue()) {
-                    Date endDate = DateRules.getDate(set.getDate(ScheduleEvent.ACT_END_TIME));
-                    if (endDate.compareTo(date) == 0) {
+                    Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
+                    Date endDate = DateRules.getDate(endTime);
+                    if (endDate.compareTo(date) == 0 || DateRules.compareTo(midnight, endTime) == 0) {
+                        // consider appointments checking out at midnight to be for the same day
                         onDate.add(set);
                     } else if (endDate.compareTo(date) > 0) {
                         afterDate.add(set);
