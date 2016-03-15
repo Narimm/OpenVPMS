@@ -63,7 +63,7 @@ public abstract class CageTableModel extends AbstractMultiDayTableModel {
      */
     @Override
     public int getRowCount() {
-        return getGrid().getRows();
+        return getGrid().getRows().size();
     }
 
     /**
@@ -215,6 +215,27 @@ public abstract class CageTableModel extends AbstractMultiDayTableModel {
      */
     public boolean isCageType(int row) {
         return getCageRow(row).isSummary();
+    }
+
+    /**
+     * Returns all rows that a schedule appears in.
+     *
+     * @param scheduleRef the schedule reference
+     * @return the rows
+     */
+    protected List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
+        List<ScheduleRow> result = new ArrayList<>();
+        int index = 0;
+        for (CageRow row : getGrid().getRows()) {
+            if (row.isSchedule(scheduleRef)) {
+                result.add(new ScheduleRow(row.getSchedule(), index));
+            } else if (!result.isEmpty()) {
+                // duplicate schedules appear consecutively, so can break out
+                break;
+            }
+            index++;
+        }
+        return result;
     }
 
     /**
