@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -66,6 +66,10 @@ public class AppointmentEditDialog extends EditDialog {
      */
     private RepeatCondition condition;
 
+    /**
+     * Determines if overlap checks should always be performed.
+     */
+    private boolean alwaysCheckOverlap = false;
 
     /**
      * Constructs a {@link AppointmentEditDialog}.
@@ -89,13 +93,22 @@ public class AppointmentEditDialog extends EditDialog {
     }
 
     /**
+     * Determines if overlap checking should always be performed.
+     *
+     * @param checkOverlap if {@code true}, always check for overlaps
+     */
+    public void setAlwaysCheckOverlap(boolean checkOverlap) {
+        this.alwaysCheckOverlap = checkOverlap;
+    }
+
+    /**
      * Save the current object.
      */
     @Override
     protected void onApply() {
         if (noOverlapCheckRequired()) {
             save();
-        } else if (!checkForOverlappingAppointment(false)) {
+        } else if (!checkForOverlappingAppointment(false)) { // TODO - should check and save in same transaction
             if (save()) {
                 getState();
             }
@@ -184,7 +197,7 @@ public class AppointmentEditDialog extends EditDialog {
      */
     private boolean noOverlapCheckRequired() {
         Act appointment = getAppointment();
-        return !appointment.isNew() && !timeSeriesModified();
+        return !alwaysCheckOverlap && !appointment.isNew() && !timeSeriesModified();
     }
 
     /**

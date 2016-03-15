@@ -23,10 +23,13 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Table;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.TableHelper;
+import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableCellRenderer;
 
 /**
@@ -110,7 +113,7 @@ class CageScheduleCellRenderer implements TableCellRendererEx {
         } else if (cageRow.isSummary()) {
             result = getCageType(cageRow, name);
         } else {
-            result = getSchedule(cageRow, name);
+            result = getSchedule(table, cageRow, name, row);
         }
         return result;
     }
@@ -145,7 +148,7 @@ class CageScheduleCellRenderer implements TableCellRendererEx {
     private Component getCageType(CageRow cageRow, Label name) {
         Component result;
         CageScheduleGroup group = cageRow.getGroup();
-        Label count = getCount(group.getSchedules().size());
+        Label count = getCount(group.getScheduleCount());
         LabelEx action = new LabelEx();
         if (group.isExpanded()) {
             action.setStyleName("CageTable.minus");
@@ -161,12 +164,30 @@ class CageScheduleCellRenderer implements TableCellRendererEx {
     /**
      * Returns a component representing a schedule.
      *
+     * @param table   the table
      * @param cageRow the row
      * @param name    the schedule name
+     * @param row     the table row
      * @return the component
      */
-    private Component getSchedule(CageRow cageRow, Label name) {
+    private Component getSchedule(Table table, CageRow cageRow, Label name, int row) {
         String styleName = cageRow.renderEven() ? "ScheduleTable.Even-InsetX" : "ScheduleTable.Odd-InsetX";
+        Entity schedule = cageRow.getSchedule().getSchedule();
+        row++;
+        int span = 1;
+        CageTableModel model = (CageTableModel) table.getModel();
+        while (row < model.getRowCount()) {
+            Schedule next = model.getSchedule(0, row);
+            if (next != null && next.getSchedule().equals(schedule)) {
+                span++;
+                row++;
+            } else {
+                break;
+            }
+        }
+        if (span > 1) {
+            name.setLayoutData(TableFactory.rowSpan(span));
+        }
         TableHelper.mergeStyle(name, styleName);
         return name;
     }

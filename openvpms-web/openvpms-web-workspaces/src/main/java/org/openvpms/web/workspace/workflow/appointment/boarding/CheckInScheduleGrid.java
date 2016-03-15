@@ -24,7 +24,7 @@ import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleG
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +58,7 @@ public class CheckInScheduleGrid extends AbstractMultiDayScheduleGrid {
      */
     private static Map<Entity, List<PropertySet>> filterAppointments(Map<Entity, List<PropertySet>> appointments,
                                                                      Date date) {
-        Map<Entity, List<PropertySet>> map = new HashMap<>();
+        Map<Entity, List<PropertySet>> map = new LinkedHashMap<>();
         for (Map.Entry<Entity, List<PropertySet>> appointmentsBySchedule : appointments.entrySet()) {
             if (!appointmentsBySchedule.getValue().isEmpty()) {
                 List<PropertySet> onDate = new ArrayList<>();    // check-ins on date

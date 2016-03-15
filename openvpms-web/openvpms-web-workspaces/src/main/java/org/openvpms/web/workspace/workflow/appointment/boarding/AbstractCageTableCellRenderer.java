@@ -19,11 +19,15 @@ package org.openvpms.web.workspace.workflow.appointment.boarding;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayTableCellRenderer;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A table cell renderer for {@link CageTableModel}.
@@ -105,9 +109,14 @@ public class AbstractCageTableCellRenderer extends AbstractMultiDayTableCellRend
      */
     private int getFreeSlots(CageScheduleGroup group, CageTableModel model, int slot) {
         int free = 0;
+        Set<Entity> seen = new HashSet<>();
         for (Schedule schedule : group.getSchedules()) {
-            if (model.getAvailability(schedule, slot) == ScheduleEventGrid.Availability.FREE) {
-                ++free;
+            Entity entity = schedule.getSchedule();
+            if (!seen.contains(entity)) {
+                seen.add(entity);
+                if (model.getAvailability(schedule, slot) == ScheduleEventGrid.Availability.FREE) {
+                    ++free;
+                }
             }
         }
         return free;

@@ -24,7 +24,9 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Groups schedules by cage type.
@@ -102,10 +104,23 @@ class CageScheduleGroup {
     /**
      * Returns the schedules.
      *
-     * @return the schedules
+     * @return the schedules. Schedules may be included more than once to handle overlapping bookings
      */
     public List<Schedule> getSchedules() {
         return schedules;
+    }
+
+    /**
+     * Returns the no. of unique schedules in the group.
+     *
+     * @return the no. of unique schedules
+     */
+    public int getScheduleCount() {
+        Set<Entity> set = new HashSet<>();
+        for (Schedule schedule: schedules) {
+            set.add(schedule.getSchedule());
+        }
+        return set.size();
     }
 
     /**

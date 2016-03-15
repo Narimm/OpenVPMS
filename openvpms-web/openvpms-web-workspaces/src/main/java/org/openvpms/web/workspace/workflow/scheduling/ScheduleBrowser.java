@@ -23,7 +23,6 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -590,10 +589,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
         ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
         ScheduleTableModel.State state = null;
-        Class type = null;
         if (model != null) {
             state = model.getState();
-            type = model.getClass();
         }
         model = createTableModel(grid);
         if (table == null) {
@@ -616,9 +613,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         }
         model.setHighlight(query.getHighlight());
 
-        if (reselect && state != null && ObjectUtils.equals(type, model.getClass())) {
-            // if the schedules and date haven't changed and there was no previously selected object or the object
-            // hasn't changed, reselect the selected cell
+        if (reselect && state != null) {
+            // attempt to restore the selection
             model.setState(state);
             if (model.getSelected() != null) {
                 setSelected(null);
