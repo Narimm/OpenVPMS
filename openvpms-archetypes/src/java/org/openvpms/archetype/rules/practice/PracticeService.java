@@ -119,7 +119,7 @@ public class PracticeService {
      */
     public Entity getSMS() {
         EntityBean bean = getBean();
-        return (bean != null) ? bean.getNodeTargetEntity("SMS") : null;
+        return (bean != null) ? bean.getNodeTargetEntity("sms") : null;
     }
 
     /**

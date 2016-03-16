@@ -198,7 +198,7 @@ public class PracticeRules {
     public boolean isSMSEnabled(Party practice) {
         boolean enabled = false;
         EntityBean bean = new EntityBean(practice, service);
-        List<IMObjectReference> refs = bean.getNodeTargetEntityRefs("SMS");
+        List<IMObjectReference> refs = bean.getNodeTargetEntityRefs("sms");
         for (IMObjectReference ref : refs) {
             if (isActive(ref)) {
                 enabled = true;
