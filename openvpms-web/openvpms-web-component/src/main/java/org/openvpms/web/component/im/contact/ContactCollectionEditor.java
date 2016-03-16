@@ -260,7 +260,11 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
             } else {
                 result = new ArrayList<>();
                 result.addAll(super.getObjects());
-                result.addAll(pending);
+                for (IMObject object : pending) {
+                    if (!result.contains(object)) {
+                        result.add(object);
+                    }
+                }
             }
             return result;
         }
