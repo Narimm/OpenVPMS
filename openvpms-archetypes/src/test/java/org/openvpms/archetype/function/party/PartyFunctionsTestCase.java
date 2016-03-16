@@ -510,6 +510,24 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyFunctions#getWebsite(Party)} method.
+     */
+    @Test
+    public void testGetWebsite() {
+        Party customer = TestHelper.createCustomer(false);
+        JXPathContext context = createContext(customer);
+
+        assertEquals("", context.getValue("party:getWebsite(.)"));
+
+        Contact contact = (Contact) create(ContactArchetypes.WEBSITE);
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("url", "http://wwww.openvpms.org");
+        customer.addContact(contact);
+
+        assertEquals("http://wwww.openvpms.org", context.getValue("party:getWebsite(.)"));
+    }
+
+    /**
      * Creates a new <em>contact.phoneNumber</em>.
      *
      * @param number    the phone number

@@ -21,7 +21,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -36,7 +35,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
  *
  * @author Tim Anderson
  */
-public class EmailContactViewLayout extends AbstractLayoutStrategy {
+public class EmailContactViewLayout extends AbstractContactViewLayout{
 
     /**
      * Creates a component for a property.

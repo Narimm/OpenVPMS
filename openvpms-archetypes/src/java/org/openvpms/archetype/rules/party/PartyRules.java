@@ -534,6 +534,22 @@ public class PartyRules {
     }
 
     /**
+     * Returns the website URL for a party.
+     *
+     * @param party the party
+     * @return the website URL of the party. May be empty if there is no corresponding <em>contact.website</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getWebsite(Party party) {
+        Contact contact = getContact(party, ContactArchetypes.WEBSITE, null);
+        if (contact != null) {
+            IMObjectBean bean = new IMObjectBean(contact, service);
+            return bean.getString("url");
+        }
+        return "";
+    }
+
+    /**
      * Returns a formatted string of a party's identities.
      *
      * @param party the party

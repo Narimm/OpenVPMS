@@ -40,6 +40,11 @@ public class ContactArchetypes {
     public static final String LOCATION = "contact.location";
 
     /**
+     * Website contact archetype short name.
+     */
+    public static final String WEBSITE = "contact.website";
+
+    /**
      * Contact purpose lookup archetype short name.
      */
     public static final String PURPOSE = "lookup.contactPurpose";
