@@ -11,19 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.List;
@@ -39,10 +37,14 @@ public class MultiScheduleTaskTableModel extends TaskTableModel {
     /**
      * Constructs a {@link MultiScheduleTaskTableModel}.
      *
-     * @param grid the task grid
+     * @param grid             the task grid
+     * @param context          the context
+     * @param eventColours     the event colours
+     * @param clinicianColours the clinician colours
      */
-    public MultiScheduleTaskTableModel(TaskGrid grid, Context context) {
-        super(grid, context);
+    public MultiScheduleTaskTableModel(TaskGrid grid, Context context, ScheduleColours eventColours,
+                                       ScheduleColours clinicianColours) {
+        super(grid, context, eventColours, clinicianColours);
     }
 
     /**
@@ -54,34 +56,7 @@ public class MultiScheduleTaskTableModel extends TaskTableModel {
      */
     @Override
     public Object getValueAt(int column, int row) {
-        Object result = null;
-        PropertySet set = getEvent(column, row);
-        if (set != null) {
-            result = getEvent(set);
-        }
-        return result;
-    }
-
-    /**
-     * Returns a component representing an event.
-     *
-     * @param event the event
-     * @return a new component
-     */
-    private Component getEvent(PropertySet event) {
-        String text = evaluate(event);
-        if (text == null) {
-            String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
-            String patient = event.getString(ScheduleEvent.PATIENT_NAME);
-            String status = getStatus(event);
-            if (patient == null) {
-                text = Messages.format("workflow.scheduling.task.table.customer", customer, status);
-            } else {
-                text = Messages.format("workflow.scheduling.task.table.customerpatient", customer, patient, status);
-            }
-        }
-        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        return createLabelWithNotes(text, notes);
+        return getEvent(column, row);
     }
 
     /**
@@ -94,8 +69,12 @@ public class MultiScheduleTaskTableModel extends TaskTableModel {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
         List<Schedule> schedules = grid.getSchedules();
         int i = 0;
+        MultiScheduleTaskTableCellRenderer renderer = new MultiScheduleTaskTableCellRenderer(this);
         for (Schedule schedule : schedules) {
-            result.addColumn(new ScheduleColumn(i++, schedule));
+            ScheduleColumn column = new ScheduleColumn(i++, schedule);
+            column.setCellRenderer(renderer);
+            column.setHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
+            result.addColumn(column);
         }
         return result;
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -204,6 +204,7 @@ public class ScheduleTestHelper extends TestHelper {
     public static Act createAppointment(Date startTime, Date endTime, Entity schedule, Party customer, Party patient) {
         Entity appointmentType = createAppointmentType();
         appointmentType.setName("XAppointmentType");
+        save(appointmentType);
         return createAppointment(startTime, endTime, schedule, appointmentType, customer, patient, null, null);
     }
 
@@ -230,7 +231,6 @@ public class ScheduleTestHelper extends TestHelper {
         bean.setValue("endTime", endTime);
         bean.setValue("reason", reason.getCode());
         bean.setValue("status", AppointmentStatus.IN_PROGRESS);
-        save(appointmentType);
         bean.setParticipant("participation.customer", customer);
         if (patient != null) {
             bean.setParticipant("participation.patient", patient);
@@ -440,4 +440,16 @@ public class ScheduleTestHelper extends TestHelper {
         return bean.getObject();
     }
 
+    /**
+     * Creates a new cage type.
+     *
+     * @param name the cage type name
+     * @return a new cage type
+     */
+    public static Entity createCageType(String name) {
+        Entity entity = (Entity) create(ScheduleArchetypes.CAGE_TYPE);
+        entity.setName(name);
+        save(entity);
+        return entity;
+    }
 }

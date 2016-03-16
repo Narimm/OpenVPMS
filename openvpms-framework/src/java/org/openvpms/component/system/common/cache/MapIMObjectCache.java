@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.cache;
@@ -21,11 +21,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
  * Implementation of the {@link IMObjectCache} interface that is backed by a {@code Map}.
- * <p/>
+ * <p>
  * This cache grows until cleared.
  *
  * @author Tim Anderson
@@ -47,5 +48,16 @@ public class MapIMObjectCache extends AbstractIMObjectCache {
      */
     public MapIMObjectCache(IArchetypeService service) {
         super(new HashMap<IMObjectReference, IMObject>(), service);
+    }
+
+    /**
+     * Constructs a {@link MapIMObjectCache} that will retrieve objects from the archetype service if they are
+     * not cached.
+     *
+     * @param map     the underlying map
+     * @param service the archetype service
+     */
+    public MapIMObjectCache(Map<IMObjectReference, IMObject> map, IArchetypeService service) {
+        super(map, service);
     }
 }

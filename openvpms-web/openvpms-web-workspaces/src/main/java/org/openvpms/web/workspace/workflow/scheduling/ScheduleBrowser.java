@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -23,8 +23,6 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
-import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -44,15 +42,12 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
-import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid.Availability;
 
@@ -280,7 +275,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (results == null) {
             query();
         }
-        List<PropertySet> result = new ArrayList<PropertySet>();
+        List<PropertySet> result = new ArrayList<>();
         for (List<PropertySet> list : results.values()) {
             for (PropertySet set : list) {
                 result.add(set);
@@ -319,7 +314,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     public Act getAct(PropertySet event) {
         if (event != null) {
             IMObjectReference actRef = event.getReference(ScheduleEvent.ACT_REFERENCE);
-            return (Act) IMObjectHelper.getObject(actRef, context);
+            return (Act) IMObjectHelper.getObject(actRef, null);
         }
         return null;
     }
@@ -351,7 +346,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
     /**
      * Sets focus on the results.
-     * <p/>
+     * <p>
      * This implementation is a no-op.
      */
     public void setFocusOnResults() {
@@ -410,7 +405,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     protected TableEx createTable(ScheduleTableModel model) {
         TableEx table = new TableEx(model, model.getColumnModel());
         table.setStyleName("ScheduleTable");
-        initTable(table);
 /*
         table.setScrollable(true);
         table.setResizeable(true);
@@ -418,16 +412,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         table.setResizeDragBarUsed(true);
 */
         return table;
-    }
-
-    /**
-     * Initialises a table.
-     *
-     * @param table the table
-     */
-    protected void initTable(TableEx table) {
-        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
-        table.setDefaultRenderer(EvenOddTableCellRenderer.INSTANCE);
     }
 
     /**
@@ -510,92 +494,9 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         return context;
     }
 
-    private void doQueryWithView(boolean reselect) {
-        Set<Entity> lastSchedules = (results != null) ? results.keySet() : null;
-        results = query.query();
-
-        ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
-        Cell lastSelected = null;
-        boolean isCut = true;
-        IMObjectReference lastEventId = null;
-        if (model != null) {
-            lastSelected = model.getSelected();
-            lastEventId = getEventReference(lastSelected);
-            isCut = model.isCut();
-        }
-        model = createTableModel(grid);
-        if (table == null) {
-            table = createTable(model);
-            table.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onSelected((TableActionEventEx) event);
-                }
-            });
-            addTable(table, component);
-        } else {
-            table.setModel(model);
-            table.setColumnModel(model.getColumnModel());
-            initTable(table);
-        }
-        User clinician = query.getClinician();
-        if (clinician != null) {
-            model.setClinician(clinician.getObjectReference());
-        } else {
-            model.setClinician(null);
-        }
-        model.setHighlight(query.getHighlight());
-
-        if (reselect) {
-            boolean sameSchedules = ObjectUtils.equals(lastSchedules, results.keySet());
-            Date selectedDate = (selectedTime != null) ? DateRules.getDate(selectedTime) : null;
-
-            // if the schedules and date haven't changed and there was no previously selected object or the object
-            // hasn't changed, reselect the selected cell
-            boolean reselected = false;
-            if (lastSelected != null && sameSchedules && lastSelected.getColumn() < model.getColumnCount()) {
-                IMObjectReference eventId = getEventReference(lastSelected);
-                if (ObjectUtils.equals(selectedDate, query.getDate())
-                    && (lastEventId == null || ObjectUtils.equals(lastEventId, eventId))) {
-                    model.setSelected(lastSelected);
-                    reselected = true;
-                }
-            }
-            if (!reselected) {
-                setSelected(null);
-            }
-
-            updateMarked(isCut);
-        }
-    }
-
-    /**
-     * Updates the event marked to be cut or copied.
-     *
-     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
-     *              Ignored if the cell is being unmarked.
-     */
-    private void updateMarked(boolean isCut) {
-        boolean found = false;
-        ScheduleTableModel model = getModel();
-        if (model != null) {
-            if (marked != null) {
-                IMObjectReference scheduleRef = marked.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
-                IMObjectReference eventRef = marked.getReference(ScheduleEvent.ACT_REFERENCE);
-                Cell cell = model.getCell(scheduleRef, eventRef);
-                if (cell != null) {
-                    model.setMarked(cell, isCut);
-                    found = true;
-                }
-            }
-            if (!found) {
-                model.setMarked(null, isCut);
-            }
-        }
-    }
-
     /**
      * Adds a table to the browser component.
-     * <p/>
+     * <p>
      * This implementation adds it with a small inset.
      *
      * @param table     the table to add
@@ -630,12 +531,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
     /**
      * Invoked when a cell is selected.
-     * <p/>
+     * <p>
      * Notifies listeners of the selection.
      *
      * @param event the event
      */
-    private void onSelected(TableActionEventEx event) {
+    protected void onSelected(TableActionEventEx event) {
         int column = event.getColumn();
         int row = event.getRow();
         boolean doubleClick = false;
@@ -679,20 +580,71 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Returns the reference of the event at the specified cell.
+     * Performs a query.
      *
-     * @param cell the cell. May be {@code null}
-     * @return the corresponding event reference, or {@code null} if none exists
+     * @param reselect if {@code true} try and reselect the selected cell
      */
-    private IMObjectReference getEventReference(Cell cell) {
-        IMObjectReference result = null;
-        if (cell != null) {
-            PropertySet event = model.getEvent(cell);
-            if (event != null) {
-                result = event.getReference(ScheduleEvent.ACT_REFERENCE);
+    private void doQueryWithView(boolean reselect) {
+        results = query.query();
+
+        ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
+        ScheduleTableModel.State state = null;
+        if (model != null) {
+            state = model.getState();
+        }
+        model = createTableModel(grid);
+        if (table == null) {
+            table = createTable(model);
+            table.addActionListener(new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onSelected((TableActionEventEx) event);
+                }
+            });
+            addTable(table, component);
+        } else {
+            table.setModel(model);
+            table.setColumnModel(model.getColumnModel());
+        }
+        User clinician = query.getClinician();
+        if (clinician != null) {
+            model.setClinician(clinician.getObjectReference());
+        } else {
+            model.setClinician(null);
+        }
+        model.setHighlight(query.getHighlight());
+
+        if (reselect && state != null) {
+            // attempt to restore the selection
+            model.setState(state);
+            if (model.getSelected() != null) {
+                setSelected(null);
             }
         }
-        return result;
+    }
+
+    /**
+     * Updates the event marked to be cut or copied.
+     *
+     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
+     *              Ignored if the cell is being unmarked.
+     */
+    private void updateMarked(boolean isCut) {
+        boolean found = false;
+        ScheduleTableModel model = getModel();
+        if (model != null) {
+            if (marked != null) {
+                IMObjectReference scheduleRef = marked.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
+                IMObjectReference eventRef = marked.getReference(ScheduleEvent.ACT_REFERENCE);
+                Cell cell = model.getCell(scheduleRef, eventRef);
+                if (cell != null) {
+                    model.setMarked(cell, isCut);
+                    found = true;
+                }
+            }
+            if (!found) {
+                model.setMarked(null, isCut);
+            }
+        }
     }
 
 }
