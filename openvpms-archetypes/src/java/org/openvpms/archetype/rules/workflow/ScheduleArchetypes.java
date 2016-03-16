@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -28,7 +28,6 @@ public class ScheduleArchetypes {
      * Organisation schedule archetype short name.
      */
     public static String ORGANISATION_SCHEDULE = "party.organisationSchedule";
-
 
     /**
      * Organisation work list archetype short name.
@@ -104,5 +103,11 @@ public class ScheduleArchetypes {
      * Visit reason archetype short name.
      */
     public static String VISIT_REASON = "lookup.visitReason";
+
+    /**
+     * Cage type short name.
+     */
+    public static final String CAGE_TYPE = "entity.cageType";
 }
+
 

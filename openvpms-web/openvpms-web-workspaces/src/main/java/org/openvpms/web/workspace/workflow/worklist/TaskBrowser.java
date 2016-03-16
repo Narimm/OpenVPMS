@@ -11,21 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
-import echopointng.TableEx;
+import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
@@ -42,9 +43,14 @@ import java.util.Map;
 public class TaskBrowser extends ScheduleBrowser {
 
     /**
-     * Table cell renderer.
+     * The task colours.
      */
-    private final TaskTableCellRenderer renderer;
+    private final ScheduleColours taskColours;
+
+    /**
+     * The clinician colours.
+     */
+    private final ScheduleColours clinicianColours;
 
     /**
      * Constructs a {@link TaskBrowser}.
@@ -53,7 +59,8 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     public TaskBrowser(Context context) {
         super(new TaskQuery(context), context);
-        renderer = new TaskTableCellRenderer();
+        taskColours = new ScheduleColours(ScheduleArchetypes.TASK_TYPE);
+        clinicianColours = new ScheduleColours(UserArchetypes.USER);
     }
 
     /**
@@ -106,20 +113,9 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
         if (grid.getSchedules().size() == 1) {
-            return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext());
+            return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext(), taskColours, clinicianColours);
         }
-        return new MultiScheduleTaskTableModel((TaskGrid) grid, getContext());
-    }
-
-    /**
-     * Initialises a table.
-     *
-     * @param table the table
-     */
-    @Override
-    protected void initTable(TableEx table) {
-        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
-        table.setDefaultRenderer(renderer);
+        return new MultiScheduleTaskTableModel((TaskGrid) grid, getContext(), taskColours, clinicianColours);
     }
 
 }

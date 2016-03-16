@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -330,7 +330,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
             endMins = startMins;
         }
 
-        return new Schedule(schedule, startMins, endMins, slotSize);
+        return new Schedule(schedule, null, startMins, endMins, slotSize);
     }
 
     /**

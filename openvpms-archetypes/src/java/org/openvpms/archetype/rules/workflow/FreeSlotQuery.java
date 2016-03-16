@@ -11,18 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.functors.AllPredicate;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.Period;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,6 +69,11 @@ public class FreeSlotQuery {
      * The schedules to query.
      */
     private Entity[] schedules = {};
+
+    /**
+     * The cage type to query, or {@code null} to query all cage types.
+     */
+    private IMObjectReference cageType;
 
     /**
      * The minimum slot size, or {@code -1} if there is no minimum slot size.
@@ -127,6 +135,15 @@ public class FreeSlotQuery {
     }
 
     /**
+     * Sets the cage type to query.
+     *
+     * @param cageType the cage type, or {@code null} to query to all cage types
+     */
+    public void setCageType(Entity cageType) {
+        this.cageType = (cageType != null) ? cageType.getObjectReference() : null;
+    }
+
+    /**
      * Sets the minimum slot size.
      *
      * @param size  the size, or {@code 0} to include all slots
@@ -159,17 +176,34 @@ public class FreeSlotQuery {
     public Iterator<Slot> query() {
         if (fromDate != null && toDate != null && schedules.length > 0) {
             Predicate<Slot> predicate = getPredicate();
-            List<FreeSlotIterator> list = new ArrayList<FreeSlotIterator>();
+            List<FreeSlotIterator> list = new ArrayList<>();
             for (Entity schedule : schedules) {
-                list.add(new FreeSlotIterator(schedule, fromDate, toDate, fromTime, toTime, service));
+                if (isSelected(schedule)) {
+                    list.add(new FreeSlotIterator(schedule, fromDate, toDate, fromTime, toTime, service));
+                }
             }
             return new FreeSlotIterators(list, predicate);
         }
         return Collections.<Slot>emptyList().iterator();
     }
 
+    /**
+     * Determines if a schedule is selected.
+     *
+     * @param schedule the schedule
+     * @return {@code true} if the schedule is selected
+     */
+    private boolean isSelected(Entity schedule) {
+        boolean selected = true;
+        if (cageType != null) {
+            IMObjectBean bean = new IMObjectBean(schedule, service);
+            selected = ObjectUtils.equals(cageType, bean.getNodeTargetObjectRef("cageType"));
+        }
+        return selected;
+    }
+
     private Predicate<Slot> getPredicate() {
-        List<Predicate<Slot>> predicates = new ArrayList<Predicate<Slot>>();
+        List<Predicate<Slot>> predicates = new ArrayList<>();
         if (minSlotSize > 0) {
             predicates.add(new SlotSizePredicate());
         }

@@ -11,40 +11,31 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
-import echopointng.BalloonHelp;
-import echopointng.layout.TableLayoutDataEx;
 import echopointng.table.TableColumnEx;
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.echo.factory.BalloonHelpFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -121,18 +112,144 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     private final boolean useStrikethrough;
 
     /**
+     * The event colours.
+     */
+    private final ScheduleColours eventColours;
+
+    /**
+     * The clinician colours.
+     */
+    private final ScheduleColours clinicianColours;
+
+    /**
      * 'Use strike-through' node name.
      */
     private static final String USE_STRIKETHROUGH = "useStrikethrough";
 
     /**
-     * Constructs a {@code ScheduleTableModel}.
-     *
-     * @param grid            the schedule event grid
-     * @param context         the context
-     * @param scheduleColumns if {@code true}, display the schedules on the columns, otherwise display them on the rows
+     * Used to restore selection state.
      */
-    public ScheduleTableModel(ScheduleEventGrid grid, Context context, boolean scheduleColumns) {
+    public static class State {
+
+        /**
+         * The table schedules.
+         */
+        private final Set<IMObjectReference> schedules;
+
+        /**
+         * The selected cell. May be {@code null}
+         */
+        private final Cell selected;
+
+        /**
+         * The selected event. May be {@code null}
+         */
+        private final IMObjectReference selectedEvent;
+
+        /**
+         * The marked event. May be {@code null}
+         */
+        private final IMObjectReference markedEvent;
+
+        /**
+         * The marked schedule. May be {@code null}
+         */
+        private IMObjectReference markedSchedule;
+
+        /**
+         * Determines if the marked event is being cut.
+         */
+        private final boolean isCut;
+
+        public State(ScheduleTableModel model) {
+            schedules = State.getSchedules(model.getSchedules());
+            selected = model.getSelected();
+            selectedEvent = getEvent(model, selected);
+            Cell markedCell = model.getMarked();
+            if (markedCell != null) {
+                PropertySet event = model.getEvent(markedCell);
+                markedEvent = getEvent(event);
+                markedSchedule = getSchedule(event);
+            } else {
+                markedEvent = null;
+                markedSchedule = null;
+            }
+            isCut = model.isCut();
+        }
+
+        public Set<IMObjectReference> getSchedules() {
+            return schedules;
+        }
+
+        public Cell getSelected() {
+            return selected;
+        }
+
+        public IMObjectReference getSelectedEvent() {
+            return selectedEvent;
+        }
+
+        public IMObjectReference getMarkedEvent() {
+            return markedEvent;
+        }
+
+        public IMObjectReference getMarkedSchedule() {
+            return markedSchedule;
+        }
+
+        public boolean isCut() {
+            return isCut;
+        }
+
+        public static Set<IMObjectReference> getSchedules(List<Schedule> schedules) {
+            Set<IMObjectReference> result = new HashSet<>();
+            for (Schedule schedule : schedules) {
+                result.add(schedule.getSchedule().getObjectReference());
+            }
+            return result;
+        }
+
+        /**
+         * Returns an event reference for an cell.
+         *
+         * @param cell the cell. May be {@code null}
+         * @return the event reference. May be {@code null}
+         */
+        private IMObjectReference getEvent(ScheduleTableModel model, Cell cell) {
+            IMObjectReference reference = null;
+            if (cell != null) {
+                PropertySet event = model.getEvent(cell);
+                reference = getEvent(event);
+            }
+            return reference;
+        }
+
+        private IMObjectReference getEvent(PropertySet event) {
+            return (event != null) ? event.getReference(ScheduleEvent.ACT_REFERENCE) : null;
+        }
+
+        /**
+         * Returns a schedule reference for an event.
+         *
+         * @param event the event. May be {@code null}
+         * @return the schedule reference. May be {@code null}
+         */
+        private IMObjectReference getSchedule(PropertySet event) {
+            return (event != null) ? event.getReference(ScheduleEvent.SCHEDULE_REFERENCE) : null;
+        }
+    }
+
+    /**
+     * Constructs a {@link ScheduleTableModel}.
+     *
+     * @param grid             the schedule event grid
+     * @param context          the context
+     * @param scheduleColumns  if {@code true}, display the schedules on the columns, otherwise display them on the rows
+     * @param eventColours     the event colours
+     * @param clinicianColours the clinician colours
+     */
+    public ScheduleTableModel(ScheduleEventGrid grid, Context context, boolean scheduleColumns,
+                              ScheduleColours eventColours, ScheduleColours clinicianColours) {
         this.grid = grid;
         this.context = context;
         this.scheduleColumns = scheduleColumns;
@@ -140,6 +257,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         expression = bean.getString("displayExpression");
         displayNotes = bean.getBoolean("displayNotes");
         useStrikethrough = bean.hasNode(USE_STRIKETHROUGH) && bean.getBoolean(USE_STRIKETHROUGH);
+        this.eventColours = eventColours;
+        this.clinicianColours = clinicianColours;
         model = createColumnModel(grid);
     }
 
@@ -168,6 +287,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
                 if (slot != -1) {
                     int row = getCellRow(slot);
                     result = new Cell(column.getModelIndex(), row);
+                    break;
                 }
             }
         } else {
@@ -177,6 +297,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
                 if (slot != -1) {
                     int column = getCellColumn(slot);
                     result = new Cell(column, row.getRow());
+                    break;
                 }
             }
         }
@@ -481,7 +602,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         return (schedule != null) ? schedule.getSchedule() : null;
     }
 
-
     /**
      * Returns the availability of the specified cell.
      *
@@ -505,6 +625,20 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
             return ScheduleEventGrid.Availability.UNAVAILABLE;
         }
         int slot = getSlot(column, row);
+        if (slot < 0) {
+            return ScheduleEventGrid.Availability.UNAVAILABLE;
+        }
+        return getAvailability(schedule, slot);
+    }
+
+    /**
+     * Returns the availability of the specified schedule slot.
+     *
+     * @param schedule the schedule
+     * @param slot     the slot
+     * @return the availability of the slot
+     */
+    public ScheduleEventGrid.Availability getAvailability(Schedule schedule, int slot) {
         return grid.getAvailability(schedule, slot);
     }
 
@@ -518,6 +652,110 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     public Date getStartTime(Schedule schedule, Cell cell) {
         int slot = getSlot(cell.getColumn(), cell.getRow());
         return grid.getStartTime(schedule, slot);
+    }
+
+    /**
+     * Returns the display expression, from the schedule view.
+     * <p>
+     * This may be used to customise the event display.
+     *
+     * @return the expression. May be {@code null}
+     */
+    public String getExpression() {
+        return expression;
+    }
+
+    /**
+     * Determines if the notes popup should be displayed.
+     *
+     * @return {@code true} if the notes popup should be displayed
+     */
+    public boolean getDisplayNotes() {
+        return displayNotes;
+    }
+
+    /**
+     * Returns a status name given its code.
+     *
+     * @param event the event
+     * @return the status name
+     */
+    public String getStatus(PropertySet event) {
+        return event.getString(ScheduleEvent.ACT_STATUS_NAME);
+    }
+
+    /**
+     * Returns the slot of a cell.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the slot
+     */
+    public int getSlot(int column, int row) {
+        return (scheduleColumns) ? row : column;
+    }
+
+    /**
+     * Returns the state of the model.
+     *
+     * @return the state of the model
+     */
+    public State getState() {
+        return new State(this);
+    }
+
+    /**
+     * Sets the state of the model.
+     *
+     * @param state the state
+     */
+    public void setState(State state) {
+        Set<IMObjectReference> schedules = State.getSchedules(getSchedules());
+        Set<IMObjectReference> newSchedules = state.getSchedules();
+        Cell newSelected = state.getSelected();
+        IMObjectReference newEvent = state.getSelectedEvent();
+        if (newSelected != null && schedules.equals(newSchedules)) {
+            if (newSelected.getColumn() < getColumnCount() && newSelected.getRow() < getRowCount()) {
+                if (newEvent != null) {
+                    PropertySet event = getEvent(newSelected);
+                    if (event == null || !ObjectUtils.equals(newEvent,
+                                                             event.getReference(ScheduleEvent.ACT_REFERENCE))) {
+                        newSelected = null;
+                    }
+                }
+            } else {
+                newSelected = null;
+            }
+        } else {
+            newSelected = null;
+        }
+        setSelected(newSelected);
+
+        IMObjectReference newMarkedEvent = state.getMarkedEvent();
+        IMObjectReference newMarkedSchedule = state.getMarkedSchedule();
+        Cell newMarked = null;
+        if (newMarkedEvent != null && newMarkedSchedule != null) {
+            newMarked = getCell(newMarkedSchedule, newMarkedEvent);
+        }
+        setMarked(newMarked, state.isCut());
+    }
+
+    /**
+     * Returns the event colours.
+     *
+     * @return the event colours
+     */
+    public ScheduleColours getEventColours() {
+        return eventColours;
+    }
+
+    /**
+     * Returns the clinician colours.
+     *
+     * @return the clinician colours
+     */
+    public ScheduleColours getClinicianColours() {
+        return clinicianColours;
     }
 
     /**
@@ -570,41 +808,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the slot of a cell.
-     *
-     * @param column the column
-     * @param row    the row
-     * @return the slot
-     */
-    protected int getSlot(int column, int row) {
-        return (scheduleColumns) ? row : column;
-    }
-
-    /**
-     * Sets the row span of a component.
-     *
-     * @param component the component
-     * @param span      the row span
-     */
-    protected void setRowSpan(Component component, int span) {
-        TableLayoutDataEx layout = new TableLayoutDataEx();
-        layout.setRowSpan(span);
-        component.setLayoutData(layout);
-    }
-
-    /**
-     * Sets the column span of a component.
-     *
-     * @param component the component
-     * @param span      the row span
-     */
-    protected void setColumnSpan(Component component, int span) {
-        TableLayoutDataEx layout = new TableLayoutDataEx();
-        layout.setColSpan(span);
-        component.setLayoutData(layout);
-    }
-
-    /**
      * Returns the cell column corresponding to a slot.
      * <p>
      * This implementation returns the slot unchanged.
@@ -629,106 +832,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the display name of the specified node.
-     *
-     * @param archetype the archetype descriptor
-     * @param name      the node name
-     * @return the display name, or {@code null} if the node doesn't exist
-     */
-    protected String getDisplayName(ArchetypeDescriptor archetype, String name) {
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-        return (descriptor != null) ? descriptor.getDisplayName() : null;
-    }
-
-    /**
-     * Evaluates the view's displayExpression expression against the supplied
-     * event. If no displayExpression is present, {@code null} is returned.
-     * <p>
-     * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
-     * a formatted string named <em>waiting</em> will be added to the set prior
-     * to evaluation of the expression. This indicates the waiting time, and
-     * is the difference between the arrival time and the current time.
-     *
-     * @param event the event
-     * @return the evaluate result. May be {@code null}
-     */
-    protected String evaluate(PropertySet event) {
-        if (!StringUtils.isEmpty(expression)) {
-            return SchedulingHelper.evaluate(expression, event);
-        }
-        return null;
-    }
-
-    /**
-     * Helper to create a multiline label with optional notes popup,
-     * if the supplied notes are non-null and {@code displayNotes} is
-     * {@code true}.
-     *
-     * @param text  the label text
-     * @param notes the notes. May be {@code null}
-     * @return a component representing the label with optional popup
-     */
-    protected Component createLabelWithNotes(String text, String notes) {
-        Label label = LabelFactory.create(true);
-        Component result;
-        if (text != null) {
-            label.setText(text);
-        }
-        if (displayNotes && notes != null) {
-            BalloonHelp help = BalloonHelpFactory.create(notes);
-            result = RowFactory.create(Styles.CELL_SPACING, label, help);
-        } else {
-            result = label;
-        }
-        return result;
-    }
-
-    /**
-     * Helper to create a multiline label with optional notes popup,
-     * if the supplied notes are non-null and {@code displayNotes} is
-     * {@code true}.
-     *
-     * @param text          the label text
-     * @param notes         the notes. May be {@code null}
-     * @param sendReminder  if {@code true}, a reminder should be sent for this appointment
-     * @param reminderSent  the date a reminder was sent. May be {@code null}
-     * @param reminderError the reminder error, if the reminder couldn't be sent. May be {@code null}
-     * @return a component representing the label with optional popup
-     */
-    protected Component createLabelWithNotes(String text, String notes, boolean sendReminder, Date reminderSent,
-                                             String reminderError) {
-        Component result = createLabelWithNotes(text, notes);
-        if (sendReminder || reminderSent != null || reminderError != null) {
-            if (!(result instanceof Row)) {
-                result = RowFactory.create(Styles.CELL_SPACING, result);
-            }
-            Label reminder = createReminderIcon(reminderSent, reminderError);
-            reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
-            result.add(reminder);
-        }
-        return result;
-    }
-
-    /**
-     * Helper to create a label indicating the reminder status of an appointment.
-     *
-     * @param reminderSent  the date a reminder was sent. May be {@code null}
-     * @param reminderError the reminder error, if the reminder couldn't be sent. May be {@code null}
-     * @return a new label
-     */
-    protected Label createReminderIcon(Date reminderSent, String reminderError) {
-        String style;
-        if (!StringUtils.isEmpty(reminderError)) {
-            style = "AppointmentReminder.error";
-        } else if (reminderSent != null) {
-            style = "AppointmentReminder.sent";
-        } else {
-            style = "AppointmentReminder.unsent";
-        }
-        return LabelFactory.create(null, style);
-    }
-
-    /**
      * Returns a column given its model index.
      *
      * @param column the column index
@@ -748,6 +851,24 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
+     * Returns all rows that a schedule appears in.
+     *
+     * @param scheduleRef the schedule reference
+     * @return the rows
+     */
+    protected List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
+        List<ScheduleRow> result = new ArrayList<>();
+        int index = 0;
+        for (Schedule schedule : grid.getSchedules()) {
+            if (schedule.getSchedule().getId() == scheduleRef.getId()) {
+                result.add(new ScheduleRow(schedule, index));
+            }
+            ++index;
+        }
+        return result;
+    }
+
+    /**
      * Returns all columns that a schedule appears in.
      *
      * @param scheduleRef the schedule reference
@@ -762,24 +883,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
                     result.add(column);
                 }
             }
-        }
-        return result;
-    }
-
-    /**
-     * Returns all rows that a schedule appears in.
-     *
-     * @param scheduleRef the schedule reference
-     * @return the rows
-     */
-    private List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
-        List<ScheduleRow> result = new ArrayList<>();
-        int index = 0;
-        for (Schedule schedule : grid.getSchedules()) {
-            if (schedule.getSchedule().getId() == scheduleRef.getId()) {
-                result.add(new ScheduleRow(schedule, index));
-            }
-            ++index;
         }
         return result;
     }

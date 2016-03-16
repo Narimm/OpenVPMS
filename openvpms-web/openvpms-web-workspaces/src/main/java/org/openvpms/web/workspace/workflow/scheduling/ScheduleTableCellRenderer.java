@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -27,23 +27,18 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.echo.colour.ColourHelper;
+import org.openvpms.web.echo.factory.BalloonHelpFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid.Availability;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import static org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid.Availability.FREE;
 import static org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
@@ -58,19 +53,29 @@ import static org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel.
 public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
-     * The schedule type archetype short name.
+     * Even row style.
      */
-    private final String scheduleTypeShortName;
+    public static final String EVEN_ROW_STYLE = "ScheduleTable.Even";
+
+    /**
+     * Odd row style.
+     */
+    public static final String ODD_ROW_STYLE = "ScheduleTable.Odd";
+
+    /**
+     * The table model.
+     */
+    private final ScheduleTableModel model;
 
     /**
      * Cache of event colours.
      */
-    private Map<IMObjectReference, String> eventColours;
+    private final ScheduleColours eventColours;
 
     /**
      * Cache of clinician colours.
      */
-    private Map<IMObjectReference, String> clinicianColours;
+    private final ScheduleColours clinicianColours;
 
     /**
      * The previous rendered row.
@@ -83,45 +88,42 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     private boolean newPrompt = false;
 
     /**
-     * Creates a new <tt>ScheduleTableCellRenderer</tt>.
+     * Constructs a {@link ScheduleTableCellRenderer}.
      *
-     * @param scheduleTypeShortName the schedule type archetype short name
+     * @param model the table model
      */
-    public ScheduleTableCellRenderer(String scheduleTypeShortName) {
-        this.scheduleTypeShortName = scheduleTypeShortName;
-        refresh();
+    public ScheduleTableCellRenderer(ScheduleTableModel model) {
+        this.model = model;
+        this.eventColours = model.getEventColours();
+        this.clinicianColours = model.getClinicianColours();
     }
 
     /**
      * Returns a component that will be displayed at the specified coordinate in
      * the table.
      *
-     * @param table  the <tt>Table</tt> for which the rendering is
-     *               occurring
-     * @param value  the value retrieved from the <tt>TableModel</tt> for the specified coordinate
+     * @param table  the {@code Table} for which the rendering is occurring
+     * @param value  the value retrieved from the {@code TableModel} for the specified coordinate
      * @param column the column index to render
      * @param row    the row index to render
      * @return a component representation  of the value.
      */
     public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
-        Component component = getComponent(table, value, column, row);
+        Component component;
+        if (value instanceof PropertySet) {
+            component = getEvent(table, (PropertySet) value, column, row);
+        } else {
+            component = getComponent(table, value, column, row);
+        }
         if (component != null) {
-            if (isCut(table, column, row)) {
+            if (isCut(column, row)) {
                 cutCell(table, component);
-            } else if (canHighlightCell(table, column, row)) {
+            } else if (canHighlightCell(column, row)) {
                 // highlight the selected cell.
                 highlightCell(component);
             }
         }
         return component;
-    }
-
-    /**
-     * Refreshes the cached data.
-     */
-    public void refresh() {
-        eventColours = getColours(scheduleTypeShortName);
-        clinicianColours = getColours(UserArchetypes.USER);
     }
 
     /**
@@ -136,17 +138,16 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return {@code true} if the cell causes selection
      */
     public boolean isSelectionCausingCell(Table table, int column, int row) {
-        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
         return model.getAvailability(column, row) != UNAVAILABLE;
     }
 
     /**
      * This method is called to determine which cells within a row can cause an
      * action to be raised on the server when clicked.
-     * <p/>
+     * <p>
      * By default if a Table has attached actionListeners then any click on any
      * cell within a row will cause the action to fire.
-     * <p/>
+     * <p>
      * This method allows this to be overrriden and only certain cells within a
      * row can cause an action event to be raise.
      *
@@ -156,24 +157,42 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return true means that the cell can cause actions while false means the cells can not cause action events.
      */
     public boolean isActionCausingCell(Table table, int column, int row) {
-        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
         return model.getAvailability(column, row) != UNAVAILABLE;
+    }
+
+    /**
+     * Returns the table model.
+     *
+     * @return the table model
+     */
+    protected ScheduleTableModel getModel() {
+        return model;
+    }
+
+    /**
+     * Returns a component representing an event.
+     *
+     * @param table  the table
+     * @param event  the event
+     * @param column the column
+     * @param row    the row
+     * @return the component
+     */
+    protected Component getEvent(Table table, PropertySet event, int column, int row) {
+        return new Label();
     }
 
     /**
      * Returns a component for a value.
      *
-     * @param table  the <tt>Table</tt> for which the rendering is
-     *               occurring
-     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     * @param table  the {@code Table} for which the rendering is occurring
+     * @param value  the value retrieved from the {@code TableModel} for the
      *               specified coordinate
      * @param column the column
      * @param row    the row
      * @return a component representation of the value. May be {@code null}
      */
     protected Component getComponent(Table table, Object value, int column, int row) {
-        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
-
         if (previousRow != row) {
             newPrompt = false;
         }
@@ -209,20 +228,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         if (component != null) {
             PropertySet event = model.getEvent(column, row);
             if (event != null) {
-                TableLayoutData layout = getEventLayoutData(event, model);
-                if (layout != null) {
-                    Color background = layout.getBackground();
-                    if (background != null) {
-                        setForegroundFromBackground(component, background);
-                    }
-                    TableHelper.mergeStyle(component, layout, true);
-                }
-                if (model.useStrikeThrough()) {
-                    String status = event.getString(ScheduleEvent.ACT_STATUS);
-                    if (ActStatus.COMPLETED.equals(status) || ActStatus.CANCELLED.equals(status)) {
-                        setStrikethroughFont(component, table);
-                    }
-                }
+                styleEvent(event, component, table);
             } else {
                 colourCell(component, column, row, model);
             }
@@ -232,21 +238,86 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     }
 
     /**
+     * Styles an event.
+     *
+     * @param event     the event
+     * @param component the component representing the event to style
+     * @param table     the table, used to determine the font style
+     */
+    protected void styleEvent(PropertySet event, Component component, Table table) {
+        TableLayoutData layout = getEventLayoutData(event, model);
+        if (layout != null) {
+            Color background = layout.getBackground();
+            if (background != null) {
+                setForegroundFromBackground(component, background);
+            }
+            TableHelper.mergeStyle(component, layout, true);
+        }
+        if (model.useStrikeThrough()) {
+            String status = event.getString(ScheduleEvent.ACT_STATUS);
+            if (ActStatus.COMPLETED.equals(status) || ActStatus.CANCELLED.equals(status)) {
+                setStrikethroughFont(component, table);
+            }
+        }
+    }
+
+    /**
+     * Evaluates the view's displayExpression expression against the supplied
+     * event. If no displayExpression is present, {@code null} is returned.
+     * <p>
+     * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
+     * a formatted string named <em>waiting</em> will be added to the set prior
+     * to evaluation of the expression. This indicates the waiting time, and
+     * is the difference between the arrival time and the current time.
+     *
+     * @param event the event
+     * @return the evaluate result. May be {@code null}
+     */
+    protected String evaluate(PropertySet event) {
+        String expression = model.getExpression();
+        if (!StringUtils.isEmpty(expression)) {
+            return SchedulingHelper.evaluate(expression, event);
+        }
+        return null;
+    }
+
+    /**
+     * Helper to create a multiline label with optional notes popup,
+     * if the supplied notes are non-null and {@code displayNotes} is
+     * {@code true}.
+     *
+     * @param text  the label text
+     * @param notes the notes. May be {@code null}
+     * @return a component representing the label with optional popup
+     */
+    protected Component createLabelWithNotes(String text, String notes) {
+        Label label = LabelFactory.create(true);
+        Component result;
+        if (text != null) {
+            label.setText(text);
+        }
+        if (model.getDisplayNotes() && notes != null) {
+            BalloonHelp help = BalloonHelpFactory.create(notes);
+            result = RowFactory.create(Styles.CELL_SPACING, label, help);
+        } else {
+            result = label;
+        }
+        return result;
+    }
+
+    /**
      * Determines if the cell can be highlighted.
      *
-     * @param table  the table
      * @param column the column
      * @param row    the row
      * @return {@code true} if the cell can be highlighted
      */
-    protected boolean canHighlightCell(Table table, int column, int row) {
-        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+    protected boolean canHighlightCell(int column, int row) {
         boolean highlight = false;
         boolean single = model.isSingleScheduleView();
         Cell cell = model.getSelected();
         if ((single && cell != null && cell.getRow() == row)
-            || (!single && model.isSelected(column, row))
-               && model.getAvailability(column, row) == Availability.BUSY) {
+            || (!single && model.isSelected(column, row)) && model.getAvailability(column, row) == Availability.BUSY) {
             highlight = true;
         }
         return highlight;
@@ -255,19 +326,17 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * Determines if a cell has been 'cut'.
      *
-     * @param table  the table
      * @param column the column
      * @param row    the row
      * @return {@code true} if the cell has been 'cut'
      */
-    protected boolean isCut(Table table, int column, int row) {
-        ScheduleTableModel model = (ScheduleTableModel) table.getModel();
+    protected boolean isCut(int column, int row) {
         return model.isCut() && model.isMarked(column, row);
     }
 
     /**
      * Highlights a cell component, used to highlight the selected cell.
-     * <p/>
+     * <p>
      * Ideally this would be done by the table, however none of the tables support cell selection.
      *
      * @param component the cell component
@@ -298,7 +367,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return a style for the row
      */
     protected String getFreeStyle(ScheduleTableModel model, int row) {
-        return (row % 2 == 0) ? "ScheduleTable.Even" : "ScheduleTable.Odd";
+        return (row % 2 == 0) ? EVEN_ROW_STYLE : ODD_ROW_STYLE;
     }
 
     /**
@@ -310,8 +379,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param model     the event model
      */
     protected void colourCell(Component component, int column, int row, ScheduleTableModel model) {
-        ScheduleEventGrid.Availability avail
-                = model.getAvailability(column, row);
+        ScheduleEventGrid.Availability avail = model.getAvailability(column, row);
         colourCell(component, avail, model, row);
     }
 
@@ -425,7 +493,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
      * Invoked to determine if the 'New' prompt should be rendered for a cell.
-     * <p/>
+     * <p>
      * Only invoked when a new prompt hasn't already been rendered for the
      * selected row, and the specified cell is empty.
      *
@@ -479,37 +547,16 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      *
      * @param set     the set to look up the reference in
      * @param key     the reference key
-     * @param colours the colours, keyed on object reference
+     * @param colours the colours
      * @return the colour, or {@code null} if none is found
      */
-    private Color getColour(PropertySet set, String key, Map<IMObjectReference, String> colours) {
-        String colour = colours.get(set.getReference(key));
-        return ColourHelper.getColor(colour);
-    }
-
-    /**
-     * Returns a map of object references and their corresponding 'colour' node
-     * values for the specified short name.
-     *
-     * @param shortName the archetype short name
-     * @return a map of the matching objects and their 'colour' node  values
-     */
-    private Map<IMObjectReference, String> getColours(String shortName) {
-        Map<IMObjectReference, String> result = new HashMap<IMObjectReference, String>();
-        ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<IMObject> iter = new IMObjectQueryIterator<IMObject>(query);
-        while (iter.hasNext()) {
-            IMObject object = iter.next();
-            IMObjectBean bean = new IMObjectBean(object);
-            result.put(object.getObjectReference(), bean.getString("colour"));
-        }
-        return result;
+    private Color getColour(PropertySet set, String key, ScheduleColours colours) {
+        return colours.getColour(set.getReference(key));
     }
 
     /**
      * Sets the font on a component to use strike-through.
-     * <p/>
+     * <p>
      * This sets the font on each nested component, to avoid font inheritance issues on Chrome.
      *
      * @param component the component
@@ -539,15 +586,15 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
      * Sets the foreground colour of a component based on a background colour.
-     * <p/>
-     * If the component is a <tt>Row</tt>, the request will be propagated to the child components.
-     * <p/>
+     * <p>
+     * If the component is a {@code Row}, the request will be propagated to the child components.
+     * <p>
      * If the component is a BalloonHelp, or a child of a row is a BalloonHelp, the foreground colour change will
      * be ignored.
-     * <p/>
-     * NOTE: this is a workaround to ensure that rows containing <tt>BalloonHelp</tt> components are rendered correctly
+     * <p>
+     * NOTE: this is a workaround to ensure that rows containing {@code BalloonHelp} components are rendered correctly
      * when the background is black.
-     * <p/>
+     * <p>
      * TODO - don't render components within the model - move all of this out to the renderer(s)
      *
      * @param component  the component

@@ -47,6 +47,8 @@
               type="java.lang.Boolean" minCardinality="0" defaultValue="false()"/>
         <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="1"
               maxCardinality="1" filter="entityLink.scheduleLocation"/>
+        <node name="cageType" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="1" filter="entityLink.scheduleCageType"/>
         <node name="views" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.viewSchedule"/>
