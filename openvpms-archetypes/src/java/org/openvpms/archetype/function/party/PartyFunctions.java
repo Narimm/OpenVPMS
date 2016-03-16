@@ -299,8 +299,8 @@ public class PartyFunctions {
      *
      * @param party the party. May be {@code null}.
      * @return a formatted billing address for the party, or an empty string
-     *         if the party is null or if the party has no corresponding
-     *         <em>contact.location</em> contact
+     * if the party is null or if the party has no corresponding
+     * <em>contact.location</em> contact
      */
     public String getBillingAddress(Party party) {
         if (party != null) {
@@ -315,7 +315,7 @@ public class PartyFunctions {
      *
      * @param act the act
      * @return a formatted billing address for a party. May be empty if the act has no customer party or the party has
-     *         no corresponding <em>contact.location</em> contact
+     * no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getBillingAddress(Act act) {
@@ -346,7 +346,7 @@ public class PartyFunctions {
      * Returns a formatted correspondence address for a party.
      *
      * @return a formatted correspondence address for a party. May be empty if
-     *         there is no corresponding <em>contact.location</em> contact
+     * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceAddress(Party party) {
@@ -361,8 +361,8 @@ public class PartyFunctions {
      * an act via an <em>participation.customer</em> participation.
      *
      * @return a formatted billing address for a party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.location</em> contact
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceAddress(Act act) {
@@ -377,8 +377,8 @@ public class PartyFunctions {
      * an act via an <em>participation.customer</em> participation.
      *
      * @return a formatted name and billing address for a party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.location</em> contact
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceNameAddress(Act act) {
@@ -393,7 +393,7 @@ public class PartyFunctions {
      *
      * @param party the customer
      * @return a formatted telephone number. party. May be empty if there is no corresponding
-     *         <em>contact.phoneNumber</em> contact.
+     * <em>contact.phoneNumber</em> contact.
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getTelephone(Party party) {
@@ -406,7 +406,7 @@ public class PartyFunctions {
      *
      * @param act the act
      * @return a formatted telephone number. party. May be empty if there is no corresponding
-     *         <em>contact.phoneNumber</em> contact.
+     * <em>contact.phoneNumber</em> contact.
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getTelephone(Act act) {
@@ -418,8 +418,8 @@ public class PartyFunctions {
      *
      * @param party the customer
      * @return a formatted telephone number. party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact
-     *         with <em>HOME</em> purpose
+     * there is no corresponding <em>contact.phoneNumber</em> contact
+     * with <em>HOME</em> purpose
      */
     public String getHomeTelephone(Party party) {
         if (party != null) {
@@ -434,8 +434,8 @@ public class PartyFunctions {
      *
      * @param act the act
      * @return a formatted telephone number for the party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.phoneNumber</em> contact with <em>HOME</em> purpose
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.phoneNumber</em> contact with <em>HOME</em> purpose
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getHomeTelephone(Act act) {
@@ -450,8 +450,8 @@ public class PartyFunctions {
      *
      * @param party the customer
      * @return a formatted telephone number for the party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact
-     *         with <em>WORK</em> purpose
+     * there is no corresponding <em>contact.phoneNumber</em> contact
+     * with <em>WORK</em> purpose
      */
     public String getWorkTelephone(Party party) {
         if (party != null) {
@@ -466,8 +466,8 @@ public class PartyFunctions {
      *
      * @param act the act
      * @return a formatted telephone number for the party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.phoneNumber</em> contact with <em>WORK</em> purpose
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.phoneNumber</em> contact with <em>WORK</em> purpose
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWorkTelephone(Act act) {
@@ -482,8 +482,8 @@ public class PartyFunctions {
      *
      * @param party the customer
      * @return a formatted telephone number for the party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact
-     *         with <em>MOBILE</em> purpose
+     * there is no corresponding <em>contact.phoneNumber</em> contact
+     * with <em>MOBILE</em> purpose
      */
     public String getMobileTelephone(Party party) {
         if (party != null) {
@@ -498,8 +498,8 @@ public class PartyFunctions {
      *
      * @param act the act
      * @return a formatted telephone number for the party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.phoneNumber</em> contact with <em>MOBILE</em> purpose
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.phoneNumber</em> contact with <em>MOBILE</em> purpose
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getMobileTelephone(Act act) {
@@ -514,7 +514,7 @@ public class PartyFunctions {
      *
      * @param context the expression context. Expected to reference a party
      * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
-     *         contact with a FAX purpose
+     * contact with a FAX purpose
      */
     public String getFaxNumber(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -531,7 +531,7 @@ public class PartyFunctions {
      * Returns a formatted fax number for a party.
      *
      * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
-     *         contact with a FAX purpose
+     * contact with a FAX purpose
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Party party) {
@@ -545,7 +545,7 @@ public class PartyFunctions {
      * Returns a formatted fax number for an act.
      *
      * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
-     *         contact with a FAX purpose
+     * contact with a FAX purpose
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Act act) {
@@ -566,7 +566,7 @@ public class PartyFunctions {
      *
      * @param context the expression context. Expected to reference a party
      * @return a formatted email address. party. May be empty if
-     *         there is no corresponding <em>contact.email</em> contact
+     * there is no corresponding <em>contact.email</em> contact
      */
     public String getEmailAddress(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -583,7 +583,7 @@ public class PartyFunctions {
      * Returns a formatted email address for a party.
      *
      * @return a formatted email address for a party. May be empty if
-     *         there is no corresponding <em>contact.email</em> contact
+     * there is no corresponding <em>contact.email</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getEmailAddress(Party party) {
@@ -597,7 +597,7 @@ public class PartyFunctions {
      * Returns a formatted email Address for an act.
      *
      * @return a formatted email Address for a party. May be empty if
-     *         there is no corresponding <em>contact.email</em> contact
+     * there is no corresponding <em>contact.email</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getEmailAddress(Act act) {
@@ -614,11 +614,22 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the website URL for a party.
+     *
+     * @param party the party. May be {@code null}
+     * @return the website URL of the party. May be empty if there is no corresponding <em>contact.website</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getWebsite(Party party) {
+        return party != null ? partyRules.getWebsite(party) : "";
+    }
+
+    /**
      * Returns a formatted contact purpose string for the Contact.
      *
      * @param context the expression context. Expected to reference a contact.
      * @return a formatted string with the contacts contact purposes,
-     *         or {@code null}
+     * or {@code null}
      */
     public String getContactPurposes(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -726,7 +737,7 @@ public class PartyFunctions {
      *
      * @param context the expression context. Expected to reference an act or patient.
      * @return the referral vet, or {@code null} if there is no patient associated with the act, the act has no start
-     *         time, or the patient isn't being referred
+     * time, or the patient isn't being referred
      */
     public Party getPatientReferralVet(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -748,7 +759,7 @@ public class PartyFunctions {
      *
      * @param act the act. May be {@code null}
      * @return the referral vet, or {@code null} if there is no patient associated with the act, the act has no start
-     *         time, or the patient isn't being referred
+     * time, or the patient isn't being referred
      */
     public Party getPatientReferralVet(Act act) {
         Party vet = null;
@@ -771,7 +782,7 @@ public class PartyFunctions {
      *
      * @param patient the patient. May be {@code null}
      * @return the referral vet, or {@code null} if there is no patient associated with the act, the act has no start
-     *         time, or the patient isn't being referred
+     * time, or the patient isn't being referred
      */
     public Party getPatientReferralVet(Party patient) {
         return (patient != null) ? patientRules.getReferralVet(patient, new Date()) : null;
@@ -839,7 +850,7 @@ public class PartyFunctions {
      * @param vet  the vet
      * @param time the time
      * @return the practice the vet is associated with or {@code null} if
-     *         the vet is not associated with any practice
+     * the vet is not associated with any practice
      */
     public Party getReferralVetPractice(Party vet, Date time) {
         return supplierRules.getReferralVetPractice(vet, time);

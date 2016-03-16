@@ -49,11 +49,12 @@ public class DefaultCollectionPropertyEditorTestCase extends AbstractCollectionP
         CollectionProperty property = getCollectionProperty(parent);
         CollectionPropertyEditor editor = createEditor(property, parent);
         String[] range = editor.getArchetypeRange();
-        assertEquals(3, range.length);
+        assertEquals(4, range.length);
         Set<String> set = new HashSet<>(Arrays.asList(range));
         assertTrue(set.contains(ContactArchetypes.LOCATION));
         assertTrue(set.contains(ContactArchetypes.PHONE));
         assertTrue(set.contains(ContactArchetypes.EMAIL));
+        assertTrue(set.contains(ContactArchetypes.WEBSITE));
     }
 
     /**
