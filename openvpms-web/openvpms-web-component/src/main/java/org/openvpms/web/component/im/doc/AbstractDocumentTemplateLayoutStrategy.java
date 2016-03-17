@@ -16,14 +16,14 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
@@ -45,7 +45,7 @@ public class AbstractDocumentTemplateLayoutStrategy extends AbstractLayoutStrate
      * Constructs an {@link AbstractDocumentTemplateLayoutStrategy}.
      */
     public AbstractDocumentTemplateLayoutStrategy() {
-
+        super();
     }
 
     /**
@@ -78,28 +78,41 @@ public class AbstractDocumentTemplateLayoutStrategy extends AbstractLayoutStrate
 
     /**
      * Returns a component representing the template document.
+     * <p/>
+     * This associates the component with the "content" property so that it can be included
+     * in the layout without further customisation.
      *
-     * @param object the template
+     * @param object     the template
+     * @param properties the properties
+     * @param context    the layout context
      * @return a component representing the template document
      */
-    protected ComponentState getContent(Entity object) {
+    protected ComponentState getContent(Entity object, PropertySet properties, LayoutContext context) {
+        ComponentState component;
         TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
-        DocumentAct act = helper.getDocumentAct(object);
-        Label component = LabelFactory.create();
-        if (act != null) {
-            component.setText(act.getFileName());
+        Participation participation = helper.getDocumentParticipation(object);
+        Property property = properties.get("content");
+        if (participation != null) {
+            component = context.getComponentFactory().create(participation, object);
+            if (component.getProperty() == null) {
+                component = new ComponentState(component.getComponent(), property, component.getFocusGroup(),
+                                               component.getDisplayName());
+            }
+        } else {
+            component = new ComponentState(LabelFactory.create(), property);
         }
-        return new ComponentState(component);
+        return component;
     }
 
     /**
      * Initialises the content component.
      *
-     * @param object the template
-     * @return the content component
+     * @param object     the template
+     * @param properties the properties
+     * @param context    the layout context  @return the content component
      */
-    protected ComponentState initContent(Entity object) {
-        setContent(getContent(object));
+    protected ComponentState initContent(Entity object, PropertySet properties, LayoutContext context) {
+        setContent(getContent(object, properties, context));
         return content;
     }
 

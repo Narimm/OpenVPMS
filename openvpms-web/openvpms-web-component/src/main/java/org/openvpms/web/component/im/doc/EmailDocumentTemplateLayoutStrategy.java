@@ -64,10 +64,10 @@ public class EmailDocumentTemplateLayoutStrategy extends AbstractDocumentTemplat
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectBean bean = new IMObjectBean(object);
-        if ("DOCUMENT".equals(bean.getString("contentType"))) {
+        if (EmailDocumentTemplateEditor.DOCUMENT_CONTENT.equals(bean.getString("contentType"))) {
             ComponentState content = getContent();
             if (content == null) {
-                content = initContent((Entity) object);
+                content = initContent((Entity) object, properties, context);
             }
             addComponent(content);
             // NOTE: this replaces the default "content" node. The pseudo node for the

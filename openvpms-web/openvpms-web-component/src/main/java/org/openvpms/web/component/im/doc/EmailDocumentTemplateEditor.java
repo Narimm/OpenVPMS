@@ -47,7 +47,7 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
     /**
      * Document content type.
      */
-    private static final String DOCUMENT_CONTENT = "DOCUMENT";
+    protected static final String DOCUMENT_CONTENT = "DOCUMENT";
 
     /**
      * The content type node name.
@@ -138,10 +138,11 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
     private static class EmailDocumentHandler implements DocumentHandler {
 
         private static final String[] SUPPORTED_MIME_TYPES = {DocFormats.ODT_TYPE, DocFormats.DOC_TYPE,
-                                                              DocFormats.HTML_TYPE};
+                                                              DocFormats.HTML_TYPE, DocFormats.RTF_TYPE};
 
         private static final String[] SUPPORTED_EXTENSIONS = {DocFormats.ODT_EXT, DocFormats.DOC_EXT,
-                                                              DocFormats.HTML_EXT, DocFormats.JRXML_EXT};
+                                                              DocFormats.HTML_EXT, DocFormats.JRXML_EXT,
+                                                              DocFormats.RTF_EXT};
 
         private final DefaultDocumentHandler handler;
         private final JRXMLDocumentHandler jrxmlHandler;
@@ -151,6 +152,7 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
             handler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT, service);
             jrxmlHandler = new JRXMLDocumentHandler(service);
         }
+
         /**
          * Determines if this handler supports a document.
          *
@@ -248,7 +250,7 @@ public class EmailDocumentTemplateEditor extends AbstractDocumentTemplateEditor 
         }
 
         private boolean isSupportedMimeType(String mimeType) {
-            for (String type: SUPPORTED_MIME_TYPES) {
+            for (String type : SUPPORTED_MIME_TYPES) {
                 if (type.equalsIgnoreCase(mimeType)) {
                     return true;
                 }

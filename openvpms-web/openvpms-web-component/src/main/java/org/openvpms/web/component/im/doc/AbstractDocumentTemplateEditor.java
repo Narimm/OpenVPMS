@@ -157,8 +157,8 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
                 act = createDocumentAct();
                 ActBean bean = new ActBean(act);
                 bean.addNodeParticipation("template", (Entity) getObject());
-            } else {
-                refMgr.add(act.getObjectReference());
+            } else if (act.getDocument() != null){
+                refMgr.add(act.getDocument());
             }
         }
         return act;
