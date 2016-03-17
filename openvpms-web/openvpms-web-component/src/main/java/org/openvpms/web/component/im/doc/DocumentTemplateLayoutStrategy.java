@@ -84,7 +84,7 @@ public class DocumentTemplateLayoutStrategy extends AbstractDocumentTemplateLayo
         }
         addComponent(new ComponentState(RowFactory.create(textArea), sms));
         if (getContent() == null) {
-            initContent((Entity) object);
+            initContent((Entity) object, properties, context);
         }
         return super.apply(object, properties, parent, context);
     }

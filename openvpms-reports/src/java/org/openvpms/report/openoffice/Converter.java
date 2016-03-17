@@ -44,7 +44,8 @@ public class Converter {
      */
     private static final String[][] MIME_MAP = {{DocFormats.ODT_TYPE, DocFormats.PDF_TYPE},
                                                 {DocFormats.DOC_TYPE, DocFormats.PDF_TYPE},
-                                                {DocFormats.DOCX_TYPE, DocFormats.PDF_TYPE}};
+                                                {DocFormats.DOCX_TYPE, DocFormats.PDF_TYPE},
+                                                {DocFormats.RTF_TYPE, DocFormats.HTML_TYPE}};
 
     /**
      * Supported conversions on extension -> target mime type.
@@ -54,7 +55,8 @@ public class Converter {
                                                {DocFormats.DOCX_EXT, DocFormats.PDF_TYPE},
                                                {DocFormats.ODT_EXT, DocFormats.HTML_TYPE},
                                                {DocFormats.DOC_EXT, DocFormats.HTML_TYPE},
-                                               {DocFormats.DOCX_EXT, DocFormats.HTML_TYPE}};
+                                               {DocFormats.DOCX_EXT, DocFormats.HTML_TYPE},
+                                               {DocFormats.RTF_EXT, DocFormats.HTML_TYPE}};
 
     /**
      * Constructs a {@link Converter}.
