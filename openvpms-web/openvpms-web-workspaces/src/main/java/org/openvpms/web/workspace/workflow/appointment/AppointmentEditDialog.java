@@ -140,7 +140,7 @@ public class AppointmentEditDialog extends EditDialog {
         final AppointmentActEditor editor = getEditor();
         boolean result = false;
         if (editor.isValid()) {
-            List<Times> times = editor.getSeries().getAppointmentTimes();
+            List<Times> times = editor.getAppointmentTimes();
             if (times != null) {
                 AppointmentService rules = ServiceHelper.getBean(AppointmentService.class);
                 Entity schedule = editor.getSchedule();
