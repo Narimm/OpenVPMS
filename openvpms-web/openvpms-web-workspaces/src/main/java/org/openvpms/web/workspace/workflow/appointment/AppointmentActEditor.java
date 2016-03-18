@@ -25,6 +25,7 @@ import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -72,6 +73,7 @@ import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -316,6 +318,23 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     public IMObjectEditor newInstance() {
         boolean editSeries = seriesEditor != null;
         return new AppointmentActEditor(reload(getObject()), getParent(), editSeries, getLayoutContext());
+    }
+
+    /**
+     * Calculates the series.
+     * <p/>
+     * If only a single appointment is being edited, this returns the appointment time.
+     *
+     * @return the series, or {@code null} if the appointments overlap
+     */
+    public List<Times> getAppointmentTimes() {
+        List<Times> result;
+        if (seriesEditor != null) {
+            result = series.getAppointmentTimes();
+        } else {
+            result = Collections.singletonList(Times.create(getObject()));
+        }
+        return result;
     }
 
     /**
