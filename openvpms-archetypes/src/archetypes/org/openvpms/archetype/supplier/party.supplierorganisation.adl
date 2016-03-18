@@ -62,5 +62,8 @@
         <node name="stockLocations" path="/entityRelationships"
               type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.supplierStockLocation*"/>
+        <node name="locations" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="*"
+              filter="entityLink.supplierLocation*"/>
     </archetype>
 </archetypes>
