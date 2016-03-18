@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -168,6 +169,30 @@ public class SupplierRulesTestCase extends AbstractSupplierTest {
         EntityRelationship supplierStockLocation = addSupplierStockLocationESCI(supplier, stockLocation);
 
         assertEquals(supplierStockLocation, rules.getSupplierStockLocation(supplier, stockLocation));
+    }
+
+    /**
+     * Tests the {@link SupplierRules#getAccountId(long, Party)} and {@link SupplierRules#getAccountId(Party, Party)}
+     * methods.
+     */
+    @Test
+    public void testGetAccountId() {
+        Party supplier = getSupplier();
+        Party location = getPracticeLocation();
+
+        assertNull(rules.getAccountId(supplier.getId(), location));
+        assertNull(rules.getAccountId(supplier, location));
+        assertNull(rules.getAccountId(-1, location));  // non existent supplier
+
+        IMObjectBean supplierBean = new IMObjectBean(supplier);
+        IMObjectRelationship relationship = supplierBean.addNodeTarget("locations", location);
+        IMObjectBean bean = new IMObjectBean(relationship);
+        String expected = "1234567";
+        bean.setValue("accountId", expected);
+        supplierBean.save();
+
+        assertEquals(expected, rules.getAccountId(supplier.getId(), location));
+        assertEquals(expected, rules.getAccountId(supplier, location));
     }
 
     /**
