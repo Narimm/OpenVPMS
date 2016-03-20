@@ -60,6 +60,9 @@
         <className>org.openvpms.web.workspace.reporting.ReportingException</className>
     </exclude-exception>
     <exclude-exception>
+        <className>org.openvpms.web.workspace.reporting.report.SQLReportException</className>
+    </exclude-exception>
+    <exclude-exception>
         <className>org.openvpms.web.workspace.workflow.otc.OTCException</className>
     </exclude-exception>
     <exclude-exception>
