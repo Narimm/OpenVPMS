@@ -737,7 +737,9 @@ public class MailEditor extends AbstractModifiable {
                 @Override
                 public void handleStartTag(HTML.Tag tag, MutableAttributeSet a, int pos) {
                     if (!filter(tag)) {
-                        buffer.append('<').append(tag.toString()).append('>');
+                        buffer.append('<').append(tag.toString());
+                        append(a);
+                        buffer.append('>');
                     }
                 }
 
@@ -772,9 +774,15 @@ public class MailEditor extends AbstractModifiable {
                     Enumeration<?> names = a.getAttributeNames();
                     if (names.hasMoreElements()) {
                         buffer.append(' ');
+                        boolean first = true;
                         while (names.hasMoreElements()) {
-                            String name = names.nextElement().toString();
-                            buffer.append(name).append('=').append(a.getAttribute(name));
+                            if (!first) {
+                                buffer.append(' ');
+                            } else {
+                                first = false;
+                            }
+                            Object element = names.nextElement();
+                            buffer.append(element).append('=').append(a.getAttribute(element));
                         }
                     }
                 }
