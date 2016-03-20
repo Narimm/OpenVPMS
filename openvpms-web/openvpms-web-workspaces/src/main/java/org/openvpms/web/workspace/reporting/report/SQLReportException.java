@@ -46,7 +46,7 @@ public class SQLReportException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages MESSAGES
-            = Messages.getMessages("org.openvpms.web.workspace.reporting.report" + OpenVPMSException.ERRMESSAGES_FILE);
+            = Messages.getMessages("org.openvpms.web.workspace.reporting.report." + OpenVPMSException.ERRMESSAGES_FILE);
 
 
     /**
