@@ -57,6 +57,13 @@ public interface EditorQueue {
     void queue(Runnable runnable);
 
     /**
+     * Returns the current popup dialog.
+     *
+     * @return the current popup dialog. May be {@code null}
+     */
+    PopupDialog getCurrent();
+
+    /**
      * Determines if editing is complete.
      *
      * @return {@code true} if there are no more editors

@@ -69,5 +69,7 @@
               maxCardinality="1" readOnly="true"/>
         <node name="reminderError" path="/details/reminderError" type="java.lang.String" minCardinality="0"
               maxCardinality="1" maxLength="5000" readOnly="true"/>
+        <node name="event" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
+              hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.appointmentClinicalEvent"/>
     </archetype>
 </archetypes>

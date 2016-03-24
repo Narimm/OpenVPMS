@@ -99,7 +99,7 @@ public class TaskActEditorTestCase extends AbstractAppTest {
         TaskActEditor editor = createEditor();
         editor.getComponent();
 
-        Date start = new Date();
+        Date start = DateRules.getToday();
         editor.setStartTime(start);
         Date end = DateRules.getDate(start, -1, DateUnits.MINUTES);
         editor.setEndTime(end);

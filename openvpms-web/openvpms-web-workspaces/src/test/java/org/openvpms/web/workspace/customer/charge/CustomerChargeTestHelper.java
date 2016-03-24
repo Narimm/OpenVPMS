@@ -66,18 +66,17 @@ public class CustomerChargeTestHelper {
      * @param patient  the patient
      * @param product  the product
      * @param quantity the quantity. If {@code null}, indicates the quantity won't be changed
-     * @param mgr      the popup editor manager
+     * @param queue    the popup editor manager
      * @return the editor for the new item
      */
     public static CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient,
-                                                      Product product, BigDecimal quantity,
-                                                      ChargeEditorQueue mgr) {
+                                                      Product product, BigDecimal quantity, EditorQueue queue) {
         CustomerChargeActItemEditor itemEditor = editor.addItem();
         itemEditor.getComponent();
         assertTrue(editor.isValid());
         assertFalse(itemEditor.isValid());
 
-        setItem(editor, itemEditor, patient, product, quantity, mgr);
+        setItem(editor, itemEditor, patient, product, quantity, queue);
         return itemEditor;
     }
 
@@ -89,10 +88,10 @@ public class CustomerChargeTestHelper {
      * @param patient    the patient
      * @param product    the product
      * @param quantity   the quantity. If {@code null}, indicates the quantity won't be changed
-     * @param mgr        the popup editor manager
+     * @param queue      the popup editor manager
      */
     public static void setItem(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                               Party patient, Product product, BigDecimal quantity, ChargeEditorQueue mgr) {
+                               Party patient, Product product, BigDecimal quantity, EditorQueue queue) {
         if (itemEditor.getProperty("patient") != null) {
             itemEditor.setPatient(patient);
         }
@@ -102,12 +101,12 @@ public class CustomerChargeTestHelper {
         }
         if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
             if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-                checkSavePopups(editor, itemEditor, product, mgr);
+                checkSavePopups(editor, itemEditor, product, queue);
             } else {
                 EntityBean bean = new EntityBean(product);
                 List<Entity> includes = bean.getNodeTargetEntities("includes");
                 for (Entity include : includes) {
-                    checkSavePopups(editor, itemEditor, (Product) include, mgr);
+                    checkSavePopups(editor, itemEditor, (Product) include, queue);
                 }
             }
         }
@@ -120,41 +119,41 @@ public class CustomerChargeTestHelper {
     }
 
     private static void checkSavePopups(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                                        Product product, ChargeEditorQueue mgr) {
+                                        Product product, EditorQueue queue) {
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             // invoice items have a dispensing node
             assertFalse(itemEditor.isValid());  // not valid while popup is displayed
 
-            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION, true);
+            checkSavePopup(queue, PatientArchetypes.PATIENT_MEDICATION, true);
             // save the popup editor - should be a medication
         }
 
         EntityBean bean = new EntityBean(product);
         for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
+            checkSavePopup(queue, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
         }
         for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, ReminderArchetypes.REMINDER, false);
+            checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
         }
     }
 
     /**
      * Saves the current popup editor.
      *
-     * @param mgr          the popup editor manager
+     * @param queue        the popup editor manager
      * @param shortName    the expected archetype short name of the object being edited
      * @param prescription if {@code true} process prescription prompts
      */
-    public static void checkSavePopup(ChargeEditorQueue mgr, String shortName, boolean prescription) {
+    public static void checkSavePopup(EditorQueue queue, String shortName, boolean prescription) {
         if (prescription) {
-            PopupDialog dialog = mgr.getCurrent();
+            PopupDialog dialog = queue.getCurrent();
             if (dialog instanceof ConfirmationDialog) {
                 fireDialogButton(dialog, PopupDialog.OK_ID);
             }
         }
-        PopupDialog dialog = mgr.getCurrent();
+        PopupDialog dialog = queue.getCurrent();
         assertTrue(dialog instanceof EditDialog);
         IMObjectEditor editor = ((EditDialog) dialog).getEditor();
         assertTrue(TypeHelper.isA(editor.getObject(), shortName));

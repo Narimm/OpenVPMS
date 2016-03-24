@@ -11,33 +11,42 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
-    <archetype name="entityLink.scheduleCageType.1.0" latest="true"
+    <archetype name="entityLink.cageFirstPetProductDay.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
-               displayName="Schedule Cage Type">
+               displayName="First Pet Product - Day">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Schedule Cage Type'"/>
+              derivedValue="'First Pet Product - Day'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
-        <node name="source" displayName="Schedule" path="/source"
-              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="party.organisationSchedule"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
-        <node name="target" displayName="Cage Type" path="/target"
+        <node name="source" displayName="Cage" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName" value="entity.cageType"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="target" displayName="Product" path="/target"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="product.medication"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="product.merchandise"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="product.service"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="product.template"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
+import org.openvpms.web.workspace.customer.charge.EditorQueue;
 import org.openvpms.web.workspace.workflow.DelegatingEditorQueue;
 import org.openvpms.web.workspace.workflow.EditorQueueHandle;
 
@@ -34,7 +34,7 @@ import org.openvpms.web.workspace.workflow.EditorQueueHandle;
  */
 class TestOTCChargeEditor extends OTCChargeEditor implements EditorQueueHandle {
 
-    private final ChargeEditorQueue queue;
+    private final EditorQueue queue;
 
     /**
      * Constructs a {@link TestOTCChargeEditor}.
@@ -44,7 +44,7 @@ class TestOTCChargeEditor extends OTCChargeEditor implements EditorQueueHandle {
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public TestOTCChargeEditor(ChargeEditorQueue queue, FinancialAct act, IMObject parent, LayoutContext context) {
+    public TestOTCChargeEditor(EditorQueue queue, FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context, false);
         this.queue = queue;
     }
@@ -55,7 +55,7 @@ class TestOTCChargeEditor extends OTCChargeEditor implements EditorQueueHandle {
      * @return the popup dialog manager
      */
     @Override
-    public ChargeEditorQueue getQueue() {
+    public EditorQueue getQueue() {
         return queue;
     }
 

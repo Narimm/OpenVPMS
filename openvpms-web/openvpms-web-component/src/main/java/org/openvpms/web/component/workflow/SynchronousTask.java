@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
@@ -24,8 +22,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 /**
  * Task that executes synchronously.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class SynchronousTask extends AbstractTask {
 
@@ -48,6 +45,7 @@ public abstract class SynchronousTask extends AbstractTask {
     /**
      * Executes the task.
      *
+     * @param context the task context
      * @throws OpenVPMSException for any error
      */
     public abstract void execute(TaskContext context);

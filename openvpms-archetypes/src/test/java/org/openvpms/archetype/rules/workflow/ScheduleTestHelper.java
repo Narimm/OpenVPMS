@@ -20,6 +20,7 @@ import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -149,6 +151,23 @@ public class ScheduleTestHelper extends TestHelper {
             addAppointmentType(schedule, appointmentType, noSlots, true);
         }
         bean.addNodeTarget("location", location);
+        bean.save();
+        return schedule;
+    }
+
+    /**
+     * Creates a boarding schedule.
+     *
+     * @param location the practice location
+     * @param cageType the cage type
+     * @return a new schedule
+     */
+    public static Party createSchedule(Party location, Entity cageType) {
+        Party schedule = (Party) create(ScheduleArchetypes.ORGANISATION_SCHEDULE);
+        IMObjectBean bean = new IMObjectBean(schedule);
+        bean.setValue("name", "XSchedule");
+        bean.addNodeTarget("location", location);
+        bean.addNodeTarget("cageType", cageType);
         bean.save();
         return schedule;
     }
@@ -447,8 +466,35 @@ public class ScheduleTestHelper extends TestHelper {
      * @return a new cage type
      */
     public static Entity createCageType(String name) {
+        Product product = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
+        return createCageType(name, product, null, null, null);
+    }
+
+    /**
+     * Creates a new cage type.
+     *
+     * @param name                  the cage type name
+     * @param firstPetProductDay    the first pet product, day rate
+     * @param firstPetProductNight  the first pet product, overnight rate. May be {@code null}
+     * @param secondPetProductDay   the second pet product, day rate
+     * @param secondPetProductNight the second pet product, overnight rate. May be {@code null}
+     * @return a new cage type
+     */
+    public static Entity createCageType(String name, Product firstPetProductDay, Product firstPetProductNight,
+                                        Product secondPetProductDay, Product secondPetProductNight) {
         Entity entity = (Entity) create(ScheduleArchetypes.CAGE_TYPE);
         entity.setName(name);
+        IMObjectBean bean = new IMObjectBean(entity);
+        bean.addNodeTarget("firstPetProductDay", firstPetProductDay);
+        if (firstPetProductNight != null) {
+            bean.addNodeTarget("firstPetProductNight", firstPetProductNight);
+        }
+        if (secondPetProductDay != null) {
+            bean.addNodeTarget("secondPetProductDay", secondPetProductDay);
+        }
+        if (secondPetProductNight != null) {
+            bean.addNodeTarget("secondPetProductNight", secondPetProductNight);
+        }
         save(entity);
         return entity;
     }

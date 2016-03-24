@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.patient;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -67,29 +68,39 @@ public class PatientHistoryChanges {
     private final IArchetypeService service;
 
     /**
+     * Appointment rules.
+     */
+    private final AppointmentRules rules;
+
+    /**
      * The events, keyed on reference.
      */
-    private Map<IMObjectReference, Act> events = new HashMap<>();
+    private final Map<IMObjectReference, Act> events = new HashMap<>();
+
+    /**
+     * Determines if events are linked to boarding appointments.
+     */
+    private final Map<IMObjectReference, Boolean> boarding = new HashMap<>();
 
     /**
      * The events for a patient, keyed on reference.
      */
-    private Map<IMObjectReference, List<Act>> eventsByPatient = new HashMap<>();
+    private final Map<IMObjectReference, List<Act>> eventsByPatient = new HashMap<>();
 
     /**
      * The acts to save.
      */
-    private Map<IMObjectReference, Act> toSave = new HashMap<>();
+    private final Map<IMObjectReference, Act> toSave = new HashMap<>();
 
     /**
      * Used to determine if an event was new, prior to {@link #save()} being invoked.
      */
-    private Set<IMObjectReference> newEvents = new HashSet<>();
+    private final Set<IMObjectReference> newEvents = new HashSet<>();
 
     /**
      * The objects to remove.
      */
-    private Set<IMObject> toRemove = new HashSet<>();
+    private final Set<IMObject> toRemove = new HashSet<>();
 
     /**
      * Constructs a {@link PatientHistoryChanges}.
@@ -102,6 +113,7 @@ public class PatientHistoryChanges {
         this.author = author;
         this.location = location;
         this.service = service;
+        this.rules = new AppointmentRules(service);
     }
 
     /**
@@ -387,6 +399,23 @@ public class PatientHistoryChanges {
         return result;
     }
 
+    /**
+     * Determines if an event is for boarding.
+     *
+     * @param act the event
+     * @return {@code true} if the event is used for boarding
+     */
+    public boolean isBoarding(Act act) {
+        IMObjectReference reference = act.getObjectReference();
+        Boolean result = boarding.get(reference);
+        if (result == null) {
+            ActBean bean = new ActBean(act, service);
+            Act appointment = (Act) bean.getNodeSourceObject("appointment");
+            result = appointment != null && rules.isBoardingAppointment(appointment);
+            boarding.put(reference, result);
+        }
+        return result;
+    }
 
     /**
      * Sorts events on ascending start time.

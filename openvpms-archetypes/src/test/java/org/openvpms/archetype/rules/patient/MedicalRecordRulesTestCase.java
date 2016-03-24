@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -35,6 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -69,6 +71,16 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * The rules.
      */
     private MedicalRecordRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        clinician = TestHelper.createClinician();
+        patient = TestHelper.createPatient();
+        rules = new MedicalRecordRules(getArchetypeService());
+    }
 
     /**
      * Verifies that deletion of an <em>act.patientClinicalProblem</em>
@@ -557,9 +569,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act event3 = createEvent(eventDate3);
         save(event3);
 
-        rules.addToHistoricalEvents(Arrays.asList(med1), eventDate1);
-        rules.addToHistoricalEvents(Arrays.asList(med2), eventDate2);
-        rules.addToHistoricalEvents(Arrays.asList(med3), eventDate3);
+        rules.addToHistoricalEvents(Collections.singletonList(med1), eventDate1);
+        rules.addToHistoricalEvents(Collections.singletonList(med2), eventDate2);
+        rules.addToHistoricalEvents(Collections.singletonList(med3), eventDate3);
 
         event1 = rules.getEvent(patient, eventDate1);
         checkContains(event1, med1);
@@ -599,10 +611,22 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         // over a week after event2, a new event should be created
         checkGetEventForAddition(null, getDatetime("2013-11-29 00:00:00"));
+
+        // now make event2 a boarding event. It should now be returned
+        Party customer = TestHelper.createCustomer();
+        Entity cageType = ScheduleTestHelper.createCageType("Z Cage Type");
+        Entity schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation(), cageType);
+        Act appointment = ScheduleTestHelper.createAppointment(getDatetime("2013-11-21 11:50:00"),
+                                                               getDatetime("2013-11-30 17:00:00"),
+                                                               schedule, customer, patient);
+        ActBean bean = new ActBean(appointment);
+        bean.addNodeRelationship("event", event2);
+        save(appointment, event2);
+        checkGetEventForAddition(event2, getDatetime("2013-11-29 00:00:00"));
     }
 
     /**
-     * Tests the {@link MedicalRecordRules#getEvent(IMObjectReference)}
+     * Tests the {@link MedicalRecordRules#getEventForAddition} method.
      */
     @Test
     public void testGetEventWithCompletedEventWithNoEndDate() {
@@ -630,6 +654,19 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         // over a week after event2, a new event should be created
         checkGetEventForAddition(null, getDatetime("2013-11-29 13:00:00"));
+
+        // now make event2 a boarding event. It should now be returned
+        Party customer = TestHelper.createCustomer();
+        Entity cageType = ScheduleTestHelper.createCageType("Z Cage Type");
+        Entity schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation(), cageType);
+        Act appointment = ScheduleTestHelper.createAppointment(getDatetime("2013-11-21 11:50:00"),
+                                                               getDatetime("2013-11-30 17:00:00"),
+                                                               schedule, customer, patient);
+        ActBean bean = new ActBean(appointment);
+        bean.addNodeRelationship("event", event2);
+        save(appointment, event2);
+
+        checkGetEventForAddition(event2, getDatetime("2013-11-29 13:00:00"));
     }
 
     /**
@@ -644,16 +681,6 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         assertTrue(rules.isAllergy(act));
         bean.setValue("alertType", "AGGRESSION");
         assertFalse(rules.isAllergy(act));
-    }
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        clinician = TestHelper.createClinician();
-        patient = TestHelper.createPatient();
-        rules = new MedicalRecordRules(getArchetypeService());
     }
 
     /**

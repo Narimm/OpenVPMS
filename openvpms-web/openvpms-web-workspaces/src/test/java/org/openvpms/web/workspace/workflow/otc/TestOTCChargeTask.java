@@ -18,11 +18,13 @@ package org.openvpms.web.workspace.workflow.otc;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
+import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
+import org.openvpms.web.workspace.customer.charge.EditorQueue;
 import org.openvpms.web.workspace.workflow.EditorQueueHandle;
 
 /**
@@ -35,7 +37,7 @@ class TestOTCChargeTask extends OTCChargeTask implements EditorQueueHandle {
     /**
      * The popup dialog manager.
      */
-    private ChargeEditorQueue queue = new ChargeEditorQueue();
+    private EditorQueue queue = new DefaultEditorQueue(new LocalContext());
 
 
     /**
@@ -44,7 +46,7 @@ class TestOTCChargeTask extends OTCChargeTask implements EditorQueueHandle {
      * @return the popup dialog manager
      */
     @Override
-    public ChargeEditorQueue getQueue() {
+    public EditorQueue getQueue() {
         return queue;
     }
 

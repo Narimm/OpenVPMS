@@ -218,7 +218,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -253,7 +253,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertTrue(editor.isValid());
 
             BigDecimal quantity = ONE;
-            ChargeEditorQueue queue = editor.getQueue();
+            EditorQueue queue = editor.getQueue();
             CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, queue);
             CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, queue);
             CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, queue);
@@ -303,7 +303,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
             TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-            ChargeEditorQueue queue = editor.getQueue();
+            EditorQueue queue = editor.getQueue();
             editor.getComponent();
             assertTrue(editor.isValid());
 
@@ -357,7 +357,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
             TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-            ChargeEditorQueue queue = editor.getQueue();
+            EditorQueue queue = editor.getQueue();
             editor.getComponent();
 
             BigDecimal quantity = ONE;
@@ -471,7 +471,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Entity template3 = addTemplate(product3);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -674,7 +674,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -696,7 +696,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -752,7 +752,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -788,7 +788,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -846,7 +846,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -881,7 +881,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -919,7 +919,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -985,7 +985,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1018,7 +1018,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1048,7 +1048,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1083,7 +1083,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1144,7 +1144,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(shortName);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
 
         editor.getComponent();
         assertTrue(editor.isValid());
@@ -1178,7 +1178,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1216,7 +1216,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1305,7 +1305,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         initStock(product2, stockLocation, product2Stock);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 

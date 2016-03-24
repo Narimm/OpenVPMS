@@ -53,28 +53,12 @@
             </assertion>
         </node>
         <node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet"
-              baseName="SourceActRelationship"
-              minCardinality="0" maxCardinality="*" filter="actRelationship.patientClinicalEventItem">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="actRelationship.patientClinicalEventItem"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.patientClinicalEventItem"/>
         <node displayName="Charges" name="chargeItems" path="/sourceActRelationships" type="java.util.HashSet"
-              baseName="SourceActRelationship"
-              minCardinality="0" maxCardinality="*" hidden="true"
-              filter="actRelationship.patientClinicalEventChargeItem">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="actRelationship.patientClinicalEventChargeItem"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              baseName="SourceActRelationship" minCardinality="0" maxCardinality="*" hidden="true"
+              filter="actRelationship.patientClinicalEventChargeItem"/>
+        <node name="appointment" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.appointmentClinicalEvent"/>
     </archetype>
 </archetypes>
