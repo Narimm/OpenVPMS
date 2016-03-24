@@ -94,12 +94,12 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param patient  the patient
      * @param product  the product
      * @param quantity the quantity. If {@code null}, indicates the quantity won't be changed
-     * @param mgr      the popup editor manager
+     * @param queue    the popup editor manager
      * @return the editor for the new item
      */
     protected CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient, Product product,
-                                                  BigDecimal quantity, ChargeEditorQueue mgr) {
-        return CustomerChargeTestHelper.addItem(editor, patient, product, quantity, mgr);
+                                                  BigDecimal quantity, EditorQueue queue) {
+        return CustomerChargeTestHelper.addItem(editor, patient, product, quantity, queue);
     }
 
     /**
@@ -110,11 +110,11 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param patient    the patient
      * @param product    the product
      * @param quantity   the quantity
-     * @param mgr        the popup editor manager
+     * @param queue      the popup editor manager
      */
     protected void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                           Party patient, Product product, BigDecimal quantity, ChargeEditorQueue mgr) {
-        CustomerChargeTestHelper.setItem(editor, itemEditor, patient, product, quantity, mgr);
+                           Party patient, Product product, BigDecimal quantity, EditorQueue queue) {
+        CustomerChargeTestHelper.setItem(editor, itemEditor, patient, product, quantity, queue);
     }
 
     /**

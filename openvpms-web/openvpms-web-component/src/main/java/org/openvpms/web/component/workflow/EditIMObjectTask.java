@@ -86,6 +86,11 @@ public class EditIMObjectTask extends AbstractTask {
     private boolean showEditorOnError = true;
 
     /**
+     * The current editor.
+     */
+    private IMObjectEditor editor;
+
+    /**
      * The current edit dialog.
      */
     private EditDialog dialog;
@@ -129,17 +134,13 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new {@code EditIMObjectTask} to create and edit
-     * a new {@code IMObject}.
+     * Constructs an {@link EditIMObjectTask} to create and edit a new {@code IMObject}.
      *
      * @param shortName        the object short name
-     * @param createProperties the properties to create the object with.
-     *                         May be {@code null}
-     * @param interactive      if {@code true} create an editor and display it;
-     *                         otherwise create it but don't display it
+     * @param createProperties the properties to create the object with. May be {@code null}
+     * @param interactive      if {@code true} create an editor and display it; otherwise create it but don't display it
      */
-    public EditIMObjectTask(String shortName, TaskProperties createProperties,
-                            boolean interactive) {
+    public EditIMObjectTask(String shortName, TaskProperties createProperties, boolean interactive) {
         this.shortName = shortName;
         create = true;
         this.createProperties = createProperties;
@@ -147,7 +148,7 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new {@code EditIMObjectTask}.
+     * Constructs an {@link EditIMObjectTask}.
      *
      * @param object the object to edit
      */
@@ -156,11 +157,10 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new {@code EditIMObjectTask}.
+     * Constructs an {@link EditIMObjectTask}.
      *
      * @param object      the object to edit
-     * @param interactive if {@code true} create an editor and display it;
-     *                    otherwise create it but don't display it
+     * @param interactive if {@code true} create an editor and display it; otherwise create it but don't display it
      */
     public EditIMObjectTask(IMObject object, boolean interactive) {
         this.object = object;
@@ -190,12 +190,12 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Determines if the object should be deleted if the task is cancelled
-     * or skipped. Defaults to {@code false}.
-     * Note that no checking is performed to see if the object participates
-     * in entity relationships before being deleted. To do this,
-     * use {@link IMObjectDeleter} instead.
-     * Defaults to {@code false}
+     * Determines if the object should be deleted if the task is cancelled or skipped.
+     * <p/>
+     * Defaults to {@code false}.
+     * <p/>
+     * Note that no checking is performed to see if the object participates in entity relationships before being
+     * deleted. To do this, use {@link IMObjectDeleter} instead.
      *
      * @param delete if {@code true} delete the object on cancel or skip
      */
@@ -206,16 +206,14 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      */
     public void start(final TaskContext context) {
         if (object == null) {
             if (create) {
-                CreateIMObjectTask creator
-                        = new CreateIMObjectTask(shortName, createProperties);
+                CreateIMObjectTask creator = new CreateIMObjectTask(shortName, createProperties);
                 creator.addTaskListener(new DefaultTaskListener() {
                     public void taskEvent(TaskEvent event) {
                         switch (event.getType()) {
@@ -237,6 +235,15 @@ public class EditIMObjectTask extends AbstractTask {
         } else {
             edit(object, context);
         }
+    }
+
+    /**
+     * Returns the editor.
+     *
+     * @return the editor, or {@code null} if none exists
+     */
+    public IMObjectEditor getEditor() {
+        return editor;
     }
 
     /**
@@ -276,7 +283,7 @@ public class EditIMObjectTask extends AbstractTask {
         context = new DefaultTaskContext(context, null, help);
 
         try {
-            final IMObjectEditor editor = createEditor(object, context);
+            editor = createEditor(object, context);
             if (interactive) {
                 interactiveEdit(editor, context);
             } else {
@@ -315,7 +322,7 @@ public class EditIMObjectTask extends AbstractTask {
             public void onClose(WindowPaneEvent event) {
                 context.setCurrent(null);
                 String action = dialog.getAction();
-                dialog = null;
+                clear();
                 if (PopupDialog.OK_ID.equals(action)) {
                     onEditCompleted();
                 } else if (PopupDialog.SKIP_ID.equals(action)) {
@@ -345,6 +352,7 @@ public class EditIMObjectTask extends AbstractTask {
         editor.getComponent();
         edit(editor, context);
         if (editor.isValid() || !showEditorOnError) {
+            clear();
             if (SaveHelper.save(editor)) {
                 notifyCompleted();
             } else {
@@ -387,6 +395,7 @@ public class EditIMObjectTask extends AbstractTask {
      * Invoked when editing is complete.
      */
     protected void onEditCompleted() {
+        clear();
         notifyCompleted();
     }
 
@@ -397,6 +406,7 @@ public class EditIMObjectTask extends AbstractTask {
      * @param context the task context
      */
     protected void onEditSkipped(IMObjectEditor editor, TaskContext context) {
+        clear();
         if (deleteOnCancelOrSkip) {
             delete(editor.getObject(), context);
         }
@@ -410,10 +420,19 @@ public class EditIMObjectTask extends AbstractTask {
      * @param context the task context
      */
     protected void onEditCancelled(IMObjectEditor editor, TaskContext context) {
+        clear();
         if (deleteOnCancelOrSkip) {
             delete(editor.getObject(), context);
         }
         notifyCancelled();
+    }
+
+    /**
+     * Clears state on edit completion/cancellation.
+     */
+    private void clear() {
+        editor = null;
+        dialog = null;
     }
 
     /**

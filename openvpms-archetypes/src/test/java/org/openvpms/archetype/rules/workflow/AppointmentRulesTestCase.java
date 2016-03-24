@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -324,6 +325,80 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the  {@link AppointmentRules#isBoardingAppointment(Act)} method.
+     */
+    @Test
+    public void testIsBoardingAppointment() {
+        Date start = createTime(9, 0);
+        Date end = createTime(9, 15);
+        Entity appointmentType = createAppointmentType();
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
+        Act appointment = createAppointment(start, end, schedule);
+
+        assertFalse(rules.isBoardingAppointment(appointment));
+
+        // now add a cage type
+        Entity cageType = ScheduleTestHelper.createCageType("Z Cage Type");
+        IMObjectBean bean = new IMObjectBean(schedule);
+        bean.addNodeTarget("cageType", cageType);
+        bean.save();
+
+        assertTrue(rules.isBoardingAppointment(appointment));
+    }
+
+    /**
+     * Tests the {@link AppointmentRules#getBoardingDays(Date, Date)} method.
+     */
+    @Test
+    public void testGetBoardingDays() {
+        checkGetDays(1, "2016-03-23 10:00:00", "2016-03-23 17:00:00"); // same day
+        checkGetDays(1, "2016-03-23 10:00:00", "2016-03-24 00:00:00"); // ends at midnight, so considered the same day
+        checkGetDays(2, "2016-03-23 10:00:00", "2016-03-24 09:00:00"); // less than 24 hours
+        checkGetDays(2, "2016-03-23 10:00:00", "2016-03-24 10:00:00"); // 24 hours
+        checkGetDays(2, "2016-03-23 10:00:00", "2016-03-24 17:00:00"); // more than 24 hours
+        checkGetDays(3, "2016-03-23 10:00:00", "2016-03-25 09:00:00"); // less than 48 hours
+        checkGetDays(3, "2016-03-23 10:00:00", "2016-03-25 10:00:00"); // 48 hours
+        checkGetDays(3, "2016-03-23 10:00:00", "2016-03-25 17:00:00"); // more than 48 hours
+
+        checkGetDays(0, "2016-03-23 10:00:00", "2016-03-20 17:00:00"); // future dated being checked out now?
+    }
+
+    /**
+     * Test the {@link AppointmentRules#getEvent(Act)} method.
+     */
+    @Test
+    public void testGetEvent() {
+        Date start = createTime(9, 0);
+        Date end = createTime(9, 15);
+        Entity appointmentType = createAppointmentType();
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
+        Act appointment = createAppointment(start, end, schedule);
+
+        assertNull(rules.getEvent(appointment));
+        ActBean bean = new ActBean(appointment);
+
+        Act event = PatientTestHelper.createEvent((Party) bean.getNodeParticipant("patient"));
+        ActBean appointmentBean = new ActBean(appointment);
+        appointmentBean.addNodeTarget("event", event);
+        save(appointment, event);
+
+        assertEquals(event, rules.getEvent(appointment));
+    }
+
+    /**
+     * Verifies that {@link AppointmentRules#getBoardingDays(Date, Date)} returns the expected no. of days.
+     *
+     * @param expected the expected no. of days
+     * @param startTime the boarding start time
+     * @param endTime the boarding end time
+     */
+    private void checkGetDays(int expected, String startTime, String endTime) {
+        Date start = TestHelper.getDatetime(startTime);
+        Date end = TestHelper.getDatetime(endTime);
+        assertEquals(expected, rules.getBoardingDays(start, end));
+    }
+
+    /**
      * Helper to create an <em>act.customerAppointment</em>.
      *
      * @param startTime the act start time
@@ -331,7 +406,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @param schedule  the schedule
      * @return a new act
      */
-    protected Act createAppointment(Date startTime, Date endTime, Party schedule) {
+    private Act createAppointment(Date startTime, Date endTime, Party schedule) {
         return ScheduleTestHelper.createAppointment(startTime, endTime, schedule);
     }
 
@@ -340,7 +415,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      *
      * @return a new act
      */
-    protected Act createTask() {
+    private Act createTask() {
         Entity taskType = createTaskType();
         Party customer = TestHelper.createCustomer();
         Party workList = ScheduleTestHelper.createWorkList();
@@ -362,7 +437,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @param shortName the act short name
      * @return a new act
      */
-    protected Act createAct(String shortName) {
+    private Act createAct(String shortName) {
         return (Act) create(shortName);
     }
 
@@ -371,7 +446,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      *
      * @return a new appointment type
      */
-    protected Entity createAppointmentType() {
+    private Entity createAppointmentType() {
         return ScheduleTestHelper.createAppointmentType();
     }
 
@@ -380,7 +455,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      *
      * @return a new task type
      */
-    protected Entity createTaskType() {
+    private Entity createTaskType() {
         Entity taskType = (Entity) create(ScheduleArchetypes.TASK_TYPE);
         taskType.setName("XTaskType");
         save(taskType);
@@ -396,7 +471,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @param appointmentType the appointment type
      * @return a new schedule
      */
-    protected Party createSchedule(int slotSize, String slotUnits, int noSlots, Entity appointmentType) {
+    private Party createSchedule(int slotSize, String slotUnits, int noSlots, Entity appointmentType) {
         return ScheduleTestHelper.createSchedule(slotSize, slotUnits, noSlots, appointmentType,
                                                  TestHelper.createLocation());
     }

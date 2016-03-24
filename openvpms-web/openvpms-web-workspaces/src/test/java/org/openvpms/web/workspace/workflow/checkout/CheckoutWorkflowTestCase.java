@@ -20,11 +20,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -131,7 +133,9 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     @Test
     public void testNoFinaliseInvoice() {
-        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(), getPractice(), context);
+        Act appointment = createAppointment();
+        createEvent(appointment);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
         BigDecimal amount = workflow.addInvoice(patient, clinician, false);
         workflow.confirm(PopupDialog.NO_ID);        // skip posting the invoice. Payment is skipped
@@ -361,6 +365,14 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     private Act createAppointment() {
         return WorkflowTestHelper.createAppointment(customer, patient, clinician, context.getLocation());
+    }
+
+    private Act createEvent(Act appointment) {
+        Act event = PatientTestHelper.createEvent(patient);
+        ActBean bean = new ActBean(appointment);
+        bean.addNodeTarget("event", event);
+        save(event, appointment);
+        return event;
     }
 
 }

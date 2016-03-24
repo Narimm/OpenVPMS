@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
+import org.openvpms.web.workspace.customer.charge.EditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 
 /**
@@ -34,7 +34,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
     /**
      * The editor queue.
      */
-    private ChargeEditorQueue queue;
+    private EditorQueue queue;
 
     /**
      * Constructs a {@code TestVisitChargeEditor}.
@@ -44,7 +44,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      * @param event   the visit to edit
      * @param context the layout context
      */
-    public TestVisitChargeEditor(ChargeEditorQueue queue, FinancialAct charge, Act event, LayoutContext context) {
+    public TestVisitChargeEditor(EditorQueue queue, FinancialAct charge, Act event, LayoutContext context) {
         super(charge, event, context, false); // don't add a default item...
         this.queue = queue;
     }
@@ -65,7 +65,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      * @return the popup dialog manager
      */
     @Override
-    public ChargeEditorQueue getQueue() {
+    public EditorQueue getQueue() {
         return queue;
     }
 

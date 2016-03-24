@@ -33,9 +33,10 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper;
+import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
+import org.openvpms.web.workspace.customer.charge.EditorQueue;
 import org.openvpms.web.workspace.customer.order.PharmacyTestHelper;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.workflow.TestVisitChargeEditor;
@@ -166,7 +167,7 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
         Product product = TestHelper.createProduct();
         FinancialAct order = PharmacyTestHelper.createOrder(customer, patient, product, BigDecimal.ONE, null);
 
-        ChargeEditorQueue queue = new ChargeEditorQueue();
+        EditorQueue queue = new DefaultEditorQueue(context);
         VisitChargeCRUDWindow window = new TestVisitChargeCRUDWindow(event, queue);
         window.setObject(charge);
         window.show();
@@ -211,7 +212,7 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
     public void testAutoSave() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
-        ChargeEditorQueue queue = new ChargeEditorQueue();
+        EditorQueue queue = new DefaultEditorQueue(context);
         TestVisitChargeCRUDWindow window = new TestVisitChargeCRUDWindow(event, queue);
         window.setObject(charge);
         window.show();
@@ -322,11 +323,11 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
 
     private class TestVisitChargeCRUDWindow extends VisitChargeCRUDWindow {
 
-        private final ChargeEditorQueue queue;
+        private final EditorQueue queue;
 
         private int saves;
 
-        public TestVisitChargeCRUDWindow(Act event, ChargeEditorQueue queue) {
+        public TestVisitChargeCRUDWindow(Act event, EditorQueue queue) {
             super(event, VisitChargeCRUDWindowTestCase.this.context, new HelpContext("foo", null));
             this.queue = queue;
         }

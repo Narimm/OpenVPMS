@@ -260,7 +260,6 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
         return new PropertyException(getProperty(), message, cause);
     }
 
-
     /**
      * Zeroes any seconds (and milliseconds) from the date.
      *
@@ -271,7 +270,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
         long ms = date.getTime();
         long seconds = ms % (60 * 1000);
         if (seconds != 0) {
-            date.setTime(ms - seconds);
+            date = new Date(ms - seconds);
         }
         return date;
     }

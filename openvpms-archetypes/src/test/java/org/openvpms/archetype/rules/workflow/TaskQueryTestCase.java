@@ -119,7 +119,7 @@ public class TaskQueryTestCase extends ArchetypeServiceTest {
      * @return the timestamp with seconds and milliseconds removed
      */
     private Date getTimestamp(Date timestamp) {
-        return DateUtils.truncate(timestamp, Calendar.SECOND);
+        return DateUtils.truncate(new Date(timestamp.getTime()), Calendar.SECOND);
     }
 
 }

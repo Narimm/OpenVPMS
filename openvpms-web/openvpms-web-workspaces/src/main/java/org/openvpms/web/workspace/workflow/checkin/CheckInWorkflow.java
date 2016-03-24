@@ -176,11 +176,14 @@ public class CheckInWorkflow extends WorkflowImpl {
         HelpContext help = getHelpContext();
         initial = new DefaultTaskContext(help);
         Entity schedule = null;
+        Entity cageType = null;
         if (appointment != null) {
             initial.addObject(appointment);
             ActBean bean = new ActBean(appointment);
             schedule = bean.getNodeParticipant("schedule");
             if (schedule != null) {
+                IMObjectBean scheduleBean = new IMObjectBean(schedule);
+                cageType = (Entity) scheduleBean.getNodeTargetObject("cageType");
                 initial.addObject(schedule);
             }
         }
@@ -202,16 +205,17 @@ public class CheckInWorkflow extends WorkflowImpl {
             addTask(new UpdateIMObjectTask(PatientArchetypes.PATIENT, new TaskProperties(), true));
         }
 
+        // get the act.patientClinicalEvent.
+        TaskProperties eventProps = new TaskProperties();
+        eventProps.add("reason", reason);
+        boolean newEvent = cageType != null;  // require a new event if the schedule has a cage type
+        addTask(new GetClinicalEventTask(arrivalTime, eventProps, appointment, newEvent));
+
         boolean useWorkList = selectWorkList(schedule);
         if (useWorkList) {
             // optionally select a work list and edit a customer task
             addTask(new CustomerTaskWorkflow(arrivalTime, taskDescription, help));
         }
-
-        // get the act.patientClinicalEvent.
-        TaskProperties eventProps = new TaskProperties();
-        eventProps.add("reason", reason);
-        addTask(new GetClinicalEventTask(arrivalTime, eventProps));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask(help));
