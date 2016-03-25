@@ -229,9 +229,10 @@ public class AbstractDocumentTemplateEditor extends AbstractIMObjectEditor {
             }
             refMgr.delete();
         } else if (act != null) {
-            if (docModified || act.isNew()) {
+            if (docModified) {
                 ServiceHelper.getArchetypeService().save(act);
                 refMgr.commit();
+                docModified = false;
             }
         }
     }
