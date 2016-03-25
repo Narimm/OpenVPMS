@@ -20,10 +20,12 @@
         <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="firstPetProductDay" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="1" maxCardinality="1" filter="entityLink.cageFirstPetProductDay"/>
-        <node name="secondPetProductDay" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="1" filter="entityLink.cageSecondPetProductDay"/>
+        <node name="firstPetProductDay" displayName="First Pet Product - Day" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="1" maxCardinality="1"
+              filter="entityLink.cageFirstPetProductDay"/>
+        <node name="secondPetProductDay" displayName="Second Pet Product - Day" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.cageSecondPetProductDay"/>
         <node name="firstPetProductNight" displayName="First Pet Product - Overnight" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.cageFirstPetProductNight"/>

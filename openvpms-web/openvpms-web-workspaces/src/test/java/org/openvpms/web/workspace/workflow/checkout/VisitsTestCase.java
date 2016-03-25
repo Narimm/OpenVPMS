@@ -154,17 +154,17 @@ public class VisitsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that double bookings on the same day are but different times still attract the first and second pet
-     * rates.
+     * Verifies that double bookings on the same day but different times still attract the first and second pet rates.
+     * NOTE: visits ending at midnight are treated as having ended on the previous day.
      */
     @Test
     public void testRateDoubleBookingOnSameDayDifferentTimes() {
         Party patient3 = TestHelper.createPatient();
         Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
 
-        // create some visits all starting and ending at different times on the same day
+        // create some visits all starting and ending at different times on the same day (midnight included)
         Visit visit1 = createVisit("2016-03-24 09:00:00", "2016-03-24 15:00:00", schedule, customer, patient1);
-        Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-24 16:00:00", schedule, customer, patient2);
+        Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-25 00:00:00", schedule, customer, patient2);
         Visit visit3 = createVisit("2016-03-24 11:00:00", "2016-03-24 17:00:00", schedule, customer, patient3);
 
         // make sure rate() updates all visits. As no patient has a weight, their ids will be used to select the
@@ -201,23 +201,32 @@ public class VisitsTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that if there is a double booking for the same dates and schedule and the first appointment is
      * completed, the second booking gets charged at the second pet rate.
+     * NOTE: visits ending at midnight are treated as having ended on the previous day.
      */
     @Test
     public void testRateDoubleBookingForCompletedAppointment() {
+        Party patient3 = TestHelper.createPatient();
         Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
 
         Visit visit1 = createVisit("2016-03-24 09:00:00", "2016-03-24 15:00:00", schedule, customer, patient1);
         Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-24 16:00:00", schedule, customer, patient2);
+        Visit visit3 = createVisit("2016-03-24 10:00:00", "2016-03-25 00:00:00", schedule, customer, patient3);
         assertFalse(visit1.isCharged());
         assertFalse(visit2.isCharged());
+        assertFalse(visit3.isCharged());
 
+        visit1.setFirstPet(true);
         visit1.setCharged(true);
         visit1.save();
         visit1 = visits.create(visit1.getEvent(), visit1.getAppointment());
+        assertTrue(visit1.isFirstPet());
         assertTrue(visit1.isCharged());
 
         visits.rate(Collections.singletonList(visit2), new Date());
         assertFalse(visit2.isFirstPet());
+
+        visits.rate(Collections.singletonList(visit3), new Date());
+        assertFalse(visit3.isFirstPet());
     }
 
     /**

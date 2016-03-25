@@ -171,9 +171,9 @@ class Visits implements Iterable<Visit> {
     public void reload() {
         List<Visit> reloaded = new ArrayList<>();
         for (Visit visit : visits) {
+            boolean isFirstPet = visit.isFirstPet();
             Act event = visit.getEvent();
             Act appointment = IMObjectHelper.reload(visit.getAppointment());
-            boolean isFirstPet = visit.isFirstPet();
 
             visit = create(event, appointment);
             visit.setFirstPet(isFirstPet);
@@ -205,8 +205,7 @@ class Visits implements Iterable<Visit> {
         }
         for (Map.Entry<VisitKey, List<Visit>> entry : map.entrySet()) {
             List<Visit> incomplete = entry.getValue();
-            if (hasCharged(entry.getKey(), incomplete)) {
-                // assume the existing pet was charged at the first pet rate, so charge the rest at the second pet rate
+            if (firstPetRateCharged(entry.getKey(), incomplete)) {
                 for (Visit visit : incomplete) {
                     visit.setFirstPet(false);
                 }
@@ -256,13 +255,14 @@ class Visits implements Iterable<Visit> {
     }
 
     /**
-     * Determines if there is another appointment that has already been charged for the same dates.
+     * Determines if there is another appointment that has already been charged for the same dates at the first pet
+     * rate.
      *
      * @param key     the visit key
      * @param exclude visits to exclude from comparison
      * @return {@code true} if another appointment has been charged
      */
-    private boolean hasCharged(VisitKey key, List<Visit> exclude) {
+    private boolean firstPetRateCharged(VisitKey key, List<Visit> exclude) {
         boolean result = false;
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT);
         query.add(join("patient").add(join("entity").add(join("customers").add(eq("source", customer)))));
@@ -272,13 +272,9 @@ class Visits implements Iterable<Visit> {
         query.add(join("appointment").add(appointmentJoin));
         query.add(gte("startTime", key.start));
         query.add(Constraints.lt("startTime", DateRules.getNextDate(key.start)));
-        if (DateRules.compareTo(key.endTime, key.end) == 0) {
-            query.add(gte("endTime", DateRules.getPreviousDate(key.end)));
-            query.add(lte("endTime", key.end));
-        } else {
-            query.add(gte("endTime", key.end));
-            query.add(lte("endTime", DateRules.getNextDate(key.end)));
-        }
+        query.add(gte("endTime", key.end));
+        query.add(lte("endTime", DateRules.getNextDate(key.end)));
+        // NOTE: can end at midnight at still be treated as same day
         List<Long> ids = new ArrayList<>();
         for (Visit visit : exclude) {
             ids.add(visit.getEvent().getId());
@@ -290,9 +286,13 @@ class Visits implements Iterable<Visit> {
             Act event = iterator.next();
             ActBean bean = new ActBean(event);
             Act appointment = (Act) bean.getNodeSourceObject("appointment");
-            if (appointment != null && new ActBean(appointment).getBoolean("boardingCharged", false)) {
-                result = true;
-                break;
+            if (appointment != null) {
+                ActBean appointmentBean = new ActBean(appointment);
+                if (appointmentBean.getBoolean(Visit.BOARDING_CHARGED)
+                    && appointmentBean.getBoolean(Visit.FIRST_PET_RATE)) {
+                    result = true;
+                    break;
+                }
             }
         }
         return result;
@@ -306,13 +306,14 @@ class Visits implements Iterable<Visit> {
 
         private final Date end;
 
-        private final Date endTime;
-
         public VisitKey(IMObjectReference schedule, Date startTime, Date endTime) {
             this.schedule = schedule;
             this.start = DateRules.getDate(startTime);
-            this.end = DateRules.getDate(endTime);
-            this.endTime = endTime;
+            Date date = DateRules.getDate(endTime);
+            if (DateRules.compareTo(date, endTime) == 0) { // midnight
+                date = DateRules.getPreviousDate(date);
+            }
+            this.end = date;
         }
 
         public static VisitKey create(Visit visit, Date endTime) {
