@@ -86,7 +86,7 @@ public class IMObjectEditorSaver {
                                  ? Messages.format("imobject.save.reverted.modified", displayName)
                                  : Messages.format("imobject.save.reverted.error", displayName);
                 String title = Messages.format("imobject.save.failed", displayName);
-                ErrorHandler.getInstance().error(title, message, null, null);
+                reloaded(title, message);
             } else {
                 failed(editor, exception);
             }
@@ -130,6 +130,16 @@ public class IMObjectEditorSaver {
      */
     protected boolean reload(IMObjectEditor editor) {
         return false;
+    }
+
+    /**
+     * Invoked to display a message that saving failed, and the editor has been reverted.
+     *
+     * @param title   the message title
+     * @param message the message
+     */
+    protected void reloaded(String title, String message) {
+        ErrorHandler.getInstance().error(title, message, null, null);
     }
 
     /**

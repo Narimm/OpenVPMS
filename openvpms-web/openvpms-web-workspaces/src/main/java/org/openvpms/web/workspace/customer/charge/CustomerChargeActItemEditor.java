@@ -1092,7 +1092,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             reminder.setPatient(getPatient());
                             reminder.setProduct(product);
 
-                            // marking matching reminders completed are handled via AbstractCustomerChargeActEditor.
+                            // marking matching reminders completed are handled via CustomerChargeActEditor.
                             // Need to disable it here to avoid the rule updating other reminders in the invoice.
                             reminder.setMarkMatchingRemindersCompleted(false);
 

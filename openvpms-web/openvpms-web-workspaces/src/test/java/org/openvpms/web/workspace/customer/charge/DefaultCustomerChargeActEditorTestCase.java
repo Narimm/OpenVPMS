@@ -88,11 +88,11 @@ import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelpe
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order;
 
 /**
- * Tests the {@link CustomerChargeActEditor} class.
+ * Tests the {@link DefaultCustomerChargeActEditor} class.
  *
  * @author Tim Anderson
  */
-public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEditorTest {
+public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
      * The customer.
@@ -436,7 +436,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes an invoice and its item.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes an invoice and its item.
      * <p>
      * If any pharmacy or lab orders have been created, these are cancelled.
      */
@@ -571,7 +571,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a credit and its item.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes a credit and its item.
      */
     @Test
     public void testDeleteCredit() {
@@ -579,7 +579,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a counter sale and its item.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes a counter sale and its item.
      */
     @Test
     public void testDeleteCounterSale() {
@@ -1110,15 +1110,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Tests the {@link CustomerChargeActEditor#newInstance()} method.
+     * Tests the {@link DefaultCustomerChargeActEditor#newInstance()} method.
      */
     @Test
     public void testNewInstance() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
-        CustomerChargeActEditor editor = new CustomerChargeActEditor(charge, null, layoutContext);
+        DefaultCustomerChargeActEditor editor = new DefaultCustomerChargeActEditor(charge, null, layoutContext);
         IMObjectEditor newInstance = editor.newInstance();
-        assertTrue(newInstance instanceof CustomerChargeActEditor);
+        assertTrue(newInstance instanceof DefaultCustomerChargeActEditor);
     }
 
     /**
@@ -1202,7 +1202,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a charge and its items.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes a charge and its items.
      *
      * @param charge the charge
      */
@@ -1249,7 +1249,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param charge the charge
      */
     private void checkEmptyCharge(FinancialAct charge) {
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        DefaultCustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
         assertTrue(editor.isValid());
         editor.save();
@@ -1608,7 +1608,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param editor the editor to use
      * @return {@code true} if the delete was successful
      */
-    private boolean delete(final CustomerChargeActEditor editor) {
+    private boolean delete(final DefaultCustomerChargeActEditor editor) {
         boolean result = false;
         try {
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());

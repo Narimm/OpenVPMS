@@ -31,11 +31,11 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
- * A test {@link CustomerChargeActEditor}.
+ * A test {@link DefaultCustomerChargeActEditor}.
  *
  * @author Tim Anderson
  */
-public class TestChargeEditor extends CustomerChargeActEditor {
+public class TestChargeEditor extends DefaultCustomerChargeActEditor {
 
     /**
      * The pharmacy order service.

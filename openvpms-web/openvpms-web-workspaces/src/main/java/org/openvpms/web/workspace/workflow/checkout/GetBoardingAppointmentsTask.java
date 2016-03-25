@@ -212,6 +212,37 @@ class GetBoardingAppointmentsTask extends AbstractTask {
             AppointmentTableModel model = (AppointmentTableModel) table.getModel();
             return model.getSelected();
         }
+
+        /**
+         * Invoked when the 'OK' button is pressed. This sets the action and closes
+         * the window.
+         */
+        @Override
+        protected void onOK() {
+            if (haveSelectedFirstPetRate()) {
+                super.onOK();
+            }
+        }
+
+        /**
+         * Ensures that a pet that attracts the First Pet rate is selected. This is required as there is no
+         * reliable way of determining if a pet was charged the first or second pet rate once they are checked out.
+         *
+         * @return {@code true} if a pet is selected that attracts the first pet rate
+         */
+        private boolean haveSelectedFirstPetRate() {
+            boolean first = false;
+            for (Visit visit : getSelected()) {
+                if (visit.isFirstPet()) {
+                    first = true;
+                    break;
+                }
+            }
+            if (!first) {
+                InformationDialog.show(Messages.get("workflow.checkout.appointments.firstpetselected"));
+            }
+            return first;
+        }
     }
 
     private static class AppointmentTableModel extends AbstractIMTableModel<Visit> {
@@ -370,8 +401,8 @@ class GetBoardingAppointmentsTask extends AbstractTask {
             return from + " - " + to;
         }
 
-        private Object getDays(Visit event) {
-            return TableHelper.rightAlign(Integer.toString(event.getDays()));
+        private Object getDays(Visit visit) {
+            return TableHelper.rightAlign(Integer.toString(visit.getDays()));
         }
 
         private Object getRate(Visit visit) {
@@ -380,12 +411,12 @@ class GetBoardingAppointmentsTask extends AbstractTask {
             return Messages.get(key);
         }
 
-        private Object getLateCheckout(Visit event) {
-            return getCheckBox(event.isLateCheckout());
+        private Object getLateCheckout(Visit visit) {
+            return getCheckBox(visit.isLateCheckout());
         }
 
-        private Object getCharged(Visit event) {
-            return getCheckBox(event.isCharged());
+        private Object getCharged(Visit visit) {
+            return getCheckBox(visit.isCharged());
         }
 
         /**

@@ -42,8 +42,7 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
 import org.openvpms.web.workspace.customer.charge.EditorQueue;
 
@@ -115,7 +114,7 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
 
         EstimateInvoicer invoicer = new TestEstimateInvoicer();
 
-        CustomerChargeActEditDialog dialog = invoicer.invoice(estimation, null, context);
+        EditDialog dialog = invoicer.invoice(estimation, null, context);
         IMObjectEditor editor = dialog.getEditor();
         assertTrue(SaveHelper.save(editor));
 
@@ -168,7 +167,7 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
          * @return a new charge editor
          */
         @Override
-        protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
+        protected DefaultCustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
             final EditorQueue manager = new DefaultEditorQueue(context.getContext()) {
                 @Override
                 protected void edit(EditDialog dialog) {
@@ -176,7 +175,7 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
                     fireDialogButton(dialog, PopupDialog.OK_ID);
                 }
             };
-            return new CustomerChargeActEditor(invoice, null, context) {
+            return new DefaultCustomerChargeActEditor(invoice, null, context) {
                 @Override
                 protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
                     ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);

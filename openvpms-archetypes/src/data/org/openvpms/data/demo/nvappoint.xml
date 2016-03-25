@@ -116,7 +116,7 @@
               target="id:DBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR3"
               target="id:DBP6"/>
-        <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTR3"
+        <data collection="secondPetProductDay" archetype="entityLink.cageSecondPetProductDay" source="id:CTR3"
               target="id:DBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTR3"
               target="id:DBP8"/>
@@ -138,7 +138,7 @@
               target="id:CBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR6"
               target="id:CBP6"/>
-        <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTR6"
+        <data collection="secondPetProductDay" archetype="entityLink.cageSecondPetProductDay" source="id:CTR6"
               target="id:CBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTR6"
               target="id:CBP8"/>
@@ -161,7 +161,7 @@
               target="id:DBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB3"
               target="id:DBP6"/>
-        <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTB3"
+        <data collection="secondPetProductDay" archetype="entityLink.cageSecondPetProductDay" source="id:CTB3"
               target="id:DBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTB3"
               target="id:DBP8"/>
@@ -183,7 +183,7 @@
               target="id:CBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB6"
               target="id:CBP6"/>
-        <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTB6"
+        <data collection="secondPetProductDay" archetype="entityLink.cageSecondPetProductDay" source="id:CTB6"
               target="id:CBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTB6"
               target="id:CBP8"/>

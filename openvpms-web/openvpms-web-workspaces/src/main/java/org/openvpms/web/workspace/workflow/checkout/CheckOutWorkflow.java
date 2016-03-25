@@ -240,20 +240,10 @@ public class CheckOutWorkflow extends WorkflowImpl {
                     return new Date();
                 }
             });
+            String shortName = act.getArchetypeId().getShortName();
+            addTask(new ReloadTask(shortName));
+            addTask(new UpdateIMObjectTask(shortName, appProps));
         }
-        TaskProperties appProps = new TaskProperties();
-        appProps.add("status", ActStatus.COMPLETED);
-        if (TypeHelper.isA(act, ScheduleArchetypes.TASK)) {
-            // update the end-time of the task
-            appProps.add(new Variable("endTime") {
-                public Object getValue(TaskContext context) {
-                    return new Date();
-                }
-            });
-        }
-        String shortName = act.getArchetypeId().getShortName();
-        addTask(new ReloadTask(shortName));
-        addTask(new UpdateIMObjectTask(shortName, appProps));
 
         // add a task to update the context at the end of the workflow
         addTask(new SynchronousTask() {
@@ -497,7 +487,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Task to import flow sheet reports, if a patient has a Smart Flow Sheet hospitalisation.
+     * Task to import flow sheet reports for each Visit, if a patient has a Smart Flow Sheet hospitalisation.
      */
     private class BatchImportFlowSheetReportsTask extends Tasks {
 
@@ -538,6 +528,9 @@ public class CheckOutWorkflow extends WorkflowImpl {
         }
     }
 
+    /**
+     * Task to import flow sheet reports for a patient, if a patient has a Smart Flow Sheet hospitalisation.
+     */
     private static class ImportFlowSheetReportsTask extends AbstractTask {
 
         private final PatientContext patientContext;
@@ -653,23 +646,31 @@ public class CheckOutWorkflow extends WorkflowImpl {
             return result;
         }
 
+        /**
+         * Updates an appointment.
+         *
+         * @param first       if {@code true} this is the first time it is being updated.
+         * @param appointment the appointment
+         * @param toSave      collects objects to save
+         * @return {@code true} if the object exists, otherwise {@code false}
+         */
         private boolean updateAppointment(boolean first, Act appointment, List<Act> toSave) {
             if (!first) {
                 appointment = IMObjectHelper.reload(appointment);
             }
-            if (appointment != null) {
-                if (ActStatus.IN_PROGRESS.equals(appointment.getStatus())) {
-                    appointment.setStatus(ActStatus.COMPLETED);
-                    toSave.add(appointment);
-                }
+            if (appointment != null && !ActStatus.COMPLETED.equals(appointment.getStatus())) {
+                appointment.setStatus(ActStatus.COMPLETED);
+                toSave.add(appointment);
             }
             return appointment != null;
         }
 
         /**
-         * @param first
-         * @param event
-         * @param toSave
+         * Updates an event.
+         *
+         * @param first  if {@code true} this is the first time it is being updated.
+         * @param event  the event
+         * @param toSave collects objects to save
          * @return {@code true} if the object exists, otherwise {@code false}
          */
         protected boolean updateEvent(boolean first, Act event, List<Act> toSave) {

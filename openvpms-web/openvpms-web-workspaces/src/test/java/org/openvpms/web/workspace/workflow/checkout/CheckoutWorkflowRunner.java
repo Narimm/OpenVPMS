@@ -38,7 +38,6 @@ import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.workflow.FinancialWorkflowRunner;
 
 import java.math.BigDecimal;
@@ -243,7 +242,7 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckOutWorkflow> {
                 @Override
                 protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
                     LayoutContext layout = new DefaultLayoutContext(true, context, new HelpContext("foo", null));
-                    return new CustomerChargeActEditor((FinancialAct) object, null, layout, false);
+                    return new CheckoutChargeEditor((FinancialAct) object, getVisits(), layout, false);
                 }
             };
         }

@@ -43,7 +43,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -56,7 +56,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
+public class VisitChargeEditor extends CustomerChargeActEditor {
 
     /**
      * The event to link charge items to.

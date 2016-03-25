@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
 
@@ -83,7 +83,7 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
             return super.validate(validator) && validateRequired(validator, "sourceInvestigation", investigation);
         }
 
-        public void charge(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
+        public void charge(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
             if (!isOrder()) {
                 PatientInvestigationActEditor investigation = itemEditor.getInvestigation(this.investigation);
                 if (investigation != null) {

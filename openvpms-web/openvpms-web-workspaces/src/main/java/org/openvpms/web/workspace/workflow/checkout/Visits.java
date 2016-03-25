@@ -30,6 +30,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.JoinConstraint;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -164,6 +166,23 @@ class Visits implements Iterable<Visit> {
     }
 
     /**
+     * Reloads the appointments to pick up any changes.
+     */
+    public void reload() {
+        List<Visit> reloaded = new ArrayList<>();
+        for (Visit visit : visits) {
+            Act event = visit.getEvent();
+            Act appointment = IMObjectHelper.reload(visit.getAppointment());
+            boolean isFirstPet = visit.isFirstPet();
+
+            visit = create(event, appointment);
+            visit.setFirstPet(isFirstPet);
+            reloaded.add(visit);
+        }
+        visits = reloaded;
+    }
+
+    /**
      * Determines the rates (i.e. first pet or second pet) to charge each visit.
      * <p/>
      * This takes into account visits that may have already been billed or completed.
@@ -186,8 +205,7 @@ class Visits implements Iterable<Visit> {
         }
         for (Map.Entry<VisitKey, List<Visit>> entry : map.entrySet()) {
             List<Visit> incomplete = entry.getValue();
-            List<Visit> completed = getCompleted(entry.getKey(), incomplete);
-            if (!completed.isEmpty()) {
+            if (hasCharged(entry.getKey(), incomplete)) {
                 // assume the existing pet was charged at the first pet rate, so charge the rest at the second pet rate
                 for (Visit visit : incomplete) {
                     visit.setFirstPet(false);
@@ -200,6 +218,15 @@ class Visits implements Iterable<Visit> {
                     first = false;
                 }
             }
+        }
+    }
+
+    /**
+     * Saves the visits.
+     */
+    public void save() {
+        for (Visit visit : visits) {
+            visit.save();
         }
     }
 
@@ -219,7 +246,7 @@ class Visits implements Iterable<Visit> {
                 int result = weight1.compareTo(weight2);
                 if (result == 0) {
                     result = Long.compare(o1.getPatient().getId(), o2.getPatient().getId());
-                }  else {
+                } else {
                     // sort on descending weight
                     result = -result;
                 }
@@ -228,11 +255,21 @@ class Visits implements Iterable<Visit> {
         });
     }
 
-    private List<Visit> getCompleted(VisitKey key, List<Visit> exclude) {
-        List<Visit> result = new ArrayList<>();
+    /**
+     * Determines if there is another appointment that has already been charged for the same dates.
+     *
+     * @param key     the visit key
+     * @param exclude visits to exclude from comparison
+     * @return {@code true} if another appointment has been charged
+     */
+    private boolean hasCharged(VisitKey key, List<Visit> exclude) {
+        boolean result = false;
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT);
         query.add(join("patient").add(join("entity").add(join("customers").add(eq("source", customer)))));
-        query.add(join("appointment").add(join("source").add(join("schedule").add(eq("entity", key.schedule)))));
+        JoinConstraint appointmentJoin = join("source");
+        appointmentJoin.add(Constraints.ne("status", ActStatus.CANCELLED));
+        appointmentJoin.add(join("schedule").add(eq("entity", key.schedule)));
+        query.add(join("appointment").add(appointmentJoin));
         query.add(gte("startTime", key.start));
         query.add(Constraints.lt("startTime", DateRules.getNextDate(key.start)));
         if (DateRules.compareTo(key.endTime, key.end) == 0) {
@@ -242,7 +279,6 @@ class Visits implements Iterable<Visit> {
             query.add(gte("endTime", key.end));
             query.add(lte("endTime", DateRules.getNextDate(key.end)));
         }
-        query.add(Constraints.eq("status", ActStatus.COMPLETED));
         List<Long> ids = new ArrayList<>();
         for (Visit visit : exclude) {
             ids.add(visit.getEvent().getId());
@@ -254,9 +290,9 @@ class Visits implements Iterable<Visit> {
             Act event = iterator.next();
             ActBean bean = new ActBean(event);
             Act appointment = (Act) bean.getNodeSourceObject("appointment");
-            if (appointment != null && ActStatus.COMPLETED.equals(appointment.getStatus())
-                && appointmentRules.isBoardingAppointment(appointment)) {
-                result.add(create(event, appointment));
+            if (appointment != null && new ActBean(appointment).getBoolean("boardingCharged", false)) {
+                result = true;
+                break;
             }
         }
         return result;

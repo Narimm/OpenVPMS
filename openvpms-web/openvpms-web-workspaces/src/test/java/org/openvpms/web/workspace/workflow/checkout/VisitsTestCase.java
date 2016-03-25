@@ -36,6 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.junit.Assert.assertFalse;
@@ -99,8 +100,8 @@ public class VisitsTestCase extends ArchetypeServiceTest {
     public void setUp() {
         location = TestHelper.createLocation();
         customer = TestHelper.createCustomer();
-        patient1 = TestHelper.createPatient();
-        patient2 = TestHelper.createPatient();
+        patient1 = TestHelper.createPatient(customer);
+        patient2 = TestHelper.createPatient(customer);
         visits = new Visits(customer, appointmentRules, patientRules);
 
         Product firstPetProductDay = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
@@ -120,7 +121,7 @@ public class VisitsTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRateDoubleBookingOnSameDay() {
-        Party patient3 = TestHelper.createPatient();
+        Party patient3 = TestHelper.createPatient(customer);
         Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
 
         // create some visits all starting and ending at the same time
@@ -195,6 +196,28 @@ public class VisitsTestCase extends ArchetypeServiceTest {
         visits.rate(Arrays.asList(visit1, visit2), new Date());
         assertTrue(visit1.isFirstPet());
         assertTrue(visit2.isFirstPet());
+    }
+
+    /**
+     * Verifies that if there is a double booking for the same dates and schedule and the first appointment is
+     * completed, the second booking gets charged at the second pet rate.
+     */
+    @Test
+    public void testRateDoubleBookingForCompletedAppointment() {
+        Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
+
+        Visit visit1 = createVisit("2016-03-24 09:00:00", "2016-03-24 15:00:00", schedule, customer, patient1);
+        Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-24 16:00:00", schedule, customer, patient2);
+        assertFalse(visit1.isCharged());
+        assertFalse(visit2.isCharged());
+
+        visit1.setCharged(true);
+        visit1.save();
+        visit1 = visits.create(visit1.getEvent(), visit1.getAppointment());
+        assertTrue(visit1.isCharged());
+
+        visits.rate(Collections.singletonList(visit2), new Date());
+        assertFalse(visit2.isFirstPet());
     }
 
     /**

@@ -69,7 +69,7 @@ public class CustomerChargeTestHelper {
      * @param queue    the popup editor manager
      * @return the editor for the new item
      */
-    public static CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient,
+    public static CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient,
                                                       Product product, BigDecimal quantity, EditorQueue queue) {
         CustomerChargeActItemEditor itemEditor = editor.addItem();
         itemEditor.getComponent();
@@ -90,7 +90,7 @@ public class CustomerChargeTestHelper {
      * @param quantity   the quantity. If {@code null}, indicates the quantity won't be changed
      * @param queue      the popup editor manager
      */
-    public static void setItem(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+    public static void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
                                Party patient, Product product, BigDecimal quantity, EditorQueue queue) {
         if (itemEditor.getProperty("patient") != null) {
             itemEditor.setPatient(patient);
@@ -118,7 +118,7 @@ public class CustomerChargeTestHelper {
         assertTrue(itemEditor.isValid());
     }
 
-    private static void checkSavePopups(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+    private static void checkSavePopups(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
                                         Product product, EditorQueue queue) {
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             // invoice items have a dispensing node

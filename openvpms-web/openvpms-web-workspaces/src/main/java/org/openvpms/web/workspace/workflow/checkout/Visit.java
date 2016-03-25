@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.workflow.checkout;
 
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
@@ -80,6 +79,11 @@ class Visit {
      * The patient weight.
      */
     private Weight weight;
+
+    /**
+     * Determines if the appointment has been changed.
+     */
+    private boolean changed;
 
     /**
      * Constructs an {@link Visit}.
@@ -213,10 +217,20 @@ class Visit {
         this.firstPet = firstPet;
     }
 
+    /**
+     * Returns the event start time.
+     *
+     * @return the event start
+     */
     public Date getStartTime() {
         return event.getActivityStartTime();
     }
 
+    /**
+     * The event end time.
+     *
+     * @return the event end time
+     */
     public Date getEndTime() {
         return event.getActivityEndTime();
     }
@@ -234,15 +248,58 @@ class Visit {
         return endTime;
     }
 
+    /**
+     * Returns a reference to the appointment schedule.
+     *
+     * @return a reference to the appointment schedule, or {@code null} if it is not known
+     */
     public IMObjectReference getScheduleRef() {
         return appointment != null ? new ActBean(appointment).getNodeParticipantRef("schedule") : null;
     }
 
+    /**
+     * Returns the patient weight.
+     *
+     * @return the patient weight
+     */
     public Weight getWeight() {
         if (weight == null) {
             weight = patientRules.getWeight(getPatient());
         }
         return weight;
+    }
+
+    /**
+     * Determines if the visit has been charged.
+     *
+     * @return {@code true} if the appointment has its boardingCharged flag set.
+     */
+    public boolean isCharged() {
+        return appointment != null && new ActBean(appointment).getBoolean("boardingCharged", false);
+    }
+
+    /**
+     * Determines if the visit has been charged.
+     *
+     * @param charged if {@code true}, indicates that boarding charges have been applied
+     */
+    public void setCharged(boolean charged) {
+        if (appointment != null) {
+            ActBean bean = new ActBean(appointment);
+            if (charged != bean.getBoolean("boardingCharged", false)) {
+                bean.setValue("boardingCharged", charged);
+                changed = true;
+            }
+        }
+    }
+
+    /**
+     * Saves the appointment if it has changed.
+     */
+    public void save() {
+        if (changed && appointment != null) {
+            ServiceHelper.getArchetypeService().save(appointment);
+        }
     }
 
     /**
@@ -273,12 +330,4 @@ class Visit {
         return event.hashCode();
     }
 
-    /**
-     * Determines if the visit has been charged.
-     *
-     * @return {@code true} if the appointment status is {@link ActStatus#COMPLETED}.
-     */
-    public boolean isCharged() {
-        return appointment != null && ActStatus.COMPLETED.equals(appointment.getStatus());
-    }
 }
