@@ -97,7 +97,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param queue    the popup editor manager
      * @return the editor for the new item
      */
-    protected CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient, Product product,
+    protected CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
                                                   BigDecimal quantity, EditorQueue queue) {
         return CustomerChargeTestHelper.addItem(editor, patient, product, quantity, queue);
     }
@@ -112,7 +112,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param quantity   the quantity
      * @param queue      the popup editor manager
      */
-    protected void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+    protected void setItem(DefaultCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
                            Party patient, Product product, BigDecimal quantity, EditorQueue queue) {
         CustomerChargeTestHelper.setItem(editor, itemEditor, patient, product, quantity, queue);
     }

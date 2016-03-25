@@ -26,7 +26,6 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
@@ -84,7 +83,7 @@ public class EstimateInvoicer extends AbstractInvoicer {
      * @param estimate the estimate to invoice
      * @param editor   the editor to add invoice items to
      */
-    public void invoice(Act estimate, AbstractCustomerChargeActEditor editor) {
+    public void invoice(Act estimate, CustomerChargeActEditor editor) {
         ActBean bean = new ActBean(estimate);
         ActRelationshipCollectionEditor items = editor.getItems();
 

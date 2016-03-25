@@ -19,8 +19,8 @@ package org.openvpms.web.workspace.workflow.checkout;
 import org.openvpms.archetype.rules.workflow.CageType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 
 import java.math.BigDecimal;
@@ -39,7 +39,7 @@ class BoardingInvoicer extends AbstractInvoicer {
      * @param visits the visits
      * @param editor the invoice editor
      */
-    public void invoice(Visits visits, AbstractCustomerChargeActEditor editor) {
+    public void invoice(Visits visits, CustomerChargeActEditor editor) {
         Date now = new Date();
         for (Visit visit : visits) {
             if (!visit.isCharged()) {
@@ -49,6 +49,7 @@ class BoardingInvoicer extends AbstractInvoicer {
                     if (cageType.isLateCheckout(now)) {
                         chargeLateCheckout(visit, editor);
                     }
+                    visit.setCharged(true);
                 }
             }
         }
@@ -56,11 +57,12 @@ class BoardingInvoicer extends AbstractInvoicer {
 
     /**
      * Charges boarding.
-     *  @param visit    the visit
-     * @param endTime  the boarding end time, if the event hasn't already ended
-     * @param editor   the invoice editor
+     *
+     * @param visit   the visit
+     * @param endTime the boarding end time, if the event hasn't already ended
+     * @param editor  the invoice editor
      */
-    private void chargeBoarding(Visit visit, Date endTime, AbstractCustomerChargeActEditor editor) {
+    private void chargeBoarding(Visit visit, Date endTime, CustomerChargeActEditor editor) {
         CageType cageType = visit.getCageType();
         int days = visit.getDays(endTime);
         Product product = cageType.getProduct(days, visit.isFirstPet());
@@ -75,7 +77,7 @@ class BoardingInvoicer extends AbstractInvoicer {
      * @param visit  the visit
      * @param editor the charge editor
      */
-    private void chargeLateCheckout(Visit visit, AbstractCustomerChargeActEditor editor) {
+    private void chargeLateCheckout(Visit visit, CustomerChargeActEditor editor) {
         CageType cageType = visit.getCageType();
         Product product = cageType.getLateCheckoutProduct();
         if (product != null) {
@@ -91,7 +93,7 @@ class BoardingInvoicer extends AbstractInvoicer {
      * @param quantity the quantity
      * @param editor   the invoice editor
      */
-    private void addItem(Party patient, Product product, int quantity, AbstractCustomerChargeActEditor editor) {
+    private void addItem(Party patient, Product product, int quantity, CustomerChargeActEditor editor) {
         CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
         itemEditor.setPatient(patient);
         itemEditor.setProduct(product);

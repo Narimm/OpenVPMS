@@ -24,6 +24,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -38,7 +39,7 @@ import org.openvpms.web.workspace.customer.order.OrderCharger;
  *
  * @author Tim Anderson
  */
-public class CustomerChargeActEditDialog extends ActEditDialog {
+public abstract class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Manages charging orders and returns.
@@ -84,8 +85,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * @param context          the context
      * @param autoChargeOrders if {@code true}, automatically charge customer orders if they are complete
      */
-    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, OrderCharger charger, Context context,
-                                       boolean autoChargeOrders) {
+    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, OrderCharger charger,
+                                       Context context, boolean autoChargeOrders) {
         super(editor, context);
         addButton(COMPLETED_ID);
         addButton(IN_PROGRESS_ID);
@@ -204,6 +205,20 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     protected boolean reload(IMObjectEditor editor) {
         manager.clear(); // discard any charged orders
         return super.reload(editor);
+    }
+
+    /**
+     * Invoked to display a message that saving failed, and the editor has been reverted.
+     * <p/>
+     * This implementation adds the dialog to the editor queue, so popups can be handled in an orderly manner.
+     *
+     * @param title   the message title
+     * @param message the message
+     */
+    @Override
+    protected void reloaded(String title, String message) {
+        CustomerChargeActEditor editor = getEditor();
+        editor.getEditorQueue().queue(new ErrorDialog(title, message));
     }
 
     /**

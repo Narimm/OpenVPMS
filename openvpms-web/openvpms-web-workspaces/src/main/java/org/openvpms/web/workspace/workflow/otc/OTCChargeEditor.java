@@ -23,7 +23,7 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 
 /**
  * An editor for over-the-counter charges.
@@ -33,7 +33,7 @@ import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEdito
  *
  * @author Tim Anderson
  */
-class OTCChargeEditor extends AbstractCustomerChargeActEditor {
+class OTCChargeEditor extends CustomerChargeActEditor {
 
     /**
      * Suppresses the status node.

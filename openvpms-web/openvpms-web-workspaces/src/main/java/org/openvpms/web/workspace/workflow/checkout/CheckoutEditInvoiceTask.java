@@ -17,10 +17,14 @@
 package org.openvpms.web.workspace.workflow.checkout;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 
 /**
  * Charges all boarding appointments associated with the current patient.
@@ -45,16 +49,28 @@ public class CheckoutEditInvoiceTask extends EditIMObjectTask {
     }
 
     /**
-     * Shows the editor in an edit dialog.
+     * Creates a new editor for an object.
      *
-     * @param editor  the editor
+     * @param object  the object to edit
      * @param context the task context
+     * @return a new editor
      */
     @Override
-    protected void interactiveEdit(IMObjectEditor editor, TaskContext context) {
-        super.interactiveEdit(editor, context);
-        BoardingInvoicer invoicer = new BoardingInvoicer();
-        invoicer.invoice(visits, (AbstractCustomerChargeActEditor) editor);
+    protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
+        LayoutContext layout = new DefaultLayoutContext(true, context, context.getHelpContext());
+        return new CheckoutChargeEditor((FinancialAct) object, visits, layout);
     }
 
+    /**
+     * Creates a new edit dialog.
+     *
+     * @param editor  the editor
+     * @param skip    if {@code true}, editing may be skipped
+     * @param context the help context
+     * @return a new edit dialog
+     */
+    @Override
+    protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip, TaskContext context) {
+        return new CheckoutEditDialog((CheckoutChargeEditor) editor, context);
+    }
 }
