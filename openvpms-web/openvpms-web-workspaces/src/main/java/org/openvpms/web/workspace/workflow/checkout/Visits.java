@@ -274,7 +274,7 @@ class Visits implements Iterable<Visit> {
         query.add(Constraints.lt("startTime", DateRules.getNextDate(key.start)));
         query.add(gte("endTime", key.end));
         query.add(lte("endTime", DateRules.getNextDate(key.end)));
-        // NOTE: can end at midnight at still be treated as same day
+        // NOTE: can end at midnight and still be treated as same day
         List<Long> ids = new ArrayList<>();
         for (Visit visit : exclude) {
             ids.add(visit.getEvent().getId());
