@@ -78,7 +78,7 @@ public class OrderChargeManager {
      *
      * @param editor the editor to add charges to
      */
-    public void charge(final AbstractCustomerChargeActEditor editor) {
+    public void charge(final CustomerChargeActEditor editor) {
         chargeCompleted(editor);
         if (charger.hasOrders()) {
             String title = Messages.get("customer.order.incomplete.title");
@@ -99,7 +99,7 @@ public class OrderChargeManager {
      * <p/>
      * A message will be added to the container indicating if there are incomplete orders.
      */
-    public void chargeCompleted(AbstractCustomerChargeActEditor editor) {
+    public void chargeCompleted(CustomerChargeActEditor editor) {
         cancelAlert();
         int before = 0;
         int after = 0;
@@ -129,7 +129,7 @@ public class OrderChargeManager {
      *
      * @param editor the editor to add charges to
      */
-    public void chargeSelected(final AbstractCustomerChargeActEditor editor) {
+    public void chargeSelected(final CustomerChargeActEditor editor) {
         charger.charge(editor, new OrderCharger.CompletionListener() {
             @Override
             public void completed() {

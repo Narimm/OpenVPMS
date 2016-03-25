@@ -49,7 +49,7 @@ public class CustomerChargeDocuments {
     /**
      * The charge editor.
      */
-    private final AbstractCustomerChargeActEditor editor;
+    private final CustomerChargeActEditor editor;
 
     /**
      * The layout context.
@@ -67,7 +67,7 @@ public class CustomerChargeDocuments {
      * @param editor  the charge editor
      * @param context the layout context
      */
-    public CustomerChargeDocuments(AbstractCustomerChargeActEditor editor, LayoutContext context) {
+    public CustomerChargeDocuments(CustomerChargeActEditor editor, LayoutContext context) {
         this.editor = editor;
         this.context = context;
         List<Act> documents = getUnprintedDocuments(); // exclude any existing unprinted documents

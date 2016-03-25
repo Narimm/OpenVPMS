@@ -30,6 +30,7 @@ import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
@@ -189,6 +190,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 protected void failed(IMObjectEditor editor, Throwable exception) {
                     super.failed(editor, exception);
                     saveFailed();
+                }
+
+                @Override
+                protected void reloaded(String title, String message) {
+                    AbstractEditDialog.this.reloaded(title, message);
                 }
             };
             result = saver.save(editor);
@@ -367,6 +373,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
             log.error("Failed to reload editor", exception);
         }
         return newEditor != null;
+    }
+
+    /**
+     * Invoked to display a message that saving failed, and the editor has been reverted.
+     *
+     * @param title   the message title
+     * @param message the message
+     */
+    protected void reloaded(String title, String message) {
+        ErrorHandler.getInstance().error(title, message, null, null);
     }
 
     /**

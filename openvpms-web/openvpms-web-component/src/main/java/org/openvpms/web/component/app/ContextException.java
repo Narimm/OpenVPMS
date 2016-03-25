@@ -23,8 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 /**
  * Context exception.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ContextException extends OpenVPMSException {
 
@@ -40,6 +39,7 @@ public class ContextException extends OpenVPMSException {
         NoCustomer,
         NoPatient,
         NoLocation,
+        NoClinicalEvent,
         NoObject
     }
 
@@ -49,15 +49,13 @@ public class ContextException extends OpenVPMSException {
     private final ErrorCode errorCode;
 
     /**
-     * The appropriate resource file is loaded cached into memory when this
-     * class is loaded.
+     * The appropriate resource file is loaded cached into memory when this class is loaded.
      */
-    private static Messages MESSAGES
-        = Messages.getMessages("org.openvpms.web.component.app."
-                               + OpenVPMSException.ERRMESSAGES_FILE);
+    private static Messages MESSAGES = Messages.getMessages("org.openvpms.web.component.app."
+                                                            + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs a new <code>ContextException</code>.
+     * Constructs a {@link ContextException}.
      *
      * @param errorCode the error code
      */

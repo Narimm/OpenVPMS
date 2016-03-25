@@ -230,6 +230,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
 
         // the first column is the start time
         ScheduleColumn startTime = new ScheduleColumn(0, schedule, names[0]);
+        startTime.setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
         startTime.setCellRenderer(new TimeColumnCellRenderer());
         result.addColumn(startTime);
 
@@ -237,6 +238,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         SingleScheduleTableCellRenderer renderer = new SingleScheduleTableCellRenderer(this);
         for (int i = 1; i < names.length; ++i) {
             ScheduleColumn column = new ScheduleColumn(i, schedule, names[i]);
+            column.setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
             column.setCellRenderer(renderer);
             result.addColumn(column);
         }

@@ -46,6 +46,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
 
 /**
@@ -154,7 +155,7 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
             Act prescription = getObject();
             ActBean prescriptionBean = new ActBean(prescription);
             DefaultLayoutContext layout = new DefaultLayoutContext(new LocalContext(context), getHelpContext());
-            final CustomerChargeActEditor editor = new CustomerChargeActEditor(invoice, null, layout, false);
+            final CustomerChargeActEditor editor = new DefaultCustomerChargeActEditor(invoice, null, layout, false);
             editor.getComponent();
             CustomerChargeActItemEditor item = editor.addItem();
             item.getComponent();

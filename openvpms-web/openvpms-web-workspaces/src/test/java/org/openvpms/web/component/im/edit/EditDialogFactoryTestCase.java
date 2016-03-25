@@ -31,7 +31,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.help.HelpListener;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditDialog;
 import org.openvpms.web.workspace.patient.mr.PatientClinicalEventEditDialog;
 
 import static org.junit.Assert.assertEquals;
@@ -59,12 +59,12 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link CustomerChargeActEditDialog} is returned for an <em>act
+     * Verifies that a {@link DefaultCustomerChargeActEditDialog} is returned for an <em>act
      * .customerAccountChargesInvoice</em>.
      */
     @Test
     public void testCustomerChargeActEditDialog() {
-        checkCreate(CustomerAccountArchetypes.INVOICE, CustomerChargeActEditDialog.class);
+        checkCreate(CustomerAccountArchetypes.INVOICE, DefaultCustomerChargeActEditDialog.class);
     }
 
     /**

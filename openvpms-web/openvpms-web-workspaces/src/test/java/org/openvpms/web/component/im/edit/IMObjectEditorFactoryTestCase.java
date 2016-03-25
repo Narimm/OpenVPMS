@@ -57,7 +57,7 @@ import org.openvpms.web.workspace.admin.type.ReminderTypeTemplateEditor;
 import org.openvpms.web.workspace.customer.CustomerEditor;
 import org.openvpms.web.workspace.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.workspace.customer.account.AdjustmentActEditor;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.estimate.EstimateEditor;
 import org.openvpms.web.workspace.customer.estimate.EstimateItemEditor;
@@ -205,18 +205,18 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link CustomerChargeActEditor} is returned for
+     * Verifies that a {@link DefaultCustomerChargeActEditor} is returned for
      * <em>act.customerAccountChargesInvoice, act.customerAccountChargesCredit,
      * act.customerAccountChargesCounter</em>
      */
     @Test
     public void testCreateChargeEditor() {
         checkCreate("act.customerAccountChargesInvoice",
-                    CustomerChargeActEditor.class);
+                    DefaultCustomerChargeActEditor.class);
         checkCreate("act.customerAccountChargesCredit",
-                    CustomerChargeActEditor.class);
+                    DefaultCustomerChargeActEditor.class);
         checkCreate("act.customerAccountChargesCounter",
-                    CustomerChargeActEditor.class);
+                    DefaultCustomerChargeActEditor.class);
     }
 
     /**

@@ -145,7 +145,8 @@ public class ConsultWorkflow extends WorkflowImpl {
             addTask(new UpdateClinicianTask(act.getArchetypeId().getShortName()));
         }
 
-        addTask(new GetClinicalEventTask(act.getActivityStartTime()));
+        Act appointment = TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT) ? act : null;
+        addTask(new GetClinicalEventTask(act.getActivityStartTime(), appointment));
         if (setClinician) {
             addTask(new UpdateClinicianTask(PatientArchetypes.CLINICAL_EVENT));
         }

@@ -55,6 +55,10 @@ public class DefaultEditorQueue implements EditorQueue {
      */
     private boolean editing;
 
+    /**
+     * The current dialog.
+     */
+    private PopupDialog current;
 
     /**
      * Constructs a {@link DefaultEditorQueue}.
@@ -117,6 +121,15 @@ public class DefaultEditorQueue implements EditorQueue {
     }
 
     /**
+     * Returns the current popup dialog.
+     *
+     * @return the current popup dialog. May be {@code null}
+     */
+    public PopupDialog getCurrent() {
+        return current;
+    }
+
+    /**
      * Determines if editing is complete.
      *
      * @return {@code true} if there are no more popups
@@ -150,6 +163,7 @@ public class DefaultEditorQueue implements EditorQueue {
      */
     protected void show(PopupDialog dialog) {
         editing = true;
+        current = dialog;
         dialog.show();
     }
 
@@ -183,6 +197,7 @@ public class DefaultEditorQueue implements EditorQueue {
      * Invoked when the edit is completed.
      */
     protected void completed() {
+        current = null;
         editing = false;
     }
 

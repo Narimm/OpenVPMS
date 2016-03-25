@@ -20,25 +20,15 @@ import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
-import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
@@ -78,7 +68,6 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         this.practice = practice;
     }
 
-
     /**
      * Returns the invoice.
      *
@@ -97,14 +86,15 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
      * @return the edit dialog
      */
     public EditDialog addInvoiceItem(Party patient, BigDecimal amount, User clinician) {
-        EditInvoiceTask task = (EditInvoiceTask) getEditTask();
+        EditIMObjectTask task = getEditTask();
         EditDialog dialog = task.getEditDialog();
 
         // get the editor and add an item
         CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
         editor.setClinician(clinician);
         Product product = createProduct(ProductArchetypes.SERVICE, amount, practice);
-        addItem(editor, patient, product, BigDecimal.ONE, task.getEditorManager());
+        ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) editor.getItems();
+        addItem(editor, patient, product, BigDecimal.ONE, items.getEditorQueue());
         return dialog;
     }
 
@@ -203,54 +193,4 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         return practice;
     }
 
-    /**
-     * Helper to edit invoices.
-     * This is required to automatically close popup dialogs.
-     */
-    protected static class EditInvoiceTask extends EditIMObjectTask {
-
-        /**
-         * The popup dialog manager.
-         */
-        private ChargeEditorQueue manager = new ChargeEditorQueue();
-
-        /**
-         * Constructs an <tt>EditInvoice</tt> to edit an object in the {@link TaskContext}.
-         */
-        public EditInvoiceTask() {
-            super(CustomerAccountArchetypes.INVOICE);
-        }
-
-        /**
-         * Returns the popup dialog manager.
-         *
-         * @return the popup dialog manager
-         */
-        public ChargeEditorQueue getEditorManager() {
-            return manager;
-        }
-
-        /**
-         * Creates a new editor for an object.
-         *
-         * @param object  the object to edit
-         * @param context the task context
-         * @return a new editor
-         */
-        @Override
-        protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
-            LayoutContext layout = new DefaultLayoutContext(true, context, new HelpContext("foo", null));
-            return new CustomerChargeActEditor((FinancialAct) object, null, layout, false) {
-                @Override
-                protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-                    ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
-                    if (editor instanceof ChargeItemRelationshipCollectionEditor) {
-                        // register a handler for act popups
-                        ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(manager);
-                    }
-                    return editor;
-                }
-            };
-        }
-    }
 }

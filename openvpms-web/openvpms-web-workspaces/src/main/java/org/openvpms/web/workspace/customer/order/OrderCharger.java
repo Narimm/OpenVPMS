@@ -52,8 +52,8 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -233,7 +233,7 @@ public class OrderCharger {
      * @param editor   the editor to add charges to
      * @param listener the listener to notify when charging completes
      */
-    public void charge(final AbstractCustomerChargeActEditor editor, final CompletionListener listener) {
+    public void charge(final CustomerChargeActEditor editor, final CompletionListener listener) {
         PendingOrderQuery query = new PendingOrderQuery(customer, null, charged);
         ResultSet<Act> set = query.query();
         if (!set.hasNext()) {
@@ -263,7 +263,7 @@ public class OrderCharger {
      *
      * @param editor the editor to add charges to
      */
-    public void chargeComplete(AbstractCustomerChargeActEditor editor) {
+    public void chargeComplete(CustomerChargeActEditor editor) {
         PendingOrderQuery query = new PendingOrderQuery(customer, null, charged);
         List<Act> orders = QueryHelper.query(query);
         for (Act order : orders) {
@@ -298,7 +298,7 @@ public class OrderCharger {
      * @param editor   the editor to add charges to
      * @param listener the listener to notify when charging completes
      */
-    private void charge(List<Act> orders, AbstractCustomerChargeActEditor editor, final CompletionListener listener) {
+    private void charge(List<Act> orders, CustomerChargeActEditor editor, final CompletionListener listener) {
         StringBuilder messages = new StringBuilder();
         for (Act order : orders) {
             OrderInvoicer charger = createInvoicer(order);

@@ -57,7 +57,7 @@ public class UndispensedOrderChecker {
      *
      * @param editor the editor
      */
-    public UndispensedOrderChecker(AbstractCustomerChargeActEditor editor) {
+    public UndispensedOrderChecker(CustomerChargeActEditor editor) {
         items = getUndispensedItems(editor);
     }
 
@@ -134,7 +134,7 @@ public class UndispensedOrderChecker {
      * @param editor the charge editor
      * @return the undispensed items
      */
-    private List<Act> getUndispensedItems(AbstractCustomerChargeActEditor editor) {
+    private List<Act> getUndispensedItems(CustomerChargeActEditor editor) {
         List<Act> items = Collections.emptyList();
         if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)
             && ActStatus.POSTED.equals(editor.getStatus())) {

@@ -19,19 +19,18 @@ package org.openvpms.web.workspace.workflow.checkout;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -60,15 +59,20 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
- * Task to allow the user to selectively print any unprinted documents
- * from a particular time.
+ * Task to allow the user to selectively print any unprinted documents from a particular time.
  *
  * @author Tim Anderson
  */
 class PrintDocumentsTask extends AbstractTask {
+
+    /**
+     * The patients to print documents for.
+     */
+    private final Set<IMObjectReference> patients;
 
     /**
      * The time to select unprinted documents from.
@@ -93,7 +97,7 @@ class PrintDocumentsTask extends AbstractTask {
     /**
      * The printable patient documents.
      */
-    private static final String[] DOCUMENTS = {"act.patientDocumentLetter", "act.patientDocumentForm"};
+    private static final String[] DOCUMENTS = {PatientArchetypes.DOCUMENT_LETTER, PatientArchetypes.DOCUMENT_FORM};
 
     /**
      * The mail button identifier.
@@ -104,10 +108,12 @@ class PrintDocumentsTask extends AbstractTask {
     /**
      * Constructs a {@code PrintDocumentsTask}.
      *
-     * @param startTime the act start time.
+     * @param patients  the patients to print documents for
+     * @param startTime the act start time
      * @param help      the help context
      */
-    public PrintDocumentsTask(Date startTime, HelpContext help) {
+    public PrintDocumentsTask(Set<IMObjectReference> patients, Date startTime, HelpContext help) {
+        this.patients = patients;
         this.startTime = startTime;
         this.help = help;
     }
@@ -121,9 +127,9 @@ class PrintDocumentsTask extends AbstractTask {
      * @param context the task context
      */
     public void start(final TaskContext context) {
-        Map<IMObject, Boolean> unprinted = new LinkedHashMap<IMObject, Boolean>();
+        Map<IMObject, Boolean> unprinted = new LinkedHashMap<>();
         unprinted.putAll(getCustomerActs(context));
-        unprinted.putAll(getPatientActs(context));
+        unprinted.putAll(getPatientActs());
         if (unprinted.isEmpty()) {
             notifyCompleted();
         } else {
@@ -183,22 +189,20 @@ class PrintDocumentsTask extends AbstractTask {
      */
     private Map<IMObject, Boolean> getCustomerActs(TaskContext context) {
         Party customer = context.getCustomer();
-        String node = "customer";
-        String participation = "participation.customer";
-        return getUnprintedActs(CHARGES, customer, node, participation);
+        return getUnprintedActs(CHARGES, customer.getObjectReference(), "customer");
     }
 
     /**
      * Returns a map of unprinted patient documents.
      *
-     * @param context the task context
      * @return a map of unprinted patient documents
      */
-    private Map<IMObject, Boolean> getPatientActs(TaskContext context) {
-        Party patient = context.getPatient();
-        String node = "patient";
-        String participation = "participation.patient";
-        return getUnprintedActs(DOCUMENTS, patient, node, participation);
+    private Map<IMObject, Boolean> getPatientActs() {
+        Map<IMObject, Boolean> result = new LinkedHashMap<>();
+        for (IMObjectReference patient : patients) {
+            result.putAll(getUnprintedActs(DOCUMENTS, patient, "patient"));
+        }
+        return result;
     }
 
     /**
@@ -207,27 +211,19 @@ class PrintDocumentsTask extends AbstractTask {
      * The corresponding boolean flag if {@code true} indicates if the act should be selected for printing.
      * If {@code false}, it indicates that the act should be displayed, but not selected.
      *
-     * @param shortNames    the act short names to query. May include wildcards
-     * @param party         the party to query
-     * @param node          the participation node to query
-     * @param participation the participation short name to query
+     * @param shortNames the act short names to query. May include wildcards
+     * @param party      the party to query
+     * @param node       the participation node to query
      * @return the unprinted acts
      */
-    private Map<IMObject, Boolean> getUnprintedActs(String[] shortNames, Party party, String node,
-                                                    String participation) {
-        Map<IMObject, Boolean> result = new LinkedHashMap<IMObject, Boolean>();
+    private Map<IMObject, Boolean> getUnprintedActs(String[] shortNames, IMObjectReference party, String node) {
+        Map<IMObject, Boolean> result = new LinkedHashMap<>();
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
         query.setFirstResult(0);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-
-        CollectionNodeConstraint participations
-                = new CollectionNodeConstraint(node, participation,
-                                               false, true);
-        participations.add(new ObjectRefNodeConstraint("entity", party.getObjectReference()));
-
-        query.add(participations);
-        query.add(new NodeConstraint("startTime", RelationalOp.GTE, startTime));
-        query.add(new NodeConstraint("printed", false));
+        query.add(Constraints.join(node).add(Constraints.eq("entity", party)));
+        query.add(Constraints.gte("startTime", startTime));
+        query.add(Constraints.eq("printed", false));
 
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         for (IMObject object : service.get(query).getResults()) {

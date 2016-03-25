@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.workflow;
 
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.customer.charge.EditorQueue;
 
 /**
@@ -31,5 +30,5 @@ public interface EditorQueueHandle {
      *
      * @return the popup dialog manager
      */
-    ChargeEditorQueue getQueue();
+    EditorQueue getQueue();
 }

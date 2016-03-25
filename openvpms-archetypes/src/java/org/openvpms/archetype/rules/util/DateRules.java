@@ -118,7 +118,8 @@ public class DateRules {
         if (datetime == null) {
             return null;
         }
-        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
+        // truncate modifies the source
+        return DateUtils.truncate(new Date(datetime.getTime()), Calendar.DAY_OF_MONTH);
     }
 
     /**
@@ -230,8 +231,8 @@ public class DateRules {
      */
     public static int compareTo(Date lhs, Date rhs, boolean ignoreMillis) {
         if (ignoreMillis) {
-            lhs = DateUtils.truncate(lhs, Calendar.SECOND);
-            rhs = DateUtils.truncate(rhs, Calendar.SECOND);
+            lhs = DateUtils.truncate(new Date(lhs.getTime()), Calendar.SECOND);
+            rhs = DateUtils.truncate(new Date(rhs.getTime()), Calendar.SECOND);
         }
         return compareTo(lhs, rhs);
     }
