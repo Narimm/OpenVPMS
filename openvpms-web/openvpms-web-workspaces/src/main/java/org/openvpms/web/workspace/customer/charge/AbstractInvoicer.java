@@ -44,7 +44,7 @@ public abstract class AbstractInvoicer {
      * @return a new charge editor
      */
     protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-        return new CustomerChargeActEditor(invoice, null, context, false);
+        return new DefaultCustomerChargeActEditor(invoice, null, context, false);
     }
 
     /**
@@ -84,7 +84,7 @@ public abstract class AbstractInvoicer {
      * @param editor the charge editor
      * @return the next item editor
      */
-    protected CustomerChargeActItemEditor getItemEditor(AbstractCustomerChargeActEditor editor) {
+    protected CustomerChargeActItemEditor getItemEditor(CustomerChargeActEditor editor) {
         CustomerChargeActItemEditor result;
         // if there is an existing empty editor, populate it first
         ActRelationshipCollectionEditor items = editor.getItems();
@@ -109,7 +109,7 @@ public abstract class AbstractInvoicer {
      * @param editor the parent charge editor
      * @return an editor for the charge item
      */
-    protected CustomerChargeActItemEditor getItemEditor(Act act, AbstractCustomerChargeActEditor editor) {
+    protected CustomerChargeActItemEditor getItemEditor(Act act, CustomerChargeActEditor editor) {
         ActRelationshipCollectionEditor items = editor.getItems();
         CustomerChargeActItemEditor result;
         result = (CustomerChargeActItemEditor) items.getEditor(act);

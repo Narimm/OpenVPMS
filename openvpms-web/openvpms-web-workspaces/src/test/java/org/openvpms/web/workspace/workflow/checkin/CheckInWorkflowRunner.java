@@ -56,7 +56,6 @@ import org.openvpms.web.workspace.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.workspace.workflow.TestEditVisitTask;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -276,8 +275,9 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         assertNotNull(event);
         assertFalse(event.isNew());  // should be saved
         ActBean bean = new ActBean(event);
-        assertEquals("Expected " + getWorkflow().getArrivalTime() + ", got " + event.getActivityStartTime(),
-                     0, DateRules.compareTo(getWorkflow().getArrivalTime(), event.getActivityStartTime()));
+        Date arrivalTime = getWorkflow().getArrivalTime();
+        assertEquals("Expected " + arrivalTime + ", got " + event.getActivityStartTime(),
+                     0, DateRules.compareTo(arrivalTime, event.getActivityStartTime(), true));
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(clinician, bean.getNodeParticipant("clinician"));
         assertEquals(status, event.getStatus());
@@ -497,12 +497,12 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         @Override
         protected SelectIMObjectTask<Party> createSelectPatientTask(TaskContext context,
                                                                     EditIMObjectTask patientEditor) {
-            List<Party> patients = (patient != null) ? Arrays.asList(patient) : Collections.<Party>emptyList();
-            Query<Party> query = new ListQuery<Party>(patients, PatientArchetypes.PATIENT, Party.class);
+            List<Party> patients = (patient != null) ? Collections.singletonList(patient) : Collections.<Party>emptyList();
+            Query<Party> query = new ListQuery<>(patients, PatientArchetypes.PATIENT, Party.class);
             return new SelectIMObjectTask<Party>(query, patientEditor, context.getHelpContext()) {
                 @Override
                 protected Browser<Party> createBrowser(Query<Party> query, LayoutContext layout) {
-                    return new DefaultIMObjectTableBrowser<Party>(query, layout);
+                    return new DefaultIMObjectTableBrowser<>(query, layout);
                 }
             };
         }
@@ -515,12 +515,13 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
          */
         @Override
         protected SelectIMObjectTask<Entity> createSelectWorkListTask(TaskContext context) {
-            List<Entity> list = (workList != null) ? Arrays.<Entity>asList(workList) : Collections.<Entity>emptyList();
-            Query<Entity> query = new ListQuery<Entity>(list, ScheduleArchetypes.ORGANISATION_WORKLIST, Entity.class);
+            List<Entity> list = (workList != null) ? Collections.<Entity>singletonList(workList)
+                                                   : Collections.<Entity>emptyList();
+            Query<Entity> query = new ListQuery<>(list, ScheduleArchetypes.ORGANISATION_WORKLIST, Entity.class);
             return new SelectIMObjectTask<Entity>(query, context.getHelpContext()) {
                 @Override
                 protected Browser<Entity> createBrowser(Query<Entity> query, LayoutContext layout) {
-                    return new DefaultIMObjectTableBrowser<Entity>(query, layout);
+                    return new DefaultIMObjectTableBrowser<>(query, layout);
                 }
             };
         }

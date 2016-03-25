@@ -41,11 +41,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link CustomerChargeActEditDialogTestCase}.
+ * Tests the {@link DefaultCustomerChargeActEditDialogTestCase}.
  *
  * @author Tim Anderson
  */
-public class CustomerChargeActEditDialogTestCase extends AbstractCustomerChargeActEditorTest {
+public class DefaultCustomerChargeActEditDialogTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
      * The layout context.
@@ -93,7 +93,7 @@ public class CustomerChargeActEditDialogTestCase extends AbstractCustomerChargeA
         FinancialAct order2 = PharmacyTestHelper.createOrder(customer, patient, product, BigDecimal.ONE, null);
 
         TestChargeEditor editor = new TestChargeEditor(charge, layoutContext, false);
-        CustomerChargeActEditDialog dialog = new CustomerChargeActEditDialog(editor, layoutContext.getContext());
+        DefaultCustomerChargeActEditDialog dialog = new DefaultCustomerChargeActEditDialog(editor, layoutContext.getContext());
         assertEquals(0, editor.getItems().getActs().size());
         dialog.show();
         CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
@@ -126,7 +126,7 @@ public class CustomerChargeActEditDialogTestCase extends AbstractCustomerChargeA
         FinancialAct order = PharmacyTestHelper.createOrder(customer, patient, product, BigDecimal.ONE, null);
 
         TestChargeEditor editor1 = new TestChargeEditor(charge, layoutContext, false);
-        CustomerChargeActEditDialog dialog = new CustomerChargeActEditDialog(editor1, layoutContext.getContext());
+        DefaultCustomerChargeActEditDialog dialog = new DefaultCustomerChargeActEditDialog(editor1, layoutContext.getContext());
         dialog.show();
         CustomerChargeTestHelper.checkSavePopup(editor1.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
         assertEquals(1, editor1.getItems().getActs().size());
@@ -166,7 +166,7 @@ public class CustomerChargeActEditDialogTestCase extends AbstractCustomerChargeA
     public void testAutoSave() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = new TestChargeEditor(charge, layoutContext, false);
-        CustomerChargeActEditDialog dialog = new CustomerChargeActEditDialog(editor, layoutContext.getContext());
+        DefaultCustomerChargeActEditDialog dialog = new DefaultCustomerChargeActEditDialog(editor, layoutContext.getContext());
         assertEquals(0, editor.getItems().getActs().size());
         dialog.show();
 
@@ -262,7 +262,7 @@ public class CustomerChargeActEditDialogTestCase extends AbstractCustomerChargeA
      * @param status the expected status
      * @param items  the expected no. of items
      */
-    private void checkInvoice(CustomerChargeActEditor editor, String status, int items) {
+    private void checkInvoice(DefaultCustomerChargeActEditor editor, String status, int items) {
         FinancialAct charge = get(editor.getObject());
         assertNotNull(charge);
         assertEquals(status, charge.getStatus());

@@ -16,6 +16,8 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.joda.time.DateMidnight;
+import org.joda.time.Days;
 import org.joda.time.Period;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -41,12 +43,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHand
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -218,19 +217,11 @@ public class AppointmentRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getActiveAppointment(Party patient) {
-        ArchetypeQuery query = new ArchetypeQuery("act.customerAppointment",
-                                                  true, true);
-        CollectionNodeConstraint participation
-                = new CollectionNodeConstraint("patient")
-                .add(new ObjectRefNodeConstraint("entity",
-                                                 patient.getObjectReference()));
-        query.add(participation);
+        ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT, true, true);
+        query.add(Constraints.join("patient").add(Constraints.eq("entity", patient.getObjectReference())));
+        query.add(Constraints.not(Constraints.in("status", AppointmentStatus.PENDING, AppointmentStatus.CANCELLED,
+                                                 AppointmentStatus.POSTED)));
         query.add(new NodeSortConstraint("startTime", false));
-        query.add(new NodeConstraint("status", RelationalOp.IN,
-                                     AppointmentStatus.CHECKED_IN,
-                                     AppointmentStatus.IN_PROGRESS,
-                                     AppointmentStatus.COMPLETED,
-                                     AppointmentStatus.BILLED));
         query.setMaxResults(1);
         IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
@@ -279,8 +270,7 @@ public class AppointmentRules {
      */
     public Period getNoReminderPeriod() {
         Period result = null;
-        IMObject object = null;
-        object = getAppointmentReminderJob();
+        IMObject object = getAppointmentReminderJob();
         if (object != null) {
             IMObjectBean bean = new IMObjectBean(object, service);
             int period = bean.getInt("noReminder");
@@ -292,6 +282,54 @@ public class AppointmentRules {
         return result;
     }
 
+    /**
+     * Determines if an appointment is a boarding appointment.
+     *
+     * @param appointment the appointment
+     * @return {@code true} if the appointment is a boarding appointment
+     */
+    public boolean isBoardingAppointment(Act appointment) {
+        boolean result = false;
+        ActBean bean = new ActBean(appointment, service);
+        Entity schedule = bean.getNodeParticipant("schedule");
+        if (schedule != null) {
+            IMObjectBean scheduleBean = new IMObjectBean(schedule, service);
+            if (scheduleBean.getNodeTargetObjectRef("cageType") != null) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the number of days to charge boarding for.
+     *
+     * @param startTime the boarding start time
+     * @param endTime   the boarding end time
+     * @return the number of days
+     */
+    public int getBoardingDays(Date startTime, Date endTime) {
+        DateMidnight end = new DateMidnight(endTime);
+        int days = Days.daysBetween(new DateMidnight(startTime), end).getDays();
+        if (days < 0) {
+            days = 0;
+        } else if (DateRules.compareTo(endTime, end.toDate()) != 0) {
+            // any time after midnight is another day
+            days++;
+        }
+        return days;
+    }
+
+    /**
+     * Returns the patient clinical event associated with an appointment.
+     *
+     * @param appointment the appointment
+     * @return the event, or {@code null} if none exists
+     */
+    public Act getEvent(Act appointment) {
+        ActBean bean = new ActBean(appointment, service);
+        return (Act) bean.getNodeTargetObject("event");
+    }
     /**
      * Returns the appointment reminder job configuration, if one is present.
      *

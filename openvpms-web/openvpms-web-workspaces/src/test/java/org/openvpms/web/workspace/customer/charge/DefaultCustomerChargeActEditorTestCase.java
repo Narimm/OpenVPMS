@@ -88,11 +88,11 @@ import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelpe
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order;
 
 /**
- * Tests the {@link CustomerChargeActEditor} class.
+ * Tests the {@link DefaultCustomerChargeActEditor} class.
  *
  * @author Tim Anderson
  */
-public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEditorTest {
+public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
      * The customer.
@@ -218,7 +218,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -253,7 +253,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertTrue(editor.isValid());
 
             BigDecimal quantity = ONE;
-            ChargeEditorQueue queue = editor.getQueue();
+            EditorQueue queue = editor.getQueue();
             CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, queue);
             CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, queue);
             CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, queue);
@@ -303,7 +303,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
             TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-            ChargeEditorQueue queue = editor.getQueue();
+            EditorQueue queue = editor.getQueue();
             editor.getComponent();
             assertTrue(editor.isValid());
 
@@ -357,7 +357,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
             TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-            ChargeEditorQueue queue = editor.getQueue();
+            EditorQueue queue = editor.getQueue();
             editor.getComponent();
 
             BigDecimal quantity = ONE;
@@ -436,7 +436,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes an invoice and its item.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes an invoice and its item.
      * <p>
      * If any pharmacy or lab orders have been created, these are cancelled.
      */
@@ -471,7 +471,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Entity template3 = addTemplate(product3);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -571,7 +571,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a credit and its item.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes a credit and its item.
      */
     @Test
     public void testDeleteCredit() {
@@ -579,7 +579,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a counter sale and its item.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes a counter sale and its item.
      */
     @Test
     public void testDeleteCounterSale() {
@@ -674,7 +674,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -696,7 +696,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -752,7 +752,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -788,7 +788,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -846,7 +846,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -881,7 +881,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -919,7 +919,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -985,7 +985,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1018,7 +1018,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1048,7 +1048,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1083,7 +1083,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1110,15 +1110,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Tests the {@link CustomerChargeActEditor#newInstance()} method.
+     * Tests the {@link DefaultCustomerChargeActEditor#newInstance()} method.
      */
     @Test
     public void testNewInstance() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
-        CustomerChargeActEditor editor = new CustomerChargeActEditor(charge, null, layoutContext);
+        DefaultCustomerChargeActEditor editor = new DefaultCustomerChargeActEditor(charge, null, layoutContext);
         IMObjectEditor newInstance = editor.newInstance();
-        assertTrue(newInstance instanceof CustomerChargeActEditor);
+        assertTrue(newInstance instanceof DefaultCustomerChargeActEditor);
     }
 
     /**
@@ -1144,7 +1144,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(shortName);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
 
         editor.getComponent();
         assertTrue(editor.isValid());
@@ -1178,7 +1178,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1202,7 +1202,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a charge and its items.
+     * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes a charge and its items.
      *
      * @param charge the charge
      */
@@ -1216,7 +1216,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1249,7 +1249,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param charge the charge
      */
     private void checkEmptyCharge(FinancialAct charge) {
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        DefaultCustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
         assertTrue(editor.isValid());
         editor.save();
@@ -1305,7 +1305,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         initStock(product2, stockLocation, product2Stock);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
-        ChargeEditorQueue queue = editor.getQueue();
+        EditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1608,7 +1608,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param editor the editor to use
      * @return {@code true} if the delete was successful
      */
-    private boolean delete(final CustomerChargeActEditor editor) {
+    private boolean delete(final DefaultCustomerChargeActEditor editor) {
         boolean result = false;
         try {
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());

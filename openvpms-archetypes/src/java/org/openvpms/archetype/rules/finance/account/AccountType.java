@@ -12,13 +12,10 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -38,8 +35,7 @@ import java.util.List;
 /**
  * Wrapper around an <em>lookup.accountType</tt>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AccountType {
 
@@ -126,7 +122,7 @@ public class AccountType {
     public Date getOverdueDate(Date date) {
         DateUnits payment = getPaymentUOM();
         if (payment != null) {
-            date = DateUtils.truncate(date, Calendar.DATE); // strip any time
+            date = DateRules.getDate(date); // strip any time
             int days = getPaymentTerms();
             return DateRules.getDate(date, -days, payment);
         }

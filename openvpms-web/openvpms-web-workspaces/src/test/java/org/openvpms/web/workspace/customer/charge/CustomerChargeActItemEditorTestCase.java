@@ -586,12 +586,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      * @return a new edit context
      */
     private CustomerChargeEditContext createEditContext(LayoutContext layout) {
-        CustomerChargeEditContext editContext = new CustomerChargeEditContext(layout);
-
-        // register a handler for act popups
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        editContext.setEditorQueue(mgr);
-        return editContext;
+        return new CustomerChargeEditContext(layout);
     }
 
     /**
@@ -734,20 +729,20 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         }
         editor.setProduct(product1);
 
-        ChargeEditorQueue mgr = (ChargeEditorQueue) editContext.getEditorQueue();
+        EditorQueue queue = editContext.getEditorQueue();
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
             if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
                 // invoice items have a dispensing node
                 assertFalse(editor.isValid()); // not valid while popup is displayed
-                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION, false);
+                checkSavePopup(queue, PatientArchetypes.PATIENT_MEDICATION, false);
                 // save the popup editor - should be a medication
             }
 
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
+            checkSavePopup(queue, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
 
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, ReminderArchetypes.REMINDER, false);
+            checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
         }
 
         // editor should now be valid
@@ -801,7 +796,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         }
 
         // should be no more popups. For medication products, the
-        assertNull(mgr.getCurrent());  // no new popup - existing medication should update
+        assertNull(queue.getCurrent());  // no new popup - existing medication should update
         assertTrue(editor.isValid());
 
         // save it

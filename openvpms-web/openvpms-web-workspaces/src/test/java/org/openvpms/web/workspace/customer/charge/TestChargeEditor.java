@@ -31,11 +31,11 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
- * A test {@link CustomerChargeActEditor}.
+ * A test {@link DefaultCustomerChargeActEditor}.
  *
  * @author Tim Anderson
  */
-public class TestChargeEditor extends CustomerChargeActEditor {
+public class TestChargeEditor extends DefaultCustomerChargeActEditor {
 
     /**
      * The pharmacy order service.
@@ -91,8 +91,8 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      *
      * @return the editor queue
      */
-    public ChargeEditorQueue getQueue() {
-        return (ChargeEditorQueue) getItems().getEditorQueue();
+    public EditorQueue getQueue() {
+        return getItems().getEditorQueue();
     }
 
     /**
@@ -132,11 +132,7 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      */
     @Override
     protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-        TestChargeItemRelationshipCollectionEditor editor
-                = new TestChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
-        // register a handler for act popups
-        editor.setEditorQueue(new ChargeEditorQueue());
-        return editor;
+        return new TestChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
     }
 
     /**

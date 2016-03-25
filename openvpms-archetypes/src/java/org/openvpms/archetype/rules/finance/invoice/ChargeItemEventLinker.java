@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,7 +65,7 @@ public class ChargeItemEventLinker {
      * @param changes the patient history changes
      */
     public void link(FinancialAct item, PatientHistoryChanges changes) {
-        link(Arrays.asList(item), changes);
+        link(Collections.singletonList(item), changes);
     }
 
     /**
@@ -78,7 +78,7 @@ public class ChargeItemEventLinker {
      * @param changes the patient history changes
      */
     public void link(Act event, Act item, PatientHistoryChanges changes) {
-        link(event, Arrays.asList(item), changes);
+        link(event, Collections.singletonList(item), changes);
     }
 
     /**
@@ -151,7 +151,7 @@ public class ChargeItemEventLinker {
      * @return the acts
      */
     private List<Act> getActs(Act item, PatientHistoryChanges changes) {
-        List<Act> acts = new ArrayList<Act>();
+        List<Act> acts = new ArrayList<>();
         ActBean bean = new ActBean(item, service);
         acts.add(item);
         acts.addAll(getActs(bean, "dispensing", changes));
@@ -161,7 +161,7 @@ public class ChargeItemEventLinker {
     }
 
     private List<Act> getActs(ActBean bean, String node, PatientHistoryChanges changes) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         for (IMObjectReference ref : bean.getNodeTargetObjectRefs(node)) {
             Act act = (Act) changes.getObject(ref);
             if (act != null) {
@@ -178,7 +178,7 @@ public class ChargeItemEventLinker {
     private class Rules extends MedicalRecordRules {
 
         /**
-         * Constructs a {@code Rules}.
+         * Constructs a {@link Rules}.
          *
          * @param service the archetype service
          */

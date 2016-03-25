@@ -38,11 +38,12 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditDialog;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -197,7 +198,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
      * @param editor the editor
      * @return {@code true}  if the order or return can update the editor
      */
-    public boolean canCharge(AbstractCustomerChargeActEditor editor) {
+    public boolean canCharge(CustomerChargeActEditor editor) {
         boolean result = false;
         FinancialAct charge = (FinancialAct) editor.getObject();
         if (!ActStatus.POSTED.equals(editor.getStatus())) {
@@ -243,8 +244,8 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        CustomerChargeActEditDialog dialog = new CustomerChargeActEditDialog(editor, charger, context.getContext(),
-                                                                             false);
+        CustomerChargeActEditDialog dialog = new DefaultCustomerChargeActEditDialog(editor, charger,
+                                                                                    context.getContext(), false);
         dialog.show();
         doCharge(editor);
         return dialog;
@@ -258,7 +259,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
      * @param editor the editor to add invoice items to
      * @throws IllegalStateException if the editor cannot be used, or the order/return is invalid
      */
-    public void charge(AbstractCustomerChargeActEditor editor) {
+    public void charge(CustomerChargeActEditor editor) {
         if (!canCharge(editor)) {
             throw new IllegalStateException("Cannot charge " + act.getArchetypeId() + " to editor");
         }
@@ -314,7 +315,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
      *
      * @param editor the editor to add invoice items to
      */
-    private void doCharge(AbstractCustomerChargeActEditor editor) {
+    private void doCharge(CustomerChargeActEditor editor) {
         ActRelationshipCollectionEditor items = editor.getItems();
 
         for (Item item : this.items) {
@@ -339,7 +340,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
      * @return a new charge editor
      */
     protected CustomerChargeActEditor createChargeEditor(FinancialAct charge, LayoutContext context) {
-        return new CustomerChargeActEditor(charge, null, context, false);
+        return new DefaultCustomerChargeActEditor(charge, null, context, false);
     }
 
     /**
@@ -460,7 +461,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return !isOrder || (invoiceItem != null && (invoiceQty.compareTo(quantity) > 0));
         }
 
-        public void charge(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
+        public void charge(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
             FinancialAct object = (FinancialAct) itemEditor.getObject();
             itemEditor.setPatientRef(patient);
             itemEditor.setProductRef(product); // TODO - protect against product change
@@ -508,7 +509,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return result;
         }
 
-        public FinancialAct getCurrentInvoiceItem(AbstractCustomerChargeActEditor editor) {
+        public FinancialAct getCurrentInvoiceItem(CustomerChargeActEditor editor) {
             FinancialAct result = null;
             if (invoiceItem != null) {
                 List<Act> acts = editor.getItems().getCurrentActs();
