@@ -46,9 +46,9 @@ class Visit {
     private final Act event;
 
     /**
-     * The appointment. May be {@code null}
+     * Appointment bean. May be {@code null}
      */
-    private final Act appointment;
+    private final ActBean appointment;
 
     /**
      * The patient.
@@ -59,11 +59,6 @@ class Visit {
      * The cage type.
      */
     private CageType cageType;
-
-    /**
-     * Determines if the patient is charged the first or second pet rate.
-     */
-    private boolean firstPet = true;
 
     /**
      * The appointment rules.
@@ -86,6 +81,16 @@ class Visit {
     private boolean changed;
 
     /**
+     * The 'boarding charged' node name.
+     */
+    static final String BOARDING_CHARGED = "boardingCharged";
+
+    /**
+     * The 'first pet rate' node name.
+     */
+    static final String FIRST_PET_RATE = "firstPetRate";
+
+    /**
      * Constructs an {@link Visit}.
      *
      * @param event            the event. An <em>act.patientClinicalEvent</em>
@@ -95,7 +100,7 @@ class Visit {
      */
     public Visit(Act event, Act appointment, AppointmentRules appointmentRules, PatientRules patientRules) {
         this.event = event;
-        this.appointment = appointment;
+        this.appointment = appointment != null ? new ActBean(appointment) : null;
         this.appointmentRules = appointmentRules;
         this.patientRules = patientRules;
     }
@@ -115,7 +120,7 @@ class Visit {
      * @return the appointment. May be {@code null}
      */
     public Act getAppointment() {
-        return appointment;
+        return (appointment != null) ? appointment.getAct() : null;
     }
 
     /**
@@ -141,8 +146,7 @@ class Visit {
      */
     public CageType getCageType() {
         if (appointment != null && cageType == null) {
-            ActBean bean = new ActBean(appointment);
-            Entity schedule = bean.getNodeParticipant("schedule");
+            Entity schedule = appointment.getNodeParticipant("schedule");
             if (schedule != null) {
                 IMObjectBean scheduleBean = new IMObjectBean(schedule);
                 Entity type = (Entity) scheduleBean.getNodeTargetObject("cageType");
@@ -204,7 +208,7 @@ class Visit {
      * the second pet rate
      */
     public boolean isFirstPet() {
-        return firstPet;
+        return appointment != null && appointment.getBoolean(FIRST_PET_RATE, false);
     }
 
     /**
@@ -214,7 +218,10 @@ class Visit {
      *                 the second pet rate
      */
     public void setFirstPet(boolean firstPet) {
-        this.firstPet = firstPet;
+        if (appointment != null && firstPet != isFirstPet()) {
+            appointment.setValue(FIRST_PET_RATE, firstPet);
+            changed = true;
+        }
     }
 
     /**
@@ -254,7 +261,7 @@ class Visit {
      * @return a reference to the appointment schedule, or {@code null} if it is not known
      */
     public IMObjectReference getScheduleRef() {
-        return appointment != null ? new ActBean(appointment).getNodeParticipantRef("schedule") : null;
+        return appointment != null ? appointment.getNodeParticipantRef("schedule") : null;
     }
 
     /**
@@ -275,7 +282,7 @@ class Visit {
      * @return {@code true} if the appointment has its boardingCharged flag set.
      */
     public boolean isCharged() {
-        return appointment != null && new ActBean(appointment).getBoolean("boardingCharged", false);
+        return appointment != null && appointment.getBoolean(BOARDING_CHARGED, false);
     }
 
     /**
@@ -284,12 +291,9 @@ class Visit {
      * @param charged if {@code true}, indicates that boarding charges have been applied
      */
     public void setCharged(boolean charged) {
-        if (appointment != null) {
-            ActBean bean = new ActBean(appointment);
-            if (charged != bean.getBoolean("boardingCharged", false)) {
-                bean.setValue("boardingCharged", charged);
-                changed = true;
-            }
+        if (appointment != null && charged != isCharged()) {
+            appointment.setValue(BOARDING_CHARGED, charged);
+            changed = true;
         }
     }
 
@@ -298,7 +302,7 @@ class Visit {
      */
     public void save() {
         if (changed && appointment != null) {
-            ServiceHelper.getArchetypeService().save(appointment);
+            appointment.save();
         }
     }
 

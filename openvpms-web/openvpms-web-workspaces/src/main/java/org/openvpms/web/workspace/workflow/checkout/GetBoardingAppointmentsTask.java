@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.checkout;
 
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -47,6 +48,7 @@ import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -116,11 +118,10 @@ class GetBoardingAppointmentsTask extends AbstractTask {
                                                    appointment.getActivityStartTime()));
             notifyCancelled();
         } else {
-            List<Visit> visits = getVisits(context);
-            visits.add(0, this.visits.create(event, appointment));
-            this.visits.rate(visits, new Date());
+            List<Visit> selections = getVisits(context);
+            selections.add(0, visits.create(event, appointment));
             DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, context.getHelpContext());
-            final SelectionDialog dialog = new SelectionDialog(visits, appointment, layoutContext);
+            final SelectionDialog dialog = new SelectionDialog(visits, selections, appointment, layoutContext);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -141,6 +142,12 @@ class GetBoardingAppointmentsTask extends AbstractTask {
         notifyCompleted();
     }
 
+    /**
+     * Returns the boarding visits available for checkout.
+     *
+     * @param context the context
+     * @return the boarding visits
+     */
     private List<Visit> getVisits(TaskContext context) {
         List<Visit> result = new ArrayList<>();
         Party customer = context.getCustomer();
@@ -187,14 +194,15 @@ class GetBoardingAppointmentsTask extends AbstractTask {
         /**
          * Constructs a {@link SelectionDialog}.
          *
-         * @param events   the events to select
-         * @param required the required object. May be {@code null}
+         * @param visits     the visits
+         * @param selections the visits to select
+         * @param required   the required object. May be {@code null}
          */
-        public SelectionDialog(List<Visit> events, Act required, LayoutContext context) {
+        public SelectionDialog(Visits visits, List<Visit> selections, Act required, LayoutContext context) {
             super(Messages.get("workflow.checkout.appointments.title"), "MediumDialog", OK_CANCEL,
                   context.getHelpContext());
             setModal(true);
-            AppointmentTableModel model = new AppointmentTableModel(events, required, context);
+            VisitTableModel model = new VisitTableModel(visits, selections, required, context);
             table = new IMTable<>(model);
             table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
             Column column = ColumnFactory.create(Styles.CELL_SPACING,
@@ -209,43 +217,18 @@ class GetBoardingAppointmentsTask extends AbstractTask {
          * @return the selected objects
          */
         public List<Visit> getSelected() {
-            AppointmentTableModel model = (AppointmentTableModel) table.getModel();
+            VisitTableModel model = (VisitTableModel) table.getModel();
             return model.getSelected();
         }
 
-        /**
-         * Invoked when the 'OK' button is pressed. This sets the action and closes
-         * the window.
-         */
-        @Override
-        protected void onOK() {
-            if (haveSelectedFirstPetRate()) {
-                super.onOK();
-            }
-        }
-
-        /**
-         * Ensures that a pet that attracts the First Pet rate is selected. This is required as there is no
-         * reliable way of determining if a pet was charged the first or second pet rate once they are checked out.
-         *
-         * @return {@code true} if a pet is selected that attracts the first pet rate
-         */
-        private boolean haveSelectedFirstPetRate() {
-            boolean first = false;
-            for (Visit visit : getSelected()) {
-                if (visit.isFirstPet()) {
-                    first = true;
-                    break;
-                }
-            }
-            if (!first) {
-                InformationDialog.show(Messages.get("workflow.checkout.appointments.firstpetselected"));
-            }
-            return first;
-        }
     }
 
-    private static class AppointmentTableModel extends AbstractIMTableModel<Visit> {
+    private static class VisitTableModel extends AbstractIMTableModel<Visit> {
+
+        /**
+         * The visits.
+         */
+        private final Visits visits;
 
         /**
          * The selection boxes.
@@ -257,6 +240,9 @@ class GetBoardingAppointmentsTask extends AbstractTask {
          */
         private final Act required;
 
+        /**
+         * The layout context.
+         */
         private final LayoutContext context;
 
         /**
@@ -264,37 +250,67 @@ class GetBoardingAppointmentsTask extends AbstractTask {
          */
         private static final int SELECTED_INDEX = 0;
 
+        /**
+         * Schedule column model index.
+         */
         private static final int SCHEDULE_INDEX = SELECTED_INDEX + 1;
 
+        /**
+         * Patient column model index.
+         */
         private static final int PATIENT_INDEX = SCHEDULE_INDEX + 1;
 
+        /**
+         * Appointment date range column model index.
+         */
         private static final int APPOINTMENT_INDEX = PATIENT_INDEX + 1;
 
+        /**
+         * Event date range column model index.
+         */
         private static final int EVENT_INDEX = APPOINTMENT_INDEX + 1;
 
+        /**
+         * Appointment reason column model index.
+         */
         private static final int REASON_INDEX = EVENT_INDEX + 1;
 
+        /**
+         * Days column model index.
+         */
         private static final int DAYS_INDEX = REASON_INDEX + 1;
 
+        /**
+         * Charging rate column model index.
+         */
         private static final int RATE_INDEX = DAYS_INDEX + 1;
 
+        /**
+         * Late checkout flag column model index.
+         */
         private static final int LATE_CHECKOUT_INDEX = RATE_INDEX + 1;
 
+        /**
+         * Charged flag column model index.
+         */
         private static final int CHARGED_INDEX = LATE_CHECKOUT_INDEX + 1;
 
         /**
-         * Constructs a {@link AppointmentTableModel}.
+         * Constructs a {@link VisitTableModel}.
          *
-         * @param events   the events
-         * @param required the required appointment. May be {@code null}
-         * @param context  the layout context
+         * @param visits     the visits
+         * @param selections the visits available for selection
+         * @param required   the required appointment. May be {@code null}
+         * @param context    the layout context
          */
-        public AppointmentTableModel(List<Visit> events, Act required, LayoutContext context) {
+        public VisitTableModel(Visits visits, List<Visit> selections, Act required, LayoutContext context) {
+            this.visits = visits;
             this.required = required;
             this.context = new DefaultLayoutContext(context);
             this.context.setComponentFactory(new TableComponentFactory(context));
-            setObjects(events);
+            setObjects(selections);
             setTableColumnModel(createTableColumnModel());
+            rate();
         }
 
         /**
@@ -329,6 +345,12 @@ class GetBoardingAppointmentsTask extends AbstractTask {
                     box.setSelected(true);
                 }
                 this.selected.add(box);
+                box.addActionListener(new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        rate();
+                    }
+                });
             }
         }
 
@@ -385,40 +407,6 @@ class GetBoardingAppointmentsTask extends AbstractTask {
             return result;
         }
 
-        private Object getAppointment(Visit visit) {
-            Act act = visit.getAppointment();
-            Date startTime = act.getActivityStartTime();
-            String from = DateFormatter.formatDateTimeAbbrev(startTime);
-            String to = DateFormatter.formatDateTimeAbbrev(act.getActivityEndTime(), startTime);
-            return from + " - " + to;
-        }
-
-        private Object getEvent(Visit visit) {
-            Date startTime = visit.getStartTime();
-            Date endTime = visit.getEndTime();
-            String from = DateFormatter.formatDateTimeAbbrev(startTime);
-            String to = (endTime != null) ? DateFormatter.formatDateTimeAbbrev(endTime, startTime) : "now";
-            return from + " - " + to;
-        }
-
-        private Object getDays(Visit visit) {
-            return TableHelper.rightAlign(Integer.toString(visit.getDays()));
-        }
-
-        private Object getRate(Visit visit) {
-            String key = visit.isFirstPet() ? "workflow.checkout.appointments.first"
-                                            : "workflow.checkout.appointments.second";
-            return Messages.get(key);
-        }
-
-        private Object getLateCheckout(Visit visit) {
-            return getCheckBox(visit.isLateCheckout());
-        }
-
-        private Object getCharged(Visit visit) {
-            return getCheckBox(visit.isCharged());
-        }
-
         /**
          * Creates a new column model.
          *
@@ -439,6 +427,90 @@ class GetBoardingAppointmentsTask extends AbstractTask {
             model.addColumn(createTableColumn(CHARGED_INDEX, "workflow.checkout.appointments.charged"));
             return model;
         }
+
+        /**
+         * Determines the charging rate for each of the selected visits.
+         */
+        private void rate() {
+            // reset all visits prior to rating those selected
+            for (Visit visit : getObjects()) {
+                visit.setFirstPet(true);
+            }
+            visits.rate(getSelected(), new Date());
+            fireTableDataChanged();
+        }
+
+        /**
+         * Returns an object representing the appointment date range.
+         *
+         * @param visit visit
+         * @return the appointment date range
+         */
+        private Object getAppointment(Visit visit) {
+            Act act = visit.getAppointment();
+            Date startTime = act.getActivityStartTime();
+            String from = DateFormatter.formatDateTimeAbbrev(startTime);
+            String to = DateFormatter.formatDateTimeAbbrev(act.getActivityEndTime(), startTime);
+            return Messages.format("workflow.checkout.appointments.daterange", from, to);
+        }
+
+        /**
+         * Returns an object representing the event date range.
+         *
+         * @param visit visit
+         * @return the event date range
+         */
+        private Object getEvent(Visit visit) {
+            Date startTime = visit.getStartTime();
+            Date endTime = visit.getEndTime();
+            String from = DateFormatter.formatDateTimeAbbrev(startTime);
+            String to = (endTime != null) ? DateFormatter.formatDateTimeAbbrev(endTime, startTime)
+                                          : Messages.get("workflow.checkout.appointments.now");
+            return Messages.format("workflow.checkout.appointments.daterange", from, to);
+        }
+
+        /**
+         * Returns an object representing the no. of days being charged.
+         *
+         * @param visit the visit
+         * @return the no. of days being charged
+         */
+        private Object getDays(Visit visit) {
+            return TableHelper.rightAlign(Integer.toString(visit.getDays()));
+        }
+
+        /**
+         * Returns an object representing charge rate.
+         *
+         * @param visit the visit
+         * @return the charge rate
+         */
+        private Object getRate(Visit visit) {
+            String key = visit.isFirstPet() ? "workflow.checkout.appointments.first"
+                                            : "workflow.checkout.appointments.second";
+            return Messages.get(key);
+        }
+
+        /**
+         * Returns an object representing the late checkout state of a visit.
+         *
+         * @param visit the visit
+         * @return the late checkout flag
+         */
+        private Object getLateCheckout(Visit visit) {
+            return getCheckBox(visit.isLateCheckout());
+        }
+
+        /**
+         * Returns an object representing the charged state of a visit.
+         *
+         * @param visit the visit
+         * @return the charged state flag
+         */
+        private Object getCharged(Visit visit) {
+            return getCheckBox(visit.isCharged());
+        }
+
     }
 
 }

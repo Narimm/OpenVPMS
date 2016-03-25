@@ -98,20 +98,32 @@
         <data collection="prices" archetype="productPrice.unitPrice" price="50.00"/>
     </data>
 
+    <!-- Late Checkout products -->
+    <data id="LCP1" archetype="product.service" name="Late Checkout">
+        <data collection="prices" archetype="productPrice.unitPrice" price="50.00"/>
+    </data>
+
     <!-- Cage types -->
-    <data id="CTR1" archetype="entity.cageType" name="Small Red Kennel" description="Small dog kennel, red section">
+    <data id="CTR1" archetype="entity.cageType" name="Small Red Kennel" description="Small dog kennel, red section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTR1"
               target="id:DBP1"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR1"
               target="id:DBP2"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTR1"
+              target="id:LCP1"/>
     </data>
-    <data id="CTR2" archetype="entity.cageType" name="Medium Red Kennel" description="Medium dog kennel, red section">
+    <data id="CTR2" archetype="entity.cageType" name="Medium Red Kennel" description="Medium dog kennel, red section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTR2"
               target="id:DBP3"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR2"
               target="id:DBP4"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTR2"
+              target="id:LCP1"/>
     </data>
-    <data id="CTR3" archetype="entity.cageType" name="Large Red Kennel" description="Large dog kennel, red section">
+    <data id="CTR3" archetype="entity.cageType" name="Large Red Kennel" description="Large dog kennel, red section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTR3"
               target="id:DBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR3"
@@ -120,20 +132,29 @@
               target="id:DBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTR3"
               target="id:DBP8"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTR3"
+              target="id:LCP1"/>
     </data>
-    <data id="CTR4" archetype="entity.cageType" name="Small Red Cage" description="Small cat cage, red section">
+    <data id="CTR4" archetype="entity.cageType" name="Small Red Cage" description="Small cat cage, red section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTR4"
               target="id:CBP1"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR4"
               target="id:CBP2"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTR4"
+              target="id:LCP1"/>
     </data>
-    <data id="CTR5" archetype="entity.cageType" name="Medium Red Cage" description="Medium cat cage, red section">
+    <data id="CTR5" archetype="entity.cageType" name="Medium Red Cage" description="Medium cat cage, red section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTR5"
               target="id:CBP3"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR5"
               target="id:CBP4"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTR5"
+              target="id:LCP1"/>
     </data>
-    <data id="CTR6" archetype="entity.cageType" name="Large Red Cage" description="Large cat cage, red section">
+    <data id="CTR6" archetype="entity.cageType" name="Large Red Cage" description="Large cat cage, red section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTR6"
               target="id:CBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTR6"
@@ -142,21 +163,29 @@
               target="id:CBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTR6"
               target="id:CBP8"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTR6"
+              target="id:LCP1"/>
     </data>
-    <data id="CTB1" archetype="entity.cageType" name="Small Blue Kennel" description="Small dog kennel, blue section">
+    <data id="CTB1" archetype="entity.cageType" name="Small Blue Kennel" description="Small dog kennel, blue section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTB1"
               target="id:DBP1"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB1"
               target="id:DBP2"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTB1"
+              target="id:LCP1"/>
     </data>
     <data id="CTB2" archetype="entity.cageType" name="Medium Blue Kennel"
-          description="Medium dog kennel, blue section">
+          description="Medium dog kennel, blue section" lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTB2"
               target="id:DBP3"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB2"
               target="id:DBP4"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTB2"
+              target="id:LCP1"/>
     </data>
-    <data id="CTB3" archetype="entity.cageType" name="Large Blue Kennel" description="Large dog kennel, blue section">
+    <data id="CTB3" archetype="entity.cageType" name="Large Blue Kennel" description="Large dog kennel, blue section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTB3"
               target="id:DBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB3"
@@ -165,20 +194,29 @@
               target="id:DBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTB3"
               target="id:DBP8"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTB3"
+              target="id:LCP1"/>
     </data>
-    <data id="CTB4" archetype="entity.cageType" name="Small Blue Cage" description="Small cat cage, blue section">
+    <data id="CTB4" archetype="entity.cageType" name="Small Blue Cage" description="Small cat cage, blue section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTB4"
               target="id:CBP1"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB4"
               target="id:CBP2"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTB4"
+              target="id:LCP1"/>
     </data>
-    <data id="CTB5" archetype="entity.cageType" name="Medium Blue Cage" description="Medium cat cage, blue section">
+    <data id="CTB5" archetype="entity.cageType" name="Medium Blue Cage" description="Medium cat cage, blue section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTB5"
               target="id:CBP3"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB5"
               target="id:CBP4"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTB5"
+              target="id:LCP1"/>
     </data>
-    <data id="CTB6" archetype="entity.cageType" name="Large Blue Cage" description="Large cat cage, blue section">
+    <data id="CTB6" archetype="entity.cageType" name="Large Blue Cage" description="Large cat cage, blue section"
+          lateCheckoutTime="1/1/1970 17:30:00">
         <data collection="firstPetProductDay" archetype="entityLink.cageFirstPetProductDay" source="id:CTB6"
               target="id:CBP5"/>
         <data collection="firstPetProductNight" archetype="entityLink.cageFirstPetProductNight" source="id:CTB6"
@@ -187,6 +225,8 @@
               target="id:CBP7"/>
         <data collection="secondPetProductNight" archetype="entityLink.cageSecondPetProductNight" source="id:CTB6"
               target="id:CBP8"/>
+        <data collection="lateCheckoutProduct" archetype="entityLink.cageLateCheckoutProduct" source="id:CTB6"
+              target="id:LCP1"/>
     </data>
 
     <!-- Dog boarding schedules, red section -->
