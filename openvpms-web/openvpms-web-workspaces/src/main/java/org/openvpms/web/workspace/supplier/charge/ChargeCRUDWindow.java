@@ -40,7 +40,7 @@ public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * @param help       the help context
      */
     public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
-        super(archetypes, ActActions.<FinancialAct>edit(), context, help);
+        super(archetypes, ActActions.<FinancialAct>edit(true), context, help);
     }
 
     /**
@@ -52,7 +52,7 @@ public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
-        buttons.add(createPreviewButton());
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -65,7 +65,7 @@ public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(POST_ID, enable);
-        buttons.setEnabled(PREVIEW_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
 }

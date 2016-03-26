@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -111,7 +112,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
         boolean enableRefresh = enable && canRefresh();
         buttons.setEnabled(REFRESH_ID, enableRefresh);
         buttons.setEnabled(EXTERNAL_EDIT_ID, enable && getActions().canExternalEdit(getObject()));
@@ -122,20 +123,22 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     @Override
     protected void onPrint() {
-        DocumentAct act = getObject();
-        if (act.getDocument() == null) {
+        DocumentAct act = IMObjectHelper.reload(getObject());
+        if (act == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else if (act.getDocument() != null) {
             if (canRefresh()) {
                 // regenerate the document, and print
-                refresh(true, false);
+                refresh(act, true, false);
             } else {
                 ActBean bean = new ActBean(act);
                 if (bean.hasNode("documentTemplate") || bean.hasNode("investigationType")) {
                     // document is generated on the fly
-                    super.onPrint();
+                    print(act);
                 }
             }
         } else {
-            super.onPrint();
+            print(act);
         }
     }
 
@@ -143,24 +146,29 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * Invoked when the 'refresh' button is pressed.
      */
     private void onRefresh() {
-        final RefreshDialog dialog = new RefreshDialog(getObject(), getHelpContext());
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                refresh(false, dialog.version());
-            }
-        });
-        dialog.show();
+        final DocumentAct act = IMObjectHelper.reload(getObject());
+        if (act == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else {
+            final RefreshDialog dialog = new RefreshDialog(getObject(), getHelpContext());
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    refresh(act, false, dialog.version());
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
-     * Refreshes the current document act, optionally printing it.
+     * Refreshes an act, optionally printing it.
      *
+     * @param act     the act to refresh
      * @param print   if {@code true} print it
      * @param version if {@code true} version the document
      */
-    private void refresh(final boolean print, boolean version) {
-        final DocumentAct act = getObject();
+    private void refresh(final DocumentAct act, final boolean print, boolean version) {
         DocumentGenerator generator = new DocumentGenerator(
                 act, getContext(), getHelpContext(), new DocumentGenerator.AbstractListener() {
             public void generated(Document document) {
@@ -179,7 +187,9 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     private void onExternalEdit() {
         DocumentAct act = IMObjectHelper.reload(getObject());
-        if (act != null) {
+        if (act == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else {
             getActions().externalEdit(act);
         }
     }

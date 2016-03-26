@@ -123,7 +123,7 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         boolean dispense = enable && getActions().canDispense(getObject());
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
         buttons.setEnabled(DISPENSE_ID, dispense);
         buttons.setEnabled(CANCEL_ID, dispense); // if it can be dispensed, it can be cancelled
     }

@@ -146,7 +146,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         boolean newFlowSheetEnabled = enable && getActions().canCreateFlowSheet(
                 getObject(), getContext().getLocation(), flowSheetServiceFactory);
         buttons.setEnabled(NEW_FLOW_SHEET_ID, newFlowSheetEnabled);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
     /**

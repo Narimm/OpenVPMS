@@ -16,15 +16,18 @@
 
 package org.openvpms.web.component.workspace;
 
+import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -54,6 +57,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -512,6 +516,32 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
+     * Enables/disables print and print-preview.
+     *
+     * @param buttons the buttons
+     * @param enable  if {@code true}, enable print/print preview, else disable it
+     */
+    protected void enablePrintPreview(ButtonSet buttons, boolean enable) {
+        buttons.setEnabled(PRINT_ID, enable);
+        String tooltip = null;
+        if (enable) {
+            buttons.addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_V, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onPreview();
+                }
+            });
+            tooltip = Messages.get("print.preview.tooltip");
+        } else {
+            buttons.removeKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_V);
+        }
+        Button button = getButtons().getButton(PRINT_ID);
+        if (button != null) {
+            button.setToolTipText(tooltip);
+        }
+    }
+
+    /**
      * Invoked when the 'new' button is pressed.
      *
      * @param archetypes the archetypes
@@ -648,7 +678,12 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Invoked when the 'print' button is pressed.
      */
     protected void onPrint() {
-        print(getObject());
+        T object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else {
+            print(object);
+        }
     }
 
     /**
@@ -731,6 +766,26 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<>(printer, context, help);
         interactive.setMailContext(getMailContext());
         return interactive;
+    }
+
+    /**
+     * Invoked to preview the current object.
+     */
+    protected void onPreview() {
+        T previous = getObject();
+        final T object = IMObjectHelper.reload(previous);
+        if (object == null && previous != null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
+        } else {
+            try {
+                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, getContext());
+                IMPrinter<T> printer = IMPrinterFactory.create(object, locator, getContext());
+                Document document = printer.getDocument(DocFormats.PDF_TYPE, false);
+                DownloadServlet.startDownload(document);
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
     }
 
     /**

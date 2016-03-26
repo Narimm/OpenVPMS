@@ -33,6 +33,13 @@ import static org.openvpms.archetype.rules.act.EstimateActStatus.INVOICED;
 public class EstimateActions extends ActActions<Act> {
 
     /**
+     * Default constructor.
+     */
+    public EstimateActions() {
+        super(true);
+    }
+
+    /**
      * Determines if an estimate can be edited.
      *
      * @param act the estimate to check

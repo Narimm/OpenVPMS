@@ -126,7 +126,7 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
         buttons.setEnabled(EDIT_ID, enableEdit);
         buttons.setEnabled(DELETE_ID, enableDeletePost);
         buttons.setEnabled(POST_ID, enableDeletePost);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
     /**

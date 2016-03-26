@@ -64,7 +64,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
         super(Archetypes.create(archetypes.getShortNames(), archetypes.getType(), INVOICE, archetypes.getDisplayName()),
-              ActActions.<FinancialAct>edit(), context, help);
+              ActActions.<FinancialAct>edit(true), context, help);
     }
 
     /**
@@ -87,7 +87,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
-        buttons.add(createPreviewButton());
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -100,7 +100,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(POST_ID, enable);
-        buttons.setEnabled(PREVIEW_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
     /**
