@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -68,6 +69,7 @@ import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
@@ -147,7 +149,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * @param help    the help context
      */
     public TillCRUDWindow(Context context, HelpContext help) {
-        super(new Archetypes<FinancialAct>("act.tillBalanceAdjustment", FinancialAct.class), context, help);
+        super(new Archetypes<>("act.tillBalanceAdjustment", FinancialAct.class), context, help);
         rules = ServiceHelper.getBean(TillRules.class);
     }
 
@@ -269,7 +271,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         }
         buttons.setEnabled(START_CLEAR_ID, uncleared);
         buttons.setEnabled(CLEAR_ID, uncleared || inProgress);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
         buttons.setEnabled(ADJUST_ID, uncleared || inProgress);
         buttons.setEnabled(REVERSE_ID, reverse);
         buttons.setEnabled(NEW_ID, inProgress);
@@ -364,27 +366,47 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void onPrint() {
-        try {
-            final FinancialAct object = getObject();
-            IPage<ObjectSet> set = new TillBalanceQuery(object, ServiceHelper.getArchetypeService()).query();
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
-            String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
-            String title = Messages.format("imobject.print.title", displayName);
-            HelpContext help = getHelpContext().subtopic("print");
-            InteractiveIMPrinter<ObjectSet> iPrinter =
-                    new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(), help);
-            iPrinter.setMailContext(getMailContext());
-            iPrinter.setListener(new BasicPrinterListener() {
-                @Override
-                public void printed(String printer) {
-                    if (getActions().setPrinted(object)) {
-                        onSaved(object, false);
+        final FinancialAct object = IMObjectHelper.reload(getObject());
+        if (object != null) {
+            try {
+                IPage<ObjectSet> set = new TillBalanceQuery(object, ServiceHelper.getArchetypeService()).query();
+                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
+                String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
+                String title = Messages.format("imobject.print.title", displayName);
+                HelpContext help = getHelpContext().subtopic("print");
+                InteractiveIMPrinter<ObjectSet> iPrinter =
+                        new InteractiveIMPrinter<>(title, printer, getContext(), help);
+                iPrinter.setMailContext(getMailContext());
+                iPrinter.setListener(new BasicPrinterListener() {
+                    @Override
+                    public void printed(String printer) {
+                        if (getActions().setPrinted(object)) {
+                            onSaved(object, false);
+                        }
                     }
-                }
-            });
-            iPrinter.print();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+                });
+                iPrinter.print();
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+    }
+
+    /**
+     * Invoked to preview the current object.
+     */
+    @Override
+    protected void onPreview() {
+        final FinancialAct object = IMObjectHelper.reload(getObject());
+        if (object != null) {
+            try {
+                IPage<ObjectSet> set = new TillBalanceQuery(object, ServiceHelper.getArchetypeService()).query();
+                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
+                Document document = printer.getDocument();
+                DownloadServlet.startDownload(document);
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
         }
     }
 

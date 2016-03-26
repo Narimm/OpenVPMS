@@ -90,7 +90,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.setEnabled(REVERSE_ID, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
     /**

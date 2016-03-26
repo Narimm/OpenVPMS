@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -51,6 +52,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
@@ -164,6 +166,27 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
+     * Invoked to preview the problem history.
+     */
+    @Override
+    protected void onPreview() {
+        if (query != null) {
+            try {
+                Context context = getContext();
+                ProblemFilter filter = new ProblemFilter(query.getActItemShortNames(), query.isSortAscending());
+                Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
+                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
+                                                                                     context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
+                Document document = printer.getDocument();
+                DownloadServlet.startDownload(document);
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -184,7 +207,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
     /**

@@ -117,7 +117,7 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
             }
         });
         buttons.add(createPostButton());
-        buttons.add(createPreviewButton());
+        buttons.add(createPrintButton());
         buttons.add(copy);
         buttons.add(invoice);
     }
@@ -141,7 +141,7 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
             enableInvoice = ops.canInvoice(act);
         }
         buttons.setEnabled(POST_ID, enablePost);
-        buttons.setEnabled(PREVIEW_ID, enable);
+        enablePrintPreview(buttons, enable);
         buttons.setEnabled(COPY_ID, enable);
         buttons.setEnabled(INVOICE_ID, enableInvoice);
     }

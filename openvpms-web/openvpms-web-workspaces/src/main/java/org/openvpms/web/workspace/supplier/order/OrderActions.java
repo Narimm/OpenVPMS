@@ -39,6 +39,7 @@ public class OrderActions extends ActActions<FinancialAct> {
      * Default constructor.
      */
     private OrderActions() {
+        super(true);
     }
 
     /**

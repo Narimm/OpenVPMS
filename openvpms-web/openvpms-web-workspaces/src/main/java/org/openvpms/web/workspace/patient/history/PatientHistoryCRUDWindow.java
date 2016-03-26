@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -46,6 +47,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
@@ -165,7 +167,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
 
         Act event = getEvent();
         Party location = getContext().getLocation();
@@ -252,6 +254,27 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
                 InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+    }
+
+    /**
+     * Invoked to preview the patient history.
+     */
+    protected void onPreview() {
+        if (query != null) {
+            try {
+                Context context = getContext();
+                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
+                // maxDepth = 2 - display the events, and their immediate children
+                Iterable<Act> summary = new ActHierarchyIterator<>(query, filter, 2);
+                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
+                                                                                     context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
+                Document document = printer.getDocument();
+                DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);
             }

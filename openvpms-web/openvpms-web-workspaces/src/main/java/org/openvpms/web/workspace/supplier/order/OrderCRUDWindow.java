@@ -46,7 +46,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.workspace.supplier.SupplierHelper;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -98,7 +98,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         });
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
-        buttons.add(createPreviewButton());
+        buttons.add(createPrintButton());
         buttons.add(copy);
         buttons.add(generate);
         buttons.add(createCheckInboxButton());
@@ -124,7 +124,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         buttons.setEnabled(EDIT_ID, editEnabled);
         buttons.setEnabled(DELETE_ID, deletePostEnabled);
         buttons.setEnabled(POST_ID, deletePostEnabled);
-        buttons.setEnabled(PREVIEW_ID, enable);
+        enablePrintPreview(buttons, enable);
         buttons.setEnabled(COPY_ID, enable);
     }
 
@@ -252,10 +252,10 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
                                 List<IMObject> suppliers, boolean belowIdealQuantity, HelpContext help) {
         final String title = Messages.get("supplier.order.generate.title");
         if (stockLocation != null) {
-            locations = Arrays.asList((IMObject) stockLocation);
+            locations = Collections.singletonList((IMObject) stockLocation);
         }
         if (supplier != null) {
-            suppliers = Arrays.asList((IMObject) supplier);
+            suppliers = Collections.singletonList((IMObject) supplier);
         }
         final OrderProgressBarProcessor processor = new OrderProgressBarProcessor(
                 getContext().getPractice(), locations, suppliers, belowIdealQuantity, title);

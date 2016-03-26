@@ -18,9 +18,9 @@ package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
@@ -29,9 +29,7 @@ import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.print.BasicPrinterListener;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -41,7 +39,6 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
@@ -58,11 +55,6 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      * Post button identifier.
      */
     protected static final String POST_ID = "post";
-
-    /**
-     * Preview button identifier.
-     */
-    protected static final String PREVIEW_ID = "preview";
 
     /**
      * Determines if the current act is posted or not.
@@ -218,17 +210,25 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     }
 
     /**
-     * Invoked when the 'preview' button is pressed.
+     * Invoked when the 'print' button is pressed.
      */
-    protected void onPreview() {
-        try {
-            T object = getObject();
-            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, getContext());
-            IMPrinter<T> printer = IMPrinterFactory.create(object, locator, getContext());
-            Document document = printer.getDocument();
-            DownloadServlet.startDownload(document);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+    @Override
+    protected void onPrint() {
+        final T object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else if (!ActStatus.POSTED.equals(object.getStatus()) && getActions().warnWhenPrintingUnfinalisedAct()) {
+            String displayName = DescriptorHelper.getDisplayName(object);
+            String title = Messages.format("print.unfinalised.title", displayName);
+            String message = Messages.format("print.unfinalised.message", displayName);
+            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    print(object);
+                }
+            });
+        } else {
+            print(object);
         }
     }
 
@@ -244,7 +244,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         InteractiveIMPrinter<T> printer = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new BasicPrinterListener() {
             public void printed(String printer) {
-                if (getActions().setPrinted(object)) {
+                if (ActStatus.POSTED.equals(object.getStatus()) && getActions().setPrinted(object)) {
                     saved(object);
                 }
             }
@@ -278,19 +278,6 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         return ButtonFactory.create(POST_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onPost();
-            }
-        });
-    }
-
-    /**
-     * Helper to create a new button with id {@link #PREVIEW_ID} linked to {@link #onPreview()}.
-     *
-     * @return a new button
-     */
-    protected Button createPreviewButton() {
-        return ButtonFactory.create(PREVIEW_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onPreview();
             }
         });
     }

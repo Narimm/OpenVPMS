@@ -156,7 +156,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
         buttons.setEnabled(REPLY_ID, enable && user);
         buttons.setEnabled(FORWARD_ID, enable && user);
         buttons.setEnabled(COMPLETED_ID, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
     /**
