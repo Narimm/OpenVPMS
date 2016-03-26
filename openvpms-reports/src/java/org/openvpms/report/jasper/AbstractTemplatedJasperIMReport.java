@@ -43,9 +43,14 @@ import static net.sf.jasperreports.engine.query.JRJdbcQueryExecuterFactory.QUERY
 public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperIMReport<T> {
 
     /**
+     * The report name.
+     */
+    private final String name;
+
+    /**
      * The template loader.
      */
-    private JasperTemplateLoader template;
+    private final JasperTemplateLoader template;
 
 
     /**
@@ -62,6 +67,7 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
                                            DocumentHandlers handlers, Functions functions) {
         super(service, lookups, handlers, functions);
         this.template = new JasperTemplateLoader(template, service, handlers);
+        this.name = template.getName();
     }
 
     /**
@@ -78,6 +84,7 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
                                            DocumentHandlers handlers, Functions functions) {
         super(service, lookups, handlers, functions);
         this.template = new JasperTemplateLoader(design, service, handlers);
+        this.name = design.getName();
     }
 
     /**
@@ -98,6 +105,16 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
             result.add(type);
         }
         return result;
+    }
+
+    /**
+     * Returns the report name.
+     *
+     * @return the report name.
+     */
+    @Override
+    public String getName() {
+        return name;
     }
 
     /**

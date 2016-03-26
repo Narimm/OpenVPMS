@@ -171,7 +171,7 @@ public class JasperReportTool extends ReportTool {
                 throw new ReportException(UnsupportedTemplate, doc.getName());
             }
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, doc.getName(), exception.getMessage());
         }
 
         if (showXML) {

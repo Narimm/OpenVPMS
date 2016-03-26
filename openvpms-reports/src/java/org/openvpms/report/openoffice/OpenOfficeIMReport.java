@@ -123,7 +123,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      */
     public Set<ParameterType> getParameterTypes() {
         Map<String, ParameterType> params = getParameters();
-        return new LinkedHashSet<ParameterType>(params.values());
+        return new LinkedHashSet<>(params.values());
     }
 
     /**
@@ -275,7 +275,8 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             try {
                 stream.write(content);
             } catch (IOException exception) {
-                throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+                throw new ReportException(exception, FailedToGenerateReport, template.getName(),
+                                          exception.getMessage());
             }
         } finally {
             close(doc, connection);
@@ -324,7 +325,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             doc = create(objects, parameters, fields, connection);
             service.print(doc, properties, true);
         } catch (OpenOfficeException exception) {
-            throw new ReportException(exception, FailedToPrintReport, exception.getMessage());
+            throw new ReportException(exception, FailedToPrintReport, template.getName(), exception.getMessage());
         } finally {
             close(doc, connection);
         }
@@ -351,7 +352,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             object = iter.next();
         }
         if (object == null || iter.hasNext()) {
-            throw new ReportException(FailedToGenerateReport, "Can only report on single objects");
+            throw new ReportException(FailedToGenerateReport, template.getName(), "Can only report on single objects");
         }
 
         try {

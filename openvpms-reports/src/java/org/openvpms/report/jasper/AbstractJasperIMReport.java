@@ -55,7 +55,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
-import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -160,7 +159,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     @Override
     public Set<ParameterType> getParameterTypes() {
-        Set<ParameterType> types = new LinkedHashSet<ParameterType>();
+        Set<ParameterType> types = new LinkedHashSet<>();
         JasperReport report = getReport();
         for (JRParameter p : report.getParameters()) {
             if (!p.isSystemDefined() && p.isForPrompting()) {
@@ -170,7 +169,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                     try {
                         defaultValue = getEvaluator().evaluate(expression);
                     } catch (JRException exception) {
-                        throw new ReportException(exception, FailedToGetParameters);
+                        throw new ReportException(exception, FailedToGetParameters, getName());
                     }
                 }
                 ParameterType type = new ParameterType(p.getName(), p.getValueClass(), p.getDescription(),
@@ -264,7 +263,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             JasperPrint print = JasperFillManager.fillReport(report, properties);
             document = export(print, properties, mimeType);
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         } finally {
             if (executer != null) {
                 executer.close();
@@ -333,7 +332,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                              String mimeType) {
         Document document;
-        parameters = (parameters != null) ? new HashMap<String, Object>(parameters) : new HashMap<String, Object>();
+        parameters = (parameters != null) ? new HashMap<>(parameters) : new HashMap<String, Object>();
         try {
             if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
                 parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
@@ -341,7 +340,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             JasperPrint print = report(objects, parameters, fields);
             document = export(print, parameters, mimeType);
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
         return document;
     }
@@ -365,7 +364,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             JasperPrint report = report(objects, parameters, fields);
             export(report, stream, parameters, mimeType);
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
     }
 
@@ -390,7 +389,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             JasperPrint print = JasperFillManager.fillReport(getReport(), params);
             print(print, properties);
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         } finally {
             if (executer != null) {
                 executer.close();
@@ -428,7 +427,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             JasperPrint print = report(objects, parameters, fields);
             print(print, properties);
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
     }
 
@@ -456,7 +455,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     public JasperPrint report(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields)
             throws JRException {
         JRDataSource source = createDataSource(objects, fields);
-        HashMap<String, Object> properties = new HashMap<String, Object>(getDefaultParameters());
+        HashMap<String, Object> properties = new HashMap<>(getDefaultParameters());
         if (parameters != null) {
             properties.putAll(parameters);
         }
@@ -516,7 +515,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @return the report parameters
      */
     protected Map<String, Object> getDefaultParameters() {
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 
     /**
@@ -540,12 +539,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             DocumentHandler handler = handlers.get(name, DocumentArchetypes.DEFAULT_DOCUMENT, mimeType);
             ByteArrayInputStream stream = new ByteArrayInputStream(data);
             document = handler.create(name, stream, mimeType, data.length);
-        } catch (DocumentException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
         } catch (Exception exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
         return document;
     }
@@ -585,7 +580,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             exportToText(report, stream, parameters);
             ext = DocFormats.TEXT_EXT;
         } else {
-            throw new ReportException(UnsupportedMimeType, mimeType);
+            throw new ReportException(UnsupportedMimeType, mimeType, getName());
         }
         return ext;
     }
@@ -732,7 +727,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private void print(JasperPrint print, PrintProperties properties) throws JRException {
         if (print.getPages().isEmpty()) {
-            throw new ReportException(NoPagesToPrint);
+            throw new ReportException(NoPagesToPrint, getName());
         }
         if (log.isDebugEnabled()) {
             log.debug("PrinterName: " + properties.getPrinterName());

@@ -39,6 +39,13 @@ public interface JasperIMReport<T> extends IMReport<T> {
     JasperPrint report(Iterable<T> objects) throws JRException;
 
     /**
+     * Returns the report name.
+     *
+     * @return the report name.
+     */
+    String getName();
+
+    /**
      * Returns the master report.
      *
      * @return the master report
