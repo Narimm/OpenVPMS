@@ -16,6 +16,8 @@
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
 
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -39,7 +41,7 @@ class CageRow {
 
     /**
      * Constructs a {@link CageRow}.
-     * <p>
+     * <p/>
      * This indicates that the row is a totals row.
      */
     public CageRow() {
@@ -94,6 +96,16 @@ class CageRow {
      */
     public Schedule getSchedule() {
         return schedule;
+    }
+
+    /**
+     * Determines if the row is for a particular schedule.
+     *
+     * @param schedule the schedule
+     * @return {@code true} if the row is for the schedule
+     */
+    public boolean isSchedule(Entity schedule) {
+        return (this.schedule != null && ObjectUtils.equals(this.schedule.getSchedule(), schedule));
     }
 
     /**
