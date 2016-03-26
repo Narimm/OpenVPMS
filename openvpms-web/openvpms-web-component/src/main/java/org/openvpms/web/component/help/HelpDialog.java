@@ -81,7 +81,7 @@ public class HelpDialog extends ModalDialog {
     /**
      * The project logo.
      */
-    private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
+    private static final String PATH = "/org/openvpms/web/resource/image/openvpms.png";
 
     /**
      * The home page.
