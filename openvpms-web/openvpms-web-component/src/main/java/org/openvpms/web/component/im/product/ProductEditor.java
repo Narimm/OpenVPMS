@@ -54,6 +54,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -293,27 +294,49 @@ public class ProductEditor extends AbstractIMObjectEditor {
             for (ProductPrice other : unitPrices) {
                 if (DateRules.intersects(price.getFromDate(), price.getToDate(), other.getFromDate(),
                                          other.getToDate())) {
-                    IMObjectBean priceBean = new IMObjectBean(price);
-                    IMObjectBean otherBean = new IMObjectBean(other);
-                    List<Lookup> priceGroups = priceBean.getValues(PRICING_GROUPS, Lookup.class);
-                    List<Lookup> otherGroups = otherBean.getValues(PRICING_GROUPS, Lookup.class);
-                    if (priceGroups.isEmpty() && otherGroups.isEmpty()) {
-                        validator.add(getPriceEditor(price), new ValidatorError(
-                                Messages.format("product.price.dateOverlap", formatPrice(price),
-                                                formatPrice(other))));
-                        valid = false;
-                        break;
-                    } else if (priceGroups.removeAll(otherGroups)) {
-                        validator.add(getPriceEditor(price), new ValidatorError(
-                                Messages.format("product.price.groupOverlap", formatPrice(price),
-                                                formatPrice(other))));
-                        valid = false;
-                        break;
+                    if (DateRules.dateEquals(price.getToDate(), other.getFromDate())) {
+                        // intersection is on time only. Make them them so that they don't intersect
+                        setToDate(price, other.getFromDate());
+                    } else if (DateRules.dateEquals(price.getFromDate(), other.getToDate())) {
+                        setToDate(other, price.getFromDate());
+                    } else {
+                        IMObjectBean priceBean = new IMObjectBean(price);
+                        IMObjectBean otherBean = new IMObjectBean(other);
+                        List<Lookup> priceGroups = priceBean.getValues(PRICING_GROUPS, Lookup.class);
+                        List<Lookup> otherGroups = otherBean.getValues(PRICING_GROUPS, Lookup.class);
+                        if (priceGroups.isEmpty() && otherGroups.isEmpty()) {
+                            validator.add(getPriceEditor(price), new ValidatorError(
+                                    Messages.format("product.price.dateOverlap", formatPrice(price),
+                                                    formatPrice(other))));
+                            valid = false;
+                            break;
+                        } else if (priceGroups.removeAll(otherGroups)) {
+                            validator.add(getPriceEditor(price), new ValidatorError(
+                                    Messages.format("product.price.groupOverlap", formatPrice(price),
+                                                    formatPrice(other))));
+                            valid = false;
+                            break;
+                        }
                     }
                 }
             }
         }
         return valid;
+    }
+
+    /**
+     * Sets the to-date of a price.
+     *
+     * @param price the price
+     * @param date  the date
+     */
+    private void setToDate(ProductPrice price, Date date) {
+        IMObjectEditor editor = getPriceEditor(price);
+        if (editor instanceof ProductPriceEditor) {
+            ((ProductPriceEditor) editor).setToDate(date);
+        } else {
+            price.setToDate(date);
+        }
     }
 
     /**

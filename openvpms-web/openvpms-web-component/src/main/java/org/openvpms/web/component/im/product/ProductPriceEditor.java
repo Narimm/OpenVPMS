@@ -34,6 +34,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -197,6 +198,15 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     public BigDecimal getMaxDiscount() {
         return getProperty(MAX_DISCOUNT).getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Sets the date that the price is valid to.
+     *
+     * @param date the date. May be {@code nul}
+     */
+    public void setToDate(Date date) {
+        getProperty("toDate").setValue(date);
     }
 
     /**
