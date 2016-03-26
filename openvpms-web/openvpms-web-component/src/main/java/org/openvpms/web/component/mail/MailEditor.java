@@ -782,7 +782,7 @@ public class MailEditor extends AbstractModifiable {
                                 first = false;
                             }
                             Object element = names.nextElement();
-                            buffer.append(element).append('=').append(a.getAttribute(element));
+                            buffer.append(element).append("=\"").append(a.getAttribute(element)).append('\"');
                         }
                     }
                 }
