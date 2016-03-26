@@ -18,6 +18,7 @@ package org.openvpms.web.component.im.product;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductPriceTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -33,11 +34,14 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 /**
  * Tests the {@link ProductEditor}.
@@ -56,9 +60,7 @@ public class ProductEditorTestCase extends AbstractAppTest {
         Party supplier = TestHelper.createSupplier();
 
         assertTrue(product.getProductPrices().isEmpty());
-        ProductEditor editor = new ProductEditor(product, null, new DefaultLayoutContext(new LocalContext(),
-                                                                                         new HelpContext("foo", null)));
-        editor.getComponent();
+        ProductEditor editor = createEditor(product);
         IMObjectTableCollectionEditor prices = (IMObjectTableCollectionEditor) editor.getPricesEditor();
 
         // add a new price. This won't be added to the product until the product-supplier relationship is populaated
@@ -92,5 +94,61 @@ public class ProductEditorTestCase extends AbstractAppTest {
         assertTrue(product.getProductPrices().contains(unit)); // now added
 
         assertTrue(SaveHelper.save(editor));
+    }
+
+    /**
+     * Verifies that a product is invalid if its unit prices date range overlap.
+     */
+    @Test
+    public void testDateRangeOverlap() {
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, false);
+        ProductPrice unit1 = ProductPriceTestHelper.createUnitPrice("2016-01-01", null);
+        ProductPrice unit2 = ProductPriceTestHelper.createUnitPrice("2016-03-01", null);
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+
+        ProductEditor editor = createEditor(product);
+
+        assertFalse(editor.isValid());
+        unit1.setToDate(unit2.getFromDate());
+
+        assertTrue(editor.isValid());
+    }
+
+    /**
+     * Verifies that if two prices have date range overlaps, but the from and to dates are the same, the editor
+     * automatically adjusts the times so they no longer overlap.
+     */
+    @Test
+    public void testAdjustTimeOverlap() {
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, false);
+        ProductPrice unit1 = ProductPriceTestHelper.createUnitPrice("2016-01-01", null);
+        Date fromDate = getDatetime("2016-03-25 10:00:00");
+        ProductPrice unit2 = ProductPriceTestHelper.createUnitPrice(fromDate, null);
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+
+        ProductEditor editor = createEditor(product);
+        assertFalse(editor.isValid());
+
+        // now set the unit1 to-date so that it overlaps unit2 by 5 minutes
+        unit1.setToDate(getDatetime("2016-03-25 10:05:00"));
+        assertTrue(editor.isValid());
+
+        // verify the editor has adjusted the dates to be the same
+        assertEquals(fromDate, unit1.getToDate());
+    }
+
+    /**
+     * Creates a new product editor.
+     *
+     * @param product the product to edit
+     * @return a new editor
+     */
+    protected ProductEditor createEditor(Product product) {
+        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        ProductEditor editor = new ProductEditor(product, null, context);
+        editor.getComponent();
+        return editor;
     }
 }
