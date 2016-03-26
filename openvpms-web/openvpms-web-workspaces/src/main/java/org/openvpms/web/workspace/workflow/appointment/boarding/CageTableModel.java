@@ -121,11 +121,12 @@ public abstract class CageTableModel extends AbstractMultiDayTableModel {
     @Override
     public int getRows(int column, int row) {
         int rowSpan = 1;
-        CageRow cageRow = getGrid().getCageSchedule(row);
+        CageScheduleGrid grid = getGrid();
+        List<CageRow> rows = grid.getRows();
+        CageRow cageRow = rows.get(row);
         if (cageRow.getSchedule() != null) {
             Entity entity = cageRow.getSchedule().getSchedule();
-            List<Schedule> schedules = cageRow.getGroup().getSchedules();
-            for (int i = row + 1; i < schedules.size() && schedules.get(i).getSchedule().equals(entity); ++i) {
+            for (int i = row + 1; i < rows.size() && rows.get(i).isSchedule(entity); ++i) {
                 if (getEvent(column, i) == null) {
                     rowSpan++;
                 } else {
