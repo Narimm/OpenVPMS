@@ -576,8 +576,7 @@ public class DocumentTemplate {
 
     /**
      * Provides a mapping between supported orientations and values defined in
-     *
-     * @{link OrientationRequested}.
+     * {@link OrientationRequested}.
      */
     private enum Orientation {
 

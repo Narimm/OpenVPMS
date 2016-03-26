@@ -80,7 +80,7 @@ public class DocumentHelper {
      */
     private static Document create(File file, DocumentHandler handler, String mimeType) {
         if (handler == null) {
-            throw new DocumentException(DocumentException.ErrorCode.UnsupportedDoc, mimeType);
+            throw new DocumentException(DocumentException.ErrorCode.UnsupportedDoc, file.getName(), mimeType);
         }
         FileInputStream stream = null;
         try {

@@ -117,7 +117,7 @@ public class DocumentHandlers {
     public DocumentHandler get(String name, String mimeType) {
         DocumentHandler handler = find(name, mimeType);
         if (handler == null) {
-            throw new DocumentException(UnsupportedDoc, mimeType);
+            throw new DocumentException(UnsupportedDoc, name, mimeType);
         }
         return handler;
     }
@@ -154,7 +154,7 @@ public class DocumentHandlers {
     public DocumentHandler get(String name, String shortName, String mimeType) {
         DocumentHandler handler = find(name, shortName, mimeType);
         if (handler == null) {
-            throw new DocumentException(UnsupportedDoc, mimeType);
+            throw new DocumentException(UnsupportedDoc, name, mimeType);
         }
         return handler;
     }

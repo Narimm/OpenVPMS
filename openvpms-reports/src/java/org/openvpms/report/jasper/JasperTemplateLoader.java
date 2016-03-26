@@ -85,7 +85,7 @@ public class JasperTemplateLoader {
             JasperDesign report = JRXmlLoader.load(stream);
             init(template.getName(), report, service, handlers);
         } catch (DocumentException | JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, template.getName(), exception.getMessage());
         } finally {
             IOUtils.closeQuietly(stream);
         }
@@ -146,7 +146,7 @@ public class JasperTemplateLoader {
             }
             report = JasperCompileManager.compileReport(design);
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, name, exception.getMessage());
         }
     }
 

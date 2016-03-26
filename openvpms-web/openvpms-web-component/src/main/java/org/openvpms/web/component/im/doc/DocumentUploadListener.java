@@ -95,7 +95,7 @@ public abstract class DocumentUploadListener extends AbstractUploadListener {
         DocumentHandler h;
         if (handler != null) {
             if (!handler.canHandle(fileName, contentType)) {
-                throw new DocumentException(UnsupportedDoc, contentType);
+                throw new DocumentException(UnsupportedDoc, fileName, contentType);
             }
             h = handler;
         } else {
