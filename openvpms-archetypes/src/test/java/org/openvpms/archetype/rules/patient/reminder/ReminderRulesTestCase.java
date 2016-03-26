@@ -532,6 +532,30 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that if a entityRelationship.productReminder is missing the periodUom, it is treated as YEARS.
+     */
+    @Test
+    public void testCalculateProductReminderDueDateForMissingPeriodUOM() {
+        Product product = TestHelper.createProduct();
+        EntityBean productBean = new EntityBean(product);
+        Entity reminderType = createReminderType();
+        EntityRelationship productReminder = productBean.addNodeRelationship("reminders", reminderType);
+        IMObjectBean bean = new IMObjectBean(productReminder);
+
+        bean.setValue("period", 1);
+        bean.setValue("periodUom", "MONTHS");
+
+        Date start = getDate("2015-03-25");
+        Date due1 = rules.calculateProductReminderDueDate(start, productReminder);
+        assertEquals(getDate("2015-04-25"), due1);
+
+        bean.setValue("periodUom", null);
+
+        Date due2 = rules.calculateProductReminderDueDate(start, productReminder);
+        assertEquals(getDate("2016-03-25"), due2);
+    }
+
+    /**
      * Verifies a reminder matches that expected.
      *
      * @param reminder     the reminder

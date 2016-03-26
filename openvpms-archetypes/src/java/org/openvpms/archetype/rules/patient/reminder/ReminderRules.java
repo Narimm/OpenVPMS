@@ -213,7 +213,7 @@ public class ReminderRules {
     public Date calculateProductReminderDueDate(Date startTime, EntityRelationship relationship) {
         IMObjectBean bean = new IMObjectBean(relationship, service);
         int period = bean.getInt("period");
-        String uom = bean.getString("periodUom");
+        String uom = bean.getString("periodUom", "YEARS");
         return DateRules.getDate(startTime, period, DateUnits.valueOf(uom));
     }
 
