@@ -32,7 +32,6 @@
     <data id="Medications" archetype="entity.productType" name="Medications"/>
     <data id="Vaccinations" archetype="entity.productType" name="Vaccinations"/>
     <data id="Procedures" archetype="entity.productType" name="Procedures"/>
-    <data id="Procedures" archetype="entity.productType" name="Procedures"/>
     <data id="Euthanasia" archetype="entity.productType" name="Euthanasia"/>
     <data id="Merchandise" archetype="entity.productType" name="Merchandise"/>
     <data id="Desexing" archetype="entity.productType" name="Desexing"/>
