@@ -182,7 +182,7 @@
                                     <div class="header"><%= Messages.get("title.login")%>
                                     </div>
                                     <div class="content">
-                                        <img style="padding:5px" src="images/openvpms.gif" alt="OpenVPMS">
+                                        <img style="padding:5px" src="images/openvpms.png" alt="OpenVPMS">
 
                                         <table style="border-collapse: collapse;">
                                             <tbody>

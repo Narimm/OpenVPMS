@@ -29,7 +29,6 @@
 
     <style name="TitlePane" type="nextapp.echo2.app.ContentPane">
         <properties>
-            <property name="foreground" value="#6B6D84"/>
             <property name="background" value="${theme.title.colour}"/>
         </properties>
     </style>
@@ -37,7 +36,7 @@
     <style name="logo" type="nextapp.echo2.app.Label">
         <properties>
             <property name="icon" type="nextapp.echo2.app.HttpImageReference">
-                <http-image-reference url="../images/openvpms.gif"/>
+                <http-image-reference url="../images/openvpms.png"/>
             </property>
         </properties>
     </style>

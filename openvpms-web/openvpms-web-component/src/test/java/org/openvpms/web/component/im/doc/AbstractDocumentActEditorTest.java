@@ -80,7 +80,7 @@ public abstract class AbstractDocumentActEditorTest extends AbstractAppTest {
      * @return a new image document
      */
     protected Document createImage() {
-        String name = "/org/openvpms/web/resource/image/openvpms.gif";
+        String name = "/org/openvpms/web/resource/image/openvpms.png";
         return createDocument(name);
     }
 
