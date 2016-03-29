@@ -16,11 +16,13 @@
 
 package org.openvpms.web.workspace.workflow;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -95,7 +97,8 @@ public class GetClinicalEventTask extends SynchronousTask {
      * @param date        the date to use to locate the event
      * @param properties  properties to populate any created event. May be {@code null}
      * @param appointment the appointment. If specified, this will be linked to new events. May be {@code null}
-     * @param newEvent    if {@code true}, require a new event. If there is an In Progress event, terminate the task
+     * @param newEvent    if {@code true}, require a new event, unless the appointment links to one already.
+     *                    If not, and there is an In Progress event, terminate the task
      */
     public GetClinicalEventTask(Date date, TaskProperties properties, Act appointment, boolean newEvent) {
         this.date = date;
@@ -103,6 +106,15 @@ public class GetClinicalEventTask extends SynchronousTask {
         this.appointment = appointment;
         this.newEvent = newEvent;
         rules = ServiceHelper.getBean(MedicalRecordRules.class);
+    }
+
+    /**
+     * Returns the appointment.
+     *
+     * @return the appointment. May be {@code null}
+     */
+    public Act getAppointment() {
+        return appointment;
     }
 
     /**
@@ -139,11 +151,13 @@ public class GetClinicalEventTask extends SynchronousTask {
             if (event.isNew()) {
                 populate(event, context);
             } else if (newEvent) {
-                // a new event is required
+                // a new event is required, unless the appointment links to an incomplete event
                 if (!ActStatus.COMPLETED.equals(event.getStatus())) {
-                    InformationDialog.show(Messages.format("workflow.checkin.visit.exists", patient.getName(),
-                                                           event.getActivityStartTime()));
-                    notifyCancelled();
+                    if (appointment == null || !hasEvent(appointment, event)) {
+                        InformationDialog.show(Messages.format("workflow.checkin.visit.exists", patient.getName(),
+                                                               event.getActivityStartTime()));
+                        notifyCancelled();
+                    }
                 } else {
                     event = rules.createEvent(patient, date, clinician);
                     populate(event, context);
@@ -154,6 +168,13 @@ public class GetClinicalEventTask extends SynchronousTask {
         }
     }
 
+    /**
+     * Returns an event that may have acts added.
+     *
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @return an event
+     */
     protected Act getEvent(Party patient, Entity clinician) {
         return rules.getEventForAddition(patient, date, clinician);
     }
@@ -181,4 +202,18 @@ public class GetClinicalEventTask extends SynchronousTask {
         }
         ServiceHelper.getArchetypeService().save(toSave);
     }
+
+    /**
+     * Determines if an appointment is linked to an event.
+     *
+     * @param appointment the appointment
+     * @param event the event
+     * @return {@code true} if the appointment is linked to the event
+     */
+    private boolean hasEvent(Act appointment, Act event) {
+        ActBean bean = new ActBean(appointment);
+        IMObjectReference eventRef = bean.getNodeTargetObjectRef("event");
+        return ObjectUtils.equals(eventRef, event.getObjectReference());
+    }
+
 }
