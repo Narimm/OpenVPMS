@@ -118,7 +118,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
     /**
      * Constructs a {@code CheckInWorkflow}.
-     * <p>
+     * <p/>
      * The workflow must be initialised via {@link #initialise} prior to use.
      *
      * @param help the help context
@@ -209,7 +209,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", reason);
         boolean newEvent = cageType != null;  // require a new event if the schedule has a cage type
-        addTask(new GetClinicalEventTask(arrivalTime, eventProps, appointment, newEvent));
+        addTask(createGetClinicalEventTask(appointment, arrivalTime, eventProps, newEvent));
 
         boolean useWorkList = selectWorkList(schedule);
         if (useWorkList) {
@@ -268,8 +268,22 @@ public class CheckInWorkflow extends WorkflowImpl {
     }
 
     /**
+     * Creates a task to get the act.patientClinicalEvent for the patient.
+     *
+     * @param appointment the appointment. If specified, this will be linked to new events. May be {@code null}
+     * @param arrivalTime the date to use to locate the event
+     * @param properties  properties to populate any created event. May be {@code null}
+     * @param newEvent    if {@code true}, require a new event. If there is an In Progress event, terminate the task
+     * @return a new task
+     */
+    protected GetClinicalEventTask createGetClinicalEventTask(Act appointment, Date arrivalTime,
+                                                              TaskProperties properties, boolean newEvent) {
+        return new GetClinicalEventTask(arrivalTime, properties, appointment, newEvent);
+    }
+
+    /**
      * Returns the time that the customer arrived for the appointment.
-     * <p>
+     * <p/>
      * This is used to:
      * <ul>
      * <li>select a Visit</li>
