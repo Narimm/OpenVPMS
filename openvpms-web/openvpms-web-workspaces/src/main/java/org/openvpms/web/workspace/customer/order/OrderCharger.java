@@ -141,7 +141,7 @@ public class OrderCharger {
 
     /**
      * Determines if the customer has pending orders.
-     * <p>
+     * <p/>
      * If a patient was supplied at construction, this limits the query to those orders that are for the patient.
      *
      * @return {@code true} if the customer has pending orders
@@ -169,7 +169,7 @@ public class OrderCharger {
 
     /**
      * Clears any charged orders.
-     * <p>
+     * <p/>
      * This should be invoked after a successful {@link #save()}
      */
     public void clear() {
@@ -332,29 +332,60 @@ public class OrderCharger {
         }
     }
 
-    private void invoice(FinancialAct act, OrderInvoicer charger, CompletionListener listener) {
-        CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
-        final FinancialAct current = rules.getInvoice(charger.getCustomer());
-        charge(act, current, charger, listener);
+    /**
+     * Invoices an order.
+     *
+     * @param act      the order
+     * @param invoicer the order invoicer
+     * @param listener the listener to notify on completion
+     */
+    private void invoice(FinancialAct act, OrderInvoicer invoicer, CompletionListener listener) {
+        if (invoicer.requiresEdit()) {
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
+            final FinancialAct current = rules.getInvoice(invoicer.getCustomer());
+            charge(act, current, invoicer, listener);
+        } else {
+            invoicer.charge();
+            listener.completed();
+        }
     }
 
-    private void credit(FinancialAct act, OrderInvoicer charger, CompletionListener listener) {
+    /**
+     * Credits a return.
+     *
+     * @param act      the order return
+     * @param invoicer the order invoicer
+     * @param listener the listener to notify on completion
+     */
+    private void credit(FinancialAct act, OrderInvoicer invoicer, CompletionListener listener) {
         CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
-        final FinancialAct current = rules.getCredit(charger.getCustomer());
-        charge(act, current, charger, listener);
+        final FinancialAct current = rules.getCredit(invoicer.getCustomer());
+        charge(act, current, invoicer, listener);
     }
 
-    private void charge(final FinancialAct act, final FinancialAct current, final OrderInvoicer charger,
+    /**
+     * Charges an order or order return.
+     * <p/>
+     * If there is no current invoice, the item will be charged and the invoice/credit displayed in an editor.
+     * If there is an invoice, a dialog will be displayed to invoice the order to a the current invoice, or a new
+     * invoice.
+     *
+     * @param act      the order/order return
+     * @param current  the current invoice. May be {@code null}
+     * @param invoicer the order invoicer
+     * @param listener the listener to notify on completion
+     */
+    private void charge(final FinancialAct act, final FinancialAct current, final OrderInvoicer invoicer,
                         final CompletionListener listener) {
         final DefaultLayoutContext context = new DefaultLayoutContext(this.context, help);
         if (current == null) {
             // no current invoice
-            doCharge(act, charger, null, context, listener);
+            doCharge(act, invoicer, null, context, listener);
         } else {
             String displayName = DescriptorHelper.getDisplayName(current);
             String title = Messages.format("customer.order.currentcharge.title", displayName);
             String message;
-            if (charger.getInvoice() != null && ActStatus.POSTED.equals(charger.getInvoice().getStatus())) {
+            if (invoicer.getInvoice() != null && ActStatus.POSTED.equals(invoicer.getInvoice().getStatus())) {
                 // original charge is posted
                 message = Messages.format("customer.order.currentcharge.original",
                                           DescriptorHelper.getDisplayName(act), displayName);
@@ -367,9 +398,9 @@ public class OrderCharger {
                 @Override
                 public void onOK() {
                     if (dialog.createCharge()) {
-                        doCharge(act, charger, null, context, listener);
+                        doCharge(act, invoicer, null, context, listener);
                     } else {
-                        doCharge(act, charger, current, context, listener);
+                        doCharge(act, invoicer, current, context, listener);
                     }
                 }
             });
@@ -377,9 +408,9 @@ public class OrderCharger {
         }
     }
 
-    private void doCharge(FinancialAct act, OrderInvoicer charger, FinancialAct current,
+    private void doCharge(FinancialAct act, OrderInvoicer invoicer, FinancialAct current,
                           DefaultLayoutContext context, final CompletionListener listener) {
-        CustomerChargeActEditDialog dialog = charger.charge(current, this, context);
+        CustomerChargeActEditDialog dialog = invoicer.charge(current, this, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             @Override
             public void onClose(WindowPaneEvent event) {
