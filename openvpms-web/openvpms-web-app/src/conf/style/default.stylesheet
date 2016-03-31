@@ -948,6 +948,8 @@
 
     <style name="MailEditor.message" type="org.openvpms.web.echo.text.RichTextArea" base-name="default">
         <properties>
+            <property name="background" value="#ffffff"/>
+            <property name="foreground" value="#000000"/>
             <property name="width" value="100%"/>
             <property name="height" value="${MailEditor.message.height}"/>
         </properties>
