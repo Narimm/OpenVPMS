@@ -750,7 +750,7 @@
         <ehcache.version>1.7.2</ehcache.version>
         <hibernate.version>3.3.2.GA</hibernate.version>
         <janino.version>2.3.8</janino.version>
-        <jasperreports.version>5.6.1</jasperreports.version>
+        <jasperreports.version>6.2.0</jasperreports.version>
         <poi.version>3.7</poi.version>
         <javassist.version>3.4.GA</javassist.version>
         <javax.mail.version>1.4.4</javax.mail.version>
