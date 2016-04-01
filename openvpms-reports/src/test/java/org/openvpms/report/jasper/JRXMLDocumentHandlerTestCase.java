@@ -100,7 +100,7 @@ public class JRXMLDocumentHandlerTestCase extends AbstractReportTest {
         } catch (JRXMLDocumentException expected) {
             assertEquals(JRXMLDocumentException.ErrorCode.ReadError, expected.getErrorCode());
             assertEquals("Failed to read /reports/invalid.jrxml. Please ensure it is saved to be compatible with "
-                         + "JasperReports 5.6.1", expected.getMessage());
+                         + "JasperReports 6.2.0", expected.getMessage());
         }
     }
 }
