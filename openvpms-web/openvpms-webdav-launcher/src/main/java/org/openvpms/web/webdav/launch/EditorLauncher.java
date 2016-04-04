@@ -1,36 +1,90 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.webdav.launch;
 
-import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Display;
-
+import javax.jnlp.BasicService;
+import javax.jnlp.PersistenceService;
+import javax.jnlp.ServiceManager;
+import javax.jnlp.UnavailableServiceException;
 import javax.swing.JOptionPane;
-import java.io.File;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  * Launches OpenOffice to edit a document.
- * <p>
- * Note that this uses the SWT Program class on Windows, Macs and some flavours of Linux to launch OpenOffice.
- * <p>
- * On other platforms it falls back to launching it from the PATH.
- * <p>
- * SWT is used as it is more likely to support Linux than java.awt.Desktop. The PATH is used as a fallback as users
- * may not have OpenOffice in the PATH.
  *
  * @author Tim Anderson
  */
 public class EditorLauncher {
 
+
+    /**
+     * The URL of the file to edit.
+     */
+    private final String url;
+
+    /**
+     * The configuration, or {@code null} if the BasicService or PersistenceService aren't supported.
+     */
+    private final Configuration configuration;
+
+    /**
+     * The default editor paths resource.
+     */
+    private static final String DEFAULT_EDITOR_PATHS = "/defaultEditorPaths.txt";
+
     /**
      * The logger.
      */
     private static final Logger logger = Logger.getLogger(EditorLauncher.class.getName());
+
+    /**
+     * Constructs an {@link EditorLauncher}.
+     *
+     * @param url                the URL of the file to edit
+     * @param basicService       the basic service
+     * @param persistenceService the persistence service
+     */
+    public EditorLauncher(String url, BasicService basicService, PersistenceService persistenceService) {
+        this.url = url;
+        configuration = (basicService != null && persistenceService != null)
+                        ? new Configuration(basicService, persistenceService) : null;
+    }
+
+    /**
+     * Launches the editor.
+     */
+    public void launch() {
+        String path = configuration != null ? configuration.getODTEditorPath() : null;
+        if (!exists(path)) {
+            path = getDefaultPath();
+            path = configure(path, null);
+        }
+        launch(path);
+    }
 
     /**
      * The main line.
@@ -42,91 +96,133 @@ public class EditorLauncher {
             logger.info("Launching soffice, os.name=" + System.getProperty("os.name") + ", os.arch="
                         + System.getProperty("os.arch"));
             String url = args[0];
-            if (!launchViaSWT(url) && !launchViaProcess(url)) {
-                JOptionPane.showMessageDialog(null, "OpenOffice could not be located to edit the document.",
-                                              "OpenVPMS Editor Launcher", JOptionPane.ERROR_MESSAGE);
-            }
+            BasicService basicService = getService(BasicService.class);
+            PersistenceService persistenceService = getService(PersistenceService.class);
+            EditorLauncher launcher = new EditorLauncher(url, basicService, persistenceService);
+            launcher.launch();
         } else {
             System.err.println("usage: " + EditorLauncher.class.getName() + " <url>");
         }
     }
 
+    /**
+     * Configures the editor.
+     *
+     * @param path    the configured path, or {@code null} if no path has been configured
+     * @param message an error message, if the path couldn't be used to launch an editor
+     * @return the new path
+     */
+    protected String configure(String path, final String message) {
+        final SettingsDialog dialog = new SettingsDialog();
+        dialog.setPath(path);
+        dialog.pack();
+        if (message != null) {
+            dialog.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowOpened(WindowEvent e) {
+                    JOptionPane.showMessageDialog(dialog, message, "Launch Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+        }
+        dialog.setVisible(true);
+        path = dialog.getPath();
+        if (configuration != null) {
+            configuration.setODTEditorPath(path);
+        }
+        return path;
+    }
 
     /**
-     * Launches OpenOffice using the SWT Program class.
+     * Launches the editor at the specified path.
      *
-     * @param url the document URL
-     * @return {@code true} if the launch was successful
+     * @param path the path
      */
-    private static boolean launchViaSWT(String url) {
-        boolean result = false;
-        Display display = null;
+    private void launch(String path) {
+        ProcessBuilder builder = new ProcessBuilder(path, url);
         try {
-            display = new Display();
-            Program program = Program.findProgram(".odt");
-            if (program != null) {
-                program.execute(url);
-                result = true;
+            Process process = builder.inheritIO().start();
+            int exitValue = process.waitFor();
+            if (exitValue != 0) {
+                logger.log(Level.SEVERE, "Editor at path: " + path + " terminated with error code: " + exitValue);
+                relaunch(path, "The program exited with error code: " + exitValue);
             }
         } catch (Throwable exception) {
-            logger.log(Level.WARNING, "Failed to launch OpenOffice via SWT", exception);
-        } finally {
-            if (display != null) {
-                display.dispose();
-            }
+            logger.log(Level.SEVERE, "Failed to launch editor at path: " + path, exception);
+            relaunch(path, "The editor failed to start: " + exception.getMessage());
         }
-        return result;
     }
 
     /**
-     * Launches OpenOffice using ProcessBuilder.
+     * Invoked when launching fails to display the configuration dialog and re-launch.
      *
-     * @param url the document URL
-     * @return {@code true} if the launch was successful
+     * @param path  the editor path
+     * @param error the error message
      */
-    private static boolean launchViaProcess(String url) {
+    private void relaunch(String path, String error) {
+        path = configure(path, error);
+        launch(path);
+    }
+
+    /**
+     * Determines if a path exists.
+     *
+     * @param path the path. May be {@code null}
+     * @return {@code true} if the path exists
+     */
+    private boolean exists(String path) {
         boolean result = false;
-        Path path = getPath();
         if (path != null) {
-            ProcessBuilder builder = new ProcessBuilder(path.toString(), url);
             try {
-                Process process = builder.inheritIO().start();
-                result = process.isAlive();
-            } catch (Throwable exception) {
-                logger.log(Level.SEVERE, "Failed to launch OpenOffice ath path: " + path, exception);
+                result = Files.exists(Paths.get(path));
+            } catch (InvalidPathException ignore) {
+                // do nothing
             }
         }
         return result;
     }
 
     /**
-     * Returns the path to soffice, it it is located in the PATH environment variable.
+     * Returns the default editor path.
      *
-     * @return the path, or {@code null} if it doesn't exist
+     * @return the default editor path, or {@code null} if none is found
      */
-    private static Path getPath() {
-        Path result = null;
-        String osName = System.getProperty("os.name");
-        String name = osName != null && osName.startsWith("Windows") ? "soffice.exe" : "soffice";
-        String paths = System.getenv("PATH");
-        if (paths != null) {
-            for (String path : paths.split(Pattern.quote(File.pathSeparator))) {
-                try {
-                    Path dir = Paths.get(path);
-                    Path file = dir.resolve(name);
-                    if (Files.exists(file)) {
-                        result = file;
-                        break;
+    private String getDefaultPath() {
+        String path = null;
+        InputStream stream = getClass().getResourceAsStream(DEFAULT_EDITOR_PATHS);
+        if (stream != null) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.startsWith("#")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && exists(line)) {
+                            path = line;
+                            break;
+                        }
                     }
-                } catch (InvalidPathException ignore) {
-                    // do nothing
                 }
+            } catch (IOException exception) {
+                logger.log(Level.SEVERE, "Failed to read " + DEFAULT_EDITOR_PATHS, exception);
             }
         }
-        if (result == null) {
-            logger.warning(name + " not found in PATH: " + paths);
+        return path;
+    }
+
+    /**
+     * Returns a JNLP service.
+     *
+     * @param type the service type
+     * @return {@code null} if the service is not supported
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> T getService(Class<T> type) {
+        try {
+            return (T) ServiceManager.lookup(type.getName());
+        } catch (UnavailableServiceException e) {
+            logger.log(Level.SEVERE, "Service " + type.getName() + " is not supported on this platform", e);
         }
-        return result;
+        return null;
     }
 }
 
