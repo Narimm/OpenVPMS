@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -68,7 +69,21 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * @param help       the help context
      */
     public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes, Context context, HelpContext help) {
-        super(archetypes, new DocumentActActions(), context, help);
+        this(archetypes, new DocumentActActions(), context, help);
+    }
+
+    /**
+     * Constructs a {@link DocumentCRUDWindow}.
+     *
+     * @param archetypes the archetypes that this may create
+     * @param context    the context
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
+     * @param help       the help context
+     */
+    public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes, DocumentActActions actions, Context context,
+                              HelpContext help) {
+        super(archetypes, actions, context, help);
     }
 
     /**

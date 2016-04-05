@@ -177,4 +177,13 @@
         <constructor-arg ref="macros"/>
     </bean>
 
+    <!-- =========================================================================================================== -->
+    <!-- Medical Record Locking                                                                                      -->
+    <!-- =========================================================================================================== -->
+    <bean class="org.openvpms.web.jobs.recordlocking.MedicalRecordLockingScheduler">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
 </beans>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -60,11 +60,13 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      */
     private static final String PRESCRIPTION_EXPIRY_UNITS = "prescriptionExpiryUnits";
 
+    public static final String RECORD_LOCK_PERIOD_UNITS = "recordLockPeriodUnits";
     /**
      * The archetype nodes. This excludes the prescription expiry units as they are rendered inline with the expiry
      * period.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(PRESCRIPTION_EXPIRY_UNITS);
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(PRESCRIPTION_EXPIRY_UNITS,
+                                                                             RECORD_LOCK_PERIOD_UNITS);
 
     /**
      * Default constructor.
@@ -86,7 +88,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Apply the layout strategy.
-     * <p>
+     * <p/>
      * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
@@ -101,6 +103,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         addPrescriptionExpiry(object, properties, factory);
         addAutoLockScreen(object, properties, factory);
         addAutoLogout(object, properties, factory);
+        addRecordLockPeriod(object, properties, factory);
         if (subscription == null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             Participation participation = SubscriptionHelper.getSubscriptionParticipation((Party) object, service);
@@ -144,13 +147,38 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      * @param factory    the component factory
      */
     private void addPrescriptionExpiry(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
-        Property period = properties.get("prescriptionExpiryPeriod");
-        Property units = properties.get(PRESCRIPTION_EXPIRY_UNITS);
+        addPeriod(object, "prescriptionExpiryPeriod", PRESCRIPTION_EXPIRY_UNITS, properties, factory);
+    }
+
+    /**
+     * Registers a component to render the medical record lock period and units.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addRecordLockPeriod(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        addPeriod(object, "recordLockPeriod", RECORD_LOCK_PERIOD_UNITS, properties, factory);
+    }
+
+    /**
+     * Registers a component to render a period and its associated units.
+     *
+     * @param object     the practice object
+     * @param periodName the period node name
+     * @param unitsName  the units node name
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addPeriod(IMObject object, String periodName, String unitsName, PropertySet properties,
+                           IMObjectComponentFactory factory) {
+        Property period = properties.get(periodName);
+        Property units = properties.get(unitsName);
 
         ComponentState periodComponent = factory.create(period, object);
         ComponentState unitsComponent = factory.create(units, object);
         Row row = RowFactory.create(Styles.CELL_SPACING, periodComponent.getComponent(), unitsComponent.getComponent());
-        FocusGroup group = new FocusGroup("PrescriptionExpiry");
+        FocusGroup group = new FocusGroup(periodName);
         group.add(periodComponent.getComponent());
         group.add(unitsComponent.getComponent());
         addComponent(new ComponentState(row, period, group));

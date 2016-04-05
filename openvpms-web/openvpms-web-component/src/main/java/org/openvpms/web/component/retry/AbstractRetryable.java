@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.retry;
 
@@ -31,7 +31,7 @@ public abstract class AbstractRetryable implements Retryable {
      * Runs the action.
      *
      * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
-     *         retried
+     * retried
      * @throws RuntimeException if the action fails and may be retried
      */
     public boolean run() {
@@ -40,7 +40,7 @@ public abstract class AbstractRetryable implements Retryable {
             first = false;
             result = runFirst();
         } else {
-            result = runAction();
+            result = runAgain();
         }
         return result;
     }
@@ -51,7 +51,7 @@ public abstract class AbstractRetryable implements Retryable {
      * This implementation delegates to {@link #runAction()}.
      *
      * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
-     *         retried
+     * retried
      * @throws RuntimeException if the action fails and may be retried
      */
     protected boolean runFirst() {
@@ -59,10 +59,22 @@ public abstract class AbstractRetryable implements Retryable {
     }
 
     /**
+     * Runs the action again.
+     * <p/>
+     * This implementation delegates to {@link #runAction()}.
+     *
+     * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+     * retried
+     */
+    protected boolean runAgain() {
+        return runAction();
+    }
+
+    /**
      * Runs the action.
      *
      * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
-     *         retried
+     * retried
      * @throws RuntimeException if the action fails and may be retried
      */
     protected abstract boolean runAction();

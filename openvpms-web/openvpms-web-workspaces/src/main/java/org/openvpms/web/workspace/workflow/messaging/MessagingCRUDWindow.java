@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
+import org.openvpms.web.component.im.edit.AbstractIMObjectActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -75,14 +75,14 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
 
     /**
-     * Constructs a {@code MessagingCRUDWindow}.
+     * Constructs a {@link MessagingCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param context    the context
      * @param help       the help context
      */
     public MessagingCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), context, help);
+        super(archetypes, Actions.INSTANCE, context, help);
     }
 
     /**
@@ -326,6 +326,22 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
          */
         public String getSent() {
             return DateFormatter.formatDateTime(bean.getDate("startTime"));
+        }
+    }
+
+    private static class Actions extends AbstractIMObjectActions<Act> {
+
+        public static final Actions INSTANCE = new Actions();
+
+        /**
+         * Determines if an object can be deleted.
+         *
+         * @param object the object to check
+         * @return {@code true} if the object can be deleted
+         */
+        @Override
+        public boolean canDelete(Act object) {
+            return super.canDelete(object) && !TypeHelper.isA(object, MessageArchetypes.AUDIT);
         }
     }
 }

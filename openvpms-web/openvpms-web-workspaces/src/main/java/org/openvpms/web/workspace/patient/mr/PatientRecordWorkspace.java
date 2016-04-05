@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -219,7 +219,11 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         if (window instanceof AbstractPatientHistoryCRUDWindow) {
             long id = (act != null) ? act.getId() : 0;
             if (click.isDoubleClick(id)) { // avoid holding onto the act
-                window.edit();
+                if (window.canEdit()) {
+                    window.edit();
+                } else {
+                    ((AbstractPatientHistoryCRUDWindow) window).view();
+                }
             }
         }
     }

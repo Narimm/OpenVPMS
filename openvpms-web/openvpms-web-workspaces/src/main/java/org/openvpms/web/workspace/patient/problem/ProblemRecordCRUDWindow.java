@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -34,7 +34,6 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -58,6 +57,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
+import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -218,9 +218,13 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onCreate(Archetypes<Act> archetypes) {
         if (problem != null) {
+            boolean includeAddendum = false;
+            if (TypeHelper.isA(getObject(), PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
+                includeAddendum = true;
+            }
             // problem is selected, so display all of the possible event item archetypes
             String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM,
-                                                PatientArchetypes.CLINICAL_PROBLEM);
+                                                includeAddendum, PatientArchetypes.CLINICAL_PROBLEM);
             archetypes = new Archetypes<>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
                                           archetypes.getDisplayName());
         }
@@ -290,7 +294,12 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
                 act = null;
             }
             Act event = getEvent();
-            PatientMedicalRecordLinker linker = createMedicalRecordLinker(event, problem, act);
+            PatientMedicalRecordLinker linker;
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
+                linker = new PatientMedicalRecordLinker(event, problem, getObject(), act);
+            } else {
+                linker = new PatientMedicalRecordLinker(event, problem, act);
+            }
             Retryer.run(linker);
         }
         super.onSaved(act, isNew);
@@ -354,7 +363,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         return null;
     }
 
-    private static class ProblemActions extends ActActions<Act> {
+    private static class ProblemActions extends PatientHistoryActions {
 
         public static final ProblemActions INSTANCE = new ProblemActions();
 

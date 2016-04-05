@@ -14,28 +14,31 @@
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.patient.problem;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.act.ActHierarchyIterator;
+package org.openvpms.component.system.common.event;
 
 /**
- * An iterator over patient problem acts.
- * <p/>
- * This includes 2 levels of act hierarchy, and the visits that items are from.
+ * A listener that dispatches to other listeners.
  *
  * @author Tim Anderson
  */
-public class ProblemHierarchyIterator extends ActHierarchyIterator<Act> {
+public interface Listeners<E> extends Listener<E> {
 
     /**
-     * Constructs an {@link ActHierarchyIterator}.
+     * Adds a listener.
      *
-     * @param acts   the collection of acts
-     * @param filter the hierarchy filter
+     * @param listener the listener to add
      */
-    public ProblemHierarchyIterator(Iterable<Act> acts, ProblemFilter filter) {
-        super(acts, filter, 3);
-    }
+    void addListener(Listener<E> listener);
 
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    void removeListener(Listener<E> listener);
+
+    /**
+     * Removes all listeners.
+     */
+    void clear();
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -551,7 +552,8 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      */
     protected int getDepth(ActBean bean) {
         int depth = 0;
-        if (bean.isA("act.patientDocument*Version")) {
+        if (bean.isA("act.patientDocument*Version")
+            || bean.isA(InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION)) {
             ++depth;
         }
         if (bean.hasNode("problem") && !bean.getNodeSourceObjectRefs("problem").isEmpty()) {

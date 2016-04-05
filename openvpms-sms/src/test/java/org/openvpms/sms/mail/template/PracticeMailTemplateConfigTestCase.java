@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
@@ -63,7 +63,8 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
         }
         save(practice);
         PracticeService practiceService = new PracticeService(getArchetypeService(),
-                                                              new PracticeRules(getArchetypeService(), null));
+                                                              new PracticeRules(getArchetypeService(), null),
+                                                              null);
         config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
     }
 
@@ -88,7 +89,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
     public void testNoPractice() {
         remove(practice);
         PracticeService practiceService = new PracticeService(getArchetypeService(),
-                                                              new PracticeRules(getArchetypeService(), null));
+                                                              new PracticeRules(getArchetypeService(), null), null);
         config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
         try {
             config.getTemplate();
