@@ -80,7 +80,7 @@ import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
-import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
+import org.openvpms.web.workspace.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.workspace.patient.mr.PrescriptionMedicationActEditor;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
