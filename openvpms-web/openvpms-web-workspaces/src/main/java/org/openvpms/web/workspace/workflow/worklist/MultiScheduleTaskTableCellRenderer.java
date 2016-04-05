@@ -61,6 +61,8 @@ public class MultiScheduleTaskTableCellRenderer extends TaskTableCellRenderer {
             }
         }
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        return createLabelWithNotes(text, notes);
+        Component result = createLabelWithNotes(text, notes);
+        styleEvent(event, result, table);
+        return result;
     }
 }
