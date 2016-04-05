@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -19,7 +19,7 @@ package org.openvpms.web.component.im.act;
 import org.apache.commons.collections.Predicate;
 import org.openvpms.component.business.domain.im.act.Act;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -154,7 +154,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * @return the flattened tree
      */
     protected List<T> flattenTree(T root) {
-        ActHierarchyLister<T> flattener = new ActHierarchyLister<T>();
+        ActHierarchyLister<T> flattener = new ActHierarchyLister<>();
         return flattener.list(root, filter, maxDepth);
     }
 
@@ -245,7 +245,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
                     if (maxDepth == -1 || maxDepth > 1) {
                         child = flattenTree(root).iterator();
                     } else {
-                        child = Arrays.asList(root).iterator();
+                        child = Collections.singletonList(root).iterator();
                     }
                 } else {
                     return false;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -60,7 +60,8 @@ public class PatientTestHelper {
         patient.setName(name);
         Lookup speciesLookup = TestHelper.getLookup(PatientArchetypes.SPECIES, species,
                                                     WordUtils.capitalize(species.toLowerCase()), true);
-        Lookup breedLookup = TestHelper.getLookup(PatientArchetypes.BREED, breed, speciesLookup, "lookupRelationship.speciesBreed");
+        Lookup breedLookup = TestHelper.getLookup(PatientArchetypes.BREED, breed, speciesLookup,
+                                                  "lookupRelationship.speciesBreed");
         breedLookup.setName(WordUtils.capitalize(breed.toLowerCase()));
         save(breedLookup);
         IMObjectBean bean = new IMObjectBean(patient);
@@ -68,7 +69,6 @@ public class PatientTestHelper {
         bean.setValue("breed", breed);
         bean.setValue("dateOfBirth", dateOfBirth);
         bean.save();
-        ;
         return patient;
     }
 
@@ -121,7 +121,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -134,7 +134,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -148,7 +148,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -174,7 +174,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p>
+     * <p/>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -188,7 +188,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p>
+     * <p/>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -233,6 +233,30 @@ public class PatientTestHelper {
      */
     public static Act createNote(Date startTime, Party patient, User clinician) {
         return createAct(PatientArchetypes.CLINICAL_NOTE, startTime, patient, clinician);
+    }
+
+    /**
+     * Adds an <em>act.patientClinicalAddendum</em> to another act.
+     *
+     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an <em>act.patientMedication</em>
+     * @param addendum the addendum
+     */
+    public static void addAddendum(Act act, Act addendum) {
+        ActBean bean = new ActBean(act);
+        bean.addNodeRelationship("addenda", addendum);
+        save(act, addendum);
+    }
+
+    /**
+     * Creates an <em>act.patientClinicalAddendum</em>.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @return a new act
+     */
+    public static Act createAddendum(Date startTime, Party patient, User clinician) {
+        return createAct(PatientArchetypes.CLINICAL_ADDENDUM, startTime, patient, clinician);
     }
 
     /**

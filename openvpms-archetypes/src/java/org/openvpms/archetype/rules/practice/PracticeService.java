@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
 
+import org.joda.time.Period;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -24,6 +25,10 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.system.common.event.AsyncListeners;
+import org.openvpms.component.system.common.event.Listener;
+import org.openvpms.component.system.common.event.Listeners;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.PreDestroy;
 import java.util.Collections;
@@ -56,13 +61,19 @@ public class PracticeService {
      */
     private final IArchetypeServiceListener listener;
 
+    /**
+     * Listeners to notify when the practice updates.
+     */
+    private final Listeners<Party> listeners;
 
     /**
      * Constructs a {@link PracticeService}.
      *
-     * @param rules the practice rules
+     * @param service  the archetype service
+     * @param rules    the practice rules
+     * @param executor the executor to perform asynchronous update notification
      */
-    public PracticeService(IArchetypeService service, PracticeRules rules) {
+    public PracticeService(IArchetypeService service, PracticeRules rules, ThreadPoolTaskExecutor executor) {
         this.service = service;
         this.rules = rules;
         practice = rules.getPractice();
@@ -73,6 +84,7 @@ public class PracticeService {
             }
 
         };
+        listeners = new AsyncListeners<>(executor.getThreadPoolExecutor());
         service.addListener(PracticeArchetypes.PRACTICE, listener);
     }
 
@@ -143,11 +155,40 @@ public class PracticeService {
     }
 
     /**
+     * Determines the period after which patient medical records are locked.
+     *
+     * @return the period, or {@code null} if no period is defined
+     */
+    public Period getRecordLockPeriod() {
+        Party current = getPractice();
+        return (current != null) ? rules.getRecordLockPeriod(current) : null;
+    }
+
+    /**
      * Disposes of the service.
      */
     @PreDestroy
     public void dispose() {
         service.removeListener(PracticeArchetypes.PRACTICE, listener);
+        listeners.clear();
+    }
+
+    /**
+     * Adds a listener to be notified when the practice updates.
+     *
+     * @param listener the listener
+     */
+    public void addListener(Listener<Party> listener) {
+        listeners.addListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeListener(Listener<Party> listener) {
+        listeners.removeListener(listener);
     }
 
     /**
@@ -155,9 +196,16 @@ public class PracticeService {
      *
      * @param object the new practice
      */
-    protected synchronized void update(Party object) {
-        if (object.isActive() || practice == null || practice.getId() == object.getId()) {
-            practice = object;
+    protected void update(Party object) {
+        boolean updated = false;
+        synchronized (this) {
+            if (object.isActive() || practice == null || practice.getId() == object.getId()) {
+                updated = true;
+                practice = object;
+            }
+        }
+        if (updated) {
+            listeners.onEvent(object);
         }
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.history;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -32,18 +33,24 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_ADDENDUM;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_NOTE;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_PROBLEM;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_MEDICATION;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.addAddendum;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.createAddendum;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.createEvent;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createNote;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createProblem;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createWeight;
+import static org.openvpms.archetype.test.TestHelper.createProduct;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 /**
@@ -56,7 +63,8 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
     /**
      * The short names to filter on.
      */
-    private static final String[] SHORT_NAMES = new String[]{CLINICAL_PROBLEM, PATIENT_WEIGHT, CLINICAL_NOTE};
+    private static final String[] SHORT_NAMES = new String[]{CLINICAL_PROBLEM, PATIENT_WEIGHT, CLINICAL_NOTE,
+                                                             PatientArchetypes.PATIENT_MEDICATION, CLINICAL_ADDENDUM};
 
     /**
      * Verifies that when a note is linked to both an event and a child problem, it is returned after the problem.
@@ -69,10 +77,9 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
         Act weight = createWeight(getDatetime("2014-05-09 10:00:00"), patient, clinician);
         Act problemNote = createNote(getDatetime("2014-05-09 10:04:00"), patient, clinician);
         Act problem = createProblem(getDatetime("2014-05-09 10:05:00"), patient, clinician, problemNote);
-        Act event = PatientTestHelper.createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician,
-                                                  weight, problemNote, problem);
+        Act event = createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician, weight, problemNote, problem);
 
-        List<Act> acts = Arrays.asList(event);
+        List<Act> acts = Collections.singletonList(event);
 
         String[] none = new String[0];
         check(acts, none, true, event);
@@ -97,10 +104,9 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
         Act weight = createWeight(getDatetime("2014-05-09 10:00:00"), patient, clinician);
         Act problemNote = createNote(getDatetime("2014-05-09 10:04:00"), patient, clinician);
         Act problem = createProblem(getDatetime("2014-05-09 10:05:00"), patient, clinician, problemNote);
-        Act event = PatientTestHelper.createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician,
-                                                  weight, problem);
+        Act event = createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician, weight, problem);
 
-        List<Act> acts = Arrays.asList(event);
+        List<Act> acts = Collections.singletonList(event);
 
         String[] none = new String[0];
         check(acts, none, true, event);
@@ -119,8 +125,8 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testInvoiceItems() {
-        Party patient = TestHelper.createPatient(true);
-        Product product = TestHelper.createProduct();
+        Party patient = TestHelper.createPatient();
+        Product product = createProduct();
         User clinician = TestHelper.createClinician();
 
         Act weight = createWeight(getDatetime("2014-05-09 10:00:00"), patient, clinician);
@@ -131,15 +137,15 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
         Act problem = createProblem(getDatetime("2014-05-09 10:05:00"), patient, clinician, problemNote);
         FinancialAct charge3 = createChargeItem(getDatetime("2014-05-09 10:06:00"), patient, product);
 
-        Act event = PatientTestHelper.createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician,
-                                                  weight, problemNote, problem, medication1);
+        Act event = createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician,
+                                weight, problemNote, problem, medication1);
         ActBean eventBean = new ActBean(event);
         eventBean.addNodeRelationship("chargeItems", charge1);
         eventBean.addNodeRelationship("chargeItems", charge2);
         eventBean.addNodeRelationship("chargeItems", charge3);
         save(event, charge1, charge2);
 
-        List<Act> acts = Arrays.asList(event);
+        List<Act> acts = Collections.singletonList(event);
 
         String[] withCharge = {CLINICAL_PROBLEM, PATIENT_WEIGHT, PATIENT_MEDICATION, INVOICE_ITEM, CLINICAL_NOTE};
         String[] noCharge = {CLINICAL_PROBLEM, PATIENT_WEIGHT, PATIENT_MEDICATION, CLINICAL_NOTE};
@@ -157,7 +163,7 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testProblemLinkedTo2Visits() {
-        Party patient = TestHelper.createPatient(true);
+        Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
 
         Act note1a = createNote(getDatetime("2014-05-09 10:04:00"), patient, clinician);
@@ -165,15 +171,77 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
         Act note2 = createNote(getDatetime("2014-05-14 13:15:00"), patient, clinician);
 
         Act problem = createProblem(getDatetime("2014-05-09 10:05:00"), patient, clinician, note1a, note1b, note2);
-        Act event1 = PatientTestHelper.createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician,
-                                                   note1a, note1b, problem);
+        Act event1 = createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician, note1a, note1b, problem);
 
-        Act event2 = PatientTestHelper.createEvent(getDatetime("2014-05-14 13:10:00"), patient, clinician,
-                                                   note2, problem);
+        Act event2 = createEvent(getDatetime("2014-05-14 13:10:00"), patient, clinician, note2, problem);
 
         List<Act> acts = Arrays.asList(event2, event1);
         check(acts, SHORT_NAMES, true, event2, problem, note2, event1, problem, note1a, note1b);
         check(acts, SHORT_NAMES, false, event2, problem, note2, event1, problem, note1b, note1a);
+    }
+
+    /**
+     * Verifies that addendum records are ordered on increasing time, and appear after the note or medication they
+     * are linked to.
+     */
+    @Test
+    public void testAddendumRecords() {
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+
+        Act note = createNote(getDatetime("2016-03-20 10:00:05"), patient, clinician);
+        FinancialAct charge = createChargeItem(getDatetime("2016-03-20 10:01:00"), patient, createProduct());
+        Act medication = createMedication(getDatetime("2016-03-20 10:01:00"), patient, charge);
+
+        Act addendum1 = createAddendum(getDatetime("2016-03-27 11:00:00"), patient, clinician);
+        Act addendum2 = createAddendum(getDatetime("2016-03-27 12:00:00"), patient, clinician);
+        addAddendum(note, addendum1);
+        addAddendum(note, addendum2);
+        Act addendum3 = createAddendum(getDatetime("2016-03-27 13:00:00"), patient, clinician);
+        Act addendum4 = createAddendum(getDatetime("2016-03-27 14:00:00"), patient, clinician);
+        addAddendum(medication, addendum3);
+        addAddendum(medication, addendum4);
+
+        Act event = createEvent(getDatetime("2016-03-20 10:00:00"), patient, clinician, note, addendum1, addendum2,
+                                medication, addendum3, addendum4);
+
+        List<Act> acts = Collections.singletonList(event);
+
+        check(acts, SHORT_NAMES, true, event, note, addendum1, addendum2, medication, addendum3, addendum4);
+        check(acts, SHORT_NAMES, false, event, medication, addendum3, addendum4, note, addendum1, addendum2);
+    }
+
+    /**
+     * Verifies that addendum records linked to a note appear in the correct order when also linked to a problem and
+     * event.
+     */
+    @Test
+    public void testAddendumLinkedToProblem() {
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+
+        Act note = createNote(getDatetime("2016-03-20 10:00:05"), patient, clinician);
+        FinancialAct charge = createChargeItem(getDatetime("2016-03-20 10:01:00"), patient, createProduct());
+        Act medication = createMedication(getDatetime("2016-03-20 10:01:00"), patient, charge);
+
+        Act addendum1 = createAddendum(getDatetime("2016-03-27 11:00:00"), patient, clinician);
+        Act addendum2 = createAddendum(getDatetime("2016-03-27 12:00:00"), patient, clinician);
+        addAddendum(note, addendum1);
+        addAddendum(note, addendum2);
+        Act addendum3 = createAddendum(getDatetime("2016-03-27 13:00:00"), patient, clinician);
+        Act addendum4 = createAddendum(getDatetime("2016-03-27 14:00:00"), patient, clinician);
+        addAddendum(medication, addendum3);
+        addAddendum(medication, addendum4);
+
+        Act problem = createProblem(getDatetime("2016-03-20 10:05:00"), patient, clinician, note, addendum1, addendum2,
+                                    medication, addendum3, addendum4);
+        Act event = createEvent(getDatetime("2016-03-20 10:00:00"), patient, clinician, note, addendum1, addendum2,
+                                medication, addendum3, addendum4, problem);
+
+        // test iteration from the event
+        List<Act> acts1 = Collections.singletonList(event);
+        check(acts1, SHORT_NAMES, true, event, problem, note, addendum1, addendum2, medication, addendum3, addendum4);
+        check(acts1, SHORT_NAMES, false, event, problem, medication, addendum3, addendum4, note, addendum1, addendum2);
     }
 
     /**
@@ -238,7 +306,7 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
      */
     private List<Act> getActs(List<Act> events, String[] shortNames, boolean sortAscending) {
         PatientHistoryIterator iterator = new PatientHistoryIterator(events, shortNames, sortAscending);
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         CollectionUtils.addAll(result, iterator);
         return result;
     }

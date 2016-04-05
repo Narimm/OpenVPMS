@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -20,13 +20,17 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.NotPredicate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -79,13 +83,14 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
      *
      * @param act  the act
      * @param root the root of the tree
+     * @param acts the set of visited acts, keyed on reference
      * @return the immediate children of the act, or an empty list if they have been filtered
      */
     @Override
-    public List<T> filter(T act, T root) {
-        List<T> result = new ArrayList<T>();
+    public List<T> filter(T act, T root, Map<IMObjectReference, T> acts) {
+        List<T> result = new ArrayList<>();
         if (include(act)) {
-            List<T> items = getIncludedTargets(act, root);
+            List<T> items = getChildren(act, root, acts);
             items = filter(act, items);
             if (include(act, items)) {
                 result.addAll(items);
@@ -138,7 +143,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
      */
     protected Collection<ActRelationship> getRelationships(Collection<ActRelationship> relationships,
                                                            Predicate predicate) {
-        Collection<ActRelationship> result = new ArrayList<ActRelationship>();
+        Collection<ActRelationship> result = new ArrayList<>();
         for (ActRelationship relationship : relationships) {
             if (predicate.evaluate(relationship)) {
                 result.add(relationship);
@@ -201,21 +206,66 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
     }
 
     /**
-     * Returns the included target acts in set of relationships.
+     * Returns the immediate children of an act.
+     * <p/>
+     * Each child is passed to {@link #include(Act, Act, Act)} to determine if it should be included.
      *
      * @param act  the parent act
      * @param root the root act
+     * @param acts a cache of the visited acts, keyed on reference
      * @return the include target acts
      */
     @SuppressWarnings("unchecked")
-    protected List<T> getIncludedTargets(T act, T root) {
-        List<T> result = new ArrayList<T>();
-        Collection<ActRelationship> relationships = getRelationships(act);
-        for (Act match : ActHelper.getTargetActs(relationships)) {
+    protected List<T> getChildren(T act, T root, Map<IMObjectReference, T> acts) {
+        List<T> result = new ArrayList<>();
+        Set<T> cached = getChildren(act, acts);
+        for (Act match : cached) {
             T item = (T) match;
             if (include(item, act, root)) {
                 result.add(item);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the immediate children of an act.
+     * <p/>
+     * This implementation returns the targets of the relationships from {@link #getRelationships(Act)}.
+     *
+     * @param act  the parent act
+     * @param acts a cache of the visited acts, keyed on reference
+     * @return the immediate children of {@code act}
+     */
+    @SuppressWarnings("unchecked")
+    protected Set<T> getChildren(T act, Map<IMObjectReference, T> acts) {
+        Collection<ActRelationship> relationships = getRelationships(act);
+        List<IMObjectReference> references = new ArrayList<>();
+        for (ActRelationship relationship : relationships) {
+            IMObjectReference target = relationship.getTarget();
+            if (target != null) {
+                references.add(target);
+            }
+        }
+        return getActs(references, acts);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected Set<T> getActs(List<IMObjectReference> references, Map<IMObjectReference, T> acts) {
+        Set<T> result = new HashSet<>();
+        Set<IMObjectReference> uncached = new HashSet<>();
+        for (IMObjectReference reference : references) {
+            T found = acts.get(reference);
+            if (found != null) {
+                result.add(found);
+            } else {
+                uncached.add(reference);
+            }
+        }
+        if (!uncached.isEmpty()) {
+            Map<IMObjectReference, T> map = (Map<IMObjectReference, T>) ActHelper.getActMap(uncached);
+            acts.putAll(map);
+            result.addAll(map.values());
         }
         return result;
     }

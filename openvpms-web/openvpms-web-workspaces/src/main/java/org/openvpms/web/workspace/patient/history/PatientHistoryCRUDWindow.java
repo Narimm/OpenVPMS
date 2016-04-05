@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -114,7 +114,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * Sets the current patient clinical event.
-     * <p>
+     * <p/>
      * This updates the context.
      *
      * @param event the current event
@@ -183,9 +183,13 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onCreate(Archetypes<Act> archetypes) {
         if (getEvent() != null) {
+            boolean includeAddendum = false;
+            if (TypeHelper.isA(getObject(), PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
+                includeAddendum = true;
+            }
             // an event is selected, so display all of the possible event item archetypes
             String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM,
-                                                PatientArchetypes.CLINICAL_EVENT);
+                                                includeAddendum, PatientArchetypes.CLINICAL_EVENT);
             archetypes = new Archetypes<>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
                                           archetypes.getDisplayName());
         }
@@ -201,12 +205,18 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onSaved(Act act, boolean isNew) {
         if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-            if (getEvent() == null) {
-                createEvent();
+            Act event = getEvent();
+            if (event == null) {
+                event = createEvent();
             }
             // link the item to its parent event, if required. As there might be multiple user's accessing the event,
             // use a Retryer to retry if the linking fails initially
-            PatientMedicalRecordLinker linker = createMedicalRecordLinker(getEvent(), act);
+            PatientMedicalRecordLinker linker;
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
+                linker = new PatientMedicalRecordLinker(event, null, getObject(), act);
+            } else {
+                linker = new PatientMedicalRecordLinker(event, act);
+            }
             Retryer.run(linker);
             if (TypeHelper.isA(act, PatientArchetypes.PATIENT_WEIGHT)) {
                 onWeightChanged(act);
@@ -292,7 +302,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * Invoked when the patient weight changes or a weight record is deleted.
-     * <p>
+     * <p/>
      * If the act is for the current visit, registered listeners will be notified via
      * the {@link PatientInformationService}.
      *

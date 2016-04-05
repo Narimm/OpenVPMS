@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
 
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.CurrencyException;
@@ -156,6 +157,24 @@ public class PracticeRules {
         return (Party) EntityRelationshipHelper.getDefaultTarget(practice, "locations", service);
     }
 
+    /**
+     * Determines the period after which patient medical records are locked.
+     *
+     * @param practice the practice
+     * @return the period, or {@code null} if no period is defined
+     */
+    public Period getRecordLockPeriod(Party practice) {
+        Period result = null;
+        IMObjectBean bean = new IMObjectBean(practice, service);
+        int period = bean.getInt("recordLockPeriod", -1);
+        if (period > 0) {
+            DateUnits units = DateUnits.fromString(bean.getString("recordLockPeriodUnits"), null);
+            if (units != null) {
+                result = units.toPeriod(period);
+            }
+        }
+        return result;
+    }
     /**
      * Returns the default prescription expiry date, based on the practice settings for the
      * <em>prescriptionExpiryPeriod</em> and <em>prescriptionExpiryUnits</em> nodes.
