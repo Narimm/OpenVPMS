@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -32,13 +32,12 @@ import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.doc.VersionedDocumentActEditorTest;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
 
 import static org.junit.Assert.assertTrue;
 
 
 /**
- * Tests the {@link org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor} class.
+ * Tests the {@link PatientInvestigationActEditor} class.
  *
  * @author Tim Anderson
  */

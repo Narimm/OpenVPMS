@@ -11,10 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.archetype.rules.doc;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -41,17 +42,28 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link DocumentRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentRulesTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The document rules.
+     */
+    private DocumentRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        rules = new DocumentRules(getArchetypeService());
+    }
 
     /**
      * Tests the {@link DocumentRules#supportsVersions} method.
      */
     @Test
     public void testSupportsVersions() {
-        DocumentRules rules = new DocumentRules();
 
         DocumentAct image = (DocumentAct) create("act.patientDocumentImage");
         assertTrue(rules.supportsVersions(image));
@@ -80,7 +92,6 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         save(act, event);
 
         // now add a document.
-        DocumentRules rules = new DocumentRules();
         Document document1 = createDocument();
         List<IMObject> objects = rules.addDocument(act, document1);
         save(objects);
@@ -109,7 +120,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         // verify document1 and document2 are versioned
         acts = bean.getNodeActs("versions", DocumentAct.class);
         assertEquals(2, acts.size());
-        Set<IMObjectReference> docs = new HashSet<IMObjectReference>();
+        Set<IMObjectReference> docs = new HashSet<>();
         for (DocumentAct version : acts) {
             assertEquals(1, version.getActRelationships().size()); // only one relationship, back to parent
             docs.add(version.getDocument());
@@ -162,7 +173,6 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         bean.addParticipation("participation.patient", patient);
 
         // now add a document.
-        DocumentRules rules = new DocumentRules();
         Document document1 = createDocument();
         assertFalse(document1.getDocSize() == 0);
         assertFalse(document1.getChecksum() == 0);
@@ -246,7 +256,6 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         save(document);
         act.setDocument(document.getObjectReference());
         assertNotNull(act);
-        DocumentRules rules = new DocumentRules();
         DocumentAct version = rules.createVersion(act);
         assertNotNull(version);
         assertEquals(expectedVersion, version.getArchetypeId().getShortName());

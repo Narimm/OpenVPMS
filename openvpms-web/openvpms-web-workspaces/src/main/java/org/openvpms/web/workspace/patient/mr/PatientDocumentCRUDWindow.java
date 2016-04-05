@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,13 +38,13 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
 public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
 
     /**
-     * Constructs a {@code PatientDocumentCRUDWindow}.
+     * Constructs a {@link PatientDocumentCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param help       the help context
      */
     public PatientDocumentCRUDWindow(Archetypes<DocumentAct> archetypes, Context context, HelpContext help) {
-        super(archetypes, context, help);
+        super(archetypes, PatientDocumentActions.INSTANCE, context, help);
     }
 
     /**
@@ -65,6 +66,8 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
     }
 
     private static class PatientDocumentActions extends DocumentActActions {
+
+        public static final PatientDocumentActions INSTANCE = new PatientDocumentActions();
 
         /**
          * Determines if an act is locked from changes.

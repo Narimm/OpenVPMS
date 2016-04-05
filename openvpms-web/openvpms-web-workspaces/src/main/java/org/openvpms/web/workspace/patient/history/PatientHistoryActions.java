@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.history;
 import org.joda.time.Period;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
@@ -53,13 +54,16 @@ public class PatientHistoryActions extends ActActions<Act> {
 
     /**
      * Determines if an act can be edited.
+     * <p/>
+     * Patient investigations can always be edited, although the editor restricts functionality based on the status.
      *
      * @param act the act to check
      * @return {@code true} if the act isn't an invoice item, and its status isn't {@code POSTED}
      */
     @Override
     public boolean canEdit(Act act) {
-        return !TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM) && super.canEdit(act);
+        return !TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)
+               && (super.canEdit(act) || TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION));
     }
 
     /**

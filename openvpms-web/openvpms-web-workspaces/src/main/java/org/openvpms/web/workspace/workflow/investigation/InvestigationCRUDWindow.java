@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -19,13 +19,13 @@ package org.openvpms.web.workspace.workflow.investigation;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
 
 /**
  * CRUD Window for <em>act.patientInvestigation</em> acts.
@@ -59,7 +59,7 @@ class InvestigationCRUDWindow extends ResultSetCRUDWindow<Act> {
         buttons.add(createEditButton());
     }
 
-    private static class InvestigationActions extends ActActions<Act> {
+    private static class InvestigationActions extends PatientHistoryActions {
 
         public static final IMObjectActions<Act> INSTANCE = new InvestigationActions();
 

@@ -42,6 +42,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -237,7 +238,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         public RefreshDialog(DocumentAct act, HelpContext help) {
             super(Messages.get("document.refresh.title"), Messages.get("document.refresh.message"),
                   help.subtopic("refresh"));
-            DocumentRules rules = new DocumentRules();
+            DocumentRules rules = new DocumentRules(ServiceHelper.getArchetypeService());
             if (act.getDocument() != null && rules.supportsVersions(act)) {
                 version = CheckBoxFactory.create("document.refresh.version", true);
             }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -84,7 +84,7 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
 
 
     /**
-     * Construct a new {@code DocumentEditor}.
+     * Constructs a {@link DocumentEditor}.
      *
      * @param property the property being edited
      * @throws ArchetypeServiceException for any archetype service error
