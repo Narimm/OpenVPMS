@@ -77,15 +77,17 @@ public class CommunicationLogger {
      * @param bcc         the BCC addresses. May be {@code null}
      * @param subject     the subject. May be {@code null}
      * @param reason      the reason for the communication  (see <em>act.customerCommunication/reason</em>)
-     * @param message     the message (in HTML)
+     * @param message     the message (in HTML). May be {@code null}
      * @param note        optional note. May be {@code null}
      * @param attachments the attachments. May be {@code null}
      * @param location    the practice location where the communication took place. May be {@code null}
      */
     public void logEmail(Party customer, Party patient, String[] to, String[] cc, String[] bcc, String subject,
                          String reason, String message, String note, String attachments, Party location) {
-        HtmlToTextFormatter formatter = new HtmlToTextFormatter();
-        message = formatter.format(message);
+        if (message != null) {
+            HtmlToTextFormatter formatter = new HtmlToTextFormatter();
+            message = formatter.format(message);
+        }
         ActBean bean = createLog(CommunicationArchetypes.EMAIL, customer, patient, getAddresses(to), subject, reason,
                                  note, location);
         bean.setValue("cc", getAddresses(cc));
