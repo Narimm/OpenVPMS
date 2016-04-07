@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -126,7 +126,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         DocumentAct act = IMObjectHelper.reload(getObject());
         if (act == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else if (act.getDocument() != null) {
+        } else if (act.getDocument() == null) {
             if (canRefresh()) {
                 // regenerate the document, and print
                 refresh(act, true, false);
