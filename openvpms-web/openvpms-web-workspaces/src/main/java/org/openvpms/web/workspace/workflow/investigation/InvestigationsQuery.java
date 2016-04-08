@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -22,7 +22,6 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -38,6 +37,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.clinician.ClinicianSelectField;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.location.LocationSelectField;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -86,6 +87,10 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      */
     private final IMObjectSelector<Entity> investigationType;
 
+    /**
+     * The result status dropdown.
+     */
+    private LookupField resultStatusSelector;
 
     /**
      * The default sort constraint.
@@ -95,19 +100,28 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * The act statuses to query..
      */
-    private static final ActStatuses STATUSES = new ActStatuses(new StatusLookupQuery(), null);
+    private static final ActStatuses STATUSES;
 
     /**
-     * Dummy incomplete status, used in the status selector.
+     * The result statuses to query..
+     */
+    private static final ActStatuses RESULT_STATUSES = new ActStatuses(new ResultStatusLookupQuery(), null);
+
+    /**
+     * Dummy incomplete status, used in the result status selector.
      */
     private static Lookup INCOMPLETE_STATUS = new Lookup(new ArchetypeId("lookup.local"), "INCOMPLETE",
                                                          Messages.get("investigation.incomplete"));
 
-    /**
-     * The 'complete' investigation statuses.
-     */
-    private static final String[] COMPLETE_CODES = {ActStatus.COMPLETED, ActStatus.CANCELLED};
+    static {
+        STATUSES = new ActStatuses(PATIENT_INVESTIGATION);
+        STATUSES.setDefault((String) null);
+    }
 
+    /**
+     * The final investigation statuses.
+     */
+    private static final String[] FINAL_STATUS = new String[]{"FINAL"};
 
     /**
      * Constructs an {@link InvestigationsQuery}.
@@ -118,9 +132,6 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         super(null, null, null, SHORT_NAMES, STATUSES, Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
         setAuto(true);
-
-        setStatus(INCOMPLETE_STATUS.getCode());
-        // TODO - shouldn't need this as its returned by StatusLookupQuery, but addStatusSelector() ignores it
 
         location = createLocationSelector(context.getContext());
         clinician = createClinicianSelector();
@@ -170,21 +181,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      */
     @Override
     public Extent getHeight() {
-        return getHeight(2);
-    }
-
-    /**
-     * Returns the act statuses to query.
-     *
-     * @return the act statuses to query
-     */
-    @Override
-    protected String[] getStatuses() {
-        String[] statuses = super.getStatuses();
-        if (statuses.length == 1 && statuses[0].equals(INCOMPLETE_STATUS.getCode())) {
-            statuses = COMPLETE_CODES;
-        }
-        return statuses;
+        return getHeight(3);
     }
 
     /**
@@ -206,7 +203,9 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     @Override
     protected void doLayout(Component container) {
         addSearchField(container);
-        super.doLayout(container);
+        addStatusSelector(container);
+        addResultStatusSelector(container);
+        addDateRange(container);
         addLocation(container);
         addClinician(container);
         addInvestigationType(container);
@@ -222,13 +221,24 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Determines if act statuses are being excluded.
+     * Adds a result status selector to the container.
      *
-     * @return {@code true} to exclude acts with status in {@link #getStatuses()}; otherwise include them.
+     * @param container the container
      */
-    @Override
-    protected boolean excludeStatuses() {
-        return (getStatuses() == COMPLETE_CODES);
+    protected void addResultStatusSelector(Component container) {
+        if (resultStatusSelector == null) {
+            resultStatusSelector = LookupFieldFactory.create(RESULT_STATUSES, true);
+            resultStatusSelector.addActionListener(new ActionListener() {
+                public void onAction(ActionEvent e) {
+                    onStatusChanged();
+                }
+            });
+        }
+        Label label = LabelFactory.create();
+        label.setText(DescriptorHelper.getDisplayName(PATIENT_INVESTIGATION, "status2"));
+        container.add(label);
+        container.add(resultStatusSelector);
+        getFocusGroup().add(resultStatusSelector);
     }
 
     /**
@@ -239,7 +249,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      */
     @Override
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        List<ParticipantConstraint> list = new ArrayList<ParticipantConstraint>();
+        List<ParticipantConstraint> list = new ArrayList<>();
         ParticipantConstraint supplier = getParticipantConstraint();
         if (supplier != null) {
             list.add(supplier);
@@ -251,9 +261,20 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
         Party location = (Party) this.location.getSelectedItem();
+        String resultStatus[];
+        boolean exclude = false;
+        Lookup selected = resultStatusSelector.getSelected();
+        if (selected == INCOMPLETE_STATUS) {
+            resultStatus = FINAL_STATUS;
+            exclude = true;
+        } else if (selected != null) {
+            resultStatus = new String[]{selected.getCode()};
+        } else {
+            resultStatus = new String[0];
+        }
         return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location,
                                           this.location.getLocations(), getFrom(), getTo(), getStatuses(),
-                                          excludeStatuses(), getMaxResults(), sort);
+                                          resultStatus, exclude, getMaxResults(), sort);
     }
 
     /**
@@ -295,7 +316,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      * @return a new selector
      */
     private IMObjectSelector<Entity> createInvestigationTypeSelector(LayoutContext context) {
-        IMObjectSelector<Entity> selector = new IMObjectSelector<Entity>(
+        IMObjectSelector<Entity> selector = new IMObjectSelector<>(
                 DescriptorHelper.getDisplayName(INVESTIGATION_TYPE), context, INVESTIGATION_TYPE);
         AbstractIMObjectSelectorListener<Entity> listener = new AbstractIMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
@@ -365,13 +386,13 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         return result;
     }
 
-    private static class StatusLookupQuery extends NodeLookupQuery {
+    private static class ResultStatusLookupQuery extends NodeLookupQuery {
 
         /**
-         * Constructs an {@link StatusLookupQuery}.
+         * Constructs an {@link ResultStatusLookupQuery}.
          */
-        public StatusLookupQuery() {
-            super(InvestigationArchetypes.PATIENT_INVESTIGATION, "status");
+        public ResultStatusLookupQuery() {
+            super(PATIENT_INVESTIGATION, "status2");
         }
 
         /**

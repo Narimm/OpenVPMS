@@ -35,9 +35,17 @@
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
-                    <property name="RECEIVED" value="Received"/>
-                    <property name="COMPLETED" value="Completed"/>
                     <property name="CANCELLED" value="Cancelled"/>
+                    <property name="POSTED" value="Finalised"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="status2" displayName="Result Status" path="/status2" type="java.lang.String" minCardinality="1"
+              defaultValue="'PENDING'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PENDING" value="Pending"/>
+                    <property name="SENT" value="Sent"/>
                     <property name="PRELIMINARY" value="Preliminary"/>
                     <property name="FINAL" value="Final"/>
                 </propertyList>

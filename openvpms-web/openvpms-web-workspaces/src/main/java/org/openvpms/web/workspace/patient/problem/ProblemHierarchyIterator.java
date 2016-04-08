@@ -29,13 +29,13 @@ import org.openvpms.web.component.im.act.ActHierarchyIterator;
 public class ProblemHierarchyIterator extends ActHierarchyIterator<Act> {
 
     /**
-     * Constructs an {@link ActHierarchyIterator}.
+     * Constructs an {@link ProblemHierarchyIterator}.
      *
      * @param acts   the collection of acts
      * @param filter the hierarchy filter
      */
     public ProblemHierarchyIterator(Iterable<Act> acts, ProblemFilter filter) {
-        super(acts, filter, 3);
+        super(acts, filter, 4);
     }
 
 }

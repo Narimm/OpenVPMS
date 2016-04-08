@@ -32,7 +32,6 @@ import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -184,13 +183,18 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void onCreate(Archetypes<Act> archetypes) {
         if (getEvent() != null) {
             boolean includeAddendum = false;
-            if (TypeHelper.isA(getObject(), PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
+            String defaultShortName = PatientArchetypes.CLINICAL_NOTE;
+            Act selected = getObject();
+            if (TypeHelper.isA(selected, PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
                 includeAddendum = true;
+                if (getActions().isLocked(selected)) {
+                    defaultShortName = PatientArchetypes.CLINICAL_ADDENDUM;
+                }
             }
             // an event is selected, so display all of the possible event item archetypes
             String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM,
                                                 includeAddendum, PatientArchetypes.CLINICAL_EVENT);
-            archetypes = new Archetypes<>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
+            archetypes = new Archetypes<>(shortNames, archetypes.getType(), defaultShortName,
                                           archetypes.getDisplayName());
         }
         super.onCreate(archetypes);
@@ -212,8 +216,13 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             // link the item to its parent event, if required. As there might be multiple user's accessing the event,
             // use a Retryer to retry if the linking fails initially
             PatientMedicalRecordLinker linker;
+            Act selected = getObject();
             if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
-                linker = new PatientMedicalRecordLinker(event, null, getObject(), act);
+                if (!TypeHelper.isA(selected, PatientArchetypes.CLINICAL_ADDENDUM)) {
+                    linker = new PatientMedicalRecordLinker(event, null, selected, act);
+                } else {
+                    linker = new PatientMedicalRecordLinker(event, null, null, act);
+                }
             } else {
                 linker = new PatientMedicalRecordLinker(event, act);
             }
@@ -253,12 +262,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         if (query != null) {
             try {
                 Context context = getContext();
-                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
-                // maxDepth = 2 - display the events, and their immediate children
-                Iterable<Act> summary = new ActHierarchyIterator<>(query, filter, 2);
-                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
-                                                                                     context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
+                IMObjectReportPrinter<Act> printer = createPrinter(context);
                 String title = Messages.get("patient.record.summary.print");
                 HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_EVENT + "/print");
                 InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
@@ -277,12 +281,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         if (query != null) {
             try {
                 Context context = getContext();
-                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
-                // maxDepth = 2 - display the events, and their immediate children
-                Iterable<Act> summary = new ActHierarchyIterator<>(query, filter, 2);
-                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
-                                                                                     context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
+                IMObjectReportPrinter<Act> printer = createPrinter(context);
                 Document document = printer.getDocument();
                 DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {
@@ -341,6 +340,21 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
                 onImportFlowSheet();
             }
         });
+    }
+
+    /**
+     * Creates a printer to print/preview the patient history.
+     *
+     * @param context the context
+     * @return a new printer
+     */
+    private IMObjectReportPrinter<Act> createPrinter(Context context) {
+        PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
+        // need to use maxDepth=3 so that addendum records appear after the records they link to.
+        PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
+                                                                             context);
+        return new IMObjectReportPrinter<>(summary, locator, context);
     }
 
     /**

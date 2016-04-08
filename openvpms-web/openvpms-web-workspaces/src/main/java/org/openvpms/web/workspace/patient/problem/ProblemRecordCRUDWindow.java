@@ -140,6 +140,16 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected ProblemActions getActions() {
+        return (ProblemActions) super.getActions();
+    }
+
+    /**
      * Invoked when the 'print' button is pressed.
      * This implementation prints the current summary list, rather than
      * the selected item.
@@ -149,11 +159,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         if (query != null) {
             try {
                 Context context = getContext();
-                ProblemFilter filter = new ProblemFilter(query.getActItemShortNames(), query.isSortAscending());
-                Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
-                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
-                                                                                     context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
+                IMObjectReportPrinter<Act> printer = createPrinter(context);
                 String title = Messages.get("patient.record.problem.print");
                 HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_PROBLEM + "/print");
                 InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
@@ -173,11 +179,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         if (query != null) {
             try {
                 Context context = getContext();
-                ProblemFilter filter = new ProblemFilter(query.getActItemShortNames(), query.isSortAscending());
-                Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
-                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
-                                                                                     context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
+                IMObjectReportPrinter<Act> printer = createPrinter(context);
                 Document document = printer.getDocument();
                 DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {
@@ -219,13 +221,18 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void onCreate(Archetypes<Act> archetypes) {
         if (problem != null) {
             boolean includeAddendum = false;
-            if (TypeHelper.isA(getObject(), PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
+            String defaultShortName = PatientArchetypes.CLINICAL_NOTE;
+            Act selected = getObject();
+            if (TypeHelper.isA(selected, PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
                 includeAddendum = true;
+                if (getActions().isLocked(selected)) {
+                    defaultShortName = PatientArchetypes.CLINICAL_ADDENDUM;
+                }
             }
             // problem is selected, so display all of the possible event item archetypes
             String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM,
                                                 includeAddendum, PatientArchetypes.CLINICAL_PROBLEM);
-            archetypes = new Archetypes<>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
+            archetypes = new Archetypes<>(shortNames, archetypes.getType(), defaultShortName,
                                           archetypes.getDisplayName());
         }
         super.onCreate(archetypes);
@@ -295,8 +302,13 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             }
             Act event = getEvent();
             PatientMedicalRecordLinker linker;
+            Act selected = getObject();
             if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
-                linker = new PatientMedicalRecordLinker(event, problem, getObject(), act);
+                if (!TypeHelper.isA(selected, PatientArchetypes.CLINICAL_ADDENDUM)) {
+                    linker = new PatientMedicalRecordLinker(event, problem, selected, act);
+                } else {
+                    linker = new PatientMedicalRecordLinker(event, problem, null, act);
+                }
             } else {
                 linker = new PatientMedicalRecordLinker(event, problem, act);
             }
@@ -316,6 +328,20 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             setProblem(null);
         }
         super.onDeleted(object);
+    }
+
+    /**
+     * Creates a printer to print/preview problems.
+     *
+     * @param context the context
+     * @return a new printer
+     */
+    private IMObjectReportPrinter<Act> createPrinter(Context context) {
+        ProblemFilter filter = new ProblemFilter(query.getActItemShortNames(), query.isSortAscending());
+        Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
+                                                                             context);
+        return new IMObjectReportPrinter<>(summary, locator, context);
     }
 
     /**

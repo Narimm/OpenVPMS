@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -99,8 +99,8 @@ class InvestigationsTableModel extends DescriptorTableModel<Act> {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"startTime", "investigationType", "patient", "id", "status", "product", "clinician",
-                            "location"};
+        return new String[]{"startTime", "investigationType", "patient", "id", "status", "status2", "product",
+                            "clinician", "location"};
     }
 
     /**
