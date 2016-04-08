@@ -118,6 +118,18 @@ public class PatientHistoryActions extends ActActions<Act> {
     }
 
     /**
+     * Determines if an act is locked from editing.
+     * <p/>
+     *
+     * @param act the act
+     * @return {@code true} if the act status is {@link ActStatus#POSTED}, or {@link #needsLock} returns {@code true}.
+     */
+    @Override
+    public boolean isLocked(Act act) {
+        return super.isLocked(act) || needsLock(act);
+    }
+
+    /**
      * Determines if an act needs locking.
      *
      * @param act thr act
@@ -130,15 +142,4 @@ public class PatientHistoryActions extends ActActions<Act> {
         return (period != null) && recordRules.needsLock(act, period);
     }
 
-    /**
-     * Determines if an act is locked from editing.
-     * <p/>
-     *
-     * @param act the act
-     * @return {@code true} if the act status is {@link ActStatus#POSTED}, or {@link #needsLock} returns {@code true}.
-     */
-    @Override
-    protected boolean isLocked(Act act) {
-        return super.isLocked(act) || needsLock(act);
-    }
 }

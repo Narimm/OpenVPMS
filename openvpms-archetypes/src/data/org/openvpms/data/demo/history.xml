@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -57,10 +57,18 @@
         <data collection="patient" archetype="participation.patient" entity="id:A5" act="id:HI8"/>
         <data collection="clinician" archetype="participation.clinician" entity="id:VET1" act="id:HI8"/>
         <data collection="items" archetype="actRelationship.patientClinicalEventItem" source="id:HI8" target="id:HI9"/>
+        <data collection="items" archetype="actRelationship.patientClinicalEventItem" source="id:HI8"
+              target="id:HI9_1"/>
     </data>
     <data id="HI9" archetype="act.patientClinicalNote" startTime="23/04/2006"
           note="Admitted to Hospital&#10;vaccination (Weight : 5kg)&#10;Temp: 39 Wt: N/R Card/Vas: N/R Integ: N.A.D. Resp: N.A.D.&#10;Sense: N.A.D. Neuro: N.A.D. Gastr: N.A.D. Uro/Gen: N.A.D.&#10;M.Skel.: N.A.D. N.A.D.&#10;AT :yjgjhhgkjhjk">
         <data collection="patient" archetype="participation.patient" entity="id:A5" act="id:HI9"/>
+    </data>
+    <data id="HI9_1" archetype="act.patientInvestigation" startTime="23/04/2006">
+        <data collection="patient" archetype="participation.patient" entity="id:A5" act="id:HI9_1"/>
+        <data collection="investigationType" archetype="participation.investigationType" entity="id:INVEST2"
+              act="id:HI9_1"/>
+        <data collection="product" archetype="participation.product" entity="id:P1000" act="id:HI9_1"/>
     </data>
     <data id="HI10" archetype="act.patientClinicalEvent" startTime="23/08/2012" endTime="23/08/2012"
           title="Consultation" status="COMPLETED">

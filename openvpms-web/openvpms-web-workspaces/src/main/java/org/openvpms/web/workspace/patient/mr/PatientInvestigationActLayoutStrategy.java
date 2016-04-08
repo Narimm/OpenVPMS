@@ -68,6 +68,16 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
     private boolean showProductReadOnly;
 
     /**
+     * Result status node name.
+     */
+    private static final String RESULT_STATUS = "status2";
+
+    /**
+     * Reviewed node name.
+     */
+    private static final String REVIEWED = "reviewed";
+
+    /**
      * Constructs a {@link PatientInvestigationActLayoutStrategy}.
      */
     public PatientInvestigationActLayoutStrategy() {
@@ -172,7 +182,8 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
      */
     @Override
     protected boolean makeReadOnly(Property property) {
-        return !property.isReadOnly() && !property.getName().equals("reviewed");
+        String name = property.getName();
+        return !property.isReadOnly() && !RESULT_STATUS.equals(name) && !REVIEWED.equals(name);
     }
 
     /**

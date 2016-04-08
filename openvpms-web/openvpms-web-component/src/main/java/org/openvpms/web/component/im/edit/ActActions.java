@@ -238,7 +238,7 @@ public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<
      * @param act the act
      * @return {@code true} if the act status is {@link ActStatus#POSTED}
      */
-    protected boolean isLocked(T act) {
+    public boolean isLocked(T act) {
         return ActStatus.POSTED.equals(act.getStatus());
     }
 }

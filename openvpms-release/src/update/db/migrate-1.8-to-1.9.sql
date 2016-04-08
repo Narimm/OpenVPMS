@@ -864,3 +864,59 @@ FROM entity_details d
        AND d.name IN ('emailSubject', 'emailText');
 
 DROP TABLE tmp_email_templates;
+
+
+#
+# OVPMS-1744 Medical Record Locking
+#
+
+# Add a status2 column to acts.
+DELIMITER $$
+CREATE PROCEDURE OVPMS1744_modify_acts()
+  BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT count(*)
+                  FROM INFORMATION_SCHEMA.COLUMNS
+                  WHERE
+                    TABLE_NAME = 'acts' AND TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = 'status2');
+    IF _count = 0
+    THEN
+      ALTER TABLE acts
+      ADD COLUMN status2 VARCHAR(50)
+      AFTER status,
+      ADD INDEX act_short_name_status2_idx (arch_short_name, status2);
+    END IF;
+  END $$
+DELIMITER ;
+
+CALL OVPMS1744_modify_acts();
+DROP PROCEDURE OVPMS1744_modify_acts;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'IN_PROGRESS',
+  a.status2  = 'PENDING'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'RECEIVED'
+      AND d.document_id IS NOT NULL;
+
+UPDATE acts a
+SET a.status = 'POSTED',
+  a.status2  = 'FINAL'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'COMPLETED';
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'PENDING'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'IN_PROGRESS'
+      AND d.document_id IS NULL;
+
+UPDATE acts a
+SET a.status2 = 'FINAL'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'CANCELLED';
+

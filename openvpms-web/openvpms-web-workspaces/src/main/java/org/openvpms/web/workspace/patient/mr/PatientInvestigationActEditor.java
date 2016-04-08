@@ -275,7 +275,7 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
             result = true;
         } else {
             ActBean bean = new ActBean(getObject());
-            result = (bean.getValue("invoiceItem") != null);
+            result = (bean.getNodeSourceObjectRef("invoiceItem") != null);
         }
         return result;
     }
