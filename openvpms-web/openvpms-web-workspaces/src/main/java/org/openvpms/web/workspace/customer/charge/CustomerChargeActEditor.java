@@ -429,10 +429,10 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      */
     @Override
     protected void doDelete() {
-        super.doDelete();
         if (orderPlacer != null) {
             orderPlacer.cancel();
         }
+        super.doDelete();
     }
 
     /**

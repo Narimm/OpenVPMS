@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -30,6 +30,7 @@ import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -372,7 +373,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param investigationType the investigation type
      * @return the corresponding investigation
      */
-    protected Act getInvestigation(Act item, Entity investigationType) {
+    protected DocumentAct getInvestigation(Act item, Entity investigationType) {
         ActBean itemBean = new ActBean(item);
         List<Act> investigations = itemBean.getNodeActs("investigations");
         for (Act investigation : investigations) {
@@ -380,7 +381,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             assertTrue(bean.isA(InvestigationArchetypes.PATIENT_INVESTIGATION));
             if (ObjectUtils.equals(bean.getNodeParticipantRef("investigationType"),
                                    investigationType.getObjectReference())) {
-                return investigation;
+                return (DocumentAct) investigation;
             }
         }
         fail("Investigation not found");

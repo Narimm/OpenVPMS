@@ -45,7 +45,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.annotation.PreDestroy;
 
 /**
- * Schedules the {@link MedicalRecordLockingJob}, based on the practice record lock period.
+ * Schedules the {@link MedicalRecordLockerJob}, based on the practice record lock period.
  *
  * @author Tim Anderson
  */
@@ -84,7 +84,7 @@ public class MedicalRecordLockingScheduler {
     /**
      * The job archetype short name.
      */
-    private static final String SHORT_NAME = "entity.jobMedicalRecordLocker";
+    protected static final String JOB_SHORT_NAME = "entity.jobMedicalRecordLocker";
 
     /**
      * Constructs an {@link MedicalRecordLockingScheduler}.
@@ -204,7 +204,7 @@ public class MedicalRecordLockingScheduler {
                 IMObject object = inactive.next();
                 setActive(object, true);
             } else {
-                IMObject config = service.create(SHORT_NAME);
+                IMObject config = service.create(JOB_SHORT_NAME);
                 IMObjectBean bean = new IMObjectBean(config, service);
                 bean.addNodeTarget("runAs", user);
                 bean.save();
@@ -245,7 +245,7 @@ public class MedicalRecordLockingScheduler {
      * @return a new iterator
      */
     private IMObjectQueryIterator<IMObject> getJobs(boolean active) {
-        ArchetypeQuery query = new ArchetypeQuery(SHORT_NAME, active);
+        ArchetypeQuery query = new ArchetypeQuery(JOB_SHORT_NAME, active);
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         query.add(Constraints.sort("id"));
         return new IMObjectQueryIterator<>(service, query);

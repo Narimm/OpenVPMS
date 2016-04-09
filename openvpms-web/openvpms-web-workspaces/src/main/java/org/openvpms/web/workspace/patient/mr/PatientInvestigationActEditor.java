@@ -221,8 +221,8 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         PatientInvestigationActLayoutStrategy strategy = new PatientInvestigationActLayoutStrategy(
                 getDocumentEditor(), getVersionsEditor(), productEditor, isLocked());
-        if (isProductReadOnly()) {
-            strategy.setShowProductReadOnly(true);
+        if (hasInvoiceItem()) {
+            strategy.setHasInvoiceItem(true);
         }
         strategy.setEnableButton(enablePrintForm());
         return strategy;
@@ -265,11 +265,13 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     }
 
     /**
-     * Determines if the product and investigation type should be read-only.
+     * Determines if the investigation is linked to an invoice item.
+     * <p/>
+     * If so, the product, investigationType and status should be read-only
      *
      * @return {@code true} if the parent act is an invoice item, or the investigation is linked to an invoice item
      */
-    private boolean isProductReadOnly() {
+    private boolean hasInvoiceItem() {
         boolean result;
         if (TypeHelper.isA(getParent(), CustomerAccountArchetypes.INVOICE_ITEM)) {
             result = true;
