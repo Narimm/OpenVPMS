@@ -136,6 +136,12 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         location = createLocationSelector(context.getContext());
         clinician = createClinicianSelector();
         investigationType = createInvestigationTypeSelector(context);
+        resultStatusSelector = LookupFieldFactory.create(RESULT_STATUSES, true);
+        resultStatusSelector.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent e) {
+                onStatusChanged();
+            }
+        });
     }
 
     /**
@@ -226,14 +232,6 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      * @param container the container
      */
     protected void addResultStatusSelector(Component container) {
-        if (resultStatusSelector == null) {
-            resultStatusSelector = LookupFieldFactory.create(RESULT_STATUSES, true);
-            resultStatusSelector.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent e) {
-                    onStatusChanged();
-                }
-            });
-        }
         Label label = LabelFactory.create();
         label.setText(DescriptorHelper.getDisplayName(PATIENT_INVESTIGATION, "status2"));
         container.add(label);

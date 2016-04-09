@@ -76,7 +76,7 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
          * @return {@code true} if the act status is {@link ActStatus#POSTED}
          */
         @Override
-        protected boolean isLocked(DocumentAct act) {
+        public boolean isLocked(DocumentAct act) {
             return super.isLocked(act) || PatientHistoryActions.needsLock(act);
         }
     }

@@ -65,7 +65,7 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
     /**
      * Determines if the product node should be displayed read-only.
      */
-    private boolean showProductReadOnly;
+    private boolean hasInvoiceItem;
 
     /**
      * Result status node name.
@@ -111,12 +111,13 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
     }
 
     /**
-     * Determines if the product and investigation type should be read-only.
+     * Determines if the investigation is generated from an invoice item.
+     * If so, the product, investigation type and status should be read-only.
      *
-     * @param readOnly if {@code true} display the product read-only
+     * @param hasInvoiceItem if {@code true} display the fields read-only
      */
-    public void setShowProductReadOnly(boolean readOnly) {
-        showProductReadOnly = readOnly;
+    public void setHasInvoiceItem(boolean hasInvoiceItem) {
+        this.hasInvoiceItem = hasInvoiceItem;
     }
 
     /**
@@ -132,9 +133,10 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        if (isLocked() || showProductReadOnly) {
+        if (isLocked() || hasInvoiceItem) {
             // note that that this replaces any prior product registration
             IMObjectComponentFactory factory = context.getComponentFactory();
+            addComponent(factory.create(createReadOnly(properties.get("status")), object));
             addComponent(factory.create(createReadOnly(properties.get("product")), object));
             addComponent(factory.create(createReadOnly(properties.get("investigationType")), object));
         }

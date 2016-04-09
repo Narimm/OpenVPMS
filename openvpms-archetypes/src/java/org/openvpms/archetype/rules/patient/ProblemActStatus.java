@@ -13,33 +13,23 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.patient;
 
 /**
- * Result status types for investigation acts.
+ * Status values for <em>act.patientClinicalProblem</em>.
  *
  * @author Tim Anderson
  */
-public class InvestigationActStatus {
+public class ProblemActStatus {
 
     /**
-     * Pending result act status.
+     * Resolved problem status.
      */
-    public static final String PENDING = "PENDING";
+    public static final String RESOLVED = "RESOLVED";
 
     /**
-     * Sent result act status.
+     * Unresolved problem status.
      */
-    public static final String SENT = "SENT";
-
-    /**
-     * Preliminary result act status.
-     */
-    public static final String PRELIMINARY = "PRELIMINARY";
-
-    /**
-     * Final result act status.
-     */
-    public static final String FINAL = "FINAL";
-
+    public static final String UNRESOLVED = "UNRESOLVED";
 }
