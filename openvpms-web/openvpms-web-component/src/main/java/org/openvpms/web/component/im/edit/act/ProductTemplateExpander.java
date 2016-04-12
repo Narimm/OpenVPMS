@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -42,7 +42,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -57,12 +56,12 @@ class ProductTemplateExpander {
      *
      * @param template the template to expand
      * @param weight   the patient weight. If {@code 0}, indicates the weight is unknown
-     * @param cache    the object cache
-     * @return a map products to their corresponding quantities
+     * @param quantity the quantity
+     * @param cache    the object cache  @return a map products to their corresponding quantities
      */
-    public Collection<TemplateProduct> expand(Product template, Weight weight, IMObjectCache cache) {
+    public Collection<TemplateProduct> expand(Product template, Weight weight, BigDecimal quantity, IMObjectCache cache) {
         Map<TemplateProduct, TemplateProduct> includes = new LinkedHashMap<>();
-        if (!expand(template, template, weight, includes, ONE, ONE, false, new ArrayDeque<Product>(), cache)) {
+        if (!expand(template, template, weight, includes, quantity, quantity, false, new ArrayDeque<Product>(), cache)) {
             includes.clear();
         } else if (includes.isEmpty()) {
             reportNoExpansion(template, weight);
