@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
@@ -60,6 +60,7 @@ import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
+import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.customer.estimate.CustomerEstimates;
 import org.openvpms.web.workspace.customer.estimate.EstimateViewer;
 import org.openvpms.web.workspace.summary.PartySummary;
@@ -115,14 +116,14 @@ public class PatientSummary extends PartySummary {
         for (Component component : components) {
             if (!(component instanceof Grid)) {
                 // grid already inset.... ugly TODO
-                column.add(ColumnFactory.create("Inset.Small", component));
+                column.add(ColumnFactory.create(Styles.SMALL_INSET, component));
             } else {
                 column.add(component);
             }
         }
         AlertSummary alerts = getAlertSummary(patient);
         if (alerts != null) {
-            column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
+            column.add(ColumnFactory.create(Styles.SMALL_INSET, alerts.getComponent()));
         }
         return ColumnFactory.create("PartySummary", column);
     }
@@ -361,16 +362,20 @@ public class PatientSummary extends PartySummary {
      */
     protected Grid addReferralVet(Party patient) {
         Grid grid = GridFactory.create(1);
-        Party vet = rules.getReferralVet(patient, new Date());
+        final Party vet = rules.getReferralVet(patient, new Date());
         if (vet != null) {
             Label title = LabelFactory.create("patient.referralvet");
-            Label name = LabelFactory.create();
+            Button name = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onShowReferralVet(vet);
+                }
+            });
             name.setText(vet.getName());
             grid.add(title);
-            grid.add(RowFactory.create("InsetX", name));
+            grid.add(RowFactory.create(Styles.INSET_X, name));
             Component practice = getReferralPractice(vet);
             if (practice != null) {
-                grid.add(RowFactory.create("InsetX", practice));
+                grid.add(RowFactory.create(Styles.INSET_X, practice));
             }
         }
         return grid;
@@ -500,7 +505,10 @@ public class PatientSummary extends PartySummary {
      * @param vet the vet
      */
     private void onShowReferralVet(Party vet) {
-        IMObjectViewerDialog dialog = new IMObjectViewerDialog(vet, PopupDialog.OK, getContext(), getHelpContext());
+        Context context = getContext();
+        HelpContext help = getHelpContext();
+        CustomerMailContext mailContext = new CustomerMailContext(context, help);
+        IMObjectViewerDialog dialog = new IMObjectViewerDialog(vet, PopupDialog.OK, context, mailContext, help);
         dialog.setStyleName("PatientSummary.ReferralDialog");
         dialog.show();
     }
