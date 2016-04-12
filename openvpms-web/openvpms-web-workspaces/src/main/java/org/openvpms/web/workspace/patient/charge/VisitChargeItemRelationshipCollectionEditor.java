@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,11 +115,12 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      *
      * @param editor   the editor
      * @param template the product template
+     * @param quantity the quantity
      * @return the acts generated from the template
      */
     @Override
-    protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
-        List<Act> acts = super.createTemplateActs(editor, template);
+    protected List<Act> createTemplateActs(ActItemEditor editor, Product template, BigDecimal quantity) {
+        List<Act> acts = super.createTemplateActs(editor, template, quantity);
         if (!acts.isEmpty()) {
             TemplateChargeItems items = new TemplateChargeItems(template, acts);
             templates.add(items);

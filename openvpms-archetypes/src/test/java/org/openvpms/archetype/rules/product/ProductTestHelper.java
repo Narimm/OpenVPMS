@@ -24,10 +24,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.archetype.test.TestHelper.create;
@@ -53,12 +55,40 @@ public class ProductTestHelper {
     }
 
     /**
+     * Helper to create a service product.
+     *
+     * @return a new service product
+     */
+    public static Product createService() {
+        return TestHelper.createProduct(ProductArchetypes.SERVICE, null);
+    }
+
+    /**
+     * Helper to create a service with a fixed price and unit price.
+     *
+     * @param fixedPrice the fixed price
+     * @param unitPrice  the unit price
+     * @return a new service product
+     */
+    public static Product createService(BigDecimal fixedPrice, BigDecimal unitPrice) {
+        Product service = createService();
+        ProductPrice fixed = ProductPriceTestHelper.createFixedPrice(fixedPrice, BigDecimal.ZERO, BigDecimal.ZERO,
+                                                                     BigDecimal.ZERO, (Date) null, null, true);
+        ProductPrice unit = ProductPriceTestHelper.createUnitPrice(unitPrice, BigDecimal.ZERO, BigDecimal.ZERO,
+                                                                   BigDecimal.ZERO, (Date) null, null);
+        service.addProductPrice(fixed);
+        service.addProductPrice(unit);
+        save(service);
+        return service;
+    }
+
+    /**
      * Creates a medication product with a concentration.
      *
      * @param concentration the concentration
      * @return a new product
      */
-    public static Product createProduct(BigDecimal concentration) {
+    public static Product createProductWithConcentration(BigDecimal concentration) {
         Product product = TestHelper.createProduct();
         IMObjectBean bean = new IMObjectBean(product);
         bean.setValue("concentration", concentration);

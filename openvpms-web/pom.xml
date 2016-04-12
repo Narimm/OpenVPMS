@@ -45,7 +45,6 @@
         <module>openvpms-webdav-launcher</module>
         <module>openvpms-webdav-package</module>
         <module>openvpms-web-app</module>
-        <module>openvpms-web-static-resources</module>
     </modules>
 
     <dependencyManagement>
