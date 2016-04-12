@@ -100,6 +100,30 @@
         </properties>
     </style>
 
+    <style name="button.mail" type="nextapp.echo2.app.button.AbstractButton" base-name="MainPane.Menu.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/mail.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="button.unreadMail" type="nextapp.echo2.app.button.AbstractButton" base-name="MainPane.Menu.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/mail-unread.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="button.newWindow" type="nextapp.echo2.app.button.AbstractButton" base-name="MainPane.Menu.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/newwindow.gif"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="MainPane.Workspace" type="nextapp.echo2.app.ContentPane">
         <properties>
             <property name="background" value="#ffffff"/>
