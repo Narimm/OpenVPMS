@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -38,6 +38,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.VERSIONS;
@@ -317,7 +318,7 @@ public class DocumentActEditor extends AbstractActEditor {
     private boolean versionOldDocument(IMObjectReference reference) {
         boolean versioned = false;
         if (reference != null && !reference.isNew() && versionsEditor != null) {
-            DocumentRules rules = new DocumentRules();
+            DocumentRules rules = new DocumentRules(ServiceHelper.getArchetypeService());
             DocumentAct version = rules.createVersion((DocumentAct) getObject());
             if (version != null) {
                 versionsEditor.add(version);

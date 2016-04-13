@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -60,6 +60,14 @@ public class DocumentActActions extends ActActions<DocumentAct> {
 
     /**
      * Determines if an act is a document that can be edited externally by OpenOffice.
+     * <p/>
+     * Note that if an act is supported for editing, but:
+     * <ul>
+     * <li>doesn't have a document attached; and</li>
+     * <li>does have a template</li>
+     * </ul>
+     * this will assume it can be edited. This may not actually be the case, but it is an expensive operation to
+     * determine if a template will produce a supported document
      *
      * @param act the act
      * @return {@code true} if the act is a document can be edited
@@ -70,6 +78,14 @@ public class DocumentActActions extends ActActions<DocumentAct> {
 
     /**
      * Determines if a document can be edited externally by OpenOffice.
+     * <p/>
+     * Note that if an act is supported for editing, but:
+     * <ul>
+     * <li>doesn't have a document attached; and</li>
+     * <li>does have a template</li>
+     * </ul>
+     * this will assume it can be edited. This may not actually be the case, but it is an expensive operation to
+     * determine if a template will produce a supported document
      *
      * @param act the document act
      * @return {@code true} if the document can be edited
@@ -99,7 +115,7 @@ public class DocumentActActions extends ActActions<DocumentAct> {
      * @param act the document act
      */
     public void externalEdit(DocumentAct act) {
-        if (canExternalEdit(act)) {
+        if (canExternalEdit(act) && act.getDocument() != null) {
             DocumentSessionManager sessions = ServiceHelper.getBean(DocumentSessionManager.class);
             Session session = sessions.create(act);
             String documentURL = ServletHelper.getContextURL() + "/document" + session.getPath();
@@ -128,7 +144,7 @@ public class DocumentActActions extends ActActions<DocumentAct> {
      */
     private DocumentAct getDocumentAct(Entity template) {
         DocumentAct result = null;
-        if (TypeHelper.isA(template, DocumentArchetypes.DOCUMENT_TEMPLATE, DocumentArchetypes.EMAIL_TEMPLATE) ) {
+        if (TypeHelper.isA(template, DocumentArchetypes.DOCUMENT_TEMPLATE, DocumentArchetypes.EMAIL_TEMPLATE)) {
             DocumentTemplate documentTemplate = new DocumentTemplate(template, ServiceHelper.getArchetypeService());
             result = documentTemplate.getDocumentAct();
         }

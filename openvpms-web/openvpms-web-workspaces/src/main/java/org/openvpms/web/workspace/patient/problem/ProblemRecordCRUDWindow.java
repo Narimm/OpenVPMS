@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -34,7 +34,6 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -58,6 +57,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
+import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -90,7 +90,8 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     public ProblemRecordCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(PatientArchetypes.CLINICAL_PROBLEM, Act.class,
-                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE, context, help);
+                                Messages.get("patient.record.createtype")),
+              PatientHistoryActions.INSTANCE, context, help);
     }
 
     /**
@@ -352,23 +353,6 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             }
         }
         return null;
-    }
-
-    private static class ProblemActions extends ActActions<Act> {
-
-        public static final ProblemActions INSTANCE = new ProblemActions();
-
-        /**
-         * Determines if an act can be deleted.
-         *
-         * @param act the act to check
-         * @return {@code true} if the act can be deleted
-         */
-        @Override
-        public boolean canDelete(Act act) {
-            return !TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) && super.canDelete(act)
-                   && act.getSourceActRelationships().isEmpty();
-        }
     }
 
     private static class VisitSelectionDialog extends PopupDialog {
