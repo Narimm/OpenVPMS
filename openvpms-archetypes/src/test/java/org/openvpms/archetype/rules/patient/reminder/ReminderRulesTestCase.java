@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -53,12 +53,14 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderWithDueDate;
 import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 
 /**
@@ -553,6 +555,45 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
 
         Date due2 = rules.calculateProductReminderDueDate(start, productReminder);
         assertEquals(getDate("2016-03-25"), due2);
+    }
+
+    /**
+     * Tests the {@link ReminderRules#getReminders(Party, Date, Date)} method.
+     */
+    @Test
+    public void testGetReminders() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, "2016-04-13 11:59:59", ReminderStatus.IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, "2016-04-14 10:10:10", ReminderStatus.IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, "2016-04-14 11:10:10", ReminderStatus.COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, "2016-04-15 10:10:10", ReminderStatus.CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, "2016-04-15 11:00:00", ReminderStatus.IN_PROGRESS);
+
+        List<Act> acts = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
+                                            getDatetime("2016-04-15 11:00:00"));
+        assertEquals(3, acts.size());
+        assertFalse(acts.contains(reminder1));
+        assertTrue(acts.contains(reminder2));
+        assertTrue(acts.contains(reminder3));
+        assertTrue(acts.contains(reminder4));
+        assertFalse(acts.contains(reminder5));
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
     }
 
     /**

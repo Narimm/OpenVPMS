@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.reminder;
@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -44,7 +45,9 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link ReminderFunctions} class.
@@ -106,6 +109,57 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderFunctions#getAllReminders(Party, Date)} method.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetAllRemindersForDate() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, "2016-04-13 11:59:59", ReminderStatus.IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, "2016-04-14 10:10:10", ReminderStatus.IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, "2016-04-14 10:10:10", ReminderStatus.COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, "2016-04-14 10:10:10", ReminderStatus.CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, "2016-04-15 00:00:00", ReminderStatus.IN_PROGRESS);
+
+        JXPathContext context = createContext(patient);
+        List<Act> acts = (List<Act>) context.getValue(
+                "reminder:getAllReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'))");
+        assertEquals(3, acts.size());
+        assertFalse(acts.contains(reminder1));
+        assertTrue(acts.contains(reminder2));
+        assertTrue(acts.contains(reminder3));
+        assertTrue(acts.contains(reminder4));
+        assertFalse(acts.contains(reminder5));
+    }
+
+    /**
+     * Tests th e {@link ReminderFunctions#getAllReminders(Party, Date, Date)} method.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetAllRemindersForDateRange() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, "2016-04-13 11:59:59", ReminderStatus.IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, "2016-04-14 10:10:10", ReminderStatus.IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, "2016-04-14 11:10:10", ReminderStatus.COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, "2016-04-15 10:10:10", ReminderStatus.CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, "2016-04-15 11:00:00", ReminderStatus.IN_PROGRESS);
+
+        JXPathContext context = createContext(patient);
+        List<Act> acts = (List<Act>) context.getValue(
+                "reminder:getAllReminders(., java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
+                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'))");
+        assertEquals(3, acts.size());
+        assertFalse(acts.contains(reminder1));
+        assertTrue(acts.contains(reminder2));
+        assertTrue(acts.contains(reminder3));
+        assertTrue(acts.contains(reminder4));
+        assertFalse(acts.contains(reminder5));
+    }
+
+    /**
      * Tests the {@link ReminderFunctions#getReminders} methods.
      *
      * @param context  the jxpath context. Either a customer or an act with a customer participation
@@ -137,6 +191,22 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         // get all reminders (i.e., including overdue)
         List<Act> reminders2 = (List<Act>) ctx.getValue("reminder:getReminders(., 12, 'MONTHS', 'true')");
         assertEquals(count, reminders2.size());
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
     }
 
     /**
