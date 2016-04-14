@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.Contacts;
@@ -564,6 +565,25 @@ public class ReminderRules {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns all reminders for a patient starting in the specified date range.
+     *
+     * @param patient the patient
+     * @param from    the start of the date range, inclusive
+     * @param to      the end of the date range, exclusive
+     * @return all reminders for the patient in the date range
+     */
+    public List<Act> getReminders(Party patient, Date from, Date to) {
+        List<Act> results = new ArrayList<>();
+        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER);
+        query.add(Constraints.gte("startTime", from));
+        query.add(Constraints.lt("startTime", to));
+        query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        CollectionUtils.addAll(results, new IMObjectQueryIterator<Act>(service, query));
+        return results;
     }
 
     /**
