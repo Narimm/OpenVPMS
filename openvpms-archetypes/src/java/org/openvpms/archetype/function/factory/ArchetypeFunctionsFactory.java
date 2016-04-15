@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.factory;
@@ -98,7 +98,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(create("openvpms", new ArchetypeServiceFunctions(service, lookups)));
         library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules)));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
-        library.addFunctions(create("reminder", new ReminderFunctions(service, reminderRules, customerRules)));
+        library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
         library.addFunctions(create("word", WordUtils.class));
         return library;
     }

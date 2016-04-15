@@ -16,16 +16,23 @@
 
 package org.openvpms.archetype.function.reminder;
 
+import org.apache.commons.jxpath.Function;
+import org.apache.commons.jxpath.NodeSet;
+import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.jxpath.AbstractObjectFunctions;
 
 import java.util.Collections;
 import java.util.Date;
@@ -33,10 +40,13 @@ import java.util.List;
 
 /**
  * JXPath extension functions for reminders.
+ * <p/>
+ * This extends {@link AbstractObjectFunctions} in order to translate the "getReminder" function to the appropriate
+ * implementation to avoid ambiguous method calls.
  *
  * @author Tim Anderson
  */
-public class ReminderFunctions {
+public class ReminderFunctions extends AbstractObjectFunctions {
 
     /**
      * The reminder rules.
@@ -61,6 +71,8 @@ public class ReminderFunctions {
      * @param customerRules    the customer rules
      */
     public ReminderFunctions(IArchetypeService archetypeService, ReminderRules rules, CustomerRules customerRules) {
+        super("reminder");
+        setObject(this);
         this.service = archetypeService;
         this.rules = rules;
         this.customerRules = customerRules;
@@ -145,11 +157,11 @@ public class ReminderFunctions {
      * @param date    the date
      * @return all reminders for the patient starting on the specified date
      */
-    public List<Act> getAllReminders(Party patient, Date date) {
+    public List<Act> getPatientReminders(Party patient, Date date) {
         if (patient != null && date != null) {
             Date from = DateRules.getDate(date);
             Date to = DateRules.getDate(from, 1, DateUnits.DAYS);
-            return getAllReminders(patient, from, to);
+            return getPatientReminders(patient, from, to);
         }
         return Collections.emptyList();
     }
@@ -162,10 +174,106 @@ public class ReminderFunctions {
      * @param to      the end of the date range, exclusive
      * @return all reminders for the patient in the date range
      */
-    public List<Act> getAllReminders(Party patient, Date from, Date to) {
+    public List<Act> getPatientReminders(Party patient, Date from, Date to) {
         if (patient != null && from != null && to != null) {
             return rules.getReminders(patient, from, to);
         }
         return Collections.emptyList();
     }
+
+    /**
+     * Returns all reminders for a patient and product type starting on the specified date.
+     *
+     * @param patient     the patient
+     * @param date        the date
+     * @param productType the product type. May contain wildcards.
+     * @return all reminders for the patient starting on the specified date
+     */
+    public List<Act> getRemindersByProductType(Party patient, Date date, String productType) {
+        if (patient != null && date != null && productType != null) {
+            Date from = DateRules.getDate(date);
+            Date to = DateRules.getDate(from, 1, DateUnits.DAYS);
+            return getRemindersByProductType(patient, from, to, productType);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns all reminders for a patient starting in the specified date range.
+     *
+     * @param patient     the patient
+     * @param from        the start of the date range, inclusive
+     * @param to          the end of the date range, exclusive
+     * @param productType the product type. May contain wildcards.
+     * @return all reminders for the patient in the date range
+     */
+    public List<Act> getRemindersByProductType(Party patient, Date from, Date to, String productType) {
+        if (patient != null && from != null && to != null && productType != null) {
+            return rules.getReminders(patient, from, to, productType);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns a Function, if any, for the specified namespace name and parameter types.
+     * <p/>
+     * This implementation changes getReminder to:
+     * <ul>
+     * <li>getRemindersByProductType if the first argument is a patient and the last is a string; or</li>
+     * <li>getPatientReminders if the first argument is a patient</li>
+     * </ul>
+     * This is required as JXPath can't cannot resolve which method to call if they are all named getReminders().
+     *
+     * @param namespace if it is not the namespace specified in the constructor, the method returns null
+     * @param name      is a function name.
+     * @return a MethodFunction, or {@code null} if there is no such function.
+     */
+    @Override
+    public Function getFunction(String namespace, String name, Object[] parameters) {
+        if ("getReminders".equals(name) && hasPatient(parameters)) {
+            if ((parameters.length == 3 || parameters.length == 4)
+                && parameters[parameters.length - 1] instanceof String) {
+                name = "getRemindersByProductType";
+            } else {
+                name = "getPatientReminders";
+            }
+        }
+        return super.getFunction(namespace, name, parameters);
+    }
+
+    /**
+     * Helper to determine if the first in a list of parameters is a patient
+     *
+     * @param parameters the parameters
+     * @return {@code true} if the first parameter is a patient
+     */
+    private boolean hasPatient(Object[] parameters) {
+        boolean result = false;
+        if (parameters != null && parameters.length > 0) {
+            Object parameter = parameters[0];
+            if (isPatient(parameter)) {
+                result = true;
+            } else if (parameter instanceof NodeSet) {
+                List pointers = ((NodeSet) parameter).getPointers();
+                if (pointers != null && pointers.size() == 1 && isPatient(pointers.get(0))) {
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Helper to determine if a parameter is a patient.
+     *
+     * @param parameter the parameter
+     * @return {@code true} if the parameter is a patient
+     */
+    private boolean isPatient(Object parameter) {
+        if (parameter instanceof Pointer) {
+            parameter = ((Pointer) parameter).getValue();
+        }
+        return parameter instanceof IMObject && TypeHelper.isA((IMObject) parameter, PatientArchetypes.PATIENT);
+    }
+
 }
