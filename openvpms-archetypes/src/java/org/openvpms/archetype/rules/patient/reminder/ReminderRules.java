@@ -54,6 +54,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.join;
+
 
 /**
  * Reminder rules.
@@ -275,7 +278,7 @@ public class ReminderRules {
      * @param reminder the reminder
      * @param date     the date
      * @return {@code true} if the reminder needs to be cancelled,
-     *         otherwise {@code false}
+     * otherwise {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean shouldCancel(Act reminder, Date date) {
@@ -347,7 +350,7 @@ public class ReminderRules {
      * @param reminderCount the no. of times a reminder has been sent
      * @param reminderType  the reminder type
      * @return the corresponding reminder type template, or {@code null}
-     *         if none is found
+     * if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public EntityRelationship getReminderTypeTemplate(int reminderCount,
@@ -577,13 +580,44 @@ public class ReminderRules {
      */
     public List<Act> getReminders(Party patient, Date from, Date to) {
         List<Act> results = new ArrayList<>();
+        ArchetypeQuery query = createQuery(patient, from, to);
+        CollectionUtils.addAll(results, new IMObjectQueryIterator<Act>(service, query));
+        return results;
+    }
+
+    /**
+     * Returns all reminders for a patient starting in the specified date range.
+     *
+     * @param patient     the patient
+     * @param from        the start of the date range, inclusive
+     * @param to          the end of the date range, exclusive
+     * @param productType the product type to match. May contain wildcards
+     * @return all reminders for the patient in the date range
+     */
+    public List<Act> getReminders(Party patient, Date from, Date to, String productType) {
+        List<Act> results = new ArrayList<>();
+        ArchetypeQuery query = createQuery(patient, from, to);
+        query.add(join("product").add(join("entity").add(join("type").add(join("target").add(
+                eq("name", productType))))));
+        CollectionUtils.addAll(results, new IMObjectQueryIterator<Act>(service, query));
+        return results;
+    }
+
+    /**
+     * Creates a query for all reminders for a patient starting in the specified date range.
+     *
+     * @param patient the patient
+     * @param from    the start of the date range, inclusive
+     * @param to      the end of the date range, exclusive
+     * @return a new query
+     */
+    private ArchetypeQuery createQuery(Party patient, Date from, Date to) {
         ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER);
         query.add(Constraints.gte("startTime", from));
         query.add(Constraints.lt("startTime", to));
-        query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
+        query.add(join("patient").add(eq("entity", patient)));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        CollectionUtils.addAll(results, new IMObjectQueryIterator<Act>(service, query));
-        return results;
+        return query;
     }
 
     /**
@@ -758,8 +792,8 @@ public class ReminderRules {
      */
     private void doMarkMatchingRemindersCompleted(Act reminder, ReminderType reminderType, IMObjectReference patient) {
         ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
-        query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
-        query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
+        query.add(eq("status", ReminderStatus.IN_PROGRESS));
+        query.add(join("patient").add(eq("entity", patient)));
         if (!reminder.isNew()) {
             query.add(Constraints.ne("id", reminder.getId()));
         }
