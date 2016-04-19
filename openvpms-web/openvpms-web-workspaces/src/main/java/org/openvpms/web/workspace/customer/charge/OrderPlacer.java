@@ -210,6 +210,29 @@ public class OrderPlacer {
     }
 
     /**
+     * Cancels any orders where the associated charge has been deleted.
+     *
+     * @param current the set of current charges and investigations
+     * @param changes patient history changes, used to obtain patient events
+     * @return the set of updated charge and investigation items
+     */
+    public Set<Act> cancelDeleted(List<Act> current, PatientHistoryChanges changes) {
+        Set<Act> updated = new HashSet<>();
+        Map<IMObjectReference, Order> copy = new HashMap<>(orders);
+        for (Act act : current) {
+            copy.remove(act.getObjectReference());
+        }
+        if (!copy.isEmpty()) {
+            Set<Party> patients = new HashSet<>();
+            for (Map.Entry<IMObjectReference, Order> removed : copy.entrySet()) {
+                cancelOrder(removed.getValue(), changes, patients, updated);
+                orders.remove(removed.getKey());
+            }
+        }
+        return updated;
+    }
+
+    /**
      * Discontinue orders.
      */
     public void discontinue() {
