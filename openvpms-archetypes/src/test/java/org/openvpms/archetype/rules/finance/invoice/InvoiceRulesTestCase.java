@@ -327,8 +327,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         // change the investigation statuses to statuses that should prevent their removal
         investigations.get(0).setStatus(ActStatus.POSTED);
         investigations.get(1).setStatus(ActStatus.POSTED);
-        investigations.get(2).setStatus(ActStatus.POSTED);
-        investigations.get(3).setStatus(ActStatus.POSTED);
+        investigations.get(2).setStatus(ActStatus.CANCELLED);
+        investigations.get(3).setStatus(ActStatus.CANCELLED);
 
         save(investigations);
 

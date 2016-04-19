@@ -149,8 +149,7 @@ public class InvoiceRules {
         List<DocumentAct> acts = bean.getNodeActs("investigations", DocumentAct.class);
         for (DocumentAct act : acts) {
             String status = act.getStatus();
-            if ((ActStatus.IN_PROGRESS.equals(status)
-                 || ActStatus.CANCELLED.equals(status)) && act.getDocument() == null) {
+            if (ActStatus.IN_PROGRESS.equals(status) && act.getDocument() == null) {
                 ActRelationship r = bean.getRelationship(act);
                 toRemove.add(act);
                 act.removeActRelationship(r);
