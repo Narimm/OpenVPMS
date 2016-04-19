@@ -40,18 +40,18 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="status2" displayName="Result Status" path="/status2" type="java.lang.String" minCardinality="1"
+        <node name="status2" displayName="Order Status" path="/status2" type="java.lang.String" minCardinality="1"
               defaultValue="'PENDING'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="PENDING" value="Pending"/>
                     <property name="SENT" value="Sent"/>
-                    <property name="PRELIMINARY" value="Preliminary"/>
-                    <property name="FINAL" value="Final"/>
+                    <property name="RECEIVED" value="Received"/>
+                    <property name="REVIEWED" value="Reviewed"/>
                 </propertyList>
             </assertion>
         </node>
-        <node name="reviewed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" hidden="true"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node displayName="Report" name="document" path="/document" minCardinality="0" maxCardinality="1"

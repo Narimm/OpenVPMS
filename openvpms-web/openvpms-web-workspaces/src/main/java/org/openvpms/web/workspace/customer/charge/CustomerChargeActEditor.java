@@ -145,10 +145,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      * @param listener the listener to invoke. May be {@code null}
      */
     public void setAddItemListener(Runnable listener) {
-        ActRelationshipCollectionEditor items = getItems();
-        if (items instanceof ChargeItemRelationshipCollectionEditor) {
-            ((ChargeItemRelationshipCollectionEditor) items).setAddItemListener(listener);
-        }
+        getItems().setAddItemListener(listener);
     }
 
     /**
@@ -333,10 +330,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      * @param dialog the dialog to display
      */
     public void queue(PopupDialog dialog) {
-        if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
-            ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
-            items.getEditorQueue().queue(dialog);
-        }
+        getItems().getEditorQueue().queue(dialog);
     }
 
     /**
@@ -361,29 +355,24 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
         List<Act> reminders = getNewReminders();
         ChargeSaveContext chargeContext = null;
         try {
-            PatientHistoryChanges changes = null;
-
-            if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
-                changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
-                                                    getLayoutContext().getContext().getLocation(),
-                                                    ServiceHelper.getArchetypeService());
-                ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
-                chargeContext = items.getSaveContext();
-                chargeContext.setHistoryChanges(changes);
-            }
+            PatientHistoryChanges changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
+                                                                      getLayoutContext().getContext().getLocation(),
+                                                                      ServiceHelper.getArchetypeService());
+            ChargeItemRelationshipCollectionEditor items = getItems();
+            chargeContext = items.getSaveContext();
+            chargeContext.setHistoryChanges(changes);
 
             super.doSave();
+
             boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
-            if (changes != null && invoice) {
+            if (invoice) {
                 // link the items to their corresponding clinical events
                 linkToEvents(changes);
                 if (ActStatus.POSTED.equals(getStatus())) {
                     changes.complete(new Date());
                 }
             }
-            if (chargeContext != null) {
-                chargeContext.save();
-            }
+            chargeContext.save();
 
             // mark reminders that match the new reminders completed
             if (!reminders.isEmpty()) {

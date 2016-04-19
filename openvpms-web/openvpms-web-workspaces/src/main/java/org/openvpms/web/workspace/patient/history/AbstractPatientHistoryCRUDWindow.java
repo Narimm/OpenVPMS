@@ -51,6 +51,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
 
 /**
@@ -176,6 +177,30 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
         if (object instanceof DocumentAct) {
             documentActions.externalEdit((DocumentAct) object);
         }
+    }
+
+    /**
+     * Creates a {@link PatientMedicalRecordLinker} to link medical records.
+     *
+     * @param event    the patient clinical event. May be {@code null}
+     * @param problem  the patient clinical problem. May be {@code null}
+     * @param item     a medication or clinical note. May be {@code null}
+     * @param addendum the addendum. May be {@code null}
+     * @return a new medical record linker
+     */
+    protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act problem, Act item, Act addendum) {
+        return new PatientMedicalRecordLinker(event, problem, item, addendum);
+    }
+
+    /**
+     * Creates a {@link PatientMedicalRecordLinker} to link medical records.
+     *
+     * @param event the patient clinical event
+     * @param item  the patient record item
+     * @return a new medical record linker
+     */
+    protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act item) {
+        return new PatientMedicalRecordLinker(event, item);
     }
 
     /**

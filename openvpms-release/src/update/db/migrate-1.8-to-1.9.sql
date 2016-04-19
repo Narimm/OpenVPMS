@@ -872,7 +872,7 @@ DROP TABLE tmp_email_templates;
 
 # Add a status2 column to acts.
 DELIMITER $$
-CREATE PROCEDURE OVPMS1744_modify_acts()
+CREATE PROCEDURE OVPMS_1744_modify_acts()
   BEGIN
     DECLARE _count INT;
     SET _count = (SELECT count(*)
@@ -889,34 +889,96 @@ CREATE PROCEDURE OVPMS1744_modify_acts()
   END $$
 DELIMITER ;
 
-CALL OVPMS1744_modify_acts();
-DROP PROCEDURE OVPMS1744_modify_acts;
+CALL OVPMS_1744_modify_acts();
+DROP PROCEDURE OVPMS_1744_modify_acts;
 
-UPDATE acts a
-  JOIN document_acts d
-    ON a.act_id = d.document_act_id
-SET a.status = 'IN_PROGRESS',
-  a.status2  = 'PENDING'
-WHERE a.arch_short_name = 'act.patientInvestigation'
-      AND a.status = 'RECEIVED'
-      AND d.document_id IS NOT NULL;
-
-UPDATE acts a
-SET a.status = 'POSTED',
-  a.status2  = 'FINAL'
-WHERE a.arch_short_name = 'act.patientInvestigation'
-      AND a.status = 'COMPLETED';
-
+# Migrate act.patientInvestigation acts to set the status and status2 nodes
 UPDATE acts a
   JOIN document_acts d
     ON a.act_id = d.document_act_id
 SET a.status2 = 'PENDING'
 WHERE a.arch_short_name = 'act.patientInvestigation'
       AND a.status = 'IN_PROGRESS'
+      AND a.status2 IS NULL
       AND d.document_id IS NULL;
 
 UPDATE acts a
-SET a.status2 = 'FINAL'
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'RECEIVED'
 WHERE a.arch_short_name = 'act.patientInvestigation'
-      AND a.status = 'CANCELLED';
+      AND a.status = 'IN_PROGRESS'
+      AND a.status2 IS NULL
+      AND d.document_id IS NOT NULL;
 
+UPDATE acts a
+SET a.status = 'IN_PROGRESS',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'RECEIVED'
+      AND a.status2 IS NULL;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'POSTED',
+  a.status2  = 'REVIEWED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'COMPLETED'
+      AND a.status2 IS NULL
+      AND d.printed = TRUE;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'IN_PROGRESS',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'COMPLETED'
+      AND a.status2 IS NULL
+      AND d.printed = FALSE;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'REVIEWED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'CANCELLED'
+      AND a.status2 IS NULL
+      AND d.printed = TRUE;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'PENDING'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'CANCELLED'
+      AND a.status2 IS NULL
+      AND d.printed = FALSE;
+
+UPDATE acts a
+SET a.status = 'IN_PROGRESS',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'PRELIMINARY'
+      AND a.status2 IS NULL;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'POSTED',
+  a.status2  = 'REVIEWED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'FINAL'
+      AND d.printed = TRUE
+      AND a.status2 IS NULL;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'POSTED',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'FINAL'
+      AND a.status2 IS NULL
+      AND d.printed = FALSE;

@@ -305,12 +305,12 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             Act selected = getObject();
             if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
                 if (!TypeHelper.isA(selected, PatientArchetypes.CLINICAL_ADDENDUM)) {
-                    linker = new PatientMedicalRecordLinker(event, problem, selected, act);
+                    linker = createMedicalRecordLinker(event, problem, selected, act);
                 } else {
-                    linker = new PatientMedicalRecordLinker(event, problem, null, act);
+                    linker = createMedicalRecordLinker(event, problem, null, act);
                 }
             } else {
-                linker = new PatientMedicalRecordLinker(event, problem, act);
+                linker = createMedicalRecordLinker(event, problem, act, null);
             }
             Retryer.run(linker);
         }

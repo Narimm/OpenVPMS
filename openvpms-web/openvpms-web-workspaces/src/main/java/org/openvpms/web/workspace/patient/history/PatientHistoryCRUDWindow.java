@@ -219,12 +219,12 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             Act selected = getObject();
             if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
                 if (!TypeHelper.isA(selected, PatientArchetypes.CLINICAL_ADDENDUM)) {
-                    linker = new PatientMedicalRecordLinker(event, null, selected, act);
+                    linker = createMedicalRecordLinker(event, null, selected, act);
                 } else {
-                    linker = new PatientMedicalRecordLinker(event, null, null, act);
+                    linker = createMedicalRecordLinker(event, null, null, act);
                 }
             } else {
-                linker = new PatientMedicalRecordLinker(event, act);
+                linker = createMedicalRecordLinker(event, act);
             }
             Retryer.run(linker);
             if (TypeHelper.isA(act, PatientArchetypes.PATIENT_WEIGHT)) {
@@ -235,6 +235,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         }
         super.onSaved(act, isNew);
     }
+
 
     /**
      * Invoked when the object has been deleted.
