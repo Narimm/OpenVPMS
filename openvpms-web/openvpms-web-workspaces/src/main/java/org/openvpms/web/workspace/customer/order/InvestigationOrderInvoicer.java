@@ -49,6 +49,16 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
         super(act, rules);
     }
 
+    /**
+     * Determines if an order/return must charged via an editor.
+     *
+     * @return {@code true} if an editor is required
+     */
+    @Override
+    public boolean requiresEdit() {
+        return true;
+    }
+
     @Override
     protected Item createItem(FinancialAct item, FinancialAct invoiceItem, FinancialAct invoice) {
         return new InvestigationItem(item, invoiceItem, invoice);

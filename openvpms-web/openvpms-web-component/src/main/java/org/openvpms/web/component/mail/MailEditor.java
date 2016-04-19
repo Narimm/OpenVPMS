@@ -78,16 +78,9 @@ import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.parser.ParserDelegator;
-import java.io.IOException;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 
 import static org.openvpms.web.echo.style.Styles.LARGE_INSET;
@@ -727,72 +720,7 @@ public class MailEditor extends AbstractModifiable {
      * @return the filtered html
      */
     private String filter(String html) {
-        String result;
-        // also see http://stackoverflow.com/questions/9022140/using-xpath-contains-against-html-in-java
-        // for an xpath version
-        ParserDelegator delegator = new ParserDelegator();
-        final StringBuilder buffer = new StringBuilder();
-        try {
-            delegator.parse(new StringReader(html), new HTMLEditorKit.ParserCallback() {
-                @Override
-                public void handleStartTag(HTML.Tag tag, MutableAttributeSet a, int pos) {
-                    if (!filter(tag)) {
-                        buffer.append('<').append(tag.toString());
-                        append(a);
-                        buffer.append('>');
-                    }
-                }
-
-                @Override
-                public void handleText(char[] data, int pos) {
-                    buffer.append(new String(data));
-                }
-
-                @Override
-                public void handleEndTag(HTML.Tag tag, int pos) {
-                    if (!filter(tag)) {
-                        buffer.append("</").append(tag.toString()).append(">");
-                    }
-                }
-
-                @Override
-                public void handleSimpleTag(HTML.Tag tag, MutableAttributeSet a, int pos) {
-                    if (!filter(tag)) {
-                        buffer.append("<").append(tag.toString());
-                        append(a);
-                        buffer.append("/>");
-                    }
-                }
-
-                protected boolean filter(HTML.Tag tag) {
-                    return tag == HTML.Tag.HTML || tag == HTML.Tag.HEAD || tag == HTML.Tag.BODY
-                           || tag == HTML.Tag.META || tag == HTML.Tag.STYLE || tag == HTML.Tag.TITLE
-                           || tag == HTML.Tag.SCRIPT;
-                }
-
-                private void append(MutableAttributeSet a) {
-                    Enumeration<?> names = a.getAttributeNames();
-                    if (names.hasMoreElements()) {
-                        buffer.append(' ');
-                        boolean first = true;
-                        while (names.hasMoreElements()) {
-                            if (!first) {
-                                buffer.append(' ');
-                            } else {
-                                first = false;
-                            }
-                            Object element = names.nextElement();
-                            buffer.append(element).append("=\"").append(a.getAttribute(element)).append('\"');
-                        }
-                    }
-                }
-            }, true);
-            result = buffer.toString();
-        } catch (IOException exception) {
-            // do nothing
-            result = null;
-        }
-        return result;
+        return HtmlFilter.filter(html);
     }
 
     /**
@@ -884,4 +812,5 @@ public class MailEditor extends AbstractModifiable {
             return ref;
         }
     }
+
 }

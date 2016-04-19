@@ -90,7 +90,8 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     public ProblemRecordCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(PatientArchetypes.CLINICAL_PROBLEM, Act.class,
-                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE, context, help);
+                                Messages.get("patient.record.createtype")),
+              ProblemActions.INSTANCE, context, help);
     }
 
     /**
@@ -401,8 +402,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
          */
         @Override
         public boolean canDelete(Act act) {
-            return !TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) && super.canDelete(act)
-                   && act.getSourceActRelationships().isEmpty();
+            return !TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) && super.canDelete(act);
         }
     }
 

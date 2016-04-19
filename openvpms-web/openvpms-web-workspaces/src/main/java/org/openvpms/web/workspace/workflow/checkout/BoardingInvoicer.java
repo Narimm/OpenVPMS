@@ -16,9 +16,11 @@
 
 package org.openvpms.web.workspace.workflow.checkout;
 
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.workflow.CageType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
@@ -35,18 +37,31 @@ class BoardingInvoicer extends AbstractInvoicer {
 
     /**
      * Invoices boarding charges for each patient visit.
+     * <p/>
+     * If visits have not ended, they are charged up to the current time.
      *
      * @param visits the visits
      * @param editor the invoice editor
      */
     public void invoice(Visits visits, CustomerChargeActEditor editor) {
-        Date now = new Date();
+        invoice(visits, editor, new Date());
+    }
+
+    /**
+     * Invoices boarding charges for each patient visit.
+     *
+     * @param visits  the visits
+     * @param endTime the boarding end time, if an event hasn't already ended
+     * @param editor  the invoice editor
+     */
+    public void invoice(Visits visits, CustomerChargeActEditor editor, Date endTime) {
         for (Visit visit : visits) {
             if (!visit.isCharged()) {
                 CageType cageType = visit.getCageType();
+                Date visitEndTime = visit.getEndTime(endTime);
                 if (cageType != null) {
-                    chargeBoarding(visit, now, editor);
-                    if (cageType.isLateCheckout(now)) {
+                    chargeBoarding(visit, visitEndTime, editor);
+                    if (cageType.isLateCheckout(visitEndTime)) {
                         chargeLateCheckout(visit, editor);
                     }
                     visit.setCharged(true);
@@ -96,7 +111,12 @@ class BoardingInvoicer extends AbstractInvoicer {
     private void addItem(Party patient, Product product, int quantity, CustomerChargeActEditor editor) {
         CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
         itemEditor.setPatient(patient);
-        itemEditor.setProduct(product);
-        itemEditor.setQuantity(BigDecimal.valueOf(quantity));
+        BigDecimal qty = BigDecimal.valueOf(quantity);
+        if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+            editor.getItems().expandTemplate(itemEditor, product, qty);
+        } else {
+            itemEditor.setProduct(product);
+            itemEditor.setQuantity(qty);
+        }
     }
 }

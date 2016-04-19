@@ -147,7 +147,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
      */
     @Test
     public void testGetDose() {
-        Product product = ProductTestHelper.createProduct(BigDecimal.valueOf(2));
+        Product product = ProductTestHelper.createProductWithConcentration(BigDecimal.valueOf(2));
 
         Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
         Lookup feline = TestHelper.getLookup(PatientArchetypes.SPECIES, "FELINE");
@@ -178,9 +178,9 @@ public class ProductRulesTestCase extends AbstractProductTest {
     @Test
     public void testGetDoseRounding() {
         BigDecimal concentration = BigDecimal.valueOf(50);
-        Product product1 = ProductTestHelper.createProduct(concentration);
-        Product product2 = ProductTestHelper.createProduct(concentration);
-        Product product3 = ProductTestHelper.createProduct(concentration);
+        Product product1 = ProductTestHelper.createProductWithConcentration(concentration);
+        Product product2 = ProductTestHelper.createProductWithConcentration(concentration);
+        Product product3 = ProductTestHelper.createProductWithConcentration(concentration);
 
         BigDecimal rate = BigDecimal.valueOf(4);
 

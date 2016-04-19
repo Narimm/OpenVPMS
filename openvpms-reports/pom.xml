@@ -168,13 +168,29 @@
                     <groupId>eclipse</groupId>
                     <artifactId>jdtcore</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-queryparser</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.olap4j</groupId>
+                    <artifactId>olap4j</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <!-- required for bold fonts in PDFs -->
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-fonts</artifactId>
-            <version>${jasperreports.version}</version>
+            <version>6.0.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>

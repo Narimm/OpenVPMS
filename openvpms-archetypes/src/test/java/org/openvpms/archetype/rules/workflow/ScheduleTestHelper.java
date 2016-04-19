@@ -482,6 +482,25 @@ public class ScheduleTestHelper extends TestHelper {
      */
     public static Entity createCageType(String name, Product firstPetProductDay, Product firstPetProductNight,
                                         Product secondPetProductDay, Product secondPetProductNight) {
+        return createCageType(name, firstPetProductDay, firstPetProductNight, secondPetProductDay,
+                              secondPetProductNight, null, null);
+    }
+
+    /**
+     * Creates a new cage type.
+     *
+     * @param name                  the cage type name
+     * @param firstPetProductDay    the first pet product, day rate
+     * @param firstPetProductNight  the first pet product, overnight rate. May be {@code null}
+     * @param secondPetProductDay   the second pet product, day rate
+     * @param secondPetProductNight the second pet product, overnight rate. May be {@code null}
+     * @param lateCheckoutTime      the late checkout time. May be {@code null}
+     * @param lateCheckoutProduct   the late checkout product. May be {@code null}
+     * @return a new cage type
+     */
+    public static Entity createCageType(String name, Product firstPetProductDay, Product firstPetProductNight,
+                                        Product secondPetProductDay, Product secondPetProductNight,
+                                        Time lateCheckoutTime, Product lateCheckoutProduct) {
         Entity entity = (Entity) create(ScheduleArchetypes.CAGE_TYPE);
         entity.setName(name);
         IMObjectBean bean = new IMObjectBean(entity);
@@ -495,7 +514,14 @@ public class ScheduleTestHelper extends TestHelper {
         if (secondPetProductNight != null) {
             bean.addNodeTarget("secondPetProductNight", secondPetProductNight);
         }
+        if (lateCheckoutTime != null) {
+            bean.setValue("lateCheckoutTime", lateCheckoutTime);
+        }
+        if (lateCheckoutProduct != null) {
+            bean.addNodeTarget("lateCheckoutProduct", lateCheckoutProduct);
+        }
         save(entity);
         return entity;
     }
+
 }

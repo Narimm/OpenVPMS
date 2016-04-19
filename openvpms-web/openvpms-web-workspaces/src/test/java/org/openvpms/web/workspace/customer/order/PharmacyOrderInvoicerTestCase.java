@@ -466,6 +466,53 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     }
 
     /**
+     * Tests charging an order that is linked to an existing POSTED invoice, with a the same quantity that was
+     * invoiced.
+     * <p>
+     * No new invoice should be created.
+     */
+    @Test
+    public void testOrderToPostedInvoice() {
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal tax = BigDecimal.valueOf(2);
+        BigDecimal total = new BigDecimal("22");
+
+        TestChargeEditor editor = createInvoice(product, quantity);
+        editor.setStatus(ActStatus.POSTED);
+        assertTrue(SaveHelper.save(editor));
+        FinancialAct invoiceItem = getInvoiceItem(editor);
+
+        checkItem(editor.getObject(), patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
+
+        FinancialAct order1 = createOrder(customer, patient, product, quantity, invoiceItem);
+        PharmacyOrderInvoicer charger1 = new TestPharmacyOrderInvoicer(order1, rules);
+        assertTrue(charger1.isValid());
+        assertTrue(charger1.canInvoice());
+        assertFalse(charger1.canCredit());
+        assertFalse(charger1.requiresEdit());
+        charger1.charge();
+
+        checkItem(editor.getObject(), patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+
+        // verify that if another order for the same item is created, editing is required, as it would exceed the
+        // original order quantity.
+        FinancialAct order2 = createOrder(customer, patient, product, quantity, invoiceItem);
+        PharmacyOrderInvoicer charger2 = new TestPharmacyOrderInvoicer(order2, rules);
+        assertTrue(charger2.isValid());
+        assertTrue(charger2.canInvoice());
+        assertFalse(charger2.canCredit());
+        assertTrue(charger2.requiresEdit());
+
+        // verify that a return requires editing
+        FinancialAct return1 = createReturn(customer, patient, product, quantity, invoiceItem);
+        PharmacyOrderInvoicer charger3 = new TestPharmacyOrderInvoicer(return1, rules);
+        assertTrue(charger3.isValid());
+        assertFalse(charger3.canInvoice());
+        assertTrue(charger3.canCredit());
+        assertTrue(charger3.requiresEdit());
+    }
+
+    /**
      * Verifies that a return for a POSTED invoice creates a new Credit.
      */
     @Test
