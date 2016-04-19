@@ -247,8 +247,8 @@ abstract class AbstractLoader implements Loader {
                 notifyAlreadyLoaded(file, act.getId());
             } else {
                 if (TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-                    act.setStatus(InvestigationActStatus.PRELIMINARY);
-                } else {
+                    act.setStatus2(InvestigationActStatus.RECEIVED);
+                } else if (!ActStatus.POSTED.equals(act.getStatus())){
                     act.setStatus(ActStatus.COMPLETED);
                 }
                 boolean version = (duplicate != act);

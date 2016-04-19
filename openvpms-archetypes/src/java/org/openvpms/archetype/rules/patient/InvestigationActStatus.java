@@ -13,33 +13,34 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.patient;
 
 /**
- * Result status types for investigation acts.
+ * Order status types for investigation acts.
  *
  * @author Tim Anderson
  */
 public class InvestigationActStatus {
 
     /**
-     * Pending result act status.
+     * Order pending status.
      */
     public static final String PENDING = "PENDING";
 
     /**
-     * Sent result act status.
+     * Order sent status.
      */
     public static final String SENT = "SENT";
 
     /**
-     * Preliminary result act status.
+     * Results received status.
      */
-    public static final String PRELIMINARY = "PRELIMINARY";
+    public static final String RECEIVED = "RECEIVED";
 
     /**
-     * Final result act status.
+     * Results reviewed status.
      */
-    public static final String FINAL = "FINAL";
+    public static final String REVIEWED = "REVIEWED";
 
 }
