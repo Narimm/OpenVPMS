@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -43,6 +43,7 @@ import net.sf.jasperreports.export.OutputStreamExporterOutput;
 import net.sf.jasperreports.export.ReportExportConfiguration;
 import net.sf.jasperreports.export.SimpleCsvExporterConfiguration;
 import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleHtmlExporterConfiguration;
 import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimplePrintServiceExporterConfiguration;
@@ -133,6 +134,23 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(AbstractJasperIMReport.class);
+
+    /**
+     * Header to use when exporting to HTML.
+     */
+    private static final String HTML_HEADER =
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" " +
+            "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+            "<html>\n" +
+            "<head>\n" +
+            "    <title></title>\n" +
+            "</head>\n" +
+            "<body>";
+
+    /**
+     * Footer to use when exporting to HTML.
+     */
+    private static final String HTML_FOOTER = "</body>\n" + "</html>";
 
 
     /**
@@ -605,6 +623,11 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private void exportToHTML(JasperPrint report, OutputStream stream) throws JRException {
         HtmlExporter exporter = new HtmlExporter();
+        // set the HTML header and footer. The JasperReports default is to centre everything
+        SimpleHtmlExporterConfiguration configuration = new SimpleHtmlExporterConfiguration();
+        configuration.setHtmlHeader(HTML_HEADER);
+        configuration.setHtmlFooter(HTML_FOOTER);
+        exporter.setConfiguration(configuration);
         exporter.setExporterInput(new SimpleExporterInput(report));
         exporter.setExporterOutput(new SimpleHtmlExporterOutput(stream));
         exporter.exportReport();

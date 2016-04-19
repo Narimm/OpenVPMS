@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -47,6 +47,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -225,7 +226,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         if (needsTemplateExpansion(editor)) {
             Product product = ((ActItemEditor) editor).getProduct();
             if (TypeHelper.isA(product, TEMPLATE)) {
-                result = expandTemplate((ActItemEditor) editor, product);
+                result = expandTemplate((ActItemEditor) editor, product, BigDecimal.ONE);
             }
         } else {
             result = super.addEdited(editor);
@@ -355,12 +356,13 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      *
      * @param editor   the editor
      * @param template the template. May be {@code null}
+     * @param quantity the quantity
      * @return {@code true} if the template was expanded; otherwise {@code false}
      */
-    protected boolean expandTemplate(ActItemEditor editor, Product template) {
+    public boolean expandTemplate(ActItemEditor editor, Product template, BigDecimal quantity) {
         boolean result = false;
         if (template != null) {
-            List<Act> items = createTemplateActs(editor, template);
+            List<Act> items = createTemplateActs(editor, template, quantity);
             result = !items.isEmpty();
             if (result && templateProductListener != null) {
                 templateProductListener.expanded(template);
@@ -383,14 +385,15 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      *
      * @param editor   the editor
      * @param template the product template
+     * @param quantity the quantity
      * @return the acts generated from the template
      */
-    protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
+    protected List<Act> createTemplateActs(ActItemEditor editor, Product template, BigDecimal quantity) {
         List<Act> result = new ArrayList<>();
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
-        Collection<TemplateProduct> includes = getProductIncludes(template, editor.getPatient());
+        Collection<TemplateProduct> includes = getProductIncludes(template, editor.getPatient(), quantity);
         Act act = editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
@@ -436,16 +439,17 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      *
      * @param template the template to expand
      * @param patient  the patient. May be {@code null}
+     * @param quantity the quantity to include
      * @return a collection of included products
      */
-    protected Collection<TemplateProduct> getProductIncludes(Product template, Party patient) {
+    protected Collection<TemplateProduct> getProductIncludes(Product template, Party patient, BigDecimal quantity) {
         Weight weight = Weight.ZERO;
         if (patient != null) {
             PatientRules rules = ServiceHelper.getBean(PatientRules.class);
             weight = rules.getWeight(patient);
         }
         ProductTemplateExpander expander = new ProductTemplateExpander();
-        return expander.expand(template, weight, getContext().getCache());
+        return expander.expand(template, weight, quantity, getContext().getCache());
     }
 
     /**
@@ -467,7 +471,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      */
     private void onProductChanged(ActItemEditor editor, Product product) {
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            expandTemplate(editor, product);
+            expandTemplate(editor, product, BigDecimal.ONE);
         }
     }
 
@@ -558,9 +562,9 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
          * @param object  the source object
          * @param service the archetype service
          * @return {@code object} if the object shouldn't be copied,
-         *         {@code null} if it should be replaced with
-         *         {@code null}, or a new instance if the object should be
-         *         copied
+         * {@code null} if it should be replaced with
+         * {@code null}, or a new instance if the object should be
+         * copied
          */
         public IMObject getObject(IMObject object, IArchetypeService service) {
             IMObject result;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -53,12 +54,17 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderStatus.CANCELLED;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderWithDueDate;
 import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 
 /**
@@ -100,37 +106,37 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         // create a reminder for patient1, with an entity.reminderType with
         // no lookup.reminderGroup
         Act reminder0 = createReminder(patient1);
-        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder0, IN_PROGRESS);
         rules.markMatchingRemindersCompleted(reminder0);
 
         // create a reminder for patient1, with an entity.reminderType with
         // group1 lookup.reminderGroup. Verify it has not changed reminder0
         Act reminder1 = createReminder(patient1, group1);
         rules.markMatchingRemindersCompleted(reminder1);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder1, IN_PROGRESS);
+        checkReminder(reminder0, IN_PROGRESS);
 
         // create a reminder for patient2, with an entity.reminderType with
         // group2 lookup.reminderGroup. Verify it has not changed reminder1
         Act reminder2 = createReminder(patient2, group2);
         rules.markMatchingRemindersCompleted(reminder2);
-        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder2, IN_PROGRESS);
+        checkReminder(reminder1, IN_PROGRESS);
 
         // create a reminder for patient1, with an entity.reminderType with
         // group1 lookup.reminderGroup. Verify it marks reminder1 COMPLETED.
         Act reminder3 = createReminder(patient1, group1);
         rules.markMatchingRemindersCompleted(reminder3);
-        checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.COMPLETED);
+        checkReminder(reminder3, IN_PROGRESS);
+        checkReminder(reminder1, COMPLETED);
 
         // create a reminder for patient2, with an entity.reminderType with
         // both group1 and group2 lookup.reminderGroup. Verify it marks
         // reminder2 COMPLETED.
         Act reminder4 = createReminder(patient2, group1, group2);
         rules.markMatchingRemindersCompleted(reminder4);
-        checkReminder(reminder4, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder2, ReminderStatus.COMPLETED);
+        checkReminder(reminder4, IN_PROGRESS);
+        checkReminder(reminder2, COMPLETED);
 
         // create a reminder type with no group, and create 2 reminders using it.
         Entity reminderType = ReminderTestHelper.createReminderType();
@@ -138,15 +144,15 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder6 = createReminder(patient2, reminderType);
         rules.markMatchingRemindersCompleted(reminder5);
         rules.markMatchingRemindersCompleted(reminder6);
-        checkReminder(reminder5, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder6, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder5, IN_PROGRESS);
+        checkReminder(reminder6, IN_PROGRESS);
 
         // now create a reminder for patient1. Verify it marks reminder5 COMPLETED
         Act reminder7 = createReminder(patient1, reminderType);
         rules.markMatchingRemindersCompleted(reminder7);
-        checkReminder(reminder5, ReminderStatus.COMPLETED);
-        checkReminder(reminder6, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder7, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder5, COMPLETED);
+        checkReminder(reminder6, IN_PROGRESS);
+        checkReminder(reminder7, IN_PROGRESS);
     }
 
     /**
@@ -163,8 +169,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder0 = ReminderTestHelper.createReminder(patient1, reminderType);
         Act reminder1 = ReminderTestHelper.createReminder(patient2, reminderType);
         save(reminder0, reminder1);
-        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder0, IN_PROGRESS);
+        checkReminder(reminder1, IN_PROGRESS);
 
         Act reminder2 = ReminderTestHelper.createReminder(patient1, reminderType);
         Act reminder3 = ReminderTestHelper.createReminder(patient2, reminderType);
@@ -180,11 +186,11 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
             }
         });
 
-        checkReminder(reminder0, ReminderStatus.COMPLETED);
-        checkReminder(reminder1, ReminderStatus.COMPLETED);
-        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder3dup, ReminderStatus.COMPLETED); // as it duplicates reminder3
+        checkReminder(reminder0, COMPLETED);
+        checkReminder(reminder1, COMPLETED);
+        checkReminder(reminder2, IN_PROGRESS);
+        checkReminder(reminder3, IN_PROGRESS);
+        checkReminder(reminder3dup, COMPLETED); // as it duplicates reminder3
     }
 
     /**
@@ -226,7 +232,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertEquals(count, rules.countReminders(patient));
 
         Act reminder0 = reminders[0];
-        reminder0.setStatus(ActStatus.COMPLETED);
+        reminder0.setStatus(COMPLETED);
         save(reminder0);
         assertEquals(count - 1, rules.countReminders(patient));
 
@@ -253,7 +259,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertEquals(count, rules.countAlerts(patient, date));
 
         Act alert0 = alerts[0];
-        alert0.setStatus(ActStatus.COMPLETED);
+        alert0.setStatus(COMPLETED);
         save(alert0);
         assertEquals(count - 1, rules.countAlerts(patient, date));
 
@@ -556,6 +562,103 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderRules#getReminders(Party, Date, Date)} method.
+     */
+    @Test
+    public void testGetReminders() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, "2016-04-14 11:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, "2016-04-15 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, "2016-04-15 11:00:00", IN_PROGRESS);
+
+        List<Act> acts = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
+                                            getDatetime("2016-04-15 11:00:00"));
+        assertEquals(3, acts.size());
+        assertFalse(acts.contains(reminder1));
+        assertTrue(acts.contains(reminder2));
+        assertTrue(acts.contains(reminder3));
+        assertTrue(acts.contains(reminder4));
+        assertFalse(acts.contains(reminder5));
+    }
+
+    /**
+     * Tests the {@link ReminderRules#getReminders(Party, Date, Date, String)} method.
+     */
+    @Test
+    public void testGetRemindersForProductType() {
+        Party patient = TestHelper.createPatient();
+        Entity productType1 = ProductTestHelper.createProductType("Z Vaccination 1");
+        Entity productType2 = ProductTestHelper.createProductType("Z Vaccination 2");
+        Product product1 = ProductTestHelper.createProduct(productType1);
+        Product product2 = ProductTestHelper.createProduct(productType2);
+        Product product3 = TestHelper.createProduct();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, product1, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, product2, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, product1, "2016-04-14 11:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, product3, "2016-04-15 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, product1, "2016-04-15 11:00:00", IN_PROGRESS);
+
+        List<Act> acts1 = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
+                                             getDatetime("2016-04-15 11:00:00"), productType1.getName());
+        assertEquals(1, acts1.size());
+        assertFalse(acts1.contains(reminder1));
+        assertFalse(acts1.contains(reminder2));
+        assertTrue(acts1.contains(reminder3));
+        assertFalse(acts1.contains(reminder4));
+        assertFalse(acts1.contains(reminder5));
+
+        List<Act> acts2 = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
+                                             getDatetime("2016-04-15 11:00:00"), productType2.getName());
+        assertEquals(1, acts2.size());
+        assertTrue(acts2.contains(reminder2));
+
+        List<Act> acts3 = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
+                                             getDatetime("2016-04-15 11:00:00"), "Z Vacc*");
+        assertEquals(2, acts3.size());
+        assertTrue(acts3.contains(reminder2));
+        assertTrue(acts3.contains(reminder3));
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param product      the product
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, Product product, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        ActBean bean = new ActBean(reminder);
+        bean.addNodeParticipation("product", product);
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
+    }
+
+    /**
      * Verifies a reminder matches that expected.
      *
      * @param reminder     the reminder
@@ -624,7 +727,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertEquals(status, reminder.getStatus());
         ActBean bean = new ActBean(reminder);
         Date date = bean.getDate("completedDate");
-        if (ReminderStatus.COMPLETED.equals(status)) {
+        if (COMPLETED.equals(status)) {
             assertNotNull(date);
         } else {
             assertNull(date);

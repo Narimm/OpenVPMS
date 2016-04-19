@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -25,6 +25,7 @@ import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -46,12 +47,17 @@ public class IMObjectViewerDialog extends PopupDialog {
     /**
      * The history of displayed references.
      */
-    private Stack<IMObjectReference> history = new Stack<IMObjectReference>();
+    private Stack<IMObjectReference> history = new Stack<>();
 
     /**
      * The context.
      */
     private final Context context;
+
+    /**
+     * The mail context. May be {@code null}.
+     */
+    private final MailContext mailContext;
 
     /**
      * Dialog style name.
@@ -89,7 +95,7 @@ public class IMObjectViewerDialog extends PopupDialog {
      * @param help    the help context
      */
     public IMObjectViewerDialog(IMObjectViewer viewer, String[] buttons, Context context, HelpContext help) {
-        this(context, buttons, help);
+        this(context, buttons, null, help);
         if (viewer != null) {
             setViewer(viewer);
         } else {
@@ -105,19 +111,33 @@ public class IMObjectViewerDialog extends PopupDialog {
      * @param help    the help context
      */
     public IMObjectViewerDialog(IMObject object, Context context, HelpContext help) {
-        this(object, BUTTONS, context, help);
+        this(object, BUTTONS, context, null, help);
     }
 
     /**
      * Constructs an {@link IMObjectViewerDialog}.
      *
-     * @param object  the object to display. May be {@code null}
-     * @param buttons the buttons to display
-     * @param context the context
-     * @param help    the help context
+     * @param object      the object to display. May be {@code null}
+     * @param context     the context
+     * @param mailContext the mail context. May be {@code null}
+     * @param help        the help context
      */
-    public IMObjectViewerDialog(IMObject object, String[] buttons, Context context, HelpContext help) {
-        this(context, buttons, help);
+    public IMObjectViewerDialog(IMObject object, Context context, MailContext mailContext, HelpContext help) {
+        this(object, BUTTONS, context, mailContext, help);
+    }
+
+    /**
+     * Constructs an {@link IMObjectViewerDialog}.
+     *
+     * @param object      the object to display. May be {@code null}
+     * @param buttons     the buttons to display
+     * @param context     the context
+     * @param mailContext the mail context. May be {@code null}
+     * @param help        the help context
+     */
+    public IMObjectViewerDialog(IMObject object, String[] buttons, Context context, MailContext mailContext,
+                                HelpContext help) {
+        this(context, buttons, mailContext, help);
         if (object != null) {
             setObject(object);
         } else {
@@ -128,13 +148,15 @@ public class IMObjectViewerDialog extends PopupDialog {
     /**
      * Constructs an {@link IMObjectViewerDialog}.
      *
-     * @param context the context
-     * @param buttons the buttons to display
-     * @param help    the help context
+     * @param context     the context
+     * @param buttons     the buttons to display
+     * @param mailContext the mail context. May be {@code null}
+     * @param help        the help context
      */
-    private IMObjectViewerDialog(Context context, String[] buttons, HelpContext help) {
+    private IMObjectViewerDialog(Context context, String[] buttons, MailContext mailContext, HelpContext help) {
         super(null, STYLE, buttons, help);
         this.context = context;
+        this.mailContext = mailContext;
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
     }
@@ -146,6 +168,7 @@ public class IMObjectViewerDialog extends PopupDialog {
      */
     public void setObject(IMObject object) {
         LayoutContext context = new DefaultLayoutContext(this.context, getHelpContext());
+        context.setMailContext(mailContext);
         context.setContextSwitchListener(new ContextSwitchListener() {
             public void switchTo(IMObject child) {
                 setObject(child);

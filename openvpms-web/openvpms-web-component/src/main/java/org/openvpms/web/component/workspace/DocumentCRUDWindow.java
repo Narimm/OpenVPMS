@@ -142,7 +142,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         DocumentAct act = IMObjectHelper.reload(getObject());
         if (act == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else if (act.getDocument() != null) {
+        } else if (act.getDocument() == null) {
             if (canRefresh()) {
                 // regenerate the document, and print
                 refresh(act, true, false);
@@ -166,7 +166,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         if (act == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
-            final RefreshDialog dialog = new RefreshDialog(getObject(), getHelpContext());
+            final RefreshDialog dialog = new RefreshDialog(act, getHelpContext());
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -202,11 +202,25 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * Launches an external editor to edit the selected document, if editing of the document is supported.
      */
     private void onExternalEdit() {
-        DocumentAct act = IMObjectHelper.reload(getObject());
+        final DocumentAct act = IMObjectHelper.reload(getObject());
         if (act == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else {
+        } else if (act.getDocument() != null) {
             getActions().externalEdit(act);
+        } else {
+            // the act has no document attached. Try and generate it first.
+            DocumentGenerator generator = new DocumentGenerator(act, getContext(), getHelpContext(),
+                                                                new DocumentGenerator.AbstractListener() {
+                                                                    @Override
+                                                                    public void generated(Document document) {
+                                                                        onSaved(act, false);
+                                                                        DocumentActActions actions = getActions();
+                                                                        if (actions.canExternalEdit(act)) {
+                                                                            actions.externalEdit(act);
+                                                                        }
+                                                                    }
+                                                                });
+            generator.generate(true, true);
         }
     }
 
@@ -236,7 +250,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
          * @param help the help context
          */
         public RefreshDialog(DocumentAct act, HelpContext help) {
-            super(Messages.get("document.refresh.title"), Messages.get("document.refresh.message"),
+            super(Messages.get("document.refresh.title"),
+                  Messages.format("document.refresh.message", act.getFileName()),
                   help.subtopic("refresh"));
             DocumentRules rules = new DocumentRules(ServiceHelper.getArchetypeService());
             if (act.getDocument() != null && rules.supportsVersions(act)) {

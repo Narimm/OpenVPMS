@@ -254,18 +254,19 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      *
      * @param editor   the editor
      * @param template the product template
+     * @param quantity the quantity
      * @return the acts generated from the template
      */
     @Override
-    protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
-        List<Act> acts = super.createTemplateActs(editor, template);
+    protected List<Act> createTemplateActs(ActItemEditor editor, Product template, BigDecimal quantity) {
+        List<Act> acts = super.createTemplateActs(editor, template, quantity);
         AlertListener alertListener = getAlertListener();
         if (alertListener != null && !acts.isEmpty()) {
             int outOfStock = 0;
             StockOnHand stock = editContext.getStock();
             for (Act act : acts) {
-                BigDecimal quantity = stock.getAvailableStock((FinancialAct) act);
-                if (quantity != null && BigDecimal.ZERO.compareTo(quantity) >= 0) {
+                BigDecimal onHand = stock.getAvailableStock((FinancialAct) act);
+                if (onHand != null && BigDecimal.ZERO.compareTo(onHand) >= 0) {
                     ++outOfStock;
                 }
             }

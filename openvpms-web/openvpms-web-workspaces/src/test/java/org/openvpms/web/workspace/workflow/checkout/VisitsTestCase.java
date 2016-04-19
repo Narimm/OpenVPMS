@@ -26,11 +26,9 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -240,41 +238,7 @@ public class VisitsTestCase extends ArchetypeServiceTest {
      * @return a new visit
      */
     private Visit createVisit(String startTime, String endTime, Entity schedule, Party customer, Party patient) {
-        Act appointment = createAppointment(startTime, endTime, schedule, customer, patient);
-        Act event = createEvent(appointment, patient);
-        return visits.create(event, appointment);
-    }
-
-    /**
-     * Creates a new appointment.
-     *
-     * @param startTime the appointment start time
-     * @param endTime   the appointment end time
-     * @param schedule  the schedule
-     * @param customer  the customer
-     * @param patient   the patient
-     * @return a new appointment
-     */
-    private Act createAppointment(String startTime, String endTime, Entity schedule, Party customer, Party patient) {
-        return ScheduleTestHelper.createAppointment(TestHelper.getDatetime(startTime), TestHelper.getDatetime(endTime),
-                                                    schedule, customer, patient);
-
-    }
-
-    /**
-     * Creates a new event linked to an appointment. The event start and end times will be the same as the appointment.
-     *
-     * @param appointment the appointment
-     * @param patient     the patient
-     * @return a new event
-     */
-    private Act createEvent(Act appointment, Party patient) {
-        Act event = PatientTestHelper.createEvent(appointment.getActivityStartTime(), appointment.getActivityEndTime(),
-                                                  patient, null);
-        ActBean bean = new ActBean(appointment);
-        bean.addNodeRelationship("event", event);
-        save(appointment, event);
-        return event;
+        return BoardingTestHelper.createVisit(startTime, endTime, schedule, customer, patient, visits);
     }
 
     /**

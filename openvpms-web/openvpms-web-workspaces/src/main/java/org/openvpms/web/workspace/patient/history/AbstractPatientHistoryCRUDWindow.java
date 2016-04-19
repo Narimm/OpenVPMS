@@ -24,11 +24,13 @@ import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -45,6 +47,7 @@ import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.DocumentActActions;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -173,9 +176,25 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
      * Launches an external editor to edit a document, if external editing of the document is supported.
      */
     protected void onExternalEdit() {
-        Act object = IMObjectHelper.reload(getObject());
-        if (object instanceof DocumentAct) {
-            documentActions.externalEdit((DocumentAct) object);
+        final DocumentAct act = (DocumentAct) IMObjectHelper.reload(getObject());
+        if (act == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else if (act.getDocument() != null) {
+            documentActions.externalEdit(act);
+        } else {
+            // the act has no document attached. Try and generate it first.
+            DocumentGenerator generator = new DocumentGenerator(
+                    act, getContext(), getHelpContext(),
+                    new DocumentGenerator.AbstractListener() {
+                        @Override
+                        public void generated(Document document) {
+                            onSaved(act, false);
+                            if (documentActions.canExternalEdit(act)) {
+                                documentActions.externalEdit(act);
+                            }
+                        }
+                    });
+            generator.generate(true, false);
         }
     }
 

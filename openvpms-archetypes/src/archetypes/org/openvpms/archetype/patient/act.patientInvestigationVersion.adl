@@ -36,7 +36,7 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="reviewed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" hidden="true"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node displayName="Report" name="document" path="/document" minCardinality="0"

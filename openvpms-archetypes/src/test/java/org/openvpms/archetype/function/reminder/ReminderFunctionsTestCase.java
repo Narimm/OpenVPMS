@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.reminder;
@@ -25,17 +25,18 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -44,7 +45,12 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderStatus.CANCELLED;
 
 /**
  * Tests the {@link ReminderFunctions} class.
@@ -106,6 +112,155 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderFunctions#getPatientReminders(Party, Date)} method.
+     * <br/>
+     * Note that this invoked as:
+     * <br/>
+     * <em>reminder:getReminders(patient, date)</em>
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetPatientRemindersForDate() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, "2016-04-14 10:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, "2016-04-14 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, "2016-04-15 00:00:00", IN_PROGRESS);
+
+        JXPathContext context = createContext(patient);
+        List<Act> acts = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'))");
+        assertEquals(3, acts.size());
+        assertFalse(acts.contains(reminder1));
+        assertTrue(acts.contains(reminder2));
+        assertTrue(acts.contains(reminder3));
+        assertTrue(acts.contains(reminder4));
+        assertFalse(acts.contains(reminder5));
+    }
+
+    /**
+     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, Date, Date, String)} method.
+     * <br/>
+     * Note that this invoked as:
+     * <br/>
+     * <em>reminder:getReminders(patient, date, date)</em>
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetPatientRemindersForDateRange() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, "2016-04-14 11:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, "2016-04-15 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, "2016-04-15 11:00:00", IN_PROGRESS);
+
+        JXPathContext context = createContext(patient);
+        List<Act> acts = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
+                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'))");
+        assertEquals(3, acts.size());
+        assertFalse(acts.contains(reminder1));
+        assertTrue(acts.contains(reminder2));
+        assertTrue(acts.contains(reminder3));
+        assertTrue(acts.contains(reminder4));
+        assertFalse(acts.contains(reminder5));
+    }
+
+    /**
+     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, Date, String)} method.
+     * <br/>
+     * Note that this invoked as:
+     * <br/>
+     * <em>reminder:getReminders(patient, date, productType)</em>
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetPatientRemindersByProductType() {
+        Party patient = TestHelper.createPatient();
+        Entity productType1 = ProductTestHelper.createProductType("Z Vaccination 1");
+        Entity productType2 = ProductTestHelper.createProductType("Z Vaccination 2");
+        Product product1 = ProductTestHelper.createProduct(productType1);
+        Product product2 = ProductTestHelper.createProduct(productType2);
+        Product product3 = TestHelper.createProduct();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, product1, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, product2, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, product1, "2016-04-14 11:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, product3, "2016-04-15 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, product1, "2016-04-15 11:00:00", IN_PROGRESS);
+
+        JXPathContext context = createContext(patient);
+        List<Act> acts1 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'), 'Z Vaccination 1')");
+
+        assertEquals(1, acts1.size());
+        assertFalse(acts1.contains(reminder1));
+        assertFalse(acts1.contains(reminder2));
+        assertTrue(acts1.contains(reminder3));
+        assertFalse(acts1.contains(reminder4));
+        assertFalse(acts1.contains(reminder5));
+
+        List<Act> acts2 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'), 'Z Vaccination*')");
+
+        assertEquals(2, acts2.size());
+        assertTrue(acts2.contains(reminder2));
+        assertTrue(acts2.contains(reminder3));
+    }
+
+    /**
+     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, Date, Date, String)} method.
+     * <br/>
+     * Note that this invoked as:
+     * <br/>
+     * <em>reminder:getReminders(patient, from, to, productType)</em>
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetPatientRemindersByProductTypeForDateRange() {
+        Party patient = TestHelper.createPatient();
+        Entity productType1 = ProductTestHelper.createProductType("Z Vaccination 1");
+        Entity productType2 = ProductTestHelper.createProductType("Z Vaccination 2");
+        Product product1 = ProductTestHelper.createProduct(productType1);
+        Product product2 = ProductTestHelper.createProduct(productType2);
+        Product product3 = TestHelper.createProduct();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, product1, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, product2, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, product1, "2016-04-14 11:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, product2, "2016-04-15 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, product3, "2016-04-15 10:45:00", IN_PROGRESS);
+        Act reminder6 = createReminder(patient, reminderType, product1, "2016-04-15 11:00:00", IN_PROGRESS);
+
+        JXPathContext context = createContext(patient);
+        List<Act> acts1 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
+                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'), 'Z Vaccination 1')");
+        assertEquals(1, acts1.size());
+        assertFalse(acts1.contains(reminder1));
+        assertFalse(acts1.contains(reminder2));
+        assertTrue(acts1.contains(reminder3));
+        assertFalse(acts1.contains(reminder4));
+        assertFalse(acts1.contains(reminder5));
+        assertFalse(acts1.contains(reminder6));
+
+        List<Act> acts2 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
+                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'), 'Z Vacc*')");
+        assertEquals(3, acts2.size());
+        assertFalse(acts2.contains(reminder1));
+        assertTrue(acts2.contains(reminder2));
+        assertTrue(acts2.contains(reminder3));
+        assertTrue(acts2.contains(reminder4));
+        assertFalse(acts2.contains(reminder5));
+        assertFalse(acts2.contains(reminder6));
+    }
+
+    /**
      * Tests the {@link ReminderFunctions#getReminders} methods.
      *
      * @param context  the jxpath context. Either a customer or an act with a customer participation
@@ -140,6 +295,41 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param product      the product
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, Product product, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        ActBean bean = new ActBean(reminder);
+        bean.addNodeParticipation("product", product);
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
+    }
+
+    /**
      * Invokes the reminder:getDocumentFormReminder() jxpath function with the supplied context.
      *
      * @param context the context object
@@ -163,7 +353,7 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         ReminderFunctions functions = new ReminderFunctions(service,
                                                             new ReminderRules(service, patientRules),
                                                             new CustomerRules(service, lookups));
-        return JXPathHelper.newContext(context, new ObjectFunctions(functions, "reminder"));
+        return JXPathHelper.newContext(context, functions);
     }
 
 }

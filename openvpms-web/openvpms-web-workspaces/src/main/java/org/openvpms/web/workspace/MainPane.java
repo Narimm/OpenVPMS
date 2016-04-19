@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -22,9 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.TaskQueueHandle;
@@ -159,11 +157,6 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     private static final String STYLE = "MainPane";
 
     /**
-     * The left menu style.
-     */
-    private static final String LEFT_MENU_STYLE = "WideCellSpacing";
-
-    /**
      * The submenu column style.
      */
     private static final String BUTTON_COLUMN_STYLE = "ControlColumn";
@@ -181,24 +174,6 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     private static final String LEFTPANE_STYLE = "MainPane.Left";
 
     private static final String RIGHTPANE_STYLE = "MainPane.Right";
-
-    /**
-     * Reference to the new window icon.
-     */
-    private ImageReference NEW_WINDOW
-            = new ResourceImageReference("/org/openvpms/web/resource/image/newwindow.gif");
-
-    /**
-     * Reference to the mail icon.
-     */
-    private static final ImageReference MAIL
-            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail.png");
-
-    /**
-     * Reference to the new mail icon.
-     */
-    private static final ImageReference UNREAD_MAIL
-            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail-unread.png");
 
 
     /**
@@ -231,7 +206,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         menu = new ButtonRow(ButtonRow.STYLE, BUTTON_STYLE);
         menu.setLayoutData(SplitPaneFactory.layout(new Alignment(Alignment.CENTER, Alignment.DEFAULT)));
         subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
-        leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
+        leftMenu = ColumnFactory.create(Styles.WIDE_CELL_SPACING, subMenu);
         currentWorkspaces = ContentPaneFactory.create(WORKSPACE_STYLE);
 
         Button button = addWorkspaces(factory.createCustomerWorkspaces(context));
@@ -456,10 +431,10 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      */
     private void updateMessageStatus(boolean newMessages) {
         if (newMessages) {
-            messages.setIcon(UNREAD_MAIL);
+            messages.setStyleName("button.unreadMail");
             messages.setToolTipText(Messages.get("messages.unread.tooltip"));
         } else {
-            messages.setIcon(MAIL);
+            messages.setStyleName("button.mail");
             messages.setToolTipText(Messages.get("messages.read.tooltip"));
         }
     }
@@ -480,8 +455,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         updateMessageStatus();
         row.addButton(messages);
 
-        Button newWindow = ButtonFactory.create(null, BUTTON_STYLE);
-        newWindow.setIcon(NEW_WINDOW);
+        Button newWindow = ButtonFactory.create(null, "button.newWindow");
         newWindow.setToolTipText(Messages.get("newwindow.tooltip"));
         newWindow.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
