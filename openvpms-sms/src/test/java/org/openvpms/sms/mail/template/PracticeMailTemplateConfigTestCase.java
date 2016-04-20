@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.mail.AbstractSMSTest;
 import org.openvpms.sms.mail.SMSArchetypes;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -62,9 +63,10 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             bean.removeRelationship(relationship);
         }
         save(practice);
+
         PracticeService practiceService = new PracticeService(getArchetypeService(),
                                                               new PracticeRules(getArchetypeService(), null),
-                                                              null);
+                                                              createPool());
         config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
     }
 
@@ -89,7 +91,8 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
     public void testNoPractice() {
         remove(practice);
         PracticeService practiceService = new PracticeService(getArchetypeService(),
-                                                              new PracticeRules(getArchetypeService(), null), null);
+                                                              new PracticeRules(getArchetypeService(), null),
+                                                              createPool());
         config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
         try {
             config.getTemplate();
@@ -145,6 +148,17 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
         assertEquals(from2, template.getFrom());
         assertEquals(to1, template.getToExpression());
         assertEquals("$message", template.getTextExpression());
+    }
+
+    /**
+     * Helper to create a thread pool.
+     *
+     * @return a new thread pool
+     */
+    protected ThreadPoolTaskExecutor createPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.afterPropertiesSet();
+        return executor;
     }
 
 }
