@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -48,6 +49,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -574,8 +576,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder4 = createReminder(patient, reminderType, "2016-04-15 10:10:10", CANCELLED);
         Act reminder5 = createReminder(patient, reminderType, "2016-04-15 11:00:00", IN_PROGRESS);
 
-        List<Act> acts = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
-                                            getDatetime("2016-04-15 11:00:00"));
+        List<Act> acts = getActs(rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
+                                                    getDatetime("2016-04-15 11:00:00")));
         assertEquals(3, acts.size());
         assertFalse(acts.contains(reminder1));
         assertTrue(acts.contains(reminder2));
@@ -585,7 +587,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderRules#getReminders(Party, Date, Date, String)} method.
+     * Tests the {@link ReminderRules#getReminders(Party, String, Date, Date)} method.
      */
     @Test
     public void testGetRemindersForProductType() {
@@ -602,8 +604,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder4 = createReminder(patient, reminderType, product3, "2016-04-15 10:10:10", CANCELLED);
         Act reminder5 = createReminder(patient, reminderType, product1, "2016-04-15 11:00:00", IN_PROGRESS);
 
-        List<Act> acts1 = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
-                                             getDatetime("2016-04-15 11:00:00"), productType1.getName());
+        List<Act> acts1 = getActs(rules.getReminders(patient, productType1.getName(), getDatetime("2016-04-14 10:00:00"),
+                                                     getDatetime("2016-04-15 11:00:00")));
         assertEquals(1, acts1.size());
         assertFalse(acts1.contains(reminder1));
         assertFalse(acts1.contains(reminder2));
@@ -611,16 +613,28 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertFalse(acts1.contains(reminder4));
         assertFalse(acts1.contains(reminder5));
 
-        List<Act> acts2 = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
-                                             getDatetime("2016-04-15 11:00:00"), productType2.getName());
+        List<Act> acts2 = getActs(rules.getReminders(patient, productType2.getName(), getDatetime("2016-04-14 10:00:00"),
+                                                     getDatetime("2016-04-15 11:00:00")));
         assertEquals(1, acts2.size());
         assertTrue(acts2.contains(reminder2));
 
-        List<Act> acts3 = rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
-                                             getDatetime("2016-04-15 11:00:00"), "Z Vacc*");
+        List<Act> acts3 = getActs(rules.getReminders(patient, "Z Vacc*", getDatetime("2016-04-14 10:00:00"),
+                                                     getDatetime("2016-04-15 11:00:00")));
         assertEquals(2, acts3.size());
         assertTrue(acts3.contains(reminder2));
         assertTrue(acts3.contains(reminder3));
+    }
+
+    /**
+     * Helper to convert an iterable of acts to a list.
+     *
+     * @param acts the acts
+     * @return the list of acts
+     */
+    private List<Act> getActs(Iterable<Act> acts) {
+        List<Act> result = new ArrayList<>();
+        CollectionUtils.addAll(result, acts);
+        return result;
     }
 
     /**
