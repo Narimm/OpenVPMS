@@ -22,7 +22,7 @@
         <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100"
               defaultValue="'Medical Record Locker'"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"
-              defaultValue="'Finalises medical records based on the Practice &quot;Lock Record Interval&quot; setting'"/>
+              defaultValue="'Finalises medical records based on the Practice &quot;Record Lock Period&quot; setting'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="batchSize" path="/details/batchSize" type="java.lang.Integer" minCardinality="1" defaultValue="500">
             <assertion name="positive">
