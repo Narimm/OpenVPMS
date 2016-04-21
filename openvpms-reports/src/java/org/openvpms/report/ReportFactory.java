@@ -160,6 +160,24 @@ public class ReportFactory {
     }
 
     /**
+     * Determines if a template can be used to create a report via {@link #createObjectSetReport(Document)}.
+     *
+     * @param template    the template
+     * @param cardinality the no. of objects being reported on. OpenOffice/Word templates only support a single object
+     * @return {@code true} if the template can be used to create a report
+     */
+    public boolean isObjectSetReport(Document template, int cardinality) {
+        boolean result = false;
+        String ext = FilenameUtils.getExtension(template.getName());
+        if (ext != null) {
+            if (isJRXML(ext) || (cardinality == 1 && (isODT(ext) || isDOC(ext)))) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Creates a new report for a collection of {@link ObjectSet}s.
      *
      * @param template the document template
@@ -185,6 +203,7 @@ public class ReportFactory {
         }
         return report;
     }
+
     /**
      * Creates a proxy for the archetype service.
      *

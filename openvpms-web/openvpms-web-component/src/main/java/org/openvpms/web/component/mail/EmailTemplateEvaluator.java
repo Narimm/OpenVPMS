@@ -32,6 +32,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.macro.Macros;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
@@ -47,6 +48,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Evaluates the content of an <em>entity.documentTemplateEmail</em> based on its <em>contentType</em>.
@@ -168,12 +170,33 @@ public class EmailTemplateEvaluator {
     }
 
     /**
+     * Returns an {@link Reporter} for the template message body, if the template has a document body.
+     *
+     * @param template the template
+     * @param objects  the objects to pass to the document
+     * @param context  the context to pass to the document
+     * @return a new reporter, or {@code null} if the content is not a supported document
+     */
+    public Reporter<ObjectSet> getMessageReporter(Entity template, List<ObjectSet> objects, Context context) {
+        Reporter<ObjectSet> result = null;
+        IMObjectBean bean = new IMObjectBean(template, service);
+        String type = bean.getString("contentType");
+        if (DOCUMENT.equals(type)) {
+            final Document document = new TemplateHelper(service).getDocumentFromTemplate(template);
+            if (document != null && factory.isObjectSetReport(document, objects.size())) {
+                result = createReporter(objects, document, context);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the email message.
      *
      * @param reporter the reporter used to generate the message
      * @return the email message, as HTML or an HTML fragment
      */
-    public String getMessage(Reporter<IMObject> reporter) {
+    public String getMessage(Reporter<?> reporter) {
         String result;
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         reporter.generate(DocFormats.HTML_TYPE, true, bytes);
@@ -189,12 +212,32 @@ public class EmailTemplateEvaluator {
      * @param context  the context
      * @return a new reporter
      */
-    private Reporter<IMObject> createReporter(final IMObject object, final Document document, Context context) {
+    private Reporter<IMObject> createReporter(IMObject object, final Document document, Context context) {
         Reporter<IMObject> result;
         result = new Reporter<IMObject>(object) {
             @Override
             protected IMReport<IMObject> getReport() {
                 return factory.createIMObjectReport(document);
+            }
+        };
+        result.setFields(ReportContextFactory.create(context));
+        return result;
+    }
+
+    /**
+     * Creates a reporter for a list of {@link ObjectSet}s.
+     *
+     * @param objects  the objects to report on
+     * @param document the report template
+     * @param context  the context
+     * @return a new reporter
+     */
+    private Reporter<ObjectSet> createReporter(List<ObjectSet> objects, final Document document, Context context) {
+        Reporter<ObjectSet> result;
+        result = new Reporter<ObjectSet>(objects) {
+            @Override
+            protected IMReport<ObjectSet> getReport() {
+                return factory.createObjectSetReport(document);
             }
         };
         result.setFields(ReportContextFactory.create(context));
