@@ -60,7 +60,6 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -143,7 +142,6 @@ public class MailEditor extends AbstractModifiable {
      */
     private SplitPane headerAttachmentsPane;
 
-
     /**
      * The attachment table model.
      */
@@ -168,6 +166,11 @@ public class MailEditor extends AbstractModifiable {
      * The macro expanded.
      */
     private final MacroExpander macroExpander;
+
+    /**
+     * The object to evaluate templates against.
+     */
+    private Object object;
 
     /**
      * The logger.
@@ -318,21 +321,50 @@ public class MailEditor extends AbstractModifiable {
 
     /**
      * Sets the mail subject and message from a template.
+     * <p/>
+     * The template will be evaluated against the object set via {@link #setObject(Object)}.
      *
      * @param template the template
-     * @param object   the object to evaluate the template against. May be {@code null}
      */
-    public void setContent(Entity template, Object object) {
-        try {
-            EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
-            String subject = evaluator.getSubject(template, object, context);
-            String text = evaluator.getMessage(template, object, context);
-            setSubject(subject);
-            setMessage(text);
-        } catch (Throwable exception) {
-            ErrorHelper.show(Messages.format("mail.template.error", template.getName(), exception.getMessage()));
-            log.error("Failed to expand email template: " + template.getName(), exception);
-        }
+    public void setContent(Entity template) {
+        setContent(template, false);
+    }
+
+    /**
+     * Sets the mail subject and message from a template.
+     * <p/>
+     * The template will be evaluated against the object set via {@link #setObject(Object)}.
+     *
+     * @param template the template
+     * @param prompt   if {@code true}, prompt for parameters
+     */
+    public void setContent(Entity template, boolean prompt) {
+        ParameterEmailTemplateEvaluator evaluator = new ParameterEmailTemplateEvaluator(template, context, help);
+        evaluator.evaluate(object, prompt, new ParameterEmailTemplateEvaluator.Listener() {
+            @Override
+            public void generated(String subject, String message) {
+                setSubject(subject);
+                setMessage(message);
+            }
+        });
+    }
+
+    /**
+     * Registers the object used to evaluate templates against.
+     *
+     * @param object the object. May be {@code null}
+     */
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    /**
+     * Returns the object used to evaluate templates against.
+     *
+     * @return the object used to evaluate templates against. May be {@code null}
+     */
+    public Object getObject() {
+        return object;
     }
 
     /**
