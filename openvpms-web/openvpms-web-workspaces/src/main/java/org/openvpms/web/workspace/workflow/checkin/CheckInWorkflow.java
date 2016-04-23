@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.checkin;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -53,10 +54,12 @@ import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.visit.FlowSheetEditDialog;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
@@ -390,9 +393,16 @@ public class CheckInWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Task to create a flow sheet if a work list has been selected and has "createFlowSheet" set true.
+     * Task to create a flow sheet if a work list has been selected and has "createFlowSheet" set.
      */
     private class CreateFlowSheetTask extends AbstractTask {
+
+        /**
+         * Creates a new {@link CreateFlowSheetTask}.
+         */
+        public CreateFlowSheetTask() {
+            setRequired(false);
+        }
 
         /**
          * Starts the task.
@@ -409,24 +419,14 @@ public class CheckInWorkflow extends WorkflowImpl {
             Party location = context.getLocation();
             if (workList != null && visit != null && location != null) {
                 IMObjectBean bean = new IMObjectBean(workList);
-                if (bean.getBoolean("createFlowSheet")) {
+                String createFlowSheet = bean.getString("createFlowSheet");
+                if (createFlowSheet != null) {
                     PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
-                    PatientContext patientContext = factory.createContext(patient, visit, location);
+                    final PatientContext patientContext = factory.createContext(patient, visit, location);
                     try {
                         if (patientContext.getWeight() != null) {
-                            HospitalizationService service
-                                    = flowSheetServiceFactory.getHospitalisationService(location);
-                            if (!service.exists(patientContext)) {
-                                service.add(patientContext);
-                            } else {
-                                popup = true;
-                                InformationDialog.show(Messages.format("workflow.flowsheet.exists", patient.getName()),
-                                                       new WindowPaneListener() {
-                                                           public void onClose(WindowPaneEvent event) {
-                                                               notifyCompleted();
-                                                           }
-                                                       });
-                            }
+                            popup = addFlowSheet(createFlowSheet, bean, patientContext, context.getAppointment(),
+                                                 location);
                         }
                     } catch (Throwable exception) {
                         popup = true;
@@ -441,6 +441,67 @@ public class CheckInWorkflow extends WorkflowImpl {
             if (!popup) {
                 notifyCompleted();
             }
+        }
+
+        /**
+         * Adds a flow sheet, if none exists.
+         *
+         * @param createFlowSheet the value of the work list <em>createFlowSheet</em> node
+         * @param workList        the work list bean
+         * @param patientContext  the patient context
+         * @param appointment     the appointment. May be {@code null}
+         * @param location        the practice location
+         * @return {@code true} if a dialog is being displayed, indicating that the task is asynchronous
+         */
+        protected boolean addFlowSheet(String createFlowSheet, IMObjectBean workList,
+                                       final PatientContext patientContext, Act appointment, Party location) {
+            boolean popup = false;
+            final HospitalizationService service = flowSheetServiceFactory.getHospitalisationService(location);
+            if (!service.exists(patientContext)) {
+                String defaultTemplate = workList.getString("defaultFlowSheetTemplate");
+                int days = 1;
+                if (appointment != null) {
+                    AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+                    days = rules.getBoardingDays(appointment);
+                }
+                if ("PROMPT".equals(createFlowSheet)) {
+                    final FlowSheetEditDialog dialog = new FlowSheetEditDialog(flowSheetServiceFactory, location,
+                                                                               defaultTemplate, days, true);
+                    dialog.addWindowPaneListener(new PopupDialogListener() {
+                        @Override
+                        public void onOK() {
+                            String defaultTemplate = dialog.getTemplate();
+                            int expectedStay = dialog.getExpectedStay();
+                            service.add(patientContext, expectedStay, defaultTemplate);
+                            notifyCompleted();
+                        }
+
+                        @Override
+                        public void onSkip() {
+                            notifyCompleted();
+                        }
+
+                        @Override
+                        public void onAction(String action) {
+                            notifyCancelled();
+                        }
+                    });
+                    dialog.show();
+                    popup = true;
+                } else {
+                    service.add(patientContext, days, defaultTemplate);
+                }
+            } else {
+                popup = true;
+                InformationDialog.show(Messages.format("workflow.flowsheet.exists",
+                                                       patientContext.getPatient().getName()),
+                                       new WindowPaneListener() {
+                                           public void onClose(WindowPaneEvent event) {
+                                               notifyCompleted();
+                                           }
+                                       });
+            }
+            return popup;
         }
     }
 
