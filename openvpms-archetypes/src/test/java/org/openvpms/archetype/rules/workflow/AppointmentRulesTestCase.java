@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -347,7 +347,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentRules#getBoardingDays(Date, Date)} method.
+     * Tests the {@link AppointmentRules#getBoardingDays} methods.
      */
     @Test
     public void testGetBoardingDays() {
@@ -386,7 +386,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that {@link AppointmentRules#getBoardingDays(Date, Date)} returns the expected no. of days.
+     * Verifies that {@link AppointmentRules#getBoardingDays(Date, Date)} and
+     * {@link AppointmentRules#getBoardingDays(Act)} return the expected no. of days.
      *
      * @param expected the expected no. of days
      * @param startTime the boarding start time
@@ -396,6 +397,11 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Date start = TestHelper.getDatetime(startTime);
         Date end = TestHelper.getDatetime(endTime);
         assertEquals(expected, rules.getBoardingDays(start, end));
+
+        Act appointment = (Act) create(ScheduleArchetypes.APPOINTMENT);
+        appointment.setActivityStartTime(start);
+        appointment.setActivityEndTime(end);
+        assertEquals(expected, rules.getBoardingDays(appointment));
     }
 
     /**
