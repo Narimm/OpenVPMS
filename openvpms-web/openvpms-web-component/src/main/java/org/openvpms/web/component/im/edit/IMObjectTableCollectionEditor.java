@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,7 +19,6 @@ package org.openvpms.web.component.im.edit;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -78,7 +77,7 @@ public abstract class IMObjectTableCollectionEditor extends IMTableCollectionEdi
      */
     protected IMObjectTableCollectionEditor(CollectionPropertyEditor editor, IMObject object, LayoutContext context,
                                             CollectionResultSetFactory factory) {
-        super(editor, object, new DefaultLayoutContext(context));
+        super(editor, object, context);
         this.resultSetFactory = factory;
     }
 
