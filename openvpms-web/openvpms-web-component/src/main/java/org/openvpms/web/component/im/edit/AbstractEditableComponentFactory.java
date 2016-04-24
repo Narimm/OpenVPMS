@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -239,7 +239,7 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
         Editor editor;
         LayoutContext context = getLayoutContext();
         if (TypeHelper.matches(range, "document.*")) {
-            editor = new DocumentEditor(property, context.getContext(), context.getHelpContext());
+            editor = new DocumentEditor(property, context);
         } else {
             editor = IMObjectReferenceEditorFactory.create(property, object, context);
         }

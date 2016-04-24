@@ -602,7 +602,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         editor = getEditor(object);
         Component component = editor.getComponent();
         if (LayoutHelper.needsInset(component)) {
-            component = ColumnFactory.create("Inset", component);
+            component = ColumnFactory.create(Styles.INSET, component);
         }
         editBox.add(component);
         editBox.setTitle(editor.getTitle());
