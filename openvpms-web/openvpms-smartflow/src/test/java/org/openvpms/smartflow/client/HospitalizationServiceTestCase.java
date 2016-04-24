@@ -29,9 +29,11 @@ import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.patient.PatientContext;
@@ -121,7 +123,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                                                   getArchetypeService(), getLookupService());
         context = factory.createContext(patient, customer, visit, location, clinician);
         context.getWeight();
-        context.getVisit().setReason("CHECKUP");
+        Lookup checkup = TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, "CHECKUP");
+        context.getVisit().setReason(checkup.getCode());
         // now override the ids, to support result comparison.
         location.setId(1);
         clinician.setId(10);
