@@ -13,7 +13,6 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.jxpath.JXPathContext;
@@ -76,7 +75,7 @@ class IMObjectValidator {
      * @return a list of validation errors encountered. Empty if no errors were found
      */
     public List<ValidationError> validate(IMObject object) {
-        List<ValidationError> errors = new ArrayList<>();
+        List<ValidationError> errors = new ArrayList<ValidationError>();
         validate(object, errors);
         return errors;
     }
@@ -207,15 +206,13 @@ class IMObjectValidator {
         Collection collection = node.toCollection(value);
 
         if (min > 0 && (collection == null || collection.size() < min)) {
-            String name = node.getBaseName() != null ? node.getBaseName() : "item";
-            addError(errors, parent, node, "must supply at least " + min + " " + name);
+            addError(errors, parent, node, "must supply at least " + min + " " + node.getBaseName());
         }
 
         // check the max cardinality if specified
         if (collection != null) {
             if (max > 0 && max != NodeDescriptor.UNBOUNDED && collection.size() > max) {
-                String name = node.getBaseName() != null ? node.getBaseName() : "item";
-                addError(errors, parent, node, "cannot supply more than " + max + " " + name);
+                addError(errors, parent, node, "cannot supply more than " + max + " " + node.getBaseName());
             }
 
             // if it's a parent-child relationship then validate the children

@@ -168,7 +168,7 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
         assertEquals("Authority to Save All Archetypes",
                      auth1.getDescription());
         assertEquals("save", auth1.getMethod());
-        assertEquals("*", auth1.getShortName());
+        assertEquals("*", auth1.getArchetypeShortName());
 
         ArchetypeAwareGrantedAuthority auth2 = (ArchetypeAwareGrantedAuthority)
                 checkReference(cache, "AUTH2", "security.archetypeAuthority");
@@ -177,7 +177,7 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
         assertEquals("Authority to Remove All Archetypes",
                      auth2.getDescription());
         assertEquals("remove", auth2.getMethod());
-        assertEquals("*", auth2.getShortName());
+        assertEquals("*", auth2.getArchetypeShortName());
 
         assertEquals(2, role.getAuthorities().size());
         assertTrue(role.getAuthorities().contains(auth1));

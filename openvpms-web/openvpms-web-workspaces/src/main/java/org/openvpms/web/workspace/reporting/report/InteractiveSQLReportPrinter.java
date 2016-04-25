@@ -136,7 +136,7 @@ public class InteractiveSQLReportPrinter extends InteractiveExportPrinter {
         DocumentTemplate template = getPrinter().getTemplate();
         Entity emailTemplate = template.getEmailTemplate();
         if (emailTemplate != null) {
-            dialog.getMailEditor().setContent(emailTemplate);
+            dialog.getMailEditor().setContent(emailTemplate, null);
         }
     }
 

@@ -175,7 +175,6 @@
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="macros"/>
-        <constructor-arg ref="reportFactory"/>
     </bean>
 
     <!-- =========================================================================================================== -->

@@ -13,7 +13,6 @@
   ~
   ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
-
 <archetypes>
     <archetype name="security.archetypeAuthority.1.0"
                latest="true" primary="true"
@@ -49,7 +48,7 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="archetypeShortName" path="/shortName"
+        <node name="archetypeShortName" path="/archetypeShortName"
               type="java.lang.String" displayName="Archetype Name"
               minCardinality="1"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>

@@ -67,7 +67,7 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
     /**
      * The archetype short name, which can also be a regular expression
      */
-    private String shortName;
+    private String archetypeShortName;
 
 
     /**
@@ -108,7 +108,7 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
 
         serviceName = temp.nextToken();
         method = temp.nextToken();
-        shortName = tokens.nextToken();
+        archetypeShortName = tokens.nextToken();
 
         // store the original str
         this.authority = str;
@@ -121,7 +121,15 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
      */
     public String getAuthority() {
         if (authority == null) {
-            authority = prefix + ":" + serviceName + "." + method + ":" + shortName;
+            StringBuilder buf = new StringBuilder(prefix);
+            buf.append(":");
+            buf.append(serviceName);
+            buf.append(".");
+            buf.append(method);
+            buf.append(":");
+            buf.append(archetypeShortName);
+
+            authority = buf.toString();
         }
 
         return authority;
@@ -132,35 +140,15 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
      *
      * @return the archetype short name
      */
-    public String getShortName() {
-        return shortName;
-    }
-
-    /**
-     * Sets the archetype short name.
-     *
-     * @param shortName the archetype short name
-     */
-    public void setShortName(String shortName) {
-        this.shortName = shortName;
-    }
-
-    /**
-     * Returns the archetype short name.
-     *
-     * @return the archetype short name
-     */
-    @Deprecated
     public String getArchetypeShortName() {
-        return getShortName();
+        return archetypeShortName;
     }
 
     /**
      * @param archetypeShortName The archetypeShortName to set.
      */
-    @Deprecated
     public void setArchetypeShortName(String archetypeShortName) {
-        setShortName(archetypeShortName);
+        this.archetypeShortName = archetypeShortName;
     }
 
     /**
@@ -204,7 +192,7 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
     @Override
     public Object clone() throws CloneNotSupportedException {
         ArchetypeAwareGrantedAuthority copy = (ArchetypeAwareGrantedAuthority) super.clone();
-        copy.shortName = this.shortName;
+        copy.archetypeShortName = this.archetypeShortName;
         copy.authority = this.authority;
         copy.method = this.method;
         copy.prefix = this.prefix;

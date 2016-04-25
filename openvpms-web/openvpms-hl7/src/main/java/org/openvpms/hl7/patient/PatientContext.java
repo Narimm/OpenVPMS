@@ -96,19 +96,9 @@ public class PatientContext {
     private Act weight;
 
     /**
-     * Determines if alerts have been initialised.
-     */
-    private boolean initAlerts = false;
-
-    /**
      * The patient allergies.
      */
     private List<Act> allergies = null;
-
-    /**
-     * Determines if the patient is aggressive.
-     */
-    private boolean aggressive = false;
 
     /**
      * The patient bean.
@@ -433,34 +423,7 @@ public class PatientContext {
      * @return the patient allergies
      */
     public List<Act> getAllergies() {
-        getAlerts();
-        return allergies;
-    }
-
-    /**
-     * Determines if the patient is aggressive.
-     *
-     * @return {@code true} if the patient is aggressive
-     */
-    public boolean isAggressive() {
-        getAlerts();
-        return aggressive;
-    }
-
-    /**
-     * Gets the most recent weight for a patient, if it hasn't already been retrieved.
-     */
-    private void getWeightAct() {
-        if (weight == null) {
-            weight = patientRules.getWeightAct(patient);
-        }
-    }
-
-    /**
-     * Initialises {@link #allergies} and {@link #aggressive} if required.
-     */
-    private void getAlerts() {
-        if (!initAlerts) {
+        if (allergies == null) {
             allergies = new ArrayList<>();
             ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.ALERT);
             query.add(Constraints.eq("status", ActStatus.IN_PROGRESS));
@@ -470,14 +433,20 @@ public class PatientContext {
             while (alerts.hasNext()) {
                 Act alert = alerts.next();
                 IMObjectBean bean = new IMObjectBean(alert, service);
-                String alertType = bean.getString("alertType");
-                if ("ALLERGY".equals(alertType)) {
+                if ("ALLERGY".equals(bean.getString("alertType"))) {
                     allergies.add(alert);
-                } else if ("AGGRESSION".equals(alertType)) {
-                    aggressive = true;
                 }
             }
-            initAlerts = true;
+        }
+        return allergies;
+    }
+
+    /**
+     * Gets the most recent weight for a patient, if it hasn't already been retrieved.
+     */
+    private void getWeightAct() {
+        if (weight == null) {
+            weight = patientRules.getWeightAct(patient);
         }
     }
 

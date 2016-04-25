@@ -56,7 +56,7 @@ public class ArchetypeAuthorityAssembler
         target.setMethod(source.getMethod());
         target.setServiceName(source.getServiceName());
         target.setMethod(source.getMethod());
-        target.setShortName(source.getShortName());
+        target.setShortName(source.getArchetypeShortName());
     }
 
     /**
@@ -74,7 +74,7 @@ public class ArchetypeAuthorityAssembler
         target.setMethod(source.getMethod());
         target.setServiceName(source.getServiceName());
         target.setMethod(source.getMethod());
-        target.setShortName(source.getShortName());
+        target.setArchetypeShortName(source.getShortName());
     }
 
     /**

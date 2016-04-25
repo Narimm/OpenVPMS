@@ -27,8 +27,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.lookup.LookupFilter;
-import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -65,8 +63,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
      * The act statuses. Exclude the <em>READ</em> status, as it will be handled explicitly whenever <em>PENDING</em>
      * is selected.
      */
-    private static final ActStatuses STATUSES = new ActStatuses(
-            new LookupFilter(new NodeLookupQuery(MessageArchetypes.USER, "status"), false, MessageStatus.READ), null);
+    private static final ActStatuses STATUSES = new ActStatuses(MessageArchetypes.USER);
 
     /**
      * The default statuses to query.
@@ -112,7 +109,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
                 participants = new ParticipantConstraint[0];
             }
             result = new ActResultSet<>(getArchetypeConstraint(), participants, getFrom(), getTo(), getStatuses(),
-                                        false, getConstraints(), getMaxResults(), sort);
+                                        excludeStatuses(), getConstraints(), getMaxResults(), sort);
         }
         return result;
     }
@@ -134,15 +131,6 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     @Override
     public Extent getHeight() {
         return getHeight(2);
-    }
-
-    /**
-     * Invoked when a status is selected.
-     */
-    @Override
-    protected void onStatusChanged() {
-        super.onStatusChanged();
-        onQuery();
     }
 
     /**

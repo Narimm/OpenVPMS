@@ -29,16 +29,8 @@
               defaultValue="true()"/>
         <node name="inputWeight" path="/details/inputWeight" type="java.lang.Boolean" minCardinality="0"
               defaultValue="true()"/>
-        <node name="createFlowSheet" path="/details/createFlowSheet" type="java.lang.String" minCardinality="0">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="DEFAULT" value="Default"/>
-                    <property name="PROMPT" value="Prompt"/>
-                </propertyList>
-            </assertion>
-        </node>
-        <node name="defaultFlowSheetTemplate" path="/details/defaulFlowSheetTemplate" type="java.lang.String"
-              maxCardinality="0"/>
+        <node name="createFlowSheet" path="/details/createFlowSheet" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="false()"/>
         <node name="views" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.viewWorkList">

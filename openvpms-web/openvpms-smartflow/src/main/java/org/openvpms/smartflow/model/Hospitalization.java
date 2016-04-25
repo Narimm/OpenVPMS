@@ -165,7 +165,7 @@ public class Hospitalization {
 
     /**
      * Returns the EMR internal ID of the hospitalization.
-     * <p/>
+     * <p>
      * This corresponds to the <em>act.patientClinicialEvent</em> identifier.
      *
      * @return the EMR internal ID of the hospitalization
@@ -223,7 +223,7 @@ public class Hospitalization {
 
     /**
      * Returns the date and time of the patient arrival in the hospital.
-     * <p/>
+     * <p>
      * In OpenVPMS this corresponds to the visit start time.
      *
      * @return the arrival date/time
@@ -334,7 +334,7 @@ public class Hospitalization {
      * Sets the estimated days of stay. This value will be used to create requested number of days of
      * hospitalization. If this value is not specified then by default 2 days will be created.
      *
-     * @param estimatedDaysOfStay the estimated days of stay
+     * @return the estimated days of stay
      */
     public void setEstimatedDaysOfStay(int estimatedDaysOfStay) {
         this.estimatedDaysOfStay = estimatedDaysOfStay;

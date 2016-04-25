@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.report.ReportFactory;
 import org.openvpms.report.jasper.JRXMLDocumentHandler;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -56,8 +55,7 @@ public class EmailTemplateEvaluatorTestCase extends AbstractAppTest {
     @Before
     public void setUp() {
         super.setUp();
-        evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(), ServiceHelper.getMacros(),
-                                               ServiceHelper.getBean(ReportFactory.class));
+        evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(), ServiceHelper.getMacros());
     }
 
     /**

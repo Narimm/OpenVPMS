@@ -79,7 +79,7 @@ public abstract class AbstractIMPrinter<T>
         if (printer == null) {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
-        reporter.print(getProperties(printer));
+        reporter.print(getObjects(), getProperties(printer));
     }
 
     /**

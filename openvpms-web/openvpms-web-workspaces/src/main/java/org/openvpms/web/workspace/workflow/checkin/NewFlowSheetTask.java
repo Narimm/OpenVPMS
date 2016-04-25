@@ -19,27 +19,22 @@ package org.openvpms.web.workspace.workflow.checkin;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
-import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.InformationTask;
+import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.Tasks;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.patient.visit.FlowSheetEditDialog;
 
 /**
  * Creates a new flow sheet.
@@ -201,28 +196,16 @@ public class NewFlowSheetTask extends Tasks {
         return contextFactory.createContext(patient, customer, visit, location, clinician);
     }
 
-    private class AddFlowSheet extends AbstractTask {
+    private class AddFlowSheet extends SynchronousTask {
 
         /**
-         * The appointment rules.
-         */
-        private final AppointmentRules rules;
-
-        /**
-         * Constructs an {@link AddFlowSheet}.
-         */
-        public AddFlowSheet() {
-            rules = ServiceHelper.getBean(AppointmentRules.class);
-        }
-
-        /**
-         * Starts the task.
+         * Executes the task.
          *
          * @param context the task context
          * @throws OpenVPMSException for any error
          */
         @Override
-        public void start(TaskContext context) {
+        public void execute(TaskContext context) {
             if (patientContext == null) {
                 patientContext = getPatientContext(visit);
             }
@@ -231,53 +214,8 @@ public class NewFlowSheetTask extends Tasks {
                 // no weight entered
                 notifyCancelled();
             } else {
-                final FlowSheetEditDialog dialog = new FlowSheetEditDialog(factory, location, null, getDays(), false);
-                dialog.addWindowPaneListener(new PopupDialogListener() {
-                    @Override
-                    public void onOK() {
-                        int days = dialog.getExpectedStay();
-                        String template = dialog.getTemplate();
-                        client.add(patientContext, days, template);
-                    }
-
-                    @Override
-                    public void onAction(String action) {
-                        notifyCancelled();
-                    }
-                });
-                dialog.show();
+                client.add(patientContext);
             }
-        }
-
-        /**
-         * Returns the estimated no. of days stay, based on the current appointment.
-         *
-         * @return the estimated days stay
-         */
-        protected int getDays() {
-            int days = 1;
-            Act appointment = getAppointment();
-            if (appointment != null) {
-                days = rules.getBoardingDays(appointment);
-            }
-            return days;
-        }
-
-        /**
-         * Returns the current appointment.
-         *
-         * @return the current appointment. May be {@code null}
-         */
-        private Act getAppointment() {
-            Act appointment = TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT) ? act : null;
-            if (appointment == null) {
-                ActBean bean = new ActBean(act); // its a task
-                appointment = (Act) bean.getNodeSourceObject("appointments");
-            }
-            if (appointment == null) {
-                appointment = rules.getActiveAppointment(patient);
-            }
-            return appointment;
         }
     }
 }

@@ -91,7 +91,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         FunctionLibrary library = new FunctionLibrary();
         library.addFunctions(create("date", new DateFunctions()));
         library.addFunctions(new ExpressionFunctions("expr"));
-        library.addFunctions(new HistoryFunctions(service));
+        library.addFunctions(create("history", new HistoryFunctions(service)));
         library.addFunctions(create("list", new ListFunctions(service, lookups)));
         library.addFunctions(create("lookup", LookupFunctions.class));
         library.addFunctions(create("math", new MathFunctions()));

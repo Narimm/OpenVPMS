@@ -16,7 +16,6 @@
 
 package org.openvpms.report;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -91,7 +90,7 @@ public class ReportFactory {
     public Report createReport(Document template) {
         String name = template.getName();
         Report report;
-        if (DocFormats.hasExtension(template, DocFormats.JRXML_EXT)) {
+        if (name.endsWith(DocFormats.JRXML_EXT)) {
             IArchetypeService serviceProxy = proxy(service);
             Functions functions = factory.create(serviceProxy);
             report = new TemplatedJasperIMObjectReport(template, serviceProxy, lookups, handlers, functions);
@@ -99,16 +98,6 @@ public class ReportFactory {
             throw new ReportException(UnsupportedTemplate, name);
         }
         return report;
-    }
-
-    /**
-     * Determines if a template can be used to create a report via {@link #createIMObjectReport(Document)}.
-     *
-     * @param template the template
-     * @return {@code true} if the template can be used to create a report
-     */
-    public boolean isIMObjectReport(Document template) {
-        return DocFormats.hasExtension(template, DocFormats.JRXML_EXT, DocFormats.ODT_EXT, DocFormats.DOC_EXT);
     }
 
     /**
@@ -120,23 +109,18 @@ public class ReportFactory {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMReport<IMObject> createIMObjectReport(Document template) {
+        String name = template.getName();
         IMReport<IMObject> report;
         IArchetypeService serviceProxy = proxy(service);
         Functions functions = factory.create(serviceProxy);
-
-        String ext = FilenameUtils.getExtension(template.getName());
-        if (ext != null) {
-            if (isJRXML(ext)) {
-                report = new TemplatedJasperIMObjectReport(template, serviceProxy, lookups, handlers, functions);
-            } else if (isODT(ext)) {
-                report = new OpenOfficeIMReport<>(template, serviceProxy, lookups, handlers, functions);
-            } else if (isDOC(ext)) {
-                report = new MsWordIMReport<>(template, serviceProxy, lookups, handlers, functions);
-            } else {
-                throw new ReportException(UnsupportedTemplate, template.getName());
-            }
+        if (name.endsWith(DocFormats.JRXML_EXT)) {
+            report = new TemplatedJasperIMObjectReport(template, serviceProxy, lookups, handlers, functions);
+        } else if (name.endsWith(DocFormats.ODT_EXT)) {
+            report = new OpenOfficeIMReport<IMObject>(template, serviceProxy, lookups, handlers, functions);
+        } else if (name.endsWith(DocFormats.DOC_EXT)) {
+            report = new MsWordIMReport<IMObject>(template, serviceProxy, lookups, handlers, functions);
         } else {
-            throw new ReportException(UnsupportedTemplate, template.getName());
+            throw new ReportException(UnsupportedTemplate, name);
         }
         return report;
     }
@@ -160,24 +144,6 @@ public class ReportFactory {
     }
 
     /**
-     * Determines if a template can be used to create a report via {@link #createObjectSetReport(Document)}.
-     *
-     * @param template    the template
-     * @param cardinality the no. of objects being reported on. OpenOffice/Word templates only support a single object
-     * @return {@code true} if the template can be used to create a report
-     */
-    public boolean isObjectSetReport(Document template, int cardinality) {
-        boolean result = false;
-        String ext = FilenameUtils.getExtension(template.getName());
-        if (ext != null) {
-            if (isJRXML(ext) || (cardinality == 1 && (isODT(ext) || isDOC(ext)))) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    /**
      * Creates a new report for a collection of {@link ObjectSet}s.
      *
      * @param template the document template
@@ -186,20 +152,16 @@ public class ReportFactory {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMReport<ObjectSet> createObjectSetReport(Document template) {
+        String name = template.getName();
         IMReport<ObjectSet> report;
-        String ext = FilenameUtils.getExtension(template.getName());
-        if (ext != null) {
-            IArchetypeService serviceProxy = proxy(service);
-            Functions functions = factory.create(serviceProxy);
-            if (isJRXML(ext)) {
-                report = new TemplatedJasperObjectSetReport(template, serviceProxy, lookups, handlers, functions);
-            } else if (isODT(ext)) {
-                report = new OpenOfficeIMReport<>(template, serviceProxy, lookups, handlers, functions);
-            } else {
-                throw new ReportException(UnsupportedTemplate, template.getName());
-            }
+        IArchetypeService serviceProxy = proxy(service);
+        Functions functions = factory.create(serviceProxy);
+        if (name.endsWith(DocFormats.JRXML_EXT)) {
+            report = new TemplatedJasperObjectSetReport(template, serviceProxy, lookups, handlers, functions);
+        } else if (name.endsWith(DocFormats.ODT_EXT)) {
+            report = new OpenOfficeIMReport<ObjectSet>(template, serviceProxy, lookups, handlers, functions);
         } else {
-            throw new ReportException(UnsupportedTemplate, template.getName());
+            throw new ReportException(UnsupportedTemplate, name);
         }
         return report;
     }
@@ -212,36 +174,6 @@ public class ReportFactory {
      */
     protected IArchetypeService proxy(IArchetypeService service) {
         return service;
-    }
-
-    /**
-     * Determines if an extension is a JasperReports .jrxml.
-     *
-     * @param ext the extension
-     * @return {@code true} if the extension is a .jrxml
-     */
-    private boolean isJRXML(String ext) {
-        return ext.equalsIgnoreCase(DocFormats.JRXML_EXT);
-    }
-
-    /**
-     * Determines if an extension is an OpenOffice .odt.
-     *
-     * @param ext the extension
-     * @return {@code true} if the extension is a .odt
-     */
-    private boolean isODT(String ext) {
-        return ext.equalsIgnoreCase(DocFormats.ODT_EXT);
-    }
-
-    /**
-     * Determines if an extension is a Microsoft Word .doc.
-     *
-     * @param ext the extension
-     * @return {@code true} if the extension is a .jrxml
-     */
-    private boolean isDOC(String ext) {
-        return ext.equalsIgnoreCase(DocFormats.DOC_EXT);
     }
 
 }

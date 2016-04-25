@@ -25,7 +25,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
@@ -142,9 +141,8 @@ public class OrderItemCollectionEditor extends ActRelationshipCollectionEditor {
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
         IMTableModel<IMObject> model;
         if (stockLocation != null) {
-            context = new DefaultLayoutContext(context);
-            context.setComponentFactory(new TableComponentFactory(context));
             model = new OrderItemTableModel(stockLocation, editContext.getStock(), context);
+            context.setComponentFactory(new TableComponentFactory(context));
         } else {
             // can't display stock
             model = super.createTableModel(context);

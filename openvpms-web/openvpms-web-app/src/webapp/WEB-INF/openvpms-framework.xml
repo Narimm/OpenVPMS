@@ -35,7 +35,6 @@
             <list>
                 <value>classpath:default-openvpms.properties</value>
                 <value>classpath:hibernate.properties</value>
-                <value>classpath:smartflow.properties</value>
             </list>
         </property>
     </bean>
