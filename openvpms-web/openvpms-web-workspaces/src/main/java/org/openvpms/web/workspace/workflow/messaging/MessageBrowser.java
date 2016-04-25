@@ -1,20 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.workflow.messaging;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Table;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -22,6 +25,10 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 
 
 /**
@@ -53,6 +60,31 @@ public class MessageBrowser extends IMObjectTableBrowser<Act> {
     protected void notifySelected(Act selected) {
         markRead(selected);
         super.notifySelected(selected);
+    }
+
+    /**
+     * Creates a new paged table.
+     *
+     * @param model the table model
+     * @return a new paged table
+     */
+    @Override
+    protected PagedIMTable<Act> createTable(final IMTableModel<Act> model) {
+        PagedIMTable<Act> table = super.createTable(model);
+        // register a renderer to make labels bold, if the act status is PENDING
+        table.getTable().setDefaultRenderer(Object.class, new EvenOddTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
+                Component result = super.getTableCellRendererComponent(table, value, column, row);
+                if (MessageStatus.PENDING.equals(model.getObjects().get(row).getStatus())) {
+                    if (result instanceof Label) {
+                        result.setStyleName(Styles.BOLD);
+                    }
+                }
+                return result;
+            }
+        });
+        return table;
     }
 
     /**
