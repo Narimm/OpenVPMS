@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.tools.security.loader;
@@ -126,7 +126,7 @@ public class SecurityLoader {
                 auth.setDescription(authData.getDescription());
                 auth.setServiceName(authData.getService());
                 auth.setMethod(authData.getMethod());
-                auth.setArchetypeShortName(authData.getArchShortName());
+                auth.setShortName(authData.getArchShortName());
                 secRole.addAuthority(auth);
             }
             session.saveOrUpdate(secRole);

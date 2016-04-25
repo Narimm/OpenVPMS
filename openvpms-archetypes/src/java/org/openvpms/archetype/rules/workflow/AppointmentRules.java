@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -302,6 +302,16 @@ public class AppointmentRules {
     }
 
     /**
+     * Returns the number of days to charge boarding for an appointment.
+     *
+     * @param appointment the appointment
+     * @return the number of days
+     */
+    public int getBoardingDays(Act appointment) {
+        return getBoardingDays(appointment.getActivityStartTime(), appointment.getActivityEndTime());
+    }
+
+    /**
      * Returns the number of days to charge boarding for.
      *
      * @param startTime the boarding start time
@@ -330,6 +340,7 @@ public class AppointmentRules {
         ActBean bean = new ActBean(appointment, service);
         return (Act) bean.getNodeTargetObject("event");
     }
+
     /**
      * Returns the appointment reminder job configuration, if one is present.
      *

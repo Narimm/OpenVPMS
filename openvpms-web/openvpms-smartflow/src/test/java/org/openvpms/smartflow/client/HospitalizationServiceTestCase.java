@@ -29,9 +29,11 @@ import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.patient.PatientContext;
@@ -121,7 +123,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                                                   getArchetypeService(), getLookupService());
         context = factory.createContext(patient, customer, visit, location, clinician);
         context.getWeight();
-
+        Lookup checkup = TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, "CHECKUP");
+        context.getVisit().setReason(checkup.getCode());
         // now override the ids, to support result comparison.
         location.setId(1);
         clinician.setId(10);
@@ -143,15 +146,15 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests serialisation of {@link Hospitalization} instances via {@link HospitalizationService#add(PatientContext)}.
+     * Tests serialisation of {@link Hospitalization} instances via {@link HospitalizationService#add}.
      */
     @Test
     public void testAdd() {
         String expected = "{\"objectType\":\"hospitalization\",\"hospitalizationId\":\"40\",\"departmentId\":0,"
                           + "\"hospitalizationGuid\":null,\"dateCreated\":\"2015-08-25T12:51:01.000+10:00\","
                           + "\"treatmentTemplateName\":null,\"temperatureUnits\":null,\"weightUnits\":\"kg\","
-                          + "\"weight\":5.1,\"estimatedDaysOfStay\":0,\"fileNumber\":null,\"caution\":false,"
-                          + "\"dnr\":false,\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":null,"
+                          + "\"weight\":5.1,\"estimatedDaysOfStay\":2,\"fileNumber\":\"30\",\"caution\":false,"
+                          + "\"dnr\":false,\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":[\"Checkup\"],"
                           + "\"cageNumber\":null,\"color\":null,\"reportPath\":null,\"status\":null,"
                           + "\"patient\":{\"objectType\":\"patient\",\"patientId\":\"30\",\"name\":\"Fido\","
                           + "\"birthday\":\"2014-06-21T10:00:00.000+10:00\",\"sex\":\"M\",\"species\":\"Canine\","
@@ -166,7 +169,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                             .withBody(expected)));
 
         HospitalizationService client = createService();
-        client.add(context);
+        client.add(context, 2, null);
 
         List<LoggedRequest> requests = WireMock.findAll(postRequestedFor(urlEqualTo("/hospitalization")));
         assertEquals(1, requests.size());
@@ -190,7 +193,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
 
         HospitalizationService client = createService();
         try {
-            client.add(context);
+            client.add(context, 2, null);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
             assertEquals("SFS-0101: Failed to create Flow Sheet for Fido", exception.getMessage());
@@ -213,7 +216,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                             .withBody(body)));
         HospitalizationService client = createService();
         try {
-            client.add(context);
+            client.add(context, 2, null);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
             assertEquals("SFS-0103: Failed to connect to Smart Flow Sheet.\n\n"
@@ -223,7 +226,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
 
     /**
      * Tests the {@link HospitalizationService#getHospitalization(PatientContext)} method.
-     * <p>
+     * <p/>
      * Verifies that any unknown properties returned in a Hospitalization, Patient or Client don't cause
      * deserialization to fail.
      */
@@ -232,8 +235,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         String response = "{\"objectType\":\"hospitalization\",\"hospitalizationId\":\"40\",\"departmentId\":0,"
                           + "\"hospitalizationGuid\":null,\"dateCreated\":\"2015-08-25T12:51:01.000+10:00\","
                           + "\"treatmentTemplateName\":null,\"temperatureUnits\":null,\"weightUnits\":\"kg\","
-                          + "\"weight\":5.1,\"estimatedDaysOfStay\":2,\"fileNumber\":null,\"caution\":false,"
-                          + "\"dnr\":false,\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":null,"
+                          + "\"weight\":5.1,\"estimatedDaysOfStay\":2,\"fileNumber\":\"30\",\"caution\":false,"
+                          + "\"dnr\":false,\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":[\"CHECKUP\"],"
                           + "\"cageNumber\":null,\"color\":null,\"reportPath\":null,\"status\":null,"
                           + "\"newHospitalizationProperty\":\"foo\","
                           + "\"patient\":{\"objectType\":\"patient\",\"patientId\":\"30\",\"name\":\"Fido\","
@@ -262,12 +265,12 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         assertEquals(5.1, result.getWeight(), 0);
         assertEquals("kg", result.getWeightUnits());
         assertEquals(2, result.getEstimatedDaysOfStay());
-        assertNull(result.getFileNumber());
+        assertEquals("30", result.getFileNumber());
         assertFalse(result.getCaution());
         assertFalse(result.getDnr());
         assertEquals("Dr Seuss", result.getDoctorName());
         assertNull(result.getMedicId());
-        assertNull(result.getDiseases());
+        assertEquals(new String[]{"CHECKUP"}[0], result.getDiseases()[0]);
         assertNull(result.getCageNumber());
         assertNull(result.getColor());
         assertNull(result.getReportPath());

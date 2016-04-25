@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.list;
@@ -32,7 +32,6 @@ import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -63,7 +62,7 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#names(Collection)} and {@link ListFunctions#names(Collection, String)} methods.
+     * Tests the {@link ListFunctions#names(Iterable)} and {@link ListFunctions#names(Iterable, String)} methods.
      */
     @Test
     public void testNames() {
@@ -90,7 +89,7 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#sortNames(Collection)} and {@link ListFunctions#sortNames(Collection, String)}
+     * Tests the {@link ListFunctions#sortNames(Iterable)} and {@link ListFunctions#sortNames(Iterable, String)}
      * methods.
      */
     @Test
@@ -100,8 +99,8 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#join(Collection, String)} and
-     * {@link ListFunctions#join(Collection, String, String)} methods.
+     * Tests the {@link ListFunctions#join(Iterable, String)} and
+     * {@link ListFunctions#join(Iterable, String, String)} methods.
      */
     @Test
     public void testJoin() {

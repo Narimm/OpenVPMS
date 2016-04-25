@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -379,6 +379,9 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                 receiver.stop();
             }
         }
+        messageContext.getExecutorService();
+        // force creation of an ExecutorService if one doesn't exist, to avoid NPE by close() below
+        messageContext.close();
     }
 
     /**

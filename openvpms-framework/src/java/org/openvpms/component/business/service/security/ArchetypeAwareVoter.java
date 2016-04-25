@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -177,7 +177,7 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter<MethodInvocation
         // second token is the method name
         String method = tokens.nextToken();
         String authMethod = authority.getMethod();
-        String authShortName = authority.getArchetypeShortName();
+        String authShortName = authority.getShortName();
         return (!StringUtils.isEmpty(authMethod)) &&
                (!StringUtils.isEmpty(authShortName)) &&
                (StringUtilities.matches(method, authMethod)) &&

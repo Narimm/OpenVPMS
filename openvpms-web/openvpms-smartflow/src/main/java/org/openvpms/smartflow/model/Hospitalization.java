@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.smartflow.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -149,7 +165,7 @@ public class Hospitalization {
 
     /**
      * Returns the EMR internal ID of the hospitalization.
-     * <p>
+     * <p/>
      * This corresponds to the <em>act.patientClinicialEvent</em> identifier.
      *
      * @return the EMR internal ID of the hospitalization
@@ -207,7 +223,7 @@ public class Hospitalization {
 
     /**
      * Returns the date and time of the patient arrival in the hospital.
-     * <p>
+     * <p/>
      * In OpenVPMS this corresponds to the visit start time.
      *
      * @return the arrival date/time
@@ -318,7 +334,7 @@ public class Hospitalization {
      * Sets the estimated days of stay. This value will be used to create requested number of days of
      * hospitalization. If this value is not specified then by default 2 days will be created.
      *
-     * @return the estimated days of stay
+     * @param estimatedDaysOfStay the estimated days of stay
      */
     public void setEstimatedDaysOfStay(int estimatedDaysOfStay) {
         this.estimatedDaysOfStay = estimatedDaysOfStay;
