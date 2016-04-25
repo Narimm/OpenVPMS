@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -300,7 +300,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
             result = act;
         } else {
             ActBean bean = new ActBean(act);
-            result = (Act) bean.getNodeTargetObject("appointments");
+            result = (Act) bean.getNodeSourceObject("appointments");
             if (result == null) {
                 result = ServiceHelper.getBean(AppointmentRules.class).getActiveAppointment(patient);
             }

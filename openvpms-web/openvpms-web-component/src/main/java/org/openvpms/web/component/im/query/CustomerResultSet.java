@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -26,6 +26,12 @@ import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+
+import java.util.Date;
+
+import static org.openvpms.component.system.common.query.Constraints.gt;
+import static org.openvpms.component.system.common.query.Constraints.isNull;
+import static org.openvpms.component.system.common.query.Constraints.lte;
 
 
 /**
@@ -116,14 +122,19 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
         if (isSearchingOnPatient()) {
             query.add(Constraints.shortName("patient", "party.patientpet"));
             JoinConstraint join = Constraints.join("patients");
+            if (getArchetypes().isActiveOnly()) {
+                Date now = new Date();
+                join.add(lte("activeStartTime", now));
+                join.add(Constraints.or(gt("activeEndTime", now), isNull("activeEndTime")));
+            }
             join.add(new IdConstraint("source", "customer"));
             join.add(new IdConstraint("target", "patient"));
             query.add(join);
-            Long id = getId(patient);
+            Long id = getId(this.patient);
             if (id != null) {
                 query.add(Constraints.eq("patient.id", id));
             } else {
-                query.add(Constraints.eq("patient.name", patient));
+                query.add(Constraints.eq("patient.name", this.patient));
             }
             query.add(new ObjectSelectConstraint("patient"));
         }

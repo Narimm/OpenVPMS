@@ -26,7 +26,8 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
 
-import java.util.Arrays;
+import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -76,9 +77,8 @@ public abstract class Reporter<T> {
      *
      * @param object the object
      */
-    @SuppressWarnings("unchecked")
     public Reporter(T object) {
-        objects = Arrays.asList(object);
+        objects = Collections.singletonList(object);
         this.object = object;
     }
 
@@ -137,7 +137,7 @@ public abstract class Reporter<T> {
         if (type == null) {
             type = report.getDefaultMimeType();
         }
-        Map<String, Object> map = new HashMap<String, Object>(getParameters(email));
+        Map<String, Object> map = new HashMap<>(getParameters(email));
         Document document = report.generate(getObjects(), map, fields, type);
         setName(document);
         return document;
@@ -146,11 +146,29 @@ public abstract class Reporter<T> {
     /**
      * Prints the report.
      *
-     * @param objects    the objects to print
      * @param properties the print properties
      */
-    public void print(Iterable<T> objects, PrintProperties properties) {
-        getReport().print(objects, getParameters(false), fields, properties);
+    public void print(PrintProperties properties) {
+        getReport().print(getObjects(), getParameters(false), fields, properties);
+    }
+
+    /**
+     * Generates a report for a collection of objects to the specified stream.
+     *
+     * @param type  the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email if {@code true} indicates that the document will be emailed. Documents generated from templates
+     *              can perform custom formatting
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public void generate(String type, boolean email, OutputStream stream) {
+        IMReport<T> report = getReport();
+        if (type == null) {
+            type = report.getDefaultMimeType();
+        }
+        Map<String, Object> map = new HashMap<>(getParameters(email));
+        report.generate(getObjects(), map, fields, type, stream);
     }
 
     /**
@@ -229,7 +247,7 @@ public abstract class Reporter<T> {
     protected Map<String, Object> getParameters(boolean email) {
         Map<String, Object> result;
         if (getReport().hasParameter(IS_EMAIL)) {
-            result = new HashMap<String, Object>();
+            result = new HashMap<>();
             if (parameters != null) {
                 result.putAll(parameters);
             }

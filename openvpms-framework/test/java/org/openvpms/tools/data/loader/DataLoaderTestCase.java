@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.tools.data.loader;
@@ -168,7 +168,7 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
         assertEquals("Authority to Save All Archetypes",
                      auth1.getDescription());
         assertEquals("save", auth1.getMethod());
-        assertEquals("*", auth1.getArchetypeShortName());
+        assertEquals("*", auth1.getShortName());
 
         ArchetypeAwareGrantedAuthority auth2 = (ArchetypeAwareGrantedAuthority)
                 checkReference(cache, "AUTH2", "security.archetypeAuthority");
@@ -177,7 +177,7 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
         assertEquals("Authority to Remove All Archetypes",
                      auth2.getDescription());
         assertEquals("remove", auth2.getMethod());
-        assertEquals("*", auth2.getArchetypeShortName());
+        assertEquals("*", auth2.getShortName());
 
         assertEquals(2, role.getAuthorities().size());
         assertTrue(role.getAuthorities().contains(auth1));
