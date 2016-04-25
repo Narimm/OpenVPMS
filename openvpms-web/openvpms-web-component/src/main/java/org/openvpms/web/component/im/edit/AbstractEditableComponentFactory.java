@@ -239,7 +239,7 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
         Editor editor;
         LayoutContext context = getLayoutContext();
         if (TypeHelper.matches(range, "document.*")) {
-            editor = new DocumentEditor(property, context.getContext(), context.getHelpContext());
+            editor = new DocumentEditor(property, context);
         } else {
             editor = IMObjectReferenceEditorFactory.create(property, object, context);
         }

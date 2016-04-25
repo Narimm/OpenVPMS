@@ -982,3 +982,27 @@ WHERE a.arch_short_name = 'act.patientInvestigation'
       AND a.status = 'FINAL'
       AND a.status2 IS NULL
       AND d.printed = FALSE;
+
+#
+# OVPMS-1720 Smart Flow Sheet Improvement Stage 1
+#
+
+# Migrate createFlowSheet
+UPDATE entity_details d
+  JOIN entities e
+    ON d.entity_id = e.entity_id
+       AND d.name = 'createFlowSheet'
+       AND d.type = 'boolean'
+       AND d.value = 'true'
+       AND e.arch_short_name = 'party.organisationWorkList'
+SET d.type = 'string',
+  d.value  = 'DEFAULT';
+
+DELETE d
+FROM entity_details d
+  JOIN entities e
+    ON d.entity_id = e.entity_id
+       AND d.name = 'createFlowSheet'
+       AND d.type = 'boolean'
+       AND d.value = 'false'
+       AND e.arch_short_name = 'party.organisationWorkList';

@@ -108,6 +108,6 @@ public class AddFlowSheetTask extends Tasks {
      */
     private boolean createFlowSheet(Entity workList) {
         IMObjectBean bean = new IMObjectBean(workList);
-        return bean.getBoolean("createFlowSheet");
+        return bean.getString("createFlowSheet") != null;
     }
 }

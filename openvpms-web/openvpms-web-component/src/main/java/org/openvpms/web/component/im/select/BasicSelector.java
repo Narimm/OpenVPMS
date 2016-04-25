@@ -22,32 +22,41 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 /**
  * Component that provides a 'select' button and non-editable object summary.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BasicSelector<T extends IMObject> extends Selector<T> {
 
     /**
-     * Constructs a <tt>BasicSelector</tt>.
+     * Constructs a {@link BasicSelector}.
      */
     public BasicSelector() {
-        this("button.select");
+        this(BUTTON_ID);
     }
 
     /**
-     * Construct a <tt>BasicSelector</tt>.
+     * Construct a {@link BasicSelector}.
      *
      * @param buttonId the button identifier
      */
     public BasicSelector(String buttonId) {
-        super(buttonId);
+        this(buttonId, true);
+    }
+
+    /**
+     * Construct a {@link BasicSelector}.
+     *
+     * @param buttonId        the button identifier
+     * @param enableShortcuts if {@code true}, include button shortcuts
+     */
+    public BasicSelector(String buttonId, boolean enableShortcuts) {
+        super(buttonId, ButtonStyle.LEFT, false, enableShortcuts);
     }
 
     /**
      * Sets the current object details.
      *
-     * @param name        the object name. May be <tt>null</tt>
-     * @param description the object description. May be <tt>null</tt>
+     * @param name        the object name. May be {@code null}
+     * @param description the object description. May be {@code null}
      * @param active      determines if the object is active
      */
     @Override

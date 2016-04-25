@@ -86,7 +86,7 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * @param dueUnits    the due interval units
      * @return the reminders for the customer's patients
      */
-    public List<Act> getReminders(Act act, int dueInterval, String dueUnits) {
+    public Iterable<Act> getReminders(Act act, int dueInterval, String dueUnits) {
         return getReminders(act, dueInterval, dueUnits, false);
     }
 
@@ -99,8 +99,8 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * @param includeOverdue if {@code true}, include reminders that are overdue
      * @return the reminders for the customer's patients
      */
-    public List<Act> getReminders(Act act, int dueInterval, String dueUnits, boolean includeOverdue) {
-        List<Act> result;
+    public Iterable<Act> getReminders(Act act, int dueInterval, String dueUnits, boolean includeOverdue) {
+        Iterable<Act> result;
         ActBean bean = new ActBean(act, service);
         Party customer = (Party) bean.getParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION);
         if (customer != null) {
@@ -119,7 +119,7 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * @param dueUnits    the due interval units
      * @return the reminders for the customer's patients
      */
-    public List<Act> getReminders(Party customer, int dueInterval, String dueUnits) {
+    public Iterable<Act> getReminders(Party customer, int dueInterval, String dueUnits) {
         return getReminders(customer, dueInterval, dueUnits, false);
     }
 
@@ -132,7 +132,7 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * @param includeOverdue if {@code true}, include reminders that are overdue
      * @return the reminders for the customer's patients
      */
-    public List<Act> getReminders(Party customer, int dueInterval, String dueUnits, boolean includeOverdue) {
+    public Iterable<Act> getReminders(Party customer, int dueInterval, String dueUnits, boolean includeOverdue) {
         if (customer != null) {
             DateUnits units = DateUnits.valueOf(dueUnits);
             return customerRules.getReminders(customer, dueInterval, units, includeOverdue);
@@ -157,7 +157,7 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * @param date    the date
      * @return all reminders for the patient starting on the specified date
      */
-    public List<Act> getPatientReminders(Party patient, Date date) {
+    public Iterable<Act> getPatientReminders(Party patient, Date date) {
         if (patient != null && date != null) {
             Date from = DateRules.getDate(date);
             Date to = DateRules.getDate(from, 1, DateUnits.DAYS);
@@ -174,7 +174,7 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * @param to      the end of the date range, exclusive
      * @return all reminders for the patient in the date range
      */
-    public List<Act> getPatientReminders(Party patient, Date from, Date to) {
+    public Iterable<Act> getPatientReminders(Party patient, Date from, Date to) {
         if (patient != null && from != null && to != null) {
             return rules.getReminders(patient, from, to);
         }
@@ -185,15 +185,15 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * Returns all reminders for a patient and product type starting on the specified date.
      *
      * @param patient     the patient
-     * @param date        the date
      * @param productType the product type. May contain wildcards.
+     * @param date        the date
      * @return all reminders for the patient starting on the specified date
      */
-    public List<Act> getRemindersByProductType(Party patient, Date date, String productType) {
+    public Iterable<Act> getRemindersByProductType(Party patient, String productType, Date date) {
         if (patient != null && date != null && productType != null) {
             Date from = DateRules.getDate(date);
             Date to = DateRules.getDate(from, 1, DateUnits.DAYS);
-            return getRemindersByProductType(patient, from, to, productType);
+            return getRemindersByProductType(patient, productType, from, to);
         }
         return Collections.emptyList();
     }
@@ -202,14 +202,14 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * Returns all reminders for a patient starting in the specified date range.
      *
      * @param patient     the patient
+     * @param productType the product type. May contain wildcards.
      * @param from        the start of the date range, inclusive
      * @param to          the end of the date range, exclusive
-     * @param productType the product type. May contain wildcards.
      * @return all reminders for the patient in the date range
      */
-    public List<Act> getRemindersByProductType(Party patient, Date from, Date to, String productType) {
+    public Iterable<Act> getRemindersByProductType(Party patient, String productType, Date from, Date to) {
         if (patient != null && from != null && to != null && productType != null) {
-            return rules.getReminders(patient, from, to, productType);
+            return rules.getReminders(patient, productType, from, to);
         }
         return Collections.emptyList();
     }
@@ -231,8 +231,7 @@ public class ReminderFunctions extends AbstractObjectFunctions {
     @Override
     public Function getFunction(String namespace, String name, Object[] parameters) {
         if ("getReminders".equals(name) && hasPatient(parameters)) {
-            if ((parameters.length == 3 || parameters.length == 4)
-                && parameters[parameters.length - 1] instanceof String) {
+            if ((parameters.length == 3 || parameters.length == 4) && parameters[1] instanceof String) {
                 name = "getRemindersByProductType";
             } else {
                 name = "getPatientReminders";

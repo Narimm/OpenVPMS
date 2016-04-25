@@ -83,8 +83,8 @@ public class DocumentActEditor extends AbstractActEditor {
         super(act, parent, context);
         Property document = getProperty(DOCUMENT);
         if (document != null) {
-            docEditor = new VersioningDocumentEditor(document, context.getContext(),
-                                                     context.getHelpContext().topic("document"));
+            HelpContext help = context.getHelpContext().topic("document");
+            docEditor = new VersioningDocumentEditor(document, new DefaultLayoutContext(context, help));
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onDocumentUpdate();
@@ -276,7 +276,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the document template updates.
-     * <p>
+     * <p/>
      * If the template is different to the prior instance, and there is a document node, the template will be used
      * to generate a new document.
      */
@@ -293,7 +293,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Generates the document.
-     * <p>
+     * <p/>
      * If the act supports versioning, any existing saved document will be copied to new version act.
      */
     private void generateDoc() {
@@ -335,11 +335,10 @@ public class DocumentActEditor extends AbstractActEditor {
          * Constructs a {@code VersioningDocumentEditor}.
          *
          * @param property the property being edited
-         * @param context  the context
-         * @param help     the help
+         * @param context  the layout context
          */
-        public VersioningDocumentEditor(Property property, Context context, HelpContext help) {
-            super(property, context, help);
+        public VersioningDocumentEditor(Property property, LayoutContext context) {
+            super(property, context);
         }
 
         /**

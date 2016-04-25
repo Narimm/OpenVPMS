@@ -21,10 +21,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
 
     <bean class="org.openvpms.smartflow.client.FlowSheetServiceFactory">
-        <!--constructor-arg name="emrApiKey" value="873af17b2163255a3eb70a7d7413be152657bfab"/>
-        <constructor-arg name="url" value="https://sfs-public.azurewebsites.net/api/v3"/-->
-        <constructor-arg name="emrApiKey" value="534bf0dae63b8755b2206daf33955c79c1362ef2"/>
-        <constructor-arg name="url" value="https://www.smartflowsheet.com/api/v3"/>
+        <constructor-arg name="emrApiKey" value="${smartflow.emrApiKey}"/>
+        <constructor-arg name="url" value="${smartflow.url}"/>
         <constructor-arg name="service" ref="archetypeRuleService"/>
         <constructor-arg name="lookups" ref="lookupService"/>
         <constructor-arg name="handlers" ref="documentHandlers"/>

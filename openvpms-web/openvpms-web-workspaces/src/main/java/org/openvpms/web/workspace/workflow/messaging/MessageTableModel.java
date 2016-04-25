@@ -13,26 +13,33 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.messaging;
 
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -47,6 +54,11 @@ public class MessageTableModel extends AbstractActTableModel {
      */
     private static final String[] NODES = {"startTime", "description", "from", "reason", "status", "item"};
 
+    /**
+     * Cache of status names, keyed on code.
+     */
+    private final Map<String, String> statuses;
+
 
     /**
      * Constructs a {@code MessageTableModel}.
@@ -56,6 +68,7 @@ public class MessageTableModel extends AbstractActTableModel {
      */
     public MessageTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
+        statuses = LookupNameHelper.getLookupNames(MessageArchetypes.USER, "status");
     }
 
     /**
@@ -114,9 +127,14 @@ public class MessageTableModel extends AbstractActTableModel {
     @Override
     protected Object getValue(Act object, DescriptorTableColumn column, int row) {
         Object result;
-        if ("startTime".equals(column.getName())) {
+        String columnName = column.getName();
+        if ("startTime".equals(columnName)) {
             result = formatStartTime(object);
-        } else if ("item".equals(column.getName())) {
+        } else if ("from".equals(columnName)) {
+            result = getFrom(object);
+        } else if ("status".equalsIgnoreCase(columnName)) {
+            result = getStatus(object);
+        } else if ("item".equals(columnName)) {
             List<IMObject> values = column.getValues(object);
             if (values != null && !values.isEmpty()) {
                 result = values.get(0);
@@ -135,5 +153,30 @@ public class MessageTableModel extends AbstractActTableModel {
             result = super.getValue(object, column, row);
         }
         return result;
+    }
+
+    /**
+     * Returns the name of the user that the message is from.
+     *
+     * @param object the message
+     * @return the user name
+     */
+    private String getFrom(Act object) {
+        ActBean bean = new ActBean(object);
+        return IMObjectHelper.getName(bean.getNodeParticipantRef("from"));
+    }
+
+    /**
+     * Returns the message status. This treats {@link MessageStatus#READ} as the same as {@link MessageStatus#PENDING}.
+     *
+     * @param object the message
+     * @return the status
+     */
+    private String getStatus(Act object) {
+        String status = object.getStatus();
+        if (MessageStatus.READ.equals(status)) {
+            status = MessageStatus.PENDING;
+        }
+        return statuses.get(status);
     }
 }
