@@ -379,9 +379,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                 receiver.stop();
             }
         }
-        messageContext.getExecutorService();
-        // force creation of an ExecutorService if one doesn't exist, to avoid NPE by close() below
-        messageContext.close();
     }
 
     /**

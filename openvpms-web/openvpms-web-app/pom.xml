@@ -53,13 +53,6 @@
                 <filtering>true</filtering>
             </resource>
             <resource>
-                <directory>${basedir}/src/conf/smartflow</directory>
-                <includes>
-                    <include>smartflow.properties</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
                 <directory>${basedir}/src/conf/p6spy</directory>
                 <includes>
                     <include>**/*.properties</include>

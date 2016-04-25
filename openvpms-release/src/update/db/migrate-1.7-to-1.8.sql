@@ -3130,7 +3130,9 @@ INSERT INTO entity_link_details (id, name, type, value)
     JOIN entity_links l
       ON l.arch_short_name = "entityLink.productIncludes"
          AND l.source_id = r.source_id AND l.target_id = r.target_id
-         AND l.linkId = r.linkId
+         AND
+         (l.active_start_time = r.active_start_time OR (l.active_start_time IS null AND l.active_start_time IS null))
+         AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS null AND l.active_end_time IS null))
   WHERE r.arch_short_name = "entityRelationship.productIncludes"
         AND NOT exists(
       SELECT

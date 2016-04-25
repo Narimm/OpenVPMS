@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.mail.MailDialog;
-import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -137,17 +136,12 @@ public class InteractiveIMPrinter<T> extends InteractivePrinter implements IMPri
     @Override
     protected void show(MailDialog dialog) {
         super.show(dialog);
-        MailEditor editor = dialog.getMailEditor();
         Reporter<T> reporter = getReporter();
-
-        //  make the object available to the editor for subsequent template expansion
-        editor.setObject(reporter.getObject());
-
         DocumentTemplate template = reporter.getTemplate();
         if (template != null) {
             Entity emailTemplate = template.getEmailTemplate();
             if (emailTemplate != null) {
-                editor.setContent(emailTemplate);
+                dialog.getMailEditor().setContent(emailTemplate, reporter.getObject());
             }
         }
     }

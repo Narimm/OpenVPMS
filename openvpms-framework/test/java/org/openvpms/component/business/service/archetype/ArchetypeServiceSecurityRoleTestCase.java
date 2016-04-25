@@ -186,7 +186,7 @@ public class ArchetypeServiceSecurityRoleTestCase extends AbstractArchetypeServi
         result.setName("XAuthority" + System.currentTimeMillis());
         result.setServiceName("foo");
         result.setMethod("bar");
-        result.setShortName("*");
+        result.setArchetypeShortName("*");
         return result;
     }
 }

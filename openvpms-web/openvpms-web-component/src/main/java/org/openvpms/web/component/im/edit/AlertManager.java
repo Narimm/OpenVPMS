@@ -107,7 +107,7 @@ public class AlertManager {
      * Clear any alerts.
      */
     public void clear() {
-        for (WindowPane alert : alerts.toArray(new WindowPane[alerts.size()])) {
+        for (WindowPane alert : alerts) {
             alert.userClose();
         }
     }

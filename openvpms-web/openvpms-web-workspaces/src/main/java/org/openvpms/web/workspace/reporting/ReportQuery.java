@@ -13,18 +13,18 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-
 package org.openvpms.web.workspace.reporting;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
@@ -36,7 +36,6 @@ import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.focus.FocusHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,18 +44,19 @@ import java.util.List;
 /**
  * Report query.
  *
- * @author Tony De Keizer
- * @author Tim Anderson
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReportQuery extends AbstractIMObjectQuery<Entity> {
 
     /**
-     * The user to use to limit access to reports.
+     * The user to use to limit acces to reports.
      */
     private final Entity user;
 
     /**
-     * The selected report type. If {@code null} indicates to query using all matching types.
+     * The selected report type. If <code>null</code> indicates to
+     * query using all matching types.
      */
     private String reportType;
 
@@ -78,9 +78,10 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
 
 
     /**
-     * Constructs a {@link ReportQuery} that queries IMObjects with the specified criteria.
+     * Constructs a new <tt>ReportQuery</tt> that queries IMObjects
+     * with the specified criteria.
      *
-     * @param user the user. May be {@code null}
+     * @param user the user. May be <tt>null</tt>
      */
     public ReportQuery(Entity user) {
         super(new String[]{"entity.documentTemplate"}, Entity.class);
@@ -89,19 +90,66 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
     }
 
     /**
+     * Lays out the component in a container.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void doLayout(Component container) {
+        addReportTypeSelector(container);
+    }
+
+    /**
+     * Adds the report Type selector to a container
+     *
+     * @param container the container
+     */
+    protected void addReportTypeSelector(Component container) {
+        LookupQuery source
+                = new NodeLookupQuery("entity.documentTemplate", "reportType");
+        typeSelector = LookupFieldFactory.create(source, true);
+        typeSelector.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onTypeChanged();
+            }
+        });
+        typeSelector.setSelected((Lookup) null);
+
+        Label typeLabel = LabelFactory.create(TYPE_ID);
+        container.add(typeLabel);
+        container.add(typeSelector);
+        getFocusGroup().add(typeSelector);
+    }
+
+    /**
+     * Invoked when a status is selected.
+     */
+    private void onTypeChanged() {
+        setReportType(typeSelector.getSelectedCode());
+    }
+
+
+    /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be {@code null}
+     * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<Entity> query(SortConstraint[] sort) {
         ResultSet<Entity> templates;
-        List<Entity> result = new ArrayList<>();
+        List<Entity> result = new ArrayList<Entity>();
         int userReportLevel;
         int templateUserLevel;
+        String type = getShortName();
+        String name = null;
+        boolean activeOnly = true;
 
-        // Get the current user's level
+
+        getComponent();  // ensure the component is rendered
+
+        // Get the current users reportlevel
         if (user == null) {
             userReportLevel = 0;
         } else {
@@ -109,8 +157,16 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
             userReportLevel = userBean.getInt("userLevel", 0);
         }
         // Do the initial archetype query
-        templates = new EntityResultSet<>(getArchetypes(), getValue(), false, getConstraints(), null, getMaxResults(),
-                                          isDistinct());
+        ShortNameConstraint archetypes;
+        if (type == null) {
+            archetypes = getArchetypes();
+            archetypes.setActiveOnly(activeOnly);
+        } else {
+            archetypes = new ShortNameConstraint(type, true, activeOnly);
+        }
+        templates = new EntityResultSet<Entity>(archetypes, name, false,
+                                                getConstraints(), null,
+                                                getMaxResults(), isDistinct());
 
         // Now filter for Reports, user Level and selected type
         while (templates.hasNext()) {
@@ -120,7 +176,8 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
                 String templateArchetype = template.getString("archetype", "");
                 templateUserLevel = template.getInt("userLevel", 9);
                 String reportType = template.getString("reportType", "");
-                if (templateArchetype.equalsIgnoreCase("REPORT") && (templateUserLevel <= userReportLevel)) {
+                if (templateArchetype.equalsIgnoreCase(
+                        "REPORT") && (templateUserLevel <= userReportLevel)) {
                     if (getReportType() == null || getReportType().equals("") ||
                         (reportType.equalsIgnoreCase(getReportType()))) {
                         result.add(object);
@@ -129,7 +186,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
             }
         }
 
-        IMObjectListResultSet<Entity> set = new IMObjectListResultSet<>(result, getMaxResults());
+        IMObjectListResultSet<Entity> set = new IMObjectListResultSet<Entity>(result, getMaxResults());
         set.sort(sort);
         return set;
     }
@@ -137,7 +194,8 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return {@code true} if the query should be run automaticaly; otherwie {@code false}
+     * @return <code>true</code> if the query should be run automaticaly;
+     *         otherwie <code>false</code>
      */
     @Override
     public boolean isAuto() {
@@ -160,46 +218,6 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      */
     public void setReportType(String type) {
         reportType = type;
-    }
-
-    /**
-     * Lays out the component in a container.
-     *
-     * @param container the container
-     */
-    @Override
-    protected void doLayout(Component container) {
-        addSearchField(container);
-        FocusHelper.setFocus(getSearchField());
-        addReportTypeSelector(container);
-    }
-
-    /**
-     * Adds the report Type selector to a container
-     *
-     * @param container the container
-     */
-    protected void addReportTypeSelector(Component container) {
-        LookupQuery source = new NodeLookupQuery(DocumentArchetypes.DOCUMENT_TEMPLATE, "reportType");
-        typeSelector = LookupFieldFactory.create(source, true);
-        typeSelector.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onTypeChanged();
-            }
-        });
-        typeSelector.setSelected((Lookup) null);
-
-        Label typeLabel = LabelFactory.create(TYPE_ID);
-        container.add(typeLabel);
-        container.add(typeSelector);
-        getFocusGroup().add(typeSelector);
-    }
-
-    /**
-     * Invoked when a status is selected.
-     */
-    private void onTypeChanged() {
-        setReportType(typeSelector.getSelectedCode());
     }
 
 }

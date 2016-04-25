@@ -53,7 +53,7 @@
 EPSP = function (rta, elementId, spellings) {
     this.elementId = elementId;
     this.spellings = spellings ? spellings : "";
-
+    ;
     this.rta = rta;
     EP.ObjectMap.put(elementId, this);
 };
@@ -123,10 +123,10 @@ EPSP.prototype.spellSpanClick = function (echoEvent) {
             spellingBoxE.contentEditable = false;
         }
 
-        for (var i = 0; i < alts.length; ++i) {
-            var altText = alts[i];
+        for (x in alts) {
+            var altText = alts[x];
             var optionE = doc.createElement('div');
-            optionE.id = this.elementId + '[' + i;
+            optionE.id = this.elementId + '[' + x;
             optionE.className = 'epspelloption';
 
             optionE.appendChild(doc.createTextNode(altText));
@@ -159,7 +159,7 @@ EPSP.prototype.optionSelect = function (echoEvent) {
     var idArray = optionE.id.split('[');
     var alternativeText = alts[idArray[1]];
     var spanE = doc.getElementById(this.elementId);
-    var spellingBoxE = doc.getElementById(this.elementId + '|Box');
+    var spellingBoxE = doc.getElementById(this.elementId + '|Box')
     if (spanE) {
         try {
             var newtextE = doc.createTextNode(alternativeText);
@@ -353,7 +353,7 @@ EPRTAColorChooser.prototype.toCSSColorFromRGB = function (r, g, b) {
     var green = g.toString(16);
     green = green.length == 1 ? '0' + green : green;
 
-    var blue = b.toString(16);
+    var blue = b.toString(16)
     blue = blue.length == 1 ? '0' + blue : blue;
 
     var color = '#' + red + green + blue;
@@ -370,7 +370,7 @@ EPRTAColorChooser.prototype.toCSSColor = function (color) {
 
     } else if (typeof(color) == 'string') {
         if (color.indexOf('rgb(') != -1) {
-            var bits = color.split(',');
+            var bits = color.split(',')
             var r = parseInt(bits[0].substr(4), 10);
             var g = parseInt(bits[1]);
             var b = parseInt(bits[2].substr(0, bits[2].length - 1));
@@ -526,7 +526,7 @@ EPToolBarItem.prototype.eventHandler = function (echoEvent) {
         if (this.cmd == "hilitecolor" || this.cmd == "forecolor") {
             if (EP.isIE) {
                 // IE lose the selection range because of clicking away
-                var saveRange = this.rta.rtaDoc.selection.createRange();
+                saveRange = this.rta.rtaDoc.selection.createRange();
             }
             var tbi = this;
             var f = function (clr) {
@@ -534,9 +534,8 @@ EPToolBarItem.prototype.eventHandler = function (echoEvent) {
                     // restore selection range on IE
                     saveRange.select();
                 }
-                tbi.rta.execCommand(tbi.cmd, clr, false);
                 tbi.execCommand(clr);
-            };
+            }
             this.rta.getColorChooser().setCallbackFunction(f);
             var currentColor = this.rta.queryCommandValue(this.cmd);
             this.rta.getColorChooser().showNextTo(this.elementId, currentColor);
@@ -579,6 +578,7 @@ EPToolBarItem.prototype.eventHandler = function (echoEvent) {
     //
     if (echoEvent.type.indexOf("mouse") == 0 && tag == "img") {
         this.redrawButtonAppearance(echoEvent.type);
+        return;
     }
 };
 
@@ -641,10 +641,8 @@ EPToolBarItem.prototype.updateState = function () {
             }
             if (!foundVal) {
                 if (cmd == "fontname") {
-                    // tima - handle the case where the browser reports the default font as 'Serif', or provides
-                    // a list of fonts for the selection
-                    curVal = curVal.split(",")[0];
-                    for (i = 0; i < select.options.length && !foundVal; ++i) {
+                    // tima - handle the case where the browser reports the default font as 'Serif'
+                    for (i = 0; i < select.options.length; ++i) {
                         var fonts = ("" + select.options[i].value).toLowerCase().split(",");
                         for (var j = 0; j < fonts.length; j++) {
                             if (curVal == fonts[j]) {
@@ -780,8 +778,8 @@ EPRTA.prototype.create = function (rtaDoc, rtaWin, rtaIFrame, initialHTML, spell
 
     //
     // now create all our previously registered toolbar items
-    for (var i = 0; i < this.toolbarItems.length; ++i) {
-        this.toolbarItems[i].create();
+    for (tbItem in    this.toolbarItems) {
+        this.toolbarItems[tbItem].create();
     }
 };
 
@@ -832,10 +830,6 @@ EPRTA.prototype.queryCommandValue = function (cmd) {
 EPRTA.prototype.queryCommandEnabled = function (cmd) {
     cmd = EPRTA.remapCommand(cmd);
     return this.rtaDoc.queryCommandEnabled(cmd);
-};
-
-EPRTA.prototype.fubar = function (cmd, value, showUI) {
-    alert("Here, this=" + this);
 };
 
 //------------------------------------------------------------
@@ -917,8 +911,8 @@ EPRTA.asynchUpdateToolBar = function (elementId) {
 // cannot be found.
 //------------------------------------------------------------
 EPRTA.prototype.findToolBarItem = function (cmd) {
-    for (var i = 0; i < this.toolbarItems.length; ++i) {
-        var tbi = this.toolbarItems[i];
+    for (tbItem in    this.toolbarItems) {
+        var tbi = this.toolbarItems[tbItem];
         if (tbi.cmd == cmd) {
             return tbi;
         }
@@ -932,8 +926,8 @@ EPRTA.prototype.findToolBarItem = function (cmd) {
 // is current given the current position.
 //------------------------------------------------------------
 EPRTA.prototype.updateToolBar = function () {
-    for (var i = 0; i < this.toolbarItems.length; ++i) {
-        this.toolbarItems[i].updateState();
+    for (tbItem in    this.toolbarItems) {
+        this.toolbarItems[tbItem].updateState();
     }
     // and save the state of control
     this.saveState();
@@ -1061,8 +1055,8 @@ EPRTA.prototype.applyMask = function (echoEvent, keyCode, keyMask) {
  * Returns true if the given key combo is handled
  */
 EPRTA.prototype.hasKeyCombo = function (keyCode) {
-    for (var i = 0; i < this.keyCombinations.length; ++i) {
-        var testKey = this.keyCombinations[i];
+    for (x in this.keyCombinations) {
+        var testKey = this.keyCombinations[x];
         if (testKey == keyCode) {
             return true;
         }
@@ -1076,8 +1070,8 @@ EPRTA.prototype.hasKeyCombo = function (keyCode) {
  * @param echoEvent
  */
 EPRTA.prototype.processFocus = function (echoEvent) {
-    EchoFocusManager.setFocusedState(this.elementId, true);
     this.updateState();
+    EchoFocusManager.setFocusedState(this.elementId, true);
 };
 
 /**
@@ -1086,8 +1080,8 @@ EPRTA.prototype.processFocus = function (echoEvent) {
  * @param echoEvent
  */
 EPRTA.prototype.processBlur = function (echoEvent) {
-    EchoFocusManager.setFocusedState(this.elementId, false);
     this.updateState();
+    EchoFocusManager.setFocusedState(this.elementId, false);
 };
 
 /**
@@ -1138,6 +1132,7 @@ EPRTA.prototype.showMacroPopup = function () {
     input.style.color = '#AAAAAA';
 
     var frame = this.rtaIFrame;
+    var body = frame.contentWindow.document.body;
     var range = rangy.getSelection(frame).getRangeAt(0);
     var clientRects = range.nativeRange.getClientRects();
     var top = 0;
@@ -1218,7 +1213,7 @@ EPRTA.prototype.createRange = function (selection) {
         if (typeof selection != "undefined") {
             return selection.getRangeAt(0);
         } else {
-            return this.rtaDoc.createRange();
+            return rtaDoc.createRange();
         }
     }
 };
@@ -1243,15 +1238,14 @@ EPRTA.prototype.eventHandler = function (echoEvent) {
     }
     if (echoEvent.type == "keypress" || echoEvent.type == "keydown" || echoEvent.type == "keyup") {
         this.onkey(echoEvent);
-        EPSP.hideSpellingBox(this);
-        // cannot hide the colour chooser in a blur event as it prevents the chooser's click event
-        this.getColorChooser().hide();
-        this.updateState();
     } else if (echoEvent.type == "focus") {
         this.processFocus(echoEvent);
     } else if (echoEvent.type == "blur") {
         this.processBlur(echoEvent);
     }
+    EPSP.hideSpellingBox(this);
+    this.getColorChooser().hide();
+    this.updateState();
 };
 
 // begin tima
@@ -1368,8 +1362,8 @@ EPRTA.MessageProcessor.processDispose = function (messageElement) {
 //Deconstructor of RTA
 //------------------------------------------------------------
 EPRTA.prototype.destroy = function () {
-    for (var i = 0; i < this.toolbarItems.length; ++i) {
-        this.toolbarItems[i].destroy();
+    for (tbItem in    this.toolbarItems) {
+        this.toolbarItems[tbItem].destroy();
     }
     this.colorChooser.destroy();
     EP.Event.removeHandler("keydown", this.rtaDoc);
@@ -1431,7 +1425,7 @@ EPRTA.MessageProcessor.processInit = function (messageElement) {
             landfItem = landfs[i];
             //
             // init our look and feel objects
-            var tag = landfItem.getAttribute("tag");
+            tag = landfItem.getAttribute("tag");
             if (tag == "button") {
                 var upItemStyle = landfItem.getAttribute("upItemStyle");
                 var downItemStyle = landfItem.getAttribute("downItemStyle");
@@ -1448,10 +1442,10 @@ EPRTA.MessageProcessor.processInit = function (messageElement) {
         // process command elements
         var commands = item.getElementsByTagName("command");
         var cmdItem = null;
-        for (var j = 0; j < commands.length; j++) {
-            cmdItem = commands[j];
-            var cmd = cmdItem.getAttribute("cmd");
-            var isStateful = cmdItem.getAttribute("isStateful") == "true";
+        for (var i = 0; i < commands.length; i++) {
+            cmdItem = commands[i];
+            cmd = cmdItem.getAttribute("cmd");
+            isStateful = cmdItem.getAttribute("isStateful") == "true";
             tag = cmdItem.getAttribute("tag");
             if (tag == "button") {
                 rta.registerButton(cmd, isStateful, buttonLandF);
@@ -1475,8 +1469,8 @@ EPRTA.MessageProcessor.processInit = function (messageElement) {
         // initialise spelling support
         var spelling = item.getElementsByTagName("spelling");
         var spellingItem = null;
-        for (var k = 0; k < spelling.length; k++) {
-            spellingItem = spelling[k];
+        for (var i = 0; i < spelling.length; i++) {
+            spellingItem = spelling[i];
             var spellId = spellingItem.getAttribute("spellId");
             var spellings = spellingItem.getAttribute("spellings");
 

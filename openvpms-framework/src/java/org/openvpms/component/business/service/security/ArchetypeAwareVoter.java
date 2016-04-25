@@ -177,7 +177,7 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter<MethodInvocation
         // second token is the method name
         String method = tokens.nextToken();
         String authMethod = authority.getMethod();
-        String authShortName = authority.getShortName();
+        String authShortName = authority.getArchetypeShortName();
         return (!StringUtils.isEmpty(authMethod)) &&
                (!StringUtils.isEmpty(authShortName)) &&
                (StringUtilities.matches(method, authMethod)) &&

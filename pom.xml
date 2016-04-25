@@ -581,16 +581,12 @@
                 <release.jdbc.url>${build.jdbc.url}</release.jdbc.url>
                 <release.jdbc.username>${build.jdbc.username}</release.jdbc.username>
                 <release.jdbc.password>${build.jdbc.password}</release.jdbc.password>
-                <smartflow.url>https://sfs-public.azurewebsites.net/api/v3</smartflow.url>
-                <smartflow.emrApiKey>873af17b2163255a3eb70a7d7413be152657bfab</smartflow.emrApiKey>
             </properties>
         </profile>
         <profile>
             <id>release</id>
             <properties>
                 <release.jdbc.url>jdbc:mysql://localhost:3306/openvpms</release.jdbc.url>
-                <smartflow.url>https://www.smartflowsheet.com/api/v3</smartflow.url>
-                <smartflow.emrApiKey>534bf0dae63b8755b2206daf33955c79c1362ef2</smartflow.emrApiKey>
             </properties>
         </profile>
     </profiles>

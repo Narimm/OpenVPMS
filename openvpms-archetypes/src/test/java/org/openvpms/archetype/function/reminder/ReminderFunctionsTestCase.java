@@ -16,7 +16,6 @@
 
 package org.openvpms.archetype.function.reminder;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -40,7 +39,6 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -132,8 +130,8 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         Act reminder5 = createReminder(patient, reminderType, "2016-04-15 00:00:00", IN_PROGRESS);
 
         JXPathContext context = createContext(patient);
-        List<Act> acts = getActs((Iterable<Act>) context.getValue(
-                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'))"));
+        List<Act> acts = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'))");
         assertEquals(3, acts.size());
         assertFalse(acts.contains(reminder1));
         assertTrue(acts.contains(reminder2));
@@ -143,7 +141,7 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, String, Date, Date)} method.
+     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, Date, Date, String)} method.
      * <br/>
      * Note that this invoked as:
      * <br/>
@@ -161,9 +159,9 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         Act reminder5 = createReminder(patient, reminderType, "2016-04-15 11:00:00", IN_PROGRESS);
 
         JXPathContext context = createContext(patient);
-        List<Act> acts = getActs((Iterable<Act>) context.getValue(
+        List<Act> acts = (List<Act>) context.getValue(
                 "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
-                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'))"));
+                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'))");
         assertEquals(3, acts.size());
         assertFalse(acts.contains(reminder1));
         assertTrue(acts.contains(reminder2));
@@ -173,7 +171,7 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, String, Date)} method.
+     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, Date, String)} method.
      * <br/>
      * Note that this invoked as:
      * <br/>
@@ -196,8 +194,8 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         Act reminder5 = createReminder(patient, reminderType, product1, "2016-04-15 11:00:00", IN_PROGRESS);
 
         JXPathContext context = createContext(patient);
-        List<Act> acts1 = getActs((Iterable<Act>) context.getValue(
-                "reminder:getReminders(., 'Z Vaccination 1', java.sql.Timestamp.valueOf('2016-04-14 11:00:00'))"));
+        List<Act> acts1 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'), 'Z Vaccination 1')");
 
         assertEquals(1, acts1.size());
         assertFalse(acts1.contains(reminder1));
@@ -206,8 +204,8 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         assertFalse(acts1.contains(reminder4));
         assertFalse(acts1.contains(reminder5));
 
-        List<Act> acts2 = getActs((Iterable<Act>) context.getValue(
-                "reminder:getReminders(.,  'Z Vaccination*', java.sql.Timestamp.valueOf('2016-04-14 11:00:00'))"));
+        List<Act> acts2 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 11:00:00'), 'Z Vaccination*')");
 
         assertEquals(2, acts2.size());
         assertTrue(acts2.contains(reminder2));
@@ -215,7 +213,7 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, String, Date, Date)} method.
+     * Tests the {@link ReminderFunctions#getRemindersByProductType(Party, Date, Date, String)} method.
      * <br/>
      * Note that this invoked as:
      * <br/>
@@ -239,9 +237,9 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         Act reminder6 = createReminder(patient, reminderType, product1, "2016-04-15 11:00:00", IN_PROGRESS);
 
         JXPathContext context = createContext(patient);
-        List<Act> acts1 = getActs((Iterable<Act>) context.getValue(
-                "reminder:getReminders(., 'Z Vaccination 1', java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
-                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'))"));
+        List<Act> acts1 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
+                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'), 'Z Vaccination 1')");
         assertEquals(1, acts1.size());
         assertFalse(acts1.contains(reminder1));
         assertFalse(acts1.contains(reminder2));
@@ -250,9 +248,9 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         assertFalse(acts1.contains(reminder5));
         assertFalse(acts1.contains(reminder6));
 
-        List<Act> acts2 = getActs((Iterable<Act>) context.getValue(
-                "reminder:getReminders(., 'Z Vacc*', java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
-                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'))"));
+        List<Act> acts2 = (List<Act>) context.getValue(
+                "reminder:getReminders(., java.sql.Timestamp.valueOf('2016-04-14 10:00:00'), "
+                + "java.sql.Timestamp.valueOf('2016-04-15 11:00:00'), 'Z Vacc*')");
         assertEquals(3, acts2.size());
         assertFalse(acts2.contains(reminder1));
         assertTrue(acts2.contains(reminder2));
@@ -260,18 +258,6 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         assertTrue(acts2.contains(reminder4));
         assertFalse(acts2.contains(reminder5));
         assertFalse(acts2.contains(reminder6));
-    }
-
-    /**
-     * Helper to convert an iterable of acts to a list.
-     *
-     * @param acts the acts
-     * @return the list of acts
-     */
-    private List<Act> getActs(Iterable<Act> acts) {
-        List<Act> result = new ArrayList<>();
-        CollectionUtils.addAll(result, acts);
-        return result;
     }
 
     /**

@@ -300,7 +300,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
             result = act;
         } else {
             ActBean bean = new ActBean(act);
-            result = (Act) bean.getNodeSourceObject("appointments");
+            result = (Act) bean.getNodeTargetObject("appointments");
             if (result == null) {
                 result = ServiceHelper.getBean(AppointmentRules.class).getActiveAppointment(patient);
             }

@@ -351,7 +351,7 @@ public class MailDialog extends PopupDialog {
             public void onOK() {
                 Entity selected = dialog.getSelected();
                 if (selected != null) {
-                    editor.setContent(selected, true);
+                    editor.setContent(selected, null);
                 }
             }
         });

@@ -19,7 +19,10 @@ package org.openvpms.smartflow.client;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
+import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentRules;
@@ -44,10 +47,15 @@ import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.service.Hospitalizations;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -56,6 +64,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 
 import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
 
@@ -64,7 +73,27 @@ import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
  *
  * @author Tim Anderson
  */
-public class HospitalizationService extends FlowSheetService {
+public class HospitalizationService {
+
+    /**
+     * The Smart Flow Sheet service root URL.
+     */
+    private final String url;
+
+    /**
+     * The EMR API key.
+     */
+    private final String emrApiKey;
+
+    /**
+     * The clinic API key.
+     */
+    private final String clinicApiKey;
+
+    /**
+     * The time zone.
+     */
+    private final TimeZone timeZone;
 
     /**
      * The archetype service.
@@ -91,6 +120,10 @@ public class HospitalizationService extends FlowSheetService {
      */
     private static final String COLOUR = "colour";
 
+    /**
+     * Empty form.
+     */
+    private static final Form EMPTY_FORM = new Form();
 
     /**
      * Constructs a {@link HospitalizationService}.
@@ -106,7 +139,10 @@ public class HospitalizationService extends FlowSheetService {
     public HospitalizationService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone,
                                   IArchetypeService service, ILookupService lookups,
                                   DocumentHandlers handlers) {
-        super(url, emrApiKey, clinicApiKey, timeZone, log);
+        this.url = url;
+        this.emrApiKey = emrApiKey;
+        this.clinicApiKey = clinicApiKey;
+        this.timeZone = timeZone;
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
@@ -131,8 +167,8 @@ public class HospitalizationService extends FlowSheetService {
     public Hospitalization getHospitalization(PatientContext context) {
         Hospitalization result = null;
         javax.ws.rs.client.Client client = getClient();
+        WebTarget target = client.target(url);
         try {
-            WebTarget target = getWebTarget(client);
             Hospitalizations hospitalizations = getHospitalizations(target);
             try {
                 result = hospitalizations.get(Long.toString(context.getVisitId()));
@@ -152,21 +188,14 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Adds a hospitalization for a patient.
-     * <p/>
+     * <p>
      * The patient should have a current weight.
      *
-     * @param context      the patient context
-     * @param stayDuration the estimated days of stay
-     * @param template     the treatment template name. May be {@code null}
+     * @param context the patient context
      */
-    public void add(PatientContext context, int stayDuration, String template) {
+    public void add(PatientContext context) {
         Hospitalization hospitalization = new Hospitalization();
-        Patient patient = createPatient(context);
-        hospitalization.setPatient(patient);
-        hospitalization.setFileNumber(patient.getPatientId());
-        hospitalization.setEstimatedDaysOfStay(stayDuration);
-        hospitalization.setCaution(context.isAggressive());
-        hospitalization.setTreatmentTemplateName(template);
+        hospitalization.setPatient(createPatient(context));
         hospitalization.setHospitalizationId(Long.toString(context.getVisitId()));
         hospitalization.setDateCreated(context.getVisitStartTime());
         Weight weight = context.getWeight();
@@ -183,15 +212,10 @@ public class HospitalizationService extends FlowSheetService {
         if (clinician != null) {
             hospitalization.setDoctorName(clinician.getName());
         }
-        String reason = lookups.getName(context.getVisit(), "reason");
-        if (reason != null) {
-            String diseases[] = new String[]{reason};
-            hospitalization.setDiseases(diseases);
-        }
 
         javax.ws.rs.client.Client client = getClient();
         try {
-            WebTarget target = getWebTarget(client);
+            WebTarget target = client.target(url);
             Hospitalizations hospitalizations = getHospitalizations(target);
             hospitalizations.add(hospitalization);
         } catch (NotAuthorizedException exception) {
@@ -275,7 +299,7 @@ public class HospitalizationService extends FlowSheetService {
         String id = Long.toString(context.getVisitId());
         javax.ws.rs.client.Client client = getClient();
         try {
-            WebTarget target = getWebTarget(client);
+            WebTarget target = client.target(url);
             Hospitalizations hospitalizations = getHospitalizations(target);
             Response response = retriever.getResponse(hospitalizations, id);
             if (response.hasEntity() && MediaTypeHelper.isPDF(response.getMediaType())) {
@@ -314,13 +338,60 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
+     * Throws a {@link FlowSheetException} with an appropriate error message for a {@code NotAuthorizedException}.
+     *
+     * @param exception the original exception
+     */
+    private void notAuthorised(NotAuthorizedException exception) {
+        log.error(exception, exception);
+        throw new FlowSheetException(FlowSheetMessages.notAuthorised());
+    }
+
+    /**
+     * Checks an exception for an SSLHandshakeException cause, and throws an {@link FlowSheetException} with appropriate
+     * error message if it has one.
+     *
+     * @param exception the exception
+     * @throws FlowSheetException if the exception has a SSLHandshakeException cause
+     */
+    private void checkSSL(Throwable exception) {
+        if (exception.getCause() instanceof SSLHandshakeException) {
+            log.error(exception, exception);
+            throw new FlowSheetException(FlowSheetMessages.cannotConnectUsingSSL(url));
+        }
+    }
+
+    /**
+     * Creates a JAX-RS client.
+     *
+     * @return a new JAX-RS client
+     */
+    private javax.ws.rs.client.Client getClient() {
+        ObjectMapperContextResolver resolver = new ObjectMapperContextResolver(timeZone);
+        ClientConfig config = new ClientConfig()
+                .register(resolver)
+                .register(JacksonFeature.class)
+                .register(new ErrorResponseFilter(resolver.getContext(Object.class)));
+        javax.ws.rs.client.Client resource = ClientBuilder.newClient(config);
+        if (log.isDebugEnabled()) {
+            resource.register(new LoggingFilter(new DebugLog(log), true));
+        }
+        return resource;
+    }
+
+    /**
      * Creates a new {@link Hospitalizations} proxy for the specified target.
      *
      * @param target the target
      * @return a new proxy
      */
     private Hospitalizations getHospitalizations(WebTarget target) {
-        return WebResourceFactory.newResource(Hospitalizations.class, target, false, getHeaders(),
+        MultivaluedMap<String, Object> header = new MultivaluedHashMap<>();
+        header.add("emrApiKey", emrApiKey);
+        header.add("clinicApiKey", clinicApiKey);
+        header.add("timezoneName", timeZone.getID());
+
+        return WebResourceFactory.newResource(Hospitalizations.class, target, false, header,
                                               Collections.<Cookie>emptyList(), EMPTY_FORM);
     }
 
@@ -406,7 +477,7 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Returns the patient colour.
-     * <p/>
+     * <p>
      * This allows for the fact that some practices use lookups for the colour node.
      *
      * @param bean the patient bean
@@ -450,4 +521,22 @@ public class HospitalizationService extends FlowSheetService {
         Response getResponse(Hospitalizations service, String id);
     }
 
+    /**
+     * Workaround to allow JAX-RS logging to be delegated to log4j.
+     */
+    private static final class DebugLog extends Logger {
+
+        private final Log log;
+
+        protected DebugLog(Log log) {
+            super(GLOBAL_LOGGER_NAME, null);
+            this.log = log;
+        }
+
+        @Override
+        public void info(String msg) {
+            log.debug(msg);
+        }
+
+    }
 }

@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.macro.Macros;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
@@ -41,14 +40,13 @@ import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.report.ReportContextFactory;
-import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.Collections;
 
 /**
  * Evaluates the content of an <em>entity.documentTemplateEmail</em> based on its <em>contentType</em>.
@@ -93,11 +91,6 @@ public class EmailTemplateEvaluator {
     private final Macros macros;
 
     /**
-     * The report factory.
-     */
-    private final ReportFactory factory;
-
-    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(EmailTemplateEvaluator.class);
@@ -108,14 +101,11 @@ public class EmailTemplateEvaluator {
      * @param service the service
      * @param lookups the lookups
      * @param macros  the macros
-     * @param factory the report factory
      */
-    public EmailTemplateEvaluator(IArchetypeService service, ILookupService lookups, Macros macros,
-                                  ReportFactory factory) {
+    public EmailTemplateEvaluator(IArchetypeService service, ILookupService lookups, Macros macros) {
         this.service = service;
         this.lookups = lookups;
         this.macros = macros;
-        this.factory = factory;
     }
 
     /**
@@ -143,108 +133,6 @@ public class EmailTemplateEvaluator {
     }
 
     /**
-     * Returns an {@link Reporter} for the template message body, if the template has a document body.
-     *
-     * @param template the template
-     * @param object   the object to evaluate expressions against. May be {@code null}
-     * @param context  the context, used to locate the object to report on
-     * @return a new reporter, or {@code null} if the content is not a supported document
-     */
-    public Reporter<IMObject> getMessageReporter(Entity template, Object object, Context context) {
-        Reporter<IMObject> result = null;
-        IMObjectBean bean = new IMObjectBean(template, service);
-        String type = bean.getString("contentType");
-        if (DOCUMENT.equals(type)) {
-            String expression = bean.getString("contentSource");
-            Object contextBean = getContextBean(expression, object, context);
-            if (contextBean instanceof IMObject) {
-                final Document document = new TemplateHelper(service).getDocumentFromTemplate(template);
-                if (document != null) {
-                    if (factory.isIMObjectReport(document)) {
-                        result = createReporter((IMObject) contextBean, document, context);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns an {@link Reporter} for the template message body, if the template has a document body.
-     *
-     * @param template the template
-     * @param objects  the objects to pass to the document
-     * @param context  the context to pass to the document
-     * @return a new reporter, or {@code null} if the content is not a supported document
-     */
-    public Reporter<ObjectSet> getMessageReporter(Entity template, List<ObjectSet> objects, Context context) {
-        Reporter<ObjectSet> result = null;
-        IMObjectBean bean = new IMObjectBean(template, service);
-        String type = bean.getString("contentType");
-        if (DOCUMENT.equals(type)) {
-            final Document document = new TemplateHelper(service).getDocumentFromTemplate(template);
-            if (document != null && factory.isObjectSetReport(document, objects.size())) {
-                result = createReporter(objects, document, context);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the email message.
-     *
-     * @param reporter the reporter used to generate the message
-     * @return the email message, as HTML or an HTML fragment
-     */
-    public String getMessage(Reporter<?> reporter) {
-        String result;
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        reporter.generate(DocFormats.HTML_TYPE, true, bytes);
-        result = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
-        return result;
-    }
-
-    /**
-     * Creates a reporter for an object.
-     *
-     * @param object   the object to report on
-     * @param document the report template
-     * @param context  the context
-     * @return a new reporter
-     */
-    private Reporter<IMObject> createReporter(IMObject object, final Document document, Context context) {
-        Reporter<IMObject> result;
-        result = new Reporter<IMObject>(object) {
-            @Override
-            protected IMReport<IMObject> getReport() {
-                return factory.createIMObjectReport(document);
-            }
-        };
-        result.setFields(ReportContextFactory.create(context));
-        return result;
-    }
-
-    /**
-     * Creates a reporter for a list of {@link ObjectSet}s.
-     *
-     * @param objects  the objects to report on
-     * @param document the report template
-     * @param context  the context
-     * @return a new reporter
-     */
-    private Reporter<ObjectSet> createReporter(List<ObjectSet> objects, final Document document, Context context) {
-        Reporter<ObjectSet> result;
-        result = new Reporter<ObjectSet>(objects) {
-            @Override
-            protected IMReport<ObjectSet> getReport() {
-                return factory.createObjectSetReport(document);
-            }
-        };
-        result.setFields(ReportContextFactory.create(context));
-        return result;
-    }
-
-    /**
      * Evaluates a node.
      *
      * @param template   the template
@@ -253,11 +141,10 @@ public class EmailTemplateEvaluator {
      * @param sourceName the content source expression node name
      * @param object     the object to evaluate expressions against. May be {@code null}
      * @param context    the context, used to locate the object to report on
-     * @param html       if {@code true}, the result is HTML
-     * @return the result of the evaluation. May be {@code null}
+     * @param html       if {@code true}, the result is HTML    @return the result of the evaluation. May be {@code null}
      */
-    private String evaluate(Entity template, String name, String typeName, String sourceName, Object object,
-                            Context context, boolean html) {
+    private String evaluate(Entity template, String name, String typeName, String sourceName, Object object, Context context,
+                            boolean html) {
         String result;
         IMObjectBean bean = new IMObjectBean(template, service);
         String expression = bean.getString(sourceName);
@@ -298,11 +185,11 @@ public class EmailTemplateEvaluator {
     /**
      * Evaluates the template content as macros.
      *
-     * @param template   the template
-     * @param name       the content node name
-     * @param object     the object to evaluate against. May be {@code null}
+     * @param template the template
+     * @param name     the content node name
+     * @param object   the object to evaluate against. May be {@code null}
      * @param expression the expression used to locate the source object. May be {@code null}
-     * @param context    the context
+     * @param context  the context
      * @return the expanded text. May be {@code null}
      */
     private String evaluateMacros(IMObjectBean template, String name, String expression, Object object,
@@ -322,8 +209,7 @@ public class EmailTemplateEvaluator {
      * @param context    the context
      * @return the result of the expression. May be {@code null}
      */
-    private String evaluateXPath(IMObjectBean template, String name, String expression, Object object,
-                                 Context context) {
+    private String evaluateXPath(IMObjectBean template, String name, String expression, Object object, Context context) {
         String content = template.getString(name);
         MacroVariables variables = new MacroVariables(context, service, lookups);
         variables.declareVariable("nl", "\n");     // to make expressions with newlines simpler
@@ -360,9 +246,14 @@ public class EmailTemplateEvaluator {
                 } catch (IOException exception) {
                     log.error("Failed to get HTML document, id=" + document.getId(), exception);
                 }
-            } else if (contextBean instanceof IMObject && factory.isIMObjectReport(document)) {
-                Reporter<IMObject> reporter = createReporter((IMObject) object, document, context);
-                result = getMessage(reporter);
+            } else if (contextBean instanceof IMObject) {
+                ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
+                IMReport<IMObject> report = factory.createIMObjectReport(document);
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                report.generate(Collections.singletonList((IMObject) contextBean),
+                                Collections.<String, Object>emptyMap(),
+                                ReportContextFactory.create(context), DocFormats.HTML_TYPE, bytes);
+                result = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
             } else if (Converter.canConvert(document, DocFormats.HTML_TYPE)) {
                 byte[] converted = DocumentHelper.export(document, DocFormats.HTML_TYPE);
                 result = new String(converted, StandardCharsets.UTF_8);

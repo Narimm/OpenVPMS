@@ -42,11 +42,6 @@ import org.openvpms.web.resource.i18n.Messages;
 public abstract class Selector<T extends IMObject> {
 
     /**
-     * Default button identifier.
-     */
-    public static final String BUTTON_ID = "button.select";
-
-    /**
      * Determines the layout of the button(s).
      */
     public enum ButtonStyle {
@@ -66,11 +61,6 @@ public abstract class Selector<T extends IMObject> {
      * The button identifier.
      */
     private final String buttonId;
-
-    /**
-     * If {@code true}, enable button shortcuts.
-     */
-    private final boolean enableShortcuts;
 
     /**
      * The 'select' button.
@@ -145,7 +135,7 @@ public abstract class Selector<T extends IMObject> {
      * @param buttonId the button identifier
      */
     public Selector(String buttonId) {
-        this(buttonId, ButtonStyle.LEFT, false, true);
+        this(buttonId, ButtonStyle.LEFT, false);
     }
 
     /**
@@ -155,22 +145,20 @@ public abstract class Selector<T extends IMObject> {
      * @param editable determines if the selector is editable
      */
     public Selector(ButtonStyle style, boolean editable) {
-        this(BUTTON_ID, style, editable, true);
+        this("button.select", style, editable);
     }
 
     /**
      * Constructs a {@link Selector}.
      *
-     * @param buttonId        the button identifier
-     * @param style           determines the layout of the button(s)
-     * @param editable        determines if the selector is editable
-     * @param enableShortcuts if {@code true}, include button shortcuts
+     * @param buttonId the button identifier
+     * @param style    determines the layout of the button(s)
+     * @param editable determines if the selector is editable
      */
-    public Selector(String buttonId, ButtonStyle style, boolean editable, boolean enableShortcuts) {
+    public Selector(String buttonId, ButtonStyle style, boolean editable) {
         this.buttonId = buttonId;
         buttonStyle = style;
         this.editable = editable;
-        this.enableShortcuts = enableShortcuts;
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
     }
 
@@ -203,7 +191,7 @@ public abstract class Selector<T extends IMObject> {
      */
     public Button getSelect() {
         if (select == null) {
-            select = createSelectButton(buttonId, enableShortcuts);
+            select = createSelectButton(buttonId);
         }
         return select;
     }
@@ -399,12 +387,11 @@ public abstract class Selector<T extends IMObject> {
     /**
      * Creates the select button.
      *
-     * @param buttonId        the button identifier
-     * @param enableShortcuts if {@code true}, enable shortcuts
+     * @param buttonId the button identifier
      * @return the select button
      */
-    protected Button createSelectButton(String buttonId, boolean enableShortcuts) {
-        return ButtonFactory.create(buttonId, enableShortcuts);
+    protected Button createSelectButton(String buttonId) {
+        return ButtonFactory.create(buttonId);
     }
 
 }

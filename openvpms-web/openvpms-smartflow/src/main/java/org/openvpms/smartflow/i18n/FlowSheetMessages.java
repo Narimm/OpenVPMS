@@ -54,15 +54,6 @@ public class FlowSheetMessages {
     }
 
     /**
-     * Creats a message when the treatment templates cant be returned.
-     *
-     * @return a new message
-     */
-    public static Message failedToGetTemplates() {
-        return messages.getMessage(105);
-    }
-
-    /**
      * Creates a message indicating that a PDF couldn't be downloaded for a patient.
      *
      * @param patient the patient

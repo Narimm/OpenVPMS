@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
-import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -38,7 +37,6 @@ import org.openvpms.web.workspace.workflow.WorkflowTestHelper;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -94,15 +92,8 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     @Test
     public void testCheckoutWorkflowForTask() {
-        Act appointment = createAppointment();
-        appointment.setStatus(AppointmentStatus.CHECKED_IN);
         Act task = createTask(customer, patient, clinician);
-        ActBean bean = new ActBean(appointment);
-        bean.addNodeRelationship("tasks", task);
-        save(appointment, task);
         checkWorkflow(task);
-        appointment = get(appointment);
-        assertEquals(AppointmentStatus.COMPLETED, appointment.getStatus());
     }
 
     /**

@@ -27,12 +27,6 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
-import java.util.Date;
-
-import static org.openvpms.component.system.common.query.Constraints.gt;
-import static org.openvpms.component.system.common.query.Constraints.isNull;
-import static org.openvpms.component.system.common.query.Constraints.lte;
-
 
 /**
  * An {@link ResultSet} implementation that queries customers. The search can be
@@ -122,19 +116,14 @@ public class CustomerResultSet extends AbstractEntityResultSet<ObjectSet> {
         if (isSearchingOnPatient()) {
             query.add(Constraints.shortName("patient", "party.patientpet"));
             JoinConstraint join = Constraints.join("patients");
-            if (getArchetypes().isActiveOnly()) {
-                Date now = new Date();
-                join.add(lte("activeStartTime", now));
-                join.add(Constraints.or(gt("activeEndTime", now), isNull("activeEndTime")));
-            }
             join.add(new IdConstraint("source", "customer"));
             join.add(new IdConstraint("target", "patient"));
             query.add(join);
-            Long id = getId(this.patient);
+            Long id = getId(patient);
             if (id != null) {
                 query.add(Constraints.eq("patient.id", id));
             } else {
-                query.add(Constraints.eq("patient.name", this.patient));
+                query.add(Constraints.eq("patient.name", patient));
             }
             query.add(new ObjectSelectConstraint("patient"));
         }

@@ -39,7 +39,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
@@ -142,8 +141,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         processor.process(customer);
         assertEquals(1, statements.size());
         EmailTemplateEvaluator evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(),
-                                                                      ServiceHelper.getMacros(),
-                                                                      ServiceHelper.getBean(ReportFactory.class));
+                                                                      ServiceHelper.getMacros());
         StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, evaluator, practice,
                                                                              new LocalContext());
         emailProcessor.process(statements.get(0));

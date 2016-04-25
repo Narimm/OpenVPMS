@@ -30,13 +30,12 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.BasicSelector;
-import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.event.ActionListener;
@@ -88,14 +87,13 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
      * Constructs a {@link DocumentEditor}.
      *
      * @param property the property being edited
-     * @param context  the layout context
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public DocumentEditor(Property property, LayoutContext context) {
+    public DocumentEditor(Property property, Context context, HelpContext help) {
         super(property);
-        this.help = context.getHelpContext();
+        this.help = help;
 
-        selector = new BasicSelector<>(Selector.BUTTON_ID, context.getLayoutDepth() <= 1);
+        selector = new BasicSelector<>();
         selector.getSelect().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelect();
@@ -105,7 +103,7 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
         if (original != null) {
             init(original);
         }
-        refMgr = new DocReferenceMgr(original, context.getContext());
+        refMgr = new DocReferenceMgr(original, context);
     }
 
     /**
