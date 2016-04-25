@@ -56,7 +56,7 @@ import java.math.BigDecimal;
 
 /**
  * Task to create an <em>act.patientWeight</em> for a patient, if either the schedule or work list have an
- * "inputWeight" set to true, or a work list has "createFlowSheet" set to true.
+ * "inputWeight" set to true, or a work list has "createFlowSheet" set.
  *
  * @author Tim Anderson
  */
@@ -172,7 +172,7 @@ class PatientWeightTask extends Tasks {
     }
 
     private boolean createFlowSheet(Entity workList) {
-        return workList != null && new IMObjectBean(workList).getBoolean("createFlowSheet");
+        return workList != null && new IMObjectBean(workList).getString("createFlowSheet") != null;
     }
 
     /**

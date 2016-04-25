@@ -13,13 +13,19 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.query;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 
 import java.util.List;
 
@@ -30,8 +36,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Tests the {@link CustomerQuery} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerQueryTestCase extends AbstractEntityQueryTest<Party> {
 
@@ -109,6 +114,44 @@ public class CustomerQueryTestCase extends AbstractEntityQueryTest<Party> {
         assertEquals(1, list.size());
         assertEquals(customer, list.get(0));
         checkSelects(true, query, customer);
+    }
+
+    /**
+     * Tests querying customers by patient name, where the patient has a current and previous ownership relationship.
+     */
+    @Test
+    public void testQueryByPatientWithMultipleOwnershipRelationships() {
+        // create a customer and patient
+        Party customer1 = createObject(true);
+        Party customer2 = createObject(true);
+        String patientName = getUniqueValue("ZPatient");
+        Party patient = TestHelper.createPatient(customer2);
+        patient.setName(patientName);
+        EntityBean bean = new EntityBean(customer1);
+        EntityRelationship relationship = bean.addRelationship(PatientArchetypes.PATIENT_OWNER, patient);
+        relationship.setActiveStartTime(DateRules.getYesterday());
+        relationship.setActiveEndTime(DateRules.getToday());
+        save(patient, customer1);
+
+        CustomerQuery query = (CustomerQuery) createQuery();
+        query.getComponent();
+        query.setPatient(patientName);
+
+        checkSelects(true, query, customer2);
+        checkSelects(false, query, customer1);
+
+        ((CustomerObjectSetQuery) query.getQuery()).setActive(BaseArchetypeConstraint.State.BOTH);
+        checkSelects(true, query, customer2);
+        checkSelects(true, query, customer1);
+
+        ((CustomerObjectSetQuery) query.getQuery()).setActive(BaseArchetypeConstraint.State.INACTIVE);
+        checkSelects(false, query, customer2);
+        checkSelects(false, query, customer1);
+
+        customer2.setActive(false);
+        save(customer2);
+        checkSelects(true, query, customer2);
+        checkSelects(false, query, customer1);
     }
 
     /**

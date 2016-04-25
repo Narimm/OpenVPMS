@@ -28,13 +28,12 @@ import org.openvpms.component.system.common.query.ParticipationConstraint;
 import java.util.Date;
 
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_MEDICATION;
-import static org.openvpms.component.system.common.query.Constraints.between;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.exists;
 import static org.openvpms.component.system.common.query.Constraints.gte;
 import static org.openvpms.component.system.common.query.Constraints.idEq;
 import static org.openvpms.component.system.common.query.Constraints.join;
-import static org.openvpms.component.system.common.query.Constraints.lte;
+import static org.openvpms.component.system.common.query.Constraints.lt;
 import static org.openvpms.component.system.common.query.Constraints.shortName;
 import static org.openvpms.component.system.common.query.Constraints.sort;
 import static org.openvpms.component.system.common.query.Constraints.subQuery;
@@ -79,11 +78,11 @@ public class PatientHistory {
     }
 
     /**
-     * Returns medication acts for a patient, between the specified dates, inclusive.
+     * Returns medication acts for a patient, between the specified dates.
      *
      * @param patient the patient
-     * @param from    the from date-time. May be {@code null}
-     * @param to      the to date-time. May be {@code null}
+     * @param from    the start of the date range, inclusive. May be {@code null}
+     * @param to      the end of the date range, exclusive. May be {@code null}
      * @return the medication acts for the patient
      */
     public Iterable<Act> getMedication(Party patient, Date from, Date to) {
@@ -102,13 +101,12 @@ public class PatientHistory {
     }
 
     /**
-     * Returns medication acts for a patient, with the specified product type name, between the specified dates,
-     * inclusive.
+     * Returns medication acts for a patient, with the specified product type name, between the specified dates.
      *
      * @param patient         the patient
-     * @param productTypeName the product type name. May be {@code null}
-     * @param from            the from date-time. May be {@code null}
-     * @param to              the to date-time. May be {@code null}
+     * @param productTypeName the product type name. May be {@code null} or contain wildcards
+     * @param from            the start of the date range, inclusive. May be {@code null}
+     * @param to              the end of the date range, exclusive. May be {@code null}
      * @return the medication acts for the patient
      */
     public Iterable<Act> getMedication(Party patient, String productTypeName, Date from, Date to) {
@@ -127,9 +125,10 @@ public class PatientHistory {
 
         if (from != null || to != null) {
             if (from != null && to != null) {
-                query.add(between("startTime", from, to));
+                query.add(gte("startTime", from));
+                query.add(lt("startTime", to));
             } else if (from == null) {
-                query.add(lte("startTime", to));
+                query.add(lt("startTime", to));
             } else {
                 query.add(gte("startTime", from));
             }

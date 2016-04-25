@@ -80,11 +80,42 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link HistoryFunctions#medication(Party, Date)} method.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testMedicationByDate() {
+        Act medication1 = PatientTestHelper.createMedication(patient);
+        Act medication2 = PatientTestHelper.createMedication(patient);
+        Act medication3 = PatientTestHelper.createMedication(patient);
+        medication1.setActivityStartTime(TestHelper.getDatetime("2013-09-19 00:00:00"));
+        medication2.setActivityStartTime(TestHelper.getDatetime("2013-09-19 23:59:00"));
+        medication3.setActivityStartTime(TestHelper.getDate("2013-09-20"));
+        save(medication1, medication2, medication3);
+
+        JXPathContext ctx = createContext(patient);
+        Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(., null)");
+        checkActs(acts1);
+
+        Iterable<Act> acts2 = (Iterable<Act>) ctx.getValue(
+                "history:medication(., java.sql.Date.valueOf('2013-09-19'))");
+        checkActs(acts2, medication2, medication1);
+
+        Iterable<Act> acts3 = (Iterable<Act>) ctx.getValue(
+                "history:medication(., java.sql.Date.valueOf('2013-09-20'))");
+        checkActs(acts3, medication3);
+
+        Iterable<Act> acts4 = (Iterable<Act>) ctx.getValue(
+                "history:medication(., java.sql.Date.valueOf('2013-09-21'))");
+        checkActs(acts4);
+    }
+
+    /**
      * Tests the {@link HistoryFunctions#medication(Party, Date, Date)} method.
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void testMedicationByDate() {
+    public void testMedicationByDateRange() {
         Act medication1 = PatientTestHelper.createMedication(patient);
         Act medication2 = PatientTestHelper.createMedication(patient);
         medication1.setActivityStartTime(TestHelper.getDate("2013-09-19"));
@@ -96,19 +127,19 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         checkActs(acts1, medication2, medication1);
 
         Iterable<Act> acts2 = (Iterable<Act>) ctx.getValue(
-                "history:medication(., java.sql.Date.valueOf('2013-09-19'), java.sql.Date.valueOf('2013-09-20'))");
+                "history:medication(., java.sql.Date.valueOf('2013-09-19'), java.sql.Date.valueOf('2013-09-21'))");
         checkActs(acts2, medication2, medication1);
 
         Iterable<Act> acts3 = (Iterable<Act>) ctx.getValue(
-                "history:medication(., java.sql.Date.valueOf('2013-09-19'), java.sql.Date.valueOf('2013-09-19'))");
+                "history:medication(., java.sql.Date.valueOf('2013-09-19'), java.sql.Date.valueOf('2013-09-20'))");
         checkActs(acts3, medication1);
 
         Iterable<Act> acts4 = (Iterable<Act>) ctx.getValue(
-                "history:medication(., null, java.sql.Date.valueOf('2013-09-19'))");
+                "history:medication(., null, java.sql.Date.valueOf('2013-09-20'))");
         checkActs(acts4, medication1);
 
         Iterable<Act> acts5 = (Iterable<Act>) ctx.getValue(
-                "history:medication(., null, java.sql.Date.valueOf('2013-09-20'))");
+                "history:medication(., null, java.sql.Date.valueOf('2013-09-21'))");
         checkActs(acts5, medication2, medication1);
 
         Iterable<Act> acts6 = (Iterable<Act>) ctx.getValue(
@@ -117,7 +148,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link HistoryFunctions#medication(Party, String)} method.
+     * Tests the {@link HistoryFunctions#medicationByProductType(Party, String)} method.
      */
     @Test
     @SuppressWarnings("unchecked")
@@ -134,7 +165,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(., 'Vaccination')");
         checkActs(acts1, medication1);
 
-        Iterable<Act> acts2 = (Iterable<Act>) ctx.getValue("history:medication(., 'Euthanasia')");
+        Iterable<Act> acts2 = (Iterable<Act>) ctx.getValue("history:medication(., 'Euth*')");
         checkActs(acts2, medication2);
 
         Iterable<Act> acts3 = (Iterable<Act>) ctx.getValue("history:medication(., 'Procedure')");
@@ -142,11 +173,44 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link HistoryFunctions#medication(Party, String, Date, Date)} method.
+     * Tests the {@link HistoryFunctions#medicationByProductType(Party, String, Date)} method.
      */
     @Test
     @SuppressWarnings("unchecked")
     public void testMedicationByProductTypeAndDate() {
+        Entity productType1 = createProductType("Vaccination");
+        Entity productType2 = createProductType("Euthanasia");
+        Product product1 = createProduct(productType1);
+        Product product2 = createProduct(productType2);
+
+        Act medication1 = PatientTestHelper.createMedication(patient, product1);
+        Act medication2 = PatientTestHelper.createMedication(patient, product1);
+        Act medication3 = PatientTestHelper.createMedication(patient, product2);
+        medication1.setActivityStartTime(TestHelper.getDatetime("2013-09-19 00:00:00"));
+        medication2.setActivityStartTime(TestHelper.getDatetime("2013-09-19 23:59:00"));
+        medication3.setActivityStartTime(TestHelper.getDate("2013-09-20"));
+        save(medication1, medication2, medication3);
+        save(medication1, medication2);
+
+        JXPathContext ctx = createContext(patient);
+        Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(., 'Vaccination', null)");
+        checkActs(acts1);
+
+        Iterable<Act> acts2 = (Iterable<Act>) ctx.getValue(
+                "history:medication(., 'Vacc*', java.sql.Date.valueOf('2013-09-19'))");
+        checkActs(acts2, medication2, medication1);
+
+        Iterable<Act> acts3 = (Iterable<Act>) ctx.getValue(
+                "history:medication(., 'Vaccination', java.sql.Date.valueOf('2013-09-20'))");
+        checkActs(acts3);
+    }
+
+    /**
+     * Tests the {@link HistoryFunctions#medicationByProductType(Party, String, Date, Date)} method.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testMedicationByProductTypeAndDateRange() {
         Entity productType1 = createProductType("Vaccination");
         Entity productType2 = createProductType("Euthanasia");
         Product product1 = createProduct(productType1);
@@ -163,7 +227,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         checkActs(acts1, medication1);
 
         Iterable<Act> acts2 = (Iterable<Act>) ctx.getValue(
-                "history:medication(., 'Vaccination', java.sql.Date.valueOf('2013-09-19'), "
+                "history:medication(., 'Vacc*', java.sql.Date.valueOf('2013-09-19'), "
                 + "java.sql.Date.valueOf('2013-09-20'))");
         checkActs(acts2, medication1);
 
@@ -243,7 +307,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         HistoryFunctions history = new HistoryFunctions(getArchetypeService());
         ArchetypeServiceFunctions functions = new ArchetypeServiceFunctions(getArchetypeService(), getLookupService());
         FunctionLibrary library = new FunctionLibrary();
-        library.addFunctions(new ObjectFunctions(history, "history"));
+        library.addFunctions(history);
         library.addFunctions(new ObjectFunctions(functions, "openvpms"));
         return JXPathHelper.newContext(object, library);
     }

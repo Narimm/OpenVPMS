@@ -101,6 +101,20 @@ public class FlowSheetServiceFactory {
     }
 
     /**
+     * Creates a {@link ConfigurationService} for the specified practice location.
+     *
+     * @param location the practice location
+     * @return a new {@link ConfigurationService}
+     */
+    public ConfigurationService getConfigurationService(Party location) {
+        String clinicKey = getClinicAPIKey(location);
+        if (clinicKey == null) {
+            throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
+        }
+        return new ConfigurationService(url, emrApiKey, clinicKey, TimeZone.getDefault());
+    }
+
+    /**
      * Returns the clinic API key for a practice location.
      *
      * @param location the practice location

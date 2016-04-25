@@ -57,7 +57,7 @@ public class EvenOddTableCellRenderer extends AbstractTableCellRenderer {
     /**
      * Default constructor.
      */
-    private EvenOddTableCellRenderer() {
+    protected EvenOddTableCellRenderer() {
     }
 
     /**

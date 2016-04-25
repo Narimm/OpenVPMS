@@ -14,26 +14,30 @@
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.im.doc;
+package org.openvpms.smartflow.service;
 
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
-import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.smartflow.model.TreatmentTemplate;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
- * Query for <em>entity.documentTemplate</em>s.
+ * Smart Flow Sheet Treatment Templates API.
  *
- * @author Tim Anderson
+ * @author benjamincharlton on 21/10/2015.
  */
-public class DocumentTemplateQuery extends AbstractDocumentTemplateQuery {
+@Path("/treatmenttemplates")
+public interface TreatmentTemplates {
 
     /**
-     * Constructs a {@link DocumentTemplateQuery}.
+     * Returns a list of Treatment Templates from SFS.
      *
-     * @throws ArchetypeQueryException if the short name don't match any archetypes
+     * @return the treatment templates
      */
-    public DocumentTemplateQuery() {
-        super(new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE});
-    }
-
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    List<TreatmentTemplate> getTemplates();
 }

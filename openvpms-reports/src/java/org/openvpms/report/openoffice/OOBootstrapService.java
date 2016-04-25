@@ -31,6 +31,7 @@ import com.sun.star.util.XCloseable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -49,7 +50,7 @@ import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.Faile
  *
  * @author Tim Anderson
  */
-public abstract class OOBootstrapService {
+public abstract class OOBootstrapService implements DisposableBean {
 
     /**
      * The command path.
@@ -109,7 +110,7 @@ public abstract class OOBootstrapService {
 
 
     /**
-     * Constructs a new <code>OOBootstrapService</code>.
+     * Constructs a {@link OOBootstrapService}.
      *
      * @param parameters the connection parameters
      */
@@ -143,7 +144,7 @@ public abstract class OOBootstrapService {
             }
 
             // command line arguments
-            List<String> argList = new ArrayList<String>();
+            List<String> argList = new ArrayList<>();
             argList.add(office);
             if (headless) {
                 argList.add("-headless");
@@ -211,8 +212,7 @@ public abstract class OOBootstrapService {
     /**
      * Determines if the service is running and accepting requests.
      *
-     * @return <code>true</code> if the service is running, otherwise
-     *         <code>false</code>
+     * @return {@code true} if the service is running, otherwise {@code false}
      */
     public synchronized boolean isActive() {
         boolean running = false;
@@ -282,8 +282,7 @@ public abstract class OOBootstrapService {
      * In headless mode, the service can be reliably terminated, however
      * it prevents any viewing of OO documents by the local user.
      *
-     * @param headless if <code>true</code> starts the server headless.
-     *                 Defaults to <code>true</code>
+     * @param headless if {@code true} starts the server headless. Defaults to {@code true}
      */
     public void setHeadless(boolean headless) {
         this.headless = headless;
@@ -304,11 +303,18 @@ public abstract class OOBootstrapService {
      * stopping an OpenOffice service. This ensures that subsequent restarts
      * don't fail with socket errors.
      *
-     * @param wait the time to wait, in milliseconds. Defaults to
-     *             <code>1000</code>
+     * @param wait the time to wait, in milliseconds. Defaults to {@code 1000}
      */
     public void setTerminateWait(long wait) {
         this.terminateWait = wait;
+    }
+
+    /**
+     * Invoked by a BeanFactory on destruction of a singleton.
+     */
+    @Override
+    public void destroy() {
+        stop();
     }
 
     /**
@@ -316,8 +322,7 @@ public abstract class OOBootstrapService {
      *
      * @param urlResolver the URL resolver
      * @param connect     the connection string
-     * @return <code>true</code> if connection is successful, otherwise
-     *         <code>false</code>
+     * @return {@code true} if connection is successful, otherwise {@code false}
      * @throws OpenOfficeException        if the context cannot be resolved
      * @throws com.sun.star.uno.Exception for any OpenOffice error
      */

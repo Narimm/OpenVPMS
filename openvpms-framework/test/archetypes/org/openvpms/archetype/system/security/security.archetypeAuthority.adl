@@ -27,7 +27,7 @@
 			minCardinality="1" />
 		<node name="method" path="/method" type="java.lang.String" displayName="Method Name"
 			minCardinality="1" />
-		<node name="archetypeShortName" path="/archetypeShortName" type="java.lang.String" displayName="Archetype Name"
+		<node name="archetypeShortName" path="/shortName" type="java.lang.String" displayName="Archetype Name"
 			minCardinality="1" />
 	</archetype>
 </archetypes>

@@ -16,7 +16,6 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.Contacts;
@@ -42,6 +41,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
@@ -578,29 +578,25 @@ public class ReminderRules {
      * @param to      the end of the date range, exclusive
      * @return all reminders for the patient in the date range
      */
-    public List<Act> getReminders(Party patient, Date from, Date to) {
-        List<Act> results = new ArrayList<>();
+    public Iterable<Act> getReminders(Party patient, Date from, Date to) {
         ArchetypeQuery query = createQuery(patient, from, to);
-        CollectionUtils.addAll(results, new IMObjectQueryIterator<Act>(service, query));
-        return results;
+        return new IterableIMObjectQuery<>(service, query);
     }
 
     /**
      * Returns all reminders for a patient starting in the specified date range.
      *
      * @param patient     the patient
+     * @param productType the product type to match. May contain wildcards
      * @param from        the start of the date range, inclusive
      * @param to          the end of the date range, exclusive
-     * @param productType the product type to match. May contain wildcards
      * @return all reminders for the patient in the date range
      */
-    public List<Act> getReminders(Party patient, Date from, Date to, String productType) {
-        List<Act> results = new ArrayList<>();
+    public Iterable<Act> getReminders(Party patient, String productType, Date from, Date to) {
         ArchetypeQuery query = createQuery(patient, from, to);
         query.add(join("product").add(join("entity").add(join("type").add(join("target").add(
                 eq("name", productType))))));
-        CollectionUtils.addAll(results, new IMObjectQueryIterator<Act>(service, query));
-        return results;
+        return new IterableIMObjectQuery<>(service, query);
     }
 
     /**

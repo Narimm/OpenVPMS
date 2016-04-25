@@ -47,6 +47,7 @@ import org.openvpms.web.workspace.reporting.ReportingException;
 import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
@@ -149,7 +150,20 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      */
     protected void send(Party customer, Contact contact, List<ReminderEvent> events, DocumentTemplate reminderTemplate,
                         Entity emailTemplate, Mailer mailer, Context context) {
-        String body = evaluator.getMessage(emailTemplate, customer, context);
+        String body = null;
+        List<ObjectSet> sets = (events.size() > 1) ? createObjectSets(events) : Collections.<ObjectSet>emptyList();
+        if (!sets.isEmpty()) {
+            Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, sets, context);
+            if (reporter != null) {
+                body = evaluator.getMessage(reporter);
+                if (StringUtils.isEmpty(body)) {
+                    throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
+                }
+            }
+        }
+        if (body == null) {
+            body = evaluator.getMessage(emailTemplate, customer, context);
+        }
         if (StringUtils.isEmpty(body)) {
             throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
         }
@@ -167,7 +181,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         mailer.setSubject(subject);
         mailer.setBody(body);
 
-        Document document = createReport(events, reminderTemplate, context);
+        Document document = createReport(events, sets, reminderTemplate, context);
         mailer.addAttachment(document);
 
         mailer.send();
@@ -177,14 +191,15 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      * Creates a new report.
      *
      * @param events           the reminder events
+     * @param sets             the reminder sets, used for grouped reminders. Empty otherwise
      * @param documentTemplate the document template
      * @param context          the reporting context
      * @return a new report
      */
-    private Document createReport(List<ReminderEvent> events, DocumentTemplate documentTemplate, Context context) {
+    private Document createReport(List<ReminderEvent> events, List<ObjectSet> sets, DocumentTemplate documentTemplate,
+                                  Context context) {
         Document result;
-        if (events.size() > 1) {
-            List<ObjectSet> sets = createObjectSets(events);
+        if (!sets.isEmpty()) {
             result = getDocument(new ObjectSetReporter(sets, documentTemplate), context);
         } else {
             List<Act> acts = new ArrayList<>();

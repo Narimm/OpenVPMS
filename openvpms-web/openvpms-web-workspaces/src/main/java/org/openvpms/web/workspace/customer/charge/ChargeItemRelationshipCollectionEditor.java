@@ -278,6 +278,17 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
                 alertId = alertListener.onAlert(Messages.format("customer.charge.outofstock", outOfStock));
             }
         }
+        EditorQueue queue = getEditorQueue();
+        if (!acts.isEmpty() && !queue.isComplete()) {
+            // the collection is considered invalid while there are popups, so force a validation check when
+            // popups have all closed.
+            queue.queue(new Runnable() {
+                @Override
+                public void run() {
+                    isValid(); //
+                }
+            });
+        }
         return acts;
     }
 

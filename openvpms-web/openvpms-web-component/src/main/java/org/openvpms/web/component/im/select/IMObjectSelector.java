@@ -242,7 +242,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * Determines if a selection dialog has been popped up.
      *
      * @return {@code true} if a selection dialog has been popped up
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     public boolean inSelect() {
         return inSelect;
@@ -392,10 +392,11 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Creates the select button.
      *
-     * @param buttonId the button identifier. Ignored for this implementation
+     * @param buttonId        the button identifier. Ignored for this implementation
+     * @param enableShortcuts if {@code true}, enable shortcuts
      * @return the select button
      */
-    protected Button createSelectButton(String buttonId) {
+    protected Button createSelectButton(String buttonId, boolean enableShortcuts) {
         return ButtonFactory.create(null, "select");
     }
 

@@ -126,7 +126,7 @@ public class SecurityLoader {
                 auth.setDescription(authData.getDescription());
                 auth.setServiceName(authData.getService());
                 auth.setMethod(authData.getMethod());
-                auth.setArchetypeShortName(authData.getArchShortName());
+                auth.setShortName(authData.getArchShortName());
                 secRole.addAuthority(auth);
             }
             session.saveOrUpdate(secRole);
