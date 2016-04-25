@@ -19,6 +19,8 @@ package org.openvpms.web.workspace.admin.template;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.doc.AbstractDocumentTemplateQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
@@ -41,6 +43,16 @@ public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
     }
 
     /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Entity> createQuery() {
+        return new TemplateQuery(getArchetypes().getShortNames());
+    }
+
+    /**
      * Creates a new CRUD window.
      *
      * @return a new CRUD window
@@ -50,6 +62,13 @@ public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
         QueryBrowser<Entity> browser = getBrowser();
         return new DocumentTemplateCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(),
                                               getContext(), getHelpContext());
+    }
+
+    private static class TemplateQuery extends AbstractDocumentTemplateQuery {
+
+        public TemplateQuery(String[] shortNames) {
+            super(shortNames);
+        }
     }
 
 }
