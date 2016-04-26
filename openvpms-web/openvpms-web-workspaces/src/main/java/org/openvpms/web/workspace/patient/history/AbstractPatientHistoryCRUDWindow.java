@@ -28,19 +28,16 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
@@ -98,12 +95,8 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
         Act act = IMObjectHelper.reload(getObject());
         if (act != null) {
             try {
-                LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
-                context.setMailContext(getMailContext());
-                context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
-                IMObjectViewer viewer = new IMObjectViewer(act, null, context);
-                viewer.getComponent();
-                IMObjectViewerDialog dialog = new IMObjectViewerDialog(viewer, getContext(), viewer.getHelpContext());
+                IMObjectViewerDialog dialog = new IMObjectViewerDialog(act, getContext(), getMailContext(),
+                                                                       getHelpContext());
                 dialog.show();
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

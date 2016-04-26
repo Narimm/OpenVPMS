@@ -870,6 +870,16 @@ DROP TABLE tmp_email_templates;
 # OVPMS-1744 Medical Record Locking
 #
 
+#
+# Set the status node for existing medical records if they have none.
+#
+UPDATE acts a
+  JOIN act_relationships r
+    ON r.arch_short_name = 'actRelationship.patientClinicalEventItem'
+       AND a.act_id = r.target_id
+       AND a.status IS NULL
+SET a.status = 'IN_PROGRESS';
+
 # Add a status2 column to acts.
 DELIMITER $$
 CREATE PROCEDURE OVPMS_1744_modify_acts()
