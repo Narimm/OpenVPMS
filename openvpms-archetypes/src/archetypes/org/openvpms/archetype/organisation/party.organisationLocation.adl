@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -106,6 +106,8 @@
         <node name="smsAppointment" displayName="Appointment SMS" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.organisationSMSAppointment"/>
+        <node name="letterhead" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="1" filter="entityLink.locationLetterhead"/>
         <node name="templates" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.documentTemplatePrinter"/>

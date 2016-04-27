@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.party;
@@ -26,12 +26,15 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
@@ -1260,6 +1263,31 @@ public class PartyFunctions {
             return (party != null) ? getBpayId(party) : null;
         }
         return null;
+    }
+
+    /**
+     * Returns the location to use for contacts in letterhead.
+     * <p/>
+     * If the supplied practice location has a letterhead, and specifies that a different location should be used
+     * for contacts, then this is returned, otherwise the supplied location is returned.
+     *
+     * @param location the practice location
+     * @return the location to use for contacts, or {@code null} if {@code location} is {@code null}
+     */
+    public Party getLetterheadContacts(Party location) {
+        Party result = location;
+        if (location != null) {
+            EntityBean bean = new EntityBean(location, service);
+            Entity letterhead = bean.getNodeTargetEntity("letterhead");
+            if (letterhead != null) {
+                bean = new EntityBean(letterhead, service);
+                IMObjectReference contacts = bean.getNodeTargetObjectRef("contacts");
+                if (contacts != null && !contacts.equals(location.getObjectReference())) {
+                    result = (Party) service.get(contacts);
+                }
+            }
+        }
+        return result;
     }
 
     /**
