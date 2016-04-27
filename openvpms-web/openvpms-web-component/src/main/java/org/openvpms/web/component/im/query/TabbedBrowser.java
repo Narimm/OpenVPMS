@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -37,13 +37,13 @@ import java.util.List;
 
 /**
  * Browser that contains other browsers, with each browser selected by a tab.
- * <p>
+ * <p/>
  * The tabs and content are rendered in a split pane so that tabs don't scroll if the content is too
  * large to fit on screen.
  *
  * @author Tim Anderson
  */
-public abstract class TabbedBrowser<T> implements Browser<T> {
+public class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * The browsers.
@@ -263,7 +263,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * Returns the browser state.
-     * <p>
+     * <p/>
      * This implementation always returns {@code null}.
      *
      * @return {@code null}
@@ -274,7 +274,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * Sets the browser state.
-     * <p>
+     * <p/>
      * This implementation is a bo-op.
      *
      * @param state the state
@@ -301,7 +301,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * Invoked when a browser is selected.
-     * <p>
+     * <p/>
      * This notifies any registered listener.
      *
      * @param selected the selected index
@@ -331,10 +331,10 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * Queries a browser, preserving the selected object if possible.
-     * <p>
+     * <p/>
      * Note that this suppresses events for all but the current browser, to avoid events from one browser triggering
      * behaviour in another.
-     * <p>
+     * <p/>
      * TODO - ideally each tab would be treated independently, and refreshed when displayed.
      *
      * @param browser the browser
