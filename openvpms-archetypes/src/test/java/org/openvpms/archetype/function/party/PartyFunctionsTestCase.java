@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.party;
@@ -31,6 +31,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -525,6 +526,35 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         customer.addContact(contact);
 
         assertEquals("http://wwww.openvpms.org", context.getValue("party:getWebsite(.)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getLetterheadContacts(Party)} method.
+     */
+    @Test
+    public void testGetLetterheadContacts() {
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+
+        JXPathContext context = createContext(new IMObject());
+        context.getVariables().declareVariable("location", null);
+        assertNull(context.getValue("party:getLetterheadContacts($location)"));
+
+        context.getVariables().declareVariable("location", location1);
+        assertEquals(location1, context.getValue("party:getLetterheadContacts($location)"));
+
+        Entity letterhead = (Entity) create("entity.letterhead");
+        EntityBean bean = new EntityBean(letterhead);
+        bean.setValue("name", "Z Test Letterhead");
+        bean.setValue("logoFile", "logo.png");
+        EntityBean locationBean = new EntityBean(location1);
+        locationBean.addNodeTarget("letterhead", letterhead);
+        save(location1, letterhead);
+        assertEquals(location1, context.getValue("party:getLetterheadContacts($location)"));
+
+        bean.addNodeTarget("contacts", location2);
+        bean.save();
+        assertEquals(location2, context.getValue("party:getLetterheadContacts($location)"));
     }
 
     /**

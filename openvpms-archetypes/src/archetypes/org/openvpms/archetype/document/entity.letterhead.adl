@@ -1,0 +1,50 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.letterhead.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Letterhead">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="companyID" displayName="Company Tax ID" type="java.lang.String"
+              path="/details/companyID"/>
+        <node name="logoFile" displayName="Logo File" path="/details/logoFile"
+              type="java.lang.String" minCardinality="1" maxLength="240"/>
+        <node name="contacts" displayName="Contacts Source" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.letterheadContacts"/>
+        <node name="subreport" displayName="Subreport Expression" type="java.lang.String"
+              path="/details/subreport" minCardinality="1" maxLength="30"
+              defaultValue="'Letterhead.jrxml'">
+            <assertion name="regularExpression">
+                <errorMessage>Must end with .jrxml - eg myletterhead.jrxml</errorMessage>
+                <property name="expression" type="java.lang.String" value=".+\.jrxml"/>
+            </assertion>
+        </node>
+        <node name="creditCardInstructions" displayName="Credit Card Instructions"
+              path="/details/creditCardInstructions" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="directDepositInstructions" displayName="Direct Deposit Instructions"
+              path="/details/directDepositInstructions" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="directDepositReference" displayName="Direct Deposit Reference"
+              path="/details/directDepositReference" type="java.lang.String" minCardinality="0"/>
+        <node name="paymentOption3" displayName="Payment Option 3" path="/details/paymentOption3"
+              type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="paymentOption4" displayName="Payment Option 4" path="/details/paymentOption4"
+              type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+    </archetype>
+</archetypes>
