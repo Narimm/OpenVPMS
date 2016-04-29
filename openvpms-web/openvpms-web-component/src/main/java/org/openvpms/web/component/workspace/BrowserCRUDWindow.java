@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -123,20 +123,15 @@ public class BrowserCRUDWindow<T extends IMObject> {
         this.window = window;
         window.setListener(new CRUDWindowListener<T>() {
             public void saved(T object, boolean isNew) {
-                refreshBrowser(object);
+                onSaved(object, isNew);
             }
 
             public void deleted(T object) {
-                refreshBrowser(null);
+                onDeleted(object);
             }
 
             public void refresh(T object) {
-                if (object.isNew()) {
-                    // object not persistent, so don't attempt to reselect after refresh
-                    refreshBrowser(null);
-                } else {
-                    refreshBrowser(object);
-                }
+                onRefresh(object);
             }
         });
         if (browser != null) {
@@ -174,6 +169,39 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     protected void onBrowsed(T object) {
         select(object);
+    }
+
+    /**
+     * Invoked when an object is saved.
+     *
+     * @param object the saved object
+     * @param isNew  determines if the object is a new instance
+     */
+    protected void onSaved(T object, boolean isNew) {
+        refreshBrowser(object);
+    }
+
+    /**
+     * Invoked when an object is deleted.
+     *
+     * @param object the deleted object
+     */
+    protected void onDeleted(T object) {
+        refreshBrowser(null);
+    }
+
+    /**
+     * Invoked when the parent needs to refresh an object.
+     *
+     * @param object the object to refresh
+     */
+    protected void onRefresh(T object) {
+        if (object.isNew()) {
+            // object not persistent, so don't attempt to reselect after refresh
+            refreshBrowser(null);
+        } else {
+            refreshBrowser(object);
+        }
     }
 
     /**
