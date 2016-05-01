@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.location;
@@ -88,6 +88,25 @@ public class LocationSelectField extends SelectField {
     }
 
     /**
+     * Sets the selected location.
+     *
+     * @param location may be {@code null}
+     */
+    public void setSelected(Location location) {
+        IMObjectListModel model = getModel();
+        if (location == null || (location.isAll() && model.getAllIndex() == -1)
+            || (location.isNone() && model.getNoneIndex() == -1)) {
+            setSelectedItem(null);
+        } else if (location.isAll()) {
+            setSelectedIndex(model.getAllIndex());
+        } else if (location.isNone()) {
+            setSelectedIndex(model.getNoneIndex());
+        } else {
+            setSelectedItem(location.getLocation());
+        }
+    }
+
+    /**
      * Returns the list model.
      *
      * @return the list model
@@ -103,7 +122,7 @@ public class LocationSelectField extends SelectField {
      * @return the locations
      */
     public List<Party> getLocations() {
-        List<Party> result = new ArrayList<Party>();
+        List<Party> result = new ArrayList<>();
         for (IMObject object : getModel().getObjects()) {
             if (object instanceof Party) {
                 result.add((Party) object);
