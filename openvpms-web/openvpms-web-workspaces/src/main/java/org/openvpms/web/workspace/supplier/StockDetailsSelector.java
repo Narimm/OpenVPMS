@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -64,7 +64,7 @@ public class StockDetailsSelector {
     public StockDetailsSelector(LayoutContext context) {
         HelpContext help = context.getHelpContext();
         LayoutContext supplierContext = new DefaultLayoutContext(context, help.topic("supplier/select"));
-        supplier = new IMObjectSelector<Party>(Messages.get("supplier.type"), supplierContext, "party.supplier*");
+        supplier = new SupplierSelector(supplierContext);
 
         LayoutContext locationContext = new DefaultLayoutContext(context, help.topic("stockLocation/select"));
         location = new StockLocationSelector(Messages.get("product.stockLocation"), locationContext);

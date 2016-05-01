@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -118,6 +118,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         super(null, null, null, SHORT_NAMES, STATUSES, Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
         setAuto(true);
+        setContains(true);
 
         setStatus(INCOMPLETE_STATUS.getCode());
         // TODO - shouldn't need this as its returned by StatusLookupQuery, but addStatusSelector() ignores it
