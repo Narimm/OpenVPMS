@@ -18,52 +18,40 @@ package org.openvpms.web.workspace.supplier;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.workspace.BasicCRUDWorkspace;
+import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.resource.i18n.Messages;
 
-
 /**
- * Supplier information workspace.
+ * Selector for suppliers that provides query support for partial/incorrect names.
  *
  * @author Tim Anderson
  */
-public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
+public class SupplierSelector extends IMObjectSelector<Party> {
 
     /**
-     * Constructs an {@code InformationWorkspace}.
+     * Constructs a {@link SupplierSelector}.
      *
-     * @param context the context
+     * @param context the layout context
      */
-    public InformationWorkspace(Context context) {
-        super("supplier", "info", Archetypes.create("party.supplier*", Party.class, Messages.get("supplier.info.type")),
-              context);
-        setMailContext(new SupplierMailContext(context, getHelpContext()));
+    public SupplierSelector(LayoutContext context) {
+        super(Messages.get("supplier.type"), context, "party.supplier*");
     }
 
     /**
-     * Sets the current object.
+     * Creates a query to select objects.
      *
-     * @param object the object. May be {@code null}
-     */
-    @Override
-    public void setObject(Party object) {
-        super.setObject(object);
-        getContext().setSupplier(object);
-    }
-
-    /**
-     * Creates a new query to select an object.
-     *
+     * @param value a value to filter on. May be {@code null}
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     @Override
-    protected Query<Party> createSelectQuery() {
+    protected Query<Party> createQuery(String value) {
         // uses the query handler for party.supplier* by default
-        return QueryFactory.create(getArchetypes().getShortNames(), false, getContext(), getType());
+        Query<Party> query = QueryFactory.create(getShortNames(), false, getContext().getContext(), Party.class);
+        query.setValue(value);
+        return query;
     }
 }
