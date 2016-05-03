@@ -16,6 +16,7 @@
 
 package org.openvpms.web.jobs.recordlocking;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.Period;
@@ -69,12 +70,17 @@ public class MedicalRecordLockingScheduler {
     /**
      * The listener for practice updates.
      */
-    private final Listener<Party> listener;
+    private final Listener<PracticeService.Update> listener;
 
     /**
      * The transaction manager.
      */
     private final PlatformTransactionManager transactionManager;
+
+    /**
+     * The record locking period, or {@code null} if locking is disabled.
+     */
+    private Period period;
 
     /**
      * The logger.
@@ -103,14 +109,14 @@ public class MedicalRecordLockingScheduler {
 
         Party practice = practiceService.getPractice();
         if (practice != null) {
-            init(practice);
+            init(practice, null, true);
         } else {
             log.error("Medical record locking cannot be enabled until a Practice is configured");
         }
-        listener = new Listener<Party>() {
+        listener = new Listener<PracticeService.Update>() {
             @Override
-            public void onEvent(Party practice) {
-                init(practice);
+            public void onEvent(PracticeService.Update update) {
+                init(update.getPractice(), update.getUser(), false);
             }
         };
         practiceService.addListener(listener);
@@ -124,13 +130,14 @@ public class MedicalRecordLockingScheduler {
         practiceService.removeListener(listener);
     }
 
-
     /**
      * Initialises the scheduler.
      *
-     * @param practice the practice
+     * @param practice  the practice
+     * @param updatedBy the user that updated the practice. May be {@code null}
+     * @param audit     if {@code true}, send an audit message, even if nothing has changed
      */
-    private void init(final Party practice) {
+    private void init(final Party practice, final String updatedBy, final boolean audit) {
         final User user = practiceService.getServiceUser();
         if (user == null) {
             log.error("Medical record locking cannot be enabled until a Practice Service User is configured");
@@ -138,7 +145,7 @@ public class MedicalRecordLockingScheduler {
             RunAs.run(user, new Runnable() {
                 @Override
                 public void run() {
-                    init(practice, user);
+                    init(practice, updatedBy, user, audit);
                 }
             });
         }
@@ -147,23 +154,41 @@ public class MedicalRecordLockingScheduler {
     /**
      * Initialises the scheduler.
      *
-     * @param practice the practice
-     * @param user     the user to send audit messages to
+     * @param practice  the practice
+     * @param updatedBy the user that updated the practice. May be {@code null}
+     * @param user      the user to send audit messages to
+     * @param audit     if {@code true}, send an audit message, even if nothing has changed
      */
-    private void init(final Party practice, final User user) {
-        final Period period = rules.getRecordLockPeriod(practice);
-        if (period == null) {
-            disable();
-            audit(Messages.get("recordlocking.disabled.subject"), Messages.get("recordlocking.disabled.message"), user);
+    private void init(final Party practice, final String updatedBy, final User user, final boolean audit) {
+        final Period newPeriod = rules.getRecordLockPeriod(practice);
+        if (newPeriod == null) {
+            boolean enabled = disable();
+            if (audit || enabled) {
+                String subject = updatedBy != null
+                                 ? Messages.format("recordlocking.disabled.subjectby", updatedBy)
+                                 : Messages.get("recordlocking.disabled.subject");
+                audit(subject, Messages.get("recordlocking.disabled.message"), user);
+            }
         } else {
             TransactionTemplate template = new TransactionTemplate(transactionManager);
             template.execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    enable(user);
-                    String periodStr = PeriodFormat.getDefault().print(period);
-                    audit(Messages.get("recordlocking.enabled.subject"),
-                          Messages.format("recordlocking.enabled.message", periodStr), user);
+                    boolean disabled = enable(user);
+                    Period current;
+                    synchronized (this) {
+                        current = period;
+                    }
+                    if (audit || disabled || !ObjectUtils.equals(current, newPeriod)) {
+                        String subject = updatedBy != null && (disabled || !ObjectUtils.equals(current, newPeriod))
+                                         ? Messages.format("recordlocking.enabled.subjectby", updatedBy)
+                                         : Messages.get("recordlocking.enabled.subject");
+                        String periodStr = PeriodFormat.getDefault().print(newPeriod);
+                        audit(subject, Messages.format("recordlocking.enabled.message", periodStr), user);
+                    }
+                    synchronized (this) {
+                        period = newPeriod;
+                    }
                 }
             });
         }
@@ -194,8 +219,10 @@ public class MedicalRecordLockingScheduler {
      * This will activate an existing job if one is available. If not, it will create a new job.
      *
      * @param user the user the job should be run as
+     * @return {@code true} if locking was previously disabled, {@code false} if it wasn't
      */
-    private void enable(User user) {
+    private boolean enable(User user) {
+        boolean result = false;
         IMObjectQueryIterator<IMObject> active = getJobs(true);
         if (!active.hasNext()) {
             // there is currently no active job. Try and activate one
@@ -209,22 +236,31 @@ public class MedicalRecordLockingScheduler {
                 bean.addNodeTarget("runAs", user);
                 bean.save();
             }
+            result = true;
         }
+        return result;
     }
 
     /**
      * Disables all active locking jobs.
+     *
+     * @return {@code true} if locking was previously enabled, {@code false} if it wasn't
      */
-    private void disable() {
+    private boolean disable() {
+        int count = 0;
         IMObjectQueryIterator<IMObject> iterator = getJobs(true);
         try {
             while (iterator.hasNext()) {
                 IMObject object = iterator.next();
-                setActive(object, false);
+                if (object.isActive()) {
+                    setActive(object, false);
+                    ++count;
+                }
             }
         } catch (Throwable exception) {
             log.error("Failed to disable job", exception);
         }
+        return count > 0;
     }
 
     /**
