@@ -27,6 +27,7 @@ import org.openvpms.component.system.common.query.ParticipationConstraint;
 
 import java.util.Date;
 
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_MEDICATION;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.exists;
@@ -67,13 +68,60 @@ public class PatientHistory {
     }
 
     /**
+     * Returns all invoice item acts for a patient.
+     *
+     * @param patient the patient
+     * @return the invoice item acts for the patient
+     */
+    public Iterable<Act> getCharges(Party patient) {
+        return getCharges(patient, null, null, null);
+    }
+
+    /**
+     * Returns all invoice item acts for a patient.
+     *
+     * @param patient the patient
+     * @param from    the start of the date range, inclusive. May be {@code null}
+     * @param to      the end of the date range, exclusive. May be {@code null}
+     * @return the invoice item acts for the patient
+     */
+    public Iterable<Act> getCharges(Party patient, Date from, Date to) {
+        return getCharges(patient, null, from, to);
+    }
+
+    /**
+     * Returns all invoice item acts for a patient.
+     *
+     * @param patient         the patient
+     * @param productTypeName the product type name. May be {@code null} or contain wildcards
+     * @return the invoice item acts for the patient
+     */
+    public Iterable<Act> getCharges(Party patient, String productTypeName) {
+        return getCharges(patient, productTypeName, null, null);
+    }
+
+
+    /**
+     * Returns invoice item acts for a patient, with the specified product type name, between the specified dates.
+     *
+     * @param patient         the patient
+     * @param productTypeName the product type name. May be {@code null} or contain wildcards
+     * @param from            the start of the date range, inclusive. May be {@code null}
+     * @param to              the end of the date range, exclusive. May be {@code null}
+     * @return the medication acts for the patient
+     */
+    public Iterable<Act> getCharges(Party patient, String productTypeName, Date from, Date to) {
+        return createQuery(patient, INVOICE_ITEM, productTypeName, from, to);
+    }
+
+    /**
      * Returns all medication acts for a patient.
      *
      * @param patient the patient
      * @return the medication acts for the patient
      */
     public Iterable<Act> getMedication(Party patient) {
-        ArchetypeQuery query = createMedicationQuery(patient);
+        ArchetypeQuery query = createQuery(patient, PATIENT_MEDICATION);
         return new IterableIMObjectQuery<>(service, query);
     }
 
@@ -110,7 +158,21 @@ public class PatientHistory {
      * @return the medication acts for the patient
      */
     public Iterable<Act> getMedication(Party patient, String productTypeName, Date from, Date to) {
-        ArchetypeQuery query = createMedicationQuery(patient);
+        return createQuery(patient, PATIENT_MEDICATION, productTypeName, from, to);
+    }
+
+    /**
+     * Returns acts for a patient with the specified short name, product type name, and between the specified dates.
+     *
+     * @param patient         the patient
+     * @param shortName       the act archetype short name
+     * @param productTypeName the product type name. May be {@code null} or contain wildcards
+     * @param from            the start of the date range, inclusive. May be {@code null}
+     * @param to              the end of the date range, exclusive. May be {@code null}
+     * @return the matching acts
+     */
+    protected Iterable<Act> createQuery(Party patient, String shortName, String productTypeName, Date from, Date to) {
+        ArchetypeQuery query = createQuery(patient, shortName);
         if (productTypeName != null) {
             // Original query. In MySQL 5.1 and 5.5, this uses the wrong index, resulting in very slow queries
             // query.add(join("product").add(join("entity").add(join("type").add(
@@ -142,11 +204,11 @@ public class PatientHistory {
      * @param patient the patient
      * @return medication query
      */
-    private ArchetypeQuery createMedicationQuery(Party patient) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName("act", PATIENT_MEDICATION));
+    private ArchetypeQuery createQuery(Party patient, String shortName) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName("act", shortName));
         JoinConstraint participation = join("patient");
         participation.add(eq("entity", patient));
-        participation.add(new ParticipationConstraint(ActShortName, PATIENT_MEDICATION));
+        participation.add(new ParticipationConstraint(ActShortName, shortName));
         query.add(participation);
         query.add(sort("startTime", false));
         query.add(sort("id", false));
