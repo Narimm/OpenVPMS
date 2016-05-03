@@ -82,7 +82,9 @@ class BoardingInvoicer extends AbstractInvoicer {
         int days = visit.getDays(endTime);
         Product product = cageType.getProduct(days, visit.isFirstPet());
         if (product != null) {
-            addItem(visit.getPatient(), product, days, editor);
+            // if staying multiple days, then the number of nights is charged
+            BigDecimal quantity = (days > 1) ? BigDecimal.valueOf(days - 1) : BigDecimal.valueOf(days);
+            addItem(visit.getPatient(), product, quantity, editor);
         }
     }
 
@@ -96,7 +98,7 @@ class BoardingInvoicer extends AbstractInvoicer {
         CageType cageType = visit.getCageType();
         Product product = cageType.getLateCheckoutProduct();
         if (product != null) {
-            addItem(visit.getPatient(), product, 1, editor);
+            addItem(visit.getPatient(), product, BigDecimal.ONE, editor);
         }
     }
 
@@ -108,15 +110,14 @@ class BoardingInvoicer extends AbstractInvoicer {
      * @param quantity the quantity
      * @param editor   the invoice editor
      */
-    private void addItem(Party patient, Product product, int quantity, CustomerChargeActEditor editor) {
+    private void addItem(Party patient, Product product, BigDecimal quantity, CustomerChargeActEditor editor) {
         CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
         itemEditor.setPatient(patient);
-        BigDecimal qty = BigDecimal.valueOf(quantity);
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            editor.getItems().expandTemplate(itemEditor, product, qty);
+            editor.getItems().expandTemplate(itemEditor, product, quantity);
         } else {
             itemEditor.setProduct(product);
-            itemEditor.setQuantity(qty);
+            itemEditor.setQuantity(quantity);
         }
     }
 }
