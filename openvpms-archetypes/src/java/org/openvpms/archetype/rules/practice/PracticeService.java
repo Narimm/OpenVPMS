@@ -29,6 +29,8 @@ import org.openvpms.component.system.common.event.AsyncListeners;
 import org.openvpms.component.system.common.event.Listener;
 import org.openvpms.component.system.common.event.Listeners;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PreDestroy;
 import java.util.Collections;
@@ -40,6 +42,39 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class PracticeService {
+
+    /**
+     * Used to notify registered listeners of updates to the practice.
+     */
+    public static class Update {
+
+        private final Party practice;
+        private final String user;
+
+        private Update(Party practice) {
+            this.practice = practice;
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            this.user = (authentication != null) ? authentication.getName() : null;
+        }
+
+        /**
+         * Returns the practice.
+         *
+         * @return the practice
+         */
+        public Party getPractice() {
+            return practice;
+        }
+
+        /**
+         * Returns the login name of the user that updated the practice.
+         *
+         * @return the login name. May be {@code null}
+         */
+        public String getUser() {
+            return user;
+        }
+    }
 
     /**
      * The practice;
@@ -64,7 +99,7 @@ public class PracticeService {
     /**
      * Listeners to notify when the practice updates.
      */
-    private final Listeners<Party> listeners;
+    private final Listeners<Update> listeners;
 
     /**
      * Constructs a {@link PracticeService}.
@@ -178,7 +213,7 @@ public class PracticeService {
      *
      * @param listener the listener
      */
-    public void addListener(Listener<Party> listener) {
+    public void addListener(Listener<Update> listener) {
         listeners.addListener(listener);
     }
 
@@ -187,7 +222,7 @@ public class PracticeService {
      *
      * @param listener the listener to remove
      */
-    public void removeListener(Listener<Party> listener) {
+    public void removeListener(Listener<Update> listener) {
         listeners.removeListener(listener);
     }
 
@@ -205,7 +240,7 @@ public class PracticeService {
             }
         }
         if (updated) {
-            listeners.onEvent(object);
+            listeners.onEvent(new Update(object));
         }
     }
 
