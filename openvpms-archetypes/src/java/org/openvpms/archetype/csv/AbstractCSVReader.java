@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.csv;
@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.List;
@@ -47,12 +48,12 @@ public abstract class AbstractCSVReader {
     /**
      * The expected CSV header.
      */
-    private final String[] header;
+    private String[] header;
 
     /**
-     * The field separator.
+     * The possible field separators.
      */
-    private final char separator;
+    private final char[] separators;
 
     /**
      * Constructs an {@link AbstractCSVReader}.
@@ -62,9 +63,23 @@ public abstract class AbstractCSVReader {
      * @param separator the field separator
      */
     public AbstractCSVReader(DocumentHandlers handlers, String[] header, char separator) {
+        this(handlers, header, new char[]{separator});
+    }
+
+    /**
+     * Constructs an {@link AbstractCSVReader}.
+     *
+     * @param handlers   the document handlers
+     * @param header     the expected CSV header
+     * @param separators the possible field separators
+     */
+    public AbstractCSVReader(DocumentHandlers handlers, String[] header, char[] separators) {
+        if (separators.length == 0) {
+            throw new IllegalArgumentException("Argument 'separators' cannot be empty");
+        }
         this.handlers = handlers;
         this.header = header;
-        this.separator = separator;
+        this.separators = separators;
     }
 
     /**
@@ -74,21 +89,60 @@ public abstract class AbstractCSVReader {
      * @return the lines
      */
     protected List<String[]> readLines(Document document) {
+        List<String[]> result = null;
+        DocumentHandler documentHandler = handlers.get(document);
+        CSVReader reader = null;
         try {
-            DocumentHandler documentHandler = handlers.get(document);
-            CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)), separator);
-            String[] first = reader.readNext();
-            if (first.length < header.length) {
-                throw new CSVReaderException(CSVReaderException.ErrorCode.UnrecognisedDocument, 1, document.getName());
-            }
-            for (int i = 0; i < header.length; ++i) {
-                if (!first[i].equalsIgnoreCase(header[i])) {
-                    throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidColumn, 1, first[i]);
+            for (int i = 0; i < separators.length; ++i) {
+                InputStream content = documentHandler.getContent(document);
+                reader = new CSVReader(new InputStreamReader(content), separators[i]);
+                String[] first = reader.readNext();
+                if ((first.length > 1) || (i + 1 == separators.length)) {
+                    // if the first line is possibly valid, or there are no more separators, validate the header
+                    checkHeader(first, document);
+                    result = reader.readAll();
+                    break;
+                } else {
+                    // try the next separator
+                    reader.close();
                 }
             }
-            return reader.readAll();
+            if (reader != null) {
+                reader.close();
+            }
         } catch (IOException exception) {
             throw new CSVReaderException(CSVReaderException.ErrorCode.ReadError, -1, exception);
+        }
+        return result;
+    }
+
+    /**
+     * Registers the header.
+     *
+     * @param header the header
+     */
+    protected void setHeader(String[] header) {
+        this.header = header;
+    }
+
+    /**
+     * Verifies the header matches that expected.
+     * <p/>
+     * Subclasses that support multiple formats should override this method, and invoke {@link #setHeader(String[])}
+     * with the actual header once the format is determined.
+     *
+     * @param line     the first line
+     * @param document the document
+     * @throws CSVReaderException if the header doesn't match that expected
+     */
+    protected void checkHeader(String[] line, Document document) {
+        if (line.length < header.length) {
+            throw new CSVReaderException(CSVReaderException.ErrorCode.UnrecognisedDocument, 1, document.getName());
+        }
+        for (int i = 0; i < header.length; ++i) {
+            if (!line[i].equalsIgnoreCase(header[i])) {
+                throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidColumn, 1, line[i]);
+            }
         }
     }
 
@@ -188,7 +242,8 @@ public abstract class AbstractCSVReader {
      */
     protected void checkFields(String[] line, int lineNo) {
         if (line.length < header.length) {
-            throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidLine, lineNo, lineNo, header.length, line.length);
+            throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidLine, lineNo, lineNo, header.length,
+                                         line.length);
         }
     }
 

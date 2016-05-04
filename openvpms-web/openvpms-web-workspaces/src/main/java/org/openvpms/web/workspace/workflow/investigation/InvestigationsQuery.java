@@ -132,6 +132,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         super(null, null, null, SHORT_NAMES, STATUSES, Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
         setAuto(true);
+        setContains(true);
 
         location = createLocationSelector(context.getContext());
         clinician = createClinicianSelector();

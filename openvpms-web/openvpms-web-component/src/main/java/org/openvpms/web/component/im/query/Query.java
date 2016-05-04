@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -166,6 +166,20 @@ public interface Query<T> extends Iterable<T> {
     int getValueMinLength();
 
     /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @param contains if {@code true}, perform substring searches, otherwise only perform them if wildcards are present
+     */
+    void setContains(boolean contains);
+
+    /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @return {@code true} to perform substring searches, {@code false} to only perform them if wildcards are present
+     */
+    boolean isContains();
+
+    /**
      * Determines if the query should be run automatically.
      *
      * @param auto if {@code true} run the query automatically
@@ -176,7 +190,7 @@ public interface Query<T> extends Iterable<T> {
      * Determines if the query should be run automatically.
      *
      * @return {@code true} if the query should be run automaticaly;
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     boolean isAuto();
 
@@ -191,7 +205,7 @@ public interface Query<T> extends Iterable<T> {
      * Determines if duplicate rows should be filtered.
      *
      * @return {@code true} if duplicate rows should be removed;
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     boolean isDistinct();
 

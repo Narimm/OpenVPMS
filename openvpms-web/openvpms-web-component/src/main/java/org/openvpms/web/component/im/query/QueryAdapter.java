@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -208,6 +208,26 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      */
     public String getValue() {
         return query.getValue();
+    }
+
+    /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @param contains if {@code true}, perform substring searches, otherwise only perform them if wildcards are present
+     */
+    @Override
+    public void setContains(boolean contains) {
+        query.setContains(contains);
+    }
+
+    /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @return {@code true} to perform substring searches, {@code false} to only perform them if wildcards are present
+     */
+    @Override
+    public boolean isContains() {
+        return query.isContains();
     }
 
     /**

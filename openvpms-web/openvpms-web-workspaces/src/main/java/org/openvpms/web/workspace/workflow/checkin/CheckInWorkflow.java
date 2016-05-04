@@ -458,11 +458,15 @@ public class CheckInWorkflow extends WorkflowImpl {
             boolean popup = false;
             final HospitalizationService service = flowSheetServiceFactory.getHospitalisationService(location);
             if (!service.exists(patientContext)) {
+                int expectedHospitalStay = workList.getInt("expectedHospitalStay");
                 String defaultTemplate = workList.getString("defaultFlowSheetTemplate");
                 int days = 1;
                 if (appointment != null) {
                     AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
                     days = rules.getBoardingDays(appointment);
+                }
+                if (expectedHospitalStay > days) {
+                    days = expectedHospitalStay;
                 }
                 if ("PROMPT".equals(createFlowSheet)) {
                     final FlowSheetEditDialog dialog = new FlowSheetEditDialog(flowSheetServiceFactory, location,

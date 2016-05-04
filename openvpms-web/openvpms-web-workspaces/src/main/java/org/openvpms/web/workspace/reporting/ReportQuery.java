@@ -83,9 +83,11 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      * @param user the user. May be {@code null}
      */
     public ReportQuery(Entity user) {
-        super(new String[]{"entity.documentTemplate"}, Entity.class);
+        super(new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE}, Entity.class);
         this.user = user;
         setDefaultSortConstraint(DEFAULT_SORT);
+        setAuto(true);
+        setContains(true);
     }
 
     /**

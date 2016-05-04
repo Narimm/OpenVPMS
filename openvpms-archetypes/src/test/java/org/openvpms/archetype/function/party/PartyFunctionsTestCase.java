@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.function.party;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
@@ -27,6 +28,9 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -47,6 +51,8 @@ import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
@@ -56,6 +62,9 @@ import static org.junit.Assert.assertNull;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_POUND_IN_GRAMS;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_POUND_IN_KILOS;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_THOUSAND;
+import static org.openvpms.archetype.rules.util.DateUnits.HOURS;
+import static org.openvpms.archetype.rules.util.DateUnits.MONTHS;
+import static org.openvpms.archetype.rules.util.DateUnits.YEARS;
 
 /**
  * Tests the {@link PartyFunctions} class.
@@ -555,6 +564,64 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         bean.addNodeTarget("contacts", location2);
         bean.save();
         assertEquals(location2, context.getValue("party:getLetterheadContacts($location)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getAppointments(Party, int, String)} method.
+     */
+    @Test
+    public void testGetAppointments() {
+        Party customer1 = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient(customer1);
+        Party customer2 = TestHelper.createCustomer();
+        Party patient2 = TestHelper.createPatient();
+        Party location = TestHelper.createLocation();
+        Entity schedule = ScheduleTestHelper.createSchedule(location);
+        Date now = new Date();
+        Act act1a = createAppointment(schedule, customer1, patient1, DateRules.getDate(now, -1, HOURS));
+        Act act1b = createAppointment(schedule, customer1, patient1, DateRules.getDate(now, 6, MONTHS));
+        Act act1c = createAppointment(schedule, customer1, null, DateRules.getDate(now, 9, MONTHS));
+        Act act1d = createAppointment(schedule, customer1, patient1, DateRules.getDate(now, 2, YEARS));
+        Act act2a = createAppointment(schedule, customer2, patient2, DateRules.getDate(now, -1, YEARS));
+        Act act2b = createAppointment(schedule, customer2, patient2, DateRules.getDate(now, 1, MONTHS));
+        Act act2c = createAppointment(schedule, customer2, patient2, DateRules.getDate(now, 6, MONTHS));
+        act2b.setStatus(AppointmentStatus.CANCELLED);
+        save(act1a, act1b, act1c, act1d, act2a, act2b, act2c);
+
+        checkAppointments(customer1, "party:getAppointments(., 1, 'YEARS')", act1b, act1c);
+        checkAppointments(patient1, "party:getAppointments(., 3, 'YEARS')", act1b, act1d);
+        checkAppointments(customer2, "party:getAppointments(., 1, 'YEARS')", act2c);
+    }
+
+    /**
+     * Helper to create a pending 15 minute appointment.
+     *
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient
+     * @param startTime the appointment start time
+     * @return a new appointment
+     */
+    private Act createAppointment(Entity schedule, Party customer, Party patient, Date startTime) {
+        return ScheduleTestHelper.createAppointment(startTime, schedule, customer, patient, AppointmentStatus.PENDING);
+    }
+
+    /**
+     * Verifies that the results of an party:getAppointments(...) call match that expected.
+     *
+     * @param party      the context party
+     * @param expression the expression to invoke
+     * @param expected   the expected results
+     */
+    @SuppressWarnings("unchecked")
+    private void checkAppointments(Party party, String expression, Act... expected) {
+        JXPathContext context = createContext(party);
+        List<Act> result = new ArrayList<>();
+        CollectionUtils.addAll(result, (Iterable<Act>) context.getValue(expression));
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; ++i) {
+            assertEquals(expected[i], result.get(i));
+        }
     }
 
     /**

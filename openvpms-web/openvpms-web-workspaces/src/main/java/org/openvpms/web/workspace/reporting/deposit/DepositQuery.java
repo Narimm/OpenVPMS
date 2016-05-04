@@ -1,17 +1,17 @@
 /*
  * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.deposit;
@@ -40,20 +40,26 @@ public class DepositQuery extends AbstractEntityQuery<Party> {
     private final Party location;
 
     /**
-     * Constructs a <tt>DepositQuery</tt>.
+     * Constructs a {@link DepositQuery} not constrained to any practice location.
+     */
+    public DepositQuery() {
+        this(null);
+    }
+
+    /**
+     * Constructs a {@link DepositQuery}.
      *
      * @param location the location to constrain deposit accounts to. May be {@code null}
      */
     public DepositQuery(Party location) {
         super(SHORT_NAMES, Party.class);
         this.location = location;
-        setAuto(true);
     }
 
     /**
      * Creates the result set.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
+     * @param sort the sort criteria. May be {@code null}
      * @return a new result set
      */
     @Override
