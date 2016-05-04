@@ -38,7 +38,9 @@
             </assertion>
         </node>
         <node name="defaultFlowSheetTemplate" path="/details/defaulFlowSheetTemplate" type="java.lang.String"
-              maxCardinality="0"/>
+              minCardinality="0"/>
+        <node name="expectedHospitalStay" path="/details/expectedHospitalStay" type="java.lang.Integer"
+              minCardinality="0" defaultValue="1"/>
         <node name="views" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.viewWorkList">
