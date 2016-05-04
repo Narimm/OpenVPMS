@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -36,6 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -46,6 +49,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.util.DateUnits.HOURS;
+import static org.openvpms.archetype.rules.util.DateUnits.MONTHS;
+import static org.openvpms.archetype.rules.util.DateUnits.YEARS;
 
 
 /**
@@ -386,12 +392,41 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link AppointmentRules#getCustomerAppointments(Party, int, DateUnits)} and
+     * {@link AppointmentRules#getPatientAppointments(Party, int, DateUnits)} methods.
+     */
+    @Test
+    public void testGetAppointments() {
+        Party customer1 = TestHelper.createCustomer();
+        Party patient1a = TestHelper.createPatient(customer1);
+        Party patient1b = TestHelper.createPatient(customer1);
+        Party customer2 = TestHelper.createCustomer();
+        Party patient2 = TestHelper.createPatient();
+        Party location = TestHelper.createLocation();
+        Entity schedule = ScheduleTestHelper.createSchedule(location);
+        Date now = new Date();
+        Act act1a = createAppointment(schedule, customer1, patient1a, DateRules.getDate(now, -1, HOURS));
+        Act act1b = createAppointment(schedule, customer1, patient1b, DateRules.getDate(now, 6, MONTHS));
+        Act act1c = createAppointment(schedule, customer1, null, DateRules.getDate(now, 9, MONTHS));
+        Act act1d = createAppointment(schedule, customer1, patient1a, DateRules.getDate(now, 2, YEARS));
+        Act act2a = createAppointment(schedule, customer2, patient2, DateRules.getDate(now, -1, YEARS));
+        Act act2b = createAppointment(schedule, customer2, patient2, DateRules.getDate(now, 1, MONTHS));
+        Act act2c = createAppointment(schedule, customer2, patient2, DateRules.getDate(now, 6, MONTHS));
+        act2b.setStatus(AppointmentStatus.CANCELLED);
+        save(act1a, act1b, act1c, act1d, act2a, act2b, act2c);
+
+        checkAppointments(rules.getCustomerAppointments(customer1, 1, YEARS), act1b, act1c);
+        checkAppointments(rules.getPatientAppointments(patient1a, 3, YEARS), act1d);
+        checkAppointments(rules.getCustomerAppointments(customer2, 1, YEARS), act2c);
+    }
+
+    /**
      * Verifies that {@link AppointmentRules#getBoardingDays(Date, Date)} and
      * {@link AppointmentRules#getBoardingDays(Act)} return the expected no. of days.
      *
-     * @param expected the expected no. of days
+     * @param expected  the expected no. of days
      * @param startTime the boarding start time
-     * @param endTime the boarding end time
+     * @param endTime   the boarding end time
      */
     private void checkGetDays(int expected, String startTime, String endTime) {
         Date start = TestHelper.getDatetime(startTime);
@@ -404,6 +439,15 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         assertEquals(expected, rules.getBoardingDays(appointment));
     }
 
+    private void checkAppointments(Iterable<Act> iterable, Act... expected) {
+        List<Act> result = new ArrayList<>();
+        CollectionUtils.addAll(result, iterable);
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; ++i) {
+            assertEquals(expected[i], result.get(i));
+        }
+    }
+
     /**
      * Helper to create an <em>act.customerAppointment</em>.
      *
@@ -414,6 +458,19 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      */
     private Act createAppointment(Date startTime, Date endTime, Party schedule) {
         return ScheduleTestHelper.createAppointment(startTime, endTime, schedule);
+    }
+
+    /**
+     * Helper to create a pending 15 minute appointment.
+     *
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient
+     * @param startTime the appointment start time
+     * @return a new appointment
+     */
+    private Act createAppointment(Entity schedule, Party customer, Party patient, Date startTime) {
+        return ScheduleTestHelper.createAppointment(startTime, schedule, customer, patient, AppointmentStatus.PENDING);
     }
 
     /**

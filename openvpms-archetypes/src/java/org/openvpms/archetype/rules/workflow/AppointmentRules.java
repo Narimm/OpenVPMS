@@ -45,6 +45,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 
 import java.util.ArrayList;
@@ -339,6 +340,54 @@ public class AppointmentRules {
     public Act getEvent(Act appointment) {
         ActBean bean = new ActBean(appointment, service);
         return (Act) bean.getNodeTargetObject("event");
+    }
+
+    /**
+     * Returns pending appointments for a customer.
+     *
+     * @param customer the customer
+     * @param interval the interval, relative to the current date/time
+     * @param units    the interval units
+     * @return the pending appointments for the customer
+     */
+    public Iterable<Act> getCustomerAppointments(Party customer, int interval, DateUnits units) {
+        ArchetypeQuery query = createAppointmentQuery(customer, "customer", interval, units);
+        return new IterableIMObjectQuery<>(service, query);
+    }
+
+    /**
+     * Returns pending appointments for a patient.
+     *
+     * @param patient  the patient
+     * @param interval the interval, relative to the current date/time
+     * @param units    the interval units
+     * @return the pending appointments for the customer
+     */
+    public Iterable<Act> getPatientAppointments(Party patient, int interval, DateUnits units) {
+        ArchetypeQuery query = createAppointmentQuery(patient, "patient", interval, units);
+        return new IterableIMObjectQuery<>(service, query);
+    }
+
+    /**
+     * Creates a pending appointment query for a party.
+     *
+     * @param party    a customer or patient
+     * @param node     the customer/patient node
+     * @param interval the interval, relative to the current date/time
+     * @param units    the interval units
+     * @return a new query
+     */
+    protected ArchetypeQuery createAppointmentQuery(Party party, String node, int interval, DateUnits units) {
+        ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT);
+        query.add(Constraints.join(node).add(Constraints.eq("entity", party)));
+        Date from = new Date();
+        Date to = DateRules.getDate(from, interval, units);
+        query.add(Constraints.gte("startTime", from));
+        query.add(Constraints.lt("startTime", to));
+        query.add(Constraints.eq("status", AppointmentStatus.PENDING));
+        query.add(Constraints.sort("startTime"));
+        query.add(Constraints.sort("id"));
+        return query;
     }
 
     /**

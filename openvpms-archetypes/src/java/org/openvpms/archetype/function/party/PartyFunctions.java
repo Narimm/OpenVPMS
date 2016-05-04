@@ -18,6 +18,7 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.BalanceCalculator;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
@@ -25,6 +26,8 @@ import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
+import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -35,9 +38,11 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
 
 
@@ -71,6 +76,11 @@ public class PartyFunctions {
     private final SupplierRules supplierRules;
 
     /**
+     * The appointment rules.
+     */
+    private final AppointmentRules appointmentRules;
+
+    /**
      * Constructs a {@link PartyFunctions}.
      *
      * @param service      the archetype service
@@ -82,6 +92,7 @@ public class PartyFunctions {
         this.patientRules = patientRules;
         partyRules = new PartyRules(service, lookups);
         supplierRules = new SupplierRules(service);
+        appointmentRules = new AppointmentRules(service);
     }
 
     /**
@@ -1288,6 +1299,25 @@ public class PartyFunctions {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns pending appointments for a customer or patient.
+     *
+     * @param party    the party
+     * @param interval the interval, relative to the current date/time
+     * @param units    the interval units
+     * @return the pending appointments for the customer
+     */
+    public Iterable<Act> getAppointments(Party party, int interval, String units) {
+        if (interval > 0 && units != null) {
+            if (TypeHelper.isA(party, CustomerArchetypes.PERSON)) {
+                return appointmentRules.getCustomerAppointments(party, interval, DateUnits.valueOf(units));
+            } else {
+                return appointmentRules.getPatientAppointments(party, interval, DateUnits.valueOf(units));
+            }
+        }
+        return Collections.emptyList();
     }
 
     /**

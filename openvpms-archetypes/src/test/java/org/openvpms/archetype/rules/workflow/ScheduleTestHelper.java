@@ -22,6 +22,8 @@ import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -225,6 +227,23 @@ public class ScheduleTestHelper extends TestHelper {
         appointmentType.setName("XAppointmentType");
         save(appointmentType);
         return createAppointment(startTime, endTime, schedule, appointmentType, customer, patient, null, null);
+    }
+
+    /**
+     * Helper to create a 15 minute appointment.
+     *
+     * @param startTime the appointment start time
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param status    the appointment status
+     * @return a new appointment
+     */
+    public static Act createAppointment(Date startTime, Entity schedule, Party customer, Party patient, String status) {
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+        Act appointment = createAppointment(startTime, endTime, schedule, customer, patient);
+        appointment.setStatus(status);
+        return appointment;
     }
 
     /**
