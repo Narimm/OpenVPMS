@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -119,7 +119,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             private Filter filter = new Filter();
 
             protected void filter(FinancialAct act, List<FinancialAct> results) {
-                List<FinancialAct> acts = filter.filter(act, act);
+                List<FinancialAct> acts = filter.filter(act);
                 if (!acts.isEmpty()) {
                     results.add(act);
                     results.addAll(acts);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -58,25 +58,39 @@ public class InvestigationResultSet extends ActResultSet<Act> {
     private final List<Party> locations;
 
     /**
+     * The result statuses to query.
+     */
+    private final String[] resultStatuses;
+
+    /**
+     * If {@code true}, exclude the acts with the result statuses.
+     */
+    private final boolean exclude;
+
+    /**
      * Constructs an {@link InvestigationResultSet}.
      *
-     * @param archetypes   the act archetype constraint
-     * @param value        the value being searched on. If non-null, can be used to search on investigation identifier
-     *                     or patient name
-     * @param participants the participant constraints. May be {@code null}
-     * @param from         the act start-from date. May be {@code null}
-     * @param to           the act start-to date. May be {@code null}
-     * @param statuses     the act statuses. If empty, indicates all acts
-     * @param exclude      if {@code true} exclude acts with status in {@code statuses}; otherwise include them.
-     * @param pageSize     the maximum no. of results per page
-     * @param sort         the sort criteria. May be {@code null}
+     * @param archetypes     the act archetype constraint
+     * @param value          the value being searched on. If non-null, can be used to search on investigation identifier
+     *                       or patient name
+     * @param participants   the participant constraints. May be {@code null}
+     * @param from           the act start-from date. May be {@code null}
+     * @param to             the act start-to date. May be {@code null}
+     * @param statuses       the statuses. If empty, indicates all acts
+     * @param resultStatuses the result statuses. If empty, indicates all acts
+     * @param exclude        if {@code true} exclude acts with result status in {@code resultStatuses}; otherwise
+     *                       include them.
+     * @param pageSize       the maximum no. of results per page
+     * @param sort           the sort criteria. May be {@code null}
      */
     public InvestigationResultSet(ShortNameConstraint archetypes, String value, ParticipantConstraint[] participants,
                                   Party location, List<Party> locations, Date from, Date to, String[] statuses,
-                                  boolean exclude, int pageSize, SortConstraint[] sort) {
-        super(archetypes, value, participants, from, to, statuses, exclude, null, pageSize, sort);
+                                  String[] resultStatuses, boolean exclude, int pageSize, SortConstraint[] sort) {
+        super(archetypes, value, participants, from, to, statuses, false, null, pageSize, sort);
         this.location = location;
         this.locations = locations;
+        this.resultStatuses = resultStatuses;
+        this.exclude = exclude;
         setDistinct(true);
     }
 
@@ -101,6 +115,10 @@ public class InvestigationResultSet extends ActResultSet<Act> {
             }
             or.add(getNoLocation());
             query.add(or);
+        }
+        IConstraint resultStatus = createStatusConstraint("status2", resultStatuses, exclude);
+        if (resultStatus != null) {
+            query.add(resultStatus);
         }
         return query;
     }

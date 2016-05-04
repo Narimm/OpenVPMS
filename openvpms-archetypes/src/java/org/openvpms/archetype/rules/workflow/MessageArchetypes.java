@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -33,6 +33,11 @@ public class MessageArchetypes {
      * The system message archetype short name.
      */
     public static String SYSTEM = "act.systemMessage";
+
+    /**
+     * The audit message archetype short name.
+     */
+    public static final String AUDIT = "act.auditMessage";
 
     /**
      * All system message archetypes.

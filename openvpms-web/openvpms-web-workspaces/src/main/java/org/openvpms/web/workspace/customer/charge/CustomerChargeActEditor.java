@@ -56,6 +56,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -145,27 +146,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      * @param listener the listener to invoke. May be {@code null}
      */
     public void setAddItemListener(Runnable listener) {
-        ActRelationshipCollectionEditor items = getItems();
-        if (items instanceof ChargeItemRelationshipCollectionEditor) {
-            ((ChargeItemRelationshipCollectionEditor) items).setAddItemListener(listener);
-        }
-    }
-
-    /**
-     * Returns all acts that may be associated with pharmacy or laboratory orders.
-     *
-     * @return the acts
-     */
-    private List<Act> getOrderActs() {
-        List<Act> acts = new ArrayList<>();
-        for (Act item : getItems().getActs()) {
-            IMObjectEditor editor = getItems().getEditor(item);
-            if (editor instanceof CustomerChargeActItemEditor) {
-                acts.add(item);
-                acts.addAll(((CustomerChargeActItemEditor) editor).getInvestigations());
-            }
-        }
-        return acts;
+        getItems().setAddItemListener(listener);
     }
 
     /**
@@ -333,10 +314,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      * @param dialog the dialog to display
      */
     public void queue(PopupDialog dialog) {
-        if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
-            ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
-            items.getEditorQueue().queue(dialog);
-        }
+        getItems().getEditorQueue().queue(dialog);
     }
 
     /**
@@ -361,29 +339,34 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
         List<Act> reminders = getNewReminders();
         ChargeSaveContext chargeContext = null;
         try {
-            PatientHistoryChanges changes = null;
-
-            if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
-                changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
-                                                    getLayoutContext().getContext().getLocation(),
-                                                    ServiceHelper.getArchetypeService());
-                ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
-                chargeContext = items.getSaveContext();
-                chargeContext.setHistoryChanges(changes);
+            boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
+            PatientHistoryChanges changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
+                                                                      getLayoutContext().getContext().getLocation(),
+                                                                      ServiceHelper.getArchetypeService());
+            List<Act> orderActs = invoice ? getOrderActs() : Collections.<Act>emptyList();
+            if (invoice) {
+                // cancel any orders associated with deleted invoice items prior to physical deletion
+                Set<Act> updated = orderPlacer.cancelDeleted(orderActs, changes);
+                if (!updated.isEmpty()) {
+                    // need to save updated items before performing deletion
+                    ServiceHelper.getArchetypeService().save(updated);
+                }
             }
 
+            ChargeItemRelationshipCollectionEditor items = getItems();
+            chargeContext = items.getSaveContext();
+            chargeContext.setHistoryChanges(changes);
+
             super.doSave();
-            boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
-            if (changes != null && invoice) {
+
+            if (invoice) {
                 // link the items to their corresponding clinical events
                 linkToEvents(changes);
                 if (ActStatus.POSTED.equals(getStatus())) {
                     changes.complete(new Date());
                 }
             }
-            if (chargeContext != null) {
-                chargeContext.save();
-            }
+            chargeContext.save();
 
             // mark reminders that match the new reminders completed
             if (!reminders.isEmpty()) {
@@ -392,7 +375,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             }
 
             if (invoice) {
-                Set<Act> updated = orderPlacer.order(getOrderActs(), changes);
+                Set<Act> updated = orderPlacer.order(orderActs, changes);
                 if (!updated.isEmpty()) {
                     // need to save the items again. This time do it skipping rules
                     ServiceHelper.getArchetypeService(false).save(updated);
@@ -429,10 +412,10 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      */
     @Override
     protected void doDelete() {
-        super.doDelete();
         if (orderPlacer != null) {
             orderPlacer.cancel();
         }
+        super.doDelete();
     }
 
     /**
@@ -546,6 +529,23 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      */
     protected boolean getAddDefaultIem() {
         return addDefaultItem;
+    }
+
+    /**
+     * Returns all acts that may be associated with pharmacy or laboratory orders.
+     *
+     * @return the acts
+     */
+    private List<Act> getOrderActs() {
+        List<Act> acts = new ArrayList<>();
+        for (Act item : getItems().getActs()) {
+            IMObjectEditor editor = getItems().getEditor(item);
+            if (editor instanceof CustomerChargeActItemEditor) {
+                acts.add(item);
+                acts.addAll(((CustomerChargeActItemEditor) editor).getInvestigations());
+            }
+        }
+        return acts;
     }
 
     /**

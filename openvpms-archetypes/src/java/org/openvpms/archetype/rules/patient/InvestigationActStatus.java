@@ -1,46 +1,46 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.patient;
 
-import org.openvpms.archetype.rules.act.ActStatus;
-
-
 /**
- * Status types for investigation acts.
+ * Order status types for investigation acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class InvestigationActStatus extends ActStatus {
+public class InvestigationActStatus {
 
     /**
-     * Preliminary act status.
+     * Order pending status.
      */
-    public static final String PRELIMINARY = "PRELIMINARY";
+    public static final String PENDING = "PENDING";
 
     /**
-     * Final act status.
+     * Order sent status.
      */
-    public static final String FINAL = "FINAL";
+    public static final String SENT = "SENT";
 
     /**
-     * Received act status.
+     * Results received status.
      */
     public static final String RECEIVED = "RECEIVED";
+
+    /**
+     * Results reviewed status.
+     */
+    public static final String REVIEWED = "REVIEWED";
 
 }

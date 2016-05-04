@@ -13,6 +13,7 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.messaging;
 
 import org.openvpms.archetype.rules.util.DateRules;

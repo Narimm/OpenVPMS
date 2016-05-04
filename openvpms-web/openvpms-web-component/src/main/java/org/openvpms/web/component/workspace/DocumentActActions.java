@@ -18,7 +18,6 @@ package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -45,11 +44,11 @@ public class DocumentActActions extends ActActions<DocumentAct> {
      * Determines if a document act can be refreshed.
      *
      * @param act the act to check
-     * @return {@code true} if the act isn't posted, and has <em>documentTemplate</em> and <em>document</em> nodes.
+     * @return {@code true} if the act isn't locked, and has <em>documentTemplate</em> and <em>document</em> nodes.
      */
     public boolean canRefresh(DocumentAct act) {
         boolean refresh = false;
-        if (!ActStatus.POSTED.equals(act.getStatus())) {
+        if (!isLocked(act)) {
             ActBean bean = new ActBean(act);
             if (bean.hasNode("documentTemplate") && bean.hasNode("document")) {
                 refresh = true;

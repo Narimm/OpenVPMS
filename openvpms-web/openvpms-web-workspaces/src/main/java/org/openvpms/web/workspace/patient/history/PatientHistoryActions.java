@@ -11,19 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
+import org.joda.time.Period;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -48,13 +54,16 @@ public class PatientHistoryActions extends ActActions<Act> {
 
     /**
      * Determines if an act can be edited.
+     * <p/>
+     * Patient investigations can always be edited, although the editor restricts functionality based on the status.
      *
      * @param act the act to check
      * @return {@code true} if the act isn't an invoice item, and its status isn't {@code POSTED}
      */
     @Override
     public boolean canEdit(Act act) {
-        return !TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM) && super.canEdit(act);
+        return !TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)
+               && (super.canEdit(act) || TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION));
     }
 
     /**
@@ -69,7 +78,8 @@ public class PatientHistoryActions extends ActActions<Act> {
             return false;
         } else if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
             return false;
-        } else if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT, PatientArchetypes.CLINICAL_PROBLEM)) {
+        } else if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT, PatientArchetypes.CLINICAL_PROBLEM,
+                                  PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
             return act.getSourceActRelationships().isEmpty();
         } else {
             for (ActRelationship rel : act.getTargetActRelationships()) {
@@ -106,4 +116,30 @@ public class PatientHistoryActions extends ActActions<Act> {
     public boolean canImportFlowSheet(Act event, Party location, FlowSheetServiceFactory factory) {
         return (event != null && location != null && factory.supportsSmartFlowSheet(location));
     }
+
+    /**
+     * Determines if an act is locked from editing.
+     * <p/>
+     *
+     * @param act the act
+     * @return {@code true} if the act status is {@link ActStatus#POSTED}, or {@link #needsLock} returns {@code true}.
+     */
+    @Override
+    public boolean isLocked(Act act) {
+        return super.isLocked(act) || needsLock(act);
+    }
+
+    /**
+     * Determines if an act needs locking.
+     *
+     * @param act thr act
+     * @return {@code true} if the act needs locking
+     */
+    public static boolean needsLock(Act act) {
+        MedicalRecordRules recordRules = ServiceHelper.getBean(MedicalRecordRules.class);
+        PracticeService practiceService = ServiceHelper.getBean(PracticeService.class);
+        Period period = practiceService.getRecordLockPeriod();
+        return (period != null) && recordRules.needsLock(act, period);
+    }
+
 }

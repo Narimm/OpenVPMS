@@ -140,14 +140,14 @@ public class BrowserCRUDWindow<T extends IMObject> {
     }
 
     /**
-     * Selects the current object. If the object is "double clicked", edits it.
+     * Selects the current object. If the object is double clicked, invokes {@link #onDoubleClick()}.
      *
      * @param object the selected object
      */
     protected void onSelected(T object) {
         select(object);
         if (click.isDoubleClick(object.getId())) {
-            window.edit();
+            onDoubleClick();
         }
     }
 
@@ -158,6 +158,15 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     protected void select(T object) {
         window.setObject(object);
+    }
+
+    /**
+     * Invoked when an object is double clicked.
+     * <p/>
+     * This implementation edits the object
+     */
+    protected void onDoubleClick() {
+        window.edit();
     }
 
     /**

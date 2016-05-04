@@ -157,44 +157,6 @@
     </bean>
 
     <!-- ================================================================== -->
-    <!--                           JMX                                      -->
-    <!-- ================================================================== -->
-
-    <!--
-    <bean id="hibernateStatisticsMBean" class="org.hibernate.jmx.StatisticsService" lazy-init="false">
-        <property name="statisticsEnabled" value="true"/>
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <bean id="ehCacheMBeanRegistration" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" lazy-init="false">
-        <property name="staticMethod" value="net.sf.ehcache.management.ManagementService.registerMBeans"/>
-        <property name="arguments">
-            <list>
-                <ref bean="cacheManager"/>
-                <ref bean="mbeanServer"/>
-                <value>true</value>
-                <value>true</value>
-                <value>true</value>
-                <value>true</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean" lazy-init="false">
-        <property name="locateExistingServerIfPossible" value="true"/>
-    </bean>
-
-    <bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
-        <property name="beans">
-            <map>
-                <entry key="Hibernate:name=statistics" value-ref="hibernateStatisticsMBean"/>
-            </map>
-        </property>
-        <property name="server" ref="mbeanServer"/>
-    </bean>
-    -->
-
-    <!-- ================================================================== -->
     <!--                      BUSINESS SERVICE BEANS                        -->
     <!-- ================================================================== -->
 

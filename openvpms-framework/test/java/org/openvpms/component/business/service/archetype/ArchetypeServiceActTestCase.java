@@ -1,25 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate;
@@ -34,8 +31,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
-import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
-import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -54,6 +49,17 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects;
 
 /**
  * Test that ability to create and query on acts.
@@ -78,12 +84,16 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         Party person = createPerson("MR", "Jim", "Alateras");
         save(person);
         Act act = createSimpleAct("study", "inprogress");
+        act.setStatus2("secondary status");
         Participation participation = createSimpleParticipation("studyParticipation", person, act);
         act.addParticipation(participation);
         save(act);
 
         Act act1 = (Act) get(act.getObjectReference());
         assertEquals(act1, act);
+        assertEquals("study", act1.getName());
+        assertEquals("inprogress", act1.getStatus());
+        assertEquals("secondary status", act1.getStatus2());
     }
 
     /**

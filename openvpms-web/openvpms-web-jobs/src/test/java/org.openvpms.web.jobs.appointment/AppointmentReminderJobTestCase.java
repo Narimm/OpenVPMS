@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.appointment;
@@ -50,6 +50,7 @@ import org.openvpms.web.component.service.SMSService;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -564,7 +565,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         private Entity template;
 
         public TestPracticeService(Entity template, Party... locations) {
-            super(getArchetypeService(), practiceRules);
+            super(getArchetypeService(), practiceRules, createPool());
             this.locations = Arrays.asList(locations);
             setAppointmentSMSTemplate(template);
         }
@@ -582,5 +583,11 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         public void setAppointmentSMSTemplate(Entity template) {
             this.template = template;
         }
+    }
+
+    private static ThreadPoolTaskExecutor createPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.afterPropertiesSet();
+        return executor;
     }
 }

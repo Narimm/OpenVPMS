@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -247,8 +247,8 @@ abstract class AbstractLoader implements Loader {
                 notifyAlreadyLoaded(file, act.getId());
             } else {
                 if (TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-                    act.setStatus(InvestigationActStatus.RECEIVED);
-                } else {
+                    act.setStatus2(InvestigationActStatus.RECEIVED);
+                } else if (!ActStatus.POSTED.equals(act.getStatus())){
                     act.setStatus(ActStatus.COMPLETED);
                 }
                 boolean version = (duplicate != act);

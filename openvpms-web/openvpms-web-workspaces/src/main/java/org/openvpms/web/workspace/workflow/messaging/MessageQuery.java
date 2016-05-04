@@ -44,7 +44,7 @@ import org.openvpms.web.resource.i18n.Messages;
 
 
 /**
- * Query for <em>act.userMessage</em> and <em>act.systemMessage</em> acts.
+ * Query for <em>act.userMessage</em>, <em>act.systemMessage</em> and <em>act.auditMessage</em> acts.
  *
  * @author Tim Anderson
  */
@@ -53,7 +53,8 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     /**
      * The archetypes to query.
      */
-    public static final String[] ARCHETYPES = {MessageArchetypes.USER, MessageArchetypes.SYSTEM_MESSAGES};
+    public static final String[] ARCHETYPES = {MessageArchetypes.USER, MessageArchetypes.SYSTEM_MESSAGES,
+                                               MessageArchetypes.AUDIT};
 
     /**
      * The user selector.

@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.ApplicationInstance;
@@ -45,7 +46,8 @@ import java.util.Map;
 
 
 /**
- * Monitors updates to <em>act.userMessage</em> and <em>act.systemMessage</em> acts, and notifies registered listeners.
+ * Monitors updates to <em>act.userMessage</em>. <em>act.systemMessage</em> and <em>act.auditMessage</em>acts, and
+ * notifies registered listeners.
  *
  * @author Tim Anderson
  */
@@ -97,6 +99,7 @@ public class MessageMonitor {
         };
         service.addListener(MessageArchetypes.USER, listener);
         service.addListener(MessageArchetypes.SYSTEM_MESSAGES, listener);
+        service.addListener(MessageArchetypes.AUDIT, listener);
     }
 
     /**
