@@ -612,7 +612,6 @@ public class ReminderRules {
         query.add(Constraints.gte("startTime", from));
         query.add(Constraints.lt("startTime", to));
         query.add(join("patient").add(eq("entity", patient)));
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         return query;
     }
 

@@ -1,29 +1,32 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -59,7 +62,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
 
 
     /**
-     * Constructs a {@code ScheduleTypeQuery}.
+     * Constructs a {@link ScheduleTypeQuery}.
      *
      * @param shortNames        the short names
      * @param schedule          the <em>party.organisationSchedule</em> or <em>party.organisationWorkList</em>.
@@ -73,6 +76,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
         this.schedule = schedule;
         this.scheduleTypesNode = scheduleTypesNode;
         this.context = context;
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -89,8 +93,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
      *
      * @param sort the sort constraint. May be {@code null}
      * @return the query result set
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          if the query fails
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<Entity> query(SortConstraint[] sort) {
@@ -103,7 +106,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new IMObjectListResultSet<Entity>(objects, getMaxResults());
+            result = new IMObjectListResultSet<>(objects, getMaxResults());
             if (sort != null) {
                 result.sort(sort);
             }
@@ -148,7 +151,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
         List<Entity> types = getScheduleTypes(schedule);
         String name = getValue();
         types = IMObjectHelper.findByName(name, types);
-        List<Entity> result = new ArrayList<Entity>();
+        List<Entity> result = new ArrayList<>();
         for (IMObject type : types) {
             if (type.isActive()) {
                 result.add((Entity) type);
@@ -164,7 +167,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
      * @return a list of appointment types associated with {@code schedule}
      */
     private List<Entity> getScheduleTypes(Entity schedule) {
-        List<Entity> result = new ArrayList<Entity>();
+        List<Entity> result = new ArrayList<>();
         EntityBean bean = new EntityBean(schedule);
         List<IMObject> relationships = bean.getValues(scheduleTypesNode);
         for (IMObject object : relationships) {

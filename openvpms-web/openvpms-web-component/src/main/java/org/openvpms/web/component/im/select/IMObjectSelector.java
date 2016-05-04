@@ -276,6 +276,15 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
+     * Returns the archetype short names to query on.
+     *
+     * @return the archetype short names to query on
+     */
+    public String[] getShortNames() {
+        return shortNames;
+    }
+
+    /**
      * Pops up a dialog to select an object.
      * <p/>
      * Only pops up a dialog if one isn't already visible.

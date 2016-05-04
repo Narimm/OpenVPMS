@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.web.echo.text.TextComponent;
 
 
 /**
@@ -37,6 +36,7 @@ public class SubstringQuery<T extends IMObject> extends AbstractIMObjectQuery<T>
     public SubstringQuery(String[] shortNames) {
         super(shortNames);
         setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
+        setContains(true);
     }
 
     /**
@@ -49,17 +49,6 @@ public class SubstringQuery<T extends IMObject> extends AbstractIMObjectQuery<T>
     public SubstringQuery(String[] shortNames, Class type) {
         super(shortNames, type);
         setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
-    }
-
-    /**
-     * Helper to return the text of the supplied field with wildcards to support substring matches.
-     *
-     * @param field the text field
-     * @return the wildcarded field text, or {@code null} if the field is empty
-     */
-    @Override
-    protected String getWildcardedText(TextComponent field) {
-        return super.getWildcardedText(field, true);
     }
 
 }

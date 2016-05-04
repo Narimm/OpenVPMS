@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.archetype;
@@ -54,13 +54,13 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     /**
      * Map of short names to their corresponding handlers.
      */
-    private Map<String, ArchetypeHandler<T>> handlers = new HashMap<String, ArchetypeHandler<T>>();
+    private Map<String, ArchetypeHandler<T>> handlers = new HashMap<>();
 
     /**
      * Map of handlers not associated with any short name. These
      * can only be returned by class name.
      */
-    private Map<String, ArchetypeHandler<T>> anonymousHandlers = new HashMap<String, ArchetypeHandler<T>>();
+    private Map<String, ArchetypeHandler<T>> anonymousHandlers = new HashMap<>();
 
 
     /**
@@ -106,11 +106,23 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * @return a handler that supports {@code shortNames} or {@code null} if there is no match
      */
     public ArchetypeHandler<T> getHandler(String[] shortNames) {
+        return getHandler(shortNames, true);
+    }
+
+    /**
+     * Returns a handler that can handle a set of archetypes.
+     *
+     * @param shortNames the archetype short names
+     * @param exact      if {@code true}, all short names must have the same handler and configuration.
+     *                   If {@code false}, all short names must match a common handler
+     * @return a handler that supports {@code shortNames} or {@code null} if there is no match
+     */
+    public ArchetypeHandler<T> getHandler(String[] shortNames, boolean exact) {
         ArchetypeHandler<T> result = null;
         Set<String> wildcards = handlers.keySet();
 
         // generate a map of matching wildcards, keyed on short name
-        Map<String, String> matches = new HashMap<String, String>();
+        Map<String, String> matches = new HashMap<>();
         for (String wildcard : wildcards) {
             for (String shortName : shortNames) {
                 if (TypeHelper.matches(shortName, wildcard)) {
@@ -124,18 +136,27 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
             }
         }
         if (matches.size() == shortNames.length) {
-            // found a match for each short name. Make sure the implementation
+            // found a match for each short name. For exact matches, make sure the implementation
             // class is the same, with the same configuration
-            for (String match : matches.values()) {
-                ArchetypeHandler<T> handler = handlers.get(match);
-                if (result == null) {
-                    result = handler;
-                } else if (!result.getType().equals(handler.getType())) {
-                    result = null;
-                    break;
-                } else if (!ObjectUtils.equals(result.getProperties(), handler.getProperties())) {
-                    result = null;
-                    break;
+            if (exact) {
+                for (String match : matches.values()) {
+                    ArchetypeHandler<T> handler = handlers.get(match);
+                    if (result == null) {
+                        result = handler;
+                    } else if (!result.getType().equals(handler.getType())) {
+                        result = null;
+                        break;
+                    } else if (!ObjectUtils.equals(result.getProperties(), handler.getProperties())) {
+                        result = null;
+                        break;
+                    }
+                }
+            } else {
+                // find a common archetype
+                for (String match : matches.values()) {
+                    if (TypeHelper.matches(shortNames, match)) {
+                        result = handlers.get(match);
+                    }
                 }
             }
         }
@@ -201,7 +222,10 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
                 if (!replace && handlers.get(shortName) != null) {
                     log.warn("Duplicate sbort name=" + shortName + " from " + path + ": ignoring");
                 } else {
-                    ArchetypeHandler<T> handler = new ArchetypeHandler<T>(shortName, type, properties);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Replacing handler for short name=" + shortName + " with handler from path=" + path);
+                    }
+                    ArchetypeHandler<T> handler = new ArchetypeHandler<>(shortName, type, properties);
                     handlers.put(shortName, handler);
                 }
             }
@@ -212,7 +236,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
                 log.warn("Duplicate anonymous handler=" + name
                          + " from " + path + ": ignoring");
             } else {
-                ArchetypeHandler<T> handler = new ArchetypeHandler<T>(null, type, properties);
+                ArchetypeHandler<T> handler = new ArchetypeHandler<>(null, type, properties);
                 anonymousHandlers.put(name, handler);
             }
         }
@@ -274,7 +298,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
             } else {
                 Class<T> clazz = (Class<T>) getClass(properties[0], type, path);
                 if (clazz != null) {
-                    Map<String, Object> config = new HashMap<String, Object>();
+                    Map<String, Object> config = new HashMap<>();
                     for (int i = 1; i < properties.length; ++i) {
                         String[] pair = properties[i].split("=");
                         config.put(pair[0], pair[1]);
@@ -337,7 +361,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
         /**
          * The handlers.
          */
-        private List<Handler> handlers = new ArrayList<Handler>();
+        private List<Handler> handlers = new ArrayList<>();
 
         /**
          * Adds a handler.

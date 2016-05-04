@@ -68,6 +68,7 @@ public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
         public TemplateQuery(String[] shortNames) {
             super(shortNames);
+            setContains(true);
         }
     }
 
