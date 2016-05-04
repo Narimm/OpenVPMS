@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -142,7 +144,7 @@ public class OrderPlacer {
      *
      * @param items   the charge and investigation items
      * @param changes patient history changes, used to obtain patient events
-     * @return the set of updated charge items
+     * @return the set of updated charge and investigation items
      */
     public Set<Act> order(List<Act> items, PatientHistoryChanges changes) {
         Map<IMObjectReference, Act> charges = new HashMap<>();
@@ -173,25 +175,23 @@ public class OrderPlacer {
                 if (existing != null) {
                     if (existing.needsCancel(order)) {
                         // TODO - need to prevent this, as PlacerOrderNumbers should not be reused.
-                        cancelOrder(existing, changes, patients);
-                        if (createOrder(charge, order, changes, patients)) {
-                            updated.add(charge);
-                        }
+                        cancelOrder(existing, changes, patients, updated);
+                        createOrder(charge, order, changes, patients, updated);
                     } else if (existing.needsUpdate(order)) {
                         updateOrder(changes, order, patients);
                     }
-                } else if (createOrder(charge, order, changes, patients)) {
-                    updated.add(charge);
+                } else {
+                    createOrder(charge, order, changes, patients, updated);
                 }
                 orders.put(id, order);
             } else if (existing != null) {
-                // new product is not dispensed via a pharmacy.
-                cancelOrder(existing, changes, patients);
+                // new product is not ordered
+                cancelOrder(existing, changes, patients, updated);
             }
         }
         for (IMObjectReference id : ids) {
             Order existing = orders.remove(id);
-            cancelOrder(existing, changes, patients);
+            cancelOrder(existing, changes, patients, updated);
         }
         return updated;
     }
@@ -204,9 +204,32 @@ public class OrderPlacer {
         for (Order order : orders.values()) {
             PatientContext context = getPatientContext(order, events);
             if (context != null) {
-                order.cancel(context, services, user);
+                order.cancel(context, services, user, new HashSet<Act>());
             }
         }
+    }
+
+    /**
+     * Cancels any orders where the associated charge has been deleted.
+     *
+     * @param current the set of current charges and investigations
+     * @param changes patient history changes, used to obtain patient events
+     * @return the set of updated charge and investigation items
+     */
+    public Set<Act> cancelDeleted(List<Act> current, PatientHistoryChanges changes) {
+        Set<Act> updated = new HashSet<>();
+        Map<IMObjectReference, Order> copy = new HashMap<>(orders);
+        for (Act act : current) {
+            copy.remove(act.getObjectReference());
+        }
+        if (!copy.isEmpty()) {
+            Set<Party> patients = new HashSet<>();
+            for (Map.Entry<IMObjectReference, Order> removed : copy.entrySet()) {
+                cancelOrder(removed.getValue(), changes, patients, updated);
+                orders.remove(removed.getKey());
+            }
+        }
+        return updated;
     }
 
     /**
@@ -349,17 +372,20 @@ public class OrderPlacer {
      * @param order    the order
      * @param changes  the changes
      * @param patients tracks patients that have had notifications sent
+     * @param updated  the set of changed acts
      * @return {@code true} if an order was created (and invoice updated)
      */
-    private boolean createOrder(Act act, Order order, PatientHistoryChanges changes, Set<Party> patients) {
+    private boolean createOrder(Act act, Order order, PatientHistoryChanges changes, Set<Party> patients,
+                                Set<Act> updated) {
         boolean result = false;
         PatientContext context = getPatientContext(order, changes);
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
-            if (order.create(context, services, user)) {
+            if (order.create(context, services, user, updated)) {
                 ActBean bean = new ActBean(act);
                 bean.setValue("ordered", true);
                 result = true;
+                updated.add(act);
             }
         }
         return result;
@@ -389,13 +415,14 @@ public class OrderPlacer {
      * @param order    the order
      * @param changes  the changes
      * @param patients the patients, used to prevent duplicate patient update notifications being sent
+     * @param updated  the set of changed acts
      */
-    private void cancelOrder(Order order, PatientHistoryChanges changes, Set<Party> patients) {
+    private void cancelOrder(Order order, PatientHistoryChanges changes, Set<Party> patients, Set<Act> updated) {
         if (!order.getActId().isNew()) {
             PatientContext context = getPatientContext(order, changes);
             if (context != null) {
                 notifyPatientInformation(context, changes, patients);
-                order.cancel(context, services, user);
+                order.cancel(context, services, user, updated);
             }
         }
     }
@@ -502,9 +529,9 @@ public class OrderPlacer {
             return event;
         }
 
-        public abstract boolean create(PatientContext context, OrderServices services, User user);
+        public abstract boolean create(PatientContext context, OrderServices services, User user, Set<Act> updated);
 
-        public abstract void cancel(PatientContext context, OrderServices services, User user);
+        public abstract void cancel(PatientContext context, OrderServices services, User user, Set<Act> updated);
 
         public abstract void discontinue(PatientContext context, OrderServices services, User user);
 
@@ -558,7 +585,7 @@ public class OrderPlacer {
         }
 
         @Override
-        public boolean create(PatientContext context, OrderServices services, User user) {
+        public boolean create(PatientContext context, OrderServices services, User user, Set<Act> updated) {
             PharmacyOrderService service = services.getPharmacyService();
             return service.createOrder(context, product, quantity, getPlacerOrderNumber(), getStartTime(), pharmacy,
                                        user);
@@ -571,7 +598,7 @@ public class OrderPlacer {
         }
 
         @Override
-        public void cancel(PatientContext context, OrderServices services, User user) {
+        public void cancel(PatientContext context, OrderServices services, User user, Set<Act> updated) {
             PharmacyOrderService service = services.getPharmacyService();
             service.cancelOrder(context, product, quantity, getPlacerOrderNumber(), getStartTime(), pharmacy, user);
         }
@@ -606,6 +633,7 @@ public class OrderPlacer {
 
     private static class LaboratoryOrder extends Order {
 
+        private final Act investigation;
         private final String serviceId;
 
         private final Entity lab;
@@ -613,20 +641,31 @@ public class OrderPlacer {
         public LaboratoryOrder(Act act, String serviceId, Party patient, User clinician, Entity lab,
                                IMObjectReference event) {
             super(act.getObjectReference(), act.getActivityStartTime(), patient, clinician, event);
+            this.investigation = act;
             this.serviceId = serviceId;
             this.lab = lab;
         }
 
         @Override
-        public boolean create(PatientContext context, OrderServices services, User user) {
+        public boolean create(PatientContext context, OrderServices services, User user, Set<Act> updated) {
             LaboratoryOrderService service = services.getLaboratoryService();
-            return service.createOrder(context, getPlacerOrderNumber(), serviceId, getStartTime(), lab, user);
+            boolean created = service.createOrder(context, getPlacerOrderNumber(), serviceId, getStartTime(), lab,
+                                                  user);
+            if (created) {
+                investigation.setStatus2(InvestigationActStatus.SENT);
+                updated.add(investigation);
+            }
+            return created;
         }
 
         @Override
-        public void cancel(PatientContext context, OrderServices services, User user) {
+        public void cancel(PatientContext context, OrderServices services, User user, Set<Act> updated) {
             LaboratoryOrderService service = services.getLaboratoryService();
-            service.cancelOrder(context, getPlacerOrderNumber(), serviceId, getStartTime(), lab, user);
+            boolean sent = service.cancelOrder(context, getPlacerOrderNumber(), serviceId, getStartTime(), lab, user);
+            if (sent) {
+                investigation.setStatus(ActStatus.CANCELLED);
+                updated.add(investigation);
+            }
         }
 
         @Override

@@ -92,6 +92,20 @@
               type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="logCommunication" path="/details/logCommunication" type="java.lang.Boolean"
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="recordLockPeriod" path="/details/recordLockPeriod" type="java.lang.Integer" minCardinality="0"
+              maxCardinality="1" defaultValue="24"/>
+        <node name="recordLockPeriodUnits" path="/details/recordLockPeriodUnits" minCardinality="0"
+              maxCardinality="1" type="java.lang.String" defaultValue="'HOURS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="HOURS" value="hours"/>
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                    <property name="YEARS" value="years"/>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

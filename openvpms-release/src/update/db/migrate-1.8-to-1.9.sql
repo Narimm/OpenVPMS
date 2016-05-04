@@ -865,6 +865,134 @@ FROM entity_details d
 
 DROP TABLE tmp_email_templates;
 
+
+#
+# OVPMS-1744 Medical Record Locking
+#
+
+#
+# Set the status node for existing medical records if they have none.
+#
+UPDATE acts a
+  JOIN act_relationships r
+    ON r.arch_short_name = 'actRelationship.patientClinicalEventItem'
+       AND a.act_id = r.target_id
+       AND a.status IS NULL
+SET a.status = 'IN_PROGRESS';
+
+# Add a status2 column to acts.
+DELIMITER $$
+CREATE PROCEDURE OVPMS_1744_modify_acts()
+  BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT count(*)
+                  FROM INFORMATION_SCHEMA.COLUMNS
+                  WHERE
+                    TABLE_NAME = 'acts' AND TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = 'status2');
+    IF _count = 0
+    THEN
+      ALTER TABLE acts
+      ADD COLUMN status2 VARCHAR(50)
+      AFTER status,
+      ADD INDEX act_short_name_status2_idx (arch_short_name, status2);
+    END IF;
+  END $$
+DELIMITER ;
+
+CALL OVPMS_1744_modify_acts();
+DROP PROCEDURE OVPMS_1744_modify_acts;
+
+# Migrate act.patientInvestigation acts to set the status and status2 nodes
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'PENDING'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'IN_PROGRESS'
+      AND a.status2 IS NULL
+      AND d.document_id IS NULL;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'IN_PROGRESS'
+      AND a.status2 IS NULL
+      AND d.document_id IS NOT NULL;
+
+UPDATE acts a
+SET a.status = 'IN_PROGRESS',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'RECEIVED'
+      AND a.status2 IS NULL;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'POSTED',
+  a.status2  = 'REVIEWED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'COMPLETED'
+      AND a.status2 IS NULL
+      AND d.printed = TRUE;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'IN_PROGRESS',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'COMPLETED'
+      AND a.status2 IS NULL
+      AND d.printed = FALSE;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'REVIEWED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'CANCELLED'
+      AND a.status2 IS NULL
+      AND d.printed = TRUE;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status2 = 'PENDING'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'CANCELLED'
+      AND a.status2 IS NULL
+      AND d.printed = FALSE;
+
+UPDATE acts a
+SET a.status = 'IN_PROGRESS',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'PRELIMINARY'
+      AND a.status2 IS NULL;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'POSTED',
+  a.status2  = 'REVIEWED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'FINAL'
+      AND d.printed = TRUE
+      AND a.status2 IS NULL;
+
+UPDATE acts a
+  JOIN document_acts d
+    ON a.act_id = d.document_act_id
+SET a.status = 'POSTED',
+  a.status2  = 'RECEIVED'
+WHERE a.arch_short_name = 'act.patientInvestigation'
+      AND a.status = 'FINAL'
+      AND a.status2 IS NULL
+      AND d.printed = FALSE;
+
 #
 # OVPMS-1720 Smart Flow Sheet Improvement Stage 1
 #

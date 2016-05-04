@@ -13,6 +13,7 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.jxpath.JXPathContext;

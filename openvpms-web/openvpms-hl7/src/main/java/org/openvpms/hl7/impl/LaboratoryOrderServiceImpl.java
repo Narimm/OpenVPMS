@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -100,15 +100,19 @@ public class LaboratoryOrderServiceImpl implements LaboratoryOrderService {
      * @param date              the order date
      * @param laboratory        the laboratory. An <em>entity.HL7ServiceLaboratory</em>
      * @param user              the user that generated the cancellation
+     * @return {@code true} if a cancellation was sent
      */
     @Override
-    public void cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date,
-                            Entity laboratory, User user) {
+    public boolean cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date,
+                               Entity laboratory, User user) {
+        boolean result = false;
         Connector connector = laboratories.getSender(laboratory);
         if (connector != null) {
             HL7Mapping config = connector.getMapping();
             Message message = factory.cancelOrder(context, placerOrderNumber, serviceId, date, config);
             dispatcher.queue(message, connector, config, user);
+            result = true;
         }
+        return result;
     }
 }

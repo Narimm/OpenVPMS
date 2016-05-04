@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -37,15 +35,15 @@ import java.util.Set;
  * can be done, or is intended or requested to be done.  An Act instance
  * is a record of an intentional business action.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class Act extends IMObject {
 
     /**
      * The serialization version identifier.
      */
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     /**
      * Represents the title of the act.
@@ -75,22 +73,24 @@ public class Act extends IMObject {
     private String status;
 
     /**
+     * A secondary status of the act.
+     */
+    private String status2;
+
+    /**
      * The {@link Participation}s for this act.
      */
-    private Set<Participation> participations =
-            new HashSet<Participation>();
+    private Set<Participation> participations = new HashSet<>();
 
     /**
      * Holds all the {@link ActRelationship}s that this act is a source off.
      */
-    private Set<ActRelationship> sourceActRelationships =
-            new HashSet<ActRelationship>();
+    private Set<ActRelationship> sourceActRelationships = new HashSet<>();
 
     /**
      * Holds all the {@link ActRelationship}s that this act is a target off.
      */
-    private Set<ActRelationship> targetActRelationships =
-            new HashSet<ActRelationship>();
+    private Set<ActRelationship> targetActRelationships = new HashSet<>();
 
     /**
      * Default constructor.
@@ -110,7 +110,6 @@ public class Act extends IMObject {
         super(archetypeId);
         setDetails(details);
     }
-
 
     /**
      * @return Returns the activityEndTime.
@@ -166,6 +165,24 @@ public class Act extends IMObject {
      */
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    /**
+     * Returns the secondary status.
+     *
+     * @return the secondary status. May be {@code null}
+     */
+    public String getStatus2() {
+        return status2;
+    }
+
+    /**
+     * Sets the secondary status.
+     *
+     * @param status2 the secondary status. May be {@code null}
+     */
+    public void setStatus2(String status2) {
+        this.status2 = status2;
     }
 
     /**
@@ -304,8 +321,7 @@ public class Act extends IMObject {
      * @return Set<ActRelationship>
      */
     public Set<ActRelationship> getActRelationships() {
-        Set<ActRelationship> relationships =
-                new HashSet<ActRelationship>(sourceActRelationships);
+        Set<ActRelationship> relationships = new HashSet<>(sourceActRelationships);
         relationships.addAll(targetActRelationships);
 
         return relationships;

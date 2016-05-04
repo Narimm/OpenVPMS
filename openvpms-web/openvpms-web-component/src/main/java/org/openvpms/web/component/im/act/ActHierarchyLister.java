@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,10 +51,8 @@ public class ActHierarchyLister<T extends Act> {
      * @return the flattened tree
      */
     public List<T> list(T root, ActFilter<T> filter, int maxDepth) {
-        Node<T> tree = new Node<T>(root);
-        Map<T, Node<T>> nodes = new HashMap<T, Node<T>>();
-        buildTree(root, root, filter, 2, maxDepth, tree, nodes); // root elements are depth = 1
-        List<T> result = new ArrayList<T>();
+        Node<T> tree = buildTree(root, filter, maxDepth);
+        List<T> result = new ArrayList<>();
         return flattenTree(tree, result, filter);
     }
 
@@ -94,32 +94,78 @@ public class ActHierarchyLister<T extends Act> {
      * Builds a tree of acts given a parent. Where acts are linked to multiple parent acts, only one instance
      * will be recorded in the resulting tree; that which has the maximum depth.
      *
+     * @param root     the root act
+     * @param filter   the act filter
+     * @param maxDepth the maximum depth to build to, or {@code -1} if there is no depth restriction
+     * @return the tree
+     */
+    protected Node<T> buildTree(T root, ActFilter<T> filter, int maxDepth) {
+        Node<T> tree = new Node<>(root);
+        Map<T, Node<T>> nodes = new HashMap<>();
+        Map<IMObjectReference, T> acts = new HashMap<>();
+        buildTree(root, root, filter, 2, maxDepth, tree, nodes, acts); // root elements are depth = 1
+        return tree;
+    }
+
+    /**
+     * Builds a tree of acts given a parent. Where acts are linked to multiple parent acts, only one instance
+     * will be recorded in the resulting tree; that which has the maximum depth.
+     *
      * @param act      the parent act
      * @param root     the root act
+     * @param filter   the act filter
      * @param depth    the current depth
      * @param maxDepth the maximum depth to build to, or {@code -1} if there is no depth restriction
      * @param parent   the parent node
      * @param nodes    a map of value to node, for quick searches
+     * @param acts     the set of visited acts
      */
     private void buildTree(T act, T root, ActFilter<T> filter, int depth, int maxDepth, Node<T> parent,
-                           Map<T, Node<T>> nodes) {
-        List<T> children = filter.filter(act, root);
+                           Map<T, Node<T>> nodes, Map<IMObjectReference, T> acts) {
+        List<T> children = filter.filter(act, root, acts);
+        List<Node<T>> added = new ArrayList<>(); // new nodes that need subtrees built
+        List<Node<T>> move = new ArrayList<>();  // existing nodes that may need moving
         for (T child : children) {
             Node<T> node = nodes.get(child);
             if (node != null) {
                 if (node == parent) {
                     log.warn("Attempt to add node to itself: " + child.getObjectReference());
-                } else if (node.getDepth() < depth) {
-                    // if the node already exists at a shallower depth, move it deeper so it is not duplicated.
-                    node.remove();
-                    parent.add(node);
+                } else {
+                    move.add(node);
                 }
             } else {
-                node = new Node<T>(parent, child);
+                node = new Node<>(parent, child);
                 nodes.put(child, node);
-                if (depth < maxDepth || maxDepth == -1) {
-                    buildTree(child, root, filter, depth + 1, maxDepth, node, nodes);
+                added.add(node);
+            }
+        }
+
+        if (depth < maxDepth || maxDepth == -1) {
+            for (Node<T> node : added) {
+                buildTree(node.value, root, filter, depth + 1, maxDepth, node, nodes, acts);
+            }
+        }
+
+        // go through the nodes that may need moving deeper in the tree, discarding those that are
+        // already children of others
+        List<Node<T>> list = new ArrayList<>(move);
+        while (!list.isEmpty()) {
+            Node<T> node1 = list.remove(0);
+            for (Node<T> node2 : list) {
+                if (node2.isChildOf(node1)) {
+                    move.remove(node2);
+                } else if (node1.isChildOf(node2)) {
+                    move.remove(node1);
+                    break;
                 }
+            }
+        }
+
+        // move any remaining nodes that can go deeper in the tree
+        for (Node<T> node : move) {
+            if (node.getDepth() < depth) {
+                node.remove();
+                parent.add(node);
             }
         }
     }
@@ -127,7 +173,7 @@ public class ActHierarchyLister<T extends Act> {
     /**
      * Tree node.
      */
-    static class Node<T> {
+    static class Node<T extends Act> {
 
         /**
          * The parent node, or {@code null} if this is a root node.
@@ -137,12 +183,12 @@ public class ActHierarchyLister<T extends Act> {
         /**
          * The node value.
          */
-        final T value;
+        private final T value;
 
         /**
          * The child nodes.
          */
-        final List<Node<T>> children = new ArrayList<Node<T>>();
+        private final List<Node<T>> children = new ArrayList<>();
 
         /**
          * Constructs a parent {@link Node}.
@@ -197,6 +243,10 @@ public class ActHierarchyLister<T extends Act> {
             while (p != null) {
                 depth++;
                 p = p.parent;
+                if (depth > 255) {
+                    log.warn("getDepth() depth greater than expected, bailing out");
+                    break;
+                }
             }
             return depth;
         }
@@ -210,5 +260,42 @@ public class ActHierarchyLister<T extends Act> {
             return parent;
         }
 
+        /**
+         * Determines if this node is a child of another.
+         *
+         * @param node the node
+         * @return if this is a child of {@code node}
+         */
+        public boolean isChildOf(Node<T> node) {
+            Node p = parent;
+            int depth = 0;
+            while (p != null && p != node) {
+                depth++;
+                p = p.getParent();
+                if (depth > 255) {
+                    log.warn("isChildOf() node depth greater than expected, bailing out");
+                    break;
+                }
+            }
+            return p == node;
+        }
+
+        /**
+         * Returns a string representation of the node and its children.
+         *
+         * @return a string representation of the node and its children
+         */
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(StringUtils.leftPad("", getDepth(), '-'));
+            builder.append(value.getArchetypeId());
+            builder.append(':');
+            builder.append(value.getId());
+            for (Node<T> child : children) {
+                builder.append("\n");
+                builder.append(child);
+            }
+            return builder.toString();
+        }
     }
 }

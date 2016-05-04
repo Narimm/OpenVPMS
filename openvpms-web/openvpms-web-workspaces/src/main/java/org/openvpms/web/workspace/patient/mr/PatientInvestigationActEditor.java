@@ -11,10 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.patient.history;
+package org.openvpms.web.workspace.patient.mr;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -51,8 +51,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.workspace.patient.mr.PatientDocumentActEditor;
-import org.openvpms.web.workspace.patient.mr.PatientInvestigationActLayoutStrategy;
 
 
 /**
@@ -221,11 +219,10 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        PatientInvestigationActLayoutStrategy strategy = new PatientInvestigationActLayoutStrategy(getDocumentEditor(),
-                                                                                                   getVersionsEditor(),
-                                                                                                   productEditor);
-        if (isProductReadOnly()) {
-            strategy.setShowProductReadOnly(true);
+        PatientInvestigationActLayoutStrategy strategy = new PatientInvestigationActLayoutStrategy(
+                getDocumentEditor(), getVersionsEditor(), productEditor, isLocked());
+        if (hasInvoiceItem()) {
+            strategy.setHasInvoiceItem(true);
         }
         strategy.setEnableButton(enablePrintForm());
         return strategy;
@@ -248,6 +245,11 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
         }
     }
 
+    /**
+     * Invoked when the investigation type changes.
+     * <p/>
+     * This clears the product if the existing product doens't have a reference to the investigation type.
+     */
     private void onInvestigationTypeChanged() {
         IMObjectReference investigationType = getInvestigationTypeRef();
         if (investigationType != null) {
@@ -263,17 +265,19 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     }
 
     /**
-     * Determines if the product and investigation type should be read-only.
+     * Determines if the investigation is linked to an invoice item.
+     * <p/>
+     * If so, the product, investigationType and status should be read-only
      *
      * @return {@code true} if the parent act is an invoice item, or the investigation is linked to an invoice item
      */
-    private boolean isProductReadOnly() {
+    private boolean hasInvoiceItem() {
         boolean result;
         if (TypeHelper.isA(getParent(), CustomerAccountArchetypes.INVOICE_ITEM)) {
             result = true;
         } else {
             ActBean bean = new ActBean(getObject());
-            result = (bean.getRelationship("actRelationship.invoiceItemInvestigation") != null);
+            result = (bean.getNodeSourceObjectRef("invoiceItem") != null);
         }
         return result;
     }

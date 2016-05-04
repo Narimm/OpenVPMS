@@ -11,18 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -48,8 +51,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -68,6 +73,16 @@ public class MedicalRecordRules {
      * Clinical event item short names.
      */
     private String[] clinicalEventItems;
+
+    /**
+     * Clinical problem item short names.
+     */
+    private String[] clinicalProblemItems;
+
+    /**
+     * Medical records that require locking.
+     */
+    private String[] lockableRecords;
 
     /**
      * Start time node name.
@@ -149,9 +164,11 @@ public class MedicalRecordRules {
      */
     public void linkMedicalRecords(Act parent, Act child) {
         if (TypeHelper.isA(child, PatientArchetypes.CLINICAL_PROBLEM)) {
-            linkMedicalRecords(parent, child, null);
+            linkMedicalRecords(parent, child, null, null);
+        } else if (!TypeHelper.isA(child, PatientArchetypes.CLINICAL_ADDENDUM)) {
+            linkMedicalRecords(parent, null, child, null);
         } else {
-            linkMedicalRecords(parent, null, child);
+            linkMedicalRecords(parent, null, null, child);
         }
     }
 
@@ -165,12 +182,13 @@ public class MedicalRecordRules {
      * <li>any of its items not presently linked to the event will be linked
      * </ul>
      *
-     * @param event   the <em>act.patientClinicalEvent</em>. May be {@code null}
-     * @param problem the <em>act.patientClinicalProblem</em>. May be {@code null}
-     * @param item    the patient medical record or charge item. May be {@code null}
+     * @param event    the <em>act.patientClinicalEvent</em>. May be {@code null}
+     * @param problem  the <em>act.patientClinicalProblem</em>. May be {@code null}
+     * @param item     the patient medical record or charge item. May be {@code null}
+     * @param addendum the addendum. If specified, the item must be a note or medication. May be {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void linkMedicalRecords(Act event, Act problem, Act item) {
+    public void linkMedicalRecords(Act event, Act problem, Act item, Act addendum) {
         if (event != null && !TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
             throw new IllegalArgumentException("Argument 'event' is of the wrong type: "
                                                + event.getArchetypeId().getShortName());
@@ -183,18 +201,41 @@ public class MedicalRecordRules {
             throw new IllegalArgumentException("Argument 'problem' is of the wrong type: "
                                                + problem.getArchetypeId().getShortName());
         }
-        ActBean bean = (event != null) ? new ActBean(event, service) : null;
-
-        if (problem != null && item != null) {
-            linkItemToProblem(problem, item);
+        if (addendum != null) {
+            if (!TypeHelper.isA(addendum, PatientArchetypes.CLINICAL_ADDENDUM)) {
+                throw new IllegalArgumentException("Argument 'addendum' is of the wrong type: "
+                                                   + addendum.getArchetypeId().getShortName());
+            }
+        }
+        Set<Act> changed = new HashSet<>();
+        if (item != null && addendum != null) {
+            linkAddendumToItem(item, addendum, changed);
+        }
+        if (problem != null) {
+            ActBean bean = new ActBean(problem, service);
+            if (item != null && TypeHelper.isA(item, getClinicalProblemItems())) {
+                linkItemToProblem(bean, item, changed);
+            }
+            if (addendum != null) {
+                linkItemToProblem(bean, addendum, changed);
+            }
+        }
+        if (event != null) {
+            ActBean bean = new ActBean(event, service);
+            if (item != null && (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
+                                 || TypeHelper.isA(item, getClinicalEventItems()))) {
+                linkItemToEvent(bean, item, changed);
+            }
+            if (addendum != null) {
+                linkItemToEvent(bean, addendum, changed);
+            }
+        }
+        if (!changed.isEmpty()) {
+            service.save(changed);
         }
 
-        if (event != null && item != null) {
-            linkItemToEvent(bean, item);
-        }
-
-        if (event != null && problem != null) {
-            linkProblemToEvent(bean, problem);
+        if (problem != null) {
+            linkProblemToEvent(event, problem);
         }
     }
 
@@ -416,6 +457,55 @@ public class MedicalRecordRules {
     public boolean isAllergy(Act alert) {
         ActBean bean = new ActBean(alert, service);
         return ALLERGY.equals(bean.getString("alertType"));
+    }
+
+    /**
+     * Determines if a medical record needs to be locked, given a period relative to the current time.
+     *
+     * @param act    the record act
+     * @param period the period prior to the current from which medical records should be locked
+     * @return {@code true} if the record needs locking
+     */
+    public boolean needsLock(Act act, Period period) {
+        return needsLock(act, new DateTime().minus(period).toDate());
+    }
+
+    /**
+     * Determines if a medical record needs to be locked.
+     *
+     * @param act      the record act
+     * @param lockTime the time that medical records should be locked on or prior to
+     * @return {@code true} if the record needs locking
+     */
+    public boolean needsLock(Act act, Date lockTime) {
+        return !ActStatus.POSTED.equals(act.getStatus())
+               && TypeHelper.isA(act, getLockableRecords())
+               && DateRules.compareTo(act.getActivityStartTime(), lockTime) <= 0;
+    }
+
+    /**
+     * Returns the archetype short names of patient medical records that may be locked.
+     *
+     * @return the archetype short names of patient medical records that may be locked
+     */
+    public synchronized String[] getLockableRecords() {
+        if (lockableRecords == null) {
+            List<String> items = new ArrayList<>(Arrays.asList(getClinicalEventItems()));
+            items.remove(PatientArchetypes.CLINICAL_PROBLEM);
+            Set<String> versionTargets = new HashSet<>();
+            for (String item : items) {
+                NodeDescriptor versions = DescriptorHelper.getNode(item, "versions", service);
+                if (versions != null) {
+                    for (String relationship : DescriptorHelper.getShortNames(versions, service)) {
+                        String[] targets = DescriptorHelper.getNodeShortNames(relationship, "target", service);
+                        versionTargets.addAll(Arrays.asList(targets));
+                    }
+                }
+            }
+            items.addAll(versionTargets);
+            lockableRecords = items.toArray(new String[items.size()]);
+        }
+        return lockableRecords;
     }
 
     /**
@@ -651,12 +741,25 @@ public class MedicalRecordRules {
      *
      * @return the short names
      */
-    private String[] getClinicalEventItems() {
+    private synchronized String[] getClinicalEventItems() {
         if (clinicalEventItems == null) {
             clinicalEventItems = DescriptorHelper.getNodeShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM, "target",
                                                                     service);
         }
         return clinicalEventItems;
+    }
+
+    /**
+     * Returns the valid short names for a problem item relationship.
+     *
+     * @return the short names
+     */
+    private synchronized String[] getClinicalProblemItems() {
+        if (clinicalProblemItems == null) {
+            clinicalProblemItems = DescriptorHelper.getNodeShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM, "target",
+                                                                      service);
+        }
+        return clinicalProblemItems;
     }
 
     /**
@@ -695,35 +798,39 @@ public class MedicalRecordRules {
     /**
      * Links an item to an <em>act.patientClinicalProblem</em>, if no relationship currently exists.
      *
-     * @param problem the problem
+     * @param bean    the problem
      * @param item    the item to link
+     * @param changed collects the changed acts
      */
-    private void linkItemToProblem(Act problem, Act item) {
+    private void linkItemToProblem(ActBean bean, Act item, Set<Act> changed) {
         // link the problem and item if required
-        ActBean problemBean = new ActBean(problem, service);
-        if (!problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, item)) {
-            problemBean.addNodeRelationship("items", item);
-            service.save(Arrays.asList(problem, item));
+        if (!bean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, item)) {
+            bean.addNodeRelationship("items", item);
+            changed.add(bean.getAct());
+            changed.add(item);
         }
     }
 
     /**
      * Links an item to an <em>act.patientClinicalEvent</em>, if no relationship currently exists.
      *
-     * @param bean the event
-     * @param item the item to link
+     * @param bean    the event
+     * @param item    the item to link
+     * @param changed collects the changed acts
      */
-    private void linkItemToEvent(ActBean bean, Act item) {
+    private void linkItemToEvent(ActBean bean, Act item, Set<Act> changed) {
         Act event = bean.getAct();
         // link the event and item
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, item)) {
+            if (!bean.hasNodeTarget("chargeItems", item)) {
                 bean.addNodeRelationship("chargeItems", item);
-                service.save(Arrays.asList(event, item));
+                changed.add(event);
+                changed.add(item);
             }
-        } else if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, item)) {
+        } else if (!bean.hasNodeTarget("items", item)) {
             bean.addNodeRelationship("items", item);
-            service.save(Arrays.asList(event, item));
+            changed.add(event);
+            changed.add(item);
         }
     }
 
@@ -731,18 +838,18 @@ public class MedicalRecordRules {
      * Links an <em>act.patientClinicalProblem> and its acts to an <em>act.patientClinicalEvent</em>,
      * if no relationship currently exists.
      *
-     * @param bean    the event
+     * @param event   the event
      * @param problem the problem to link
      */
-    private void linkProblemToEvent(ActBean bean, Act problem) {
-        Act event = bean.getAct();
+    private void linkProblemToEvent(Act event, Act problem) {
         // link the event and problem
         ActBean problemBean = new ActBean(problem, service);
         List<Act> toSave = new ArrayList<>();
 
+        ActBean bean = new ActBean(event, service);
         // if the problem is not linked to the event, add it
-        if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem)) {
-            bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem);
+        if (!bean.hasNodeTarget("items", problem)) {
+            bean.addNodeRelationship("items", problem);
             toSave.add(event);
         }
 
@@ -753,13 +860,29 @@ public class MedicalRecordRules {
             for (Act child : acts) {
                 ActBean childBean = new ActBean(child, service);
                 if (childBean.isA(shortNames) && !childBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM)) {
-                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child);
+                    bean.addNodeRelationship("items", child);
                     toSave.add(child);
                 }
             }
         }
         if (!toSave.isEmpty()) {
             service.save(toSave);
+        }
+    }
+
+    /**
+     * Links an addendum to an <em>act.patientClinicalNote</em> or <em>act.patientMedication</em>, if no relationship
+     * currently exists.
+     *
+     * @param item     the item
+     * @param addendum the addendum to link
+     */
+    private void linkAddendumToItem(Act item, Act addendum, Set<Act> changed) {
+        ActBean bean = new ActBean(item, service);
+        if (!bean.hasNodeTarget("addenda", addendum)) {
+            bean.addNodeRelationship("addenda", addendum);
+            changed.add(item);
+            changed.add(addendum);
         }
     }
 

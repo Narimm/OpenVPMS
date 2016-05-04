@@ -11,17 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.WordUtils;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -60,7 +62,8 @@ public class PatientTestHelper {
         patient.setName(name);
         Lookup speciesLookup = TestHelper.getLookup(PatientArchetypes.SPECIES, species,
                                                     WordUtils.capitalize(species.toLowerCase()), true);
-        Lookup breedLookup = TestHelper.getLookup(PatientArchetypes.BREED, breed, speciesLookup, "lookupRelationship.speciesBreed");
+        Lookup breedLookup = TestHelper.getLookup(PatientArchetypes.BREED, breed, speciesLookup,
+                                                  "lookupRelationship.speciesBreed");
         breedLookup.setName(WordUtils.capitalize(breed.toLowerCase()));
         save(breedLookup);
         IMObjectBean bean = new IMObjectBean(patient);
@@ -68,7 +71,6 @@ public class PatientTestHelper {
         bean.setValue("breed", breed);
         bean.setValue("dateOfBirth", dateOfBirth);
         bean.save();
-        ;
         return patient;
     }
 
@@ -90,9 +92,20 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createMedication(Party patient, Product product) {
-        Act act = (Act) create(PatientArchetypes.PATIENT_MEDICATION);
+        return createMedication(new Date(), patient, product);
+    }
+
+    /**
+     * Helper to create an <em>act.patientMedication</em>.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param product   the product
+     * @return a new act
+     */
+    public static Act createMedication(Date startTime, Party patient, Product product) {
+        Act act = createAct(PatientArchetypes.PATIENT_MEDICATION, startTime, patient, null);
         ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("patient", patient);
         bean.addNodeParticipation("product", product);
         bean.save();
         return act;
@@ -121,7 +134,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -134,7 +147,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -148,7 +161,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -174,7 +187,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p>
+     * <p/>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -188,7 +201,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p>
+     * <p/>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -220,7 +233,7 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createNote(Date startTime, Party patient) {
-        return createAct(PatientArchetypes.CLINICAL_NOTE, startTime, patient, null);
+        return createNote(startTime, patient, null);
     }
 
     /**
@@ -232,7 +245,35 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createNote(Date startTime, Party patient, User clinician) {
-        return createAct(PatientArchetypes.CLINICAL_NOTE, startTime, patient, clinician);
+        Act act = createAct(PatientArchetypes.CLINICAL_NOTE, startTime, patient, clinician);
+        save(act);
+        return act;
+    }
+
+    /**
+     * Adds an <em>act.patientClinicalAddendum</em> to another act.
+     *
+     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an <em>act.patientMedication</em>
+     * @param addendum the addendum
+     */
+    public static void addAddendum(Act act, Act addendum) {
+        ActBean bean = new ActBean(act);
+        bean.addNodeRelationship("addenda", addendum);
+        save(act, addendum);
+    }
+
+    /**
+     * Creates an <em>act.patientClinicalAddendum</em>.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @return a new act
+     */
+    public static Act createAddendum(Date startTime, Party patient, User clinician) {
+        Act act = createAct(PatientArchetypes.CLINICAL_ADDENDUM, startTime, patient, clinician);
+        save(act);
+        return act;
     }
 
     /**
@@ -284,7 +325,9 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createWeight(Date startTime, Party patient, User clinician) {
-        return createAct(PatientArchetypes.PATIENT_WEIGHT, startTime, patient, clinician);
+        Act act = createAct(PatientArchetypes.PATIENT_WEIGHT, startTime, patient, clinician);
+        save(act);
+        return act;
     }
 
     /**
@@ -340,17 +383,82 @@ public class PatientTestHelper {
      * @return a new investigation
      */
     public static Act createInvestigation(Party patient, User clinician, Party location, Entity investigationType) {
-        Act act = (Act) create(InvestigationArchetypes.PATIENT_INVESTIGATION);
+        return createInvestigation(new Date(), patient, clinician, location, investigationType);
+    }
+
+    /**
+     * Creates an investigation.
+     *
+     * @param startTime         the act start time
+     * @param patient           the patient
+     * @param clinician         the clinician. May be {@code null}
+     * @param location          the practice location. May be {@code null}
+     * @param investigationType the investigation type
+     * @return a new investigation
+     */
+    public static Act createInvestigation(Date startTime, Party patient, User clinician, Party location,
+                                          Entity investigationType) {
+        Act act = createAct(InvestigationArchetypes.PATIENT_INVESTIGATION, startTime, patient, clinician);
         ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("patient", patient);
-        if (clinician != null) {
-            bean.addNodeParticipation("clinician", clinician);
-        }
         if (location != null) {
             bean.addNodeParticipation("location", location);
         }
         bean.addNodeParticipation("investigationType", investigationType);
         bean.save();
+        return act;
+    }
+
+    /**
+     * Creates an investigation version document act.
+     *
+     * @param startTime         the act start time
+     * @param investigationType the investigation type
+     * @return a new document act
+     */
+    public static Act createInvestigationVersion(Date startTime, Entity investigationType) {
+        DocumentAct act = (DocumentAct) create(InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION);
+        act.setActivityStartTime(startTime);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("investigationType", investigationType);
+        save(act);
+        return act;
+    }
+
+    /**
+     * Adds a report to an investigation.
+     *
+     * @param investigation the investigation or investigation version
+     */
+    public static void addReport(DocumentAct investigation) {
+        Document document = (Document) create(DocumentArchetypes.TEXT_DOCUMENT);
+        document.setName("Z Test document");
+        investigation.setDocument(document.getObjectReference());
+        save(investigation, document);
+    }
+
+    /**
+     * Creates an attachment document act.
+     *
+     * @param patient   the patient
+     * @param startTime the act start time
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentAttachment(Date startTime, Party patient) {
+        Act act = createAct(PatientArchetypes.DOCUMENT_ATTACHMENT, startTime, patient, null);
+        save(act);
+        return (DocumentAct) act;
+    }
+
+    /**
+     * Creates an attachment version document act .
+     *
+     * @param startTime the act start time
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentAttachmentVersion(Date startTime) {
+        DocumentAct act = (DocumentAct) create(PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION);
+        act.setActivityStartTime(startTime);
+        save(act);
         return act;
     }
 
@@ -372,13 +480,77 @@ public class PatientTestHelper {
      * @return a new form document act
      */
     public static DocumentAct createDocumentForm(Party patient, Product product) {
-        DocumentAct act = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
-        ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("patient", patient);
+        return createDocumentForm(new Date(), patient, product);
+    }
+
+    /**
+     * Creates a form document act.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param product   the product. May be {@code null}
+     * @return a new form document act
+     */
+    public static DocumentAct createDocumentForm(Date startTime, Party patient, Product product) {
+        DocumentAct act = (DocumentAct) createAct(PatientArchetypes.DOCUMENT_FORM, startTime, patient, null);
         if (product != null) {
+            ActBean bean = new ActBean(act);
             bean.addNodeParticipation("product", product);
         }
         save(act);
         return act;
     }
+
+    /**
+     * Creates an image document act.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentImage(Date startTime, Party patient) {
+        Act act = createAct(PatientArchetypes.DOCUMENT_IMAGE, startTime, patient, null);
+        save(act);
+        return (DocumentAct) act;
+    }
+
+    /**
+     * Creates an image version document act .
+     *
+     * @param startTime the act start time
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentImageVersion(Date startTime) {
+        DocumentAct act = (DocumentAct) create(PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION);
+        act.setActivityStartTime(startTime);
+        save(act);
+        return act;
+    }
+
+    /**
+     * Creates a letter document act.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentLetter(Date startTime, Party patient) {
+        Act act = createAct(PatientArchetypes.DOCUMENT_LETTER, startTime, patient, null);
+        save(act);
+        return (DocumentAct) act;
+    }
+
+    /**
+     * Creates a letter version document act .
+     *
+     * @param startTime the act start time
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentLetterVersion(Date startTime) {
+        DocumentAct act = (DocumentAct) create(PatientArchetypes.DOCUMENT_LETTER_VERSION);
+        act.setActivityStartTime(startTime);
+        save(act);
+        return act;
+    }
+
 }

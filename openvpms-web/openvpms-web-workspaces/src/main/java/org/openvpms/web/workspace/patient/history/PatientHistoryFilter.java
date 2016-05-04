@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,9 +78,23 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      */
     public PatientHistoryFilter(String[] shortNames, boolean sortAscending) {
         super();
-        this.shortNames = new ArrayList<String>(Arrays.asList(shortNames));
+        this.shortNames = new ArrayList<>(Arrays.asList(shortNames));
         invoice = this.shortNames.remove(CustomerAccountArchetypes.INVOICE_ITEM);
         setSortItemsAscending(sortAscending);
+    }
+
+    /**
+     * Returns a comparator to sort the children of an act.
+     *
+     * @param act the parent act
+     * @return the comparator to sort the act's children
+     */
+    @Override
+    public Comparator<Act> getComparator(Act act) {
+        if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION, PatientArchetypes.CLINICAL_NOTE)) {
+            return super.getComparator(true);
+        }
+        return super.getComparator(act);
     }
 
     /**
@@ -144,8 +159,8 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      */
     private List<Act> filterInvoiceItems(Act event, List<Act> children) {
         List<Act> result;
-        result = new ArrayList<Act>(children);
-        Set<IMObjectReference> chargeItemRefs = new HashSet<IMObjectReference>();
+        result = new ArrayList<>(children);
+        Set<IMObjectReference> chargeItemRefs = new HashSet<>();
         ActBean bean = new ActBean(event);
         for (ActRelationship relationship : bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
             IMObjectReference target = relationship.getTarget();

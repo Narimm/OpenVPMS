@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.act;
@@ -28,8 +26,7 @@ import java.util.Set;
 /**
  * Implementation of the {@link ActDO} interface.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-07-10 15:32:07 +1000 (Tue, 10 Jul 2007) $
+ * @author Tim Anderson
  */
 public class ActDOImpl extends IMObjectDOImpl implements ActDO {
 
@@ -59,22 +56,24 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     private String status;
 
     /**
+     * The secondary status of the act.
+     */
+    private String status2;
+
+    /**
      * The relationships to other acts where this is the source.
      */
-    private Set<ActRelationshipDO> sourceActRelationships =
-            new HashSet<ActRelationshipDO>();
+    private Set<ActRelationshipDO> sourceActRelationships = new HashSet<>();
 
     /**
      * The relationships to other acts where this is the target.
      */
-    private Set<ActRelationshipDO> targetActRelationships =
-            new HashSet<ActRelationshipDO>();
+    private Set<ActRelationshipDO> targetActRelationships = new HashSet<>();
 
     /**
      * The participations for this act.
      */
-    private Set<ParticipationDO> participations =
-            new HashSet<ParticipationDO>();
+    private Set<ParticipationDO> participations = new HashSet<>();
 
 
     /**
@@ -87,7 +86,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Returns the title.
      *
-     * @return the title. May be <tt>null</tt>
+     * @return the title. May be {@code null}
      */
     public String getTitle() {
         return title;
@@ -96,7 +95,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Sets the title.
      *
-     * @param title the title. May be <tt>null</tt>
+     * @param title the title. May be {@code null}
      */
     public void setTitle(String title) {
         this.title = title;
@@ -105,7 +104,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Returns the act start time.
      *
-     * @return the act start time. May be <tt>null</tt>
+     * @return the act start time. May be {@code null}
      */
     public Date getActivityStartTime() {
         return activityStartTime;
@@ -114,7 +113,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Sets the act start time.
      *
-     * @param activityStartTime the start time. May be <tt>null</tt>
+     * @param activityStartTime the start time. May be {@code null}
      */
     public void setActivityStartTime(Date activityStartTime) {
         this.activityStartTime = activityStartTime;
@@ -123,7 +122,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Returns the act end time.
      *
-     * @return the end time. May be <tt>null</tt>
+     * @return the end time. May be {@code null}
      */
     public Date getActivityEndTime() {
         return activityEndTime;
@@ -132,7 +131,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Sets the act end time.
      *
-     * @param activityEndTime the end time. May be <tt>null</tt>
+     * @param activityEndTime the end time. May be {@code null}
      */
     public void setActivityEndTime(Date activityEndTime) {
         this.activityEndTime = activityEndTime;
@@ -141,7 +140,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Returns the reason for the act.
      *
-     * @return the reason. May be <tt>null</tt>
+     * @return the reason. May be {@code null}
      */
     public String getReason() {
         return reason;
@@ -150,7 +149,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Sets the reason for the act.
      *
-     * @param reason the reason. May be <tt>null</tt>
+     * @param reason the reason. May be {@code null}
      */
     public void setReason(String reason) {
         this.reason = reason;
@@ -159,7 +158,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Returns the act status.
      *
-     * @return the act status. May be <tt>null</tt>
+     * @return the act status. May be {@code null}
      */
     public String getStatus() {
         return status;
@@ -168,10 +167,28 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     /**
      * Sets the act status.
      *
-     * @param status the act status. May be <tt>null</tt>
+     * @param status the act status. May be {@code null}
      */
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    /**
+     * Returns the secondary act status.
+     *
+     * @return the secondary act status. May be {@code null}
+     */
+    public String getStatus2() {
+        return status2;
+    }
+
+    /**
+     * Sets the secondary act status.
+     *
+     * @param status2 the secondary act status. May be {@code null}
+     */
+    public void setStatus2(String status2) {
+        this.status2 = status2;
     }
 
     /**
@@ -263,8 +280,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
      *
      * @param relationships the relationships
      */
-    protected void setSourceActRelationships(
-            Set<ActRelationshipDO> relationships) {
+    protected void setSourceActRelationships(Set<ActRelationshipDO> relationships) {
         sourceActRelationships = relationships;
     }
 
@@ -273,8 +289,7 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
      *
      * @param relationships the relationships
      */
-    protected void setTargetActRelationships(
-            Set<ActRelationshipDO> relationships) {
+    protected void setTargetActRelationships(Set<ActRelationshipDO> relationships) {
         targetActRelationships = relationships;
     }
 

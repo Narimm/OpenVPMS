@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class VisitHistoryBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
+public class VisitHistoryBrowserCRUDWindow extends AbstractVisitHistoryBrowserCRUDWindow {
 
     /**
      * The help context.
@@ -55,6 +55,7 @@ public class VisitHistoryBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
      */
     public VisitHistoryBrowserCRUDWindow(PatientHistoryQuery query, PatientHistoryBrowser browser, Context context,
                                          HelpContext help) {
+        super();
         this.help = help;
         if (browser.getSelected() == null) {
             browser.query();
@@ -89,16 +90,6 @@ public class VisitHistoryBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
     public void setSelected(Act object) {
         super.setSelected(object);
         getWindow().setEvent(getBrowser().getSelectedParent());
-    }
-
-    /**
-     * Returns the CRUD window.
-     *
-     * @return the window
-     */
-    @Override
-    public AbstractPatientHistoryCRUDWindow getWindow() {
-        return (AbstractPatientHistoryCRUDWindow) super.getWindow();
     }
 
     /**

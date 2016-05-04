@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -44,7 +44,8 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     public MessagingWorkspace(Context context) {
         super("workflow", "messaging", context, false);
         setArchetypes(User.class, UserArchetypes.USER);
-        setChildArchetypes(Act.class, MessageArchetypes.USER, MessageArchetypes.SYSTEM_MESSAGES);
+        setChildArchetypes(Act.class, MessageArchetypes.USER, MessageArchetypes.SYSTEM_MESSAGES,
+                           MessageArchetypes.AUDIT);
     }
 
     /**

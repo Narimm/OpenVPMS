@@ -13,6 +13,7 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.Component;
@@ -32,7 +33,7 @@ import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 
 
 /**
- * Browser for <em>act.userMessage</em> and <em>act.systemMessage</em> acts.
+ * Browser for <em>act.userMessage</em>,<em>act.systemMessage</em> and <em>act.auditMessage</em> acts.
  *
  * @author Tim Anderson
  */

@@ -1,618 +1,559 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
-              name="Patient Clinical Problems" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30"
-              rightMargin="30" topMargin="20" bottomMargin="20">
-    <property name="ireport.scriptlethandling" value="0"/>
-    <property name="ireport.encoding" value="UTF-8"/>
-    <property name="ireport.zoom" value="1.5"/>
-    <property name="ireport.x" value="0"/>
-    <property name="ireport.y" value="0"/>
-    <import value="net.sf.jasperreports.engine.*"/>
-    <import value="java.util.*"/>
-    <import value="net.sf.jasperreports.engine.data.*"/>
-    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
-        <parameterDescription>
-            <![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
-        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
-    </parameter>
-    <field name="shortName" class="java.lang.String"/>
-    <field name="product.entity.name" class="java.lang.String"/>
-    <field name="startTime" class="java.util.Date"/>
-    <field name="clinician.entity.description" class="java.lang.String"/>
-    <field name="status" class="java.lang.String"/>
-    <field name="reason" class="java.lang.String"/>
-    <field name="displayName" class="java.lang.String"/>
-    <field name="note" class="java.lang.String"/>
-    <field name="description" class="java.lang.String"/>
-    <field name="patient.entity.description" class="java.lang.String"/>
-    <field name="patient.entity.name" class="java.lang.String"/>
-    <field name="endTime" class="java.util.Date"/>
-    <field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;name&apos;)]"
-           class="java.lang.String"/>
-    <field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;id&apos;)]"
-           class="java.lang.Long"/>
-    <field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;description&apos;)]"
-           class="java.lang.String"/>
-    <field name="quantity" class="java.math.BigDecimal"/>
-    <field name="label" class="java.lang.String"/>
-    <field name="patient.entity.id" class="java.lang.Long"/>
-    <field name="presentingComplaint" class="java.lang.String"/>
-    <background>
-        <band splitType="Stretch"/>
-    </background>
-    <title>
-        <band height="88" splitType="Stretch">
-            <staticText>
-                <reportElement key="staticText-15" x="11" y="15" width="40" height="12"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <text><![CDATA[Owner :]]></text>
-            </staticText>
-            <textField evaluationTime="Report" isBlankWhenNull="false">
-                <reportElement key="textField" x="487" y="13" width="48" height="13"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
-            </textField>
-            <line>
-                <reportElement key="line-1" positionType="FixRelativeToBottom" x="0" y="84" width="535" height="1"/>
-            </line>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField" positionType="FixRelativeToBottom" x="56" y="72" width="358"
-                               height="12"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{patient.entity.description}]]></textFieldExpression>
-            </textField>
-            <textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
-                <reportElement key="textField" x="460" y="1" width="75" height="12"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement key="textField" x="56" y="27" width="359" height="34" isPrintWhenDetailOverflows="true"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'description')]}]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement key="staticText-19" x="430" y="1" width="30" height="12"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <text><![CDATA[Printed:]]></text>
-            </staticText>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField" x="56" y="15" width="230" height="12"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}+" (ID: "+$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'id')]}+")"]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField" positionType="FixRelativeToBottom" x="56" y="61" width="359"
-                               height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{patient.entity.name}+" (ID: "+$F{patient.entity.id}+")"]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField" x="430" y="13" width="52" height="13"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement textAlignment="Right">
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement key="staticText-14" x="206" y="0" width="123" height="16"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement textAlignment="Center">
-                    <font fontName="SansSerif" isBold="true" isUnderline="true"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <text><![CDATA[Patient Clinical Problems]]></text>
-            </staticText>
-            <staticText>
-                <reportElement key="staticText-16" positionType="FixRelativeToBottom" x="11" y="61" width="40"
-                               height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <text><![CDATA[Patient :]]></text>
-            </staticText>
-        </band>
-    </title>
-    <pageHeader>
-        <band height="28" splitType="Stretch">
-            <printWhenExpression>
-                <![CDATA[$V{PAGE_NUMBER}.intValue() != 1? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
-            <staticText>
-                <reportElement key="staticText-14" x="187" y="0" width="161" height="16"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement textAlignment="Center">
-                    <font fontName="SansSerif" isBold="true" isUnderline="true"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <text><![CDATA[Patient Clinical Problems (cont)]]></text>
-            </staticText>
-            <line>
-                <reportElement key="line-1" positionType="FixRelativeToBottom" x="0" y="27" width="535" height="1"/>
-            </line>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField" x="430" y="14" width="52" height="13"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement textAlignment="Right">
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
-            </textField>
-            <textField evaluationTime="Report" isBlankWhenNull="false">
-                <reportElement key="textField" x="487" y="14" width="48" height="13"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
-            </textField>
-            <textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
-                <reportElement key="textField" x="460" y="1" width="75" height="12"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement key="staticText-19" x="430" y="1" width="30" height="12"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <text><![CDATA[Printed:]]></text>
-            </staticText>
-        </band>
-    </pageHeader>
-    <columnHeader>
-        <band splitType="Stretch"/>
-    </columnHeader>
-    <detail>
-        <band height="22" splitType="Stretch">
-            <printWhenExpression>
-                <![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalProblem"))]]></printWhenExpression>
-            <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-                <reportElement key="textField-7" stretchType="RelativeToBandHeight" x="11" y="0" width="56" height="11"
-                               isPrintWhenDetailOverflows="true"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" isBold="true" isItalic="true" isUnderline="false"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="true">
-                <reportElement key="textField-8" x="363" y="0" width="110" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" isBold="true" isItalic="true"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{clinician.entity.description}]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField-9" x="477" y="0" width="60" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" isBold="true" isItalic="true"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{status}]]></textFieldExpression>
-            </textField>
-            <textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
-                <reportElement key="textField-23" stretchType="RelativeToBandHeight" x="76" y="0" width="56" height="11"
-                               isPrintWhenDetailOverflows="true">
-                    <printWhenExpression>
-                        <![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "Completed".equals($F{status}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
-                </reportElement>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" isBold="true" isItalic="true" isUnderline="false"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[$F{endTime}]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement key="staticText-13" x="67" y="0" width="8" height="11">
-                    <printWhenExpression>
-                        <![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "Completed".equals($F{status}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
-                </reportElement>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" isItalic="true" isUnderline="false"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <text><![CDATA[-]]></text>
-            </staticText>
-            <textField isBlankWhenNull="false">
-                <reportElement x="164" y="11" width="199" height="11"/>
-                <textElement>
-                    <font size="8"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA["Presenting Complaint: " + ($F{presentingComplaint} == null ?
+<!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 6.1.0  -->
+<!-- 2016-04-08T11:28:33 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient Clinical Problems" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="471fc9f1-9b63-443a-87cf-6caaa8601a28">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<field name="shortName" class="java.lang.String"/>
+	<field name="product.entity.name" class="java.lang.String"/>
+	<field name="startTime" class="java.util.Date"/>
+	<field name="clinician.entity.description" class="java.lang.String"/>
+	<field name="status" class="java.lang.String"/>
+	<field name="reason" class="java.lang.String"/>
+	<field name="displayName" class="java.lang.String"/>
+	<field name="note" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="patient.entity.description" class="java.lang.String"/>
+	<field name="patient.entity.name" class="java.lang.String"/>
+	<field name="endTime" class="java.util.Date"/>
+	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;name&apos;)]" class="java.lang.String"/>
+	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;id&apos;)]" class="java.lang.Long"/>
+	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;description&apos;)]" class="java.lang.String"/>
+	<field name="quantity" class="java.math.BigDecimal"/>
+	<field name="label" class="java.lang.String"/>
+	<field name="patient.entity.id" class="java.lang.Long"/>
+	<field name="presentingComplaint" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="88" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-15" x="11" y="15" width="40" height="12" uuid="4074bc26-6735-4385-8f46-383de77ff3b4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Owner :]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="487" y="13" width="48" height="13" uuid="83ea6641-975e-486f-abc7-cfcd83ceada1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-1" positionType="FixRelativeToBottom" x="0" y="84" width="535" height="1" uuid="408edddd-2e4c-47cc-a325-3217bf5a26cc"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" positionType="FixRelativeToBottom" x="56" y="72" width="358" height="12" uuid="027258af-21bf-4f6f-a6e2-9c1ae52bad8c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient.entity.description}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
+				<reportElement key="textField" x="460" y="1" width="75" height="12" uuid="f8449eae-28d3-4c3e-8c2c-91606d9c3bb9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="56" y="27" width="359" height="34" isPrintWhenDetailOverflows="true" uuid="ac7ad6f0-a0d4-40fa-9c1f-60abe92e2884"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'description')]}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-19" x="430" y="1" width="30" height="12" uuid="1b816e6b-fe00-4ec0-8556-60415089d93c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Printed:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="56" y="15" width="230" height="12" uuid="cb7880e4-b861-4e76-93d4-187b47209a82"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}+" (ID: "+$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'id')]}+")"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" positionType="FixRelativeToBottom" x="56" y="61" width="359" height="11" uuid="b3575a0e-944f-421d-813c-f59e5893e587"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient.entity.name}+" (ID: "+$F{patient.entity.id}+")"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="430" y="13" width="52" height="13" uuid="83d188aa-e788-427c-8d79-d81826375f74"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-14" x="206" y="0" width="123" height="16" uuid="fbdd4efb-cdb6-49bb-ae45-6c0be87fe39e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" isBold="true" isUnderline="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Patient Clinical Problems]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-16" positionType="FixRelativeToBottom" x="11" y="61" width="40" height="11" uuid="e51e3b5e-a803-4a3b-ab0f-4a516c59f3b0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Patient :]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="28" splitType="Stretch">
+			<printWhenExpression><![CDATA[$V{PAGE_NUMBER}.intValue() != 1? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
+			<staticText>
+				<reportElement key="staticText-14" x="187" y="0" width="161" height="16" uuid="27a0d873-a309-4dad-a5b8-1fe774aa857c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" isBold="true" isUnderline="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Patient Clinical Problems (cont)]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-1" positionType="FixRelativeToBottom" x="0" y="27" width="535" height="1" uuid="c0b94f2a-ff06-496a-a3db-6ed934c26977"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="430" y="14" width="52" height="13" uuid="da025756-2a4b-4ade-9a44-62f6d867678c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="487" y="14" width="48" height="13" uuid="5d94f9a6-3509-4c8c-b625-d729b15fd227"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
+				<reportElement key="textField" x="460" y="1" width="75" height="12" uuid="bc19560b-a548-4a00-8b45-84804bea3f99"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-19" x="430" y="1" width="30" height="12" uuid="420e9d0a-4b64-462f-9692-28c175bad1d9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[Printed:]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="22" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalProblem"))]]></printWhenExpression>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-7" stretchType="RelativeToBandHeight" x="11" y="0" width="56" height="11" isPrintWhenDetailOverflows="true" uuid="a52659d0-080d-4302-9bb1-20697f7ac9f4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" isUnderline="false" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{startTime}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-8" x="363" y="0" width="110" height="11" uuid="84c49b31-470d-4f62-9ab1-fa64b7dceba5"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{clinician.entity.description}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-9" x="477" y="0" width="60" height="11" uuid="f1602267-dafb-43bf-9ff6-dbad2015a500"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-23" stretchType="RelativeToBandHeight" x="76" y="0" width="56" height="11" isPrintWhenDetailOverflows="true" uuid="0be4b5dc-c458-4b54-8634-2f78a42dd951">
+					<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "Completed".equals($F{status}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" isUnderline="false" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{endTime}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-13" x="67" y="0" width="8" height="11" uuid="89d1f681-bb82-41bf-b7b3-63b2bfe7b042">
+					<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "Completed".equals($F{status}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" isItalic="true" isUnderline="false" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement x="164" y="11" width="199" height="11" uuid="aea38b06-7fc2-4a83-9c0b-ba241ae61530"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Presenting Complaint: " + ($F{presentingComplaint} == null ?
     "None" : $F{presentingComplaint})]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement key="textField-1" stretchType="RelativeToBandHeight" x="139" y="0" width="220"
-                               height="11" isPrintWhenDetailOverflows="true"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" isBold="true" isItalic="true"
-                          pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{reason} == null ? "No Diagnosis" : $F{reason}]]></textFieldExpression>
-            </textField>
-        </band>
-        <band height="11">
-            <printWhenExpression>
-                <![CDATA[new Boolean($F{shortName}.startsWith("act.patientClinicalEvent"))]]></printWhenExpression>
-            <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-                <reportElement key="textField-10" x="21" y="0" width="55" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField-11" x="87" y="0" width="66" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="164" y="0" width="199" height="11"/>
-                <textElement>
-                    <font size="8"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{reason} != null && $F{description} != null
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" stretchType="RelativeToBandHeight" x="139" y="0" width="220" height="11" isPrintWhenDetailOverflows="true" uuid="9462dffe-db47-4eea-aeaa-31dfef616820"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{reason} == null ? "No Diagnosis" : $F{reason}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="11">
+			<printWhenExpression><![CDATA[new Boolean($F{shortName}.startsWith("act.patientClinicalEvent"))]]></printWhenExpression>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-10" x="21" y="0" width="55" height="11" uuid="b63be057-9c1b-4ddb-88d0-3c3172549906"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{startTime}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-11" x="87" y="0" width="66" height="11" uuid="23df3fef-97c9-4172-aacd-4f9f4eecc176"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{displayName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="164" y="0" width="199" height="11" uuid="73d70c0e-6721-4f34-b8ee-b2a05d03125b"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{reason} != null && $F{description} != null
 ? $F{reason} + " - " + $F{description} : $F{reason} != null
 ? $F{reason} : $F{description} != null
-? $F{description} : "No Reason"
-]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="true">
-                <reportElement x="363" y="0" width="110" height="11"/>
-                <textElement>
-                    <font size="8"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{clinician.entity.description}]]></textFieldExpression>
-            </textField>
-        </band>
-        <band height="11">
-            <printWhenExpression>
-                <![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalNote"))]]></printWhenExpression>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement key="textField-15" stretchType="RelativeToBandHeight" x="164" y="0" width="245"
-                               height="11" isPrintWhenDetailOverflows="true"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{note}]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField-11" x="93" y="0" width="66" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
-            </textField>
-            <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-                <reportElement key="textField-10" x="32" y="0" width="55" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-            </textField>
-        </band>
-        <band height="11">
-            <printWhenExpression>
-                <![CDATA[new Boolean($F{shortName}.startsWith("act.patientInvestigation"))]]></printWhenExpression>
-            <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-                <reportElement key="textField-10" x="32" y="0" width="55" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField-11" x="93" y="0" width="66" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement key="textField-22" stretchType="RelativeToBandHeight" x="164" y="0" width="245"
-                               height="11" isPrintWhenDetailOverflows="true"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{description} + " [" + $F{status} + "]"]]></textFieldExpression>
-            </textField>
-        </band>
-        <band height="22">
-            <printWhenExpression>
-                <![CDATA[new Boolean($F{shortName}.equals("act.patientMedication") )]]></printWhenExpression>
-            <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-                <reportElement key="textField-10" x="32" y="0" width="55" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="false">
-                <reportElement key="textField-11" x="93" y="0" width="66" height="11"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
-            </textField>
-            <textField pattern="(###0.##)">
-                <reportElement x="378" y="0" width="82" height="11"/>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantity}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="164" y="0" width="195" height="11"/>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{product.entity.name}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement key="textField-11" x="164" y="11" width="284" height="11" isRemoveLineWhenBlank="true"/>
-                <box>
-                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-                </box>
-                <textElement>
-                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
-                </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{label}]]></textFieldExpression>
-            </textField>
-        </band>
-    </detail>
-    <columnFooter>
-        <band splitType="Stretch"/>
-    </columnFooter>
-    <pageFooter>
-        <band height="5" splitType="Stretch">
-            <line>
-                <reportElement key="line-2" x="0" y="2" width="535" height="1"/>
-            </line>
-        </band>
-    </pageFooter>
-    <summary>
-        <band splitType="Stretch"/>
-    </summary>
+? $F{description} : "No Reason"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="363" y="0" width="110" height="11" uuid="4bb92e02-7b0d-4142-aec8-5d8cede9322d"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{clinician.entity.description}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="11">
+			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalNote") || $F{shortName}.equals("act.patientClinicalAddendum"))]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-15" stretchType="RelativeToBandHeight" x="164" y="0" width="245" height="11" isPrintWhenDetailOverflows="true" uuid="51560f61-64db-4fac-a190-8f6fa664f2ae"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{note}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-11" x="93" y="0" width="66" height="11" uuid="936b00dc-4e0e-460b-b6fd-1fd4968945fd"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{displayName}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-10" x="32" y="0" width="55" height="11" uuid="ec93b7ea-62bc-44b9-a865-14dc609ce029"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{startTime}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="11">
+			<printWhenExpression><![CDATA[new Boolean($F{shortName}.startsWith("act.patientInvestigation"))]]></printWhenExpression>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-10" x="32" y="0" width="55" height="11" uuid="6319494e-ac52-41ba-8e5d-f41c2c77b99b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{startTime}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-11" x="93" y="0" width="66" height="11" uuid="ec22e3d3-eafc-4c26-9681-feb6dbbcde25"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{displayName}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-22" stretchType="RelativeToBandHeight" x="164" y="0" width="245" height="11" isPrintWhenDetailOverflows="true" uuid="66a3ee33-909b-4ac3-9deb-d84a6cb0f3cf"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description} + " [" + $F{status} + "]"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="22">
+			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientMedication") )]]></printWhenExpression>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-10" x="32" y="0" width="55" height="11" uuid="ac08030d-9644-4d61-864c-ff0ee64195ca"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{startTime}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-11" x="93" y="0" width="66" height="11" uuid="c886703c-bd58-4a2d-baf4-572511ec2895"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{displayName}]]></textFieldExpression>
+			</textField>
+			<textField pattern="(###0.##)">
+				<reportElement x="378" y="0" width="82" height="11" uuid="735f855c-c25d-4696-ae0d-0ef323f392aa"/>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="164" y="0" width="195" height="11" uuid="57599e9c-631c-4fff-acb2-f809457363b3"/>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{product.entity.name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-11" x="164" y="11" width="284" height="11" isRemoveLineWhenBlank="true" uuid="2dbea668-0335-4fea-bb3a-fb004bd9caea"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="5" splitType="Stretch">
+			<line>
+				<reportElement key="line-2" x="0" y="2" width="535" height="1" uuid="aa13a686-76f6-481c-a8fb-4938b8cda29a"/>
+			</line>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
 </jasperReport>

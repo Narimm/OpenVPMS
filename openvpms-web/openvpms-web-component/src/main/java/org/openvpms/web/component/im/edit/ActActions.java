@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -139,20 +139,20 @@ public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<
      * Determines if an act can be edited.
      *
      * @param act the act to check
-     * @return {@code true} if the act status isn't {@code POSTED}
+     * @return {@code true} if the act isn't locked
      */
     public boolean canEdit(T act) {
-        return super.canEdit(act) && !ActStatus.POSTED.equals(act.getStatus());
+        return super.canEdit(act) && !isLocked(act);
     }
 
     /**
      * Determines if an act can be deleted.
      *
      * @param act the act to check
-     * @return {@code true} if the act status isn't {@code POSTED}
+     * @return {@code true} if the act isn't locked
      */
     public boolean canDelete(T act) {
-        return super.canDelete(act) && !ActStatus.POSTED.equals(act.getStatus());
+        return super.canDelete(act) && !isLocked(act);
     }
 
     /**
@@ -230,5 +230,15 @@ public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<
      */
     public boolean warnWhenPrintingUnfinalisedAct() {
         return warnOnPrintUnfinalised;
+    }
+
+    /**
+     * Determines if an act is locked from changes.
+     *
+     * @param act the act
+     * @return {@code true} if the act status is {@link ActStatus#POSTED}
+     */
+    public boolean isLocked(T act) {
+        return ActStatus.POSTED.equals(act.getStatus());
     }
 }

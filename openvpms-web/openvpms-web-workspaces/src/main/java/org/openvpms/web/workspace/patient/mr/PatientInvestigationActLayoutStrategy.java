@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -25,7 +25,6 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.doc.DocumentActLayoutStrategy;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
@@ -36,7 +35,7 @@ import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -46,6 +45,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.List;
 
@@ -55,12 +55,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStrategy {
-
-    /**
-     * Determines if the date node should be displayed read-only.
-     */
-    private boolean showDateReadOnly;
+public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLayoutStrategy {
 
     /**
      * Determines if printing should be enabled.
@@ -70,14 +65,23 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     /**
      * Determines if the product node should be displayed read-only.
      */
-    private boolean showProductReadOnly;
-
+    private boolean hasInvoiceItem;
 
     /**
-     * Constructs a {@code PatientInvestigationActLayoutStrategy}.
+     * Result status node name.
+     */
+    private static final String RESULT_STATUS = "status2";
+
+    /**
+     * Reviewed node name.
+     */
+    private static final String REVIEWED = "reviewed";
+
+    /**
+     * Constructs a {@link PatientInvestigationActLayoutStrategy}.
      */
     public PatientInvestigationActLayoutStrategy() {
-        this(null, null, null);
+        this(null, null, null, false);
     }
 
     /**
@@ -86,23 +90,15 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
      * @param editor         the document reference editor. May be {@code null}
      * @param versionsEditor the document version editor. May be {@code null}
      * @param productEditor  editor the product editor. May be {@code null}
+     * @param locked         determines if the record is locked
      */
     public PatientInvestigationActLayoutStrategy(DocumentEditor editor,
                                                  ActRelationshipCollectionEditor versionsEditor,
-                                                 SingleParticipationCollectionEditor productEditor) {
-        super(editor, versionsEditor);
+                                                 SingleParticipationCollectionEditor productEditor, boolean locked) {
+        super(editor, versionsEditor, locked);
         if (productEditor != null) {
             addComponent(new ComponentState(productEditor));
         }
-    }
-
-    /**
-     * Determines if the data should be displayed read-only.
-     *
-     * @param readOnly if {@code true} display the date read-only
-     */
-    public void setDateReadOnly(boolean readOnly) {
-        showDateReadOnly = readOnly;
     }
 
     /**
@@ -115,12 +111,13 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     }
 
     /**
-     * Determines if the product and investigation type should be read-only.
+     * Determines if the investigation is generated from an invoice item.
+     * If so, the product, investigation type and status should be read-only.
      *
-     * @param readOnly if {@code true} display the product read-only
+     * @param hasInvoiceItem if {@code true} display the fields read-only
      */
-    public void setShowProductReadOnly(boolean readOnly) {
-        showProductReadOnly = readOnly;
+    public void setHasInvoiceItem(boolean hasInvoiceItem) {
+        this.hasInvoiceItem = hasInvoiceItem;
     }
 
     /**
@@ -136,15 +133,12 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        if (showDateReadOnly || showProductReadOnly) {
-            ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(context);
-            if (showDateReadOnly) {
-                addComponent(factory.create(properties.get("startTime"), object));
-            }
-            if (showProductReadOnly) {
-                addComponent(factory.create(properties.get("product"), object));
-                addComponent(factory.create(properties.get("investigationType"), object));
-            }
+        if (isLocked() || hasInvoiceItem) {
+            // note that that this replaces any prior product registration
+            IMObjectComponentFactory factory = context.getComponentFactory();
+            addComponent(factory.create(createReadOnly(properties.get("status")), object));
+            addComponent(factory.create(createReadOnly(properties.get("product")), object));
+            addComponent(factory.create(createReadOnly(properties.get("investigationType")), object));
         }
         return super.apply(object, properties, parent, context);
     }
@@ -173,13 +167,25 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
             rowLayout.setAlignment(topRight);
             print.setLayoutData(rowLayout);
             ComponentGrid grid = createGrid(object, properties, context);
-            Row row = RowFactory.create("WideCellSpacing", createGrid(grid));
+            Row row = RowFactory.create(Styles.WIDE_CELL_SPACING, createGrid(grid));
             ButtonSet set = new ButtonSet(row);
             set.add(print);
-            container.add(ColumnFactory.create("Inset.Small", row));
+            container.add(ColumnFactory.create(Styles.SMALL_INSET, row));
         } else {
             super.doSimpleLayout(object, parent, properties, container, context);
         }
+    }
+
+    /**
+     * Determines if a property should be made read-only when the act is locked.
+     *
+     * @param property the property
+     * @return {@code true} if the property should be made read-only
+     */
+    @Override
+    protected boolean makeReadOnly(Property property) {
+        String name = property.getName();
+        return !property.isReadOnly() && !RESULT_STATUS.equals(name) && !REVIEWED.equals(name);
     }
 
     /**
@@ -193,7 +199,7 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
             IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
-            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, context, help);
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

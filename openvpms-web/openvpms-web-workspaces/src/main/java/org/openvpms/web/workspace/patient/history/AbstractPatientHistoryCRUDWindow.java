@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -25,6 +26,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
@@ -36,6 +38,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.IMObjectViewerDialog;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.DocumentActActions;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -49,8 +53,6 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
-
-import java.util.Arrays;
 
 /**
  * CRUD Window for patient history.
@@ -84,6 +86,22 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
     public AbstractPatientHistoryCRUDWindow(Archetypes<Act> archetypes, IMObjectActions<Act> actions, Context context,
                                             HelpContext help) {
         super(archetypes, actions, context, help);
+    }
+
+    /**
+     * Views a record
+     */
+    public void view() {
+        Act act = IMObjectHelper.reload(getObject());
+        if (act != null) {
+            try {
+                IMObjectViewerDialog dialog = new IMObjectViewerDialog(act, getContext(), getMailContext(),
+                                                                       getHelpContext());
+                dialog.show();
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
     }
 
     /**
@@ -176,28 +194,33 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
     /**
      * Creates a {@link PatientMedicalRecordLinker} to link medical records.
      *
+     * @param event    the patient clinical event. May be {@code null}
+     * @param problem  the patient clinical problem. May be {@code null}
+     * @param item     a medication or clinical note. May be {@code null}
+     * @param addendum the addendum. May be {@code null}
+     * @return a new medical record linker
+     */
+    protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act problem, Act item, Act addendum) {
+        return new PatientMedicalRecordLinker(event, problem, item, addendum);
+    }
+
+    /**
+     * Creates a {@link PatientMedicalRecordLinker} to link medical records.
+     *
      * @param event the patient clinical event
      * @param item  the patient record item
+     * @return a new medical record linker
      */
     protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act item) {
         return new PatientMedicalRecordLinker(event, item);
     }
 
     /**
-     * Creates a {@link PatientMedicalRecordLinker} to link medical records.
-     *
-     * @param event   the patient clinical event. May be {@code null}
-     * @param problem the patient clinical problem. May be {@code null}
-     * @param item    the patient record item. May be {@code null}
-     */
-    protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act problem, Act item) {
-        return new PatientMedicalRecordLinker(event, problem, item);
-    }
-
-    /**
      * Creates a new event, making it the current event.
+     *
+     * @return the event
      */
-    protected void createEvent() {
+    protected Act createEvent() {
         Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
         if (event == null) {
             throw new IllegalStateException("Failed to create " + PatientArchetypes.CLINICAL_EVENT);
@@ -210,20 +233,24 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
         }
         editor.save();
         setEvent(event);
+        return event;
     }
 
     /**
      * Helper to concatenate the short names for the target of a relationship with those supplied.
      *
-     * @param relationship the relationship archetype short name
-     * @param shortNames   the short names to add
+     * @param relationship    the relationship archetype short name
+     * @param includeAddendum if {@code true}, include the <em>act.patientClinicalAddendum</em> if present, otherwise
+     *                        exclude it
+     * @param shortNames      the short names to add
      * @return the archetype shortnames
      */
-    protected String[] getShortNames(String relationship, String... shortNames) {
+    protected String[] getShortNames(String relationship, boolean includeAddendum, String... shortNames) {
         String[] targets = RelationshipHelper.getTargetShortNames(relationship);
-        String[] result = Arrays.copyOf(targets, targets.length + shortNames.length);
-        System.arraycopy(shortNames, 0, result, targets.length, shortNames.length);
-        return result;
+        if (!includeAddendum) {
+            targets = (String[]) ArrayUtils.removeElement(targets, PatientArchetypes.CLINICAL_ADDENDUM);
+        }
+        return (String[]) ArrayUtils.addAll(targets, shortNames);
     }
 
     /**

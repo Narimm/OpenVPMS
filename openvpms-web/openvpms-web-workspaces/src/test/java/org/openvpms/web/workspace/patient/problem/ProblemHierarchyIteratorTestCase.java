@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -24,12 +24,16 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_ADDENDUM;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_NOTE;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.addAddendum;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.createAddendum;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.createEvent;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createNote;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createProblem;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
@@ -44,7 +48,7 @@ public class ProblemHierarchyIteratorTestCase extends ArchetypeServiceTest {
     /**
      * The short names to filter on.
      */
-    private static final String[] SHORT_NAMES = new String[]{PATIENT_WEIGHT, CLINICAL_NOTE};
+    private static final String[] SHORT_NAMES = new String[]{PATIENT_WEIGHT, CLINICAL_NOTE, CLINICAL_ADDENDUM};
 
     /**
      * Tests iteration.
@@ -60,9 +64,34 @@ public class ProblemHierarchyIteratorTestCase extends ArchetypeServiceTest {
         Act event = PatientTestHelper.createEvent(getDatetime("2014-05-09 09:00:00"), patient, clinician, problem,
                                                   note1, note2);
 
-        List<Act> acts = Arrays.asList(problem);
+        List<Act> acts = Collections.singletonList(problem);
         check(acts, SHORT_NAMES, true, problem, event, note1, note2);
         check(acts, SHORT_NAMES, false, problem, event, note2, note1);
+    }
+
+    /**
+     * Verifies that addendum records linked to a note appear in the correct order when also linked to a problem and
+     * event.
+     */
+    @Test
+    public void testAddendumLinkedToProblem() {
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+
+        Act note = createNote(getDatetime("2016-03-20 10:00:05"), patient, clinician);
+
+        Act addendum1 = createAddendum(getDatetime("2016-03-27 11:00:00"), patient, clinician);
+        Act addendum2 = createAddendum(getDatetime("2016-03-27 12:00:00"), patient, clinician);
+        addAddendum(note, addendum1);
+        addAddendum(note, addendum2);
+
+        Act problem = createProblem(getDatetime("2016-03-20 10:05:00"), patient, clinician, note, addendum1, addendum2);
+        Act event = createEvent(getDatetime("2016-03-20 10:00:00"), patient, clinician, note, addendum1, addendum2,
+                                problem);
+
+        List<Act> acts = Collections.singletonList(problem);
+        check(acts, SHORT_NAMES, true, problem, event, note, addendum1, addendum2);
+        check(acts, SHORT_NAMES, false, problem, event, note, addendum1, addendum2);
     }
 
     /**

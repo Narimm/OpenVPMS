@@ -13,9 +13,15 @@
  *
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.doc;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -46,16 +52,27 @@ import static org.junit.Assert.assertTrue;
 public class DocumentRulesTestCase extends ArchetypeServiceTest {
 
     /**
+     * The document rules.
+     */
+    private DocumentRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        rules = new DocumentRules(getArchetypeService());
+    }
+
+    /**
      * Tests the {@link DocumentRules#supportsVersions} method.
      */
     @Test
     public void testSupportsVersions() {
-        DocumentRules rules = new DocumentRules(getArchetypeService());
-
-        DocumentAct image = (DocumentAct) create("act.patientDocumentImage");
+        DocumentAct image = (DocumentAct) create(PatientArchetypes.DOCUMENT_IMAGE);
         assertTrue(rules.supportsVersions(image));
 
-        DocumentAct form = (DocumentAct) create("act.patientDocumentForm");
+        DocumentAct form = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
         assertFalse(rules.supportsVersions(form));
     }
 
@@ -66,20 +83,19 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
     public void testAddDocument() {
         // create an act.patientClinicalEvent and act.patientDocumentImage and add a relationship between them
         Party patient = TestHelper.createPatient();
-        Act event = (Act) create("act.patientClinicalEvent");
+        Act event = (Act) create(PatientArchetypes.CLINICAL_EVENT);
         ActBean eventBean = new ActBean(event);
-        eventBean.addParticipation("participation.patient", patient);
+        eventBean.addNodeParticipation("patient", patient);
         eventBean.save();
 
-        DocumentAct act = (DocumentAct) create("act.patientDocumentImage");
+        DocumentAct act = (DocumentAct) create(PatientArchetypes.DOCUMENT_IMAGE);
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
+        bean.addNodeParticipation("patient", patient);
 
         eventBean.addNodeRelationship("items", act);
         save(act, event);
 
         // now add a document.
-        DocumentRules rules = new DocumentRules(getArchetypeService());
         Document document1 = createDocument();
         List<IMObject> objects = rules.addDocument(act, document1);
         save(objects);
@@ -123,10 +139,11 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCreatePatientDocumentVersion() {
-        checkCreatePatientVersion("act.patientDocumentAttachment", "act.patientDocumentAttachmentVersion");
-        checkCreatePatientVersion("act.patientDocumentImage", "act.patientDocumentImageVersion");
-        checkCreatePatientVersion("act.patientDocumentLetter", "act.patientDocumentLetterVersion");
-        checkCreatePatientVersion("act.patientInvestigation", "act.patientInvestigationVersion");
+        checkCreatePatientVersion(PatientArchetypes.DOCUMENT_ATTACHMENT, PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION);
+        checkCreatePatientVersion(PatientArchetypes.DOCUMENT_IMAGE, PatientArchetypes.DOCUMENT_IMAGE_VERSION);
+        checkCreatePatientVersion(PatientArchetypes.DOCUMENT_LETTER, PatientArchetypes.DOCUMENT_LETTER_VERSION);
+        checkCreatePatientVersion(InvestigationArchetypes.PATIENT_INVESTIGATION,
+                                  InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION);
     }
 
     /**
@@ -135,8 +152,10 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCreateCustomerDocumentVersion() {
-        checkCreateCustomerSupplierVersion("act.customerDocumentAttachment", "act.customerDocumentAttachmentVersion");
-        checkCreateCustomerSupplierVersion("act.customerDocumentLetter", "act.customerDocumentLetterVersion");
+        checkCreateCustomerSupplierVersion(CustomerArchetypes.DOCUMENT_ATTACHMENT,
+                                           CustomerArchetypes.DOCUMENT_ATTACHMENT_VERSION);
+        checkCreateCustomerSupplierVersion(CustomerArchetypes.DOCUMENT_LETTER,
+                                           CustomerArchetypes.DOCUMENT_LETTER_VERSION);
     }
 
     /**
@@ -145,8 +164,10 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCreateSupplierDocumentVersion() {
-        checkCreateCustomerSupplierVersion("act.supplierDocumentAttachment", "act.supplierDocumentAttachmentVersion");
-        checkCreateCustomerSupplierVersion("act.supplierDocumentLetter", "act.supplierDocumentLetterVersion");
+        checkCreateCustomerSupplierVersion(SupplierArchetypes.DOCUMENT_ATTACHMENT,
+                                           SupplierArchetypes.DOCUMENT_ATTACHMENT_VERSION);
+        checkCreateCustomerSupplierVersion(SupplierArchetypes.DOCUMENT_LETTER,
+                                           SupplierArchetypes.DOCUMENT_LETTER_VERSION);
     }
 
     /**
@@ -156,12 +177,11 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
     public void testIsDuplicate() {
         // create an act.patientDocumentImage and link a patient
         Party patient = TestHelper.createPatient();
-        DocumentAct act = (DocumentAct) create("act.patientDocumentImage");
+        DocumentAct act = (DocumentAct) create(PatientArchetypes.DOCUMENT_IMAGE);
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
+        bean.addNodeParticipation("patient", patient);
 
         // now add a document.
-        DocumentRules rules = new DocumentRules(getArchetypeService());
         Document document1 = createDocument();
         assertFalse(document1.getDocSize() == 0);
         assertFalse(document1.getChecksum() == 0);
@@ -245,7 +265,6 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         save(document);
         act.setDocument(document.getObjectReference());
         assertNotNull(act);
-        DocumentRules rules = new DocumentRules(getArchetypeService());
         DocumentAct version = rules.createVersion(act);
         assertNotNull(version);
         assertEquals(expectedVersion, version.getArchetypeId().getShortName());
@@ -265,7 +284,7 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
      * @return a new document
      */
     private Document createDocument() {
-        Document document = (Document) create("document.other");
+        Document document = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
         document.setName("test" + System.currentTimeMillis() + ".gif");
         document.setMimeType("image/gif");
         document.setContents(document.getName().getBytes());

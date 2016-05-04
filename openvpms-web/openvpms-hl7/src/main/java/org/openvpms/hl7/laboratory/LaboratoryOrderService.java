@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.laboratory;
@@ -45,14 +45,14 @@ public interface LaboratoryOrderService {
 
     /**
      * Cancels an order.
-     *
-     * @param context           the patient context
+     *  @param context           the patient context
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param serviceId         the universal service identifier
      * @param date              the order date
      * @param laboratory        the laboratory. An <em>entity.HL7ServiceLaboratory</em>
      * @param user              the user that generated the cancellation
+     * @return {@code true} if a cancellation was sent
      */
-    void cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date, Entity laboratory,
-                     User user);
+    boolean cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date, Entity laboratory,
+                        User user);
 }

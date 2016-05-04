@@ -75,6 +75,16 @@
     <bean id="practiceService" class="org.openvpms.archetype.rules.practice.PracticeService">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="practiceRules"/>
+        <constructor-arg>
+            <!-- register a pool for asynchronous notification -->
+            <!-- this is required for audit messaging; notification has to happen outside of the transaction -->
+            <!-- synchronisation                                                                             -->
+            <bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+                <property name="threadGroupName" value="PracticeService"/>
+                <property name="corePoolSize" value="1"/>
+                <property name="maxPoolSize" value="1"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="discountRules" class="org.openvpms.archetype.rules.finance.discount.DiscountRules">

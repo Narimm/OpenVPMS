@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
-import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
+import org.openvpms.web.workspace.patient.mr.PatientInvestigationActEditor;
 
 /**
  * This class is responsible for cancelling investigations associated with from
