@@ -15,8 +15,8 @@
   -->
 
 <archetypes>
-    <archetype name="act.scheduleEventSeries.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.Act" displayName="Schedule Event Series">
+    <archetype name="act.calendarEventSeries.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Calendar Event Series">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="0" readOnly="true"/>
         <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
@@ -40,6 +40,6 @@
               filter="participation.author" hidden="true"/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" hidden="true" minCardinality="0"
-              maxCardinality="*" filter="actRelationship.scheduleEventSeries"/>
+              maxCardinality="*" filter="actRelationship.calendarEventSeries"/>
     </archetype>
 </archetypes>

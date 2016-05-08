@@ -40,11 +40,11 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * Schedule event series.
+ * Calendar event series.
  *
  * @author Tim Anderson
  */
-public class ScheduleEventSeries {
+public class CalendarEventSeries {
 
     /**
      * Used to indicate overlapping events.
@@ -114,23 +114,23 @@ public class ScheduleEventSeries {
     private boolean updateTimesOnly;
 
     /**
-     * Constructs an {@link ScheduleEventSeries}.
+     * Constructs an {@link CalendarEventSeries}.
      *
-     * @param event   the event. An appointment or schedule block
+     * @param event   the event. An appointment or calendar block
      * @param service the archetype service
      */
-    public ScheduleEventSeries(Act event, IArchetypeService service) {
+    public CalendarEventSeries(Act event, IArchetypeService service) {
         this(event, service, DEFAULT_MAX_EVENTS);
     }
 
     /**
-     * Constructs an {@link ScheduleEventSeries}.
+     * Constructs an {@link CalendarEventSeries}.
      *
-     * @param event     the event. An appointment or schedule block
+     * @param event     the event. An appointment or calendar block
      * @param service   the archetype service
      * @param maxEvents the maximum no. of appointments in a series
      */
-    public ScheduleEventSeries(Act event, IArchetypeService service, int maxEvents) {
+    public CalendarEventSeries(Act event, IArchetypeService service, int maxEvents) {
         this.event = event;
         this.service = service;
         this.maxEvents = maxEvents;
@@ -248,7 +248,7 @@ public class ScheduleEventSeries {
     /**
      * Returns the series act.
      *
-     * @return the series act, or {@code null} if the appointment isn't associated with a series
+     * @return the series act, or {@code null} if the event isn't associated with a series
      */
     public Act getSeries() {
         return series;
@@ -311,7 +311,7 @@ public class ScheduleEventSeries {
     /**
      * Creates a new event linked to the series.
      *
-     * @param times      the appointment times
+     * @param times      the event times
      * @param seriesBean the series
      * @return the appointment
      */
@@ -427,18 +427,23 @@ public class ScheduleEventSeries {
         service.save(toSave);
     }
 
+    /**
+     * Creates a new calendar event series.
+     *
+     * @return a new <em>act.calendarEventSeries</em> act
+     */
     private Act createSeries() {
-        series = (Act) service.create(ScheduleArchetypes.SCHEDULE_EVENT_SERIES);
+        series = (Act) service.create(ScheduleArchetypes.CALENDAR_EVENT_SERIES);
         series.setActivityStartTime(event.getActivityStartTime());
         return series;
     }
 
     /**
-     * Updates an appointment.
+     * Updates an event.
      *
-     * @param act   the appointment
-     * @param times the appointment times
-     * @return the appointment
+     * @param act   the event
+     * @param times the Event times
+     * @return the event
      */
     private ActBean populate(Act act, Times times) {
         act.setActivityStartTime(times.getStartTime());
@@ -452,7 +457,7 @@ public class ScheduleEventSeries {
     }
 
     /**
-     * Updates an appointment series.
+     * Updates a series.
      *
      * @return {@code true} if changes were made
      */
@@ -481,19 +486,19 @@ public class ScheduleEventSeries {
     }
 
     /**
-     * Updates an event series.
+     * Updates a series.
      *
-     * @param acts                   the acts to update
-     * @param times                  the new times
-     * @param actsPriorToAppointment the no. of acts in the series prior to the appointment
+     * @param acts             the acts to update
+     * @param times            the new times
+     * @param actsPriorToEvent the no. of acts in the series prior to the event
      */
-    private void updateSeries(List<Act> acts, List<Times> times, int actsPriorToAppointment) {
+    private void updateSeries(List<Act> acts, List<Times> times, int actsPriorToEvent) {
         Act oldSeries = series;
         boolean createSeries = !current.repeatEquals(previous);
         // create a new series if the repeat expression or condition has changed
 
         Act currentSeries = (createSeries) ? createSeries() : series;
-        ActBean bean = populateSeries(currentSeries, actsPriorToAppointment);
+        ActBean bean = populateSeries(currentSeries, actsPriorToEvent);
         ActBean oldBean = (createSeries) ? new ActBean(oldSeries, service) : bean;
 
         acts = new ArrayList<>(acts);                 // copy to avoid modifying source
@@ -545,7 +550,7 @@ public class ScheduleEventSeries {
     }
 
     /**
-     * Deletes the appointments after the current appointment, and unlinks it from the series.
+     * Deletes the events after the current event, and unlinks it from the series.
      * If no acts reference the series act, it is also removed.
      */
     private void deleteSeries() {
@@ -553,7 +558,7 @@ public class ScheduleEventSeries {
         if (index >= 0) {
             List<Act> future = Collections.emptyList();
             if (index + 1 < acts.size()) {
-                // delete the acts after the appointment.
+                // delete the acts after the event.
                 future = acts.subList(index + 1, acts.size());
             }
             deleteSeries(future);
@@ -588,11 +593,11 @@ public class ScheduleEventSeries {
     /**
      * Populates the series with the current expression and condition.
      *
-     * @param series                 the series to populate
-     * @param actsPriorToAppointment the no. of acts in the series prior to the appointment
+     * @param series           the series to populate
+     * @param actsPriorToEvent the no. of acts in the series prior to the event
      * @return the series bean
      */
-    private ActBean populateSeries(Act series, int actsPriorToAppointment) {
+    private ActBean populateSeries(Act series, int actsPriorToEvent) {
         ActBean seriesBean = new ActBean(series, service);
         String expr = null;
         Integer interval = null;
@@ -611,7 +616,7 @@ public class ScheduleEventSeries {
         if (condition instanceof RepeatUntilDateCondition) {
             endTime = ((RepeatUntilDateCondition) condition).getDate();
         } else {
-            times = ((RepeatNTimesCondition) condition).getTimes() + actsPriorToAppointment;
+            times = ((RepeatNTimesCondition) condition).getTimes() + actsPriorToEvent;
         }
         seriesBean.setValue("interval", interval);
         seriesBean.setValue("units", units);
@@ -685,14 +690,14 @@ public class ScheduleEventSeries {
         /**
          * Updates the state from an event.
          *
-         * @param appointment the event
+         * @param event the event
          */
-        public void update(ActBean appointment) {
-            Act act = appointment.getAct();
+        public void update(ActBean event) {
+            Act act = event.getAct();
             startTime = act.getActivityStartTime();
             endTime = act.getActivityEndTime();
-            schedule = appointment.getNodeParticipantRef("schedule");
-            author = appointment.getNodeParticipantRef("author");
+            schedule = event.getNodeParticipantRef("schedule");
+            author = event.getNodeParticipantRef("author");
         }
 
         /**

@@ -27,7 +27,7 @@ import java.util.Date;
 
 
 /**
- * Queries <em>act.customerAppointment</em> and <em>act.scheduleBlock</em> acts, returning a limited set of data for
+ * Queries <em>act.customerAppointment</em> and <em>act.calendarBlock</em> acts, returning a limited set of data for
  * display purposes.
  *
  * @author Tim Anderson
@@ -64,7 +64,7 @@ class AppointmentQuery extends ScheduleEventQuery {
      */
     protected String getScheduleType(String eventShortName) {
         return ScheduleArchetypes.APPOINTMENT.equals(eventShortName) ?
-               ScheduleArchetypes.APPOINTMENT_TYPE : ScheduleArchetypes.BLOCK_TYPE;
+               ScheduleArchetypes.APPOINTMENT_TYPE : ScheduleArchetypes.CALENDAR_BLOCK_TYPE;
     }
 
     /**

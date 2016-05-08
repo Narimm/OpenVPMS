@@ -39,11 +39,11 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesViewer;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeriesEditor;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeriesViewer;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
-import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
-import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeriesEditor;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
@@ -55,26 +55,26 @@ import java.util.List;
 
 
 /**
- * An editor for <em>act.customerAppointment</em>s.
+ * An editor for <em>act.customerAppointment</em> and <em>act.calendarBlock</em> acts.
  *
  * @author Tim Anderson
  */
-public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
+public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
 
     /**
-     * The appointment slot size.
+     * The event slot size.
      */
     private int slotSize;
 
     /**
      * The event series.
      */
-    private final ScheduleEventSeries series;
+    private final CalendarEventSeries series;
 
     /**
-     * The appointment series editor.
+     * The series editor.
      */
-    private final ScheduleEventSeriesEditor seriesEditor;
+    private final CalendarEventSeriesEditor seriesEditor;
 
     /**
      * The appointment rules.
@@ -82,35 +82,35 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
     private final AppointmentRules rules;
 
     /**
-     * The appointment duration.
+     * The event duration.
      */
     private Label duration = LabelFactory.create();
 
     /**
-     * The appointment duration formatter.
+     * The duration formatter.
      */
     private static DurationFormatter formatter = DateDurationFormatter.create(false, false, false, true, true, true);
 
     /**
-     * Constructs an {@link AppointmentActEditor}.
+     * Constructs an {@link CalendarEventEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public AppointmentActEditor(Act act, IMObject parent, LayoutContext context) {
+    public CalendarEventEditor(Act act, IMObject parent, LayoutContext context) {
         this(act, parent, false, context);
     }
 
     /**
-     * Constructs an {@link AppointmentActEditor}.
+     * Constructs an {@link CalendarEventEditor}.
      *
      * @param act        the act to edit
      * @param parent     the parent object. May be {@code null}
      * @param editSeries if {@code true}, edit the series
      * @param context    the layout context
      */
-    public AppointmentActEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
+    public CalendarEventEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, context);
         rules = ServiceHelper.getBean(AppointmentRules.class);
         if (act.isNew()) {
@@ -158,7 +158,7 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
      *
      * @return the series
      */
-    public ScheduleEventSeries getSeries() {
+    public CalendarEventSeries getSeries() {
         return series;
     }
 
@@ -199,9 +199,9 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
      * <p/>
      * If only a single act is being edited, this returns the act time.
      *
-     * @return the series, or {@code null} if the appointments overlap
+     * @return the series, or {@code null} if events overlap
      */
-    public List<Times> getAppointmentTimes() {
+    public List<Times> getEventTimes() {
         List<Times> result;
         if (seriesEditor != null) {
             result = series.getEventTimes();
@@ -216,18 +216,18 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
      *
      * @return a new event series
      */
-    protected ScheduleEventSeries createSeries() {
-        return new ScheduleEventSeries(getObject(), ServiceHelper.getArchetypeService());
+    protected CalendarEventSeries createSeries() {
+        return new CalendarEventSeries(getObject(), ServiceHelper.getArchetypeService());
     }
 
     /**
-     * Creates a new {@link ScheduleEventSeriesEditor}.
+     * Creates a new {@link CalendarEventSeriesEditor}.
      *
      * @param series the series to edit
      * @return a new editor
      */
-    protected ScheduleEventSeriesEditor createSeriesEditor(ScheduleEventSeries series) {
-        return new ScheduleEventSeriesEditor(series);
+    protected CalendarEventSeriesEditor createSeriesEditor(CalendarEventSeries series) {
+        return new CalendarEventSeriesEditor(series);
     }
 
     /**
@@ -240,11 +240,11 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Returns the appointment series editor.
+     * Returns the series editor.
      *
-     * @return the appointment series editor. May be {@code null}
+     * @return the series editor. May be {@code null}
      */
-    protected ScheduleEventSeriesEditor getSeriesEditor() {
+    protected CalendarEventSeriesEditor getSeriesEditor() {
         return seriesEditor;
     }
 
@@ -344,7 +344,7 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
     protected abstract void calculateEndTime();
 
     /**
-     * Updates the appointment duration display.
+     * Updates the duration display.
      */
     private void updateDuration() {
         Date startTime = getStartTime();
@@ -366,8 +366,7 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Initialises the appointment type editor with the schedule, updates the slot size, and determines if schedule
-     * reminders are enabled.
+     * Initialises the editor with the schedule.
      *
      * @param schedule the schedule. May be {@code null}
      */
@@ -378,8 +377,7 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Calculates the default start time of an appointment, using the supplied
-     * date and current time.
+     * Calculates the default start time of an event, using the supplied date and current time.
      * The start time is rounded to the next nearest 'slot-size' interval.
      *
      * @param date the start date
@@ -448,7 +446,7 @@ public abstract class AppointmentActEditor extends AbstractScheduleActEditor {
                 untilState.setLabel(new Label());
                 grid.add(untilState);
             } else {
-                AppointmentSeriesViewer viewer = new AppointmentSeriesViewer(series);
+                CalendarEventSeriesViewer viewer = new CalendarEventSeriesViewer(series);
                 grid.add(new ComponentState(viewer.getComponent(), repeat), 2);
             }
 

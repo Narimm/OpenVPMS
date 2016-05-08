@@ -63,10 +63,10 @@ public class AppointmentEditorTestCase extends AbstractAppTest {
     }
 
     /**
-     * Tests the {@link AppointmentEditor#getAppointmentTimes()} method.
+     * Tests the {@link AppointmentEditor#getEventTimes()} method.
      */
     @Test
-    public void testGetAppointmentTimes() {
+    public void testGetEventTimes() {
         Date start = DateRules.getToday();
         Date end = DateRules.getTomorrow();
         Party schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation());
@@ -83,15 +83,15 @@ public class AppointmentEditorTestCase extends AbstractAppTest {
         AppointmentEditor editor1 = new AppointmentEditor(appointment, null, true, context);
 
         // verify that there are 3 appointments in the series
-        List<Times> times1 = editor1.getAppointmentTimes();
+        List<Times> times1 = editor1.getEventTimes();
         assertNotNull(times1);
         assertEquals(3, times1.size());
 
         // now create an editor for the first appointment in the series.
         AppointmentEditor editor2 = new AppointmentEditor(appointment, null, false, context);
 
-        // verify that getAppointmentTimes() returns the one appointment, corresponding to that of the first appointment
-        List<Times> times2 = editor2.getAppointmentTimes();
+        // verify that getEventTimes() returns the one appointment, corresponding to that of the first appointment
+        List<Times> times2 = editor2.getEventTimes();
         assertNotNull(times2);
         assertEquals(1, times2.size());
         assertEquals(appointment.getId(), times2.get(0).getId());

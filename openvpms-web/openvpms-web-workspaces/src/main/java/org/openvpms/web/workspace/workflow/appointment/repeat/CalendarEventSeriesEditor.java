@@ -54,16 +54,16 @@ import static org.openvpms.web.resource.i18n.format.DateFormatter.formatDateTime
 import static org.openvpms.web.resource.i18n.format.DateFormatter.formatDateTimeAbbrev;
 
 /**
- * An editor for {@link ScheduleEventSeries}.
+ * An editor for {@link CalendarEventSeries}.
  *
  * @author Tim Anderson
  */
-public class ScheduleEventSeriesEditor extends AbstractModifiable {
+public class CalendarEventSeriesEditor extends AbstractModifiable {
 
     /**
      * The event series.
      */
-    private final ScheduleEventSeries series;
+    private final CalendarEventSeries series;
 
     /**
      * Container for the repeat selector.
@@ -117,11 +117,11 @@ public class ScheduleEventSeriesEditor extends AbstractModifiable {
 
 
     /**
-     * Constructs an {@link ScheduleEventSeriesEditor}.
+     * Constructs an {@link CalendarEventSeriesEditor}.
      *
      * @param series the appointment series
      */
-    public ScheduleEventSeriesEditor(ScheduleEventSeries series) {
+    public CalendarEventSeriesEditor(CalendarEventSeries series) {
         this.series = series;
         setExpression(series.getExpression());
         setCondition(series.getCondition());
@@ -352,7 +352,7 @@ public class ScheduleEventSeriesEditor extends AbstractModifiable {
 
     private boolean noOverlaps(Validator validator) {
         boolean result;
-        ScheduleEventSeries.Overlap overlap = series.getFirstOverlap();
+        CalendarEventSeries.Overlap overlap = series.getFirstOverlap();
         if (overlap != null) {
             result = false;
             Times appointment1 = overlap.getEvent1();

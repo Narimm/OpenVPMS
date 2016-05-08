@@ -31,10 +31,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.appointment.repeat.Repeats;
-import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Date;
 import java.util.List;
@@ -226,7 +226,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         AppointmentSeries series = createSeries(appointment);
         series.setExpression(daily());  // the next appointment overlaps the previous
         series.setCondition(once());
-        ScheduleEventSeries.Overlap overlap = series.getFirstOverlap();
+        CalendarEventSeries.Overlap overlap = series.getFirstOverlap();
         assertNotNull(overlap);
         assertEquals(overlap.getEvent1(), Times.create(appointment));
     }

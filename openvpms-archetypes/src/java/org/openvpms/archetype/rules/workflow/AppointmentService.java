@@ -70,7 +70,7 @@ public class AppointmentService extends AbstractScheduleService {
     /**
      * The archetypes to cache. .
      */
-    private static final String[] SHORT_NAMES = {ScheduleArchetypes.APPOINTMENT, ScheduleArchetypes.BLOCK};
+    private static final String[] SHORT_NAMES = {ScheduleArchetypes.APPOINTMENT, ScheduleArchetypes.CALENDAR_BLOCK};
 
     /**
      * Constructs an {@link AppointmentService}.

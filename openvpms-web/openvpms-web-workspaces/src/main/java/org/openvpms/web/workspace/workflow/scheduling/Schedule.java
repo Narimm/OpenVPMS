@@ -326,7 +326,7 @@ public class Schedule {
     }
 
     public static boolean isBlockingEvent(PropertySet event) {
-        return TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE), ScheduleArchetypes.BLOCK);
+        return TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE), ScheduleArchetypes.CALENDAR_BLOCK);
     }
 
     /**

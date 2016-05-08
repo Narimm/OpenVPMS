@@ -38,20 +38,20 @@ select act.archetypeId, act.id, act.linkId, act.version,
       e.name
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act
 join act.participations as p
-      with (p.actShortName = 'act.customerAppointment' or p.actShortName = 'act.scheduleBlock')
+      with (p.actShortName = 'act.customerAppointment' or p.actShortName = 'act.calendarBlock')
            and ((p.activityStartTime < :from and p.activityEndTime > :from)
 	            or (p.activityStartTime < :to and p.activityEndTime > :to)
       	        or (p.activityStartTime >= :from and p.activityEndTime <=:to))
 join p.entity as e
 join act.participations as schedule
       with schedule.archetypeId.shortName = 'participation.schedule'
-          and (schedule.actShortName = 'act.customerAppointment' or schedule.actShortName = 'act.scheduleBlock')
+          and (schedule.actShortName = 'act.customerAppointment' or schedule.actShortName = 'act.calendarBlock')
           and schedule.entity.id = :scheduleId
           and ((schedule.activityStartTime < :from and schedule.activityEndTime > :from)
             	or (schedule.activityStartTime < :to and schedule.activityEndTime > :to)
             	or (schedule.activityStartTime >= :from and schedule.activityEndTime <=:to))
       left outer join act.details as details
-where (act.archetypeId.shortName = 'act.customerAppointment' or act.archetypeId.shortName = 'act.scheduleBlock')
+where (act.archetypeId.shortName = 'act.customerAppointment' or act.archetypeId.shortName = 'act.calendarBlock')
 order by p.activityStartTime, act.id
       ]]>
     </query>

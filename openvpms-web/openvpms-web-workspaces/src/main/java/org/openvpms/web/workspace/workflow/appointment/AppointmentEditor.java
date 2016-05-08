@@ -55,7 +55,7 @@ import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
-import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
 
 import java.util.Date;
 
@@ -69,7 +69,7 @@ import static org.openvpms.web.echo.style.Styles.INSET;
  *
  * @author Tim Anderson
  */
-public class AppointmentEditor extends AppointmentActEditor {
+public class AppointmentEditor extends CalendarEventEditor {
 
     /**
      * The alerts row.
@@ -205,7 +205,7 @@ public class AppointmentEditor extends AppointmentActEditor {
      * @return a new event series
      */
     @Override
-    protected ScheduleEventSeries createSeries() {
+    protected CalendarEventSeries createSeries() {
         return new AppointmentSeries(getObject(), ServiceHelper.getArchetypeService());
     }
 

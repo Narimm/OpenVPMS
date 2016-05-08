@@ -27,7 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
  *
  * @author Tim Anderson
  */
-public class AppointmentSeries extends ScheduleEventSeries {
+public class AppointmentSeries extends CalendarEventSeries {
 
     /**
      * Constructs an {@link AppointmentSeries}.

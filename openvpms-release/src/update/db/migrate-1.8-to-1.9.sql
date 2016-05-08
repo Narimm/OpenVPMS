@@ -1021,19 +1021,16 @@ FROM entity_details d
 # OVPMS-1763 Schedule blocking
 #
 
-
-# Rename act.customerAppointmentSeries to act.scheduleEventSeries
-
+# Rename act.customerAppointmentSeries to act.calendarEventSeries
 UPDATE acts a
-SET a.arch_short_name = 'act.scheduleEventSeries'
+SET a.arch_short_name = 'act.calendarEventSeries'
 WHERE a.arch_short_name = 'act.customerAppointmentSeries';
 
 UPDATE participations p
 SET p.act_arch_short_name = 'act.scheduleEventSeries'
 WHERE p.act_arch_short_name = 'act.customerAppointmentSeries';
 
-# Rename actRelationship.customerAppointmentSeries to actRelationship.scheduleEventSeries
-
+# Rename actRelationship.customerAppointmentSeries to actRelationship.calendarEventSeries
 UPDATE act_relationships r
-SET r.arch_short_name = 'actRelationship.scheduleEventSeries'
+SET r.arch_short_name = 'actRelationship.calendarEventSeries'
 WHERE r.arch_short_name = 'actRelationship.customerAppointmentSeries';

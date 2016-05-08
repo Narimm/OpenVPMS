@@ -198,7 +198,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         rules = ServiceHelper.getBean(AppointmentRules.class);
         appointmentColours = new ScheduleColours(ScheduleArchetypes.APPOINTMENT_TYPE);
         clinicianColours = new ScheduleColours(UserArchetypes.USER);
-        blockingEventColours = new ScheduleColours(ScheduleArchetypes.BLOCK_TYPE);
+        blockingEventColours = new ScheduleColours(ScheduleArchetypes.CALENDAR_BLOCK_TYPE);
     }
 
     /**

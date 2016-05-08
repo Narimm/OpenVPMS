@@ -15,16 +15,16 @@
   -->
 
 <archetypes>
-    <archetype name="participation.scheduleBlockType.1.0"
+    <archetype name="participation.calendarBlockType.1.0"
                latest="true"
-               type="org.openvpms.component.business.domain.im.common.Participation" displayName="Schedule Block">
+               type="org.openvpms.component.business.domain.im.common.Participation" displayName="Calendar Block">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node displayName="Block" name="entity" path="/entity" minCardinality="1" maxCardinality="1"
+        <node displayName="Calendar Block" name="entity" path="/entity" minCardinality="1" maxCardinality="1"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="entity.scheduleBlockType"/>
+                        <property name="shortName" value="entity.calendarBlockType"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
@@ -34,7 +34,7 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="act.scheduleBlock"/>
+                        <property name="shortName" value="act.calendarBlock"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

@@ -78,7 +78,7 @@ import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 import org.openvpms.web.workspace.workflow.LocalClinicianContext;
 import org.openvpms.web.workspace.workflow.WorkflowFactory;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
-import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesState;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeriesState;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.checkin.TransferWorkflow;
@@ -134,7 +134,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     /**
      * The schedule block archetype.
      */
-    private static final Archetypes<Act> BLOCK = Archetypes.create(ScheduleArchetypes.BLOCK, Act.class);
+    private static final Archetypes<Act> BLOCK = Archetypes.create(ScheduleArchetypes.CALENDAR_BLOCK, Act.class);
 
     /**
      * Constructs an {@link AppointmentCRUDWindow}.
@@ -185,7 +185,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     protected void delete(final Act object) {
-        final AppointmentSeriesState state = new AppointmentSeriesState(object, ServiceHelper.getArchetypeService());
+        final CalendarEventSeriesState state = new CalendarEventSeriesState(object, ServiceHelper.getArchetypeService());
         if (state.hasSeries() && state.canEditFuture()) {
             final DeleteSeriesDialog dialog = new DeleteSeriesDialog(state, getHelpContext().subtopic("deleteseries"));
             dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -229,7 +229,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     @Override
     protected void edit(final Act object, final List<Selection> path) {
         oldStatus = object.getStatus();
-        final AppointmentSeriesState state = new AppointmentSeriesState(object, ServiceHelper.getArchetypeService());
+        final CalendarEventSeriesState state = new CalendarEventSeriesState(object,
+                                                                            ServiceHelper.getArchetypeService());
         if (state.hasSeries()) {
             if (state.canEditFuture()) {
                 final EditSeriesDialog dialog = new EditSeriesDialog(state, getHelpContext().subtopic("editseries"));
@@ -271,7 +272,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             if (isAppointment(object)) {
                 editor = new AppointmentEditor(object, null, editSeries, context);
             } else {
-                editor = new ScheduleBlockEditor(object, null, editSeries, context);
+                editor = new CalendarBlockEditor(object, null, editSeries, context);
             }
             editor.getComponent();
             edit(editor, path);
@@ -290,8 +291,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     @Override
     protected AppointmentEditDialog edit(IMObjectEditor editor, List<Selection> path) {
         Date startTime = browser.getSelectedTime();
-        if (startTime != null && editor.getObject().isNew() && editor instanceof AppointmentActEditor) {
-            ((AppointmentActEditor) editor).setStartTime(startTime);
+        if (startTime != null && editor.getObject().isNew() && editor instanceof CalendarEventEditor) {
+            ((CalendarEventEditor) editor).setStartTime(startTime);
         }
         return (AppointmentEditDialog) super.edit(editor, path);
     }
@@ -440,7 +441,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new AppointmentEditDialog((AppointmentActEditor) editor, getContext());
+        return new AppointmentEditDialog((CalendarEventEditor) editor, getContext());
     }
 
     /**
@@ -559,7 +560,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                            Messages.get("workflow.scheduling.appointment.paste.noslot"));
                 } else {
-                    final AppointmentSeriesState state = new AppointmentSeriesState(
+                    final CalendarEventSeriesState state = new CalendarEventSeriesState(
                             act, ServiceHelper.getArchetypeService());
                     HelpContext help = getHelpContext();
                     if (browser.isCut()) {
@@ -685,7 +686,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param startTime the new start time
      * @param series    the appointment series. May be {@code null}
      */
-    private void cut(Act act, Entity schedule, Date startTime, AppointmentSeriesState series) {
+    private void cut(Act act, Entity schedule, Date startTime, CalendarEventSeriesState series) {
         if (isAppointment(act)) {
             if (DateRules.compareTo(act.getActivityStartTime(), startTime) != 0) {
                 ActBean bean = new ActBean(act);
@@ -707,7 +708,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param series      the appointment series. May be {@code null}
      * @param index       the index of the appointment in the series
      */
-    private void copy(Act act, Entity schedule, Date startTime, AppointmentSeriesState series, int index) {
+    private void copy(Act act, Entity schedule, Date startTime, CalendarEventSeriesState series, int index) {
         int duration = getDuration(act.getActivityStartTime(), act.getActivityEndTime());
         act = rules.copy(act);
         ActBean bean = new ActBean(act);
@@ -735,7 +736,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param expression the new repeat expression. Only relevant if the series is being copied. May be {@code null}
      * @param condition  the new repeat condition. Only relevant if the series is being copied. May be {@code null}
      */
-    private void paste(Act act, Entity schedule, Date startTime, int duration, AppointmentSeriesState series,
+    private void paste(Act act, Entity schedule, Date startTime, int duration, CalendarEventSeriesState series,
                        boolean copy, RepeatExpression expression, RepeatCondition condition) {
         HelpContext edit = createEditTopic(act);
         LocalContext localContext = LocalContext.copy(getContext());
@@ -743,7 +744,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         localContext.setPatient(null);           // if they aren't populated
         localContext.setClinician(null);
         DefaultLayoutContext context = new DefaultLayoutContext(localContext, edit);
-        AppointmentActEditor editor = createEditor(act, series, context);
+        CalendarEventEditor editor = createEditor(act, series, context);
         AppointmentEditDialog dialog = edit(editor, null);
         // NOTE: need to update the start time after dialog is created
         //       See AppointmentEditDialog.timesModified().
@@ -769,12 +770,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         browser.setSelected(browser.getEvent(act));
     }
 
-    private AppointmentActEditor createEditor(Act act, AppointmentSeriesState series, DefaultLayoutContext context) {
-        AppointmentActEditor result;
+    private CalendarEventEditor createEditor(Act act, CalendarEventSeriesState series, DefaultLayoutContext context) {
+        CalendarEventEditor result;
         if (isAppointment(act)) {
             result = new AppointmentEditor(act, null, series != null, context);
         } else {
-            result = new ScheduleBlockEditor(act, null, series != null, context);
+            result = new CalendarBlockEditor(act, null, series != null, context);
         }
         return result;
     }
@@ -892,12 +893,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     private static class SeriesDialog extends MessageDialog {
 
-        private final AppointmentSeriesState series;
+        private final CalendarEventSeriesState series;
         private RadioButton single;
         private RadioButton future;
         private RadioButton all;
 
-        public SeriesDialog(String title, String message, AppointmentSeriesState series, HelpContext help) {
+        public SeriesDialog(String title, String message, CalendarEventSeriesState series, HelpContext help) {
             super(title, message, OK_CANCEL, help);
             this.series = series;
             ButtonGroup group = new ButtonGroup();
@@ -1019,7 +1020,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param series the appointment series
          * @param help   the help context
          */
-        public EditSeriesDialog(AppointmentSeriesState series, HelpContext help) {
+        public EditSeriesDialog(CalendarEventSeriesState series, HelpContext help) {
             super(Messages.get("workflow.scheduling.appointment.editseries.title"),
                   Messages.get("workflow.scheduling.appointment.editseries.message"), series, help);
         }
@@ -1033,7 +1034,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param series the appointment series
          * @param help   the help context
          */
-        public DeleteSeriesDialog(AppointmentSeriesState series, HelpContext help) {
+        public DeleteSeriesDialog(CalendarEventSeriesState series, HelpContext help) {
             super(Messages.get("workflow.scheduling.appointment.deleteseries.title"),
                   Messages.get("workflow.scheduling.appointment.deleteseries.message"), series, help);
         }
@@ -1047,7 +1048,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param series the appointment series
          * @param help   the help context
          */
-        public CopySeriesDialog(AppointmentSeriesState series, HelpContext help) {
+        public CopySeriesDialog(CalendarEventSeriesState series, HelpContext help) {
             super(Messages.get("workflow.scheduling.appointment.copyseries.title"),
                   Messages.get("workflow.scheduling.appointment.copyseries.message"), series, help);
         }
@@ -1061,7 +1062,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param series the appointment series
          * @param help   the help context
          */
-        public MoveSeriesDialog(AppointmentSeriesState series, HelpContext help) {
+        public MoveSeriesDialog(CalendarEventSeriesState series, HelpContext help) {
             super(Messages.get("workflow.scheduling.appointment.moveseries.title"),
                   Messages.get("workflow.scheduling.appointment.moveseries.message"), series, help);
         }

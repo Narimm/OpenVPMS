@@ -27,32 +27,32 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import java.util.Date;
 
 /**
- * An editor for <em>act.scheduleBlock</em> acts.
+ * An editor for <em>act.calendarBlock</em> acts.
  *
  * @author Tim Anderson
  */
-public class ScheduleBlockEditor extends AppointmentActEditor {
+public class CalendarBlockEditor extends CalendarEventEditor {
 
     /**
-     * Constructs a {@link ScheduleBlockEditor}.
+     * Constructs a {@link CalendarBlockEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public ScheduleBlockEditor(Act act, IMObject parent, LayoutContext context) {
+    public CalendarBlockEditor(Act act, IMObject parent, LayoutContext context) {
         this(act, parent, false, context);
     }
 
     /**
-     * Constructs a {@link ScheduleBlockEditor}.
+     * Constructs a {@link CalendarBlockEditor}.
      *
      * @param act        the act to edit
      * @param parent     the parent object. May be {@code null}
      * @param editSeries if {@code true}, edit the series
      * @param context    the layout context
      */
-    public ScheduleBlockEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
+    public CalendarBlockEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, editSeries, context);
     }
 

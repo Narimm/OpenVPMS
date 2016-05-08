@@ -23,23 +23,23 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
 
 /**
- * Appointment series viewer.
+ * Calendar event series viewer.
  *
  * @author Tim Anderson
  */
-public class AppointmentSeriesViewer {
+public class CalendarEventSeriesViewer {
 
     /**
      * The event series.
      */
-    private final ScheduleEventSeries series;
+    private final CalendarEventSeries series;
 
     /**
-     * Constructs an {@link AppointmentSeriesViewer}.
+     * Constructs an {@link CalendarEventSeriesViewer}.
      *
      * @param series the series to view
      */
-    public AppointmentSeriesViewer(ScheduleEventSeries series) {
+    public CalendarEventSeriesViewer(CalendarEventSeries series) {
         this.series = series;
     }
 

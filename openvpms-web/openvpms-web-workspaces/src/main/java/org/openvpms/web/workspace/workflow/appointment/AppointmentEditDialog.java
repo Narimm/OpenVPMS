@@ -31,9 +31,9 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
-import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Date;
 import java.util.List;
@@ -77,7 +77,7 @@ public class AppointmentEditDialog extends EditDialog {
      * @param editor  the editor
      * @param context the context
      */
-    public AppointmentEditDialog(AppointmentActEditor editor, Context context) {
+    public AppointmentEditDialog(CalendarEventEditor editor, Context context) {
         super(editor, context);
         getState();
     }
@@ -88,8 +88,8 @@ public class AppointmentEditDialog extends EditDialog {
      * @return the editor, or {@code null} if none has been set
      */
     @Override
-    public AppointmentActEditor getEditor() {
-        return (AppointmentActEditor) super.getEditor();
+    public CalendarEventEditor getEditor() {
+        return (CalendarEventEditor) super.getEditor();
     }
 
     /**
@@ -137,10 +137,10 @@ public class AppointmentEditDialog extends EditDialog {
      * @return {@code true} if there are overlapping appointments, otherwise {@code false}
      */
     private boolean checkForOverlappingAppointment(final boolean close) {
-        final AppointmentActEditor editor = getEditor();
+        final CalendarEventEditor editor = getEditor();
         boolean result = false;
         if (editor.isValid()) {
-            List<Times> times = editor.getAppointmentTimes();
+            List<Times> times = editor.getEventTimes();
             if (times != null) {
                 AppointmentService rules = ServiceHelper.getBean(AppointmentService.class);
                 Entity schedule = editor.getSchedule();
@@ -207,7 +207,7 @@ public class AppointmentEditDialog extends EditDialog {
         Act appointment = getAppointment();
         startTime = appointment.getActivityStartTime();
         endTime = appointment.getActivityEndTime();
-        ScheduleEventSeries series = getEditor().getSeries();
+        CalendarEventSeries series = getEditor().getSeries();
         expression = series.getExpression();
         condition = series.getCondition();
     }
@@ -219,7 +219,7 @@ public class AppointmentEditDialog extends EditDialog {
      * otherwise {@code false}
      */
     private boolean timeSeriesModified() {
-        ScheduleEventSeries series = getEditor().getSeries();
+        CalendarEventSeries series = getEditor().getSeries();
         Act act = getAppointment();
         return DateRules.compareTo(startTime, act.getActivityStartTime()) != 0
                || DateRules.compareTo(endTime, act.getActivityEndTime()) != 0
