@@ -97,19 +97,20 @@ class SingleScheduleTableModel extends AppointmentTableModel {
     /**
      * Constructs a {@link SingleScheduleTableModel}.
      *
-     * @param grid             the appointment grid
-     * @param context          the context
-     * @param eventColours     the event colours
-     * @param clinicianColours the clinician colours
+     * @param grid                 the appointment grid
+     * @param context              the context
+     * @param eventColours         the event colours
+     * @param clinicianColours     the clinician colours
+     * @param blockingEventColours the blocking event colours
      */
     public SingleScheduleTableModel(AppointmentGrid grid, Context context, ScheduleColours eventColours,
-                                    ScheduleColours clinicianColours) {
-        super(grid, context, eventColours, clinicianColours);
+                                    ScheduleColours clinicianColours, ScheduleColours blockingEventColours) {
+        super(grid, context, eventColours, clinicianColours, blockingEventColours);
     }
 
     /**
      * Determines if a cell is cut.
-     * <p>
+     * <p/>
      * This implementation returns true if the row matches the cut row, and the column is any
      * other than the start time column.
      *

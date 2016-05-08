@@ -31,16 +31,16 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
+import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Date;
 import java.util.List;
 
 
 /**
- * Edit dialog for appointment acts.
+ * Edit dialog for appointment and block acts.
  *
  * @author Tim Anderson
  */
@@ -207,7 +207,7 @@ public class AppointmentEditDialog extends EditDialog {
         Act appointment = getAppointment();
         startTime = appointment.getActivityStartTime();
         endTime = appointment.getActivityEndTime();
-        AppointmentSeries series = getEditor().getSeries();
+        ScheduleEventSeries series = getEditor().getSeries();
         expression = series.getExpression();
         condition = series.getCondition();
     }
@@ -219,7 +219,7 @@ public class AppointmentEditDialog extends EditDialog {
      * otherwise {@code false}
      */
     private boolean timeSeriesModified() {
-        AppointmentSeries series = getEditor().getSeries();
+        ScheduleEventSeries series = getEditor().getSeries();
         Act act = getAppointment();
         return DateRules.compareTo(startTime, act.getActivityStartTime()) != 0
                || DateRules.compareTo(endTime, act.getActivityEndTime()) != 0

@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!DOCTYPE hibernate-mapping PUBLIC
@@ -22,7 +22,7 @@
 <hibernate-mapping>
 
 
-    <query name="act.customerAppointment">
+    <query name="appointmentEvents">
         <![CDATA[
 select act.archetypeId, act.id, act.linkId, act.version,
       p.activityStartTime,
@@ -30,6 +30,7 @@ select act.archetypeId, act.id, act.linkId, act.version,
       indices(details), elements(details),
       act.status,
       act.reason,
+      act.name,
       act.description,
       p.archetypeId.shortName,
       p.version,
@@ -37,25 +38,25 @@ select act.archetypeId, act.id, act.linkId, act.version,
       e.name
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act
 join act.participations as p
-      with p.actShortName = 'act.customerAppointment'
+      with (p.actShortName = 'act.customerAppointment' or p.actShortName = 'act.scheduleBlock')
            and ((p.activityStartTime < :from and p.activityEndTime > :from)
 	            or (p.activityStartTime < :to and p.activityEndTime > :to)
       	        or (p.activityStartTime >= :from and p.activityEndTime <=:to))
 join p.entity as e
 join act.participations as schedule
       with schedule.archetypeId.shortName = 'participation.schedule'
-          and schedule.actShortName = 'act.customerAppointment'
+          and (schedule.actShortName = 'act.customerAppointment' or schedule.actShortName = 'act.scheduleBlock')
           and schedule.entity.id = :scheduleId
           and ((schedule.activityStartTime < :from and schedule.activityEndTime > :from)
             	or (schedule.activityStartTime < :to and schedule.activityEndTime > :to)
             	or (schedule.activityStartTime >= :from and schedule.activityEndTime <=:to))
       left outer join act.details as details
-where act.archetypeId.shortName = 'act.customerAppointment'
+where (act.archetypeId.shortName = 'act.customerAppointment' or act.archetypeId.shortName = 'act.scheduleBlock')
 order by p.activityStartTime, act.id
       ]]>
     </query>
 
-    <query name="act.customerTask">
+    <query name="taskEvents">
         <![CDATA[
 select act.archetypeId, act.id, act.linkId, act.version,
       p.activityStartTime,
@@ -63,6 +64,7 @@ select act.archetypeId, act.id, act.linkId, act.version,
       indices(details), elements(details),
       act.status,
       act.reason,
+      act.name,
       act.description,
       p.archetypeId.shortName,
       p.version,

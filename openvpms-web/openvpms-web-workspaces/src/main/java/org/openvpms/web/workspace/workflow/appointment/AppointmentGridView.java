@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -103,19 +103,17 @@ class AppointmentGridView extends AbstractAppointmentGrid {
     }
 
     /**
-     * Returns the no. of slots at an appointment occupies, from the specified
-     * slot.
+     * Returns the no. of slots that an event occupies, from the specified slot.
      * <p/>
-     * If the appointment begins prior to the slot, the remaining slots will
-     * be returned.
+     * If the event begins prior to the slot, the remaining slots will be returned.
      *
-     * @param appointment the appointment
-     * @param slot        the starting slot
-     * @return the no. of slots that the appointment occupies
+     * @param event the event
+     * @param slot  the starting slot
+     * @return the no. of slots that the event occupies
      */
     @Override
-    public int getSlots(PropertySet appointment, int slot) {
-        return grid.getSlots(appointment, startSlot + slot);
+    public int getSlots(PropertySet event, int slot) {
+        return grid.getSlots(event, startSlot + slot);
     }
 
     /**
@@ -157,7 +155,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      *
      * @param minutes the minutes
      * @return the first slot that minutes intersects, or {@code -1} if no
-     *         slots intersect
+     * slots intersect
      */
     public int getFirstSlot(int minutes) {
         return grid.getFirstSlot(minutes);
@@ -169,7 +167,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      *
      * @param minutes the minutes
      * @return the last slot that minutes intersects, or {@code -1} if no
-     *         slots intersect
+     * slots intersect
      */
     public int getLastSlot(int minutes) {
         return grid.getLastSlot(minutes);

@@ -18,9 +18,11 @@ package org.openvpms.web.workspace.workflow.scheduling;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -69,7 +71,12 @@ public class Schedule {
     /**
      * The events.
      */
-    private List<PropertySet> events = new ArrayList<>();
+    private final List<PropertySet> events = new ArrayList<>();
+
+    /**
+     * The blocking events.
+     */
+    private final List<PropertySet> blockingEvents;
 
     /**
      * The comparator to detect intersecting events.
@@ -102,19 +109,41 @@ public class Schedule {
         this.startMins = startMins;
         this.endMins = endMins;
         this.slotSize = slotSize;
+        this.blockingEvents = new ArrayList<>();
+        intersectComparator = new IntersectComparator(slotSize);
+    }
+
+    /**
+     * Constructs an {@link Schedule}.
+     *
+     * @param schedule       the event schedule
+     * @param cageType       the cage type. May be {@code null}
+     * @param startMins      the schedule start time, as minutes since midnight
+     * @param endMins        the schedule end time, as minutes since midnight
+     * @param slotSize       the schedule slot size, in minutes
+     * @param blockingEvents the blocking events
+     */
+    public Schedule(Entity schedule, Entity cageType, int startMins, int endMins, int slotSize,
+                    List<PropertySet> blockingEvents) {
+        this.schedule = schedule;
+        this.cageType = cageType;
+        this.startMins = startMins;
+        this.endMins = endMins;
+        this.slotSize = slotSize;
+        this.blockingEvents = blockingEvents;
         intersectComparator = new IntersectComparator(slotSize);
     }
 
     /**
      * Creates a schedule from an existing schedule.
-     * <p>
-     * The events are not copied.
+     * <p/>
+     * Only the blocking events are copied.
      *
      * @param source the source schedule
      */
     public Schedule(Schedule source) {
         this(source.getSchedule(), source.getCageType(), source.getStartMins(), source.getEndMins(),
-             source.getSlotSize());
+             source.getSlotSize(), source.blockingEvents);
     }
 
     /**
@@ -174,10 +203,14 @@ public class Schedule {
     /**
      * Adds an event.
      *
-     * @param set an object set representing the event
+     * @param event the event
      */
-    public void addEvent(PropertySet set) {
-        events.add(set);
+    public void add(PropertySet event) {
+        if (isBlockingEvent(event)) {
+            blockingEvents.add(event);
+        } else {
+            events.add(event);
+        }
     }
 
     /**
@@ -200,7 +233,6 @@ public class Schedule {
         return (index != -1) ? events.get(index) : null;
     }
 
-
     /**
      * Returns the index of an event, given its reference.
      *
@@ -218,8 +250,9 @@ public class Schedule {
     }
 
     /**
-     * Determines if the schedule has an event that intersects the specified
-     * event.
+     * Determines if the schedule has an event that intersects the specified event.
+     * <p/>
+     * This excludes blocking events.
      *
      * @param event the event
      * @return {@code true} if the schedule has an intersecting event
@@ -236,11 +269,8 @@ public class Schedule {
      * @return the corresponding event, or {@code null} if none is found
      */
     public PropertySet getEvent(Date time, int slotSize) {
-        PropertySet set = new ObjectSet();
-        set.set(ScheduleEvent.ACT_START_TIME, time);
-        set.set(ScheduleEvent.ACT_END_TIME, time);
-        int index = Collections.binarySearch(events, set, new StartTimeComparator(slotSize));
-        return (index < 0) ? null : events.get(index);
+        StartTimeComparator comparator = new StartTimeComparator(slotSize);
+        return getEvent(time, comparator);
     }
 
     /**
@@ -250,11 +280,7 @@ public class Schedule {
      * @return the corresponding event, or {@code null} if none is found
      */
     public PropertySet getIntersectingEvent(Date time) {
-        PropertySet set = new ObjectSet();
-        set.set(ScheduleEvent.ACT_START_TIME, time);
-        set.set(ScheduleEvent.ACT_END_TIME, time);
-        int index = Collections.binarySearch(events, set, intersectComparator);
-        return (index < 0) ? null : events.get(index);
+        return getEvent(time, intersectComparator);
     }
 
     /**
@@ -273,6 +299,34 @@ public class Schedule {
      */
     public boolean getRenderEven() {
         return renderEven;
+    }
+
+    /**
+     * Returns an event.
+     *
+     * @param time       the time to search for
+     * @param comparator the comparator used to locate matches
+     * @return the event
+     */
+    protected PropertySet getEvent(Date time, Comparator<PropertySet> comparator) {
+        PropertySet result = null;
+        PropertySet set = new ObjectSet();
+        set.set(ScheduleEvent.ACT_START_TIME, time);
+        set.set(ScheduleEvent.ACT_END_TIME, time);
+        int index = Collections.binarySearch(events, set, comparator);
+        if (index >= 0) {
+            result = events.get(index);
+        } else {
+            index = Collections.binarySearch(blockingEvents, set, comparator);
+            if (index >= 0) {
+                result = blockingEvents.get(index);
+            }
+        }
+        return result;
+    }
+
+    public static boolean isBlockingEvent(PropertySet event) {
+        return TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE), ScheduleArchetypes.BLOCK);
     }
 
     /**

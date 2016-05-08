@@ -1016,3 +1016,24 @@ FROM entity_details d
        AND d.type = 'boolean'
        AND d.value = 'false'
        AND e.arch_short_name = 'party.organisationWorkList';
+
+#
+# OVPMS-1763 Schedule blocking
+#
+
+
+# Rename act.customerAppointmentSeries to act.scheduleEventSeries
+
+UPDATE acts a
+SET a.arch_short_name = 'act.scheduleEventSeries'
+WHERE a.arch_short_name = 'act.customerAppointmentSeries';
+
+UPDATE participations p
+SET p.act_arch_short_name = 'act.scheduleEventSeries'
+WHERE p.act_arch_short_name = 'act.customerAppointmentSeries';
+
+# Rename actRelationship.customerAppointmentSeries to actRelationship.scheduleEventSeries
+
+UPDATE act_relationships r
+SET r.arch_short_name = 'actRelationship.scheduleEventSeries'
+WHERE r.arch_short_name = 'actRelationship.customerAppointmentSeries';

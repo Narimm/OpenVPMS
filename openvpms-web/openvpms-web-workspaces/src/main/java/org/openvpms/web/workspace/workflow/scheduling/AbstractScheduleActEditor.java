@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.workflow.scheduling;
 
@@ -118,18 +118,20 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
     /**
      * Invoked when layout has completed. All editors have been created.
      * <p/>
-     * This adds a listener to invoke {@link #onCustomerChanged()} when the customer changes.
+     * For acts with customers, this adds a listener to invoke {@link #onCustomerChanged()} ifwhen the customer changes.
      */
     @Override
     protected void onLayoutCompleted() {
-        CustomerParticipationEditor customer = getCustomerEditor();
-        PatientParticipationEditor patient = getPatientEditor();
-        customer.setPatientParticipationEditor(patient);
-        customer.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onCustomerChanged();
-            }
-        });
+        if (getProperty("customer") != null && getProperty("patient") != null) {
+            CustomerParticipationEditor customer = getCustomerEditor();
+            PatientParticipationEditor patient = getPatientEditor();
+            customer.setPatientParticipationEditor(patient);
+            customer.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onCustomerChanged();
+                }
+            });
+        }
     }
 
     /**

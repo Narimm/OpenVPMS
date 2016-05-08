@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -82,7 +81,7 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link LookupHelper#getNames(IArchetypeService, String, String)} method.
+     * Tests the {@link LookupHelper#getNames(IArchetypeService, ILookupService, String, String)} method.
      */
     @Test
     public void testGetNames() {
@@ -141,31 +140,6 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
         NodeDescriptor sex = bean.getDescriptor("sex");
         assertNotNull(sex);
         assertEquals("male", LookupHelper.getName(service, lookups, sex, pet));
-    }
-
-    /**
-     * Tests the {@link LookupHelper#getDefaultLookup} methods.
-     */
-    @Test
-    public void testDefaultLookup() {
-        IArchetypeService service = getArchetypeService();
-        LookupUtil.removeAll(service, "lookup.colour");
-
-        // create two new colour lookups. Make RED the default.
-
-        Lookup red = LookupUtil.createLookup(service, "lookup.colour", "RED");
-        red.setDefaultLookup(true);
-
-        Lookup blue = LookupUtil.createLookup(service, "lookup.colour", "BLUE");
-        blue.setDefaultLookup(false);
-
-        service.save(red);
-        service.save(blue);
-
-        // verify the correct lookup is returned
-        Lookup lookup = LookupServiceHelper.getLookupService().getDefaultLookup("lookup.colour");
-        assertNotNull(lookup);
-        assertEquals(red.getCode(), lookup.getCode());
     }
 
     /**

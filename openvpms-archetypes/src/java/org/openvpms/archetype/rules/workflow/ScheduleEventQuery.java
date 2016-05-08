@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
@@ -87,14 +88,16 @@ abstract class ScheduleEventQuery {
      * @param to             the 'to' start time
      * @param eventShortName the event archetype short name
      * @param service        the archetype service
+     * @param lookups        the lookup service
      */
-    public ScheduleEventQuery(Entity schedule, Date from, Date to, String eventShortName, IArchetypeService service) {
+    public ScheduleEventQuery(Entity schedule, Date from, Date to, String eventShortName, IArchetypeService service,
+                              ILookupService lookups) {
         this.schedule = schedule;
         this.from = from;
         this.to = to;
         this.service = service;
-        statusNames = LookupHelper.getNames(service, eventShortName, "status");
-        reasonNames = LookupHelper.getNames(service, eventShortName, "reason");
+        statusNames = LookupHelper.getNames(service, lookups, eventShortName, "status");
+        reasonNames = LookupHelper.getNames(service, lookups, eventShortName, "reason");
     }
 
     /**
@@ -106,10 +109,10 @@ abstract class ScheduleEventQuery {
     public IPage<ObjectSet> query() {
         IArchetypeQuery query = createQuery(from, to);
         IPage<ObjectSet> page = service.getObjects(query);
-        List<ObjectSet> result = new ArrayList<ObjectSet>();
+        List<ObjectSet> result = new ArrayList<>();
         IMObjectReference currentAct = null;
         ObjectSet current = null;
-        String scheduleType = getScheduleType();
+        String scheduleType = null;
         for (ObjectSet set : page.getResults()) {
             IMObjectReference actRef = getAct(set);
             if (currentAct == null || !currentAct.equals(actRef)) {
@@ -118,6 +121,7 @@ abstract class ScheduleEventQuery {
                 }
                 currentAct = actRef;
                 current = createEvent(actRef, set);
+                scheduleType = getScheduleType(actRef.getArchetypeId().getShortName());
                 current.set(ScheduleEvent.ACT_VERSION, set.getLong("act.version"));
             }
             IMObjectReference entityRef = getEntity(set);
@@ -150,7 +154,7 @@ abstract class ScheduleEventQuery {
         if (current != null) {
             result.add(current);
         }
-        return new Page<ObjectSet>(result, 0, result.size(), result.size());
+        return new Page<>(result, 0, result.size(), result.size());
     }
 
     /**
@@ -163,9 +167,10 @@ abstract class ScheduleEventQuery {
     /**
      * Returns the archetype short name of the schedule type.
      *
+     * @param eventShortName the event archetype short name
      * @return the short name of the schedule type
      */
-    protected abstract String getScheduleType();
+    protected abstract String getScheduleType(String eventShortName);
 
     /**
      * Creates a new query.
@@ -182,6 +187,7 @@ abstract class ScheduleEventQuery {
                                                  "act.details_Keys",
                                                  "act.details_Values",
                                                  "act.status", "act.reason",
+                                                 "act.name",
                                                  "act.description",
                                                  "participation.shortName",
                                                  "participation.version",
@@ -216,6 +222,7 @@ abstract class ScheduleEventQuery {
         result.set(ScheduleEvent.ACT_STATUS_NAME, statusNames.get(status));
         result.set(ScheduleEvent.ACT_REASON, reason);
         result.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
+        result.set(ScheduleEvent.ACT_NAME, set.get(ScheduleEvent.ACT_NAME));
         result.set(ScheduleEvent.ACT_DESCRIPTION, set.get(ScheduleEvent.ACT_DESCRIPTION));
         result.set(ScheduleEvent.CUSTOMER_REFERENCE, null);
         result.set(ScheduleEvent.CUSTOMER_NAME, null);

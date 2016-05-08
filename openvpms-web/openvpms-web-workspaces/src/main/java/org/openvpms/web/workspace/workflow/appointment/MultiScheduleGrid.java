@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -33,8 +33,7 @@ import java.util.Map;
 /**
  * An {@link AppointmentGrid} for a multiple schedule.
  * <p/>
- * This handles overlapping and double booked appointments by creating new
- * {@link Schedule} instances to contain them.
+ * This handles overlapping and double booked appointments by creating new {@link Schedule} instances to contain them.
  *
  * @author Tim Anderson
  */
@@ -45,21 +44,21 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param scheduleView the schedule view
      * @param date         the appointment date
-     * @param appointments the appointments
+     * @param events       the events
      * @param rules        the appointment rules
      */
-    public MultiScheduleGrid(Entity scheduleView, Date date,
-                             Map<Entity, List<PropertySet>> appointments, AppointmentRules rules) {
+    public MultiScheduleGrid(Entity scheduleView, Date date, Map<Entity, List<PropertySet>> events,
+                             AppointmentRules rules) {
         super(scheduleView, date, -1, -1, rules);
-        setAppointments(appointments);
+        setEvents(events);
     }
 
     /**
-     * Returns the appointment for the specified schedule and slot.
+     * Returns the event for the specified schedule and slot.
      *
      * @param schedule the schedule
      * @param slot     the slot
-     * @return the corresponding appointment, or {@code null} if none is found
+     * @return the corresponding event, or {@code null} if none is found
      */
     public PropertySet getEvent(Schedule schedule, int slot) {
         Date time = getStartTime(schedule, slot);
@@ -76,7 +75,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param minutes the minutes
      * @return the first slot that minutes intersects, or {@code -1} if no
-     *         slots intersect
+     * slots intersect
      */
     public int getFirstSlot(int minutes) {
         if (minutes < getStartMins() || minutes > getEndMins()) {
@@ -91,30 +90,30 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param minutes the minutes
      * @return the last slot that minutes intersects, or {@code -1} if no
-     *         slots intersect
+     * slots intersect
      */
     public int getLastSlot(int minutes) {
         return getFirstSlot(minutes);
     }
 
     /**
-     * Sets the appointments.
+     * Sets the events.
      *
-     * @param appointments the appointments, keyed on schedule
+     * @param events the events, keyed on schedule
      */
-    private void setAppointments(Map<Entity, List<PropertySet>> appointments) {
+    private void setEvents(Map<Entity, List<PropertySet>> events) {
         int startMins = -1;
         int endMins = -1;
         int slotSize = -1;
         setSlotSize(-1);
 
-        List<Schedule> schedules = new ArrayList<Schedule>();
+        List<Schedule> schedules = new ArrayList<>();
 
         // Determine the startMins, endMins and slotSize. The:
         // . startMins is the minimum startMins of all schedules
         // . endMins is the minimum endMins of all schedules
         // . slotSize is the minimum slotSize of all schedules
-        for (Entity schedule : appointments.keySet()) {
+        for (Entity schedule : events.keySet()) {
             Schedule column = createSchedule((Party) schedule);
             schedules.add(column);
             int start = column.getStartMins();
@@ -143,56 +142,31 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         setEndMins(endMins);
         setSlotSize(slotSize);
 
-        // add the appointments
-        for (Map.Entry<Entity, List<PropertySet>> entry : appointments.entrySet()) {
+        // add the events
+        for (Map.Entry<Entity, List<PropertySet>> entry : events.entrySet()) {
             Party schedule = (Party) entry.getKey();
             List<PropertySet> sets = entry.getValue();
 
             for (PropertySet set : sets) {
-                addAppointment(schedule, set);
+                addEvent(schedule, set);
             }
         }
     }
 
     /**
-     * Adds an appointment.
+     * Adds an event.
      * <p/>
-     * If the corresponding Schedule already has an appointment that intersects
-     * the appointment, a new Schedule will be created with the same start and
-     * end times, and the appointment added to that.
+     * If event is an appointment, and the corresponding Schedule already has an appointment that intersects it,
+     * new Schedule will be created with the same start and end times, and the appointment added to that.
      *
      * @param schedule the schedule to add the appointment to
-     * @param set      the appointment
+     * @param event    the event
      */
-    private void addAppointment(Party schedule, PropertySet set) {
-        Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
-        Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
-        int index = -1;
-        boolean found = false;
-        Schedule column = null;
-        Schedule match = null;
-
-        // try and find a corresponding Schedule that has no appointment that
-        // intersects the supplied one
-        List<Schedule> columns = getSchedules();
-        for (int i = 0; i < columns.size(); ++i) {
-            column = columns.get(i);
-            if (column.getSchedule().equals(schedule)) {
-                if (column.hasIntersectingEvent(set)) {
-                    match = column;
-                    index = i;
-                } else {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        if (!found) {
-            // appointment intersects an existing one, so create a new Schedule
-            column = new Schedule(match);
-            columns.add(index + 1, column);
-        }
-        column.addEvent(set);
+    @Override
+    protected void addEvent(Entity schedule, PropertySet event) {
+        super.addEvent(schedule, event);
+        Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
+        Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
 
         // adjust the grid start and end times, if required
         Date startDate = DateRules.getDate(startTime);

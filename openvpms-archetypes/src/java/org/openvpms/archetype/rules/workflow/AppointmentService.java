@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -40,7 +40,7 @@ import org.openvpms.component.system.common.query.ParticipationConstraint;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -67,6 +67,10 @@ public class AppointmentService extends AbstractScheduleService {
      */
     private final IArchetypeServiceListener listener;
 
+    /**
+     * The archetypes to cache. .
+     */
+    private static final String[] SHORT_NAMES = {ScheduleArchetypes.APPOINTMENT, ScheduleArchetypes.BLOCK};
 
     /**
      * Constructs an {@link AppointmentService}.
@@ -76,7 +80,7 @@ public class AppointmentService extends AbstractScheduleService {
      * @param cache         the cache
      */
     public AppointmentService(IArchetypeService service, ILookupService lookupService, Ehcache cache) {
-        super(ScheduleArchetypes.APPOINTMENT, service, cache, new AppointmentFactory(service, lookupService));
+        super(SHORT_NAMES, service, cache, new AppointmentFactory(service, lookupService));
 
         listener = new AbstractArchetypeServiceListener() {
             @Override
@@ -153,7 +157,7 @@ public class AppointmentService extends AbstractScheduleService {
         }
         if (result == null && incomplete) {
             // need to hit the database
-            List<Times> list = Arrays.asList(times);
+            List<Times> list = Collections.singletonList(times);
             result = getOverlap(list, schedule);
         }
         return result;
@@ -223,7 +227,7 @@ public class AppointmentService extends AbstractScheduleService {
      */
     private Times getOverlap(List<Times> appointments, IMObjectReference schedule) {
         Times result = null;
-        List<Long> ids = new ArrayList<Long>();
+        List<Long> ids = new ArrayList<>();
         for (Times times : appointments) {
             if (times.getId() != -1) {
                 ids.add(times.getId());

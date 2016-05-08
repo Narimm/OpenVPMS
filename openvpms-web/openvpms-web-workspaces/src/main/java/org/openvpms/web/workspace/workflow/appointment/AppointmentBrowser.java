@@ -115,6 +115,11 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private final ScheduleColours clinicianColours;
 
     /**
+     * The blocking event colours.
+     */
+    private final ScheduleColours blockingEventColours;
+
+    /**
      * Displays the selected schedule view, schedule and date above the
      * appointments.
      */
@@ -193,6 +198,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         rules = ServiceHelper.getBean(AppointmentRules.class);
         appointmentColours = new ScheduleColours(ScheduleArchetypes.APPOINTMENT_TYPE);
         clinicianColours = new ScheduleColours(UserArchetypes.USER);
+        blockingEventColours = new ScheduleColours(ScheduleArchetypes.BLOCK_TYPE);
     }
 
     /**
@@ -305,25 +311,26 @@ public class AppointmentBrowser extends ScheduleBrowser {
         if (grid instanceof CageScheduleGrid) {
             CageScheduleGrid cageGrid = (CageScheduleGrid) grid;
             if (getQuery().getShow() == AppointmentQuery.Show.CAGE) {
-                model = new DefaultCageTableModel(cageGrid, getContext(), appointmentColours, clinicianColours);
+                model = new DefaultCageTableModel(cageGrid, getContext(), appointmentColours, clinicianColours, blockingEventColours);
             } else {
-                model = new CageSummaryTableModel(cageGrid, getContext(), appointmentColours, clinicianColours);
+                model = new CageSummaryTableModel(cageGrid, getContext(), appointmentColours, clinicianColours,
+                                                  blockingEventColours);
             }
         } else if (grid instanceof MultiDayScheduleGrid) {
             model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext(), appointmentColours,
-                                           clinicianColours);
+                                           clinicianColours, blockingEventColours);
         } else if (grid instanceof CheckInScheduleGrid) {
             model = new CheckInTableModel((CheckInScheduleGrid) grid, getContext(), appointmentColours,
-                                          clinicianColours);
+                                          clinicianColours, blockingEventColours);
         } else if (grid instanceof CheckOutScheduleGrid) {
             model = new CheckOutTableModel((CheckOutScheduleGrid) grid, getContext(), appointmentColours,
-                                           clinicianColours);
+                                           clinicianColours, blockingEventColours);
         } else if (grid.getSchedules().size() == 1) {
             model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext(), appointmentColours,
-                                                 clinicianColours);
+                                                 clinicianColours, blockingEventColours);
         } else {
             model = new MultiScheduleTableModel((AppointmentGrid) grid, getContext(), appointmentColours,
-                                                clinicianColours);
+                                                clinicianColours, blockingEventColours);
         }
         return model;
     }

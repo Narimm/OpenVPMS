@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.workflow;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Date;
@@ -38,9 +39,10 @@ class TaskQuery extends ScheduleEventQuery {
      * @param from     the 'from' start time
      * @param to       the 'to' start time
      * @param service  the archetype service
+     * @param lookups  the lookup service
      */
-    public TaskQuery(Entity workList, Date from, Date to, IArchetypeService service) {
-        super(workList, from, to, ScheduleArchetypes.TASK, service);
+    public TaskQuery(Entity workList, Date from, Date to, IArchetypeService service, ILookupService lookups) {
+        super(workList, from, to, ScheduleArchetypes.TASK, service, lookups);
     }
 
     /**
@@ -49,15 +51,16 @@ class TaskQuery extends ScheduleEventQuery {
      * @return the name of the named query
      */
     protected String getQueryName() {
-        return "act.customerTask";
+        return "taskEvents";
     }
 
     /**
      * Returns the archetype short name of the schedule type.
      *
+     * @param eventShortName the event archetype short name
      * @return the short name of the schedule type
      */
-    protected String getScheduleType() {
+    protected String getScheduleType(String eventShortName) {
         return ScheduleArchetypes.TASK_TYPE;
     }
 

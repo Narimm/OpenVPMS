@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -30,16 +30,16 @@ import org.openvpms.web.echo.style.Styles;
 public class AppointmentSeriesViewer {
 
     /**
-     * The appointment series.
+     * The event series.
      */
-    private final AppointmentSeries series;
+    private final ScheduleEventSeries series;
 
     /**
      * Constructs an {@link AppointmentSeriesViewer}.
      *
      * @param series the series to view
      */
-    public AppointmentSeriesViewer(AppointmentSeries series) {
+    public AppointmentSeriesViewer(ScheduleEventSeries series) {
         this.series = series;
     }
 

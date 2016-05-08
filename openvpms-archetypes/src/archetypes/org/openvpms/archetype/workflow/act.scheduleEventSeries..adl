@@ -11,15 +11,14 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
-    <archetype name="act.customerAppointmentSeries.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.Act" displayName="Appointment Series">
+    <archetype name="act.scheduleEventSeries.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Schedule Event Series">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Appointment'"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="0" readOnly="true"/>
         <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
         <node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" hidden="true"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="0" hidden="true"/>
@@ -41,6 +40,6 @@
               filter="participation.author" hidden="true"/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" hidden="true" minCardinality="0"
-              maxCardinality="*" filter="actRelationship.customerAppointmentSeries"/>
+              maxCardinality="*" filter="actRelationship.scheduleEventSeries"/>
     </archetype>
 </archetypes>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -40,14 +40,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link AppointmentActEditor}.
+ * Tests the {@link AppointmentEditor}.
  *
  * @author Tim Anderson
  */
-public class AppointmentActEditorTestCase extends AbstractAppTest {
+public class AppointmentEditorTestCase extends AbstractAppTest {
 
     /**
-     * Tests the {@link AppointmentActEditor#newInstance()} method.
+     * Tests the {@link AppointmentEditor#newInstance()} method.
      */
     @Test
     public void testNewInstance() {
@@ -56,12 +56,15 @@ public class AppointmentActEditorTestCase extends AbstractAppTest {
         Party schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation());
         Act appointment = ScheduleTestHelper.createAppointment(start, end, schedule);
         LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
+        AppointmentEditor editor = new AppointmentEditor(appointment, null, context);
 
         IMObjectEditor newInstance = editor.newInstance();
-        assertTrue(newInstance instanceof AppointmentActEditor);
+        assertTrue(newInstance instanceof AppointmentEditor);
     }
 
+    /**
+     * Tests the {@link AppointmentEditor#getAppointmentTimes()} method.
+     */
     @Test
     public void testGetAppointmentTimes() {
         Date start = DateRules.getToday();
@@ -77,7 +80,7 @@ public class AppointmentActEditorTestCase extends AbstractAppTest {
 
         // create an editor to edit the series
         LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        AppointmentActEditor editor1 = new AppointmentActEditor(appointment, null, true, context);
+        AppointmentEditor editor1 = new AppointmentEditor(appointment, null, true, context);
 
         // verify that there are 3 appointments in the series
         List<Times> times1 = editor1.getAppointmentTimes();
@@ -85,7 +88,7 @@ public class AppointmentActEditorTestCase extends AbstractAppTest {
         assertEquals(3, times1.size());
 
         // now create an editor for the first appointment in the series.
-        AppointmentActEditor editor2 = new AppointmentActEditor(appointment, null, false, context);
+        AppointmentEditor editor2 = new AppointmentEditor(appointment, null, false, context);
 
         // verify that getAppointmentTimes() returns the one appointment, corresponding to that of the first appointment
         List<Times> times2 = editor2.getAppointmentTimes();

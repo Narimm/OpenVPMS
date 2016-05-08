@@ -54,14 +54,15 @@ public class MultiDayTableModel extends AbstractMultiDayTableModel {
     /**
      * Constructs a {@link MultiDayTableModel}.
      *
-     * @param grid             the appointment grid
-     * @param context          the context
-     * @param eventColours     the event colours
-     * @param clinicianColours the clinician colours
+     * @param grid                 the appointment grid
+     * @param context              the context
+     * @param eventColours         the event colours
+     * @param clinicianColours     the clinician colours
+     * @param blockingEventColours the blocking event colours
      */
     public MultiDayTableModel(AbstractMultiDayScheduleGrid grid, Context context, ScheduleColours eventColours,
-                              ScheduleColours clinicianColours) {
-        super(grid, context, eventColours, clinicianColours);
+                              ScheduleColours clinicianColours, ScheduleColours blockingEventColours) {
+        super(grid, context, eventColours, clinicianColours, blockingEventColours);
     }
 
     /**
@@ -182,10 +183,10 @@ public class MultiDayTableModel extends AbstractMultiDayTableModel {
         /**
          * This method is called to determine which cells within a row can cause an
          * action to be raised on the server when clicked.
-         * <p>
+         * <p/>
          * By default if a Table has attached actionListeners then any click on any
          * cell within a row will cause the action to fire.
-         * <p>
+         * <p/>
          * This method allows this to be overridden and only certain cells within a
          * row can cause an action event to be raise.
          *

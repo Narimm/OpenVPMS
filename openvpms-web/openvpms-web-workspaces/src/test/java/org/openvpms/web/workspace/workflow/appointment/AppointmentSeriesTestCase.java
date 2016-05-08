@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -34,6 +34,7 @@ import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.appointment.repeat.Repeats;
+import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Date;
 import java.util.List;
@@ -169,7 +170,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
 
         AppointmentSeries series = createSeries(appointment, monthly(), times(11));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
-        List<Act> oldAppointments = series.getAppointments();
+        List<Act> oldAppointments = series.getEvents();
         assertEquals(12, oldAppointments.size());
 
         List<Act> toRemove = oldAppointments.subList(10, 12);
@@ -177,7 +178,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         series.setCondition(times(9));
         series.save();
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 10);
-        List<Act> newAppointments = series.getAppointments();
+        List<Act> newAppointments = series.getEvents();
         assertEquals(10, newAppointments.size());
 
         for (Act act : oldAppointments) {
@@ -199,13 +200,13 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
 
         AppointmentSeries series = createSeries(appointment, monthly(), times(9));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 10);
-        List<Act> oldAppointments = series.getAppointments();
+        List<Act> oldAppointments = series.getEvents();
         assertEquals(10, oldAppointments.size());
 
         series.setCondition(times(11));
         series.save();
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
-        List<Act> newAppointments = series.getAppointments();
+        List<Act> newAppointments = series.getEvents();
         assertEquals(12, newAppointments.size());
 
         // verify the original appointments have been retained
@@ -225,9 +226,9 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         AppointmentSeries series = createSeries(appointment);
         series.setExpression(daily());  // the next appointment overlaps the previous
         series.setCondition(once());
-        AppointmentSeries.Overlap overlap = series.getFirstOverlap();
+        ScheduleEventSeries.Overlap overlap = series.getFirstOverlap();
         assertNotNull(overlap);
-        assertEquals(overlap.getAppointment1(), Times.create(appointment));
+        assertEquals(overlap.getEvent1(), Times.create(appointment));
     }
 
     /**
@@ -242,13 +243,13 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         Act act = series.getSeries();
         assertNotNull(act);
 
-        List<Act> appointments = series.getAppointments();
+        List<Act> appointments = series.getEvents();
         assertEquals(10, appointments.size());
 
         series.setExpression(null);
         series.setCondition(null);
         series.save();
-        appointments = series.getAppointments();
+        appointments = series.getEvents();
         assertEquals(0, appointments.size());
         assertNull(series.getSeries());
         assertNotNull(get(appointment));
@@ -378,7 +379,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the author can be updated.
+     * Verifies that the author cannot be updated.
      */
     @Test
     public void testCannotChangeAuthor() {
@@ -491,7 +492,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     private List<Act> checkSeries(AppointmentSeries series, Act appointment, int interval, DateUnits units, int count,
                                   User author) {
-        List<Act> acts = series.getAppointments();
+        List<Act> acts = series.getEvents();
         assertEquals(count, acts.size());
         Date from = appointment.getActivityStartTime();
         Date to = appointment.getActivityEndTime();
@@ -537,7 +538,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     private AppointmentSeries createSeries(Act appointment, RepeatExpression expression, RepeatCondition condition) {
         AppointmentSeries series = createSeries(appointment);
-        assertEquals(0, series.getAppointments().size());
+        assertEquals(0, series.getEvents().size());
         assertTrue(series.isModified());
         assertNull(series.getSeries());
 

@@ -132,19 +132,17 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
     }
 
     /**
-     * Returns the no. of slots at an appointment occupies, from the specified
-     * slot.
+     * Returns the no. of slots that an event occupies, from the specified slot.
      * <p/>
-     * If the appointment begins prior to the slot, the remaining slots will
-     * be returned.
+     * If the event begins prior to the slot, the remaining slots will be returned.
      *
-     * @param appointment the appointment
-     * @param slot        the starting slot
-     * @return the no. of slots that the appointment occupies
+     * @param event the event
+     * @param slot  the starting slot
+     * @return the no. of slots that the event occupies
      */
-    public int getSlots(PropertySet appointment, int slot) {
+    public int getSlots(PropertySet event, int slot) {
         Date startTime = getStartTime(slot);
-        Date endTime = appointment.getDate(ScheduleEvent.ACT_END_TIME);
+        Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
         int startSlot = getSlot(startTime);
         int endSlot = getSlot(endTime);
         return endSlot - startSlot;
