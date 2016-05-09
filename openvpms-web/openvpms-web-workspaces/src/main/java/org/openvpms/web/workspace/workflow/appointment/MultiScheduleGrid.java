@@ -63,7 +63,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
     public PropertySet getEvent(Schedule schedule, int slot) {
         Date time = getStartTime(schedule, slot);
         PropertySet result = schedule.getEvent(time, getSlotSize());
-        if (result == null && slot == 0) {
+        if (result == null) {
             result = schedule.getIntersectingEvent(time);
         }
         return result;

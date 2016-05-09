@@ -33,6 +33,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.OrConstraint;
@@ -97,19 +98,19 @@ public class AppointmentService extends AbstractScheduleService {
     }
 
     /**
-     * Determines if there are acts that overlap with an appointment.
+     * Determines if there are acts that overlap with an event.
      *
-     * @param appointment the appointment
-     * @return the first overlapping appointment times, or {@code null} if none are found
+     * @param event the event
+     * @return the first overlapping event times, or {@code null} if none are found
      * @throws OpenVPMSException for any error
      */
-    public Times getOverlappingAppointment(Act appointment) {
+    public Times getOverlappingEvent(Act event) {
         Times result = null;
-        ActBean bean = new ActBean(appointment, getService());
+        ActBean bean = new ActBean(event, getService());
         IMObjectReference schedule = bean.getNodeParticipantRef("schedule");
-        Times times = Times.create(appointment);
+        Times times = Times.create(event);
         if (schedule != null && times != null) {
-            result = getOverlappingAppointment(times, schedule);
+            result = getOverlappingEvent(times, schedule);
         }
         return result;
     }
@@ -119,22 +120,22 @@ public class AppointmentService extends AbstractScheduleService {
      * <p/>
      * This checks the cache first for overlaps before making a more expensive database query.
      * <p/>
-     * Note that due to race conditions, it is possible that an appointment may be saved in another thread that
-     * won't be seen in the cache. This may result in double booking of appointments for schedules that don't support
+     * Note that due to race conditions, it is possible that an event may be saved in another thread that
+     * won't be seen in the cache. This may result in double booking of events for schedules that don't support
      * it.
      * While not ideal, the likelihood is small, and needs to be weighed against:
      * <ul>
      * <li>issuing a database query each time</li>
-     * <li>changing the architecture to route all appointment updates directly through this service first
+     * <li>changing the architecture to route all event updates directly through this service first
      * to keep the cache in sync.</li>
      * </ul>
      *
-     * @param times    the appointment times
+     * @param times    the event times
      * @param schedule the schedule
-     * @return the first overlapping appointment times, or {@code null} if none are found
+     * @return the first overlapping event times, or {@code null} if none are found
      * @throws OpenVPMSException for any error
      */
-    public Times getOverlappingAppointment(Times times, IMObjectReference schedule) {
+    public Times getOverlappingEvent(Times times, IMObjectReference schedule) {
         Times result = null;
         Date startTime = times.getStartTime();
         Date endTime = times.getEndTime();
@@ -164,31 +165,31 @@ public class AppointmentService extends AbstractScheduleService {
     }
 
     /**
-     * Returns the first appointment that overlaps the specified appointments.
+     * Returns the event that overlaps the specified events.
      *
-     * @param appointments the appointment times
-     * @param schedule     the schedule
-     * @return the first appointment, or {@code null} if none exists
+     * @param events   the event times
+     * @param schedule the schedule
+     * @return the first event, or {@code null} if none exists
      */
-    public Times getOverlappingAppointment(List<Times> appointments, Entity schedule) {
-        return getOverlappingAppointment(appointments, schedule.getObjectReference());
+    public Times getOverlappingEvent(List<Times> events, Entity schedule) {
+        return getOverlappingEvent(events, schedule.getObjectReference());
     }
 
     /**
-     * Returns the first appointment that overlaps the specified appointments.
+     * Returns the first event that overlaps the specified events.
      *
-     * @param appointments the appointment times
-     * @param schedule     the schedule
-     * @return the first appointment, or {@code null} if none exists
+     * @param events   the event times
+     * @param schedule the schedule
+     * @return the first event, or {@code null} if none exists
      */
-    public Times getOverlappingAppointment(List<Times> appointments, IMObjectReference schedule) {
+    public Times getOverlappingEvent(List<Times> events, IMObjectReference schedule) {
         Times result;
-        if (appointments.isEmpty()) {
+        if (events.isEmpty()) {
             result = null;
-        } else if (appointments.size() == 1) {
-            result = getOverlappingAppointment(appointments.get(0), schedule);
+        } else if (events.size() == 1) {
+            result = getOverlappingEvent(events.get(0), schedule);
         } else {
-            result = getOverlap(appointments, schedule);
+            result = getOverlap(events, schedule);
         }
         return result;
     }
@@ -217,38 +218,42 @@ public class AppointmentService extends AbstractScheduleService {
     }
 
     /**
-     * Returns the first appointment that overlaps the specified appointments.
+     * Returns the first event that overlaps the specified events.
      * <p/>
      * This implementation queries the database.
      *
-     * @param appointments the appointment times
-     * @param schedule     the schedule
-     * @return the first appointment, or {@code null} if none exists
+     * @param events   the event times
+     * @param schedule the schedule
+     * @return the first event, or {@code null} if none exists
      */
-    private Times getOverlap(List<Times> appointments, IMObjectReference schedule) {
+    private Times getOverlap(List<Times> events, IMObjectReference schedule) {
         Times result = null;
         List<Long> ids = new ArrayList<>();
-        for (Times times : appointments) {
+        for (Times times : events) {
             if (times.getId() != -1) {
                 ids.add(times.getId());
             }
         }
-        ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT);
+        String[] shortNames = {ScheduleArchetypes.APPOINTMENT, ScheduleArchetypes.CALENDAR_BLOCK};
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, false, false);
         query.getArchetypeConstraint().setAlias("act");
-        query.add(new NodeSelectConstraint("id"));
+        query.add(new ObjectRefSelectConstraint("act"));
         query.add(new NodeSelectConstraint("startTime"));
         query.add(new NodeSelectConstraint("endTime"));
         JoinConstraint participation = join("schedule");
         participation.add(eq("entity", schedule));
 
         // to encourage mysql to use the correct index
-        participation.add(new ParticipationConstraint(ActShortName, ScheduleArchetypes.APPOINTMENT));
+        OrConstraint participationActs = new OrConstraint();
+        participationActs.add(new ParticipationConstraint(ActShortName, ScheduleArchetypes.APPOINTMENT));
+        participationActs.add(new ParticipationConstraint(ActShortName, ScheduleArchetypes.CALENDAR_BLOCK));
+        participation.add(participationActs);
         query.add(participation);
         if (!ids.isEmpty()) {
             query.add(not(in("id", ids.toArray())));
         }
         OrConstraint or = new OrConstraint();
-        for (Times times : appointments) {
+        for (Times times : events) {
             or.add(and(lt("startTime", times.getEndTime()), gt("endTime", times.getStartTime())));
         }
         query.add(or);
@@ -257,7 +262,7 @@ public class AppointmentService extends AbstractScheduleService {
         ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(getService(), query);
         if (iterator.hasNext()) {
             ObjectSet set = iterator.next();
-            result = new Times(set.getLong("act.id"), set.getDate("act.startTime"), set.getDate("act.endTime"));
+            result = new Times(set.getReference("act"), set.getDate("act.startTime"), set.getDate("act.endTime"));
         }
         return result;
     }
@@ -278,7 +283,7 @@ public class AppointmentService extends AbstractScheduleService {
                 Date startTime2 = event.getDate(ScheduleEvent.ACT_START_TIME);
                 Date endTime2 = event.getDate(ScheduleEvent.ACT_END_TIME);
                 if (times.intersects(startTime2, endTime2)) {
-                    result = new Times(ref.getId(), startTime2, endTime2);
+                    result = new Times(ref, startTime2, endTime2);
                     break;
                 }
             }

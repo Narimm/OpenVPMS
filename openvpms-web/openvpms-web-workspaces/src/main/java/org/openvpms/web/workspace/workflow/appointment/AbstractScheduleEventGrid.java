@@ -187,7 +187,7 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
             column = new Schedule(match);
             columns.add(index + 1, column);
         }
-        column.add(event);
+        column.addEvent(event);
     }
 
 }

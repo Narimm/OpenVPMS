@@ -376,12 +376,12 @@ public class CalendarEventSeries {
                 Predicate<Date> predicate = PredicateUtils.andPredicate(max, condition.create());
                 while ((startTime = expression.getRepeatAfter(startTime, predicate)) != null) {
                     endTime = new DateTime(startTime).plus(duration).toDate();
-                    long id = -1;
+                    IMObjectReference reference = null;
                     if (iterator != null && iterator.hasNext()) {
                         Act act = iterator.next();
-                        id = act.getId();
+                        reference = act.getObjectReference();
                     }
-                    Times newEvent = new Times(id, startTime, endTime);
+                    Times newEvent = new Times(reference, startTime, endTime);
                     overlap = getOverlap(times, newEvent);
                     if (overlap != null) {
                         break;

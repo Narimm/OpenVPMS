@@ -107,7 +107,7 @@ class AppointmentFactory extends ScheduleEventFactory {
             target.set(ScheduleEvent.REMINDER_ERROR, source.getString(ScheduleEvent.REMINDER_ERROR));
             target.set(ScheduleEvent.ARRIVAL_TIME, source.getDate(ScheduleEvent.ARRIVAL_TIME));
         } else {
-            IMObjectReference typeRef = source.getNodeParticipantRef("blockType");
+            IMObjectReference typeRef = source.getNodeParticipantRef("type");
             String typeName = getName(typeRef);
             target.set(ScheduleEvent.ACT_NAME, source.getAct().getName());
             target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);

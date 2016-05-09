@@ -121,12 +121,12 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * <p/>
      * If the event begins prior to the slot, the remaining slots will be returned.
      *
-     * @param event the event
-     * @param slot  the starting slot
-     * @return the no. of slots that the event occupies
+     * @param event    the event
+     * @param schedule the schedule
+     * @param slot     the starting slot  @return the no. of slots that the event occupies
      */
     @Override
-    public int getSlots(PropertySet event, int slot) {
+    public int getSlots(PropertySet event, Schedule schedule, int slot) {
         SlotGroup group = slots.get(slot).getGroup();
         int result = 0;
         if (group != null) {
@@ -256,7 +256,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * @param event the event
      */
     private void addEvent(PropertySet event) {
-        schedule.add(event);
+        schedule.addEvent(event);
 
         Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
         Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);

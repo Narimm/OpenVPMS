@@ -107,13 +107,13 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * <p/>
      * If the event begins prior to the slot, the remaining slots will be returned.
      *
-     * @param event the event
-     * @param slot  the starting slot
-     * @return the no. of slots that the event occupies
+     * @param event    the event
+     * @param schedule the schedule
+     * @param slot     the starting slot  @return the no. of slots that the event occupies
      */
     @Override
-    public int getSlots(PropertySet event, int slot) {
-        return grid.getSlots(event, startSlot + slot);
+    public int getSlots(PropertySet event, Schedule schedule, int slot) {
+        return grid.getSlots(event, schedule, startSlot + slot);
     }
 
     /**

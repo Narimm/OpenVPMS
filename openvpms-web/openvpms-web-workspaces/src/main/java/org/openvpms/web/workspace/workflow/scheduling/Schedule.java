@@ -35,6 +35,14 @@ import java.util.List;
 
 /**
  * Event schedule.
+ * <p/>
+ * This supports non-blocking and block events, with the following restrictions:
+ * <ul>
+ *     <li>events must be ordered on ascending start time</li>
+ *     <li>non-blocking events may overlap blocking events</li>
+ *     <li>blocking events may not overlap other blocking events</li>
+ *     <li>non-blocking events may not overlap other non-blocking events</li>
+ * </ul>
  */
 public class Schedule {
 
@@ -69,9 +77,14 @@ public class Schedule {
     private boolean renderEven = true;
 
     /**
-     * The events.
+     * All events.
      */
     private final List<PropertySet> events = new ArrayList<>();
+
+    /**
+     * The non-blocking events.
+     */
+    private final List<PropertySet> nonBlockingEvents = new ArrayList<>();
 
     /**
      * The blocking events.
@@ -205,12 +218,13 @@ public class Schedule {
      *
      * @param event the event
      */
-    public void add(PropertySet event) {
+    public void addEvent(PropertySet event) {
         if (isBlockingEvent(event)) {
             blockingEvents.add(event);
         } else {
-            events.add(event);
+            nonBlockingEvents.add(event);
         }
+        events.add(event);
     }
 
     /**
@@ -240,13 +254,34 @@ public class Schedule {
      * @return the index, or {@code -1} if the event is not found
      */
     public int indexOf(IMObjectReference event) {
-        for (int i = 0; i < events.size(); ++i) {
-            PropertySet set = events.get(i);
-            if (ObjectUtils.equals(event, set.getReference(ScheduleEvent.ACT_REFERENCE))) {
-                return i;
+        return indexOf(event, events);
+    }
+
+    /**
+     * Returns the first event starting after that specified.
+     * <p/>
+     * This excludes blocking events.
+     *
+     * @param event     the event
+     * @param startTime the start time to compare against
+     * @return the first event, or {@code null} if none is found
+     */
+    public PropertySet getEventAfter(PropertySet event, Date startTime) {
+        PropertySet result = null;
+        int index = indexOf(event.getReference(ScheduleEvent.ACT_REFERENCE), events);
+        if (index != -1) {
+            while (index < events.size()) {
+                PropertySet next = events.get(index);
+                if (!isBlockingEvent(next)
+                    && DateRules.compareTo(startTime, next.getDate(ScheduleEvent.ACT_START_TIME)) < 0) {
+                    result = next;
+                    break;
+                } else {
+                    index++;
+                }
             }
         }
-        return -1;
+        return result;
     }
 
     /**
@@ -258,7 +293,7 @@ public class Schedule {
      * @return {@code true} if the schedule has an intersecting event
      */
     public boolean hasIntersectingEvent(PropertySet event) {
-        return Collections.binarySearch(events, event, intersectComparator) >= 0;
+        return Collections.binarySearch(nonBlockingEvents, event, intersectComparator) >= 0;
     }
 
     /**
@@ -302,7 +337,36 @@ public class Schedule {
     }
 
     /**
+     * Helper to determine if an event is a blocking event.
+     *
+     * @param event the event
+     * @return {@code true} if the event is a blocking event
+     */
+    public static boolean isBlockingEvent(PropertySet event) {
+        return TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE), ScheduleArchetypes.CALENDAR_BLOCK);
+    }
+
+    /**
+     * Returns the index of an event, given its reference.
+     *
+     * @param event the event reference
+     * @param list  the events to search
+     * @return the index, or {@code -1} if the event is not found
+     */
+    protected int indexOf(IMObjectReference event, List<PropertySet> list) {
+        for (int i = 0; i < list.size(); ++i) {
+            PropertySet set = list.get(i);
+            if (ObjectUtils.equals(event, set.getReference(ScheduleEvent.ACT_REFERENCE))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Returns an event.
+     * <p/>
+     * This returns non-blocking events in preference to blocking ones.
      *
      * @param time       the time to search for
      * @param comparator the comparator used to locate matches
@@ -313,9 +377,9 @@ public class Schedule {
         PropertySet set = new ObjectSet();
         set.set(ScheduleEvent.ACT_START_TIME, time);
         set.set(ScheduleEvent.ACT_END_TIME, time);
-        int index = Collections.binarySearch(events, set, comparator);
+        int index = Collections.binarySearch(nonBlockingEvents, set, comparator);
         if (index >= 0) {
-            result = events.get(index);
+            result = nonBlockingEvents.get(index);
         } else {
             index = Collections.binarySearch(blockingEvents, set, comparator);
             if (index >= 0) {
@@ -323,10 +387,6 @@ public class Schedule {
             }
         }
         return result;
-    }
-
-    public static boolean isBlockingEvent(PropertySet event) {
-        return TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE), ScheduleArchetypes.CALENDAR_BLOCK);
     }
 
     /**

@@ -19,10 +19,14 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentService;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -144,18 +148,24 @@ public class AppointmentEditDialog extends EditDialog {
             if (times != null) {
                 AppointmentService rules = ServiceHelper.getBean(AppointmentService.class);
                 Entity schedule = editor.getSchedule();
-                Times overlap = rules.getOverlappingAppointment(times, schedule.getObjectReference());
+                Times overlap = rules.getOverlappingEvent(times, schedule.getObjectReference());
                 if (overlap != null) {
                     result = true;
-                    if (!allowDoubleBooking(schedule)) {
-                        String title = Messages.get("workflow.scheduling.nodoubleschedule.title");
+                    String displayName = DescriptorHelper.getDisplayName(editor.getObject());
+                    IMObjectReference reference = overlap.getReference();
+                    String overlapDisplayName = (reference != null) ? DescriptorHelper.getDisplayName(
+                            reference.getArchetypeId().getShortName()) : null;
+                    if (!allowDoubleBooking()) {
+                        String title = Messages.format("workflow.scheduling.nodoubleschedule.title", displayName);
                         String message = Messages.format("workflow.scheduling.nodoubleschedule.message",
+                                                         overlapDisplayName,
                                                          DateFormatter.formatDate(overlap.getStartTime(), false),
                                                          DateFormatter.formatTime(overlap.getStartTime(), false));
                         ErrorDialog.show(title, message);
                     } else {
-                        String title = Messages.get("workflow.scheduling.doubleschedule.title");
+                        String title = Messages.format("workflow.scheduling.doubleschedule.title", displayName);
                         String message = Messages.format("workflow.scheduling.doubleschedule.message",
+                                                         displayName, overlapDisplayName,
                                                          DateFormatter.formatDate(overlap.getStartTime(), false),
                                                          DateFormatter.formatTime(overlap.getStartTime(), false));
                         final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
@@ -182,31 +192,34 @@ public class AppointmentEditDialog extends EditDialog {
     /**
      * Determines if double booking is allowed.
      *
-     * @param schedule the appointment schedule
      * @return {@code true} if double booking is allowed, otherwise {@code false}
      */
-    private boolean allowDoubleBooking(Entity schedule) {
-        IMObjectBean bean = new IMObjectBean(schedule);
-        return bean.getBoolean("allowDoubleBooking");
+    private boolean allowDoubleBooking() {
+        if (TypeHelper.isA(getEvent(), ScheduleArchetypes.APPOINTMENT)) {
+            CalendarEventEditor editor = getEditor();
+            IMObjectBean bean = new IMObjectBean(editor.getSchedule());
+            return bean.getBoolean("allowDoubleBooking");
+        }
+        return false;
     }
 
     /**
-     * Determines if the appointment can be saved without checking for overlaps.
+     * Determines if the event can be saved without checking for overlaps.
      *
      * @return {@code true} if the appointment can be saved
      */
     private boolean noOverlapCheckRequired() {
-        Act appointment = getAppointment();
-        return !alwaysCheckOverlap && !appointment.isNew() && !timeSeriesModified();
+        Act event = getEvent();
+        return !alwaysCheckOverlap && !event.isNew() && !timeSeriesModified();
     }
 
     /**
-     * Caches the appointment start and end times.
+     * Caches the event start and end times.
      */
     private void getState() {
-        Act appointment = getAppointment();
-        startTime = appointment.getActivityStartTime();
-        endTime = appointment.getActivityEndTime();
+        Act event = getEvent();
+        startTime = event.getActivityStartTime();
+        endTime = event.getActivityEndTime();
         CalendarEventSeries series = getEditor().getSeries();
         expression = series.getExpression();
         condition = series.getCondition();
@@ -220,7 +233,7 @@ public class AppointmentEditDialog extends EditDialog {
      */
     private boolean timeSeriesModified() {
         CalendarEventSeries series = getEditor().getSeries();
-        Act act = getAppointment();
+        Act act = getEvent();
         return DateRules.compareTo(startTime, act.getActivityStartTime()) != 0
                || DateRules.compareTo(endTime, act.getActivityEndTime()) != 0
                || !ObjectUtils.equals(expression, series.getExpression())
@@ -228,11 +241,11 @@ public class AppointmentEditDialog extends EditDialog {
     }
 
     /**
-     * Returns the appointment.
+     * Returns the event.
      *
-     * @return the appointment
+     * @return the event
      */
-    private Act getAppointment() {
+    private Act getEvent() {
         return getEditor().getObject();
     }
 

@@ -54,13 +54,13 @@ public class TaskGrid extends AbstractScheduleEventGrid {
     public TaskGrid(Entity scheduleView, Date date, Map<Entity, List<PropertySet>> tasks) {
         super(scheduleView, date);
 
-        List<Schedule> schedules = new ArrayList<Schedule>();
+        List<Schedule> schedules = new ArrayList<>();
         for (Map.Entry<Entity, List<PropertySet>> entry : tasks.entrySet()) {
             Entity workList = entry.getKey();
             List<PropertySet> sets = entry.getValue();
             TaskSchedule schedule = new TaskSchedule(workList);
             for (PropertySet set : sets) {
-                schedule.add(set);
+                schedule.addEvent(set);
             }
             schedules.add(schedule);
 

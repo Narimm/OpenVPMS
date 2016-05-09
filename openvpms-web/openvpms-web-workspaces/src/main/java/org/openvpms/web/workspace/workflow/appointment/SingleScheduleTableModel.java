@@ -34,7 +34,6 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
@@ -147,11 +146,15 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         } else {
             PropertySet set = getEvent(column, row);
             int rowSpan = 1;
+            Schedule schedule = getSchedule(column, row);
             if (set != null) {
-                result = getValue(set, c);
-                rowSpan = grid.getSlots(set, row);
+                if (Schedule.isBlockingEvent(set)) {
+                    result = getBlock(set, c);
+                } else {
+                    result = getAppointment(set, c);
+                }
+                rowSpan = grid.getSlots(set, schedule, row);
             } else {
-                Schedule schedule = getSchedule(column, row);
                 if (schedule != null) {
                     if (grid.getAvailability(schedule, row) == UNAVAILABLE) {
                         rowSpan = grid.getUnavailableSlots(schedule, row);
@@ -173,24 +176,16 @@ class SingleScheduleTableModel extends AppointmentTableModel {
     }
 
     /**
-     * Returns the value found at the given coordinate within the table.
+     * Returns the value found at the given coordinate within the table, for an appointment.
      *
      * @param set    the object
      * @param column the column
      * @return the value at the given coordinate.
      */
-    protected Object getValue(PropertySet set, TableColumn column) {
+    protected Object getAppointment(PropertySet set, TableColumn column) {
         Object result = null;
         int index = column.getModelIndex();
         switch (index) {
-            case START_TIME_INDEX:
-                Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
-                Label label = LabelFactory.create();
-                if (date != null) {
-                    label.setText(DateFormatter.formatTime(date, false));
-                }
-                result = label;
-                break;
             case STATUS_INDEX:
                 result = getStatus(set);
                 break;
@@ -212,6 +207,27 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 break;
             case PATIENT_INDEX:
                 result = getViewer(set, ScheduleEvent.PATIENT_REFERENCE, ScheduleEvent.PATIENT_NAME, true);
+                break;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the value found at the given coordinate within the table, for a calendar block.
+     *
+     * @param set    the object
+     * @param column the column
+     * @return the value at the given coordinate.
+     */
+    protected Object getBlock(PropertySet set, TableColumn column) {
+        Object result = null;
+        int index = column.getModelIndex();
+        switch (index) {
+            case DESCRIPTION_INDEX:
+                result = set.getString(ScheduleEvent.ACT_DESCRIPTION);
+                break;
+            case APPOINTMENT_INDEX:
+                result = getViewer(set, ScheduleEvent.SCHEDULE_TYPE_REFERENCE, ScheduleEvent.SCHEDULE_TYPE_NAME, false);
                 break;
         }
         return result;
@@ -295,6 +311,5 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         return (descriptor != null) ? descriptor.getDisplayName() : null;
     }
-
 
 }

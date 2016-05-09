@@ -192,9 +192,8 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
                 text = event.getString(ScheduleEvent.SCHEDULE_TYPE_NAME);
             }
         }
-        Label label = LabelFactory.create();
-        label.setText(text);
-        return label;
+        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
+        return createLabelWithNotes(text, notes);
     }
 
 }
