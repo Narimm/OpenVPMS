@@ -205,11 +205,12 @@ public final class QueryFactory {
      * <ul>
      * <li>(String[] shortNames, Context context)</li>
      * <li>(String[] shortNames)</li>
+     * <li>(Context)</li>
      * <li>default constructor</li>
      * </ul>
      *
      * @param handler    the {@link Query} implementation
-     * @param shortNames the archerype short names to query on
+     * @param shortNames the archetype short names to query on
      * @param context    the context
      * @param type       the type that the query returns
      * @return a new query, or {@code null} if no appropriate constructor can be found or construction fails
@@ -227,7 +228,12 @@ public final class QueryFactory {
                     Object[] args = new Object[]{shortNames};
                     result = handler.create(args);
                 } catch (NoSuchMethodException nested) {
-                    result = handler.create();
+                    try {
+                        Object[] args = new Object[]{context};
+                        result = handler.create(args);
+                    } catch (NoSuchMethodException nested2) {
+                        result = handler.create();
+                    }
                 }
             }
             if (!type.isAssignableFrom(result.getType())) {
