@@ -399,6 +399,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         boolean checkoutConsultEnabled = false;
         boolean transferEnabled = false;
         boolean smsEnabled = false;
+        boolean printEnabled = false;
         if (enable) {
             Act act = getObject();
             AppointmentActions actions = getActions();
@@ -411,8 +412,10 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             }
             transferEnabled = actions.canTransfer(act);
             smsEnabled = actions.canSMS(act);
+            printEnabled = AppointmentActions.isAppointment(act);
         }
         buttons.setEnabled(NEW_ID, canCreateAppointment());
+        enablePrintPreview(buttons, printEnabled);
         buttons.setEnabled(CHECKIN_ID, checkInEnabled);
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
@@ -501,9 +504,10 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         if (browser.isAppointmentsSelected()) {
             browser.clearMarked();
             PropertySet selected = browser.getSelected();
-            Act appointment = browser.getAct(selected);
-            if (appointment != null) {
-                if (AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+            Act event = browser.getAct(selected);
+            if (event != null) {
+                if (TypeHelper.isA(event, ScheduleArchetypes.CALENDAR_BLOCK)
+                    || AppointmentStatus.PENDING.equals(event.getStatus())) {
                     browser.setMarked(selected, true);
                 } else {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
@@ -541,7 +545,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                                            Messages.get("workflow.scheduling.appointment.paste.noexist"));
                     onRefresh(null);        // force redraw
                     browser.clearMarked();
-                } else if (browser.isCut() && !AppointmentStatus.PENDING.equals(act.getStatus())) {
+                } else if (browser.isCut() && TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT) &&
+                           !AppointmentStatus.PENDING.equals(act.getStatus())) {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                            Messages.get("workflow.scheduling.appointment.paste.pending"));
                     onRefresh(act); // force redraw
@@ -692,11 +697,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     /**
      * Copies an act and pastes it to the specified schedule and start time.
      *
-     * @param act the act
-     * @param schedule    the new schedule
-     * @param startTime   the new start time
-     * @param series      the appointment series. May be {@code null}
-     * @param index       the index of the appointment in the series
+     * @param act       the act
+     * @param schedule  the new schedule
+     * @param startTime the new start time
+     * @param series    the appointment series. May be {@code null}
+     * @param index     the index of the appointment in the series
      */
     private void copy(Act act, Entity schedule, Date startTime, CalendarEventSeriesState series, int index) {
         int duration = getDuration(act.getActivityStartTime(), act.getActivityEndTime());
@@ -898,10 +903,13 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                     onOK();
                 }
             };
-            single = ButtonFactory.create("workflow.scheduling.appointment.series.single", group, listener);
+            single = ButtonFactory.create(null, group, listener);
+            single.setText(Messages.format("workflow.scheduling.appointment.series.single", series.getDisplayName()));
             single.setSelected(true);
             if (series.canEditFuture()) {
-                future = ButtonFactory.create("workflow.scheduling.appointment.series.future", group, listener);
+                future = ButtonFactory.create(null, group, listener);
+                future.setText(Messages.format("workflow.scheduling.appointment.series.future",
+                                               series.getDisplayName()));
             }
             if (series.canEditSeries()) {
                 all = ButtonFactory.create("workflow.scheduling.appointment.series.all", group, listener);
@@ -1011,8 +1019,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param help   the help context
          */
         public EditSeriesDialog(CalendarEventSeriesState series, HelpContext help) {
-            super(Messages.get("workflow.scheduling.appointment.editseries.title"),
-                  Messages.get("workflow.scheduling.appointment.editseries.message"), series, help);
+            super(Messages.format("workflow.scheduling.appointment.editseries.title", series.getDisplayName()),
+                  Messages.format("workflow.scheduling.appointment.editseries.message", series.getDisplayName()),
+                  series, help);
         }
     }
 
@@ -1025,8 +1034,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param help   the help context
          */
         public DeleteSeriesDialog(CalendarEventSeriesState series, HelpContext help) {
-            super(Messages.get("workflow.scheduling.appointment.deleteseries.title"),
-                  Messages.get("workflow.scheduling.appointment.deleteseries.message"), series, help);
+            super(Messages.format("workflow.scheduling.appointment.deleteseries.title", series.getDisplayName()),
+                  Messages.format("workflow.scheduling.appointment.deleteseries.message", series.getDisplayName()),
+                  series, help);
         }
     }
 
@@ -1039,8 +1049,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param help   the help context
          */
         public CopySeriesDialog(CalendarEventSeriesState series, HelpContext help) {
-            super(Messages.get("workflow.scheduling.appointment.copyseries.title"),
-                  Messages.get("workflow.scheduling.appointment.copyseries.message"), series, help);
+            super(Messages.format("workflow.scheduling.appointment.copyseries.title", series.getDisplayName()),
+                  Messages.format("workflow.scheduling.appointment.copyseries.message", series.getDisplayName()),
+                  series, help);
         }
     }
 
@@ -1053,8 +1064,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * @param help   the help context
          */
         public MoveSeriesDialog(CalendarEventSeriesState series, HelpContext help) {
-            super(Messages.get("workflow.scheduling.appointment.moveseries.title"),
-                  Messages.get("workflow.scheduling.appointment.moveseries.message"), series, help);
+            super(Messages.format("workflow.scheduling.appointment.moveseries.title", series.getDisplayName()),
+                  Messages.format("workflow.scheduling.appointment.moveseries.message", series.getDisplayName()),
+                  series, help);
         }
     }
 

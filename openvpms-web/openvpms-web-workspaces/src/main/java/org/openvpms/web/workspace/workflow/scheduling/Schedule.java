@@ -38,10 +38,10 @@ import java.util.List;
  * <p/>
  * This supports non-blocking and block events, with the following restrictions:
  * <ul>
- *     <li>events must be ordered on ascending start time</li>
- *     <li>non-blocking events may overlap blocking events</li>
- *     <li>blocking events may not overlap other blocking events</li>
- *     <li>non-blocking events may not overlap other non-blocking events</li>
+ * <li>events must be ordered on ascending start time</li>
+ * <li>non-blocking events may overlap blocking events</li>
+ * <li>blocking events may not overlap other blocking events</li>
+ * <li>non-blocking events may not overlap other non-blocking events</li>
  * </ul>
  */
 public class Schedule {
@@ -298,14 +298,28 @@ public class Schedule {
 
     /**
      * Returns the event starting at the specified time.
+     * <p/>
+     * This returns non-blocking events in preference to blocking ones.
      *
      * @param time     the time
      * @param slotSize the slot size
      * @return the corresponding event, or {@code null} if none is found
      */
     public PropertySet getEvent(Date time, int slotSize) {
+        return getEvent(time, slotSize, true);
+    }
+
+    /**
+     * Returns the event starting at the specified time.
+     *
+     * @param time                  the time
+     * @param slotSize              the slot size
+     * @param includeBlockingEvents if {@code true}, look for blocking events if there are no non-blocking events
+     * @return the corresponding event, or {@code null} if none is found
+     */
+    public PropertySet getEvent(Date time, int slotSize, boolean includeBlockingEvents) {
         StartTimeComparator comparator = new StartTimeComparator(slotSize);
-        return getEvent(time, comparator);
+        return getEvent(time, comparator, includeBlockingEvents);
     }
 
     /**
@@ -315,7 +329,18 @@ public class Schedule {
      * @return the corresponding event, or {@code null} if none is found
      */
     public PropertySet getIntersectingEvent(Date time) {
-        return getEvent(time, intersectComparator);
+        return getIntersectingEvent(time, true);
+    }
+
+    /**
+     * Returns the event intersecting the specified time.
+     *
+     * @param time                  the time
+     * @param includeBlockingEvents if {@code true}, look for blocking events if there are no non-blocking events
+     * @return the corresponding event, or {@code null} if none is found
+     */
+    public PropertySet getIntersectingEvent(Date time, boolean includeBlockingEvents) {
+        return getEvent(time, intersectComparator, includeBlockingEvents);
     }
 
     /**
@@ -368,11 +393,12 @@ public class Schedule {
      * <p/>
      * This returns non-blocking events in preference to blocking ones.
      *
-     * @param time       the time to search for
-     * @param comparator the comparator used to locate matches
+     * @param time                  the time to search for
+     * @param comparator            the comparator used to locate matches
+     * @param includeBlockingEvents if {@code true}, return any blocking event if there are no non-blocking events
      * @return the event
      */
-    protected PropertySet getEvent(Date time, Comparator<PropertySet> comparator) {
+    protected PropertySet getEvent(Date time, Comparator<PropertySet> comparator, boolean includeBlockingEvents) {
         PropertySet result = null;
         PropertySet set = new ObjectSet();
         set.set(ScheduleEvent.ACT_START_TIME, time);
@@ -380,7 +406,7 @@ public class Schedule {
         int index = Collections.binarySearch(nonBlockingEvents, set, comparator);
         if (index >= 0) {
             result = nonBlockingEvents.get(index);
-        } else {
+        } else if (includeBlockingEvents) {
             index = Collections.binarySearch(blockingEvents, set, comparator);
             if (index >= 0) {
                 result = blockingEvents.get(index);

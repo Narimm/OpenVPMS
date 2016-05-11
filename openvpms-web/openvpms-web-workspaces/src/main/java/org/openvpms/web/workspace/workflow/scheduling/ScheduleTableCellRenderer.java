@@ -124,7 +124,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         if (component != null) {
             if (isCut(column, row)) {
                 cutCell(table, component);
-            } else if (canHighlightCell(column, row)) {
+            } else if (canHighlightCell(column, row, value)) {
                 // highlight the selected cell.
                 highlightCell(component);
             }
@@ -316,9 +316,10 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      *
      * @param column the column
      * @param row    the row
+     * @param value  the value at the cell
      * @return {@code true} if the cell can be highlighted
      */
-    protected boolean canHighlightCell(int column, int row) {
+    protected boolean canHighlightCell(int column, int row, Object value) {
         boolean highlight = false;
         boolean single = model.isSingleScheduleView();
         Cell cell = model.getSelected();

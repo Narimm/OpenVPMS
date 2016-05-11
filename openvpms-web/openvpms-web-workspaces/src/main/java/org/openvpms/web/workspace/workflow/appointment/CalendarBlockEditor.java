@@ -19,8 +19,8 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -57,8 +57,19 @@ public class CalendarBlockEditor extends CalendarEventEditor {
      */
     public CalendarBlockEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, editSeries, context);
+        addStartEndTimeListeners();
     }
 
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        boolean editSeries = getSeriesEditor() != null;
+        return new CalendarBlockEditor(reload(getObject()), getParent(), editSeries, getLayoutContext());
+    }
 
     /**
      * Creates a new event series.
@@ -76,14 +87,12 @@ public class CalendarBlockEditor extends CalendarEventEditor {
     @Override
     protected void calculateEndTime() {
         Date start = getStartTime();
-        Entity schedule = getSchedule();
-        if (start != null && schedule != null) {
-            int minutes = getRules().getSlotSize(schedule);
-            Date end = DateRules.getDate(start, minutes, DateUnits.MINUTES);
+        int slotSize = getSlotSize();
+        if (start != null && slotSize != 0) {
+            Date end = DateRules.getDate(start, slotSize, DateUnits.MINUTES);
             setEndTime(end);
         }
     }
-
 
     /**
      * Creates the layout strategy.

@@ -30,6 +30,7 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.Times;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -119,7 +120,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
     /**
      * Constructs an {@link CalendarEventSeriesEditor}.
      *
-     * @param series the appointment series
+     * @param series the event series
      */
     public CalendarEventSeriesEditor(CalendarEventSeries series) {
         this.series = series;
@@ -355,14 +356,16 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
         CalendarEventSeries.Overlap overlap = series.getFirstOverlap();
         if (overlap != null) {
             result = false;
-            Times appointment1 = overlap.getEvent1();
-            Times appointment2 = overlap.getEvent2();
-            String startTime1 = formatDateTime(appointment1.getStartTime());
-            String endTime1 = formatDateTimeAbbrev(appointment1.getEndTime(), appointment1.getStartTime());
-            String startTime2 = formatDateTime(appointment2.getStartTime());
-            String endTime2 = formatDateTimeAbbrev(appointment2.getEndTime(), appointment2.getStartTime());
-            validator.add(this, new ValidatorError(Messages.format("workflow.scheduling.appointment.overlap",
-                                                                   startTime1, endTime1, startTime2, endTime2)));
+            Times event1 = overlap.getEvent1();
+            Times event2 = overlap.getEvent2();
+            String displayName = DescriptorHelper.getDisplayName(series.getEvent());
+            String startTime1 = formatDateTime(event1.getStartTime());
+            String endTime1 = formatDateTimeAbbrev(event1.getEndTime(), event1.getStartTime());
+            String startTime2 = formatDateTime(event2.getStartTime());
+            String endTime2 = formatDateTimeAbbrev(event2.getEndTime(), event2.getStartTime());
+            String message = Messages.format("workflow.scheduling.appointment.overlap",
+                                             displayName, startTime1, endTime1, startTime2, endTime2);
+            validator.add(this, new ValidatorError(message));
         } else {
             result = true;
         }

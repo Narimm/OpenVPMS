@@ -102,6 +102,14 @@
     <data archetype="lookup.customerType" code="LARGE_ANIMAL"/>
     <data archetype="lookup.customerType" code="STUD"/>
     <data archetype="lookup.customerType" code="FARM"/>
+    <data id="Normal" archetype="lookup.customerType" code="NORMAL"/>
+    <data id="Valued" archetype="lookup.customerType" code="VALUED"/>
+    <data id="Bad" archetype="lookup.customerType" code="BAD"/>
+    <data id="Pensioner" archetype="lookup.customerType" code="PENSIONER"/>
+    <data id="Monthly" archetype="lookup.customerType" code="MONTHLY"/>
+    <data id="Cash Only" archetype="lookup.customerType" code="CASH_ONLY"/>
+    <data id="PUPPY_SCHOOL" archetype="lookup.customerType" code="PUPPY_SCHOOL"/>
+    <data id="HEALTH_CLUB" archetype="lookup.customerType" code="HEALTH_CLUB"/>
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" taxScheme="GST" taxCategory="S"/>
     <data archetype="lookup.productIncomeType" code="PROFESSIONAL"/>
     <data archetype="lookup.productIncomeType" code="MEDICATION"/>
@@ -111,12 +119,6 @@
     <data archetype="lookup.supplierType" code="MANUFACTURER"/>
     <data archetype="lookup.supplierType" code="RETAIL"/>
     <data archetype="lookup.supplierType" code="OTHER"/>
-    <data id="Normal" archetype="lookup.customerType" code="NORMAL"/>
-    <data id="Valued" archetype="lookup.customerType" code="VALUED"/>
-    <data id="Bad" archetype="lookup.customerType" code="BAD"/>
-    <data id="Pensioner" archetype="lookup.customerType" code="PENSIONER"/>
-    <data id="Monthly" archetype="lookup.customerType" code="MONTHLY"/>
-    <data id="Cash Only" archetype="lookup.customerType" code="CASH_ONLY"/>
     <data archetype="lookup.reminderGroup" code="VACCINATIONS"/>
     <data archetype="lookup.reminderGroup" code="DESEXING"/>
     <data archetype="lookup.reminderGroup" code="WORMING"/>

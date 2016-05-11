@@ -82,10 +82,22 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      */
     @Override
     public PropertySet getEvent(Schedule schedule, int slot) {
+        return getEvent(schedule, slot, true);
+    }
+
+    /**
+     * Returns the event for the specified schedule and slot.
+     *
+     * @param schedule              the schedule
+     * @param slot                  the slot
+     * @param includeBlockingEvents if {@code true}, look for blocking events if there are no non-blocking events
+     * @return the corresponding event, or {@code null} if none is found
+     */
+    public PropertySet getEvent(Schedule schedule, int slot, boolean includeBlockingEvents) {
         Date time = getStartTime(schedule, slot);
-        PropertySet result = schedule.getEvent(time, 24 * 60);
+        PropertySet result = schedule.getEvent(time, 24 * 60, includeBlockingEvents);
         if (result == null) {
-            result = schedule.getIntersectingEvent(time);
+            result = schedule.getIntersectingEvent(time, includeBlockingEvents);
         }
         return result;
     }
@@ -112,10 +124,8 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      */
     @Override
     public Availability getAvailability(Schedule schedule, int slot) {
-        if (getEvent(schedule, slot) != null) {
-            return Availability.BUSY;
-        }
-        return Availability.FREE;
+        PropertySet event = getEvent(schedule, slot, false);
+        return (event != null) ? Availability.BUSY : Availability.FREE;
     }
 
     /**

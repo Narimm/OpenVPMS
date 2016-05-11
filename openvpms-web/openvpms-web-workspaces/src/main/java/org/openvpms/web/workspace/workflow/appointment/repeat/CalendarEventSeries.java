@@ -152,6 +152,15 @@ public class CalendarEventSeries {
     }
 
     /**
+     * Returns the event.
+     *
+     * @return the event
+     */
+    public Act getEvent() {
+        return event;
+    }
+
+    /**
      * Invoked to notify this of any event changes.
      */
     public void refresh() {
@@ -330,7 +339,6 @@ public class CalendarEventSeries {
      * @param state the state
      */
     protected void populate(ActBean bean, State state) {
-        bean.setNodeParticipant("schedule", state.getSchedule());
     }
 
     /**
@@ -450,6 +458,7 @@ public class CalendarEventSeries {
         act.setActivityEndTime(times.getEndTime());
 
         ActBean bean = new ActBean(act, service);
+        bean.setNodeParticipant("schedule", current.getSchedule());
         if (!updateTimesOnly) {
             populate(bean, current);
         }

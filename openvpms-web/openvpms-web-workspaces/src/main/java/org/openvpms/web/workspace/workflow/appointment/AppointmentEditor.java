@@ -288,7 +288,6 @@ public class AppointmentEditor extends CalendarEventEditor {
      */
     protected void onScheduleChanged(Entity schedule) {
         super.onScheduleChanged(schedule);
-        initSchedule(schedule);
         updateSendReminder(sendReminder.isSelected());
     }
 
@@ -298,7 +297,8 @@ public class AppointmentEditor extends CalendarEventEditor {
      *
      * @param schedule the schedule. May be {@code null}
      */
-    private void initSchedule(Entity schedule) {
+    @Override
+    protected void initSchedule(Entity schedule) {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
         scheduleReminders = schedule != null && rules.isScheduleRemindersEnabled(schedule);

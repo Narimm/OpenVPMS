@@ -370,10 +370,19 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
      *
      * @param schedule the schedule. May be {@code null}
      */
-    private void initSchedule(Entity schedule) {
+    protected void initSchedule(Entity schedule) {
         if (schedule != null) {
             slotSize = rules.getSlotSize(schedule);
         }
+    }
+
+    /**
+     * Returns the slot size.
+     *
+     * @return the slot size, in minutes
+     */
+    protected int getSlotSize() {
+        return slotSize;
     }
 
     /**

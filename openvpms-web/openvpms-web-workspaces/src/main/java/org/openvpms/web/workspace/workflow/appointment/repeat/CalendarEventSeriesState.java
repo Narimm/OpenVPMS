@@ -17,11 +17,14 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
@@ -78,6 +81,11 @@ public class CalendarEventSeriesState {
     private final List<ObjectSet> items;
 
     /**
+     * The event display name.
+     */
+    private final String displayName;
+
+    /**
      * Constructs an {@link CalendarEventSeriesState}.
      *
      * @param event   the event
@@ -116,6 +124,16 @@ public class CalendarEventSeriesState {
             first = null;
             expression = null;
         }
+        displayName = DescriptorHelper.getDisplayName(event);
+    }
+
+    /**
+     * Returns the event display name.
+     *
+     * @return the event display name
+     */
+    public String getDisplayName() {
+        return displayName;
     }
 
     /**
@@ -352,10 +370,12 @@ public class CalendarEventSeriesState {
      */
     private List<String> getNonPendingStatuses(int index) {
         List<String> result = new ArrayList<>();
-        for (int i = index + 1; i < items.size(); ++i) {
-            String status = items.get(i).getString("act.status");
-            if (!WorkflowStatus.PENDING.equals(status) && !result.contains(status)) {
-                result.add(status);
+        if (TypeHelper.isA(event, ScheduleArchetypes.APPOINTMENT)) {
+            for (int i = index + 1; i < items.size(); ++i) {
+                String status = items.get(i).getString("act.status");
+                if (!WorkflowStatus.PENDING.equals(status) && !result.contains(status)) {
+                    result.add(status);
+                }
             }
         }
         return result;
