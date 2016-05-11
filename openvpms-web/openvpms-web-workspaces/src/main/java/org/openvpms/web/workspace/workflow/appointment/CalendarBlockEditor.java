@@ -23,6 +23,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarBlockSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
 
 import java.util.Date;
 
@@ -54,6 +57,17 @@ public class CalendarBlockEditor extends CalendarEventEditor {
      */
     public CalendarBlockEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, editSeries, context);
+    }
+
+
+    /**
+     * Creates a new event series.
+     *
+     * @return a new event series
+     */
+    @Override
+    protected CalendarEventSeries createSeries() {
+        return new CalendarBlockSeries(getObject(), ServiceHelper.getArchetypeService());
     }
 
     /**

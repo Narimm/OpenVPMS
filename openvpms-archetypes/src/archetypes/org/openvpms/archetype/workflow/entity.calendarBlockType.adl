@@ -22,8 +22,11 @@
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="colour" path="/details/colour" type="java.lang.String" maxLength="10"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="allowAppointments" path="/classifications" parentChild="false"
-              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.customerType"/>
+        <node name="customerAccountTypes" displayName="Reserve for Account Types" path="/classifications"
+              parentChild="false" type="java.util.HashSet" baseName="Classification" minCardinality="0"
+              maxCardinality="*" filter="lookup.customerAccountType"/>
+        <node name="customerTypes" displayName="Reserve for Customer Types" path="/classifications"
+              parentChild="false" type="java.util.HashSet" baseName="Classification" minCardinality="0"
+              maxCardinality="*" filter="lookup.customerType"/>
     </archetype>
 </archetypes>

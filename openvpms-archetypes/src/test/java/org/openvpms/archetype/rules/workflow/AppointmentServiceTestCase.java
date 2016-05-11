@@ -384,7 +384,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      * Tests the behaviour of {@link AppointmentService#getOverlappingEvent(Act)} method.
      */
     @Test
-    public void testGetOverlappingAppointment() {
+    public void testGetOverlappingEvent() {
         service = createScheduleService(1);
         Date start = getDatetime("2015-05-14 09:00:00");
         Date end = getDatetime("2015-05-14 09:15:00");
@@ -434,7 +434,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      * Tests the {@link AppointmentService#getOverlappingEvent(List, Entity)} method.
      */
     @Test
-    public void testGetOverlappingAppointmentTimes() {
+    public void getOverlappingEventTimes() {
         service = createScheduleService(1);
         Date start1 = getDatetime("2015-05-14 09:00:00");
         Date end1 = getDatetime("2015-05-14 09:15:00");

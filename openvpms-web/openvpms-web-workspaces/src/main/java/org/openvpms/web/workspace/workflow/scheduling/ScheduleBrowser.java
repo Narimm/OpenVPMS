@@ -616,7 +616,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (reselect && state != null) {
             // attempt to restore the selection
             model.setState(state);
-            if (model.getSelected() != null) {
+            if (model.getSelected() == null) {
                 setSelected(null);
             }
         }

@@ -195,6 +195,27 @@ public class AppointmentService extends AbstractScheduleService {
     }
 
     /**
+     * Returns events that overlap those supplied.
+     *
+     * @param events   the events to check
+     * @param schedule the schedule
+     * @param limit    the maximum no. of events to return
+     * @return the overlapping events, or {@code null} if no events overlap
+     */
+    public OverlappingEvents getOverlappingEvents(List<Times> events, Entity schedule, int limit) {
+        List<Times> result = new ArrayList<>();
+        ObjectSetQueryIterator iterator = createOverlappingEventIterator(events, schedule.getObjectReference(), 100);
+        while (iterator.hasNext()) {
+            ObjectSet set = iterator.next();
+            result.add(createTimes(set));
+            if (limit > 0 && result.size() == limit) {
+                break;
+            }
+        }
+        return !result.isEmpty() ? new OverlappingEvents(schedule, result, getService()) : null;
+    }
+
+    /**
      * Invoked by a BeanFactory on destruction of a singleton.
      *
      * @throws Exception in case of shutdown errors.
@@ -228,12 +249,25 @@ public class AppointmentService extends AbstractScheduleService {
      */
     private Times getOverlap(List<Times> events, IMObjectReference schedule) {
         Times result = null;
-        List<Long> ids = new ArrayList<>();
-        for (Times times : events) {
-            if (times.getId() != -1) {
-                ids.add(times.getId());
-            }
+        ObjectSetQueryIterator iterator = createOverlappingEventIterator(events, schedule, 1);
+        if (iterator.hasNext()) {
+            ObjectSet set = iterator.next();
+            result = createTimes(set);
         }
+        return result;
+    }
+
+    /**
+     * Creates an iterator that returns events that overlap those supplied.
+     *
+     * @param events     the events
+     * @param schedule   the schedule
+     * @param maxResults the maximum no. of results to return
+     * @return the iterator
+     */
+    protected ObjectSetQueryIterator createOverlappingEventIterator(List<Times> events, IMObjectReference schedule,
+                                                                    int maxResults) {
+        List<Long> ids = getIds(events);
         String[] shortNames = {ScheduleArchetypes.APPOINTMENT, ScheduleArchetypes.CALENDAR_BLOCK};
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, false);
         query.getArchetypeConstraint().setAlias("act");
@@ -258,13 +292,25 @@ public class AppointmentService extends AbstractScheduleService {
         }
         query.add(or);
         query.add(sort("startTime"));
-        query.setMaxResults(1);
-        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(getService(), query);
-        if (iterator.hasNext()) {
-            ObjectSet set = iterator.next();
-            result = new Times(set.getReference("act"), set.getDate("act.startTime"), set.getDate("act.endTime"));
+        query.setMaxResults(maxResults);
+        IArchetypeService service = getService();
+        return new ObjectSetQueryIterator(service, query);
+    }
+
+    /**
+     * Returns the event identifiers.
+     *
+     * @param events the events
+     * @return the event identifiers
+     */
+    private List<Long> getIds(List<Times> events) {
+        List<Long> ids = new ArrayList<>();
+        for (Times times : events) {
+            if (times.getId() != -1) {
+                ids.add(times.getId());
+            }
         }
-        return result;
+        return ids;
     }
 
     /**
@@ -289,6 +335,16 @@ public class AppointmentService extends AbstractScheduleService {
             }
         }
         return result;
+    }
+
+    /**
+     * Creates a {@link Times} from an object set.
+     *
+     * @param set the set
+     * @return the new times
+     */
+    private Times createTimes(ObjectSet set) {
+        return new Times(set.getReference("act.reference"), set.getDate("act.startTime"), set.getDate("act.endTime"));
     }
 
     /**

@@ -47,7 +47,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.contact.ContactHelper;
-import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -156,8 +155,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     protected AppointmentCRUDWindow(AppointmentBrowser browser, AppointmentActions actions, Context context,
                                     HelpContext help) {
-        super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")),
-              actions, context, help);
+        super(Archetypes.create(ScheduleArchetypes.APPOINTMENT, Act.class,
+                                Messages.get("workflow.scheduling.createtype")), actions, context, help);
         this.browser = browser;
         browser.setListener(new TabbedBrowserListener() {
             @Override
@@ -185,7 +184,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     protected void delete(final Act object) {
-        final CalendarEventSeriesState state = new CalendarEventSeriesState(object, ServiceHelper.getArchetypeService());
+        final CalendarEventSeriesState state
+                = new CalendarEventSeriesState(object, ServiceHelper.getArchetypeService());
         if (state.hasSeries() && state.canEditFuture()) {
             final DeleteSeriesDialog dialog = new DeleteSeriesDialog(state, getHelpContext().subtopic("deleteseries"));
             dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -289,12 +289,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @return the edit dialog
      */
     @Override
-    protected AppointmentEditDialog edit(IMObjectEditor editor, List<Selection> path) {
+    protected CalendarEventEditDialog edit(IMObjectEditor editor, List<Selection> path) {
         Date startTime = browser.getSelectedTime();
         if (startTime != null && editor.getObject().isNew() && editor instanceof CalendarEventEditor) {
             ((CalendarEventEditor) editor).setStartTime(startTime);
         }
-        return (AppointmentEditDialog) super.edit(editor, path);
+        return (CalendarEventEditDialog) super.edit(editor, path);
     }
 
     /**
@@ -432,16 +432,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         // create a local context - don't want to pick up the current clinician
         Context local = new LocalClinicianContext(getContext());
         return new DefaultLayoutContext(true, local, help);
-    }
-
-    /**
-     * Creates a new edit dialog.
-     *
-     * @param editor the editor
-     */
-    @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new AppointmentEditDialog((CalendarEventEditor) editor, getContext());
     }
 
     /**
@@ -745,9 +735,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         localContext.setClinician(null);
         DefaultLayoutContext context = new DefaultLayoutContext(localContext, edit);
         CalendarEventEditor editor = createEditor(act, series, context);
-        AppointmentEditDialog dialog = edit(editor, null);
+        CalendarEventEditDialog dialog = edit(editor, null);
         // NOTE: need to update the start time after dialog is created
-        //       See AppointmentEditDialog.timesModified().
+        //       See CalendarEventEditDialog.timesModified().
         editor.setSchedule(schedule);
         editor.setStartTime(startTime);   // will recalc end time. May be rounded to nearest slot
         startTime = editor.getStartTime();

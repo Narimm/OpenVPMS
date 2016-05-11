@@ -688,19 +688,6 @@ public class CalendarEventSeries {
         }
 
         /**
-         * Updates the state from an event.
-         *
-         * @param event the event
-         */
-        public void update(ActBean event) {
-            Act act = event.getAct();
-            startTime = act.getActivityStartTime();
-            endTime = act.getActivityEndTime();
-            schedule = event.getNodeParticipantRef("schedule");
-            author = event.getNodeParticipantRef("author");
-        }
-
-        /**
          * Copy constructor.
          *
          * @param state the state to copy
@@ -712,6 +699,19 @@ public class CalendarEventSeries {
             this.author = state.author;
             this.expression = state.expression;
             this.condition = state.condition;
+        }
+
+        /**
+         * Updates the state from an event.
+         *
+         * @param event the event
+         */
+        public void update(ActBean event) {
+            Act act = event.getAct();
+            startTime = act.getActivityStartTime();
+            endTime = act.getActivityEndTime();
+            schedule = event.getNodeParticipantRef("schedule");
+            author = event.getNodeParticipantRef("author");
         }
 
         /**

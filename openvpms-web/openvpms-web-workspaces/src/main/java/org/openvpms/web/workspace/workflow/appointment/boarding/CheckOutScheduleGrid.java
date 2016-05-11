@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
+import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,42 +42,45 @@ public class CheckOutScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param scheduleView the schedule view
      * @param date         the date
      * @param days         the number of days to display
-     * @param appointments the appointments
+     * @param events       the events
      */
-    public CheckOutScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> appointments) {
-        super(scheduleView, date, days, filterAppointments(appointments, date));
+    public CheckOutScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> events) {
+        super(scheduleView, date, days, filterEvents(events, date));
     }
 
     /**
      * Filters appointments so that they only include those checking out on or after the specified date.
-     * <p>
+     * <p/>
      * If a schedule has no appointments checking out on the date, then all of its appointments are excluded.
      *
-     * @param appointments the appointments
-     * @param date         the date
+     * @param events the appointments
+     * @param date   the date
      * @return the filtered appointments
      */
-    private static Map<Entity, List<PropertySet>> filterAppointments(Map<Entity, List<PropertySet>> appointments,
-                                                                     Date date) {
+    private static Map<Entity, List<PropertySet>> filterEvents(Map<Entity, List<PropertySet>> events, Date date) {
         Map<Entity, List<PropertySet>> map = new LinkedHashMap<>();
-        for (Map.Entry<Entity, List<PropertySet>> appointmentsBySchedule : appointments.entrySet()) {
+        for (Map.Entry<Entity, List<PropertySet>> eventsBySchedule : events.entrySet()) {
             Date midnight = DateRules.getNextDate(date);
-            if (!appointmentsBySchedule.getValue().isEmpty()) {
+            if (!eventsBySchedule.getValue().isEmpty()) {
                 List<PropertySet> onDate = new ArrayList<>();        // check-outs on date
                 List<PropertySet> afterDate = new ArrayList<>();     // check-outs after date
-                for (PropertySet set : appointmentsBySchedule.getValue()) {
-                    Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
+                for (PropertySet event : eventsBySchedule.getValue()) {
+                    Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
                     Date endDate = DateRules.getDate(endTime);
                     if (endDate.compareTo(date) == 0 || DateRules.compareTo(midnight, endTime) == 0) {
                         // consider appointments checking out at midnight to be for the same day
-                        onDate.add(set);
+                        if (!Schedule.isBlockingEvent(event) || !onDate.isEmpty()) {
+                            // only add blocking events on the date if there is an appointment before it, to provide
+                            // context
+                            onDate.add(event);
+                        }
                     } else if (endDate.compareTo(date) > 0) {
-                        afterDate.add(set);
+                        afterDate.add(event);
                     }
                 }
                 if (!onDate.isEmpty()) {
                     onDate.addAll(afterDate);                   // add all check-outs after the date to provide context
-                    map.put(appointmentsBySchedule.getKey(), onDate);
+                    map.put(eventsBySchedule.getKey(), onDate);
                 }
             }
         }

@@ -183,9 +183,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param isDefault       determines if the appointment type is the default
      * @return the new <em>entityRelationship.scheduleAppointmentType</em>
      */
-    public static EntityRelationship addAppointmentType(Party schedule,
-                                                        Entity appointmentType,
-                                                        int noSlots,
+    public static EntityRelationship addAppointmentType(Entity schedule, Entity appointmentType, int noSlots,
                                                         boolean isDefault) {
         EntityBean bean = new EntityBean(schedule);
         EntityRelationship relationship = bean.addRelationship(
@@ -541,6 +539,52 @@ public class ScheduleTestHelper extends TestHelper {
         }
         save(entity);
         return entity;
+    }
+
+    /**
+     * Helper to create and save a new <em>entity.calendarBlockType</em>.
+     *
+     * @return a new calendar block type
+     */
+    public static Entity createCalendarBlockType() {
+        return createCalendarBlockType("XCalendarBlockType");
+    }
+
+    /**
+     * Helper to create and save a new <em>entity.calendarBlockType</em>.
+     *
+     * @param name the block type name
+     * @return a new block type
+     */
+    public static Entity createCalendarBlockType(String name) {
+        Entity blockType = (Entity) create(ScheduleArchetypes.CALENDAR_BLOCK_TYPE);
+        blockType.setName(name);
+        save(blockType);
+        return blockType;
+    }
+
+    /**
+     * Helper to create an <em>act.calendarBlock</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param schedule  the schedule
+     * @param blockType the calendar block type
+     * @param author    the author. May be {@code null}
+     * @return a new act
+     */
+    public static Act createCalendarBlock(Date startTime, Date endTime, Entity schedule, Entity blockType,
+                                          User author) {
+        Act act = (Act) create(ScheduleArchetypes.CALENDAR_BLOCK);
+        ActBean bean = new ActBean(act);
+        bean.setValue("startTime", startTime);
+        bean.setValue("endTime", endTime);
+        bean.addNodeParticipation("schedule", schedule);
+        bean.addNodeParticipation("type", blockType);
+        if (author != null) {
+            bean.addNodeParticipation("author", author);
+        }
+        return act;
     }
 
 }
