@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
+import org.openvpms.web.workspace.reporting.ReportingException;
 
 /**
  * Evaluates <em>entity.documentTemplateSMSReminder</em> templates.
@@ -54,11 +55,18 @@ public class ReminderSMSEvaluator {
      * @return the result of the expression. May be {@code null}, or too long for an SMS
      */
     public String evaluate(Entity template, ReminderEvent event, Party location, Party practice) {
+        String result;
         Context local = new LocalContext();
         local.setCustomer(event.getCustomer());
         local.setPatient(event.getPatient());
         local.setLocation(location);
         local.setPractice(practice);
-        return evaluator.evaluate(template, event.getReminder(), local);
+        try {
+            result = evaluator.evaluate(template, event.getReminder(), local);
+        } catch (Throwable exception) {
+            throw new ReportingException(ReportingException.ErrorCode.SMSEvaluationFailed, exception,
+                                         template.getName());
+        }
+        return result;
     }
 }

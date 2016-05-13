@@ -24,11 +24,11 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.macro.Macros;
+import org.openvpms.macro.impl.MacroTestHelper;
 import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
-import org.openvpms.web.system.ServiceHelper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -66,7 +66,7 @@ public class AppointmentReminderEvaluatorTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         SMSTemplateEvaluator smsEvaluator = new SMSTemplateEvaluator(getArchetypeService(), getLookupService(),
-                                                                     ServiceHelper.getMacros());
+                                                                     applicationContext.getBean(Macros.class));
         evaluator = new AppointmentReminderEvaluator(getArchetypeService(), smsEvaluator);
         practice = TestHelper.getPractice();
         practice.setName("Vets R Us");
@@ -123,9 +123,9 @@ public class AppointmentReminderEvaluatorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testMacroExpression() {
-        createMacro("@patient", "$patient.name");
-        createMacro("@location", "$location.name");
-        createMacro("@startDate", "date:formatDate($appointment.startTime, 'short')");
+        MacroTestHelper.createMacro("@patient", "$patient.name");
+        MacroTestHelper.createMacro("@location", "$location.name");
+        MacroTestHelper.createMacro("@startDate", "date:formatDate($appointment.startTime, 'short')");
         String expression = "Reminder: @patient has an appointment at @location on @startDate";
 
         Entity template = createTemplate("MACRO", expression);
@@ -138,7 +138,7 @@ public class AppointmentReminderEvaluatorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testMacroException() {
-        createMacro("@badexpression", "concat(");
+        MacroTestHelper.createMacro("@badexpression", "concat(");
         try {
             Entity template = createTemplate("MACRO", "@badexpression");
             evaluator.evaluate(template, act, location, practice);
@@ -171,27 +171,11 @@ public class AppointmentReminderEvaluatorTestCase extends ArchetypeServiceTest {
         Entity template = (Entity) create(DocumentArchetypes.APPOINTMENT_SMS_TEMPLATE);
         IMObjectBean bean = new IMObjectBean(template);
         bean.setValue("name", type + " template");
-        bean.setValue("expressionType", type);
-        bean.setValue("expression", expression);
+        bean.setValue("contentType", type);
+        bean.setValue("content", expression);
         return template;
     }
 
-    /**
-     * Helper to create a macro.
-     *
-     * @param code       the macro code
-     * @param expression the macro expression
-     * @return the macro
-     */
-    private Lookup createMacro(String code, String expression) {
-        Lookup macro = TestHelper.getLookup("lookup.macro", code, false);
-        IMObjectBean bean = new IMObjectBean(macro);
-        bean.setValue("code", code);
-        bean.setValue("name", code);
-        bean.setValue("expression", expression);
-        bean.setValue("active", true);
-        bean.save();
-        return macro;
-    }
+
 }
 
