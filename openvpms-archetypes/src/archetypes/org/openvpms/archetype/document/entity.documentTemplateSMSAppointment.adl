@@ -28,8 +28,9 @@
               defaultValue="'XPATH'" minCardinality="1">
             <assertion name="lookup.local">
                 <propertyList name="entries">
-                    <property name="XPATH" value="XPath"/>
+                    <property name="TEXT" value="Plain text"/>
                     <property name="MACRO" value="Macro"/>
+                    <property name="XPATH" value="Expression"/>
                 </propertyList>
             </assertion>
         </node>
