@@ -21,20 +21,20 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
- * An editor for <em>entity.documentTemplateSMSAppointment</em>.
+ * An editor for <em>entity.documentTemplateSMSReminder</em>.
  *
  * @author Tim Anderson
  */
-public class SMSAppointmentTemplateEditor extends SMSTemplateEditor {
+public class SMSReminderTemplateEditor extends SMSTemplateEditor {
 
     /**
-     * Constructs an {@link SMSAppointmentTemplateEditor}.
+     * Constructs an {@link SMSReminderTemplateEditor}.
      *
      * @param object        the object to edit
      * @param parent        the parent object. May be {@code null}
      * @param layoutContext the layout context
      */
-    public SMSAppointmentTemplateEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
+    public SMSReminderTemplateEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
         evaluate();
     }
@@ -48,7 +48,7 @@ public class SMSAppointmentTemplateEditor extends SMSTemplateEditor {
      */
     @Override
     protected SMSTemplateSampler createSampler(Entity template, LayoutContext layoutContext) {
-        return new SMSAppointmentTemplateSampler(template, layoutContext);
+        return new SMSReminderTemplateSampler(template, getLayoutContext());
     }
 
 }

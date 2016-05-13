@@ -395,6 +395,15 @@ public class DocumentTemplate {
     }
 
     /**
+     * Returns the SMS template.
+     *
+     * @return the SMS template. May be {@code null}
+     */
+    public Entity getSMSTemplate() {
+        return bean.getNodeTargetEntity("sms");
+    }
+
+    /**
      * Returns the text to use when the template is sent via SMS.
      *
      * @return the SMS text. May be {@code null}

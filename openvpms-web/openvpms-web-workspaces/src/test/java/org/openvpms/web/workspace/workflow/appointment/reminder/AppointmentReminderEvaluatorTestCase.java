@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.reminder;
@@ -27,7 +27,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.macro.Macros;
+import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
+import org.openvpms.web.system.ServiceHelper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -64,8 +65,9 @@ public class AppointmentReminderEvaluatorTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        evaluator = new AppointmentReminderEvaluator(
-                getArchetypeService(), getLookupService(), applicationContext.getBean(Macros.class));
+        SMSTemplateEvaluator smsEvaluator = new SMSTemplateEvaluator(getArchetypeService(), getLookupService(),
+                                                                     ServiceHelper.getMacros());
+        evaluator = new AppointmentReminderEvaluator(getArchetypeService(), smsEvaluator);
         practice = TestHelper.getPractice();
         practice.setName("Vets R Us");
         location = TestHelper.createLocation();

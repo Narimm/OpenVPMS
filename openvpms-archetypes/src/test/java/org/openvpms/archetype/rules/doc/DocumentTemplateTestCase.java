@@ -66,7 +66,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         checkEquals(BigDecimal.ZERO, template.getPaperHeight());
         checkEquals(BigDecimal.ZERO, template.getPaperWidth());
         assertEquals(DocumentTemplate.MM, template.getPaperUnits());
-        assertNull(template.getSMS());
+        assertNull(template.getSMSTemplate());
         assertNull(template.getMediaSize());
         assertEquals(OrientationRequested.PORTRAIT, template.getOrientationRequested());
         assertTrue(template.getPrinters().isEmpty());
@@ -100,7 +100,6 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         template.setPaperHeight(height);
         template.setPaperWidth(width);
         template.setPaperUnits(DocumentTemplate.MM);
-        template.setSMS("test SMS");
         template.save();
 
         template = new DocumentTemplate(get(entity), getArchetypeService());
@@ -117,7 +116,6 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         checkEquals(height, template.getPaperHeight());
         checkEquals(width, template.getPaperWidth());
         assertEquals(DocumentTemplate.MM, template.getPaperUnits());
-        assertEquals("test SMS", template.getSMS());
         assertEquals(MediaSizeName.ISO_A5, template.getMediaSize());
         assertEquals(OrientationRequested.LANDSCAPE, template.getOrientationRequested());
     }
