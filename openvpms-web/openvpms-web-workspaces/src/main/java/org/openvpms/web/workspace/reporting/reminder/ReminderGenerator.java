@@ -21,7 +21,6 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -293,7 +292,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         if (groupTemplate == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
         }
-        sms = !StringUtils.isEmpty(groupTemplate.getSMS()) && SMSHelper.isSMSEnabled(context.getPractice());
+        sms = groupTemplate.getSMSTemplate() != null && SMSHelper.isSMSEnabled(context.getPractice());
 
         if (CommunicationHelper.isLoggingEnabled(practice)) {
             logger = new ReminderCommunicationLogger(ServiceHelper.getBean(CommunicationLogger.class));
@@ -488,7 +487,8 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     protected ReminderSMSProcessor createSMSProcessor(DocumentTemplate groupTemplate, Context context) {
-        return new ReminderSMSProcessor(getSMSService(), groupTemplate, context, logger);
+        ReminderSMSEvaluator evaluator = ServiceHelper.getBean(ReminderSMSEvaluator.class);
+        return new ReminderSMSProcessor(getSMSService(), groupTemplate, context, logger, evaluator);
     }
 
     /**

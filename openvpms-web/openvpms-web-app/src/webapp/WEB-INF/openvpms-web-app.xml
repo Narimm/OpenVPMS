@@ -153,19 +153,25 @@
         <constructor-arg ref="practiceService"/>
     </bean>
 
+    <bean id="smsTemplateEvaluator" class="org.openvpms.web.component.im.sms.SMSTemplateEvaluator">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="macros"/>
+    </bean>
+
     <bean id="communicationLogger" class="org.openvpms.web.workspace.customer.communication.CommunicationLogger">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="userRules"/>
     </bean>
 
-    <!-- =========================================================================================================== -->
-    <!-- Appointment reminders                                                                                       -->
-    <!-- =========================================================================================================== -->
+    <bean id="reminderSMSEvaluator" class="org.openvpms.web.workspace.reporting.reminder.ReminderSMSEvaluator">
+        <constructor-arg ref="smsTemplateEvaluator"/>
+    </bean>
+
     <bean id="appointmentReminderEvaluator"
           class="org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator">
         <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="lookupService"/>
-        <constructor-arg ref="macros"/>
+        <constructor-arg ref="smsTemplateEvaluator"/>
     </bean>
 
     <!-- =========================================================================================================== -->

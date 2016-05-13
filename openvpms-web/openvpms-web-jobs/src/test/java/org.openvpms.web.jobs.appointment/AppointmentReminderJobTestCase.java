@@ -45,8 +45,9 @@ import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleServ
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.macro.Macros;
+import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
 import org.openvpms.web.component.service.SMSService;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,8 +126,9 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        evaluator = new AppointmentReminderEvaluator(getArchetypeService(), getLookupService(),
-                                                     Mockito.mock(Macros.class));
+        SMSTemplateEvaluator smsEvaluator = new SMSTemplateEvaluator(getArchetypeService(), getLookupService(),
+                                                                     ServiceHelper.getMacros());
+        evaluator = new AppointmentReminderEvaluator(getArchetypeService(), smsEvaluator);
         customerRules = new CustomerRules(getArchetypeService(), getLookupService());
         dateFrom = TestHelper.getDate("2015-11-01");
 
