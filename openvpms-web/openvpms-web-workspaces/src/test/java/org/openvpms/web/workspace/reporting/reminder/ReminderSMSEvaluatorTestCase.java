@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
@@ -27,7 +26,6 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.impl.MacroTestHelper;
 import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
@@ -183,26 +181,10 @@ public class ReminderSMSEvaluatorTestCase extends ArchetypeServiceTest {
      * @return the result of the evaluation
      */
     private String evaluate(String contentType, String content) {
-        Entity template = createTemplate(contentType, content);
+        Entity template = ReminderTestHelper.createSMSTemplate(contentType, content);
         ReminderType type = new ReminderType(this.reminderType, getArchetypeService());
         ReminderEvent event = new ReminderEvent(ReminderEvent.Action.SMS, act, type, patient, customer);
         return evaluator.evaluate(template, event, location, practice);
-    }
-
-    /**
-     * Helper to create an template.
-     *
-     * @param type       the content type
-     * @param expression the content
-     * @return a new template
-     */
-    private Entity createTemplate(String type, String expression) {
-        Entity template = (Entity) create(DocumentArchetypes.REMINDER_SMS_TEMPLATE);
-        IMObjectBean bean = new IMObjectBean(template);
-        bean.setValue("name", type + " template");
-        bean.setValue("contentType", type);
-        bean.setValue("content", expression);
-        return template;
     }
 
 }

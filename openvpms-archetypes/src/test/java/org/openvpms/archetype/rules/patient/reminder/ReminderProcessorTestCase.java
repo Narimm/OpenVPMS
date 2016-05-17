@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -122,8 +122,9 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
     public void testSMSContact() {
         Entity template = ReminderTestHelper.createDocumentTemplate();
         IMObjectBean bean = new IMObjectBean(template);
-        bean.setValue("sms", "Test SMS");
-        bean.save();
+        Entity smsTemplate = ReminderTestHelper.createSMSTemplate("TEXT", "Some plain text");
+        bean.addNodeTarget("sms", smsTemplate);
+        save(template, smsTemplate);
         ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
         Act reminder = createReminderDueTomorrow();
 
@@ -138,7 +139,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
     public void testProcessSMSForNoSMText() {
         Entity template = ReminderTestHelper.createDocumentTemplate();
         IMObjectBean bean = new IMObjectBean(template);
-        assertNull(bean.getString("sms"));
+        assertNull(bean.getNodeTargetObjectRef("sms"));
         ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
         Act reminder = createReminderDueTomorrow();
 
@@ -206,8 +207,9 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
     public void testProcessSMS() {
         Entity template = ReminderTestHelper.createDocumentTemplate();
         IMObjectBean templateBean = new IMObjectBean(template);
-        templateBean.setValue("sms", "Test SMS");
-        templateBean.save();
+        Entity smsTemplate = ReminderTestHelper.createSMSTemplate("TEXT", "Some plain text");
+        templateBean.addNodeTarget("sms", smsTemplate);
+        save(template, smsTemplate);
         EntityRelationship relationship = ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
         IMObjectBean bean = new IMObjectBean(relationship);
         bean.setValue("sms", true);
