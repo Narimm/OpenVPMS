@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /**
@@ -19,22 +19,17 @@
  *
  * @author Tim Anderson
  */
-package org.openvpms.web.component.im.edit.act;
+package org.openvpms.web.component.im.clinician;
 
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
 
 
@@ -53,11 +48,9 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
      * @param parent        the parent object
      * @param context       the layout context
      */
-    public ClinicianParticipationEditor(Participation participation,
-                                        Act parent,
-                                        LayoutContext context) {
+    public ClinicianParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation, "participation.clinician")) {
+        if (!TypeHelper.isA(participation, UserArchetypes.CLINICIAN_PARTICIPATION)) {
             throw new IllegalArgumentException("Invalid participation type:"
                                                + participation.getArchetypeId().getShortName());
         }
@@ -77,36 +70,8 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
     protected IMObjectReferenceEditor<User> createEntityEditor(Property property) {
         LayoutContext context = getLayoutContext();
         LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().topic("clinician"));
-        return new AbstractIMObjectReferenceEditor<User>(property, getParent(), subContext) {
-
-            @Override
-            protected Query<User> createQuery(String name) {
-                Query<User> query = super.createQuery(name);
-                addConstraints(query);
-                return query;
-            }
-
-            @Override
-            public boolean setObject(User object) {
-                getLayoutContext().getContext().setClinician(object);
-                return super.setObject(object);
-            }
-        };
+        return new ClinicianReferenceEditor(property, getParent(), subContext);
     }
 
-    /**
-     * Adds constraints to the query to restrict it to return users with a 'Clinician' classification.
-     *
-     * @param query the query
-     */
-    private void addConstraints(Query query) {
-        IConstraint hasClinicianClassification = new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.userType");
-
-        IConstraint isClinician = new NodeConstraint("code", RelationalOp.EQ, "CLINICIAN");
-        CollectionNodeConstraint constraint = new CollectionNodeConstraint("classifications", true);
-        constraint.add(hasClinicianClassification);
-        constraint.add(isClinician);
-        query.setConstraints(constraint);
-    }
 }
 
