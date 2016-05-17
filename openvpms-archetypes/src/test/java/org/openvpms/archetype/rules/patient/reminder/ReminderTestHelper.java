@@ -266,4 +266,20 @@ public class ReminderTestHelper extends TestHelper {
         TestHelper.save(document, template, act);
         return template;
     }
+
+    /**
+     * Helper to create a template.
+     *
+     * @param type       the content type
+     * @param expression the content
+     * @return a new template
+     */
+    public static Entity createSMSTemplate(String type, String expression) {
+        Entity template = (Entity) create(DocumentArchetypes.REMINDER_SMS_TEMPLATE);
+        IMObjectBean bean = new IMObjectBean(template);
+        bean.setValue("name", type + " template");
+        bean.setValue("contentType", type);
+        bean.setValue("content", expression);
+        return template;
+    }
 }

@@ -18,17 +18,12 @@ package org.openvpms.web.component.im.doc;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.sms.BoundCountedTextArea;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.text.TextArea;
 
 import java.util.List;
 
@@ -50,7 +45,7 @@ public class DocumentTemplateLayoutStrategy extends AbstractDocumentTemplateLayo
     /**
      * Constructs a {@link DocumentTemplateLayoutStrategy}.
      *
-     * @param content    the component representing the 'content' node
+     * @param content the component representing the 'content' node
      */
     public DocumentTemplateLayoutStrategy(ComponentState content) {
         super(content);
@@ -69,20 +64,11 @@ public class DocumentTemplateLayoutStrategy extends AbstractDocumentTemplateLayo
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        Property sms = properties.get("sms");
-        TextArea textArea;
         if (context.isEdit()) {
-            textArea = new BoundCountedTextArea(sms, 40, 8);
-            textArea.setStyleName(Styles.DEFAULT);
-
             Property copies = properties.get("copies");
             SpinBox spinBox = new SpinBox(copies, 1, 99);
             addComponent(new ComponentState(spinBox, copies, spinBox.getFocusGroup()));
-        } else {
-            textArea = BoundTextComponentFactory.createTextArea(sms, 40, 8);
-            textArea.setEnabled(false);
         }
-        addComponent(new ComponentState(RowFactory.create(textArea), sms));
         if (getContent() == null) {
             initContent((Entity) object, properties, context);
         }

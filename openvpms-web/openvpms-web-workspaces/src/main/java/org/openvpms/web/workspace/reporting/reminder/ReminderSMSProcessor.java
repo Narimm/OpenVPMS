@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
@@ -34,6 +35,8 @@ import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
+import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSMessageEmpty;
+import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSMessageTooLong;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.TemplateMissingSMSText;
 
 
@@ -55,6 +58,11 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
     private final ReminderCommunicationLogger logger;
 
     /**
+     * The template evaluator.
+     */
+    private final ReminderSMSEvaluator evaluator;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(ReminderSMSProcessor.class);
@@ -66,12 +74,14 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
      * @param groupTemplate the template for grouped reminders
      * @param context       the context
      * @param logger        if specified, logs SMS reminders
+     * @param evaluator     the template evaluator
      */
     public ReminderSMSProcessor(SMSService service, DocumentTemplate groupTemplate, Context context,
-                                ReminderCommunicationLogger logger) {
+                                ReminderCommunicationLogger logger, ReminderSMSEvaluator evaluator) {
         super(groupTemplate, context);
         this.service = service;
         this.logger = logger;
+        this.evaluator = evaluator;
     }
 
     /**
@@ -84,14 +94,15 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
     protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
         ReminderEvent event = events.get(0);
         Contact contact = event.getContact();
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName, getContext());
+        Context context = getContext();
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName, context);
         documentTemplate = locator.getTemplate();
         if (documentTemplate == null) {
             throw new ReportingException(ReminderMissingDocTemplate);
         }
-        String text = documentTemplate.getSMS();
-        if (StringUtils.isEmpty(text)) {
-            throw new ReportingException(TemplateMissingSMSText);
+        Entity smsTemplate = documentTemplate.getSMSTemplate();
+        if (smsTemplate == null) {
+            throw new ReportingException(TemplateMissingSMSText, documentTemplate.getName());
         }
         String phoneNumber = SMSHelper.getPhone(contact);
         if (StringUtils.isEmpty(phoneNumber)) {
@@ -99,15 +110,22 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
             log.error("Contact has no phone number for customer=" + customer.getName() + " (" + customer.getId() + ")");
         } else {
             try {
-                service.send(phoneNumber, text, event.getCustomer(), event.getPatient(), contact,
-                             getContext().getLocation());
-                if (logger != null) {
-                    logger.logSMS(text, events, getContext().getLocation());
+                String text = evaluator.evaluate(smsTemplate, event, context.getLocation(), context.getPractice());
+                if (StringUtils.isEmpty(text)) {
+                    throw new ReportingException(SMSMessageEmpty, smsTemplate.getName());
+                } else if (text.length() > 160) {
+                    throw new ReportingException(SMSMessageTooLong, smsTemplate.getName(), text.length());
                 }
+                service.send(phoneNumber, text, event.getCustomer(), event.getPatient(), contact,
+                             context.getLocation());
+                if (logger != null) {
+                    logger.logSMS(text, events, context.getLocation());
+                }
+            } catch (ReportingException exception) {
+                throw exception;
             } catch (Throwable exception) {
                 throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
             }
         }
     }
-
 }

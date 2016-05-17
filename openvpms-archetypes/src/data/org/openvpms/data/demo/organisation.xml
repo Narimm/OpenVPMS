@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -64,5 +64,18 @@
     <data id="OTC2" archetype="party.organisationOTC" name="Branch OTC"/>
     <data archetype="entityRelationship.locationOTC" source="id:OL1" target="id:OTC1"/>
     <data archetype="entityRelationship.locationOTC" source="id:OL2" target="id:OTC2"/>
-
+    <data id="ART1" archetype="entity.documentTemplateSMSAppointment"
+          name="Default Appointment Reminder SMS Template"
+          description="&lt;patient&gt;'s appointment at &lt;location&gt; is confirmed for &lt;date/time&gt;. Call us on &lt;phone&gt; if you need to change the appointment"
+          contentType="XPATH"
+          content="concat(expr:if(expr:var('patient.name') != '', concat(expr:var('patient.name'), '&apos;s'), 'Your'),
+                     ' appointment at ' , $location.name,' is confirmed for ', date:formatDate($appointment.startTime, 'short'),
+                     ' @ ', date:formatTime($appointment.startTime, 'short'), $nl,
+                     'Call us on ', party:getTelephone($location), ' if you need to change the appointment')"/>
+    <data archetype="entityLink.organisationSMSAppointment" source="id:OP1" target="id:ART1"/>
+    <data id="PRT1" archetype="entity.documentTemplateSMSReminder"
+          name="Sample Vaccination Reminder SMS Template"
+          description="&lt;patient&gt; is due for a vaccination at &lt;location&gt;. Call us on &lt;phone&gt; to make an appointment"
+          contentType="XPATH"
+          content="concat($patient.name, ' is due for a vaccination at ', $location.name, '.', $nl, 'Please contact us on ',  party:getTelephone($location), ' to make an appointment')"/>
 </archetype>

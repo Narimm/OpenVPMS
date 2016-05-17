@@ -16,6 +16,7 @@
 
 c:\Program Files (x86)\OpenOffice 4\program\soffice.exe
 c:\Program Files (x86)\LibreOffice 5\program\soffice.exe
+c:\Program Files\LibreOffice 5\program\soffice.exe
 /Applications/OpenOffice.app/Contents/MacOS/soffice
 /Applications/LibreOffice.app/Contents/MacOS/soffice
 /usr/bin/soffice

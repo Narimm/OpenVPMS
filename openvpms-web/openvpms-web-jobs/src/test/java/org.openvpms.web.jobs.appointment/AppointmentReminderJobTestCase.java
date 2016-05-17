@@ -46,6 +46,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.macro.Macros;
+import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
 import org.openvpms.web.component.service.SMSService;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
 import org.quartz.JobExecutionException;
@@ -125,8 +126,9 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        evaluator = new AppointmentReminderEvaluator(getArchetypeService(), getLookupService(),
-                                                     Mockito.mock(Macros.class));
+        SMSTemplateEvaluator smsEvaluator = new SMSTemplateEvaluator(getArchetypeService(), getLookupService(),
+                                                                     applicationContext.getBean(Macros.class));
+        evaluator = new AppointmentReminderEvaluator(getArchetypeService(), smsEvaluator);
         customerRules = new CustomerRules(getArchetypeService(), getLookupService());
         dateFrom = TestHelper.getDate("2015-11-01");
 
@@ -546,8 +548,8 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         Entity template = (Entity) create(DocumentArchetypes.APPOINTMENT_SMS_TEMPLATE);
         IMObjectBean bean = new IMObjectBean(template);
         bean.setValue("name", "Test Appointment Reminder SMS Template");
-        bean.setValue("expressionType", "XPATH");
-        bean.setValue("expression", expression);
+        bean.setValue("contentType", "XPATH");
+        bean.setValue("content", expression);
         bean.save();
         return template;
     }

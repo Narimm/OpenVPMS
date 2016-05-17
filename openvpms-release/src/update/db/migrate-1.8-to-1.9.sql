@@ -1017,6 +1017,163 @@ FROM entity_details d
        AND d.value = 'false'
        AND e.arch_short_name = 'party.organisationWorkList';
 
+
+#
+# OVPMS-1767 Support macro expansion in SMS reminders
+#
+
+# Migrate entity.documentTemplate sms node to entity.documentTemplateSMSReminder
+DROP TABLE IF EXISTS tmp_sms_templates;
+CREATE TEMPORARY TABLE tmp_sms_templates (
+  linkId    VARCHAR(36) PRIMARY KEY,
+  source_id BIGINT(20) NOT NULL,
+  entity_id BIGINT(20),
+  name      VARCHAR(255),
+  text      VARCHAR(5000),
+  active    BIT(1)
+);
+
+INSERT INTO tmp_sms_templates (linkId, source_id, name, sms, active)
+  SELECT
+    e.linkId,
+    e.entity_id,
+    e.name,
+    sms.value,
+    e.active
+  FROM entities e
+    LEFT JOIN entity_details sms
+      ON e.entity_id = sms.entity_id
+         AND sms.name = 'sms'
+  WHERE e.arch_short_name = 'entity.documentTemplate';
+
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
+  SELECT
+    1,
+    linkId,
+    'entity.documentTemplateSMSReminder',
+    '1.0',
+    name,
+    active
+  FROM tmp_sms_templates t
+  WHERE NOT exists(
+      SELECT *
+      FROM entities e
+      WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder'
+            AND e.linkId = t.linkId);
+
+UPDATE tmp_sms_templates t
+  JOIN entities e
+    ON t.linkId = e.linkId
+       AND e.arch_short_name = 'entity.documentTemplateEmail'
+SET t.entity_id = e.entity_id;
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'content',
+    'string',
+    t.text
+  FROM tmp_sms_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'content');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    t.entity_id,
+    'contentType',
+    'string',
+    'TEXT'
+  FROM tmp_sms_templates t
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = t.entity_id AND d.name = 'contentType');
+
+# Link the templates to their SMS templates
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    linkId,
+    'entityLink.documentTemplateSMS',
+    '1.0',
+    'SMS Template',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    t.source_id,
+    t.entity_id
+  FROM tmp_sms_templates t
+  WHERE NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = t.source_id AND l.arch_short_name = 'entityLink.documentTemplateSMS');
+
+DELETE d
+FROM entity_details d
+  JOIN tmp_sms_templates t
+    ON d.entity_id = t.source_id
+       AND d.name IN ('sms');
+
+DROP TABLE tmp_sms_templates;
+
+# Set up a default entity.documentTemplateSMSReminder, if one isn't present
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, description, active)
+  SELECT
+    1,
+    UUID(),
+    'entity.documentTemplateSMSReminder',
+    '1.0',
+    'Sample Vaccination Reminder SMS Template',
+    '<patient> is due for a vaccination. Call us on <phone> to make an appointment',
+    1
+  FROM dual
+  WHERE NOT exists(
+      SELECT *
+      FROM entities e
+      WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder');
+
+SELECT *
+FROM entities e JOIN entity_links r ON e.entity_id = r.target_id
+WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder';
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'contentType',
+    'string',
+    'XPATH'
+  FROM entities e
+  WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder' AND NOT exists(SELECT *
+                                                                                FROM entity_details d
+                                                                                WHERE d.entity_id = e.entity_id AND
+                                                                                      d.name = 'contentType');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'content',
+    'string',
+    'concat($patient.name, '' is due for a vaccination.'', $nl, ''Please contact us on '',  party:getTelephone($location), '' to make an appointment'')'
+  FROM entities e
+  WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder' AND NOT exists(SELECT *
+                                                                                FROM entity_details d
+                                                                                WHERE d.entity_id = e.entity_id AND
+                                                                                      d.name = 'content');
+
+# Make entity.documentTemplateSMSAppointment have the same nodes as entity.documentTemplateSMSReminder
+UPDATE entity_details expressionType
+  JOIN entities e ON expressionType.entity_id = e.entity_id AND expressionType.name = "expressionType"
+                     AND e.arch_short_name = 'entity.documentTemplateSMSAppointment'
+SET expressionType.name = 'contentType';
+
+UPDATE entity_details expression
+  JOIN entities e ON expression.entity_id = e.entity_id AND expression.name = "expression"
+                     AND e.arch_short_name = 'entity.documentTemplateSMSAppointment'
+SET expression.name = 'content';
+
+
 #
 # OVPMS-1763 Schedule blocking
 #

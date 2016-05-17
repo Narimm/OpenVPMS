@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.template;
@@ -28,26 +28,26 @@ import org.openvpms.web.component.property.PropertySet;
 import java.util.List;
 
 /**
- * Layout strategy for <em>entity.documentTemplateSMSAppointment</em>.
+ * Layout strategy for <em>entity.documentTemplateSMS*</em> entities.
  *
  * @author Tim Anderson
  */
-public class SMSAppointmentTemplateLayoutStrategy extends AbstractLayoutStrategy {
+public class SMSTemplateLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * The expression node name.
+     * The content node name.
      */
-    private static final String EXPRESSION = "expression";
+    private static final String CONTENT = "content";
 
     /**
-     * The nodes to display. The expression node is handled explicitly.
+     * The nodes to display. The content node is handled explicitly.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(EXPRESSION);
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(CONTENT);
 
     /**
-     * Constructs an {@link SMSAppointmentTemplateLayoutStrategy}.
+     * Constructs an {@link SMSTemplateLayoutStrategy}.
      */
-    public SMSAppointmentTemplateLayoutStrategy() {
+    public SMSTemplateLayoutStrategy() {
         super(NODES);
     }
 
@@ -64,7 +64,7 @@ public class SMSAppointmentTemplateLayoutStrategy extends AbstractLayoutStrategy
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        addComponent(createComponent(properties.get(EXPRESSION), object, context));
+        addComponent(createComponent(properties.get(CONTENT), object, context));
         return super.apply(object, properties, parent, context);
     }
 
@@ -78,7 +78,7 @@ public class SMSAppointmentTemplateLayoutStrategy extends AbstractLayoutStrategy
     @Override
     protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
         ComponentGrid grid = super.createGrid(object, properties, context);
-        grid.add(getComponent(EXPRESSION), 2);
+        grid.add(getComponent(CONTENT), 2);
         return grid;
     }
 }

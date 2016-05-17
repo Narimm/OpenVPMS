@@ -90,6 +90,11 @@ public class DocumentArchetypes {
     public static final String APPOINTMENT_SMS_TEMPLATE = "entity.documentTemplateSMSAppointment";
 
     /**
+     * Patient reminder SMS template.
+     */
+    public static final String REMINDER_SMS_TEMPLATE = "entity.documentTemplateSMSReminder";
+
+    /**
      * Letterhead template.
      */
     public static final String LETTERHEAD = "entity.letterhead";

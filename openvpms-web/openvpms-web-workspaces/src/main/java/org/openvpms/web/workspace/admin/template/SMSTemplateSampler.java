@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.template;
@@ -21,10 +21,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -36,7 +34,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.sms.BoundCountedTextArea;
 import org.openvpms.web.component.im.sms.SMSEditor;
-import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -46,31 +43,20 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
-import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderException;
-
-import java.util.Date;
 
 import static org.openvpms.archetype.rules.workflow.ScheduleArchetypes.APPOINTMENT;
 
 /**
- * A component to test the expression evaluation of an <em>entity.documentTemplateSMSAppointment</em>.
+ * A component to test the expression evaluation of SMS templates.
  *
  * @author Tim Anderson
  */
-public class SMSApppointmentTemplateSampler {
+public abstract class SMSTemplateSampler {
 
     /**
-     * The template to use.
+     * The template.
      */
-    private Entity template;
-
-    /**
-     * The property to hold the generated message.
-     */
-    private final SimpleProperty messageProperty = new SimpleProperty("message", null, String.class,
-                                                                      Messages.get("sms.message"));
+    private final Entity template;
 
     /**
      * The layout context.
@@ -90,9 +76,10 @@ public class SMSApppointmentTemplateSampler {
             "patient", null, IMObjectReference.class, DescriptorHelper.getDisplayName(APPOINTMENT, "patient"));
 
     /**
-     * The focus group.
+     * The property to hold the generated message.
      */
-    private FocusGroup group = new FocusGroup("Sampler");
+    private final SimpleProperty message = new SimpleProperty("message", null, String.class,
+                                                              Messages.get("sms.message"));
 
     /**
      * The evaluation status.
@@ -100,13 +87,23 @@ public class SMSApppointmentTemplateSampler {
     private Label status;
 
     /**
-     * Constructs an {@link SMSApppointmentTemplateSampler}.
+     * The focus group.
+     */
+    private FocusGroup group = new FocusGroup("Sampler");
+
+    /**
+     * Constructs an {@link SMSTemplateSampler}.
      *
+     * @param template      the template
      * @param layoutContext the layout context
      */
-    public SMSApppointmentTemplateSampler(LayoutContext layoutContext) {
+    public SMSTemplateSampler(Entity template, LayoutContext layoutContext) {
+        this.template = template;
+
+        // create a local context so changes aren't propagated
         Context local = new LocalContext(layoutContext.getContext());
         this.layoutContext = new DefaultLayoutContext(true, local, layoutContext.getHelpContext());
+
         customer.setArchetypeRange(new String[]{CustomerArchetypes.PERSON});
         patient.setArchetypeRange(new String[]{PatientArchetypes.PATIENT});
         ModifiableListener listener = new ModifiableListener() {
@@ -121,78 +118,25 @@ public class SMSApppointmentTemplateSampler {
     }
 
     /**
-     * Sets the template.
-     *
-     * @param template the template. An instance of <em>entity.documentTemplateSMSAppointmentReminder</em>
-     */
-    public void setTemplate(Entity template) {
-        this.template = template;
-    }
-
-    /**
-     * Evaluates the template against the selected customer and patient.
+     * Evaluates the template.
      */
     public void evaluate() {
         String value;
-        Act act = (Act) IMObjectCreator.create(APPOINTMENT);
-        ActBean bean = new ActBean(act);
-        bean.setNodeParticipant("customer", customer.getReference());
-        bean.setNodeParticipant("patient", patient.getReference());
-        act.setActivityStartTime(new Date());
-        act.setActivityEndTime(new Date());
-        AppointmentReminderEvaluator evaluator = ServiceHelper.getBean(AppointmentReminderEvaluator.class);
         try {
-            value = evaluator.evaluate(template, act, layoutContext.getContext().getLocation(),
-                                       layoutContext.getContext().getPractice());
+            value = evaluate(template, layoutContext.getContext());
             if (value != null && value.length() > SMSEditor.MAX_LENGTH) {
                 value = value.substring(0, SMSEditor.MAX_LENGTH);
                 status.setText(Messages.get("sms.truncated"));
             } else {
                 status.setText(null);
             }
-        } catch (AppointmentReminderException exception) {
+        } catch (Throwable exception) {
             value = null;
             String message = (exception.getCause() != null) ? exception.getCause().getMessage()
                                                             : exception.getMessage();
             status.setText(message);
         }
-        messageProperty.setValue(value);
-    }
-
-    /**
-     * Returns the component.
-     *
-     * @return the component
-     */
-    public Component getComponent() {
-        IMObjectReferenceEditor customerSelector = new CustomerReferenceEditor(customer, null, layoutContext);
-        IMObjectReferenceEditor patientSelector = new PatientReferenceEditor(patient, null, layoutContext);
-        BoundCountedTextArea message = new BoundCountedTextArea(messageProperty, 40, 15);
-        message.setMaximumLength(SMSEditor.MAX_LENGTH);
-        message.setStyleName(Styles.DEFAULT);
-        message.setEnabled(false);
-
-        Label customerLabel = LabelFactory.create();
-        customerLabel.setText(customer.getDisplayName());
-
-        Label patientLabel = LabelFactory.create();
-        patientLabel.setText(patient.getDisplayName());
-
-        Label messageLabel = LabelFactory.create();
-        messageLabel.setText(messageProperty.getDisplayName());
-
-        ComponentGrid grid = new ComponentGrid();
-        grid.add(customerLabel, customerSelector.getComponent(), patientLabel, patientSelector.getComponent());
-        grid.add(LabelFactory.create("sms.title", Styles.BOLD), LabelFactory.create(),
-                 LabelFactory.create("sms.appointment.status", Styles.BOLD));
-        status.setTextAlignment(Alignment.ALIGN_TOP);
-        status.setLayoutData(ComponentGrid.layout(new Alignment(Alignment.LEFT, Alignment.TOP)));
-        grid.add(LabelFactory.create("sms.message"), RowFactory.create(message));
-        grid.set(2, 2, 2, status);
-        group.add(customerSelector.getFocusGroup());
-        group.add(patientSelector.getFocusGroup());
-        group.add(message);
-        return ColumnFactory.create(Styles.INSET, grid.createGrid());
+        message.setValue(value);
     }
 
     /**
@@ -203,4 +147,88 @@ public class SMSApppointmentTemplateSampler {
     public FocusGroup getFocusGroup() {
         return group;
     }
+
+    /**
+     * Returns the component.
+     *
+     * @return the component
+     */
+    public Component getComponent() {
+        FocusGroup group = getFocusGroup();
+        BoundCountedTextArea message = new BoundCountedTextArea(this.message, 40, 15);
+        message.setMaximumLength(SMSEditor.MAX_LENGTH);
+        message.setStyleName(Styles.DEFAULT);
+        message.setEnabled(false);
+
+        Label messageLabel = LabelFactory.create();
+        messageLabel.setText(this.message.getDisplayName());
+
+        ComponentGrid grid = new ComponentGrid();
+        layoutFields(grid, group);
+        grid.add(LabelFactory.create("sms.title", Styles.BOLD), LabelFactory.create(),
+                 LabelFactory.create("sms.appointment.status", Styles.BOLD));
+        status.setTextAlignment(Alignment.ALIGN_TOP);
+        status.setLayoutData(ComponentGrid.layout(new Alignment(Alignment.LEFT, Alignment.TOP)));
+        grid.add(LabelFactory.create("sms.message"), RowFactory.create(message));
+        grid.set(2, 2, 2, status);
+        group.add(message);
+        return ColumnFactory.create(Styles.INSET, grid.createGrid());
+    }
+
+    /**
+     * Lays out the editable fields in a grid.
+     *
+     * @param grid  the grid
+     * @param group the focus group
+     */
+    protected void layoutFields(ComponentGrid grid, FocusGroup group) {
+        IMObjectReferenceEditor customerSelector = new CustomerReferenceEditor(customer, null, layoutContext);
+        IMObjectReferenceEditor patientSelector = new PatientReferenceEditor(patient, null, layoutContext);
+        Label customerLabel = LabelFactory.create();
+        customerLabel.setText(customer.getDisplayName());
+
+        Label patientLabel = LabelFactory.create();
+        patientLabel.setText(patient.getDisplayName());
+
+        grid.add(customerLabel, customerSelector.getComponent(), patientLabel, patientSelector.getComponent());
+        group.add(customerSelector.getFocusGroup());
+        group.add(patientSelector.getFocusGroup());
+    }
+
+    /**
+     * Evaluates the template.
+     *
+     * @param template the template
+     * @param context  the context
+     * @return the result of the evaluation. May be {@code null}
+     */
+    protected abstract String evaluate(Entity template, Context context);
+
+    /**
+     * Returns the selected customer.
+     *
+     * @return the customer. May be {@code null}
+     */
+    protected IMObjectReference getCustomer() {
+        return customer.getReference();
+    }
+
+    /**
+     * Returns the selected patient.
+     *
+     * @return the patient. May be {@code null}
+     */
+    protected IMObjectReference getPatient() {
+        return patient.getReference();
+    }
+
+    /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getContext() {
+        return layoutContext;
+    }
+
 }
