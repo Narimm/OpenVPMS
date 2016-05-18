@@ -1484,6 +1484,17 @@
     <data archetype="entityRelationship.worklistTaskType" source="id:OW3" target="id:TT1" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW4" target="id:TT2" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW4" target="id:TT3" noSlots="1"/>
+
+    <data archetype="entity.calendarBlockType" name="Team Meating" colour="0xd1ffb1"/>
+    <data archetype="entity.calendarBlockType" name="Reserved for Valued Customers" colour="0xd1ffb1">
+        <data collection="customerAccountTypes" archetype="lookup.customerAccountType" childId="id:Valued"/>
+    </data>
+    <data archetype="entity.calendarBlockType" name="Puppy School" colour="0xd1ffb1">
+        <data collection="customerTypes" archetype="lookup.customerType" childId="id:PUPPY_SCHOOL"/>
+    </data>
+    <data archetype="entity.calendarBlockType" name="Health Club" colour="0xd1ffb1">
+        <data collection="customerTypes" archetype="lookup.customerType" childId="id:HEALTH_CLUB"/>
+    </data>
     <data id="AP1" archetype="act.customerAppointment" startTime="12/05/2003 14:00:00" endTime="12/05/2003 14:15:00"
           reason="vac">
         <data collection="customer" archetype="participation.customer" entity="id:C9" act="id:AP1"/>

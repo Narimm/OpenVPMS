@@ -17,15 +17,11 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.joda.time.Period;
-import org.openvpms.archetype.i18n.time.DateDurationFormatter;
-import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
-import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -38,9 +34,7 @@ import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
-import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -49,34 +43,21 @@ import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
-import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesEditor;
-import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesViewer;
-import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
-import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
-import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
-import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
+import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
 
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
 
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
@@ -88,7 +69,7 @@ import static org.openvpms.web.echo.style.Styles.INSET;
  *
  * @author Tim Anderson
  */
-public class AppointmentActEditor extends AbstractScheduleActEditor {
+public class AppointmentEditor extends CalendarEventEditor {
 
     /**
      * The alerts row.
@@ -99,21 +80,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * Listener notified when the patient changes.
      */
     private ModifiableListener patientListener;
-
-    /**
-     * The appointment slot size.
-     */
-    private int slotSize;
-
-    /**
-     * The appointment series.
-     */
-    private AppointmentSeries series;
-
-    /**
-     * The appointment series editor.
-     */
-    private AppointmentSeriesEditor seriesEditor;
 
     /**
      * The appointment rules.
@@ -131,11 +97,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private boolean scheduleReminders;
 
     /**
-     * The appointment duration.
-     */
-    private Label duration = LabelFactory.create();
-
-    /**
      * Determines if the sendReminder checkbox should be enabled.
      */
     private Period noReminder;
@@ -144,11 +105,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * The send reminder flag.
      */
     private BoundCheckBox sendReminder;
-
-    /**
-     * The appointment duration formatter.
-     */
-    private static DurationFormatter formatter = DateDurationFormatter.create(false, false, false, true, true, true);
 
     /**
      * The 'send reminder' node name.
@@ -166,29 +122,28 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private static final String REMINDER_ERROR = "reminderError";
 
     /**
-     * Constructs an {@link AppointmentActEditor}.
+     * Constructs an {@link AppointmentEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public AppointmentActEditor(Act act, IMObject parent, LayoutContext context) {
+    public AppointmentEditor(Act act, IMObject parent, LayoutContext context) {
         this(act, parent, false, context);
     }
 
     /**
-     * Constructs an {@link AppointmentActEditor}.
+     * Constructs an {@link AppointmentEditor}.
      *
      * @param act        the act to edit
      * @param parent     the parent object. May be {@code null}
      * @param editSeries if {@code true}, edit the series
      * @param context    the layout context
      */
-    public AppointmentActEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
-        super(act, parent, context);
+    public AppointmentEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
+        super(act, parent, editSeries, context);
         rules = ServiceHelper.getBean(AppointmentRules.class);
         if (act.isNew()) {
-            initParticipant("schedule", context.getContext().getSchedule());
             initParticipant("customer", context.getContext().getCustomer());
         }
 
@@ -206,48 +161,13 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             }
         }
 
-        Date startTime = getStartTime();
-        if (startTime == null) {
-            Date scheduleDate = context.getContext().getScheduleDate();
-            if (scheduleDate != null) {
-                startTime = getDefaultStartTime(scheduleDate);
-                setStartTime(startTime, true);
-            }
-        }
-
         getProperty("status").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onStatusChanged();
             }
         });
-        series = new AppointmentSeries(act, ServiceHelper.getArchetypeService());
-        seriesEditor = (editSeries) ? new AppointmentSeriesEditor(series) : null;
         sendReminder = new BoundCheckBox(getProperty(SEND_REMINDER));
         addStartEndTimeListeners();
-        updateRelativeDate();
-        updateDuration();
-        updateSendReminder(act.isNew());
-    }
-
-    /**
-     * Sets the schedule.
-     *
-     * @param schedule the schedule
-     */
-    public void setSchedule(Entity schedule) {
-        if (setParticipant("schedule", schedule)) {
-            onScheduleChanged(schedule);
-        }
-        calculateEndTime();
-    }
-
-    /**
-     * Returns the schedule.
-     *
-     * @return the schedule. May be {@code null}
-     */
-    public Entity getSchedule() {
-        return (Entity) getParticipant("schedule");
     }
 
     /**
@@ -269,96 +189,24 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Returns the appointment series.
-     *
-     * @return the series
-     */
-    public AppointmentSeries getSeries() {
-        return series;
-    }
-
-    /**
-     * Sets the series repeat expression.
-     *
-     * @param expression the expression. May be {@code null}
-     */
-    public void setExpression(RepeatExpression expression) {
-        if (seriesEditor != null) {
-            seriesEditor.setExpression(expression);
-        }
-    }
-
-    /**
-     * Sets the series repeat condition.
-     *
-     * @param condition the condition. May be {@code null}
-     */
-    public void setCondition(RepeatCondition condition) {
-        if (seriesEditor != null) {
-            seriesEditor.setCondition(condition);
-        }
-    }
-
-    /**
-     * Determines if the object has been changed.
-     *
-     * @return {@code true} if the object has been changed
-     */
-    @Override
-    public boolean isModified() {
-        return super.isModified() || (seriesEditor != null && seriesEditor.isModified());
-    }
-
-    /**
      * Creates a new instance of the editor, with the latest instance of the object to edit.
      *
      * @return {@code null}
      */
     @Override
     public IMObjectEditor newInstance() {
-        boolean editSeries = seriesEditor != null;
-        return new AppointmentActEditor(reload(getObject()), getParent(), editSeries, getLayoutContext());
+        boolean editSeries = getSeriesEditor() != null;
+        return new AppointmentEditor(reload(getObject()), getParent(), editSeries, getLayoutContext());
     }
 
     /**
-     * Calculates the series.
-     * <p/>
-     * If only a single appointment is being edited, this returns the appointment time.
+     * Creates a new event series.
      *
-     * @return the series, or {@code null} if the appointments overlap
-     */
-    public List<Times> getAppointmentTimes() {
-        List<Times> result;
-        if (seriesEditor != null) {
-            result = series.getAppointmentTimes();
-        } else {
-            result = Collections.singletonList(Times.create(getObject()));
-        }
-        return result;
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     * @return a new event series
      */
     @Override
-    protected boolean doValidation(Validator validator) {
-        return super.doValidation(validator) && (seriesEditor == null || seriesEditor.validate(validator));
-    }
-
-    /**
-     * Save any edits.
-     *
-     * @throws OpenVPMSException if the save fails
-     */
-    @Override
-    protected void doSave() {
-        super.doSave();
-        if (seriesEditor != null) {
-            seriesEditor.save();
-        }
+    protected CalendarEventSeries createSeries() {
+        return new AppointmentSeries(getObject(), ServiceHelper.getArchetypeService());
     }
 
     /**
@@ -397,45 +245,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     @Override
     protected void onStartTimeChanged() {
-        Date start = getStartTime();
-        if (start != null && slotSize != 0) {
-            Date rounded = SchedulingHelper.getSlotTime(start, slotSize, false);
-            if (DateRules.compareTo(start, rounded) != 0) {
-                setStartTime(rounded, true);
-            }
-            if (seriesEditor != null) {
-                seriesEditor.refresh();
-            }
-        }
-
-        try {
-            calculateEndTime();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-        updateRelativeDate();
-        updateDuration();
+        super.onStartTimeChanged();
         updateSendReminder(sendReminder.isSelected());
-    }
-
-    /**
-     * Invoked when the end time changes. Recalculates the end time if it is less than the start time.
-     */
-    @Override
-    protected void onEndTimeChanged() {
-        Date start = getStartTime();
-        Date end = getEndTime();
-        if (start != null && end != null) {
-            if (end.compareTo(start) < 0) {
-                calculateEndTime();
-            } else if (slotSize != 0) {
-                Date rounded = SchedulingHelper.getSlotTime(end, slotSize, true);
-                if (DateRules.compareTo(end, rounded) != 0) {
-                    setEndTime(rounded, true);
-                }
-            }
-        }
-        updateDuration();
     }
 
     /**
@@ -456,22 +267,16 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Updates the end-time editor to base relative dates on the start time.
+     * Calculates the end time if the start time and appointment type are set.
      */
-    protected void updateRelativeDate() {
-        getEndTimeEditor().setRelativeDate(getStartTime());
-    }
-
-    /**
-     * Updates the appointment duration display.
-     */
-    private void updateDuration() {
-        Date startTime = getStartTime();
-        Date endTime = getEndTime();
-        if (startTime != null && endTime != null) {
-            duration.setText(formatter.format(startTime, endTime));
-        } else {
-            duration.setText(null);
+    protected void calculateEndTime() {
+        Date start = getStartTime();
+        Entity schedule = getSchedule();
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
+        Entity appointmentType = editor.getEntity();
+        if (start != null && schedule != null && appointmentType != null) {
+            Date end = rules.calculateEndTime(start, schedule, appointmentType);
+            setEndTime(end);
         }
     }
 
@@ -481,8 +286,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      *
      * @param schedule the schedule. May be {@code null}
      */
-    private void onScheduleChanged(Entity schedule) {
-        initSchedule(schedule);
+    protected void onScheduleChanged(Entity schedule) {
+        super.onScheduleChanged(schedule);
         updateSendReminder(sendReminder.isSelected());
     }
 
@@ -492,15 +297,11 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      *
      * @param schedule the schedule. May be {@code null}
      */
-    private void initSchedule(Entity schedule) {
+    @Override
+    protected void initSchedule(Entity schedule) {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
-        if (schedule != null) {
-            slotSize = rules.getSlotSize((Party) schedule);
-            scheduleReminders = rules.isScheduleRemindersEnabled(schedule);
-        } else {
-            scheduleReminders = false;
-        }
+        scheduleReminders = schedule != null && rules.isScheduleRemindersEnabled(schedule);
     }
 
     /**
@@ -630,53 +431,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Calculates the default start time of an appointment, using the supplied
-     * date and current time.
-     * The start time is rounded to the next nearest 'slot-size' interval.
-     *
-     * @param date the start date
-     * @return the start time
-     */
-    private Date getDefaultStartTime(Date date) {
-        int slotSize = 0;
-        Party schedule = (Party) getParticipant("schedule");
-        if (schedule != null) {
-            slotSize = rules.getSlotSize(schedule);
-        }
-
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(date);
-        Calendar timeCal = new GregorianCalendar();
-        timeCal.setTime(new Date());
-        calendar.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
-        calendar.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        if (slotSize != 0) {
-            int mins = calendar.get(Calendar.MINUTE);
-            mins = ((mins / slotSize) * slotSize) + slotSize;
-            calendar.set(Calendar.MINUTE, mins);
-        }
-        return calendar.getTime();
-    }
-
-    /**
-     * Calculates the end time if the start time and appointment type are set.
-     *
-     * @throws OpenVPMSException for any error
-     */
-    private void calculateEndTime() {
-        Date start = getStartTime();
-        Party schedule = (Party) getParticipant("schedule");
-        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
-        Entity appointmentType = editor.getEntity();
-        if (start != null && schedule != null && appointmentType != null) {
-            Date end = rules.calculateEndTime(start, schedule, appointmentType);
-            setEndTime(end);
-        }
-    }
-
-    /**
      * Returns the appointment type editor.
      *
      * @return the appointment type editor
@@ -737,22 +491,12 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         }
     }
 
-    private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Dummy property used to ensure the duration is displayed after the endTime node.
-         */
-        private SimpleProperty durationProperty = new SimpleProperty(
-                "duration", null, String.class, Messages.get("workflow.scheduling.appointment.duration"));
+    private class AppointmentLayoutStrategy extends LayoutStrategy {
 
         /**
          * Constructs an {@link AppointmentLayoutStrategy}.
          */
         public AppointmentLayoutStrategy() {
-            super(new ArchetypeNodes());
-            addComponent(new ComponentState(getStartTimeEditor()));
-            addComponent(new ComponentState(getEndTimeEditor()));
-            addComponent(new ComponentState(duration, durationProperty));
             ArchetypeNodes archetypeNodes = getArchetypeNodes();
             archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
             if (!smsPractice || !scheduleReminders) {
@@ -763,35 +507,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             BoundDateTimeField reminderSent = BoundDateTimeFieldFactory.create(getProperty(REMINDER_SENT));
             reminderSent.setStyleName(Styles.EDIT);
             addComponent(new ComponentState(reminderSent));
-        }
-
-        /**
-         * Lays out components in a grid.
-         *
-         * @param object     the object to lay out
-         * @param properties the properties
-         * @param context    the layout context
-         */
-        @Override
-        protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
-            ArchetypeNodes.insert(properties, END_TIME, durationProperty);
-            ComponentGrid grid = super.createGrid(object, properties, context);
-
-            Property repeat = getProperty("repeat");
-            if (seriesEditor != null) {
-                ComponentState repeatState = new ComponentState(seriesEditor.getRepeatEditor(), repeat,
-                                                                seriesEditor.getRepeatFocusGroup());
-                grid.add(repeatState, 2);
-                ComponentState untilState = new ComponentState(seriesEditor.getUntilEditor(),
-                                                               seriesEditor.getUntilFocusGroup());
-                untilState.setLabel(new Label());
-                grid.add(untilState);
-            } else {
-                AppointmentSeriesViewer viewer = new AppointmentSeriesViewer(series);
-                grid.add(new ComponentState(viewer.getComponent(), repeat), 2);
-            }
-
-            return grid;
         }
 
         /**

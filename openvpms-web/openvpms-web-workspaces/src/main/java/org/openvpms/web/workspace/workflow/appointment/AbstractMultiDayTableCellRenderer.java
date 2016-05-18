@@ -190,4 +190,20 @@ public abstract class AbstractMultiDayTableCellRenderer extends AbstractAppointm
         return result;
     }
 
+    /**
+     * Determines if the cell can be highlighted.
+     *
+     * @param column the column
+     * @param row    the row
+     * @param value  the value at the cell
+     * @return {@code true} if the cell can be highlighted
+     */
+    @Override
+    protected boolean canHighlightCell(int column, int row, Object value) {
+        boolean highlight = false;
+        if (getModel().isSelected(column, row) && value instanceof PropertySet) {
+            highlight = true;
+        }
+        return highlight;
+    }
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -59,7 +59,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
     /**
      * The archetype short name of the events that this service caches.
      */
-    private final String eventShortName;
+    private final String[] eventShortNames;
 
     /**
      * Listener for event updates.
@@ -70,18 +70,18 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
     /**
      * Constructs an {@link AbstractScheduleService}.
      *
-     * @param eventShortName the event act archetype short name
+     * @param eventShortNames the event act archetype short names
      * @param service        the archetype service
      * @param cache          the event cache
      * @param factory        the event factory
      */
-    public AbstractScheduleService(String eventShortName, IArchetypeService service, Ehcache cache,
+    public AbstractScheduleService(String[] eventShortNames, IArchetypeService service, Ehcache cache,
                                    ScheduleEventFactory factory) {
         this.service = service;
         this.factory = factory;
         this.cache = new ScheduleEventCache(cache, factory);
 
-        this.eventShortName = eventShortName;
+        this.eventShortNames = eventShortNames;
 
         // add a listener to receive notifications from the archetype service
         listener = new AbstractArchetypeServiceListener() {
@@ -96,7 +96,9 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
                 removeEvent((Act) object);
             }
         };
-        service.addListener(eventShortName, listener);
+        for (String shortName : eventShortNames) {
+            service.addListener(shortName, listener);
+        }
     }
 
     /**
@@ -109,7 +111,9 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
     @Override
     public void destroy() throws Exception {
         cache.clear();
-        service.removeListener(eventShortName, listener);
+        for (String shortName : eventShortNames) {
+            service.removeListener(shortName, listener);
+        }
     }
 
     /**
@@ -135,7 +139,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
     public List<PropertySet> getEvents(Entity schedule, Date from, Date to) {
         Date fromDay = DateRules.getDate(from);
         Date toDay = DateRules.getDate(to);
-        List<PropertySet> results = new ArrayList<PropertySet>();
+        List<PropertySet> results = new ArrayList<>();
         while (fromDay.compareTo(toDay) <= 0) {
             for (PropertySet event : getEvents(schedule, fromDay)) {
                 Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);

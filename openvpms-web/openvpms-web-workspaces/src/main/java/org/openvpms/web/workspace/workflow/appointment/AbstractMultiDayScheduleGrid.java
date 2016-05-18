@@ -54,13 +54,13 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      * @param scheduleView the schedule view
      * @param date         the date
      * @param days         the number of days to display
-     * @param appointments the appointments
+     * @param events       the events
      */
     public AbstractMultiDayScheduleGrid(Entity scheduleView, Date date, int days,
-                                        Map<Entity, List<PropertySet>> appointments) {
+                                        Map<Entity, List<PropertySet>> events) {
         super(scheduleView, date, DateRules.getDate(date, days - 1, DateUnits.DAYS));
         this.days = days;
-        setAppointments(appointments);
+        setEvents(events);
     }
 
     /**
@@ -82,10 +82,22 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      */
     @Override
     public PropertySet getEvent(Schedule schedule, int slot) {
+        return getEvent(schedule, slot, true);
+    }
+
+    /**
+     * Returns the event for the specified schedule and slot.
+     *
+     * @param schedule              the schedule
+     * @param slot                  the slot
+     * @param includeBlockingEvents if {@code true}, look for blocking events if there are no non-blocking events
+     * @return the corresponding event, or {@code null} if none is found
+     */
+    public PropertySet getEvent(Schedule schedule, int slot, boolean includeBlockingEvents) {
         Date time = getStartTime(schedule, slot);
-        PropertySet result = schedule.getEvent(time, 24 * 60);
+        PropertySet result = schedule.getEvent(time, 24 * 60, includeBlockingEvents);
         if (result == null) {
-            result = schedule.getIntersectingEvent(time);
+            result = schedule.getIntersectingEvent(time, includeBlockingEvents);
         }
         return result;
     }
@@ -112,10 +124,8 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      */
     @Override
     public Availability getAvailability(Schedule schedule, int slot) {
-        if (getEvent(schedule, slot) != null) {
-            return Availability.BUSY;
-        }
-        return Availability.FREE;
+        PropertySet event = getEvent(schedule, slot, false);
+        return (event != null) ? Availability.BUSY : Availability.FREE;
     }
 
     /**
@@ -143,18 +153,16 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
     }
 
     /**
-     * Returns the no. of slots at an appointment occupies, from the specified
-     * slot.
-     * <p>
-     * If the appointment begins prior to the slot, the remaining slots will
-     * be returned.
+     * Returns the no. of slots an event occupies, from the specified slot.
+     * <p/>
+     * If the event begins prior to the slot, the remaining slots will be returned.
      *
-     * @param appointment the appointment
-     * @param slot        the starting slot
-     * @return the no. of slots that the appointment occupies
+     * @param event the event
+     * @param slot  the starting slot
+     * @return the no. of slots that the event occupies
      */
-    public int getSlots(PropertySet appointment, int slot) {
-        DateTime endTime = new DateTime(appointment.getDate(ScheduleEvent.ACT_END_TIME));
+    public int getSlots(PropertySet event, int slot) {
+        DateTime endTime = new DateTime(event.getDate(ScheduleEvent.ACT_END_TIME));
         int endSlot = Days.daysBetween(new DateTime(getStartDate()), endTime).getDays();
         if (endTime.getHourOfDay() > 0 || endTime.getMinuteOfHour() > 0) {
             ++endSlot;
@@ -173,17 +181,17 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
     }
 
     /**
-     * Sets the appointments.
+     * Sets the events.
      *
-     * @param appointments the appointments, keyed on schedule
+     * @param events the events, keyed on schedule
      */
-    protected void setAppointments(Map<Entity, List<PropertySet>> appointments) {
+    protected void setEvents(Map<Entity, List<PropertySet>> events) {
         List<Schedule> schedules = new ArrayList<>();
         IMObjectCache cageTypes = new SoftRefIMObjectCache(ServiceHelper.getArchetypeService());
 
         int index = -1;
         Entity last = null;
-        for (Entity entity : appointments.keySet()) {
+        for (Entity entity : events.keySet()) {
             IMObjectBean bean = new IMObjectBean(entity);
             Entity cageType = (Entity) cageTypes.get(bean.getNodeTargetObjectRef("cageType"));
             Schedule schedule = new Schedule(entity, cageType, 0, 24 * 60, 24 * 60);
@@ -196,56 +204,14 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
         }
         setSchedules(schedules);
 
-        // add the appointments
-        for (Map.Entry<Entity, List<PropertySet>> entry : appointments.entrySet()) {
+        // add the events
+        for (Map.Entry<Entity, List<PropertySet>> entry : events.entrySet()) {
             Party schedule = (Party) entry.getKey();
             List<PropertySet> sets = entry.getValue();
 
             for (PropertySet set : sets) {
-                addAppointment(schedule, set);
+                addEvent(schedule, set);
             }
         }
-    }
-
-    /**
-     * Adds an appointment.
-     * <p>
-     * If the corresponding Schedule already has an appointment that intersects
-     * the appointment, a new Schedule will be created with the same start and
-     * end times, and the appointment added to that.
-     *
-     * @param schedule the schedule to add the appointment to
-     * @param set      the appointment
-     */
-    private void addAppointment(Party schedule, PropertySet set) {
-        int index = -1;
-        boolean found = false;
-        Schedule row = null;
-        Schedule match = null;
-
-        // try and find a corresponding Schedule that has no appointment that
-        // intersects the supplied one
-        List<Schedule> schedules = getSchedules();
-        for (int i = 0; i < schedules.size(); ++i) {
-            row = schedules.get(i);
-            if (row.getSchedule().equals(schedule)) {
-                if (row.indexOf(set.getReference(ScheduleEvent.ACT_REFERENCE)) != -1) {
-                    return;
-                }
-                if (row.hasIntersectingEvent(set)) {
-                    match = row;
-                    index = i;
-                } else {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        if (!found) {
-            // appointment intersects an existing one, so create a new Schedule
-            row = new Schedule(match);
-            schedules.add(index + 1, row);
-        }
-        row.addEvent(set);
     }
 }

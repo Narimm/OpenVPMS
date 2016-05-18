@@ -47,7 +47,7 @@ public abstract class TaskTableModel extends ScheduleTableModel {
      */
     public TaskTableModel(TaskGrid grid, Context context, ScheduleColours eventColours,
                           ScheduleColours clinicianColours) {
-        super(grid, context, true, eventColours, clinicianColours);
+        super(grid, context, true, eventColours, clinicianColours, null);
     }
 
     /**

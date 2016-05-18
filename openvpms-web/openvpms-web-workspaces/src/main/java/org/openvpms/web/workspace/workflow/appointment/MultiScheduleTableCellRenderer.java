@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Table;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.echo.factory.TableFactory;
+import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
 /**
  * TableCellRenderer for {@link MultiScheduleTableModel}.
@@ -47,9 +48,10 @@ public class MultiScheduleTableCellRenderer extends AppointmentTableCellRenderer
      * @return the component
      */
     protected Component getEvent(Table table, PropertySet event, int column, int row) {
+        Schedule schedule = getModel().getSchedule(column, row);
         Component component = super.getEvent(table, event, column, row);
         AppointmentGrid grid = getModel().getGrid();
-        int rowSpan = grid.getSlots(event, row);
+        int rowSpan = grid.getSlots(event, schedule, row);
         if (rowSpan > 1) {
             component.setLayoutData(TableFactory.rowSpan(rowSpan));
         }

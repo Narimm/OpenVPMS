@@ -11,17 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
@@ -40,19 +43,17 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.openvpms.archetype.rules.workflow.ScheduleArchetypes.APPOINTMENT;
-
 /**
- * Helper for working with appointment series without loading the entire series.
+ * Helper for working with calendar event series without loading the entire series.
  *
  * @author Tim Anderson
  */
-public class AppointmentSeriesState {
+public class CalendarEventSeriesState {
 
     /**
-     * The appointment.
+     * The event.
      */
-    private final Act appointment;
+    private final Act event;
 
     /**
      * The archetype service.
@@ -65,7 +66,7 @@ public class AppointmentSeriesState {
     private final Act first;
 
     /**
-     * The appointment series, or {@code null} if the appointment isn't associated with a series
+     * The series, or {@code null} if the event isn't associated with a series.
      */
     private final Act series;
 
@@ -80,20 +81,25 @@ public class AppointmentSeriesState {
     private final List<ObjectSet> items;
 
     /**
-     * Constructs an {@link AppointmentSeriesState}.
-     *
-     * @param appointment the appointment
-     * @param service     the archetype service
+     * The event display name.
      */
-    public AppointmentSeriesState(Act appointment, IArchetypeService service) {
-        ActBean bean = new ActBean(appointment);
-        this.appointment = appointment;
+    private final String displayName;
+
+    /**
+     * Constructs an {@link CalendarEventSeriesState}.
+     *
+     * @param event   the event
+     * @param service the archetype service
+     */
+    public CalendarEventSeriesState(Act event, IArchetypeService service) {
+        ActBean bean = new ActBean(event);
+        this.event = event;
         this.service = service;
         series = (Act) bean.getNodeSourceObject("repeat");
         if (series != null) {
             ActBean seriesBean = new ActBean(series);
             List<IMObjectReference> refs = seriesBean.getNodeTargetObjectRefs("items");
-            ArchetypeQuery query = new ArchetypeQuery(APPOINTMENT);
+            ArchetypeQuery query = new ArchetypeQuery(event.getArchetypeId());
             query.getArchetypeConstraint().setAlias("act");
             query.add(new NodeSelectConstraint("id"));
             query.add(new NodeSelectConstraint("startTime"));
@@ -105,7 +111,7 @@ public class AppointmentSeriesState {
             items = objects.getResults();
             int index = getIndex();
             if (index == 0) {
-                first = appointment;
+                first = event;
             } else if (!items.isEmpty()) {
                 IMObjectReference reference = getReference(0);
                 first = (Act) service.get(reference);
@@ -118,13 +124,23 @@ public class AppointmentSeriesState {
             first = null;
             expression = null;
         }
+        displayName = DescriptorHelper.getDisplayName(event);
     }
 
     /**
-     * Determines if the appointment is associated with a series.
+     * Returns the event display name.
+     *
+     * @return the event display name
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    /**
+     * Determines if the event is associated with a series.
      * +
      *
-     * @return {@code true} if the appointment is associated with a series
+     * @return {@code true} if the event is associated with a series
      */
     public boolean hasSeries() {
         return series != null;
@@ -149,9 +165,9 @@ public class AppointmentSeriesState {
     }
 
     /**
-     * Returns the series repeat condition, for the nth appointment in the series
+     * Returns the series repeat condition, for the nth event in the series
      *
-     * @param index the index of the nth appointment (0-based)
+     * @param index the index of the nth event (0-based)
      * @return the series repeat condition. May be {@code null}
      */
     public RepeatCondition getCondition(int index) {
@@ -203,11 +219,11 @@ public class AppointmentSeriesState {
     }
 
     /**
-     * Deletes the appointment.
+     * Deletes the event.
      * <p/>
-     * If it is the only appointment in the series, the series will be deleted, otherwise the series will remain.
+     * If it is the only event in the series, the series will be deleted, otherwise the series will remain.
      *
-     * @return {@code true} if the appointment was deleted
+     * @return {@code true} if the event was deleted
      */
     public boolean delete() {
         TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
@@ -215,9 +231,9 @@ public class AppointmentSeriesState {
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 if (series != null) {
                     ActBean bean = new ActBean(series, service);
-                    bean.removeNodeRelationships("items", appointment);
-                    service.save(Arrays.asList(series, appointment));
-                    service.remove(appointment);
+                    bean.removeNodeRelationships("items", event);
+                    service.save(Arrays.asList(series, event));
+                    service.remove(event);
                     if (bean.getNodeTargetObjectRefs("items").isEmpty()) {
                         service.remove(series);
                     }
@@ -247,14 +263,14 @@ public class AppointmentSeriesState {
     }
 
     /**
-     * Returns the index of the appointment in the series.
+     * Returns the index of the event in the series.
      *
      * @return the index, or {@code -1} if not found
      */
     public int getIndex() {
         for (int i = 0; i < items.size(); ++i) {
             ObjectSet set = items.get(i);
-            if (getId(set) == appointment.getId()) {
+            if (getId(set) == event.getId()) {
                 return i;
             }
         }
@@ -262,18 +278,18 @@ public class AppointmentSeriesState {
     }
 
     /**
-     * Deletes all appointments from the specified index.
+     * Deletes all events from the specified index.
      * <p/>
-     * If there are no appointments left, the series will also be deleted
+     * If there are no events left, the series will also be deleted
      *
-     * @param index the appointment index
+     * @param index the events index
      */
     private boolean delete(final int index) {
         TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 ActBean bean = new ActBean(series, service);
-                List<Act> acts = new ArrayList<Act>();
+                List<Act> acts = new ArrayList<>();
                 for (int i = index; i < items.size(); ++i) {
                     IMObjectReference reference = getReference(i);
                     Act act = (Act) ServiceHelper.getArchetypeService().get(reference);
@@ -282,7 +298,7 @@ public class AppointmentSeriesState {
                         bean.removeNodeRelationships("items", act);
                     }
                 }
-                List<Act> toSave = new ArrayList<Act>(acts);
+                List<Act> toSave = new ArrayList<>(acts);
                 toSave.add(series);
                 service.save(toSave);
                 if (index == 0) {
@@ -335,14 +351,14 @@ public class AppointmentSeriesState {
     }
 
     /**
-     * Determines if an appointment can be edited.
+     * Determines if an event can be edited.
      *
-     * @param set the appointment
-     * @param now the current time
-     * @return {@code true} if the appointment can be edited
+     * @param event the event
+     * @param now   the current time
+     * @return {@code true} if the event can be edited
      */
-    private boolean canEdit(ObjectSet set, Date now) {
-        Date startTime = set.getDate("act.startTime");
+    private boolean canEdit(ObjectSet event, Date now) {
+        Date startTime = event.getDate("act.startTime");
         return DateRules.compareTo(startTime, now) > 0;
     }
 
@@ -353,32 +369,34 @@ public class AppointmentSeriesState {
      * @return the statuses
      */
     private List<String> getNonPendingStatuses(int index) {
-        List<String> result = new ArrayList<String>();
-        for (int i = index + 1; i < items.size(); ++i) {
-            String status = items.get(i).getString("act.status");
-            if (!WorkflowStatus.PENDING.equals(status) && !result.contains(status)) {
-                result.add(status);
+        List<String> result = new ArrayList<>();
+        if (TypeHelper.isA(event, ScheduleArchetypes.APPOINTMENT)) {
+            for (int i = index + 1; i < items.size(); ++i) {
+                String status = items.get(i).getString("act.status");
+                if (!WorkflowStatus.PENDING.equals(status) && !result.contains(status)) {
+                    result.add(status);
+                }
             }
         }
         return result;
     }
 
     /**
-     * Returns an appointment reference for the specified index.
+     * Returns an event reference for the specified index.
      *
-     * @param index the appointment index
-     * @return the corresponding appointment reference
+     * @param index the event index
+     * @return the corresponding event reference
      */
     private IMObjectReference getReference(int index) {
         long id = getId(items.get(index));
-        return new IMObjectReference(APPOINTMENT, id);
+        return new IMObjectReference(event.getArchetypeId(), id);
     }
 
     /**
-     * Returns the appointment id from a set.
+     * Returns the event id from a set.
      *
      * @param set the set
-     * @return the appointment id
+     * @return the event id
      */
     private long getId(ObjectSet set) {
         return set.getLong("act.id");

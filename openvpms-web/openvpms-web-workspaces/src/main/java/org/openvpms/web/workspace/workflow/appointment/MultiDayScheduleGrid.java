@@ -36,10 +36,10 @@ public class MultiDayScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param scheduleView the schedule view
      * @param date         the date
      * @param days         the number of days to display
-     * @param appointments the appointments
+     * @param events       the events
      */
-    public MultiDayScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> appointments) {
-        super(scheduleView, date, days, appointments);
+    public MultiDayScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> events) {
+        super(scheduleView, date, days, events);
     }
 
 }

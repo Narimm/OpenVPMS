@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -23,23 +23,23 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
 
 /**
- * Appointment series viewer.
+ * Calendar event series viewer.
  *
  * @author Tim Anderson
  */
-public class AppointmentSeriesViewer {
+public class CalendarEventSeriesViewer {
 
     /**
-     * The appointment series.
+     * The event series.
      */
-    private final AppointmentSeries series;
+    private final CalendarEventSeries series;
 
     /**
-     * Constructs an {@link AppointmentSeriesViewer}.
+     * Constructs an {@link CalendarEventSeriesViewer}.
      *
      * @param series the series to view
      */
-    public AppointmentSeriesViewer(AppointmentSeries series) {
+    public CalendarEventSeriesViewer(CalendarEventSeries series) {
         this.series = series;
     }
 

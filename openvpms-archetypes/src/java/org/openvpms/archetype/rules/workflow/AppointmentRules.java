@@ -142,8 +142,8 @@ public class AppointmentRules {
      * @return the schedule slot size in minutes
      * @throws OpenVPMSException for any error
      */
-    public int getSlotSize(Party schedule) {
-        EntityBean bean = new EntityBean(schedule, service);
+    public int getSlotSize(Entity schedule) {
+        IMObjectBean bean = new IMObjectBean(schedule, service);
         return getSlotSize(bean);
     }
 
@@ -409,7 +409,7 @@ public class AppointmentRules {
      * @return the schedule slot size in minutes
      * @throws OpenVPMSException for any error
      */
-    private int getSlotSize(EntityBean schedule) {
+    private int getSlotSize(IMObjectBean schedule) {
         int slotSize = schedule.getInt("slotSize");
         String slotUnits = schedule.getString("slotUnits");
         int result;
@@ -426,7 +426,7 @@ public class AppointmentRules {
      *
      * @param schedule        the schedule
      * @param appointmentType the appointment type
-     * @return the no. of slots, or <code>0</code> if unknown
+     * @return the no. of slots, or {@code 0} if unknown
      * @throws OpenVPMSException for any error
      */
     private int getSlots(EntityBean schedule, Entity appointmentType) {

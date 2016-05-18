@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -62,7 +62,7 @@
         <node name="tasks" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
               hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.customerAppointmentTask"/>
         <node name="repeat" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
-              hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.customerAppointmentSeries"/>
+              hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.calendarEventSeries"/>
         <node name="sendReminder" path="/details/sendReminder" type="java.lang.Boolean" minCardinality="0"
               maxCardinality="1" defaultValue="false()"/>
         <node name="reminderSent" path="/details/reminderSent" type="java.util.Date" minCardinality="0"
