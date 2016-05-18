@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -84,7 +84,7 @@ public class TaskQueryTestCase extends ArchetypeServiceTest {
         }
         Date to = new Date();
 
-        TaskQuery query = new TaskQuery(workList, from, to, getArchetypeService());
+        TaskQuery query = new TaskQuery(workList, from, to, getArchetypeService(), getLookupService());
         IPage<ObjectSet> page = query.query();
         assertNotNull(page);
         List<ObjectSet> results = page.getResults();

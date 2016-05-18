@@ -16,7 +16,9 @@
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import echopointng.layout.TableLayoutDataEx;
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
@@ -28,6 +30,8 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableCellRenderer;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
@@ -48,7 +52,6 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
     public AbstractAppointmentTableCellRender(ScheduleTableModel model) {
         super(model);
     }
-
 
     /**
      * Helper to create a label indicating the reminder status of an appointment.
@@ -80,30 +83,13 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
      */
     @Override
     protected Component getEvent(Table table, PropertySet event, int column, int row) {
-        String text = evaluate(event);
-        if (text == null) {
-            String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
-            String patient = event.getString(ScheduleEvent.PATIENT_NAME);
-            String status = getModel().getStatus(event);
-            String reason = event.getString(ScheduleEvent.ACT_REASON_NAME);
-            if (reason == null) {
-                // fall back to the code
-                reason = event.getString(ScheduleEvent.ACT_REASON);
-            }
-
-            if (patient == null) {
-                text = Messages.format("workflow.scheduling.appointment.table.customer",
-                                       customer, reason, status);
-            } else {
-                text = Messages.format("workflow.scheduling.appointment.table.customerpatient",
-                                       customer, patient, reason, status);
-            }
+        Component result;
+        if (Schedule.isBlockingEvent(event)) {
+            result = getBlock(event);
+        } else {
+            result = getAppointment(event);
         }
-
-        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        return createLabelWithNotes(text, notes, event.getBoolean(ScheduleEvent.SEND_REMINDER),
-                                    event.getDate(ScheduleEvent.REMINDER_SENT),
-                                    event.getString(ScheduleEvent.REMINDER_ERROR));
+        return result;
     }
 
     /**
@@ -130,6 +116,84 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
             result.add(reminder);
         }
         return result;
+    }
+
+    /**
+     * Returns the table layout data for an event .
+     *
+     * @param event     the event
+     * @param highlight the highlight setting
+     * @return layout data for the event, or {@code null} if no style information exists
+     */
+    @Override
+    protected TableLayoutDataEx getEventLayoutData(PropertySet event, ScheduleTableModel.Highlight highlight) {
+        TableLayoutDataEx result = null;
+        if (Schedule.isBlockingEvent(event)) {
+            ScheduleColours colours = getBlockingEventColours();
+            Color colour = null;
+            if (colours != null) {
+                colour = colours.getColour(event.getReference(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+            }
+            if (colour != null) {
+                result = new TableLayoutDataEx();
+                result.setBackground(colour);
+            }
+        } else {
+            result = super.getEventLayoutData(event, highlight);
+        }
+        return result;
+    }
+
+    /**
+     * Formats an appointment.
+     *
+     * @param event the event
+     * @return the appointment component
+     */
+    private Component getAppointment(PropertySet event) {
+        Component result;
+        String text = evaluate(event);
+        if (text == null) {
+            String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
+            String patient = event.getString(ScheduleEvent.PATIENT_NAME);
+            String status = getModel().getStatus(event);
+            String reason = event.getString(ScheduleEvent.ACT_REASON_NAME);
+            if (reason == null) {
+                // fall back to the code
+                reason = event.getString(ScheduleEvent.ACT_REASON);
+            }
+
+            if (patient == null) {
+                text = Messages.format("workflow.scheduling.appointment.table.customer",
+                                       customer, reason, status);
+            } else {
+                text = Messages.format("workflow.scheduling.appointment.table.customerpatient",
+                                       customer, patient, reason, status);
+            }
+        }
+        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
+        result = createLabelWithNotes(text, notes, event.getBoolean(ScheduleEvent.SEND_REMINDER),
+                                      event.getDate(ScheduleEvent.REMINDER_SENT),
+                                      event.getString(ScheduleEvent.REMINDER_ERROR));
+        return result;
+    }
+
+    /**
+     * Formats a block.
+     *
+     * @param event the blocking event
+     * @return the block component
+     */
+    private Component getBlock(PropertySet event) {
+        String text = evaluate(event);
+        if (text == null) {
+            text = event.getString(ScheduleEvent.ACT_NAME);
+            if (text == null) {
+                text = event.getString(ScheduleEvent.SCHEDULE_TYPE_NAME);
+            }
+        }
+        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
+        return createLabelWithNotes(text, notes);
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -30,6 +30,7 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.Times;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -54,16 +55,16 @@ import static org.openvpms.web.resource.i18n.format.DateFormatter.formatDateTime
 import static org.openvpms.web.resource.i18n.format.DateFormatter.formatDateTimeAbbrev;
 
 /**
- * An editor for {@link AppointmentSeries}.
+ * An editor for {@link CalendarEventSeries}.
  *
  * @author Tim Anderson
  */
-public class AppointmentSeriesEditor extends AbstractModifiable {
+public class CalendarEventSeriesEditor extends AbstractModifiable {
 
     /**
-     * The appointment series.
+     * The event series.
      */
-    private final AppointmentSeries series;
+    private final CalendarEventSeries series;
 
     /**
      * Container for the repeat selector.
@@ -117,11 +118,11 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
 
 
     /**
-     * Constructs an {@link AppointmentSeriesEditor}.
+     * Constructs an {@link CalendarEventSeriesEditor}.
      *
-     * @param series the appointment series
+     * @param series the event series
      */
-    public AppointmentSeriesEditor(AppointmentSeries series) {
+    public CalendarEventSeriesEditor(CalendarEventSeries series) {
         this.series = series;
         setExpression(series.getExpression());
         setCondition(series.getCondition());
@@ -352,17 +353,19 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
 
     private boolean noOverlaps(Validator validator) {
         boolean result;
-        AppointmentSeries.Overlap overlap = series.getFirstOverlap();
+        CalendarEventSeries.Overlap overlap = series.getFirstOverlap();
         if (overlap != null) {
             result = false;
-            Times appointment1 = overlap.getAppointment1();
-            Times appointment2 = overlap.getAppointment2();
-            String startTime1 = formatDateTime(appointment1.getStartTime());
-            String endTime1 = formatDateTimeAbbrev(appointment1.getEndTime(), appointment1.getStartTime());
-            String startTime2 = formatDateTime(appointment2.getStartTime());
-            String endTime2 = formatDateTimeAbbrev(appointment2.getEndTime(), appointment2.getStartTime());
-            validator.add(this, new ValidatorError(Messages.format("workflow.scheduling.appointment.overlap",
-                                                                   startTime1, endTime1, startTime2, endTime2)));
+            Times event1 = overlap.getEvent1();
+            Times event2 = overlap.getEvent2();
+            String displayName = DescriptorHelper.getDisplayName(series.getEvent());
+            String startTime1 = formatDateTime(event1.getStartTime());
+            String endTime1 = formatDateTimeAbbrev(event1.getEndTime(), event1.getStartTime());
+            String startTime2 = formatDateTime(event2.getStartTime());
+            String endTime2 = formatDateTimeAbbrev(event2.getEndTime(), event2.getStartTime());
+            String message = Messages.format("workflow.scheduling.appointment.overlap",
+                                             displayName, startTime1, endTime1, startTime2, endTime2);
+            validator.add(this, new ValidatorError(message));
         } else {
             result = true;
         }

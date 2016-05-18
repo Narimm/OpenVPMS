@@ -26,6 +26,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayTableModel;
+import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
 import java.util.Date;
 
@@ -81,17 +82,19 @@ class CageSummaryTableCellRenderer extends AbstractCageTableCellRenderer {
         AbstractMultiDayTableModel model = getModel();
         AbstractMultiDayScheduleGrid grid = model.getGrid();
         Label label = LabelFactory.create();
-        Date startDate = DateRules.getDate(startTime);
-        Date endDate = DateRules.getDate(endTime);
-        if (startDate.equals(endDate) || DateRules.compareTo(endTime, DateRules.getNextDate(startDate)) == 0) {
-            // if the appointment is on the same day, or ends a midnight, it is a day board
-            label.setText(day);
-        } else {
-            Date date = grid.getDate(slot);
-            if (date.compareTo(endDate) < 0) {
-                label.setText(overnight);
+        if (!Schedule.isBlockingEvent(event)) {
+            Date startDate = DateRules.getDate(startTime);
+            Date endDate = DateRules.getDate(endTime);
+            if (startDate.equals(endDate) || DateRules.compareTo(endTime, DateRules.getNextDate(startDate)) == 0) {
+                // if the appointment is on the same day, or ends a midnight, it is a day board
+                label.setText(day);
             } else {
-                label.setText(checkout);
+                Date date = grid.getDate(slot);
+                if (date.compareTo(endDate) < 0) {
+                    label.setText(overnight);
+                } else {
+                    label.setText(checkout);
+                }
             }
         }
         styleEvent(event, label, table);

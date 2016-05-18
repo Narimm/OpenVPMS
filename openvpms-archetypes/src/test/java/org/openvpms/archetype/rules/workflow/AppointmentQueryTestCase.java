@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -86,7 +86,7 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         }
         Date to = new Date();
 
-        AppointmentQuery query = new AppointmentQuery(schedule, from, to, getArchetypeService());
+        AppointmentQuery query = new AppointmentQuery(schedule, from, to, getArchetypeService(), getLookupService());
         IPage<ObjectSet> page = query.query();
         assertNotNull(page);
         List<ObjectSet> results = page.getResults();
@@ -162,7 +162,7 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         createAppointment(schedule2, "2015-01-03 10:00:00", "2015-01-03 11:00:00"); // intersect start
         createAppointment(schedule2, "2015-01-03 10:30:00", "2015-01-03 11:00:00"); // at start
 
-        AppointmentQuery query = new AppointmentQuery(schedule1, from, to, getArchetypeService());
+        AppointmentQuery query = new AppointmentQuery(schedule1, from, to, getArchetypeService(), getLookupService());
         IPage<ObjectSet> page = query.query();
         List<ObjectSet> appointments = page.getResults();
         assertEquals(7, appointments.size());

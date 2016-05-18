@@ -32,14 +32,15 @@ public class CageSummaryTableModel extends CageTableModel {
     /**
      * Constructs a {@link CageSummaryTableModel}.
      *
-     * @param grid             the appointment grid
-     * @param context          the context
-     * @param eventColours     the event colours
-     * @param clinicianColours the clinician colours
+     * @param grid                 the appointment grid
+     * @param context              the context
+     * @param eventColours         the event colours
+     * @param clinicianColours     the clinician colours
+     * @param blockingEventColours the blocking event colours
      */
     public CageSummaryTableModel(ScheduleEventGrid grid, Context context, ScheduleColours eventColours,
-                                 ScheduleColours clinicianColours) {
-        super(grid, context, eventColours, clinicianColours);
+                                 ScheduleColours clinicianColours, ScheduleColours blockingEventColours) {
+        super(grid, context, eventColours, clinicianColours, blockingEventColours);
     }
 
     /**

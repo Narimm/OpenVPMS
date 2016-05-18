@@ -122,6 +122,11 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     private final ScheduleColours clinicianColours;
 
     /**
+     * The blocking event colours.
+     */
+    private final ScheduleColours blockingEventColours;
+
+    /**
      * 'Use strike-through' node name.
      */
     private static final String USE_STRIKETHROUGH = "useStrikethrough";
@@ -242,14 +247,16 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Constructs a {@link ScheduleTableModel}.
      *
-     * @param grid             the schedule event grid
-     * @param context          the context
-     * @param scheduleColumns  if {@code true}, display the schedules on the columns, otherwise display them on the rows
-     * @param eventColours     the event colours
-     * @param clinicianColours the clinician colours
+     * @param grid                 the schedule event grid
+     * @param context              the context
+     * @param scheduleColumns      if {@code true}, display the schedules on the columns, otherwise display them on the rows
+     * @param eventColours         the event colours
+     * @param clinicianColours     the clinician colours
+     * @param blockingEventColours the blocking event colours. May be {@code null}
      */
     public ScheduleTableModel(ScheduleEventGrid grid, Context context, boolean scheduleColumns,
-                              ScheduleColours eventColours, ScheduleColours clinicianColours) {
+                              ScheduleColours eventColours, ScheduleColours clinicianColours,
+                              ScheduleColours blockingEventColours) {
         this.grid = grid;
         this.context = context;
         this.scheduleColumns = scheduleColumns;
@@ -259,6 +266,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         useStrikethrough = bean.hasNode(USE_STRIKETHROUGH) && bean.getBoolean(USE_STRIKETHROUGH);
         this.eventColours = eventColours;
         this.clinicianColours = clinicianColours;
+        this.blockingEventColours = blockingEventColours;
         model = createColumnModel(grid);
     }
 
@@ -448,7 +456,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Determines the scheme to colour cells.
-     * <p>
+     * <p/>
      * Defaults to {@link Highlight#EVENT_TYPE}.
      *
      * @param highlight the highlight
@@ -656,7 +664,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Returns the display expression, from the schedule view.
-     * <p>
+     * <p/>
      * This may be used to customise the event display.
      *
      * @return the expression. May be {@code null}
@@ -759,6 +767,15 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
+     * Returns the blocking event colours.
+     *
+     * @return the blocking event colours. May be {@code null}
+     */
+    public ScheduleColours getBlockingEventColours() {
+        return blockingEventColours;
+    }
+
+    /**
      * Returns the event at the specified schedule and slot.
      *
      * @param schedule the schedule. May be {@code null}
@@ -809,7 +826,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Returns the cell column corresponding to a slot.
-     * <p>
+     * <p/>
      * This implementation returns the slot unchanged.
      *
      * @param slot the slot
@@ -821,7 +838,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Returns the cell row corresponding to a slot.
-     * <p>
+     * <p/>
      * This implementation returns the slot unchanged.
      *
      * @param slot the slot

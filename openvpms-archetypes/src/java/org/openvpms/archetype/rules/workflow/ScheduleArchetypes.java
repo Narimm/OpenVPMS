@@ -40,9 +40,9 @@ public class ScheduleArchetypes {
     public static String APPOINTMENT = "act.customerAppointment";
 
     /**
-     * The appointment series archetype short name.
+     * The calendar event series archetype short name.
      */
-    public static String APPOINTMENT_SERIES = "act.customerAppointmentSeries";
+    public static String CALENDAR_EVENT_SERIES = "act.calendarEventSeries";
 
     /**
      * The task archetype short name.
@@ -108,6 +108,16 @@ public class ScheduleArchetypes {
      * Cage type short name.
      */
     public static final String CAGE_TYPE = "entity.cageType";
+
+    /**
+     * Calendar block archetype short name.
+     */
+    public static final String CALENDAR_BLOCK = "act.calendarBlock";
+
+    /**
+     * Calendar block type archetype short name.
+     */
+    public static final String CALENDAR_BLOCK_TYPE = "entity.calendarBlockType";
 }
 
 

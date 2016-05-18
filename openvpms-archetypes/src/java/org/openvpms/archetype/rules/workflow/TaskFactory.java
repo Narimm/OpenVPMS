@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -37,11 +37,11 @@ class TaskFactory extends ScheduleEventFactory {
     /**
      * Constructs a {@link TaskFactory}.
      *
-     * @param service       the archetype service
-     * @param lookupService the lookup service
+     * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public TaskFactory(IArchetypeService service, ILookupService lookupService) {
-        super(ScheduleArchetypes.TASK, service, lookupService);
+    public TaskFactory(IArchetypeService service, ILookupService lookups) {
+        super(ScheduleArchetypes.TASK, service, lookups);
     }
 
     /**
@@ -82,6 +82,6 @@ class TaskFactory extends ScheduleEventFactory {
      */
     @Override
     protected ScheduleEventQuery createQuery(Entity schedule, Date day) {
-        return new TaskQuery(schedule, DateRules.getDate(day), getEnd(day), getService());
+        return new TaskQuery(schedule, DateRules.getDate(day), getEnd(day), getService(), getLookups());
     }
 }

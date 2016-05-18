@@ -11,27 +11,28 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.Date;
 
 /**
- * Appointment start and end times.
+ * Event start and end times.
  *
  * @author Tim Anderson
  */
 public class Times implements Comparable<Times> {
 
     /**
-     * The appointment id, or {@code -1} to indicate the appointment is unsaved.
+     * The event reference, or {@code null} if it hasn't been saved.
      */
-    private final long id;
+    private final IMObjectReference reference;
 
     /**
      * The start time.
@@ -50,29 +51,38 @@ public class Times implements Comparable<Times> {
      * @param endTime   the end time
      */
     public Times(Date startTime, Date endTime) {
-        this(-1, startTime, endTime);
+        this(null, startTime, endTime);
     }
 
     /**
      * Constructs an {@link Times} not associated with an existing appointment.
      *
-     * @param id        the appointment identifier, or {@code -1} if the appointment hasn't been saved
+     * @param reference the event reference, or {@code null} if the event hasn't been saved
      * @param startTime the start time
      * @param endTime   the end time
      */
-    public Times(long id, Date startTime, Date endTime) {
-        this.id = id;
+    public Times(IMObjectReference reference, Date startTime, Date endTime) {
+        this.reference = reference;
         this.startTime = startTime;
         this.endTime = endTime;
     }
 
     /**
-     * Returns the appointment identifier.
+     * Returns the event identifier.
      *
-     * @return the appointment identifier, or {@code -1} if the appointment hasn't been saved
+     * @return the event identifier, or {@code -1} if the event hasn't been saved
      */
     public long getId() {
-        return id;
+        return (reference != null) ? reference.getId() : -1;
+    }
+
+    /**
+     * Returns the event reference.
+     *
+     * @return the event reference, or {@code null} if the event hasn't been saved
+     */
+    public IMObjectReference getReference() {
+        return reference;
     }
 
     /**
@@ -102,7 +112,7 @@ public class Times implements Comparable<Times> {
     public static Times create(Act act) {
         Date startTime = act.getActivityStartTime();
         Date endTime = act.getActivityEndTime();
-        return startTime != null && endTime != null ? new Times(act.getId(), startTime, endTime) : null;
+        return startTime != null && endTime != null ? new Times(act.getObjectReference(), startTime, endTime) : null;
     }
 
     /**
@@ -138,7 +148,7 @@ public class Times implements Comparable<Times> {
         if (DateRules.compareTo(startTime, endTime2) >= 0 && DateRules.compareTo(endTime, endTime2) > 0) {
             return 1;
         }
-        return (id < object.id) ? -1 : ((id == object.id) ? 0 : 1);  // TODO replace with Integer.compare()
+        return Long.compare(getId(), object.getId());
     }
 
     /**

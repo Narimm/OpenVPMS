@@ -1173,3 +1173,21 @@ UPDATE entity_details expression
                      AND e.arch_short_name = 'entity.documentTemplateSMSAppointment'
 SET expression.name = 'content';
 
+
+#
+# OVPMS-1763 Schedule blocking
+#
+
+# Rename act.customerAppointmentSeries to act.calendarEventSeries
+UPDATE acts a
+SET a.arch_short_name = 'act.calendarEventSeries'
+WHERE a.arch_short_name = 'act.customerAppointmentSeries';
+
+UPDATE participations p
+SET p.act_arch_short_name = 'act.scheduleEventSeries'
+WHERE p.act_arch_short_name = 'act.customerAppointmentSeries';
+
+# Rename actRelationship.customerAppointmentSeries to actRelationship.calendarEventSeries
+UPDATE act_relationships r
+SET r.arch_short_name = 'actRelationship.calendarEventSeries'
+WHERE r.arch_short_name = 'actRelationship.customerAppointmentSeries';

@@ -1,7 +1,24 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
@@ -129,6 +146,48 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
      */
     protected void setSchedules(List<Schedule> schedules) {
         this.schedules = schedules;
+    }
+
+    /**
+     * Adds an event or blocking event.
+     * <p/>
+     * If the event is not a blocking event, and the corresponding Schedule already has an event that intersects
+     * it, a new Schedule will be created with the same start and end times, and the event added to that.
+     *
+     * @param schedule the schedule to add the appointment to
+     * @param event    the event
+     */
+    protected void addEvent(Entity schedule, PropertySet event) {
+        int index = -1;
+        boolean found = false;
+        Schedule column = null;
+        Schedule match = null;
+
+        boolean blockingEvent = Schedule.isBlockingEvent(event);
+        // try and find a corresponding Schedule. If the event is non-blocking, try and find one that has no event
+        // that intersects the supplied one.
+        List<Schedule> columns = getSchedules();
+        for (int i = 0; i < columns.size(); ++i) {
+            column = columns.get(i);
+            if (column.getSchedule().equals(schedule)) {
+                if (blockingEvent) {
+                    found = true;
+                    break;
+                } else if (column.hasIntersectingEvent(event)) {
+                    match = column;
+                    index = i;
+                } else {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            // event intersects an existing one, so create a new Schedule. Any blocking event will be shared.
+            column = new Schedule(match);
+            columns.add(index + 1, column);
+        }
+        column.addEvent(event);
     }
 
 }
