@@ -31,6 +31,9 @@
             <includes>
                 <include>*.jar</include>
             </includes>
+            <excludes>
+                <exclude>javaws.jar</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
 </assembly>
