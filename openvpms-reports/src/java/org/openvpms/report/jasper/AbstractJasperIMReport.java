@@ -21,7 +21,6 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
-import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
@@ -113,11 +112,6 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * The document handlers.
      */
     private final DocumentHandlers handlers;
-
-    /**
-     * Cached expression evaluator.
-     */
-    private JREvaluator evaluator;
 
     /**
      * The JXPath extension functions.
@@ -278,7 +272,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         JRQueryExecuter executer = null;
         try {
             executer = initDataSource(properties, fields, report);
-            JasperPrint print = JasperFillManager.fillReport(report, properties);
+            JasperPrint print = createFillManager().fill(report, properties);
             document = export(print, properties, mimeType);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
@@ -404,7 +398,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         JRQueryExecuter executer = null;
         try {
             executer = initDataSource(params, fields, report);
-            JasperPrint print = JasperFillManager.fillReport(getReport(), params);
+            JasperPrint print = createFillManager().fill(getReport(), params);
             print(print, properties);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
@@ -479,7 +473,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         }
         properties.put("dataSource", source);  // custom data source name, to avoid casting
         properties.put(JRParameter.REPORT_DATA_SOURCE, source);
-        return JasperFillManager.fillReport(getReport(), properties, source);
+        return createFillManager().fill(getReport(), properties, source);
     }
 
     /**
@@ -805,12 +799,14 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @return the expression evaluator
      * @throws JRException if the evaluator can't be loaded
      */
-    private JREvaluator getEvaluator() throws JRException {
-        if (evaluator == null) {
-            evaluator = JasperCompileManager.loadEvaluator(getReport());
-        }
-        return evaluator;
-    }
+    protected abstract JREvaluator getEvaluator() throws JRException;
+
+    /**
+     * Creates a {@link JasperFillManager} that will lazily load sub-reports.
+     *
+     * @return a new fill manager
+     */
+    protected abstract JasperFillManager createFillManager();
 
     /**
      * Initialises a JDBC data source, if required.

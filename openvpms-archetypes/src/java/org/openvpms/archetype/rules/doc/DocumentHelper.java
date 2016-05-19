@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -88,7 +88,7 @@ public class DocumentHelper {
             int length = (int) file.length();
             return handler.create(file.getName(), stream, mimeType, length);
         } catch (IOException exception) {
-            throw new DocumentException(DocumentException.ErrorCode.ReadError, exception);
+            throw new DocumentException(DocumentException.ErrorCode.ReadError, exception, file.getName());
         } finally {
             IOUtils.closeQuietly(stream);
         }
