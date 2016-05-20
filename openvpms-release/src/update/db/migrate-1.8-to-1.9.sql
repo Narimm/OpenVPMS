@@ -360,7 +360,7 @@ INSERT INTO entity_details (entity_id, name, type, value)
     e.entity_id,
     'expression',
     'string',
-    'concat(expr:if(expr:var(''patient.name'') != '''', concat(expr:var(''patient.name''), ''&apos;s''), ''Your''),
+    'concat(expr:if(expr:var(''patient.name'') != '''', concat(expr:var(''patient.name''), "&apos;s"), ''Your''),
                      '' appointment at '' , $location.name,'' is confirmed for '', date:formatDate($appointment.startTime, ''short''),
                      '' @ '', date:formatTime($appointment.startTime, ''short''), $nl,
                      ''Call us on '', party:getTelephone($location), '' if you need to change the appointment'')'
@@ -686,7 +686,7 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
     1,
     '1.0',
     'AD_HOC_EMAIL',
-    'Ad-hoc Email',
+    'Ad hoc Email',
     NULL,
     0
   FROM dual
@@ -702,7 +702,7 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
     1,
     '1.0',
     'AD_HOC_SMS',
-    'Ad-hoc SMS',
+    'Ad hoc SMS',
     NULL,
     0
   FROM dual
@@ -1191,3 +1191,22 @@ WHERE p.act_arch_short_name = 'act.customerAppointmentSeries';
 UPDATE act_relationships r
 SET r.arch_short_name = 'actRelationship.calendarEventSeries'
 WHERE r.arch_short_name = 'actRelationship.customerAppointmentSeries';
+
+#
+# OVPMS-1769 Distinguish between SMS appointment reminders and general SMSes in communications log
+#
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.customerCommunicationReason',
+    1,
+    '1.0',
+    'APPOINTMENT_REMINDER',
+    'Appointment Reminder',
+    NULL,
+    0
+  FROM dual
+  WHERE NOT exists(SELECT *
+                   FROM lookups e
+                   WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'APPOINTMENT_REMINDER');

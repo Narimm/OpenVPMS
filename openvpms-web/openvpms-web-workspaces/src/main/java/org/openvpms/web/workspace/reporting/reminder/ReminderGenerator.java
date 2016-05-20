@@ -41,7 +41,6 @@ import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
-import org.openvpms.web.component.service.SMSService;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.WorkflowImpl;
@@ -62,7 +61,6 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.customer.communication.LoggingMailerFactory;
-import org.openvpms.web.workspace.customer.communication.LoggingSMSService;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.ArrayList;
@@ -129,9 +127,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private MailerFactory factory;
 
     /**
-     * The SMS service.
+     * The SMS connection factory.
      */
-    private SMSService service;
+    private ConnectionFactory smsFactory;
 
     /**
      * The communication logger, if communications logging is enabled.
@@ -353,19 +351,15 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Returns the SMS service.
-     * <p/>
-     * Note that the default service isn't used as it could be an instance of {@link LoggingSMSService};
-     * logging is handled by the {@link ReminderCommunicationLogger} when logging is enabled.
+     * Returns the SMS connection factory.
      *
-     * @return the SMS service
+     * @return the SMS connection factory
      */
-    protected SMSService getSMSService() {
-        if (service == null) {
-            service = new SMSService(ServiceHelper.getBean(ConnectionFactory.class),
-                                     ServiceHelper.getArchetypeService());
+    protected ConnectionFactory getConnectionFactory() {
+        if (smsFactory == null) {
+            smsFactory = ServiceHelper.getBean(ConnectionFactory.class);
         }
-        return service;
+        return smsFactory;
     }
 
     /**
@@ -488,7 +482,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected ReminderSMSProcessor createSMSProcessor(DocumentTemplate groupTemplate, Context context) {
         ReminderSMSEvaluator evaluator = ServiceHelper.getBean(ReminderSMSEvaluator.class);
-        return new ReminderSMSProcessor(getSMSService(), groupTemplate, context, logger, evaluator);
+        return new ReminderSMSProcessor(getConnectionFactory(), groupTemplate, context, logger, evaluator);
     }
 
     /**

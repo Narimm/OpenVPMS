@@ -27,7 +27,7 @@ import org.openvpms.sms.SMSException;
 import org.openvpms.web.component.service.SMSService;
 
 /**
- * An {@link SMSService} that logs SMS messages.
+ * An {@link SMSService} that logs SMS messages for customers, if communication logging is enabled for the practice.
  *
  * @author Tim Anderson
  */
@@ -42,16 +42,6 @@ public class LoggingSMSService extends SMSService {
      * The practice service.
      */
     private final PracticeService practiceService;
-
-    /**
-     * The communication subject.
-     */
-    private String subject = "Ad-hoc SMS";
-
-    /**
-     * The communication reason.
-     */
-    private String reason = "AD_HOC_SMS";
 
     /**
      * Constructs a {@link LoggingSMSService}.
@@ -75,12 +65,15 @@ public class LoggingSMSService extends SMSService {
      * @param message  the SMS text
      * @param party    the party associated with the phone number. May be {@code null}
      * @param contact  the phone contact. May be {@code null}
+     * @param subject  the subject of the SMS, for communication logging purposes
+     * @param reason   the reason of the SMS, for communication logging purposes
      * @param location the practice location. May be {@code null}
      * @throws SMSException if the send fails
      */
     @Override
-    public void send(String phone, String message, Party party, Contact contact, Party location) {
-        super.send(phone, message, party, contact, location);
+    public void send(String phone, String message, Party party, Contact contact, String subject, String reason,
+                     Party location) {
+        super.send(phone, message, party, contact, subject, reason, location);
         if (log(party)) {
             logger.logSMS(party, null, phone, subject, reason, message, null, location);
         }
@@ -94,25 +87,29 @@ public class LoggingSMSService extends SMSService {
      * @param customer the customer associated with the phone number
      * @param patient  the patient the SMS refers to. May be {@code null}
      * @param contact  the phone contact. May be {@code null}
+     * @param subject  the subject of the SMS, for communication logging purposes
+     * @param reason   the reason of the SMS, for communication logging purposes
      * @param location the practice location. May be {@code null}
      * @throws SMSException if the send fails
      */
     @Override
-    public void send(String phone, String message, Party customer, Party patient, Contact contact, Party location) {
-        super.send(phone, message, customer, patient, contact, location);
+    public void send(String phone, String message, Party customer, Party patient, Contact contact, String subject,
+                     String reason, Party location) {
+        super.send(phone, message, customer, patient, contact, subject, reason, location);
         if (log(customer)) {
             logger.logSMS(customer, patient, phone, subject, reason, message, null, location);
         }
     }
 
     /**
-     * Determines if logging should take place
+     * Determines if logging should take place.
      *
      * @param party the customer
      * @return {@code true} if logging should take place
      */
     protected boolean log(Party party) {
-        return TypeHelper.isA(party, CustomerArchetypes.PERSON) && CommunicationHelper.isLoggingEnabled(practiceService);
+        return TypeHelper.isA(party, CustomerArchetypes.PERSON)
+               && CommunicationHelper.isLoggingEnabled(practiceService);
     }
 
 }

@@ -24,11 +24,12 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.sms.Connection;
+import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.sms.SMSHelper;
-import org.openvpms.web.component.service.SMSService;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.List;
@@ -48,9 +49,9 @@ import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.
 public class ReminderSMSProcessor extends AbstractReminderProcessor {
 
     /**
-     * The SMS service.
+     * The SMS connection factory.
      */
-    private final SMSService service;
+    private final ConnectionFactory factory;
 
     /**
      * The communication logger. May be {@code null}
@@ -70,16 +71,16 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
     /**
      * Constructs a {@link ReminderSMSProcessor}.
      *
-     * @param service       the SMS service
+     * @param factory       the SMS connection factory
      * @param groupTemplate the template for grouped reminders
      * @param context       the context
      * @param logger        if specified, logs SMS reminders
      * @param evaluator     the template evaluator
      */
-    public ReminderSMSProcessor(SMSService service, DocumentTemplate groupTemplate, Context context,
+    public ReminderSMSProcessor(ConnectionFactory factory, DocumentTemplate groupTemplate, Context context,
                                 ReminderCommunicationLogger logger, ReminderSMSEvaluator evaluator) {
         super(groupTemplate, context);
-        this.service = service;
+        this.factory = factory;
         this.logger = logger;
         this.evaluator = evaluator;
     }
@@ -116,8 +117,12 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
                 } else if (text.length() > 160) {
                     throw new ReportingException(SMSMessageTooLong, smsTemplate.getName(), text.length());
                 }
-                service.send(phoneNumber, text, event.getCustomer(), event.getPatient(), contact,
-                             context.getLocation());
+                Connection connection = factory.createConnection();
+                try {
+                    connection.send(phoneNumber, text);
+                } finally {
+                    connection.close();
+                }
                 if (logger != null) {
                     logger.logSMS(text, events, context.getLocation());
                 }

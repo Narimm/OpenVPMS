@@ -68,10 +68,9 @@
           name="Default Appointment Reminder SMS Template"
           description="&lt;patient&gt;'s appointment at &lt;location&gt; is confirmed for &lt;date/time&gt;. Call us on &lt;phone&gt; if you need to change the appointment"
           contentType="XPATH"
-          content="concat(expr:if(expr:var('patient.name') != '', concat(expr:var('patient.name'), '&apos;s'), 'Your'),
-                     ' appointment at ' , $location.name,' is confirmed for ', date:formatDate($appointment.startTime, 'short'),
-                     ' @ ', date:formatTime($appointment.startTime, 'short'), $nl,
-                     'Call us on ', party:getTelephone($location), ' if you need to change the appointment')"/>
+          content="concat(expr:if(expr:var('patient.name') != '', concat(expr:var('patient.name'), &quot;&apos;s&quot;), 'Your'),
+' appointment at ' , $location.name,' is confirmed for ', date:formatDate($appointment.startTime, 'short'), ' @ ', date:formatTime($appointment.startTime, 'short'), $nl,
+'Call us on ', party:getTelephone($location), ' if you need to change the appointment')"/>
     <data archetype="entityLink.organisationSMSAppointment" source="id:OP1" target="id:ART1"/>
     <data id="PRT1" archetype="entity.documentTemplateSMSReminder"
           name="Sample Vaccination Reminder SMS Template"

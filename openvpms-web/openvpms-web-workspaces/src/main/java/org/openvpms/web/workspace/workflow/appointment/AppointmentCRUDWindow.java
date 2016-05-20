@@ -606,43 +606,48 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Invoked to send an SMS reminder for the selected appointment.
      */
     private void onSMS() {
-        final Act object = getObject();
-        final ActBean bean = new ActBean(object);
-        Party customer = (Party) bean.getNodeParticipant("customer");
-        Party patient = (Party) bean.getNodeParticipant("patient");
-        Party location = getLocation(bean);
-        Context context = getContext();
+        final Act object = IMObjectHelper.reload(getObject());
+        if (object != null) {
+            final ActBean bean = new ActBean(object);
+            Party customer = (Party) bean.getNodeParticipant("customer");
+            Party patient = (Party) bean.getNodeParticipant("patient");
+            Party location = getLocation(bean);
+            Context context = getContext();
 
-        final List<Contact> contacts = ContactHelper.getSMSContacts(customer);
-        if (!contacts.isEmpty() && location != null) {
-            final Context local = new LocalContext(context);
-            local.setCustomer(customer);
-            local.setPatient(patient);
-            Entity template = SMSHelper.getAppointmentTemplate(location);
-            SMSDialog dialog = new SMSDialog(contacts, local, getHelpContext().subtopic("sms"));
-            dialog.show();
-            if (template != null) {
-                try {
-                    AppointmentReminderEvaluator evaluator = ServiceHelper.getBean(AppointmentReminderEvaluator.class);
-                    String message = evaluator.evaluate(template, object, location, context.getPractice());
-                    dialog.setMessage(message);
-                } catch (Throwable exception) {
-                    ErrorHelper.show(exception);
+            final List<Contact> contacts = ContactHelper.getSMSContacts(customer);
+            if (!contacts.isEmpty() && location != null) {
+                final Context local = new LocalContext(context);
+                local.setCustomer(customer);
+                local.setPatient(patient);
+                Entity template = SMSHelper.getAppointmentTemplate(location);
+                SMSDialog dialog = new SMSDialog(contacts, local, getHelpContext().subtopic("sms"));
+                dialog.show();
+                if (template != null) {
+                    try {
+                        AppointmentReminderEvaluator evaluator
+                                = ServiceHelper.getBean(AppointmentReminderEvaluator.class);
+                        String message = evaluator.evaluate(template, object, location, context.getPractice());
+                        dialog.setMessage(message);
+                    } catch (Throwable exception) {
+                        ErrorHelper.show(exception);
+                    }
                 }
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        bean.setValue("reminderSent", new Date());
+                        bean.setValue("reminderError", null);
+                        bean.save();
+                        onSaved(object, false);
+                    }
+                });
+            } else if (contacts.isEmpty()) {
+                InformationDialog.show(Messages.get("sms.appointment.nocontact"));
+            } else {
+                InformationDialog.show(Messages.get("sms.appointment.nolocation"));
             }
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onOK() {
-                    bean.setValue("reminderSent", new Date());
-                    bean.setValue("reminderError", null);
-                    bean.save();
-                    onSaved(object, false);
-                }
-            });
-        } else if (contacts.isEmpty()) {
-            InformationDialog.show(Messages.get("sms.appointment.nocontact"));
         } else {
-            InformationDialog.show(Messages.get("sms.appointment.nolocation"));
+            onRefresh(getObject());
         }
     }
 
