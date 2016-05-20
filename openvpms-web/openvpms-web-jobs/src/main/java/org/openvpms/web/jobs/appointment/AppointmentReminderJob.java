@@ -67,7 +67,7 @@ import java.util.TreeSet;
 
 /**
  * A job that sends SMS appointment reminders.
- * <p>
+ * <p/>
  * It is configured by an <em>entity.jobAppointmentReminder</em>.
  *
  * @author Tim Anderson
@@ -120,6 +120,11 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     private final Period toPeriod;
 
     /**
+     * Communications logging subject.
+     */
+    private final String subject;
+
+    /**
      * Determines if reminding should stop.
      */
     private volatile boolean stop;
@@ -166,6 +171,11 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     private static final Log log = LogFactory.getLog(AppointmentReminderJob.class);
 
     /**
+     * Communication logging reason code.
+     */
+    private static final String REASON = "APPOINTMENT_REMINDER";
+
+    /**
      * Constructs an {@link AppointmentReminderJob}.
      *
      * @param configuration    the job configuration
@@ -190,6 +200,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
         fromPeriod = getPeriod(bean, "smsFrom", "smsFromUnits", DateUnits.WEEKS);
         toPeriod = getPeriod(bean, "smsTo", "smsToUnits", DateUnits.DAYS);
         notifier = new JobCompletionNotifier(archetypeService);
+        subject = Messages.get("sms.log.appointment.subject");
     }
 
     /**
@@ -338,7 +349,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
                             } else if (message.length() > 160) {
                                 addError(bean, Messages.format("sms.appointment.toolong", message));
                             } else {
-                                service.send(message, contact, customer, location);
+                                service.send(message, contact, customer, subject, REASON, location);
                                 bean.setValue("reminderSent", new Date());
                                 bean.setValue("reminderError", null);
                                 bean.save();
@@ -408,7 +419,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
 
     /**
      * Adds an error.
-     * <p>
+     * <p/>
      * This populates the reminderError node, ensuring the contents don't exceed the maximum length, and
      * logs the schedule and date of the reminder for reporting by {@link #notifyUsers}.
      *

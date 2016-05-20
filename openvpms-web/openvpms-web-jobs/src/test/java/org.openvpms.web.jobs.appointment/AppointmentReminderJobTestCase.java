@@ -204,7 +204,8 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         }
 
         Mockito.verify(smsService, Mockito.times(6)).send(Mockito.eq("Reminder: Vets R Us"), Mockito.<Contact>any(),
-                                                          Mockito.<Party>any(), Mockito.eq(location1));
+                                                          Mockito.<Party>any(), Mockito.eq("SMS appointment reminder"),
+                                                          Mockito.eq("APPOINTMENT_REMINDER"), Mockito.eq(location1));
         practiceService.dispose();
     }
 
@@ -244,7 +245,8 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         }
 
         Mockito.verify(smsService, Mockito.times(6)).send(Mockito.eq("Reminder: Vets Be Us"), Mockito.<Contact>any(),
-                                                          Mockito.<Party>any(), Mockito.eq(location2));
+                                                          Mockito.<Party>any(), Mockito.eq("SMS appointment reminder"),
+                                                          Mockito.eq("APPOINTMENT_REMINDER"), Mockito.eq(location2));
     }
 
     /**

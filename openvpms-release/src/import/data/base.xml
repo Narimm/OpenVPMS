@@ -64,10 +64,11 @@
     <data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
     <data archetype="lookup.patientAlertType" code="OTHER" priority="HIGH" colour="0xFF0000" defaultLookup="true"/>
     <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.customerCommunicationReason" code="AD_HOC_EMAIL" name="Ad-hoc Email"/>
-    <data archetype="lookup.customerCommunicationReason" code="AD_HOC_SMS" name="Ad-hoc SMS"/>
-    <data archetype="lookup.customerCommunicationReason" code="PATIENT_REMINDER" name="Patient Reminder"/>
+    <data archetype="lookup.customerCommunicationReason" code="AD_HOC_EMAIL" name="Ad hoc Email"/>
+    <data archetype="lookup.customerCommunicationReason" code="AD_HOC_SMS" name="Ad hoc SMS"/>
+    <data archetype="lookup.customerCommunicationReason" code="APPOINTMENT_REMINDER" name="Appointment Reminder"/>
     <data archetype="lookup.customerCommunicationReason" code="FORWARDED_DOCUMENT" name="Forwarded Documents"/>
+    <data archetype="lookup.customerCommunicationReason" code="PATIENT_REMINDER" name="Patient Reminder"/>
     <data archetype="lookup.reportType" code="CUSTOMER"/>
     <data archetype="lookup.reportType" code="PATIENT"/>
     <data archetype="lookup.reportType" code="SUPPLIER"/>

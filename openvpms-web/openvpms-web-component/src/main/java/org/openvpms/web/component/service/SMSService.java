@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.service;
@@ -65,20 +65,22 @@ public class SMSService {
      * Sends an SMS.
      *
      * @param message  the SMS text
-     * @param party    the party associated with the phone number. May be {@code null}
      * @param contact  the phone contact
+     * @param party    the party associated with the phone number. May be {@code null}
+     * @param subject  the subject of the SMS, for communication logging purposes
+     * @param reason   the reason of the SMS, for communication logging purposes
      * @param location the practice location. May be {@code null}
      * @throws IllegalArgumentException if the phone contact is incomplete
      * @throws SMSException             if the send fails
      */
-    public void send(String message, Contact contact, Party party, Party location) {
+    public void send(String message, Contact contact, Party party, String subject, String reason, Party location) {
         IMObjectBean bean = new IMObjectBean(contact, service);
         String telephoneNumber = bean.getString("telephoneNumber");
         if (StringUtils.isEmpty(telephoneNumber)) {
             throw new IllegalArgumentException("Argument 'contact' doesn't have a telephoneNumber");
         }
         String phone = SMSHelper.getPhone(contact);
-        send(phone, message, party, contact, location);
+        send(phone, message, party, contact, subject, reason, location);
     }
 
     /**
@@ -88,16 +90,18 @@ public class SMSService {
      * @param message  the SMS text
      * @param party    the party associated with the phone number. May be {@code null}
      * @param contact  the phone contact. May be {@code null}
+     * @param subject  the subject of the SMS, for communication logging purposes
+     * @param reason   the reason of the SMS, for communication logging purposes
      * @param location the practice location. May be {@code null}
-     * @throws SMSException if the send fails
      */
-    public void send(String phone, String message, Party party, Contact contact, Party location) {
+    public void send(String phone, String message, Party party, Contact contact, String subject, String reason,
+                     Party location) {
         if (log.isDebugEnabled()) {
             String p = (party != null) ? party.getName() + " (" + party.getId() + ")" : null;
             String c = (contact != null) ? contact.getDescription() + " (" + contact.getId() + ")" : null;
             String l = (location != null) ? location.getName() + " (" + location.getId() + ")" : null;
             log.debug("SMS: phone=" + phone + ", message='" + message + "', party=" + p + ", contact=" + c
-                      + ", location=" + l);
+                      + ", subject=" + subject + ", reason=" + reason + ", location=" + l);
         }
         send(phone, message);
     }
@@ -110,16 +114,20 @@ public class SMSService {
      * @param customer the customer associated with the phone number
      * @param patient  the patient the SMS refers to. May be {@code null}
      * @param contact  the phone contact. May be {@code null}
+     * @param subject  the subject of the SMS, for communication logging purposes
+     * @param reason   the reason of the SMS, for communication logging purposes
      * @param location the practice location. May be {@code null}
      * @throws SMSException if the send fails
      */
-    public void send(String phone, String message, Party customer, Party patient, Contact contact, Party location) {
+    public void send(String phone, String message, Party customer, Party patient, Contact contact, String subject,
+                     String reason, Party location) {
         if (log.isDebugEnabled()) {
             String p = (patient != null) ? patient.getName() + " (" + patient.getId() + ")" : null;
             String c = (contact != null) ? contact.getDescription() + " (" + contact.getId() + ")" : null;
             String l = (location != null) ? location.getName() + " (" + location.getId() + ")" : null;
             log.debug("SMS: phone=" + phone + ", message='" + message + "', customer=" + customer.getName()
-                      + "(" + customer.getId() + ")" + p + ", contact=" + c + ", location=" + l);
+                      + "(" + customer.getId() + ")" + p + ", contact=" + c + ", subject=" + subject
+                      + ", reason=" + reason + ", location=" + l);
         }
         send(phone, message);
     }

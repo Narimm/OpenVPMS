@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -117,6 +117,10 @@ public class SMSEditor extends AbstractModifiable {
      */
     private Editors editors;
 
+    /**
+     * Ad hoc SMS reason code.
+     */
+    private static final String AD_HOC_SMS = "AD_HOC_SMS";
 
     /**
      * Constructs an {@link SMSEditor}.
@@ -203,11 +207,13 @@ public class SMSEditor extends AbstractModifiable {
         String message = getMessage();
         SMSService service = ServiceHelper.getBean(SMSService.class);
         Party customer = context.getCustomer();
+        String subject = Messages.get("sms.log.adhoc.subject");
         if (customer != null) {
-            service.send(phone, message, customer, context.getPatient(), selected, context.getLocation());
+            service.send(phone, message, customer, context.getPatient(), selected, subject, AD_HOC_SMS,
+                         context.getLocation());
         } else {
             Party party = (selected != null) ? selected.getParty() : null;
-            service.send(phone, message, party, selected, context.getLocation());
+            service.send(phone, message, party, selected, subject, AD_HOC_SMS, context.getLocation());
         }
     }
 
