@@ -1064,7 +1064,7 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, acti
 UPDATE tmp_sms_templates t
   JOIN entities e
     ON t.linkId = e.linkId
-       AND e.arch_short_name = 'entity.documentTemplateEmail'
+       AND e.arch_short_name = 'entity.documentTemplateSMSReminder'
 SET t.entity_id = e.entity_id;
 
 INSERT INTO entity_details (entity_id, name, type, value)
