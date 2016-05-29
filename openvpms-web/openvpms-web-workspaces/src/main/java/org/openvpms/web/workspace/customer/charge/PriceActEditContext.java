@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductHelper;
@@ -79,6 +80,11 @@ public class PriceActEditContext {
     private DoseManager doseManager;
 
     /**
+     * Determines if minimum quantity restrictions are in place.
+     */
+    private final boolean useMinimumQuantities;
+
+    /**
      * Constructs a {@link PriceActEditContext}.
      *
      * @param context the layout context. The context supply a practice
@@ -88,6 +94,8 @@ public class PriceActEditContext {
         if (practice == null) {
             throw new IllegalStateException("Context is missing the practice");
         }
+        IMObjectBean bean = new IMObjectBean(practice);
+        useMinimumQuantities = bean.getBoolean("minimumQuantities", false);
         service = new CachingReadOnlyArchetypeService(context.getCache(), ServiceHelper.getArchetypeService());
         ILookupService lookups = ServiceHelper.getLookupService();
         priceRules = new ProductPriceRules(service);
@@ -186,5 +194,14 @@ public class PriceActEditContext {
      */
     public CustomerTaxRules getTaxRules() {
         return taxRules;
+    }
+
+    /**
+     * Determines if minimum quantity restrictions are in place.
+     *
+     * @return {@code true} if minimum quantity restrictions are in place
+     */
+    public boolean useMinimumQuantities() {
+        return useMinimumQuantities;
     }
 }

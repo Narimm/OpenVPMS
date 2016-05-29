@@ -44,7 +44,6 @@ import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditDialog;
-import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -339,17 +338,6 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
     protected Item createItem(FinancialAct item, FinancialAct invoiceItem, FinancialAct invoice) {
         return new Item(item, invoiceItem, invoice);
-    }
-
-    /**
-     * Creates a new {@link CustomerChargeActEditor}.
-     *
-     * @param charge  the charge
-     * @param context the layout context
-     * @return a new charge editor
-     */
-    protected CustomerChargeActEditor createChargeEditor(FinancialAct charge, LayoutContext context) {
-        return new DefaultCustomerChargeActEditor(charge, null, context, false);
     }
 
     /**

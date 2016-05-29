@@ -61,11 +61,6 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     private Date lastItemDate = null;
 
     /**
-     * The edit context.
-     */
-    private final CustomerChargeEditContext editContext;
-
-    /**
      * Listener invoked when {@link #onAdd()} is invoked.
      */
     private Runnable listener;
@@ -100,15 +95,14 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                   CollectionResultSetFactory factory) {
-        super(property, act, context, factory);
-        editContext = new CustomerChargeEditContext(context);
+        super(property, act, context, factory, new CustomerChargeEditContext(context));
         Prescriptions prescriptions;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
         } else {
             prescriptions = null;
         }
-        editContext.setPrescriptions(prescriptions);
+        getEditContext().setPrescriptions(prescriptions);
     }
 
     /**
@@ -117,7 +111,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @return the save context
      */
     public ChargeSaveContext getSaveContext() {
-        return editContext.getSaveContext();
+        return getEditContext().getSaveContext();
     }
 
     /**
@@ -126,7 +120,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @param queue the popup editor manager. May be {@code null}
      */
     public void setEditorQueue(EditorQueue queue) {
-        editContext.setEditorQueue(queue);
+        getEditContext().setEditorQueue(queue);
     }
 
     /**
@@ -135,7 +129,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @return the popup editor manager. May be {@code null}
      */
     public EditorQueue getEditorQueue() {
-        return editContext.getEditorQueue();
+        return getEditContext().getEditorQueue();
     }
 
     /**
@@ -147,6 +141,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     public void remove(IMObject object) {
         super.remove(object);
         FinancialAct act = (FinancialAct) object;
+        CustomerChargeEditContext editContext = getEditContext();
         editContext.getStock().remove(act);
         Prescriptions prescriptions = editContext.getPrescriptions();
         if (prescriptions != null) {
@@ -202,7 +197,18 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         return initialiseEditor(new DefaultCustomerChargeActItemEditor((FinancialAct) object, (Act) getObject(),
-                                                                       editContext, context));
+                                                                       getEditContext(), context));
+    }
+
+    /**
+     * Returns an editor for an object, creating one if it doesn't exist.
+     *
+     * @param object the object to edit
+     * @return an editor for the object
+     */
+    @Override
+    public CustomerChargeActItemEditor getEditor(IMObject object) {
+        return (CustomerChargeActItemEditor) super.getEditor(object);
     }
 
     /**
@@ -210,8 +216,9 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      *
      * @return the edit context
      */
+    @Override
     protected CustomerChargeEditContext getEditContext() {
-        return editContext;
+        return (CustomerChargeEditContext) super.getEditContext();
     }
 
     /**
@@ -263,7 +270,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         AlertListener alertListener = getAlertListener();
         if (alertListener != null && !acts.isEmpty()) {
             int outOfStock = 0;
-            StockOnHand stock = editContext.getStock();
+            StockOnHand stock = getEditContext().getStock();
             for (Act act : acts) {
                 BigDecimal onHand = stock.getAvailableStock((FinancialAct) act);
                 if (onHand != null && BigDecimal.ZERO.compareTo(onHand) >= 0) {
@@ -299,6 +306,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      */
     @Override
     protected void doSave() {
+        CustomerChargeEditContext editContext = getEditContext();
         Prescriptions prescriptions = editContext.getPrescriptions();
         if (prescriptions != null) {
             prescriptions.save();
@@ -322,7 +330,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
         ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
-                                                              editContext.getStock(), context);
+                                                              getEditContext().getStock(), context);
         return (IMTableModel) model;
     }
 

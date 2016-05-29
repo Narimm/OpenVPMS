@@ -236,7 +236,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
         if (product != null) {
             // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
             // from the template, as it is the dose quantity for the patient weight
-            setQuantity(null);
+            setQuantity(BigDecimal.ZERO);
             setProduct(product.getProduct());
             if (MathRules.isZero(getQuantity())) {
                 setQuantity(product.getHighQuantity());

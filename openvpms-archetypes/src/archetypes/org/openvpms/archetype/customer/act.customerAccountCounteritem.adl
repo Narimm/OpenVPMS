@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -40,7 +40,13 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
+        <node name="minQuantity" displayName="Minimum Quantity" path="/details/minQuantity" type="java.math.BigDecimal"
+              minCardinality="0" defaultValue="0.0" hidden="true" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
         <node name="fixedPrice" path="/fixedAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="unitPrice" path="/unitAmount"

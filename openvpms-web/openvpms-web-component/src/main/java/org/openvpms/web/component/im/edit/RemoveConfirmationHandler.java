@@ -14,22 +14,26 @@
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.echo.event;
+package org.openvpms.web.component.im.edit;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
- * A VetoListener event gets fired whenever a vetoable action is performed.
+ * Confirms removal of an object from a collection.
+ * <p/>
+ * Removal may be performed asynchronously, and implementations may choose to veto removal.
  *
  * @author Tim Anderson
- * @see Vetoable
  */
-public interface VetoListener<T extends Vetoable> extends java.util.EventListener {
+public interface RemoveConfirmationHandler {
 
     /**
-     * Invoked when a vetoable action is performed.
+     * Confirms removal of an object from a collection.
+     * <p/>
+     * If approved, it performs the removal.
      *
-     * @param action the action to veto or allow
+     * @param object     the object to remove
+     * @param collection the collection to remove the object from, if approved
      */
-    void onVeto(T action);
-
+    void remove(IMObject object, IMObjectCollectionEditor collection);
 }

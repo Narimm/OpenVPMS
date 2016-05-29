@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -20,7 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
-import org.openvpms.web.component.im.archetype.ShortNamePairArchetypeHandlers;
+import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.lang.reflect.Constructor;
@@ -36,12 +36,17 @@ public class IMObjectEditorFactory {
     /**
      * Editor implementations.
      */
-    private ShortNamePairArchetypeHandlers editors;
+    private ArchetypeHandlers<IMObjectEditor> editors;
 
     /**
-     * The resource path.
+     * The resource name.
      */
-    private final String path;
+    private final String name;
+
+    /**
+     * The fallback resource name.
+     */
+    private final String fallbackName;
 
     /**
      * The logger.
@@ -49,24 +54,31 @@ public class IMObjectEditorFactory {
     private static final Log log = LogFactory.getLog(IMObjectEditorFactory.class);
 
     /**
-     * The default resource path.
+     * The default resource name.
      */
-    private static final String DEFAULT_PATH = "IMObjectEditorFactory.properties";
+    private static final String NAME = "IMObjectEditorFactory.properties";
+
+    /**
+     * The default fallback resource name.
+     */
+    private static final String FALLBACK_NAME = "DefaultIMObjectEditorFactory.properties";
 
     /**
      * Constructs an {@link IMObjectEditorFactory}.
      */
     public IMObjectEditorFactory() {
-        this(DEFAULT_PATH);
+        this(NAME, FALLBACK_NAME);
     }
 
     /**
      * Constructs an {@link IMObjectEditorFactory}.
      *
-     * @param path the resource name
+     * @param name         the resource name
+     * @param fallbackName the fallback resource name. May be {@code null}
      */
-    public IMObjectEditorFactory(String path) {
-        this.path = path;
+    public IMObjectEditorFactory(String name, String fallbackName) {
+        this.name = name;
+        this.fallbackName = fallbackName;
     }
 
     /**
@@ -91,15 +103,8 @@ public class IMObjectEditorFactory {
     public IMObjectEditor create(IMObject object, IMObject parent, LayoutContext context) {
         IMObjectEditor result = null;
 
-        ArchetypeHandler handler;
-        if (parent != null) {
-            String primary = object.getArchetypeId().getShortName();
-            String secondary = parent.getArchetypeId().getShortName();
-            handler = getEditors().getHandler(primary, secondary);
-        } else {
-            String shortName = object.getArchetypeId().getShortName();
-            handler = getEditors().getHandler(shortName);
-        }
+        String shortName = object.getArchetypeId().getShortName();
+        ArchetypeHandler handler = getEditors().getHandler(shortName);
 
         if (handler != null) {
             Class type = handler.getType();
@@ -125,9 +130,9 @@ public class IMObjectEditorFactory {
      *
      * @return the editors
      */
-    private synchronized ShortNamePairArchetypeHandlers getEditors() {
+    private synchronized ArchetypeHandlers getEditors() {
         if (editors == null) {
-            editors = new ShortNamePairArchetypeHandlers(path, IMObjectEditor.class);
+            editors = new ArchetypeHandlers<>(name, fallbackName, IMObjectEditor.class);
         }
         return editors;
     }

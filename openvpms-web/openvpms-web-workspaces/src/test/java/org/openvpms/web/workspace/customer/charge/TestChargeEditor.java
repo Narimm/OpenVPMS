@@ -83,7 +83,7 @@ public class TestChargeEditor extends DefaultCustomerChargeActEditor {
      * @return the corresponding editor
      */
     public CustomerChargeActItemEditor getEditor(Act object) {
-        return (CustomerChargeActItemEditor) getItems().getEditor(object);
+        return getItems().getEditor(object);
     }
 
     /**

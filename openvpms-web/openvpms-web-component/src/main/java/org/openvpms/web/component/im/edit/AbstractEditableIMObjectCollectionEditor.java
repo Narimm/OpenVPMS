@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -56,6 +56,10 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      */
     private IMObjectCreationListener creationListener;
 
+    /**
+     * The handler to confirm removal of objects.
+     */
+    private RemoveConfirmationHandler removeConfirmationHandler;
 
     /**
      * Constructs an {@link AbstractEditableIMObjectCollectionEditor}.
@@ -135,6 +139,26 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     @Override
     public IMObjectCreationListener getCreationListener() {
         return creationListener;
+    }
+
+    /**
+     * Registers a handler to confirm removal of objects.
+     *
+     * @param handler the handler
+     */
+    @Override
+    public void setRemoveConfirmationHandler(RemoveConfirmationHandler handler) {
+        this.removeConfirmationHandler = handler;
+    }
+
+    /**
+     * Returns the handler to confirm removal of objects.
+     *
+     * @return the handler. May be {@code null}
+     */
+    @Override
+    public RemoveConfirmationHandler getRemoveConfirmationHandler() {
+        return removeConfirmationHandler;
     }
 
     /**

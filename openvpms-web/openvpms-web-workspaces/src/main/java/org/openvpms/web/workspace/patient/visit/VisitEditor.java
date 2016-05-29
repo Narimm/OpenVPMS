@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -45,7 +45,6 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.event.VetoListener;
-import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
@@ -390,11 +389,10 @@ public class VisitEditor {
             tabbedPane.setStyleName("VisitEditor.TabbedPane");
             VetoableSingleSelectionModel selectionModel = new VetoableSingleSelectionModel();
             tabbedPane.setSelectionModel(selectionModel);
-            selectionModel.setVetoListener(new VetoListener() {
+            selectionModel.setVetoListener(new VetoListener<VetoableSingleSelectionModel.Change>() {
                 @Override
-                public void onVeto(Vetoable action) {
-                    VetoableSingleSelectionModel.Change change = (VetoableSingleSelectionModel.Change) action;
-                    action.veto(!switchTabs(change.getOldIndex(), change.getNewIndex()));
+                public void onVeto(VetoableSingleSelectionModel.Change change) {
+                    change.veto(!switchTabs(change.getOldIndex(), change.getNewIndex()));
                 }
             });
             tabbedPane.getSelectionModel().addChangeListener(new ChangeListener() {

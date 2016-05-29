@@ -45,6 +45,9 @@ import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
  * </table>
  * <p/>
  * Multiple <em>QueryFactory.properties</em> may be used.
+ * <p/>
+ * Default implementations can be registered in a <em>DefaultQueryFactory.properties</em> file; these are overridden by
+ * <em>QueryFactory.properties</em>.
  *
  * @author Tim Anderson
  */

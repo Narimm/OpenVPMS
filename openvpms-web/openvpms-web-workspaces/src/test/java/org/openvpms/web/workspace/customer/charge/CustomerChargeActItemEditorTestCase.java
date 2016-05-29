@@ -287,7 +287,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertNotNull(item);
 
         // verify the item matches that expected
-        checkItem(item, patient, product, null, author, null, quantity, unitCost, unitPrice, fixedCost,
+        checkItem(item, patient, product, null, author, null, BigDecimal.ZERO, quantity, unitCost, unitPrice, fixedCost,
                   fixedPrice, discount, tax, total);
 
         // verify no errors were logged
@@ -350,8 +350,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal fixedPriceExTax = new BigDecimal("1.82");
         BigDecimal unitPriceExTax = new BigDecimal("9.09");
         BigDecimal totalExTax = new BigDecimal("20");
-        checkItem(item, patient, product, null, author, null, quantity, unitCost, unitPriceExTax, fixedCost,
-                  fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
+        checkItem(item, patient, product, null, author, null, BigDecimal.ZERO, quantity, unitCost, unitPriceExTax,
+                  fixedCost, fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
@@ -413,8 +413,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal fixedPriceExTax = new BigDecimal("1.82").multiply(ratio);
         BigDecimal unitPriceExTax = new BigDecimal("9.09").multiply(ratio);
         BigDecimal totalExTax = new BigDecimal("20").multiply(ratio);
-        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPriceExTax, fixedCost,
-                  fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
+        checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, quantity, unitCost, unitPriceExTax,
+                  fixedCost, fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
@@ -512,8 +512,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal discount1 = BigDecimal.ZERO;
         BigDecimal tax1 = new BigDecimal("2.00");
         BigDecimal total1 = new BigDecimal("22.00");
-        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
-                  fixedPrice, discount1, tax1, total1);
+        checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, quantity, unitCost, unitPrice,
+                  fixedCost, fixedPrice, discount1, tax1, total1);
     }
 
     /**
@@ -757,8 +757,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertNotNull(item);
 
         // verify the item matches that expected
-        checkItem(item, patient1, product1, null, author1, clinician1, quantity1, unitCost1, unitPrice1, fixedCost1,
-                  fixedPrice1, discount1, tax1, total1);
+        checkItem(item, patient1, product1, null, author1, clinician1, BigDecimal.ZERO, quantity1, unitCost1,
+                  unitPrice1, fixedCost1, fixedPrice1, discount1, tax1, total1);
         ActBean itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
             if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
@@ -806,8 +806,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertNotNull(item);
 
         // fixedPrice2 and unitPrice2 are calculated as 11.10, then rounded to minPrice
-        checkItem(item, patient2, product2, null, author2, clinician2, quantity2, unitCost2, roundedPrice,
-                  fixedCost2, roundedPrice, discount2, tax2, total2);
+        checkItem(item, patient2, product2, null, author2, clinician2, BigDecimal.ZERO, quantity2, unitCost2,
+                  roundedPrice, fixedCost2, roundedPrice, discount2, tax2, total2);
 
         itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
@@ -831,8 +831,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             item = get(item);
             assertNotNull(item);
 
-            checkItem(item, patient2, product2, null, author2, null, quantity2, unitCost2, roundedPrice,
-                      fixedCost2, roundedPrice, discount2, tax2, total2);
+            checkItem(item, patient2, product2, null, author2, null, BigDecimal.ZERO, quantity2, unitCost2,
+                      roundedPrice, fixedCost2, roundedPrice, discount2, tax2, total2);
         }
 
         editor.setProduct(null);       // make sure nulls are handled
@@ -893,8 +893,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             assertEquals("Cannot save with product template: " + product.getName(), expected.getMessage());
         }
 
-        checkItem(item, patient, product, null, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, quantity, BigDecimal.ZERO,
+                  BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         ActBean itemBean = new ActBean(item);
         // verify there are no medication acts
         assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
@@ -949,8 +949,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal discount1 = new BigDecimal("2.20");
         BigDecimal tax1 = new BigDecimal("1.80");
         BigDecimal total1 = new BigDecimal("19.80");
-        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
-                  fixedPrice, discount1, tax1, total1);
+        checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, quantity, unitCost, unitPrice,
+                  fixedCost, fixedPrice, discount1, tax1, total1);
 
         // now remove the discounts
         editor.setDiscount(BigDecimal.ZERO);
@@ -960,8 +960,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal discount2 = BigDecimal.ZERO;
         BigDecimal tax2 = new BigDecimal("2.00");
         BigDecimal total2 = new BigDecimal("22.00");
-        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
-                  fixedPrice, discount2, tax2, total2);
+        checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, quantity, unitCost, unitPrice,
+                  fixedCost, fixedPrice, discount2, tax2, total2);
     }
 
     /**
@@ -1025,8 +1025,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         // verify the item matches that expected
         BigDecimal tax = new BigDecimal("4.0");
         BigDecimal total = new BigDecimal("44.00");
-        checkItem(item, patient, product, null, author, clinician, doseQuantity, unitCost, unitPrice, fixedCost,
-                  fixedPrice, discount, tax, total);
+        checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, doseQuantity, unitCost, unitPrice,
+                  fixedCost, fixedPrice, discount, tax, total);
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());

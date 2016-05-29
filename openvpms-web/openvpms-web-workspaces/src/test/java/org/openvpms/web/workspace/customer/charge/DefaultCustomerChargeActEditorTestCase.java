@@ -1159,13 +1159,15 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
         assertEquals(3, items.size());
 
-        checkItem(items, patient, product1, template, author, clinician, ONE, ZERO, ZERO, ZERO, ONE, ZERO,
+        checkItem(items, patient, product1, template, author, clinician, ONE, ONE, ZERO, ZERO, ZERO, ONE, ZERO,
                   new BigDecimal("0.091"), ONE, null, childActs);
-        checkItem(items, patient, product2, template, author, clinician, BigDecimal.valueOf(2), ZERO, ZERO, ZERO, ONE,
+        BigDecimal two = BigDecimal.valueOf(2);
+        checkItem(items, patient, product2, template, author, clinician, two, two, ZERO, ZERO, ZERO, ONE,
                   ZERO, new BigDecimal("0.091"), ONE, null, childActs);
 
         // verify that product3 is charged at zero price
-        checkItem(items, patient, product3, template, author, clinician, BigDecimal.valueOf(3), ZERO, ZERO, ZERO, ZERO,
+        BigDecimal three = BigDecimal.valueOf(3);
+        checkItem(items, patient, product3, template, author, clinician, three, three, ZERO, ZERO, ZERO, ZERO,
                   ZERO, ZERO, ZERO, null, childActs);
     }
 
@@ -1364,11 +1366,11 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         }
 
         BigDecimal discount = ZERO;
-        checkItem(items, patient, product1, null, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product1, null, author, clinician, ZERO, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
-        checkItem(items, patient, product2, null, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product2, null, author, clinician, ZERO, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, product2Acts);
-        checkItem(items, patient, product3, null, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product3, null, author, clinician, ZERO, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, product3Acts);
 
         boolean add = bean.isA(CustomerAccountArchetypes.CREDIT);
@@ -1507,17 +1509,17 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         }
 
         if (TypeHelper.isA(charge, CustomerAccountArchetypes.COUNTER)) {
-            checkItem(items, patient, product1, template, author, clinician, quantity, ZERO, ZERO,
+            checkItem(items, patient, product1, template, author, clinician, BigDecimal.ONE, quantity, ZERO, ZERO,
                       ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
         } else {
             // quantity derived from the product dose. As there is no unit price, the totals don't change
-            checkItem(items, patient, product1, template, author, clinician, new BigDecimal("4.2"), ZERO, ZERO,
-                      ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+            checkItem(items, patient, product1, template, author, clinician, BigDecimal.ONE, new BigDecimal("4.2"),
+                      ZERO, ZERO, ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
         }
 
-        checkItem(items, patient, product2, template, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product2, template, author, clinician, BigDecimal.ONE, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
-        checkItem(items, patient, product3, template, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product3, template, author, clinician, BigDecimal.ONE, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
     }
 

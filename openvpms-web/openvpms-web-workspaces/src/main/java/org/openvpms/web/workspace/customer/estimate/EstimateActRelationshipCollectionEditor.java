@@ -32,11 +32,6 @@ import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemRelationshipCollectionEditor {
 
     /**
-     * The edit context.
-     */
-    private ChargeEditContext editContext;
-
-    /**
      * Constructs an {@link EstimateActRelationshipCollectionEditor}.
      *
      * @param property the collection property
@@ -44,8 +39,7 @@ public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemR
      * @param context  the layout context
      */
     public EstimateActRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        super(property, act, context);
-        editContext = new ChargeEditContext(context);
+        super(property, act, context, new ChargeEditContext(context));
     }
 
     /**
@@ -57,8 +51,7 @@ public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemR
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        return initialiseEditor(new EstimateItemEditor((Act) object, (Act) getObject(), getEditContext(),
-                                                       context));
+        return initialiseEditor(new EstimateItemEditor((Act) object, (Act) getObject(), getEditContext(), context));
     }
 
     /**
@@ -78,7 +71,7 @@ public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemR
      * @return the edit context
      */
     protected ChargeEditContext getEditContext() {
-        return editContext;
+        return (ChargeEditContext) super.getEditContext();
     }
 
 }

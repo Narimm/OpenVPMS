@@ -731,8 +731,8 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     private void checkItem(List<FinancialAct> items, Party patient, Product product, BigDecimal quantity,
                            BigDecimal unitPrice, BigDecimal fixedPrice, BigDecimal tax, BigDecimal total,
                            int childActs) {
-        checkItem(items, patient, product, null, author, clinician, quantity, ZERO, unitPrice, ZERO, fixedPrice, ZERO,
-                  tax, total, null, childActs);
+        checkItem(items, patient, product, null, author, clinician, ZERO, quantity, ZERO, unitPrice, ZERO,
+                  fixedPrice, ZERO, tax, total, null, childActs);
     }
 
     private static class TestPharmacyOrderInvoicer extends PharmacyOrderInvoicer {

@@ -6813,8 +6813,8 @@
         <data collection="prices" archetype="productPrice.fixedPrice" name="Short Operation" price="75"/>
     </data>
 
-    <data id="P866" archetype="product.service" name="Desex - Dog &lt; 20kg"/>
-    <data id="P867" archetype="product.service" name="Desex - Dog &gt;= 20kg"/>
+    <data id="P866" archetype="product.service" name="Desex - Dog &lt; 20kg" templateOnly="true"/>
+    <data id="P867" archetype="product.service" name="Desex - Dog &gt;= 20kg" templateOnly="true"/>
     <data id="P868" archetype="product.medication" name="Carprofen Injection" dispensingUnits="MLS"
           sellingUnits="MLS" concentration="50">
         <data collection="type" archetype="entityLink.productType" source="id:P868"
