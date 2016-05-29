@@ -1033,7 +1033,7 @@ CREATE TEMPORARY TABLE tmp_sms_templates (
   active    BIT(1)
 );
 
-INSERT INTO tmp_sms_templates (linkId, source_id, name, sms, active)
+INSERT INTO tmp_sms_templates (linkId, source_id, name, text, active)
   SELECT
     e.linkId,
     e.entity_id,
@@ -1041,7 +1041,7 @@ INSERT INTO tmp_sms_templates (linkId, source_id, name, sms, active)
     sms.value,
     e.active
   FROM entities e
-    LEFT JOIN entity_details sms
+    JOIN entity_details sms
       ON e.entity_id = sms.entity_id
          AND sms.name = 'sms'
   WHERE e.arch_short_name = 'entity.documentTemplate';
