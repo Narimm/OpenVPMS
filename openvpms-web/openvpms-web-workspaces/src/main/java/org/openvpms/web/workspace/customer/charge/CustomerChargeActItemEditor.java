@@ -1669,7 +1669,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         CollectionProperty collection = (CollectionProperty) getProperty(name);
         if (collection != null && !collection.isHidden()) {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
-                    collection, act, getLayoutContext());
+                    collection, act, new DefaultLayoutContext(getLayoutContext())); // wrap to increase depth
             editor.setExcludeDefaultValueObject(false);
             getEditors().add(editor);
         }
