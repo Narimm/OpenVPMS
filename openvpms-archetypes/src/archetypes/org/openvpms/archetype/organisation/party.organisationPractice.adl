@@ -106,6 +106,8 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="minimumQuantities" path="/details/minimumQuantities" minCardinality="0"
+              maxCardinality="1" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

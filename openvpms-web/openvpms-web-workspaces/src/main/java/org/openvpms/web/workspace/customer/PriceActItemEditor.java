@@ -17,9 +17,12 @@
 package org.openvpms.web.workspace.customer;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -28,18 +31,26 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.edit.act.TemplateProduct;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.charge.PriceActEditContext;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
 
 
 /**
@@ -75,6 +86,12 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private final PriceActEditContext editContext;
 
     /**
+     * Minimum quantity node name.
+     */
+    private static final String MINIMUM_QUANTITY = "minQuantity";
+
+
+    /**
      * Constructs a {@link PriceActItemEditor}.
      *
      * @param act           the act to edit
@@ -98,6 +115,24 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Returns the minimum quantity.
+     *
+     * @return the minimum quantity
+     */
+    public BigDecimal getMinimumQuantity() {
+        return getProperty(MINIMUM_QUANTITY).getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Sets the minimum quantity.
+     *
+     * @param quantity the minimum quantity
+     */
+    public void setMinimumQuantity(BigDecimal quantity) {
+        getProperty(MINIMUM_QUANTITY).setValue(quantity);
+    }
+
+    /**
      * Returns the fixed price.
      *
      * @return the fixed price
@@ -113,6 +148,57 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     public BigDecimal getServiceRatio() {
         return serviceRatio;
+    }
+
+    /**
+     * Sets a product included from a template.
+     * <p/>
+     * This updates the minimum quantity to that of the low quantity from the template.
+     *
+     * @param product  the product. May be {@code null}
+     * @param template the template that included the product. May be {@code null}
+     */
+    @Override
+    public void setProduct(TemplateProduct product, Product template) {
+        setMinimumQuantity(null);
+        super.setProduct(product, template);
+        setMinimumQuantity(product != null ? product.getLowQuantity() : null);
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean result = super.doValidation(validator);
+        if (result && editContext.useMinimumQuantities()) {
+            result = validateMinimumQuantity(validator);
+        }
+        return result;
+    }
+
+    /**
+     * Ensures that the quantity isn't less than the minimum quantity.
+     *
+     * @param validator the validator
+     * @return {@code true} if the quantity isn't less than the minimum quantity, otherwise {@code false}
+     */
+    protected boolean validateMinimumQuantity(Validator validator) {
+        boolean result = true;
+        BigDecimal minQuantity = getMinimumQuantity();
+        if (!MathRules.isZero(minQuantity) && getQuantity().compareTo(minQuantity) < 0) {
+            Product product = getProduct();
+            String name = (product != null) ? product.getName() : null;
+            // product should never be null, due to validation
+            Property property = getProperty(QUANTITY);
+            String message = Messages.format("customer.charge.minquantity", name, minQuantity);
+            validator.add(property, new ValidatorError(property, message));
+            result = false;
+        }
+        return result;
     }
 
     /**
@@ -173,6 +259,17 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
         return new PriceItemLayoutStrategy(fixedPrice);
+    }
+
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        if (editContext.useMinimumQuantities()) {
+            restrictProductSelection();
+        }
     }
 
     /**
@@ -508,6 +605,53 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Restricts product selection if the item has a minimum quantity.
+     * <p/>
+     * When a minimum quantity is in place, this only allows a product to be replaced with one of the same type.
+     * <br/>
+     * This is to handle the case where the preferred product is out of stock.
+     */
+    protected void restrictProductSelection() {
+        ProductParticipationEditor editor = getProductEditor(false);
+        if (editor != null) {
+            if (!MathRules.isZero(getMinimumQuantity())) {
+                IMObjectReference product = editor.getEntityRef();
+                if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
+                    // doesn't apply to services - these should be read-only
+                    editor.setShortNames(product.getArchetypeId().getShortName());
+                } else {
+                    editor.resetShortNames();
+                }
+            } else {
+                editor.resetShortNames();
+            }
+        }
+    }
+
+    /**
+     * Determines if the product is read-only.
+     *
+     * @return {@code true} if minimum quantities are enforced, and the product is a service with a minimum quantity
+     */
+    protected boolean isProductReadOnly() {
+        boolean result = false;
+        if (editContext.useMinimumQuantities() && TypeHelper.isA(getProductRef(), ProductArchetypes.SERVICE)) {
+            BigDecimal minQuantity = getMinimumQuantity();
+            result = !MathRules.isZero(minQuantity);
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the product is currently editable, but a read-only product is required.
+     *
+     * @return {@code true} if the product is editable and read-only is required
+     */
+    protected boolean needsReadOnlyProduct() {
+        return getProductEditor(false) != null && isProductReadOnly();
+    }
+
+    /**
      * Layout strategy that includes the fixed price editor.
      */
     protected class PriceItemLayoutStrategy extends LayoutStrategy {
@@ -517,6 +661,25 @@ public abstract class PriceActItemEditor extends ActItemEditor {
                                             fixedEditor.getFocusGroup()));
             // need to register the editor
             getEditors().add(editor);
+        }
+
+        /**
+         * Apply the layout strategy.
+         * <p/>
+         * This renders an object in a {@code Component}, using a factory to create the child components.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component containing the rendered {@code object}
+         */
+        @Override
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            if (isProductReadOnly()) {
+                addComponent(createComponent(createReadOnly(properties.get(PRODUCT)), parent, context));
+            }
+            return super.apply(object, properties, parent, context);
         }
     }
 

@@ -14,22 +14,26 @@
  * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.echo.event;
-
+package org.openvpms.web.component.im.edit;
 
 /**
- * A VetoListener event gets fired whenever a vetoable action is performed.
+ * Default implementation of {@link RemoveConfirmationHandler}.
+ * <p/>
+ * This only prompts for confirmation if the object is saved.
  *
  * @author Tim Anderson
- * @see Vetoable
  */
-public interface VetoListener<T extends Vetoable> extends java.util.EventListener {
+public class DefaultRemoveConfirmationHandler extends AbstractRemoveConfirmationHandler {
 
     /**
-     * Invoked when a vetoable action is performed.
-     *
-     * @param action the action to veto or allow
+     * The singleton instance.
      */
-    void onVeto(T action);
+    public static final RemoveConfirmationHandler INSTANCE = new DefaultRemoveConfirmationHandler();
+
+    /**
+     * Default constructor.
+     */
+    private DefaultRemoveConfirmationHandler() {
+    }
 
 }

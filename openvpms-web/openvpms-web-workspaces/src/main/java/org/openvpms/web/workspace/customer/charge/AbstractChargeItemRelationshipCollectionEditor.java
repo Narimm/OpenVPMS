@@ -48,14 +48,20 @@ import org.openvpms.web.workspace.customer.PriceActItemEditor;
 public abstract class AbstractChargeItemRelationshipCollectionEditor extends ActRelationshipCollectionEditor {
 
     /**
+     * The edit context.
+     */
+    private final PriceActEditContext editContext;
+
+    /**
      * Constructs an {@link AbstractChargeItemRelationshipCollectionEditor}
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        this(property, act, context, DefaultCollectionResultSetFactory.INSTANCE);
+    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
+                                                          PriceActEditContext editContext) {
+        this(property, act, context, DefaultCollectionResultSetFactory.INSTANCE, editContext);
     }
 
     /**
@@ -66,9 +72,21 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @param context  the layout context
      * @param factory  the result set factory
      */
-    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
-                                                          CollectionResultSetFactory factory) {
+    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act,
+                                                          LayoutContext context, CollectionResultSetFactory factory,
+                                                          PriceActEditContext editContext) {
         super(property, act, context, factory);
+        this.editContext = editContext;
+        setRemoveConfirmationHandler(DefaultChargeRemoveConfirmationHandler.INSTANCE);
+    }
+
+    /**
+     * Returns the edit context.
+     *
+     * @return the edit context
+     */
+    protected PriceActEditContext getEditContext() {
+        return editContext;
     }
 
     /**
