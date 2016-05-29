@@ -82,8 +82,7 @@ class BoardingInvoicer extends AbstractInvoicer {
         int days = visit.getDays(endTime);
         Product product = cageType.getProduct(days, visit.isFirstPet());
         if (product != null) {
-            // if staying multiple days, then the number of nights is charged
-            BigDecimal quantity = (days > 1) ? BigDecimal.valueOf(days - 1) : BigDecimal.valueOf(days);
+            BigDecimal quantity = BigDecimal.valueOf(days);
             addItem(visit.getPatient(), product, quantity, editor);
         }
     }

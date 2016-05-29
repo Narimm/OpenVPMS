@@ -332,6 +332,18 @@ public class AppointmentRules {
     }
 
     /**
+     * Returns the number of nights to charge boarding for.
+     *
+     * @param startTime the boarding start time
+     * @param endTime   the boarding end time
+     * @return the number of nights
+     */
+    public int getBoardingNights(Date startTime, Date endTime) {
+        int days = getBoardingDays(startTime, endTime);
+        return days > 1 ? days - 1 : days;
+    }
+
+    /**
      * Returns the patient clinical event associated with an appointment.
      *
      * @param appointment the appointment
