@@ -1134,10 +1134,6 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, desc
       FROM entities e
       WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder');
 
-SELECT *
-FROM entities e JOIN entity_links r ON e.entity_id = r.target_id
-WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder';
-
 INSERT INTO entity_details (entity_id, name, type, value)
   SELECT
     e.entity_id,
