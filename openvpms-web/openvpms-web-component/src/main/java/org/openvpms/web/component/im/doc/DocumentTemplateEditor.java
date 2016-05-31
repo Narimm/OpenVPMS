@@ -19,8 +19,10 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -42,7 +44,7 @@ public class DocumentTemplateEditor extends AbstractDocumentTemplateEditor {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentTemplateEditor(Entity template, IMObject parent, LayoutContext context) {
-        super(template, parent, false, null, context);
+        super(template, parent, false, new DocumentTemplateHandler(), context);
     }
 
     /**
@@ -54,4 +56,18 @@ public class DocumentTemplateEditor extends AbstractDocumentTemplateEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new DocumentTemplateLayoutStrategy(getSelector());
     }
+
+    private static class DocumentTemplateHandler extends SupportedContentDocumentHandler {
+
+        private static final String[] SUPPORTED_EXTENSIONS = {DocFormats.ODT_EXT, DocFormats.DOC_EXT,
+                                                              DocFormats.JRXML_EXT, DocFormats.RTF_EXT};
+
+        private static final String[] SUPPORTED_MIME_TYPES = {DocFormats.ODT_TYPE, DocFormats.DOC_TYPE,
+                                                              DocFormats.RTF_TYPE};
+
+        public DocumentTemplateHandler() {
+            super(SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES, ServiceHelper.getArchetypeService());
+        }
+    }
+
 }
