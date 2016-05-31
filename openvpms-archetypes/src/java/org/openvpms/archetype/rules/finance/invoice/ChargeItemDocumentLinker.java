@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -108,10 +108,10 @@ public class ChargeItemDocumentLinker {
      */
     public void prepare(PatientHistoryChanges changes) {
         // map of template references to their corresponding entity relationship, obtained from the product
-        Map<IMObjectReference, EntityRelationship> productTemplates = new HashMap<IMObjectReference, EntityRelationship>();
+        Map<IMObjectReference, EntityRelationship> productTemplates = new HashMap<>();
 
         // template references associated with the current document acts
-        Set<IMObjectReference> templateRefs = new HashSet<IMObjectReference>();
+        Set<IMObjectReference> templateRefs = new HashSet<>();
 
         // determine the templates associated with the item's product
         ActBean itemBean = new ActBean(item, service);
@@ -191,7 +191,7 @@ public class ChargeItemDocumentLinker {
                 documentAct.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
             }
 
-            if (TypeHelper.isA(act, PatientArchetypes.DOCUMENT_FORM)) {
+            if (TypeHelper.isA(act, PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_LETTER)) {
                 IMObjectReference product = itemBean.getParticipantRef(ProductArchetypes.PRODUCT_PARTICIPATION);
                 documentAct.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
             }

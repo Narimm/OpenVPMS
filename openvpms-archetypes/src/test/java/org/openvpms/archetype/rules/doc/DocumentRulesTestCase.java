@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
@@ -221,14 +222,22 @@ public class DocumentRulesTestCase extends ArchetypeServiceTest {
         DocumentAct act = (DocumentAct) create(actShortName);
         User clinician = TestHelper.createClinician();
         User author = TestHelper.createClinician();
+        Product product = null;
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("clinician", clinician);
         bean.addNodeParticipation("author", author);
+        if (bean.hasNode("product")) {
+            product = TestHelper.createProduct();
+            bean.addNodeParticipation("product", product);
+        }
 
         DocumentAct version = checkCreateVersion(act, expectedVersion);
         ActBean versionBean = new ActBean(version);
         assertEquals(clinician, versionBean.getNodeParticipant("clinician"));
         assertEquals(author, versionBean.getNodeParticipant("author"));
+        if (versionBean.hasNode("product")) {
+            assertEquals(product, versionBean.getNodeParticipant("product"));
+        }
     }
 
     /**
