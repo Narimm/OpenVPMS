@@ -24,6 +24,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.property.DefaultValidator;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -171,10 +174,13 @@ public abstract class CalendarEventEditDialog extends EditDialog {
      */
     protected boolean checkEventTimes(boolean close) {
         CalendarEventEditor editor = getEditor();
-        boolean result = editor.isValid();
+        Validator validator = new DefaultValidator();
+        boolean result = editor.validate(validator);
         if (result) {
             List<Times> times = editor.getEventTimes();
             result = times != null && checkEventTimes(times, close);
+        } else {
+            ValidationHelper.showError(validator);
         }
         return result;
     }
