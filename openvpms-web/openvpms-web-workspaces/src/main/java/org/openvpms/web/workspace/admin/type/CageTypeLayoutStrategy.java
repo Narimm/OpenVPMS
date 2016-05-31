@@ -46,7 +46,8 @@ public class CageTypeLayoutStrategy extends AbstractLayoutStrategy {
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        BoundAbsoluteTimeField lateCheckoutTime = new BoundAbsoluteTimeField(properties.get("lateCheckoutTime"));
+        BoundAbsoluteTimeField lateCheckoutTime = new BoundAbsoluteTimeField(properties.get("lateCheckoutTime"),
+                                                                             false);
         if (!context.isEdit()) {
             lateCheckoutTime.setEnabled(false);
         }
