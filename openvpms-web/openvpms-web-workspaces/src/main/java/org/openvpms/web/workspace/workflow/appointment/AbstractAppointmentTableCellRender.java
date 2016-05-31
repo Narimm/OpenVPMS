@@ -185,12 +185,9 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
      * @return the block component
      */
     private Component getBlock(PropertySet event) {
-        String text = evaluate(event);
+        String text = event.getString(ScheduleEvent.ACT_NAME);
         if (text == null) {
-            text = event.getString(ScheduleEvent.ACT_NAME);
-            if (text == null) {
-                text = event.getString(ScheduleEvent.SCHEDULE_TYPE_NAME);
-            }
+            text = event.getString(ScheduleEvent.SCHEDULE_TYPE_NAME);
         }
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
         return createLabelWithNotes(text, notes);
