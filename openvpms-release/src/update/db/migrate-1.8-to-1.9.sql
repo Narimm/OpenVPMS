@@ -353,7 +353,7 @@ INSERT INTO entity_details (entity_id, name, type, value)
   WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment' AND NOT exists(SELECT *
                                                                                    FROM entity_details d
                                                                                    WHERE d.entity_id = e.entity_id AND
-                                                                                         d.name = 'expressionType');
+                                                                                         d.name in ('expressionType', 'contentType'));
 
 INSERT INTO entity_details (entity_id, name, type, value)
   SELECT
@@ -368,7 +368,7 @@ INSERT INTO entity_details (entity_id, name, type, value)
   WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment' AND NOT exists(SELECT *
                                                                                    FROM entity_details d
                                                                                    WHERE d.entity_id = e.entity_id AND
-                                                                                         d.name = 'expression');
+                                                                                         d.name in ('expression', 'content'));
 
 #
 # Update entity.HL7Mapping* to include a sendADT node for OVPMS-1704 Add support to enable/disable ADT messages for
