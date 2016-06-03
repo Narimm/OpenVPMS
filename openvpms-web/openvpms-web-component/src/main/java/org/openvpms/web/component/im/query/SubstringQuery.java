@@ -49,6 +49,7 @@ public class SubstringQuery<T extends IMObject> extends AbstractIMObjectQuery<T>
     public SubstringQuery(String[] shortNames, Class type) {
         super(shortNames, type);
         setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
+        setContains(true);
     }
 
 }
