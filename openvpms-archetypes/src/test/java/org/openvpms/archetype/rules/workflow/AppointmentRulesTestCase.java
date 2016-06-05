@@ -67,7 +67,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     private AppointmentRules rules;
 
     /**
-     * Tests the {@link AppointmentRules#getSlotSize(Party)} method.
+     * Tests the {@link AppointmentRules#getSlotSize(Entity)} method.
      */
     @Test
     public void testGetSlotSize() {
@@ -300,19 +300,28 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentRules#isScheduleRemindersEnabled(Entity)}.
+     * Tests the {@link AppointmentRules#isRemindersEnabled(Entity)}.
      */
     @Test
-    public void testIsScheduleRemindersEnabled() {
+    public void testIsRemindersEnabled() {
+        // check schedule support
         Entity schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation());
-        assertFalse(rules.isScheduleRemindersEnabled(schedule));
+        assertFalse(rules.isRemindersEnabled(schedule));
 
         IMObjectBean bean = new IMObjectBean(schedule);
         bean.setValue("sendReminders", true);
 
-        assertTrue(rules.isScheduleRemindersEnabled(schedule));
+        assertTrue(rules.isRemindersEnabled(schedule));
 
-        assertFalse(rules.isScheduleRemindersEnabled(null));
+        // check appointment type support
+        Entity appointmentType = ScheduleTestHelper.createAppointmentType();
+        assertFalse(rules.isRemindersEnabled(appointmentType));
+        bean = new IMObjectBean(appointmentType);
+        bean.setValue("sendReminders", true);
+        assertTrue(rules.isRemindersEnabled(appointmentType));
+
+        // check null
+        assertFalse(rules.isRemindersEnabled(null));
     }
 
     /**

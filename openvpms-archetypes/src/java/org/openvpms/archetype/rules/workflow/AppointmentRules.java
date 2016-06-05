@@ -251,14 +251,14 @@ public class AppointmentRules {
     }
 
     /**
-     * Determines if automatic reminders are enabled for a schedule.
+     * Determines if automatic reminders are enabled for a schedule or appointment type.
      *
-     * @param schedule the schedule. May be {@code null}
-     * @return {@code true} if reminders are enabled for the schedule
+     * @param entity the schedule or appointment type. May be {@code null}
+     * @return {@code true} if reminders are enabled
      */
-    public boolean isScheduleRemindersEnabled(Entity schedule) {
-        if (schedule != null) {
-            IMObjectBean bean = new IMObjectBean(schedule, service);
+    public boolean isRemindersEnabled(Entity entity) {
+        if (entity != null) {
+            IMObjectBean bean = new IMObjectBean(entity, service);
             return bean.getBoolean("sendReminders");
         }
         return false;

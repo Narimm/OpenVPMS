@@ -350,10 +350,11 @@ INSERT INTO entity_details (entity_id, name, type, value)
     'string',
     'XPATH'
   FROM entities e
-  WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment' AND NOT exists(SELECT *
-                                                                                   FROM entity_details d
-                                                                                   WHERE d.entity_id = e.entity_id AND
-                                                                                         d.name in ('expressionType', 'contentType'));
+  WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment'
+        AND NOT exists(SELECT *
+                       FROM entity_details d
+                       WHERE d.entity_id = e.entity_id AND
+                             d.name IN ('expressionType', 'contentType'));
 
 INSERT INTO entity_details (entity_id, name, type, value)
   SELECT
@@ -365,10 +366,11 @@ INSERT INTO entity_details (entity_id, name, type, value)
                      '' @ '', date:formatTime($appointment.startTime, ''short''), $nl,
                      ''Call us on '', party:getTelephone($location), '' if you need to change the appointment'')'
   FROM entities e
-  WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment' AND NOT exists(SELECT *
-                                                                                   FROM entity_details d
-                                                                                   WHERE d.entity_id = e.entity_id AND
-                                                                                         d.name in ('expression', 'content'));
+  WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment'
+        AND NOT exists(SELECT *
+                       FROM entity_details d
+                       WHERE d.entity_id = e.entity_id AND
+                             d.name IN ('expression', 'content'));
 
 #
 # Update entity.HL7Mapping* to include a sendADT node for OVPMS-1704 Add support to enable/disable ADT messages for
@@ -1160,12 +1162,12 @@ INSERT INTO entity_details (entity_id, name, type, value)
 
 # Make entity.documentTemplateSMSAppointment have the same nodes as entity.documentTemplateSMSReminder
 UPDATE entity_details expressionType
-  JOIN entities e ON expressionType.entity_id = e.entity_id AND expressionType.name = "expressionType"
+  JOIN entities e ON expressionType.entity_id = e.entity_id AND expressionType.name = 'expressionType'
                      AND e.arch_short_name = 'entity.documentTemplateSMSAppointment'
 SET expressionType.name = 'contentType';
 
 UPDATE entity_details expression
-  JOIN entities e ON expression.entity_id = e.entity_id AND expression.name = "expression"
+  JOIN entities e ON expression.entity_id = e.entity_id AND expression.name = 'expression'
                      AND e.arch_short_name = 'entity.documentTemplateSMSAppointment'
 SET expression.name = 'content';
 
@@ -1206,3 +1208,29 @@ INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, cod
   WHERE NOT exists(SELECT *
                    FROM lookups e
                    WHERE e.arch_short_name = 'lookup.customerCommunicationReason' AND e.code = 'APPOINTMENT_REMINDER');
+
+#
+# OVPMS-1773 Add support to disable appointment reminders by appointment type
+#
+
+# For sites that deployed the earlier versions, default appointment types to send reminders where their schedule
+# has been configured to send reminders
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT DISTINCT
+    appointmentType.entity_id,
+    'sendReminders',
+    'boolean',
+    'true'
+  FROM entities schedule
+    JOIN entity_details sendReminders
+      ON sendReminders.entity_id = schedule.entity_id AND sendReminders.name = 'sendReminders'
+         AND sendReminders.value = 'true'
+    JOIN entity_relationships r
+      ON schedule.entity_id = r.source_id
+         AND r.arch_short_name = 'entityRelationship.scheduleAppointmentType'
+    JOIN entities appointmentType
+      ON r.target_id = appointmentType.entity_id
+  WHERE NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = appointmentType.entity_id
+                         AND d.name = 'sendReminders');
