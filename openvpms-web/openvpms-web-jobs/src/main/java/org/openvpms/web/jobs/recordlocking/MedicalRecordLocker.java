@@ -105,11 +105,12 @@ class MedicalRecordLocker {
      * @return the count of updated acts
      */
     protected int update(Session session, List ids) {
-        Query update = session.createQuery(
-                "update versioned org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl"
-                + " set status='POSTED'"
+        Query update = session.createSQLQuery(
+                "update acts"
+                + " set status='POSTED',"
+                + " version=version + 1"
                 + " where status <> 'POSTED' and status <> 'CANCELLED'"
-                + " and id in (:ids)");
+                + " and act_id in (:ids)");
         update.setParameterList("ids", ids);
         return update.executeUpdate();
     }
