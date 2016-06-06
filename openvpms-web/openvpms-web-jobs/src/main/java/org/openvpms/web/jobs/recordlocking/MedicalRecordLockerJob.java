@@ -224,7 +224,7 @@ public class MedicalRecordLockerJob implements InterruptableJob, StatefulJob {
         } else {
             reason = SystemMessageReason.COMPLETED;
             double seconds = elapsed / 1000;
-            double rate = (seconds != 0) ? locked / seconds : 0;
+            double rate = (seconds != 0) ? locked / seconds : locked;
             subject = Messages.format("recordlocking.subject", configuration.getName(), locked);
             text = Messages.format("recordlocking.message", locked, seconds, rate);
         }
