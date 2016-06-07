@@ -104,10 +104,10 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         BigDecimal tax3 = taxRules.calculateTax(amount3, product3, true);
         BigDecimal tax4 = taxRules.calculateTax(amount4, product4, true);
 
-        Act item1 = EstimateTestHelper.createEstimateItem(patient, product1, author, quantity1, price1);
-        Act item2 = EstimateTestHelper.createEstimateItem(patient, product2, author, quantity2, price2);
-        Act item3 = EstimateTestHelper.createEstimateItem(patient, product3, template, author, quantity3, price3);
-        Act item4 = EstimateTestHelper.createEstimateItem(patient, product4, template, author, quantity4, price4);
+        Act item1 = createEstimateItem(patient, product1, author, quantity1, price1);
+        Act item2 = createEstimateItem(patient, product2, author, quantity2, price2);
+        Act item3 = createEstimateItem(patient, product3, template, author, quantity3, price3);
+        Act item4 = createEstimateItem(patient, product4, template, author, quantity4, price4);
         Act estimation = EstimateTestHelper.createEstimate(customer, author, item1, item2, item3, item4);
 
         save(estimation, item1, item2, item3, item4);
@@ -131,14 +131,14 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         checkCharge(invoice, customer, author, clinician, tax, total);
 
         BigDecimal discount = BigDecimal.ZERO;
-        checkItem(items, patient, product1, null, author, clinician, quantity1, BigDecimal.ZERO, price1,
+        checkItem(items, patient, product1, null, author, clinician, BigDecimal.ONE, quantity1, BigDecimal.ZERO, price1,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax1, amount1, null, 1);
-        checkItem(items, patient, product2, null, author, clinician, quantity2, BigDecimal.ZERO, price2,
+        checkItem(items, patient, product2, null, author, clinician, BigDecimal.ONE, quantity2, BigDecimal.ZERO, price2,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax2, amount2, null, 0);
-        checkItem(items, patient, product3, template, author, clinician, quantity3, BigDecimal.ZERO, price3,
-                  BigDecimal.ZERO, BigDecimal.ZERO, discount, tax3, amount3, null, 0);
-        checkItem(items, patient, product4, template, author, clinician, quantity4, BigDecimal.ZERO, price4,
-                  BigDecimal.ZERO, BigDecimal.ZERO, discount, tax4, amount4, null, 1);
+        checkItem(items, patient, product3, template, author, clinician, BigDecimal.ONE, quantity3, BigDecimal.ZERO,
+                  price3, BigDecimal.ZERO, BigDecimal.ZERO, discount, tax3, amount3, null, 0);
+        checkItem(items, patient, product4, template, author, clinician, BigDecimal.ONE, quantity4, BigDecimal.ZERO,
+                  price4, BigDecimal.ZERO, BigDecimal.ZERO, discount, tax4, amount4, null, 1);
     }
 
     /**
@@ -156,6 +156,44 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         }
         return result;
     }
+
+    /**
+     * Creates an estimate item.
+     *
+     * @param patient   the patient
+     * @param product   the product
+     * @param author    the author
+     * @param quantity  the quantity
+     * @param unitPrice the unit price
+     * @return a new estimation item
+     */
+    private Act createEstimateItem(Party patient, Product product, User author, BigDecimal quantity,
+                                   BigDecimal unitPrice) {
+        Act item = EstimateTestHelper.createEstimateItem(patient, product, author, quantity, unitPrice);
+        ActBean bean = new ActBean(item);
+        bean.setValue("lowQty", BigDecimal.ONE);
+        return item;
+    }
+
+    /**
+     * Creates an estimate item.
+     *
+     * @param patient   the patient
+     * @param product   the product
+     * @param template  the template
+     * @param author    the author
+     * @param quantity  the quantity
+     * @param unitPrice the unit price
+     * @return a new estimation item
+     */
+    private Act createEstimateItem(Party patient, Product product, Product template, User author,
+                                   BigDecimal quantity, BigDecimal unitPrice) {
+        Act item = EstimateTestHelper.createEstimateItem(patient, product, template, author, quantity, unitPrice);
+        ActBean bean = new ActBean(item);
+        bean.setValue("lowQty", BigDecimal.ONE);
+        return item;
+    }
+
 
     private static class TestEstimateInvoicer extends EstimateInvoicer {
 

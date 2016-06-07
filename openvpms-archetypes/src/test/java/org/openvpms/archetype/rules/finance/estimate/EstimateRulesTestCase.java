@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
@@ -73,10 +73,12 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
         Act item = EstimateTestHelper.createEstimateItem(patient, product, author, fixedPrice);
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
         estimate.setStatus(EstimateActStatus.IN_PROGRESS);
+
+        ActBean itemBean = new ActBean(item);
+        itemBean.setValue("minQuantity", BigDecimal.ONE);
         save(estimate, item);
 
         ActBean bean = new ActBean(estimate);
-        ActBean itemBean = new ActBean(item);
 
         String title = "Copy";
         Act copy = rules.copy(estimate, title);
@@ -97,6 +99,9 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
         assertTrue(itemCopy.getId() != item.getId());
         ActBean itemCopyBean = new ActBean(itemCopy);
 
+        checkEquals(itemBean.getBigDecimal("minQuantity"), itemCopyBean.getBigDecimal("minQuantity"));
+        checkEquals(itemBean.getBigDecimal("lowQty"), itemCopyBean.getBigDecimal("lowQty"));
+        checkEquals(itemBean.getBigDecimal("highQty"), itemCopyBean.getBigDecimal("highQty"));
         checkEquals(itemBean.getBigDecimal("fixedPrice"), itemCopyBean.getBigDecimal("fixedPrice"));
         checkEquals(itemBean.getBigDecimal("lowTotal"), itemCopyBean.getBigDecimal("lowTotal"));
         checkEquals(itemBean.getBigDecimal("highTotal"), itemCopyBean.getBigDecimal("highTotal"));
@@ -119,6 +124,9 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
         Act item = EstimateTestHelper.createEstimateItem(patient, product, author, fixedPrice);
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
+        ActBean itemBean = new ActBean(item);
+        itemBean.setValue("minQuantity", BigDecimal.ONE);
+
         save(estimate, item);
 
         FinancialAct invoice = rules.invoice(estimate, clinician);
@@ -130,7 +138,7 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
         ActBean estimateItemBean = new ActBean(item);
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
         assertEquals(1, items.size());
-        ActBean itemBean = new ActBean(items.get(0));
+        itemBean = new ActBean(items.get(0));
         checkEquals(estimateBean.getBigDecimal("highTotal"), bean.getBigDecimal("amount"));
 
         checkParticipantRef(customer, bean, "customer");
@@ -142,6 +150,7 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
         checkParticipantRef(author, itemBean, "author");
         checkParticipantRef(clinician, itemBean, "clinician");
 
+        checkEquals(itemBean.getBigDecimal("minQuantity"), estimateItemBean.getBigDecimal("minQuantity"));
         checkEquals(itemBean.getBigDecimal("total"), estimateItemBean.getBigDecimal("highTotal"));
 
         // check the dispensing act

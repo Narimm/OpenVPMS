@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.cache.IMObjectCache;
@@ -213,5 +214,53 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
                 addEvent(schedule, set);
             }
         }
+    }
+
+    /**
+     * Adds an event or blocking event.
+     * <p/>
+     * If the event is not a blocking event, and the corresponding Schedule already has an event that intersects
+     * it, a new Schedule will be created with the same start and end times, and the event added to that.
+     *
+     * @param schedule the schedule to add the appointment to
+     * @param event    the event
+     */
+    @Override
+    protected void addEvent(Entity schedule, PropertySet event) {
+        int index = -1;
+        boolean found = false;
+        Schedule column = null;
+        Schedule match = null;
+
+        boolean blockingEvent = Schedule.isBlockingEvent(event);
+        // try and find a corresponding Schedule. If the event is non-blocking, try and find one that has no event
+        // that intersects the supplied one.
+        List<Schedule> columns = getSchedules();
+        IMObjectReference eventRef = event.getReference(ScheduleEvent.ACT_REFERENCE);
+        for (int i = 0; i < columns.size(); ++i) {
+            column = columns.get(i);
+            if (column.getSchedule().equals(schedule)) {
+                if (column.indexOf(eventRef) != -1) {
+                    // multi-day appointments are duplicated on subsequent days, so skip it if it has already been added
+                    return;
+                }
+                if (blockingEvent) {
+                    found = true;
+                    break;
+                } else if (column.hasIntersectingEvent(event)) {
+                    match = column;
+                    index = i;
+                } else {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            // event intersects an existing one, so create a new Schedule. Any blocking event will be shared.
+            column = new Schedule(match);
+            columns.add(index + 1, column);
+        }
+        column.addEvent(event);
     }
 }

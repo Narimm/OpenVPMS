@@ -48,6 +48,7 @@ public class VisitChargeEditorTestCase extends AbstractAppTest {
         Act event = (Act) create(PatientArchetypes.CLINICAL_EVENT);
         LocalContext localContext = new LocalContext();
         localContext.setPractice(TestHelper.getPractice());
+        localContext.setCustomer(TestHelper.createCustomer());
         LayoutContext context = new DefaultLayoutContext(localContext, new HelpContext("foo", null));
         VisitChargeEditor editor = new VisitChargeEditor(charge, event, context);
 

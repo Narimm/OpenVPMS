@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -27,7 +27,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
@@ -74,25 +73,23 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
 
 
     /**
-     * Creates a new <tt>StatementProcessor</tt>.
+     * Creates a {@link StatementProcessor}.
      *
      * @param statementDate the statement date. Must be a date prior to today.
      * @param practice      the practice
      * @param service       the archetype service
-     * @param lookups       the lookup service
      * @param accountRules  the customer account rules
      * @throws StatementProcessorException if the statement date is invalid
      */
     public StatementProcessor(Date statementDate, Party practice, IArchetypeService service,
-                              ILookupService lookups, CustomerAccountRules accountRules) {
+                              CustomerAccountRules accountRules) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
         if (calendar.getTime().compareTo(statementDate) < 0) {
-            throw new StatementProcessorException(InvalidStatementDate,
-                                                  statementDate);
+            throw new StatementProcessorException(InvalidStatementDate, statementDate);
         }
-        rules = new StatementRules(practice, service, lookups, accountRules);
+        rules = new StatementRules(practice, service, accountRules);
         actHelper = new StatementActHelper(service);
         this.statementDate = actHelper.getStatementTimestamp(statementDate);
     }
@@ -100,11 +97,10 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
     /**
      * Determines if statements that have been printed should be reprinted.
      * A statement is printed if the printed flag of its
-     * <em>act.customerClosingOpeningBalance</em> is <tt>true</tt>.
-     * Defaults to <tt>false</tt>.
+     * <em>act.customerClosingOpeningBalance</em> is {@code true}.
+     * Defaults to {@code false}.
      *
-     * @param reprint if <tt>true</tt>, process statements that have been
-     *                printed.
+     * @param reprint if {@code true}, process statements that have been printed.
      */
     public void setReprint(boolean reprint) {
         this.reprint = reprint;
@@ -160,9 +156,9 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
         if (fee.compareTo(BigDecimal.ZERO) != 0) {
             Act feeAct = rules.createAccountingFeeAdjustment(
                     customer, fee, period.getFeeTimestamp());
-            List<Act> toAdd = new ArrayList<Act>();
+            List<Act> toAdd = new ArrayList<>();
             toAdd.add(feeAct);
-            result = new IterableChain<Act>(result, toAdd);
+            result = new IterableChain<>(result, toAdd);
         }
         return result;
     }
@@ -171,12 +167,12 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      * Returns the preferred statement contacts for the customer.
      *
      * @param customer the customer
-     * @return the preferred contacts for <tt>customer</tt>, or an empty list
+     * @return the preferred contacts for {@code customer}, or an empty list
      *         if the customer has no contacts
      * @throws ArchetypeServiceException for any archetype service error
      */
     private List<Contact> getContacts(Party customer) {
-        List<Contact> result = new ArrayList<Contact>();
+        List<Contact> result = new ArrayList<>();
         addBillingContacts(result, customer, ContactArchetypes.EMAIL);
         addBillingContacts(result, customer, ContactArchetypes.LOCATION);
         if (result.isEmpty()) {

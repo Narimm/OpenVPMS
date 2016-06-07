@@ -27,7 +27,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -82,21 +81,14 @@ public class DiscountRules {
      */
     private final IArchetypeService service;
 
-    /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
 
     /**
      * Constructs a {@link DiscountRules}.
      *
      * @param service the archetype service
-     * @param lookups the lookup service
      */
-    public DiscountRules(IArchetypeService service, ILookupService lookups) {
+    public DiscountRules(IArchetypeService service) {
         this.service = service;
-        this.lookups = lookups;
     }
 
     /**
@@ -145,7 +137,7 @@ public class DiscountRules {
         BigDecimal discount;
         BigDecimal taxRate = BigDecimal.ZERO;
         if (practice != null) {
-            CustomerTaxRules taxRules = new CustomerTaxRules(practice, service, lookups);
+            CustomerTaxRules taxRules = new CustomerTaxRules(practice, service);
             taxRate = taxRules.getTaxRate(product, customer);
         }
 

@@ -217,7 +217,6 @@
 
     <bean id="discountRules" class="org.openvpms.archetype.rules.finance.discount.DiscountRules">
         <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="estimateRules" class="org.openvpms.archetype.rules.finance.estimate.EstimateRules">

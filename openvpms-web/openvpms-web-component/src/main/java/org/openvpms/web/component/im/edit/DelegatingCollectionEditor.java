@@ -115,6 +115,26 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     }
 
     /**
+     * Registers a handler to confirm removal of objects.
+     *
+     * @param handler the handler. May be {@code null}
+     */
+    @Override
+    public void setRemoveConfirmationHandler(RemoveConfirmationHandler handler) {
+        editor.setRemoveConfirmationHandler(handler);
+    }
+
+    /**
+     * Returns the handler to confirm removal of objects.
+     *
+     * @return the handler. May be {@code null}
+     */
+    @Override
+    public RemoveConfirmationHandler getRemoveConfirmationHandler() {
+        return editor.getRemoveConfirmationHandler();
+    }
+
+    /**
      * Creates a new object.
      * <p>
      * The object is not automatically added to the collection.

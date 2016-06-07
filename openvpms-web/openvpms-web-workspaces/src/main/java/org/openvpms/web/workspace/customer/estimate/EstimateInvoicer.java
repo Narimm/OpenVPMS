@@ -97,9 +97,9 @@ public class EstimateInvoicer extends AbstractInvoicer {
 
             // NOTE: setting the product can trigger popups - want the popups to get the correct
             // property values from above
+            itemEditor.setMinimumQuantity(itemBean.getBigDecimal("lowQty"));
             itemEditor.setProduct(itemBean.getNodeParticipantRef("product"),
                                   itemBean.getNodeParticipantRef("template"));
-
             itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
             itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
             itemEditor.setDiscount(itemBean.getBigDecimal("highDiscount"));

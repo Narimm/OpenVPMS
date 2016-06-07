@@ -181,9 +181,9 @@ public class CustomerChargeTestHelper {
      *
      * @param shortName  the product archetype short name
      * @param fixedCost  the fixed cost
-     * @param fixedPrice the fixed price
+     * @param fixedPrice the fixed price, tax-exclusive
      * @param unitCost   the unit cost
-     * @param unitPrice  the unit price
+     * @param unitPrice  the unit price, tax-exclusive
      * @param practice   the practice, used to determine the tax rate
      * @return a new product
      */

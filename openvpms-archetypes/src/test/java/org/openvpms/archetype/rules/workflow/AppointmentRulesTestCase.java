@@ -370,6 +370,23 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link AppointmentRules#getBoardingNights(Date, Date)} method.
+     */
+    @Test
+    public void testGetBoardingNights() {
+        checkGetNights(1, "2016-03-23 10:00:00", "2016-03-23 17:00:00"); // same day
+        checkGetNights(1, "2016-03-23 10:00:00", "2016-03-24 00:00:00"); // ends at midnight, so considered the same day
+        checkGetNights(1, "2016-03-23 10:00:00", "2016-03-24 09:00:00"); // less than 24 hours
+        checkGetNights(1, "2016-03-23 10:00:00", "2016-03-24 10:00:00"); // 24 hours
+        checkGetNights(1, "2016-03-23 10:00:00", "2016-03-24 17:00:00"); // more than 24 hours
+        checkGetNights(2, "2016-03-23 10:00:00", "2016-03-25 09:00:00"); // less than 48 hours
+        checkGetNights(2, "2016-03-23 10:00:00", "2016-03-25 10:00:00"); // 48 hours
+        checkGetNights(2, "2016-03-23 10:00:00", "2016-03-25 17:00:00"); // more than 48 hours
+
+        checkGetNights(0, "2016-03-23 10:00:00", "2016-03-20 17:00:00"); // future dated being checked out now?
+    }
+
+    /**
      * Test the {@link AppointmentRules#getEvent(Act)} method.
      */
     @Test
@@ -437,6 +454,19 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         appointment.setActivityStartTime(start);
         appointment.setActivityEndTime(end);
         assertEquals(expected, rules.getBoardingDays(appointment));
+    }
+
+    /**
+     * Verifies that {@link AppointmentRules#getBoardingNights(Date, Date)} method returns the expected no. of nights.
+     *
+     * @param expected  the expected no. of days
+     * @param startTime the boarding start time
+     * @param endTime   the boarding end time
+     */
+    private void checkGetNights(int expected, String startTime, String endTime) {
+        Date start = TestHelper.getDatetime(startTime);
+        Date end = TestHelper.getDatetime(endTime);
+        assertEquals(expected, rules.getBoardingNights(start, end));
     }
 
     private void checkAppointments(Iterable<Act> iterable, Act... expected) {

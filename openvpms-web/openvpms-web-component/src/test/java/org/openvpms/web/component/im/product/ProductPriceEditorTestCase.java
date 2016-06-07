@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -90,19 +90,19 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
         ProductPriceEditor editor = new ProductPriceEditor(price, product, layout);
 
         // check the defaults
-        checkPrice(editor, "0.00", "100", "0.00", "100");
+        checkPrice(editor, "0.00", "100", "0.00", "0.00", "100");
 
         // set the cost and verify the price and max discount change
         editor.setCost(BigDecimal.ONE);
-        checkPrice(editor, "1.00", "100", "2.20", "50");
+        checkPrice(editor, "1.00", "100", "2.00", "2.20", "50");
 
         // set the markup and verify the price and max discount change
         editor.setMarkup(BigDecimal.valueOf(50));
-        checkPrice(editor, "1.00", "50", "1.65", "33.3");
+        checkPrice(editor, "1.00", "50", "1.50", "1.65", "33.3");
 
         // set the price and verify the markup and max discount changes
-        editor.setPrice(BigDecimal.valueOf(2.2));
-        checkPrice(editor, "1.00", "100", "2.20", "50");
+        editor.setPrice(BigDecimal.valueOf(2));
+        checkPrice(editor, "1.00", "100", "2.00", "2.20", "50");
     }
 
     /**
@@ -117,13 +117,13 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
         ProductPriceEditor editor1 = new ProductPriceEditor(price1, product, layout);
 
         editor1.setCost(BigDecimal.valueOf(1.63));
-        checkPrice(editor1, "1.63", "100", "3.59", "50");
+        checkPrice(editor1, "1.63", "100", "3.26", "3.59", "50");
 
         editor1.setMarkup(BigDecimal.valueOf(50));
-        checkPrice(editor1, "1.63", "50", "2.69", "33.30");
+        checkPrice(editor1, "1.63", "50", "2.45", "2.70", "33.30");
 
         editor1.setMarkup(BigDecimal.valueOf(75));
-        checkPrice(editor1, "1.63", "75", "3.14", "42.90");
+        checkPrice(editor1, "1.63", "75", "2.85", "3.14", "42.90");
 
         // now enable rounding to 0.20
         Lookup currency = TestHelper.getCurrency("AUD");
@@ -136,13 +136,13 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
 
         // note that the markup changes as it is now recalculated after the price is calculated.
         editor2.setCost(BigDecimal.valueOf(1.63));
-        checkPrice(editor2, "1.63", "100.80", "3.60", "50.20");
+        checkPrice(editor2, "1.63", "100.00", "3.26", "3.60", "50.00");
 
         editor2.setMarkup(BigDecimal.valueOf(50));
-        checkPrice(editor2, "1.63", "45", "2.60", "31.00");
+        checkPrice(editor2, "1.63", "50.30", "2.45", "2.60", "33.50");
 
         editor2.setMarkup(BigDecimal.valueOf(75));
-        checkPrice(editor2, "1.63", "78.50", "3.20", "44.00");
+        checkPrice(editor2, "1.63", "74.80", "2.85", "3.20", "42.80");
     }
 
     /**
@@ -151,13 +151,16 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
      * @param editor      the editor to check
      * @param cost        the expected cost
      * @param markup      the expected markup
-     * @param price       the expected price
+     * @param price       the expected tax-exclusive price
+     * @param taxIncPrice the expected tax-inclusive price
      * @param maxDiscount the expected max discount
      */
-    private void checkPrice(ProductPriceEditor editor, String cost, String markup, String price, String maxDiscount) {
+    private void checkPrice(ProductPriceEditor editor, String cost, String markup, String price, String taxIncPrice,
+                            String maxDiscount) {
         checkEquals(new BigDecimal(cost), editor.getCost());
         checkEquals(new BigDecimal(markup), editor.getMarkup());
         checkEquals(new BigDecimal(price), editor.getPrice());
+        checkEquals(new BigDecimal(taxIncPrice), editor.getTaxInclusivePrice());
         checkEquals(new BigDecimal(maxDiscount), editor.getMaxDiscount());
     }
 }

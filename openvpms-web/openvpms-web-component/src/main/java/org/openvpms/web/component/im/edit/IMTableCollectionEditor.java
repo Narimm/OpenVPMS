@@ -50,8 +50,6 @@ import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.echo.button.ButtonRow;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GroupBoxFactory;
@@ -61,7 +59,6 @@ import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.SortableTableModel;
 import org.openvpms.web.echo.table.TableNavigator;
-import org.openvpms.web.resource.i18n.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -535,9 +532,9 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Invoked when the 'delete' button is pressed.
-     * If the selected object has been saved, a confirmation dialog will be
-     * displayed, prompting to delete it. If the object hasn't been saved,
-     * it will be deleted without prompting.
+     * If the selected object has been saved, delegates to the registered
+     * {@link #getRemoveConfirmationHandler() RemoveConfirmationHandler},
+     * or uses {@link DefaultRemoveConfirmationHandler} if none is registered.
      */
     protected void onDelete() {
         IMObject object;
@@ -548,11 +545,11 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             object = getSelected();
         }
         if (object != null) {
-            if (object.isNew()) {
-                remove(object);
-            } else {
-                confirmDelete(object);
+            RemoveConfirmationHandler handler = getRemoveConfirmationHandler();
+            if (handler == null) {
+                handler = DefaultRemoveConfirmationHandler.INSTANCE;
             }
+            handler.remove(object, this);
         }
     }
 
@@ -715,25 +712,6 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         editBox = null;
 
         super.removeCurrentEditor();
-    }
-
-    /**
-     * Confirms to delete an object.
-     *
-     * @param object the object to delete
-     */
-    private void confirmDelete(final IMObject object) {
-        String displayName = DescriptorHelper.getDisplayName(object);
-        String title = Messages.format("imobject.collection.delete.title", displayName);
-        String message = Messages.format("imobject.collection.delete.message", displayName);
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                remove(object);
-            }
-        });
-        dialog.show();
     }
 
     /**

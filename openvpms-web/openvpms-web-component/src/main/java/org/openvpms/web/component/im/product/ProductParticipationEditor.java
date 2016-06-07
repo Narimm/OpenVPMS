@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 
 
@@ -68,6 +69,11 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     private boolean excludeTemplateOnlyProducts;
 
     /**
+     * The product short names that may be queried.
+     */
+    private String[] shortNames;
+
+    /**
      * Constructs a {@link ProductParticipationEditor}.
      *
      * @param participation the object to edit
@@ -81,6 +87,25 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
             throw new IllegalArgumentException("Invalid participation type:"
                                                + participation.getArchetypeId().getShortName());
         }
+        resetShortNames();
+    }
+
+    /**
+     * Sets the product archetypes that may be queried.
+     * <p/>
+     * These should be a subset allowed by the underlying archetype
+     *
+     * @param shortNames the product archetypes
+     */
+    public void setShortNames(String... shortNames) {
+        this.shortNames = shortNames;
+    }
+
+    /**
+     * Resets the product archetypes that may be queried to the default.
+     */
+    public void resetShortNames() {
+        shortNames = getEntityProperty().getArchetypeRange();
     }
 
     /**
@@ -205,7 +230,13 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      */
     @Override
     protected IMObjectReferenceEditor<Product> createEntityEditor(Property property) {
-        return new ProductReferenceEditor(this, property, getLayoutContext());
+        DelegatingProperty p = new DelegatingProperty(property) {
+            @Override
+            public String[] getArchetypeRange() {
+                return shortNames;
+            }
+        };
+        return new ProductReferenceEditor(this, p, getLayoutContext());
     }
 
 }

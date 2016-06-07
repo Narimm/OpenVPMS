@@ -78,7 +78,7 @@ class StatementGenerator extends AbstractStatementGenerator {
               Messages.get("reporting.statements.run.cancel.title"),
               Messages.get("reporting.statements.run.cancel.message"),
               Messages.get("reporting.statements.run.retry.title"), help);
-        List<Party> customers = new ArrayList<Party>();
+        List<Party> customers = new ArrayList<>();
         Party party = (Party) IMObjectHelper.getObject(customer, context);
         if (party != null) {
             customers.add(party);
@@ -100,7 +100,7 @@ class StatementGenerator extends AbstractStatementGenerator {
               Messages.get("reporting.statements.run.cancel.message"),
               Messages.get("reporting.statements.run.retry.title"), help);
         List<ObjectSet> balances = query.getObjects();
-        List<Party> customers = new ArrayList<Party>();
+        List<Party> customers = new ArrayList<>();
         for (ObjectSet set : balances) {
             BigDecimal balance
                     = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
@@ -160,7 +160,6 @@ class StatementGenerator extends AbstractStatementGenerator {
         }
 
         processor = new StatementProcessor(date, practice, ServiceHelper.getArchetypeService(),
-                                           ServiceHelper.getLookupService(),
                                            ServiceHelper.getBean(CustomerAccountRules.class));
         progressBarProcessor = new StatementProgressBarProcessor(processor, customers);
 

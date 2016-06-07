@@ -373,8 +373,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     public void setProduct(TemplateProduct product, Product template) {
         super.setProduct(product, template);
-        if (product != null && !product.getPrint() && MathRules.isZero(getTotal())) {
-            setPrint(false);
+        if (product != null) {
+            if (!product.getPrint() && MathRules.isZero(getTotal())) {
+                setPrint(false);
+
+            }
+            if (needsReadOnlyProduct()) {
+                updateLayout(product.getProduct());
+            }
         }
     }
 
@@ -459,6 +465,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         return (investigations != null) ? investigations.getActs() : Collections.<Act>emptyList();
     }
 
+    /**
+     * Returns the investigation editor given the investigation reference.
+     *
+     * @param investigationRef the investigation reference
+     * @return the corresponding editor, or {@code null} if none is found
+     */
     public PatientInvestigationActEditor getInvestigation(IMObjectReference investigationRef) {
         if (investigations != null) {
             for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
@@ -785,7 +797,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
         }
         if (clearDefault) {
-            // the quantity is not a default for the product, so turn off any higlighting
+            // the quantity is not a default for the product, so turn off any highlighting
             quantity.clearDefault();
         }
         Property discount = getProperty(DISCOUNT);
@@ -1154,7 +1166,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         ArchetypeNodes currentNodes = getArchetypeNodes();
         ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
         EditorQueue queue = getEditorQueue();
-        if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
+        if (!ObjectUtils.equals(currentNodes, expectedFilter) || needsReadOnlyProduct()) {
             Component popupFocus = null;
             Component focus = FocusHelper.getFocus();
             Property focusProperty = null;
@@ -1657,7 +1669,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         CollectionProperty collection = (CollectionProperty) getProperty(name);
         if (collection != null && !collection.isHidden()) {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
-                    collection, act, getLayoutContext());
+                    collection, act, new DefaultLayoutContext(getLayoutContext())); // wrap to increase depth
             editor.setExcludeDefaultValueObject(false);
             getEditors().add(editor);
         }
@@ -1699,6 +1711,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         return (BatchParticipationEditor) editor;
     }
 
+    /**
+     * Determines if the product is read-only.
+     *
+     * @return {@code true} if the item has been ordered via an HL7 service, or its a service product with a
+     * minimum quantity
+     */
+    @Override
+    protected boolean isProductReadOnly() {
+        return isOrdered() || super.isProductReadOnly();
+    }
+
     protected class CustomerChargeItemLayoutStrategy extends PriceItemLayoutStrategy {
 
         public CustomerChargeItemLayoutStrategy(FixedPriceEditor fixedPrice) {
@@ -1733,20 +1756,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (reminders != null) {
                 addComponent(new ComponentState(reminders));
             }
-            return super.apply(object, properties, parent, context);
-        }
-
-        @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            ComponentState state;
-            String name = property.getName();
-            if ((PATIENT.equals(name) || PRODUCT.equals(name)) && isOrdered()) {
-                // the item has been ordered via an HL7 service. The patient and product cannot be changed
-                state = super.createComponent(createReadOnly(property), parent, context);
-            } else {
-                state = super.createComponent(property, parent, context);
+            if (isOrdered()) {
+                // the item has been ordered via an HL7 service, the patient cannot be changed
+                addComponent(createComponent(createReadOnly(properties.get(PATIENT)), parent, context));
             }
-            return state;
+            return super.apply(object, properties, parent, context);
         }
     }
 }

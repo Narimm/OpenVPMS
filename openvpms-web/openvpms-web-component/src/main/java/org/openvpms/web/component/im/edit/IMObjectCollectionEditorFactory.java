@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -39,6 +39,10 @@ import java.lang.reflect.Constructor;
  * </ol>
  * The former is used if the collection property returns {@code true} for
  * {@link CollectionProperty#isParentChild()}, indicating that the collection items are editable.
+ * <p/>
+ * NOTE: default implementations for EditableIMObjectCollectionEditor instances can be registered in a
+ * <em>DefaultEditableIMObjectCollectionEditorFactory.properties</em>; these are overridden by
+ * <em>EditableIMObjectCollectionEditorFactory.properties</em>.
  *
  * @author Tim Anderson
  */
@@ -139,8 +143,8 @@ public class IMObjectCollectionEditorFactory {
      */
     private static synchronized ArchetypeHandlers<IMObjectCollectionEditor> getEditors() {
         if (editors == null) {
-            editors = new ArchetypeHandlers<IMObjectCollectionEditor>("IMObjectCollectionEditorFactory.properties",
-                                                                      IMObjectCollectionEditor.class);
+            editors = new ArchetypeHandlers<>("IMObjectCollectionEditorFactory.properties",
+                                              IMObjectCollectionEditor.class);
         }
         return editors;
     }
@@ -152,8 +156,9 @@ public class IMObjectCollectionEditorFactory {
      */
     private static synchronized ArchetypeHandlers<EditableIMObjectCollectionEditor> getEditable() {
         if (editable == null) {
-            editable = new ArchetypeHandlers<EditableIMObjectCollectionEditor>(
-                    "EditableIMObjectCollectionEditorFactory.properties", EditableIMObjectCollectionEditor.class);
+            editable = new ArchetypeHandlers<>("EditableIMObjectCollectionEditorFactory.properties",
+                                               "DefaultEditableIMObjectCollectionEditorFactory.properties",
+                                               EditableIMObjectCollectionEditor.class);
         }
         return editable;
     }

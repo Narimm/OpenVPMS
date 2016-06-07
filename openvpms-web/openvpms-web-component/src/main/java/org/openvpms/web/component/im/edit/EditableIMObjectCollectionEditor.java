@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -55,6 +55,20 @@ public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEdit
      * @return the listener, or {@code null} if none is registered
      */
     IMObjectCreationListener getCreationListener();
+
+    /**
+     * Registers a handler to confirm removal of objects.
+     *
+     * @param handler the handler. May be {@code null}
+     */
+    void setRemoveConfirmationHandler(RemoveConfirmationHandler handler);
+
+    /**
+     * Returns the handler to confirm removal of objects.
+     *
+     * @return the handler. May be {@code null}
+     */
+    RemoveConfirmationHandler getRemoveConfirmationHandler();
 
     /**
      * Creates a new object.

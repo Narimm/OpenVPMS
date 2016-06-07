@@ -90,6 +90,7 @@ public class OrderEditor extends FinancialActEditor {
         posted = OrderStatus.POSTED.equals(act.getStatus());
         accepted = OrderStatus.ACCEPTED.equals(act.getStatus());
         rules = SupplierHelper.createOrderRules(context.getContext().getPractice());
+        initialise();
     }
 
     /**

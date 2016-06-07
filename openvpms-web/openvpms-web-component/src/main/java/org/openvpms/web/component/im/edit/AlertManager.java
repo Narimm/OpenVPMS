@@ -21,20 +21,20 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.layout.GridLayoutData;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
@@ -213,10 +213,11 @@ public class AlertManager {
             setClosable(false);
             setPositionX(new Extent(OFFSET));
             setPositionY(new Extent(OFFSET));
-            Extent height = getHeight(message);
+            int fontSize = StyleSheetHelper.getProperty("font.size", 10);
+            Extent height = getHeight(message, fontSize);
             setHeight(height);
             setMinimumHeight(height);
-            Label label = LabelFactory.create(null, true);
+            Label label = LabelFactory.create(true, true);
             label.setStyleName("InformationMessage");
             label.setText(message);
             Button button = ButtonFactory.create(null, "Message.close");
@@ -227,22 +228,26 @@ public class AlertManager {
                 }
             });
 
-            Row buttonRow = RowFactory.create(button);
-            buttonRow.setLayoutData(RowFactory.rightAlign());
-            add(ColumnFactory.create(Styles.INSET, RowFactory.create(Styles.WIDE_CELL_SPACING, label, buttonRow)));
+            GridLayoutData layoutData = new GridLayoutData();
+            label.setLayoutData(layoutData);
+            Grid grid = GridFactory.create(2, label, button);
+            grid.setColumnWidth(0, Styles.FULL_WIDTH);
+            grid.setWidth(Styles.FULL_WIDTH);
+            grid.setHeight(Styles.FULL_HEIGHT);
+            add(grid);
         }
 
         /**
          * Returns the height of the alert.
          *
-         * @param message the message
-         * @return the height, or {@code null} if it cannot be determined
+         * @param message    the message
+         * @param fontSize the font size
+         * @return the height
          */
-        private Extent getHeight(String message) {
-            int lines = StringUtils.countMatches(message, "\n") + 1;
-            int height = StyleSheetHelper.getProperty("alert.height", -1);
-            return height > 0 ? new Extent(height * lines) : null;
+        private Extent getHeight(String message, int fontSize) {
+            int lines = StringUtils.countMatches(message, "\n");
+            lines += 3; // at least one line + 2 for padding
+            return new Extent(fontSize * lines);
         }
-
     }
 }

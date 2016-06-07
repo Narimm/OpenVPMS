@@ -168,10 +168,12 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Verifies that if the currency has a minimum price, prices are rounded to it.
+     * Verifies that if the currency has a minimum price, prices are NOT rounded to it.
+     * <p/>
+     * The minimum price only takes effect when calculating the tax-inclusive price? TODO
      */
     @Test
-    public void testRoundPrice() {
+    public void testMinPrice() {
         Product product1 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         Product product2 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         ProductPrice price1 = addUnitPrice(product1, BigDecimal.ZERO, BigDecimal.ONE);
@@ -190,11 +192,11 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         bean.setValue("minPrice", new BigDecimal("0.20"));
         bean.save();
 
-        addProductSupplier(product2, supplier, 30, "10.00", "20.00", true);
+        addProductSupplier(product2, supplier, 30, "12.00", "22.00", true);
         save(product2, supplier);
 
         price2 = get(price2);
-        checkPrice(price2, new BigDecimal("0.67"), new BigDecimal("1.40"));
+        checkPrice(price2, new BigDecimal("0.73"), new BigDecimal("1.46"));
     }
 
     /**

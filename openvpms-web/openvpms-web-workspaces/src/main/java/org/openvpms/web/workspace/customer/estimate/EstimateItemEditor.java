@@ -44,11 +44,14 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 import org.openvpms.web.workspace.customer.charge.Quantity;
@@ -144,17 +147,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
             LOW_QTY, HIGH_QTY, FIXED_PRICE, LOW_UNIT_PRICE, HIGH_UNIT_PRICE, LOW_DISCOUNT, HIGH_DISCOUNT,
             PRINT, LOW_TOTAL, HIGH_TOTAL);
 
-
-    /**
-     * Constructs an {@link EstimateItemEditor}.
-     *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the layout context
-     */
-    public EstimateItemEditor(Act act, Act parent, LayoutContext context) {
-        this(act, parent, new ChargeEditContext(context), context);
-    }
 
     /**
      * Constructs an {@link EstimateItemEditor}.
@@ -356,12 +348,16 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     @Override
     public void setProduct(TemplateProduct product, Product template) {
+        setMinimumQuantity(null);
         setTemplate(template);  // NB: template must be set before product
         if (product != null) {
             // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
             // from the template, as it is the dose quantity for the patient weight, unless the low quantity is zero
             setQuantity(ZERO);
             setProduct(product.getProduct());
+            // need to set the minimum quantity after the product, as it can mark the product read-only.
+            // If done before the product, the productModified() callback is never invoked. TODO - brittle
+            setMinimumQuantity(product.getLowQuantity());
             if (isZero(getHighQuantity())) {
                 setLowQuantity(product.getLowQuantity());
                 setHighQuantity(product.getHighQuantity());
@@ -379,6 +375,10 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 setFixedPrice(ZERO);
                 setUnitPrice(ZERO);
                 setDiscount(ZERO);
+            }
+            if (needsReadOnlyProduct()) {
+                // need to re-layout if the product has been marked read-only by setting the minimum quantity
+                updateLayout(product.getProduct(), updatePrint(product.getProduct()));
             }
         } else {
             setProduct(null);
@@ -401,6 +401,27 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     public BigDecimal getHighTotal() {
         return getProperty(HIGH_TOTAL).getBigDecimal(ZERO);
+    }
+
+    /**
+     * Ensures that the quantity isn't less than the minimum quantity.
+     *
+     * @param validator the validator
+     * @return {@code true} if the quantity isn't less than the minimum quantity, otherwise {@code false}
+     */
+    protected boolean validateMinimumQuantity(Validator validator) {
+        boolean result = true;
+        BigDecimal minQuantity = getMinimumQuantity();
+        if (!MathRules.isZero(minQuantity) && getLowQuantity().compareTo(minQuantity) < 0) {
+            Product product = getProduct();
+            String name = (product != null) ? product.getName() : null;
+            // product should never be null, due to validation
+            Property property = getProperty(LOW_QTY);
+            String message = Messages.format("customer.charge.minquantity", name, minQuantity);
+            validator.add(property, new ValidatorError(property, message));
+            result = false;
+        }
+        return result;
     }
 
     /**
@@ -554,7 +575,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
     private void updateLayout(Product product, boolean showPrint) {
         ArchetypeNodes currentNodes = getArchetypeNodes();
         ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
-        if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
+        if (!ObjectUtils.equals(currentNodes, expectedFilter) || needsReadOnlyProduct()) {
             Component focus = FocusHelper.getFocus();
             Property focusProperty = null;
             if (focus instanceof BoundProperty) {
@@ -735,4 +756,5 @@ public class EstimateItemEditor extends PriceActItemEditor {
         }
         return result;
     }
+
 }

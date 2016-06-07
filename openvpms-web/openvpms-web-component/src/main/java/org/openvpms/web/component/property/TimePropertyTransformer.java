@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -49,6 +49,11 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
      */
     private Date date;
 
+    /**
+     * Determines if the maximum date is exclusive, or inclusive.
+     */
+    private final boolean exclusive;
+
     static {
         Calendar calendar = new GregorianCalendar();
         calendar.clear();         // get rid of date, timezone
@@ -73,7 +78,20 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
      * @param max      the maximum value for the date, exclusive. If {@code null}, the date has no maximum
      */
     public TimePropertyTransformer(Property property, Date min, Date max) {
+        this(property, min, max, true);
+    }
+
+    /**
+     * Constructs a {@link TimePropertyTransformer}.
+     *
+     * @param property  the property
+     * @param min       the minimum value for the date, inclusive. If {@code null}, the date has no minimum
+     * @param max       the maximum value for the date. If {@code null}, the date has no maximum
+     * @param exclusive if {@code true} the maximum value is exclusive, otherwise it is inclusive
+     */
+    public TimePropertyTransformer(Property property, Date min, Date max, boolean exclusive) {
         super(property, min, max, Format.DATE_TIME);
+        this.exclusive = exclusive;
     }
 
     /**
@@ -151,12 +169,25 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
             String msg = Messages.format("property.error.minTime", formatDate, formatMin);
             throw new PropertyException(getProperty(), msg);
         }
-        if (max != null && date.getTime() >= max.getTime()) {
-            String formatDate = DateFormatter.formatTimeDiff(MIN_DATE, date);
-            String formatMax = DateFormatter.formatTimeDiff(MIN_DATE, max);
-            String msg = Messages.format("property.error.maxTime", formatDate, formatMax);
-            throw new PropertyException(getProperty(), msg);
+        if (max != null) {
+            if (exclusive && date.getTime() >= max.getTime()) {
+                throw new PropertyException(getProperty(), formatMaxError("<", max));
+            } else if (!exclusive && date.getTime() > max.getTime()) {
+                throw new PropertyException(getProperty(), formatMaxError("<=", max));
+            }
         }
+    }
+
+    /**
+     * Formats an error message when a value exceeds the maximum value.
+     *
+     * @param operator the operator
+     * @param max      the maximum value
+     * @return the error message
+     */
+    private String formatMaxError(String operator, Date max) {
+        String formatMax = DateFormatter.formatTimeDiff(MIN_DATE, max);
+        return Messages.format("property.error.maxTime", getProperty().getDisplayName(), operator, formatMax);
     }
 
 }

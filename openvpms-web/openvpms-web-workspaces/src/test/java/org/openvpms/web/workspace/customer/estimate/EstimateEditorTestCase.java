@@ -95,8 +95,10 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
         Entity discount = DiscountTestHelper.createDiscount(TEN, true, DiscountRules.PERCENTAGE);
 
-        BigDecimal fixedPrice = ONE;
-        BigDecimal unitPrice = ONE;
+        BigDecimal fixedPrice = new BigDecimal("0.91");
+        BigDecimal unitPrice = new BigDecimal("0.91");
+        BigDecimal fixedPriceIncTax = ONE;
+        BigDecimal unitPriceIncTax = ONE;
         Product template = ProductTestHelper.createTemplate("templateA");
 
         // product1 has a dose, which should be selected over the template include quantity
@@ -136,9 +138,10 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal five = BigDecimal.valueOf(5);
 
         checkEstimate(estimate, customer, author, new BigDecimal("4.00"), new BigDecimal("10.20"));
-        checkItem(items, patient, product1, author, ZERO, new BigDecimal("4.2"), unitPrice, unitPrice,
-                  fixedPrice, ZERO, ZERO, ONE, new BigDecimal("5.20"));
-        checkItem(items, patient, product2, author, 2, 4, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, three, five);
+        checkItem(items, patient, product1, author, ZERO, new BigDecimal("4.2"), unitPriceIncTax, unitPriceIncTax,
+                  ONE, ZERO, ZERO, ONE, new BigDecimal("5.20"));
+        checkItem(items, patient, product2, author, 2, 4, unitPriceIncTax, unitPriceIncTax, fixedPriceIncTax, ZERO,
+                  ZERO, three, five);
         checkItem(items, patient, product3, author, 3, 6, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
     }
 
