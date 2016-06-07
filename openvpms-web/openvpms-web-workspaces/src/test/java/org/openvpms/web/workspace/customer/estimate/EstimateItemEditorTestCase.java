@@ -85,6 +85,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     private User author;
 
     /**
+     * The practice location.
+     */
+    private Party location;
+
+    /**
      * The layout context.
      */
     private LayoutContext layout;
@@ -100,6 +105,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient();
         author = TestHelper.createUser();
+        location = TestHelper.createLocation();
 
         // register an ErrorHandler to collect errors
         ErrorHandler.setInstance(new ErrorHandler() {
@@ -114,7 +120,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         });
         Context context = new LocalContext();
         context.setPractice(getPractice());
-        context.setLocation(TestHelper.createLocation());
+        context.setLocation(location);
         context.setUser(author);
         layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
     }
@@ -127,9 +133,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal lowQuantity = BigDecimal.ONE;
         BigDecimal highQuantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(2);
         Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
         addDiscount(patient, discount);
@@ -139,7 +147,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -158,8 +167,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal highDiscount1 = new BigDecimal("2.20");
         BigDecimal lowTotal1 = new BigDecimal("10.80");
         BigDecimal highTotal1 = new BigDecimal("19.80");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  lowDiscount1, highDiscount1, lowTotal1, highTotal1);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, lowDiscount1, highDiscount1, lowTotal1, highTotal1);
 
         // now remove the discounts
         editor.setLowDiscount(BigDecimal.ZERO);
@@ -169,8 +178,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         item = get(item);
         BigDecimal lowTotal2 = new BigDecimal("12.00");
         BigDecimal highTotal2 = new BigDecimal("22.00");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  BigDecimal.ZERO, BigDecimal.ZERO, lowTotal2, highTotal2);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, BigDecimal.ZERO, BigDecimal.ZERO, lowTotal2, highTotal2);
     }
 
     /**
@@ -186,9 +195,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal lowQuantity = BigDecimal.ONE;
         BigDecimal highQuantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(2);
         Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
         addDiscount(patient, discount);
@@ -198,7 +209,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -217,8 +229,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal highDiscount1 = BigDecimal.ZERO;
         BigDecimal lowTotal1 = new BigDecimal("12.00");
         BigDecimal highTotal1 = new BigDecimal("22.00");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  lowDiscount1, highDiscount1, lowTotal1, highTotal1);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, lowDiscount1, highDiscount1, lowTotal1, highTotal1);
     }
 
     /**
@@ -230,9 +242,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
         BigDecimal discount = BigDecimal.ZERO;
         Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
 
@@ -240,7 +252,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -260,10 +273,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         assertNotNull(item);
 
         // verify the item matches that expected
-        BigDecimal fixedPriceExTax = new BigDecimal("1.82");
-        BigDecimal unitPriceExTax = new BigDecimal("9.09");
         BigDecimal totalExTax = new BigDecimal("20");
-        checkItem(item, patient, product, author, quantity, quantity, unitPriceExTax, unitPriceExTax, fixedPriceExTax,
+        checkItem(item, patient, product, author, quantity, quantity, unitPrice, unitPrice, fixedPrice,
                   discount, discount, totalExTax, totalExTax);
 
         // verify no errors were logged
@@ -279,9 +290,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
         BigDecimal fixedCost = BigDecimal.ONE;
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal ratio = BigDecimal.valueOf(2);
         Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
@@ -293,7 +304,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -313,11 +325,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         assertNotNull(item);
 
         // verify the item matches that expected
-        BigDecimal fixedPriceExTax = new BigDecimal("1.82").multiply(ratio);
-        BigDecimal unitPriceExTax = new BigDecimal("9.09").multiply(ratio);
-        BigDecimal totalExTax = new BigDecimal("40");
-        checkItem(item, patient, product, author, quantity, quantity, unitPriceExTax, unitPriceExTax, fixedPriceExTax,
-                  discount, discount, totalExTax, totalExTax);
+        BigDecimal fixedPriceWithRatio = new BigDecimal("1.82").multiply(ratio);
+        BigDecimal unitPriceWithRatio = new BigDecimal("9.09").multiply(ratio);
+        BigDecimal total = new BigDecimal("40");
+        checkItem(item, patient, product, author, quantity, quantity, unitPriceWithRatio, unitPriceWithRatio,
+                  fixedPriceWithRatio, discount, discount, total, total);
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
@@ -337,9 +349,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         BigDecimal quantity = BigDecimal.ONE;
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(5.55);
+        BigDecimal unitPrice = BigDecimal.valueOf(5.05);
         BigDecimal fixedCost = BigDecimal.valueOf(0.5);
-        BigDecimal fixedPrice = BigDecimal.valueOf(5.55);
+        BigDecimal fixedPrice = BigDecimal.valueOf(5.05);
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal ratio = BigDecimal.valueOf(2);
 
@@ -352,7 +364,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
 
         // populate quantity, patient, clinician.
@@ -383,9 +396,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     @Test
     public void testProductDose() {
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(2);
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
         IMObjectBean bean = new IMObjectBean(product);
         bean.setValue("concentration", BigDecimal.ONE);
@@ -399,7 +414,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, new ChargeEditContext(layout), layout);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -418,8 +434,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal highDiscount = BigDecimal.ZERO;
         BigDecimal lowTotal1 = new BigDecimal("44.00");
         BigDecimal highTotal1 = new BigDecimal("44.00");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  lowDiscount, highDiscount, lowTotal1, highTotal1);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, lowDiscount, highDiscount, lowTotal1, highTotal1);
     }
 
     /**

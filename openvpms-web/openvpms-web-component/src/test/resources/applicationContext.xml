@@ -281,6 +281,7 @@
     <!-- ================================================================== -->
     <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
         <constructor-arg value="IMObjectEditorFactory.properties"/>
+        <constructor-arg value="DefaultIMObjectEditorFactory.properties"/>
     </bean>
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
 

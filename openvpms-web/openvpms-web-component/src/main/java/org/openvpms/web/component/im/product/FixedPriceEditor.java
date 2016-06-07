@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -21,11 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
-import org.openvpms.archetype.rules.math.Currency;
-import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductPriceRules;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -49,9 +45,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import static java.math.BigDecimal.ONE;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 
 
 /**
@@ -98,38 +91,19 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private ProductPrice price;
 
     /**
-     * The pricing group.
+     * The pricing context.
      */
-    private final PricingGroup pricingGroup;
-
-    /**
-     * The currency, used to round prices.
-     */
-    private final Currency currency;
-
-    /**
-     * Price rules, used to select fixed prices associated with the product.
-     */
-    private final ProductPriceRules rules;
-
-    /**
-     * The service ratio.
-     */
-    private BigDecimal serviceRatio = ONE;
+    private final PricingContext pricingContext;
 
     /**
      * Constructs a {@link FixedPriceEditor}.
      *
-     * @param property     the fixed price property
-     * @param pricingGroup the pricing group. May be {@code null}
-     * @param currency     the practice currency, used to round prices
-     * @param rules        the product price rules
+     * @param property       the fixed price property
+     * @param pricingContext the pricing context
      */
-    public FixedPriceEditor(Property property, Lookup pricingGroup, Currency currency, ProductPriceRules rules) {
+    public FixedPriceEditor(Property property, PricingContext pricingContext) {
         super(property);
-        this.pricingGroup = new PricingGroup(pricingGroup);
-        this.currency = currency;
-        this.rules = rules;
+        this.pricingContext = pricingContext;
 
         date = new Date();
 
@@ -149,12 +123,10 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Sets the product, used to select the fixed price.
      *
-     * @param product      the product. May be {@code null}
-     * @param serviceRatio the service ratio
+     * @param product the product. May be {@code null}
      */
-    public void setProduct(Product product, BigDecimal serviceRatio) {
+    public void setProduct(Product product) {
         this.product = product;
-        this.serviceRatio = serviceRatio;
         updatePrices();
     }
 
@@ -236,7 +208,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         Component component = field;
         Component table = null;
         if (product != null) {
-            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date, pricingGroup);
+            List<ProductPrice> prices = pricingContext.getFixedPrices(product, date);
             if (!prices.isEmpty()) {
                 table = createPriceTable(prices).getComponent();
             }
@@ -280,7 +252,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @return the
      */
     private BigDecimal getPrice(ProductPrice price) {
-        return ProductHelper.getPrice(price, serviceRatio, currency);
+        return pricingContext.getPrice(product, price);
     }
 
     /**

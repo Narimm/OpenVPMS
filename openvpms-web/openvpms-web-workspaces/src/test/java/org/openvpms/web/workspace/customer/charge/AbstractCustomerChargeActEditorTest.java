@@ -75,6 +75,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         // NOTE: need to create the practice prior to the application as it caches the practice in the context 
         practice = TestHelper.getPractice();
         practice.addClassification(TestHelper.createTaxType(BigDecimal.TEN));
+        IMObjectBean bean = new IMObjectBean(practice);
+        bean.setValue("minimumQuantities", true);
         save(practice);
         super.setUp();
     }
@@ -154,32 +156,32 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
 
     /**
      * Verifies an item's properties match that expected.
-     *
-     * @param items      the items to search
-     * @param patient    the expected patient
-     * @param product    the expected product
-     * @param template   the expected template. May be {@code null}
-     * @param author     the expected author
-     * @param clinician  the expected clinician
-     * @param quantity   the expected quantity
-     * @param unitCost   the expected unit cost
-     * @param unitPrice  the expected unit price
-     * @param fixedCost  the expected fixed cost
-     * @param fixedPrice the expected fixed price
-     * @param discount   the expected discount
-     * @param tax        the expected tax
-     * @param total      the expected total
-     * @param event      the clinical event. May be {@code null}
-     * @param childActs  the expected no. of child acts
+     *  @param items           the items to search
+     * @param patient         the expected patient
+     * @param product         the expected product
+     * @param template        the expected template. May be {@code null}
+     * @param author          the expected author
+     * @param clinician       the expected clinician
+     * @param minimumQuantity the expected minimum quantity
+     * @param quantity        the expected quantity
+     * @param unitCost        the expected unit cost
+     * @param unitPrice       the expected unit price
+     * @param fixedCost       the expected fixed cost
+     * @param fixedPrice      the expected fixed price
+     * @param discount        the expected discount
+     * @param tax             the expected tax
+     * @param total           the expected total
+     * @param event           the clinical event. May be {@code null}
+     * @param childActs       the expected no. of child acts
      */
     protected void checkItem(List<FinancialAct> items, Party patient, Product product, Product template, User author,
-                             User clinician, BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice,
-                             BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax,
-                             BigDecimal total, Act event, int childActs) {
+                             User clinician, BigDecimal minimumQuantity, BigDecimal quantity, BigDecimal unitCost,
+                             BigDecimal unitPrice, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount,
+                             BigDecimal tax, BigDecimal total, Act event, int childActs) {
         int count = 0;
         FinancialAct item = find(items, product);
-        checkItem(item, patient, product, template, author, clinician, quantity, unitCost, unitPrice, fixedCost,
-                  fixedPrice, discount, tax, total);
+        checkItem(item, patient, product, template, author, clinician, minimumQuantity, quantity, unitCost, unitPrice,
+                  fixedCost, fixedPrice, discount, tax, total);
         ActBean itemBean = new ActBean(item);
         EntityBean bean = new EntityBean(product);
 
@@ -291,25 +293,26 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     /**
      * Verifies an item's properties match that expected.
      *
-     * @param item       the item to check
-     * @param patient    the expected patient
-     * @param product    the expected product
-     * @param template   the expected template. May be {@code null}
-     * @param author     the expected author
-     * @param clinician  the expected clinician
-     * @param quantity   the expected quantity
-     * @param unitCost   the expected unit cost
-     * @param unitPrice  the expected unit price
-     * @param fixedCost  the expected fixed cost
-     * @param fixedPrice the expected fixed price
-     * @param discount   the expected discount
-     * @param tax        the expected tax
-     * @param total      the expected total
+     * @param item            the item to check
+     * @param patient         the expected patient
+     * @param product         the expected product
+     * @param template        the expected template. May be {@code null}
+     * @param author          the expected author
+     * @param clinician       the expected clinician
+     * @param minimumQuantity the expected minimum quantity
+     * @param quantity        the expected quantity
+     * @param unitCost        the expected unit cost
+     * @param unitPrice       the expected unit price
+     * @param fixedCost       the expected fixed cost
+     * @param fixedPrice      the expected fixed price
+     * @param discount        the expected discount
+     * @param tax             the expected tax
+     * @param total           the expected total
      */
     protected void checkItem(FinancialAct item, Party patient, Product product, Product template, User author,
-                             User clinician, BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice,
-                             BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax,
-                             BigDecimal total) {
+                             User clinician, BigDecimal minimumQuantity, BigDecimal quantity, BigDecimal unitCost,
+                             BigDecimal unitPrice, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount,
+                             BigDecimal tax, BigDecimal total) {
         ActBean bean = new ActBean(item);
         if (bean.hasNode("patient")) {
             assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
@@ -328,6 +331,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
                 assertNull(bean.getNodeParticipant("clinician"));
             }
         }
+        checkEquals(minimumQuantity, bean.getBigDecimal("minQuantity"));
         checkEquals(quantity, bean.getBigDecimal("quantity"));
         checkEquals(fixedCost, bean.getBigDecimal("fixedCost"));
         checkEquals(fixedPrice, bean.getBigDecimal("fixedPrice"));
@@ -548,8 +552,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * Helper to create a product.
      *
      * @param shortName  the product archetype short name
-     * @param fixedPrice the fixed price
-     * @param unitPrice  the unit price
+     * @param fixedPrice the fixed price, tax-exclusive
+     * @param unitPrice  the unit price, tax-exclusive
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice, BigDecimal unitPrice) {
@@ -562,9 +566,9 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      *
      * @param shortName  the product archetype short name
      * @param fixedCost  the fixed cost
-     * @param fixedPrice the fixed price
+     * @param fixedPrice the fixed price, tax-exclusive
      * @param unitCost   the unit cost
-     * @param unitPrice  the unit price
+     * @param unitPrice  the unit price, tax-exclusive
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal unitCost,

@@ -185,7 +185,7 @@ class Visit {
     /**
      * Returns the no. of days to charge for, relative to the current time.
      *
-     * @return the number of days
+     * @return the number of days to charge for
      */
     public int getDays() {
         return getDays(new Date());
@@ -193,12 +193,14 @@ class Visit {
 
     /**
      * Returns the no. of days to charge for, relative to the specified time.
+     * <p/>
+     * This is determined by the number of nights stayed.
      *
      * @param endTime the end time to use, if the event hasn't ended
-     * @return the number of days
+     * @return the number of days to charge for
      */
     public int getDays(Date endTime) {
-        return appointmentRules.getBoardingDays(event.getActivityStartTime(), getEndTime(endTime));
+        return appointmentRules.getBoardingNights(event.getActivityStartTime(), getEndTime(endTime));
     }
 
     /**

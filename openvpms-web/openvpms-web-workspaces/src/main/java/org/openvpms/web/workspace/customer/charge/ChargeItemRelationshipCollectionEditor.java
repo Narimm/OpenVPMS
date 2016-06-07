@@ -21,7 +21,9 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.AlertListener;
@@ -32,6 +34,7 @@ import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
@@ -59,11 +62,6 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * Last Selected Item Date.
      */
     private Date lastItemDate = null;
-
-    /**
-     * The edit context.
-     */
-    private final CustomerChargeEditContext editContext;
 
     /**
      * Listener invoked when {@link #onAdd()} is invoked.
@@ -100,15 +98,14 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                   CollectionResultSetFactory factory) {
-        super(property, act, context, factory);
-        editContext = new CustomerChargeEditContext(context);
+        super(property, act, context, factory, createEditContext(act, context));
         Prescriptions prescriptions;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
         } else {
             prescriptions = null;
         }
-        editContext.setPrescriptions(prescriptions);
+        getEditContext().setPrescriptions(prescriptions);
     }
 
     /**
@@ -117,7 +114,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @return the save context
      */
     public ChargeSaveContext getSaveContext() {
-        return editContext.getSaveContext();
+        return getEditContext().getSaveContext();
     }
 
     /**
@@ -126,7 +123,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @param queue the popup editor manager. May be {@code null}
      */
     public void setEditorQueue(EditorQueue queue) {
-        editContext.setEditorQueue(queue);
+        getEditContext().setEditorQueue(queue);
     }
 
     /**
@@ -135,7 +132,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @return the popup editor manager. May be {@code null}
      */
     public EditorQueue getEditorQueue() {
-        return editContext.getEditorQueue();
+        return getEditContext().getEditorQueue();
     }
 
     /**
@@ -147,6 +144,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     public void remove(IMObject object) {
         super.remove(object);
         FinancialAct act = (FinancialAct) object;
+        CustomerChargeEditContext editContext = getEditContext();
         editContext.getStock().remove(act);
         Prescriptions prescriptions = editContext.getPrescriptions();
         if (prescriptions != null) {
@@ -202,7 +200,18 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         return initialiseEditor(new DefaultCustomerChargeActItemEditor((FinancialAct) object, (Act) getObject(),
-                                                                       editContext, context));
+                                                                       getEditContext(), context));
+    }
+
+    /**
+     * Returns an editor for an object, creating one if it doesn't exist.
+     *
+     * @param object the object to edit
+     * @return an editor for the object
+     */
+    @Override
+    public CustomerChargeActItemEditor getEditor(IMObject object) {
+        return (CustomerChargeActItemEditor) super.getEditor(object);
     }
 
     /**
@@ -210,8 +219,9 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      *
      * @return the edit context
      */
+    @Override
     protected CustomerChargeEditContext getEditContext() {
-        return editContext;
+        return (CustomerChargeEditContext) super.getEditContext();
     }
 
     /**
@@ -263,7 +273,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         AlertListener alertListener = getAlertListener();
         if (alertListener != null && !acts.isEmpty()) {
             int outOfStock = 0;
-            StockOnHand stock = editContext.getStock();
+            StockOnHand stock = getEditContext().getStock();
             for (Act act : acts) {
                 BigDecimal onHand = stock.getAvailableStock((FinancialAct) act);
                 if (onHand != null && BigDecimal.ZERO.compareTo(onHand) >= 0) {
@@ -299,6 +309,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      */
     @Override
     protected void doSave() {
+        CustomerChargeEditContext editContext = getEditContext();
         Prescriptions prescriptions = editContext.getPrescriptions();
         if (prescriptions != null) {
             prescriptions.save();
@@ -322,8 +333,25 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
         ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
-                                                              editContext.getStock(), context);
+                                                              getEditContext().getStock(), context);
         return (IMTableModel) model;
+    }
+
+    /**
+     * Creates a new charge edit context.
+     *
+     * @param act     the parent charge
+     * @param context the layout context
+     * @return a new charge edit context
+     */
+    private static CustomerChargeEditContext createEditContext(Act act, LayoutContext context) {
+        ActBean bean = new ActBean(act);
+        Party customer = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("customer"), context.getContext());
+        if (customer == null) {
+            throw new IllegalStateException(act.getArchetypeId().getShortName() + " has no customer");
+        }
+        Party location = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("location"), context.getContext());
+        return new CustomerChargeEditContext(customer, location, context);
     }
 
 }

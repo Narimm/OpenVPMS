@@ -124,6 +124,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
         initParticipant("customer", customer);
         initParticipant("location", location);
         this.addDefaultItem = addDefaultItem;
+        initialise();
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             getItems().setTemplateProductListener(new TemplateProductListener() {
                 public void expanded(Product product) {
@@ -136,6 +137,17 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             orderPlacer.initialise(acts);
         }
         unprintedDocuments = new CustomerChargeDocuments(this, context);
+    }
+
+    /**
+     * Determines if a default item should be added if the charge doesn't have one.
+     * <p/>
+     * This only applies prior to the creation of the component. After that, it is ignored.
+     *
+     * @param addDefaultItem if {@code true} add a default item if the charge has none
+     */
+    public void setAddDefaultItem(boolean addDefaultItem) {
+        this.addDefaultItem = addDefaultItem;
     }
 
     /**
@@ -275,10 +287,8 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             orderPlacer.initialise(item);
         }
         if (getItems().hasEditor(item)) {
-            IMObjectEditor editor = getItems().getEditor(item);
-            if (editor instanceof CustomerChargeActItemEditor) {
-                ((CustomerChargeActItemEditor) editor).ordered();
-            }
+            CustomerChargeActItemEditor editor = getItems().getEditor(item);
+            editor.ordered();
         }
     }
 
@@ -292,15 +302,12 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
         List<Act> result = new ArrayList<>();
         if (orderPlacer != null) {
             for (Act item : getItems().getCurrentActs()) {
-                IMObjectEditor editor = getItems().getEditor(item);
-                if (editor instanceof CustomerChargeActItemEditor) {
-                    CustomerChargeActItemEditor itemEditor = (CustomerChargeActItemEditor) editor;
-                    if (itemEditor.isOrdered() || orderPlacer.isPharmacyProduct(itemEditor.getProduct())) {
-                        BigDecimal quantity = itemEditor.getQuantity();
-                        BigDecimal received = itemEditor.getReceivedQuantity();
-                        if (!MathRules.equals(quantity, received)) {
-                            result.add(item);
-                        }
+                CustomerChargeActItemEditor editor = getItems().getEditor(item);
+                if (editor.isOrdered() || orderPlacer.isPharmacyProduct(editor.getProduct())) {
+                    BigDecimal quantity = editor.getQuantity();
+                    BigDecimal received = editor.getReceivedQuantity();
+                    if (!MathRules.equals(quantity, received)) {
+                        result.add(item);
                     }
                 }
             }
@@ -383,10 +390,8 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
                     // notify the editors that orders have been placed
                     for (Act item : updated) {
                         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                            IMObjectEditor editor = getItems().getEditor(item);
-                            if (editor instanceof CustomerChargeActItemEditor) {
-                                ((CustomerChargeActItemEditor) editor).ordered();
-                            }
+                            CustomerChargeActItemEditor editor = getItems().getEditor(item);
+                            editor.ordered();
                         }
                     }
                 }
@@ -539,11 +544,9 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
     private List<Act> getOrderActs() {
         List<Act> acts = new ArrayList<>();
         for (Act item : getItems().getActs()) {
-            IMObjectEditor editor = getItems().getEditor(item);
-            if (editor instanceof CustomerChargeActItemEditor) {
-                acts.add(item);
-                acts.addAll(((CustomerChargeActItemEditor) editor).getInvestigations());
-            }
+            CustomerChargeActItemEditor editor = getItems().getEditor(item);
+            acts.add(item);
+            acts.addAll(editor.getInvestigations());
         }
         return acts;
     }

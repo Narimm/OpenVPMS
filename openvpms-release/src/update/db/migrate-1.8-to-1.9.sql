@@ -1033,7 +1033,7 @@ CREATE TEMPORARY TABLE tmp_sms_templates (
   active    BIT(1)
 );
 
-INSERT INTO tmp_sms_templates (linkId, source_id, name, sms, active)
+INSERT INTO tmp_sms_templates (linkId, source_id, name, text, active)
   SELECT
     e.linkId,
     e.entity_id,
@@ -1041,7 +1041,7 @@ INSERT INTO tmp_sms_templates (linkId, source_id, name, sms, active)
     sms.value,
     e.active
   FROM entities e
-    LEFT JOIN entity_details sms
+    JOIN entity_details sms
       ON e.entity_id = sms.entity_id
          AND sms.name = 'sms'
   WHERE e.arch_short_name = 'entity.documentTemplate';
@@ -1064,7 +1064,7 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, acti
 UPDATE tmp_sms_templates t
   JOIN entities e
     ON t.linkId = e.linkId
-       AND e.arch_short_name = 'entity.documentTemplateEmail'
+       AND e.arch_short_name = 'entity.documentTemplateSMSReminder'
 SET t.entity_id = e.entity_id;
 
 INSERT INTO entity_details (entity_id, name, type, value)
@@ -1133,10 +1133,6 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, desc
       SELECT *
       FROM entities e
       WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder');
-
-SELECT *
-FROM entities e JOIN entity_links r ON e.entity_id = r.target_id
-WHERE e.arch_short_name = 'entity.documentTemplateSMSReminder';
 
 INSERT INTO entity_details (entity_id, name, type, value)
   SELECT

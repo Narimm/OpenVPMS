@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -55,7 +55,7 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
         if (parent == null) {
             throw new IllegalArgumentException("Argument 'parent' is null");
         }
-        Property entity = getProperty("entity");
+        Property entity = getEntityProperty();
         editor = createEntityEditor(entity);
         getEditors().add(editor, entity);
         Property act = getProperty("act");
@@ -96,7 +96,7 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
      *
      * @param reference the entity reference. May be {@code null}
      * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
-     *         the existing value
+     * the existing value
      */
     public boolean setEntityRef(IMObjectReference reference) {
         return editor.getProperty().setValue(reference);
@@ -117,7 +117,7 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
      *
      * @param entity the entity. May be {@code null}
      * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
-     *         the existing value
+     * the existing value
      */
     public boolean setEntity(T entity) {
         return editor.setObject(entity);
@@ -146,6 +146,15 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
         if (getParent() != null) {
             throw new IllegalStateException("Parent is not set");
         }
+    }
+
+    /**
+     * Returns the entity property.
+     *
+     * @return the entity property
+     */
+    protected Property getEntityProperty() {
+        return getProperty("entity");
     }
 
     /**

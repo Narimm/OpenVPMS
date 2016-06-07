@@ -1485,7 +1485,8 @@
     <data archetype="entityRelationship.worklistTaskType" source="id:OW4" target="id:TT2" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW4" target="id:TT3" noSlots="1"/>
 
-    <data archetype="entity.calendarBlockType" name="Team Meating" colour="0xd1ffb1"/>
+    <data archetype="entity.calendarBlockType" name="Team Meeting" colour="0xd1ffb1"/>
+    <data archetype="entity.calendarBlockType" name="Lunch" colour="0xd1ffb1"/>
     <data archetype="entity.calendarBlockType" name="Reserved for Valued Customers" colour="0xd1ffb1">
         <data collection="customerAccountTypes" archetype="lookup.customerAccountType" childId="id:Valued"/>
     </data>

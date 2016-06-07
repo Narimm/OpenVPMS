@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -24,6 +24,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
@@ -44,7 +45,10 @@ public abstract class AbstractInvoicer {
      * @return a new charge editor
      */
     protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-        return new DefaultCustomerChargeActEditor(invoice, null, context, false);
+        IMObjectEditorFactory factory = ServiceHelper.getBean(IMObjectEditorFactory.class);
+        CustomerChargeActEditor editor = (CustomerChargeActEditor) factory.create(invoice, context);
+        editor.setAddDefaultItem(false);
+        return editor;
     }
 
     /**
@@ -99,6 +103,7 @@ public abstract class AbstractInvoicer {
             }
             result = getItemEditor(act, editor);
         }
+
         return result;
     }
 
@@ -115,6 +120,8 @@ public abstract class AbstractInvoicer {
         result = (CustomerChargeActItemEditor) items.getEditor(act);
         result.getComponent();
         items.addEdited(result);
+        items.setModified(act, true);
+        // need to explicitly flag the  item as modified, or it can be excluded as a default value object
         return result;
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.tabpane;
@@ -30,14 +30,14 @@ public class VetoableSingleSelectionModel extends DefaultSingleSelectionModel {
     /**
      * The listener.
      */
-    private VetoListener listener;
+    private VetoListener<Change> listener;
 
     /**
      * Registers the veto listener.
      *
      * @param listener the listener. May be {@code null}
      */
-    public void setVetoListener(VetoListener listener) {
+    public void setVetoListener(VetoListener<Change> listener) {
         this.listener = listener;
 
     }

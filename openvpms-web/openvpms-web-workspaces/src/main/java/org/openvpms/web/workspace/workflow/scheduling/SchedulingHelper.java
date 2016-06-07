@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -166,7 +166,7 @@ public class SchedulingHelper {
         boolean appointment = TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE),
                                              ScheduleArchetypes.APPOINTMENT);
         if (appointment) {
-            if (status.equals(AppointmentStatus.CHECKED_IN) && event.exists(ScheduleEvent.ARRIVAL_TIME)) {
+            if (AppointmentStatus.CHECKED_IN.equals(status) && event.exists(ScheduleEvent.ARRIVAL_TIME)) {
                 Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
                 if (arrival != null) {
                     waiting = DateFormatter.formatTimeDiff(arrival, new Date());
@@ -175,7 +175,7 @@ public class SchedulingHelper {
         } else {
             Date start = event.getDate(ScheduleEvent.ACT_START_TIME);
             Date end;
-            if (status.equals(TaskStatus.PENDING) || !event.exists(ScheduleEvent.CONSULT_START_TIME)) {
+            if (TaskStatus.PENDING.equals(status) || !event.exists(ScheduleEvent.CONSULT_START_TIME)) {
                 end = new Date();
             } else {
                 end = event.getDate(ScheduleEvent.CONSULT_START_TIME);

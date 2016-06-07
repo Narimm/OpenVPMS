@@ -18,10 +18,8 @@ package org.openvpms.archetype.rules.product.io;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 
@@ -75,11 +73,6 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
     private ProductPrice unit2;
 
     /**
-     * The practice.
-     */
-    private Party practice;
-
-    /**
      * The product importer.
      */
     private ProductImporter importer;
@@ -96,7 +89,6 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
     public void setUp() {
         rules = new ProductPriceRules(getArchetypeService());
         importer = new ProductImporter(rules, getArchetypeService());
-        practice = (Party) create(PracticeArchetypes.PRACTICE);
         product1 = createProduct("Product 1", "P1");
         product2 = createProduct("Product 2", "P2");
 
@@ -224,7 +216,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2014-01-01"), getDate("2014-06-01"),
                           groups, 1);
 
-        List<ProductData> input = Arrays.asList(data);
+        List<ProductData> input = Collections.singletonList(data);
         ProductDataFilter filter = new ProductDataFilter(rules, getArchetypeService());
         ProductDataSet filtered = filter.filter(input);
         assertTrue(filtered.getErrors().isEmpty());
@@ -254,7 +246,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
      */
     private void importProducts(ProductData... data) {
         List<ProductData> products = Arrays.asList(data);
-        importer.run(products, practice);
+        importer.run(products);
     }
 
 

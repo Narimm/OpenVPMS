@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -60,7 +60,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     private final Party practice;
 
     /**
-     * Constructs a <tt>WorkflowRunner</tt>.
+     * Constructs a {@link FinancialWorkflowRunner}.
      *
      * @param practice the practice, used to determine tax rates
      */
@@ -78,22 +78,22 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     }
 
     /**
-     * Verifies that the current task is an EditInvoiceTask, and adds invoice item for the specified amount.
+     * Verifies that the current task is an EditInvoiceTask, and adds an invoice item for the specified fixed price.
      *
-     * @param patient   the patient
-     * @param amount    the amount
-     * @param clinician the clinician. May be {@code null}
+     * @param patient    the patient
+     * @param fixedPrice the fixed price
+     * @param clinician  the clinician. May be {@code null}
      * @return the edit dialog
      */
-    public EditDialog addInvoiceItem(Party patient, BigDecimal amount, User clinician) {
+    public EditDialog addInvoiceItem(Party patient, BigDecimal fixedPrice, User clinician) {
         EditIMObjectTask task = getEditTask();
         EditDialog dialog = task.getEditDialog();
 
         // get the editor and add an item
         CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
         editor.setClinician(clinician);
-        Product product = createProduct(ProductArchetypes.SERVICE, amount, practice);
-        ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) editor.getItems();
+        Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice, practice);
+        ChargeItemRelationshipCollectionEditor items = editor.getItems();
         addItem(editor, patient, product, BigDecimal.ONE, items.getEditorQueue());
         return dialog;
     }
@@ -103,12 +103,12 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
      *
      * @param patient   the patient
      * @param clinician the clinician. May be {@code null}
-     * @param post      if <tt>true</tt> post the invoice
+     * @param post      if {@code true} post the invoice
      * @return the invoice total
      */
     public BigDecimal addInvoice(Party patient, User clinician, boolean post) {
-        BigDecimal amount = BigDecimal.valueOf(20);
-        EditDialog dialog = addInvoiceItem(patient, amount, clinician);
+        BigDecimal fixedPrice = new BigDecimal("18.18");
+        EditDialog dialog = addInvoiceItem(patient, fixedPrice, clinician);
         if (post) {
             CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
             editor.setStatus(ActStatus.POSTED);
@@ -133,15 +133,15 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     }
 
     /**
-     * Verifies that the current task is an EditVisitTask, and adds invoice item for the specified amount.
+     * Verifies that the current task is an EditVisitTask, and adds invoice item for the specified fixed price.
      *
-     * @param patient   the patient
-     * @param amount    the amount
-     * @param clinician the clinician. May be {@code null}
+     * @param patient    the patient
+     * @param fixedPrice the product fixed price
+     * @param clinician  the clinician. May be {@code null}
      * @return the item editor
      */
-    public CustomerChargeActItemEditor addVisitInvoiceItem(Party patient, BigDecimal amount, User clinician) {
-        Product product = createProduct(ProductArchetypes.SERVICE, amount, getPractice());
+    public CustomerChargeActItemEditor addVisitInvoiceItem(Party patient, BigDecimal fixedPrice, User clinician) {
+        Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice, getPractice());
         return addVisitInvoiceItem(patient, clinician, product);
     }
 

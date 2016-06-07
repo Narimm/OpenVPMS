@@ -300,7 +300,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#updateUnitPrices(Product, BigDecimal, Party, Currency)} method.
+     * Tests the {@link ProductPriceRules#updateUnitPrices(Product, BigDecimal, Currency)} method.
      */
     @Test
     public void testUpdatePrices() {
@@ -323,14 +323,14 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         save(product);
 
         BigDecimal newCost = BigDecimal.valueOf(2);
-        List<ProductPrice> updated = rules.updateUnitPrices(product, newCost, practice, currency);
+        List<ProductPrice> updated = rules.updateUnitPrices(product, newCost, currency);
         assertEquals(2, updated.size());
         assertFalse(updated.contains(unit1));
         assertTrue(updated.contains(unit2));
         assertTrue(updated.contains(unit3));
         assertFalse(updated.contains(unit4));
 
-        BigDecimal newPrice = new BigDecimal("4.40");
+        BigDecimal newPrice = BigDecimal.valueOf(4);
         checkPrice(unit1, cost, price);
         checkPrice(unit2, newCost, newPrice);
         checkPrice(unit3, newCost, newPrice);
@@ -338,14 +338,14 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#calcMaxDiscount(BigDecimal)} method.
+     * Tests the {@link ProductPriceRules#getMaxDiscount(BigDecimal)} method.
      */
     @Test
     public void testCalcMaxDiscount() {
-        checkEquals(ProductPriceRules.DEFAULT_MAX_DISCOUNT, rules.calcMaxDiscount(BigDecimal.ZERO));
-        checkEquals(new BigDecimal("33.3"), rules.calcMaxDiscount(BigDecimal.valueOf(50)));
-        checkEquals(new BigDecimal(50), rules.calcMaxDiscount(BigDecimal.valueOf(100)));
-        checkEquals(new BigDecimal("66.7"), rules.calcMaxDiscount(BigDecimal.valueOf(200)));
+        checkEquals(ProductPriceRules.DEFAULT_MAX_DISCOUNT, rules.getMaxDiscount(BigDecimal.ZERO));
+        checkEquals(new BigDecimal("33.3"), rules.getMaxDiscount(BigDecimal.valueOf(50)));
+        checkEquals(new BigDecimal(50), rules.getMaxDiscount(BigDecimal.valueOf(100)));
+        checkEquals(new BigDecimal("66.7"), rules.getMaxDiscount(BigDecimal.valueOf(200)));
     }
 
     /**

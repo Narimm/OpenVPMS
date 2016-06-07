@@ -238,6 +238,7 @@ public class NewFlowSheetTask extends Tasks {
                         int days = dialog.getExpectedStay();
                         String template = dialog.getTemplate();
                         client.add(patientContext, days, template);
+                        notifyCompleted();
                     }
 
                     @Override

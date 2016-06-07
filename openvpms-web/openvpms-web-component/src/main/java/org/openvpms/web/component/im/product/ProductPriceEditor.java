@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -26,15 +28,21 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -58,6 +66,11 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * The markup property listener.
      */
     private final ModifiableListener markupListener;
+
+    /**
+     * The tax-inclusive price listener.
+     */
+    private final ModifiableListener taxIncListener;
 
     /**
      * Product price calculator.
@@ -87,12 +100,18 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     /**
      * The practice, used to determine the tax rate.
      */
-    private Party practice;
+    private final Party practice;
 
     /**
      * The practice currency.
      */
-    private Currency currency;
+    private final Currency currency;
+
+    /**
+     * The tax-inclusive price.
+     */
+    private final Property taxIncPrice = new SimpleProperty("taxIncPrice", BigDecimal.ZERO, BigDecimal.class,
+                                                            Messages.get("product.price.taxinc"));
 
     /**
      * Constructs a {@link ProductPriceEditor}.
@@ -124,11 +143,19 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
 
         priceListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateMarkup();
+                onPriceChanged();
             }
         };
         getProperty(PRICE).addModifiableListener(priceListener);
         rules = ServiceHelper.getBean(ProductPriceRules.class);
+        taxIncListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                updatePriceFromTaxInclusivePrice();
+            }
+        };
+        taxIncPrice.addModifiableListener(taxIncListener);
+        updateTaxInclusivePrice();
     }
 
     /**
@@ -172,9 +199,9 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Returns the price.
+     * Returns the tax-exclusive price.
      *
-     * @return the price
+     * @return the tax-exclusive price
      */
     public BigDecimal getPrice() {
         return getProperty(PRICE).getBigDecimal(BigDecimal.ZERO);
@@ -189,6 +216,26 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     public void setPrice(BigDecimal price) {
         getProperty(PRICE).setValue(price);
+    }
+
+    /**
+     * Sets the price, inclusive of tax.
+     * <p/>
+     * The {@link #getPrice() tax-exclusive} price will be updated.
+     *
+     * @param price the tax-inclusive price
+     */
+    public void setTaxInclusivePrice(BigDecimal price) {
+        taxIncPrice.setValue(price);
+    }
+
+    /**
+     * Returns the price, inclusive of tax.
+     *
+     * @return the tax-inclusive price
+     */
+    public BigDecimal getTaxInclusivePrice() {
+        return taxIncPrice.getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -225,6 +272,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             markup.removeModifiableListener(markupListener);
             price.removeModifiableListener(priceListener);
             price.refresh();
+            updateTaxInclusivePrice();
         } finally {
             cost.addModifiableListener(costListener);
             markup.addModifiableListener(markupListener);
@@ -233,7 +281,17 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Updates the price and maximum discount.
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new LayoutStrategy();
+    }
+
+    /**
+     * Updates the price, maximum discount and tax-inclusive price.
      * <p/>
      * Note that the markup is also recalculated if the currency has a non-default minimum price set.
      * <p/>
@@ -243,30 +301,34 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
         try {
             Property property = getProperty(PRICE);
             property.removeModifiableListener(priceListener);
-            property.setValue(calculatePrice());
+            property.setValue(calculateTaxExPrice());
             property.addModifiableListener(priceListener);
 
             if (currencyHasNonDefaultMinimumPrice()) {
-                // recalculate the markup as the price may have been rounded. if the minimum price is the same as
+                // recalculate the markup as the price may have been rounded. If the minimum price is the same as
                 // the default rounding amount, then don't recalculate as any difference is due to rounding error.
-                updateMarkup();
+                onPriceChanged();
             }
             updateMaxDiscount();
+            updateTaxInclusivePrice();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
     }
 
     /**
-     * Recalculates the markup when the price is updated, and adjusts the maximum discount.
+     * Invoked when the price changes.
+     * <p/>
+     * Recalculates the markup and tax-inclusive price, adjusts the maximum discount.
      */
-    private void updateMarkup() {
+    private void onPriceChanged() {
         try {
             Property property = getProperty(MARKUP);
             property.removeModifiableListener(markupListener);
             property.setValue(calculateMarkup());
             property.addModifiableListener(markupListener);
             updateMaxDiscount();
+            updateTaxInclusivePrice();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -282,20 +344,18 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Calculates the price using the following formula:
+     * Calculates the tax-exclusive price using the following formula:
      * <p/>
-     * {@code price = (cost * (1 + markup/100) ) * (1 + tax/100)}
+     * {@code taxExPrice = cost * (1 + markup/100)}
      *
      * @return the price
      */
-    private BigDecimal calculatePrice() {
+    private BigDecimal calculateTaxExPrice() {
         BigDecimal cost = getCost();
         BigDecimal markup = getMarkup();
         BigDecimal price = BigDecimal.ZERO;
-        Product product = (Product) getParent();
-
-        if (product != null && practice != null && currency != null) {
-            price = rules.getPrice(product, cost, markup, practice, currency);
+        if (currency != null) {
+            price = rules.getTaxExPrice(cost, markup);
         }
         return price;
     }
@@ -303,28 +363,21 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     /**
      * Calculates the markup using the following formula:
      * <p/>
-     * {@code markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100}
+     * {@code markup = (price/cost - 1) * 100}
      *
      * @return the markup
      */
     private BigDecimal calculateMarkup() {
-        BigDecimal markup = BigDecimal.ZERO;
         BigDecimal cost = getCost();
         BigDecimal price = getPrice();
-        Product product = (Product) getParent();
-        Context context = getLayoutContext().getContext();
-        Party practice = context.getPractice();
-        if (product != null && practice != null) {
-            markup = rules.getMarkup(product, cost, price, practice);
-        }
-        return markup;
+        return rules.getMarkup(cost, price);
     }
 
     /**
      * Calculates the maximum discount.
      * <p/>
      * If the current maximum discount is zero, this is left unchanged, otherwise it is determined from the
-     * current markup using {@link ProductPriceRules#calcMaxDiscount(BigDecimal)}.
+     * current markup using {@link ProductPriceRules#getMaxDiscount(BigDecimal)}.
      *
      * @param maxDiscount the current maximum discount
      * @return the new maximum discount
@@ -335,7 +388,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             result = BigDecimal.ZERO;
         } else {
             BigDecimal markup = getMarkup();
-            result = rules.calcMaxDiscount(markup);
+            result = rules.getMaxDiscount(markup);
         }
         return result;
     }
@@ -352,5 +405,53 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
                    && !MathRules.equals(currency.getDefaultRoundingAmount(), minimumPrice);
         }
         return false;
+    }
+
+    /**
+     * Calculates the tax-inclusive price from the price.
+     */
+    private void updateTaxInclusivePrice() {
+        Product product = (Product) getParent();
+        if (product != null && practice != null && currency != null) {
+            BigDecimal price = rules.getTaxIncPrice(getPrice(), product, practice, currency);
+            taxIncPrice.removeModifiableListener(taxIncListener);
+            taxIncPrice.setValue(price);
+            taxIncPrice.addModifiableListener(taxIncListener);
+        }
+    }
+
+    /**
+     * Calculates the tax-exclusive price from the tax-inclusive price, then recalculates the tax-inclusive price
+     * to take into account any rounding and minimum currency amounts.
+     */
+    private void updatePriceFromTaxInclusivePrice() {
+        Product product = (Product) getParent();
+        if (product != null && practice != null && currency != null) {
+            BigDecimal price = rules.getTaxExPriceFromTaxIncPrice(taxIncPrice.getBigDecimal(BigDecimal.ZERO), product,
+                                                                  practice);
+            setPrice(price);
+            // now recalculate the tax-inc price from the tax ex, as this reflects what the use will see
+            updateTaxInclusivePrice();
+        }
+    }
+
+    private class LayoutStrategy extends AbstractLayoutStrategy {
+
+        /**
+         * Lays out child components in a grid.
+         *
+         * @param object     the object to lay out
+         * @param parent     the parent object. May be {@code null}
+         * @param properties the properties
+         * @param container  the container to use
+         * @param context    the layout context
+         */
+        @Override
+        protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties, Component container,
+                                      LayoutContext context) {
+            ArchetypeNodes.insert(properties, "price", taxIncPrice);
+            super.doSimpleLayout(object, parent, properties, container, context);
+        }
+
     }
 }

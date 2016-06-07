@@ -116,7 +116,6 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         StatementRules rules = new StatementRules(practice, getArchetypeService(),
-                                                  ServiceHelper.getLookupService(),
                                                   ServiceHelper.getBean(CustomerAccountRules.class));
         assertFalse(rules.hasStatement(customer, statementDate));
         List<Act> acts = getActs(customer, statementDate);
@@ -132,7 +131,6 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
 
         final List<Statement> statements = new ArrayList<>();
         StatementProcessor processor = new StatementProcessor(statementDate, practice, getArchetypeService(),
-                                                              getLookupService(),
                                                               ServiceHelper.getBean(CustomerAccountRules.class));
         processor.addListener(new ProcessorListener<Statement>() {
             public void process(Statement statement) {

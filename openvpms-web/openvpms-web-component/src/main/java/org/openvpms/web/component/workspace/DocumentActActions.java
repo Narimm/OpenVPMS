@@ -25,8 +25,12 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.servlet.ServletHelper;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.webdav.milton.DocumentSessionManager;
 import org.openvpms.web.webdav.resource.EditableDocuments;
@@ -110,22 +114,35 @@ public class DocumentActActions extends ActActions<DocumentAct> {
 
     /**
      * Launches an external editor to edit a document, if editing of the document is supported.
+     * <p/>
+     * If the document is a Word document, a confirmation will be displayed, as merge fields are lost when editing
+     * Word documents in OpenOffice.
      *
      * @param act the document act
      */
-    public void externalEdit(DocumentAct act) {
+    public void externalEdit(final DocumentAct act) {
         if (canExternalEdit(act) && act.getDocument() != null) {
-            DocumentSessionManager sessions = ServiceHelper.getBean(DocumentSessionManager.class);
-            Session session = sessions.create(act);
-            String documentURL = ServletHelper.getContextURL() + "/document" + session.getPath();
-            String url = ServletHelper.getRedirectURI("externaledit?") + documentURL;
-            ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, "", ""));
+            if (DocFormats.hasExtension(act.getFileName(), DocFormats.DOC_EXT)) {
+                String title = Messages.get("document.edit.wordinopenoffice.title");
+                String message = Messages.get("document.edit.wordinopenoffice.message");
+                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        onExternalEdit(act);
+                    }
+                });
+            } else {
+                onExternalEdit(act);
+            }
         }
     }
 
     /**
      * Launches an external editor to edit a document associated with a template, if editing of the document is
      * supported.
+     * <p/>
+     * If the document is a Word document, a confirmation will be displayed, as merge fields are lost when editing
+     * Word documents in OpenOffice.
      *
      * @param template the document template
      */
@@ -134,6 +151,19 @@ public class DocumentActActions extends ActActions<DocumentAct> {
         if (act != null) {
             externalEdit(act);
         }
+    }
+
+    /**
+     * Launches an external editor for a document.
+     *
+     * @param act the document act
+     */
+    protected void onExternalEdit(DocumentAct act) {
+        DocumentSessionManager sessions = ServiceHelper.getBean(DocumentSessionManager.class);
+        Session session = sessions.create(act);
+        String documentURL = ServletHelper.getContextURL() + "/document" + session.getPath();
+        String url = ServletHelper.getRedirectURI("externaledit?") + documentURL;
+        ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, "", ""));
     }
 
     /**

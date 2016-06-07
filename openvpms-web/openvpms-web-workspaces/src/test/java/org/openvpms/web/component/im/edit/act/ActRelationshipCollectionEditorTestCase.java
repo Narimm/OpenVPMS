@@ -260,7 +260,9 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         final FinancialAct invoice = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         ActBean bean = new ActBean(invoice);
         Party customer = TestHelper.createCustomer();
+        Party location = TestHelper.createLocation();
         bean.addNodeParticipation("customer", customer);
+        bean.addNodeParticipation("location", location);
         return invoice;
     }
 

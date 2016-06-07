@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -24,7 +24,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -59,25 +59,9 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     private int unitPriceIndex;
 
     /**
-     * The product price rules.
+     * The pricing context.
      */
-    private ProductPriceRules rules;
-
-    /**
-     * The practice location, used to determine service ratios. May be {@code null}
-     */
-    private Party location;
-
-    /**
-     * The pricing location. May be {@code null}
-     */
-    private Lookup pricingGroup;
-
-    /**
-     * The currency, used for rounding.
-     */
-    private final Currency currency;
-
+    private final ProductPricingContext pricingContext;
 
     /**
      * Constructs a {@link ProductTableModel}.
@@ -95,21 +79,30 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      * @param context the layout context
      */
     public ProductTableModel(ProductQuery query, LayoutContext context) {
+        this(query, context.getContext().getLocation(), context);
+    }
+
+    /**
+     * Constructs a {@link ProductTableModel}.
+     *
+     * @param query    the query. May be {@code null}
+     * @param location the practice location, used to determine service ratios. May be {@code null}
+     * @param context  the layout context
+     */
+    public ProductTableModel(ProductQuery query, Party location, LayoutContext context) {
         super(null);
-        rules = ServiceHelper.getBean(ProductPriceRules.class);
+        ProductPriceRules rules = ServiceHelper.getBean(ProductPriceRules.class);
         PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
-        currency = practiceRules.getCurrency(context.getContext().getPractice());
+        Party practice = context.getContext().getPractice();
+        Currency currency = practiceRules.getCurrency(practice);
+        if (query != null) {
+            pricingContext = new ProductPricingContext(currency, query.getPricingGroup(), practice, location, rules);
+        } else {
+            LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
+            pricingContext = new ProductPricingContext(currency, practice, location, rules, locationRules);
+        }
         boolean active = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createTableColumnModel(active));
-        if (query != null) {
-            pricingGroup = query.getPricingGroup().getGroup();
-        } else {
-            Party location = context.getContext().getLocation();
-            if (location != null) {
-                LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-                pricingGroup = locationRules.getPricingGroup(location);
-            }
-        }
     }
 
     /**
@@ -120,22 +113,10 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      * @param pricingGroup the pricing group. May be {@code null}
      */
     public void setPricingGroup(Lookup pricingGroup) {
-        if (!ObjectUtils.equals(this.pricingGroup, pricingGroup)) {
-            this.pricingGroup = pricingGroup;
+        if (!ObjectUtils.equals(pricingContext.getPricingGroup().getGroup(), pricingGroup)) {
+            pricingContext.setPricingGroup(new PricingGroup(pricingGroup));
             fireTableDataChanged();
         }
-    }
-
-    /**
-     * Sets the practice location.
-     * <p/>
-     * If non-null, this is used to determine service ratios that are applied to prices.
-     * If null, the prices are displayed unchanged.
-     *
-     * @param location the practice location. May be {@code null}
-     */
-    public void setLocation(Party location) {
-        this.location = location;
     }
 
     /**
@@ -150,9 +131,9 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     protected Object getValue(Product product, TableColumn column, int row) {
         int index = column.getModelIndex();
         if (index == fixedPriceIndex) {
-            return getPrice(ProductArchetypes.FIXED_PRICE, product);
+            return getFixedPrice(product);
         } else if (index == unitPriceIndex) {
-            return getPrice(ProductArchetypes.UNIT_PRICE, product);
+            return getUnitPrice(product);
         }
         return super.getValue(product, column, row);
     }
@@ -181,21 +162,37 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     }
 
     /**
+     * Returns a component representing the default fixed price for a product.
+     *
+     * @param product the product
+     * @return the default fixed price component, or {@code null} if the product doesn't have a fixed price
+     */
+    private Component getFixedPrice(Product product) {
+        ProductPrice price = pricingContext.getFixedPrice(product, new Date());
+        return getPrice(product, price);
+    }
+
+    /**
+     * Returns a component representing the unit price for a product.
+     *
+     * @param product the product
+     * @return the unit price component, or {@code null} if the product doesn't have a unit price
+     */
+    private Component getUnitPrice(Product product) {
+        ProductPrice price = pricingContext.getUnitPrice(product, new Date());
+        return getPrice(product, price);
+    }
+
+    /**
      * Returns a component for a product price.
      *
-     * @param shortName the product price short name
-     * @param product   the product
+     * @param product the product
      * @return a component for the product price corresponding to {@code shortName} or {@code null} if none is found
      */
-    private Component getPrice(String shortName, Product product) {
+    private Component getPrice(Product product, ProductPrice price) {
         Component result = null;
-        ProductPrice price = rules.getProductPrice(product, shortName, new Date(), pricingGroup);
-        if (price != null && price.getPrice() != null) {
-            BigDecimal value = price.getPrice();
-            if (location != null) {
-                BigDecimal ratio = rules.getServiceRatio(product, location);
-                value = ProductHelper.getPrice(price, ratio, currency);
-            }
+        if (price != null) {
+            BigDecimal value = pricingContext.getPrice(product, price);
             result = TableHelper.rightAlign(NumberFormatter.formatCurrency(value));
         }
         return result;
