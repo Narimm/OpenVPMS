@@ -120,10 +120,10 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
         checkPrice(editor1, "1.63", "100", "3.26", "3.59", "50");
 
         editor1.setMarkup(BigDecimal.valueOf(50));
-        checkPrice(editor1, "1.63", "50", "2.45", "2.70", "33.30");
+        checkPrice(editor1, "1.63", "50", "2.445", "2.69", "33.30");
 
         editor1.setMarkup(BigDecimal.valueOf(75));
-        checkPrice(editor1, "1.63", "75", "2.85", "3.14", "42.90");
+        checkPrice(editor1, "1.63", "75", "2.853", "3.14", "42.90");
 
         // now enable rounding to 0.20
         Lookup currency = TestHelper.getCurrency("AUD");
@@ -139,10 +139,10 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
         checkPrice(editor2, "1.63", "100.00", "3.26", "3.60", "50.00");
 
         editor2.setMarkup(BigDecimal.valueOf(50));
-        checkPrice(editor2, "1.63", "50.30", "2.45", "2.60", "33.50");
+        checkPrice(editor2, "1.63", "50.00", "2.445", "2.60", "33.30");
 
         editor2.setMarkup(BigDecimal.valueOf(75));
-        checkPrice(editor2, "1.63", "74.80", "2.85", "3.20", "42.80");
+        checkPrice(editor2, "1.63", "75", "2.853", "3.20", "42.90");
     }
 
     /**

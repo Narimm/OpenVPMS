@@ -347,8 +347,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertNotNull(item);
 
         // verify the item matches that expected
-        checkItem(item, patient, product, null, author, null, BigDecimal.ZERO, quantity, unitCost, unitPrice,
-                  fixedCost, fixedPrice, discount, BigDecimal.ZERO, new BigDecimal(20));
+        BigDecimal unitPriceExTax = new BigDecimal("9.00");  // rounded due to minPrice
+        BigDecimal fixedPriceExTax = new BigDecimal("1.80"); // rounded due to minPrice
+        checkItem(item, patient, product, null, author, null, BigDecimal.ZERO, quantity, unitCost, unitPriceExTax,
+                  fixedCost, fixedPriceExTax, discount, BigDecimal.ZERO, new BigDecimal("19.80"));
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
@@ -407,9 +409,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertNotNull(item);
 
         // verify the item matches that expected
-        BigDecimal fixedPriceExTax = new BigDecimal("3.60"); // rounded from 3.64 due to minPrice
-        BigDecimal unitPriceExTax = new BigDecimal("18.20"); // rounded from 18.18
-        BigDecimal totalExTax = new BigDecimal("20").multiply(ratio);
+        BigDecimal fixedPriceExTax = new BigDecimal("3.60"); // rounded due to minPrice
+        BigDecimal unitPriceExTax = new BigDecimal("18.00"); // rounded due to minPrice
+        BigDecimal totalExTax = unitPriceExTax.multiply(quantity).add(fixedPriceExTax);
         checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, quantity, unitCost, unitPriceExTax,
                   fixedCost, fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
 

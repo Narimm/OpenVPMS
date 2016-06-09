@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.service;
@@ -38,7 +38,7 @@ import java.util.Properties;
 /**
  * Mail service that configures the SMTP details from <em>party.organisationLocation</em> from
  * {@link Context#getLocation()}, if available.
- * <p>
+ * <p/>
  *
  * @author Tim Anderson
  */
@@ -65,9 +65,29 @@ public abstract class MailService implements JavaMailSender {
     private boolean debugAuth = false;
 
     /**
+     * The connection timeout, or {@code 0} to use the default timeout.
+     */
+    private long connectionTimout = 0;
+
+    /**
+     * The timeout, or {@code 0} to use the default timeout.
+     */
+    private long timeout = 0;
+
+    /**
      * Property name for STARTTLS flag.
      */
     private static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+
+    /**
+     * Property name for the connection timeout.
+     */
+    private static final String NAIL_SMTP_CONNECTION_TIMEOUT = "mail.smtp.connectiontimeout";
+
+    /**
+     * Property name for the timeout.
+     */
+    private static final String NAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
 
     /**
      * Property name for authentication flag.
@@ -200,6 +220,28 @@ public abstract class MailService implements JavaMailSender {
     }
 
     /**
+     * Sets the timeout for establishing an SMTP connection.
+     * <p/>
+     * This corresponds to the <em>mail.smtp.connectiontimeout</em> property.
+     *
+     * @param timeout the timeout, in seconds. Use {@code <= 0} for the default timeout
+     */
+    public void setConnectionTimeout(long timeout) {
+        this.connectionTimout = timeout * 1000;
+    }
+
+    /**
+     * Sets the timeout for sending a message.
+     * <p/>
+     * This corresponds to the <em>mail.smtp.timeout</em> property.
+     *
+     * @param timeout the timeout, in seconds. Use {@code <= 0} for the default timeout
+     */
+    public void setTimeout(long timeout) {
+        this.timeout = timeout * 1000;
+    }
+
+    /**
      * Determines if JavaMail debugging output is enabled.
      * <p/>
      * Corresponds to the JavaMail mail.debug property.
@@ -270,6 +312,12 @@ public abstract class MailService implements JavaMailSender {
         }
         properties.setProperty(MAIL_DEBUG, Boolean.toString(debug));
         properties.setProperty(MAIL_DEBUG_AUTH, Boolean.toString(debugAuth));
+        if (connectionTimout > 0) {
+            properties.setProperty(NAIL_SMTP_CONNECTION_TIMEOUT, Long.toString(connectionTimout));
+        }
+        if (timeout > 0) {
+            properties.setProperty(NAIL_SMTP_TIMEOUT, Long.toString(timeout));
+        }
         return result;
     }
 
