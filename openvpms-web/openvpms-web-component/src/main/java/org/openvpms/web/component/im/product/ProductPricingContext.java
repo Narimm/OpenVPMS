@@ -35,7 +35,14 @@ import java.math.BigDecimal;
  */
 public class ProductPricingContext extends AbstractPricingContext {
 
+    /**
+     * Determines if prices are displayed including tax.
+     */
     private final boolean includeTax;
+
+    /**
+     * The tax rules.
+     */
     private TaxRules taxRules;
 
     /**
@@ -81,6 +88,12 @@ public class ProductPricingContext extends AbstractPricingContext {
         return includeTax ? taxRules.getTaxRate(product) : BigDecimal.ZERO;
     }
 
+    /**
+     * Determines if prices are displayed including tax.
+     *
+     * @param practice the practice
+     * @return {@code true} if prices are displayed including tax
+     */
     protected boolean includeTax(Party practice) {
         IMObjectBean bean = new IMObjectBean(practice);
         return bean.getBoolean("showPricesTaxInclusive", true);

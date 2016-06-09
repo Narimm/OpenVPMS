@@ -119,24 +119,24 @@ order by product, fl.name, ul.name]]>
     <field name="unitStartTime" class="java.sql.Timestamp"/>
     <field name="unitEndTime" class="java.sql.Timestamp"/>
     <field name="unitPricingGroup" class="java.lang.String"/>
-    <variable name="PRICEX1" class="java.math.BigDecimal">
-        <variableExpression><![CDATA[$F{fixedPrice}.add($F{unitPrice})]]></variableExpression>
-    </variable>
-    <variable name="PRICEX2" class="java.math.BigDecimal">
+    <variable name="UNIT" class="java.math.BigDecimal">
         <variableExpression>
-            <![CDATA[$F{fixedPrice}.add($F{unitPrice}.multiply(new BigDecimal("2.00")))]]></variableExpression>
+            <![CDATA[($F{unitPrice} != null) ? EVALUATE("product:price($F.pid, $F.unitPrice)"): new BigDecimal("0.00")]]></variableExpression>
     </variable>
     <variable name="FIXED" class="java.math.BigDecimal">
         <variableExpression>
-            <![CDATA[($F{fixedPrice} != null) ? $F{fixedPrice}: new BigDecimal("0.00")]]></variableExpression>
+            <![CDATA[($F{fixedPrice} != null) ? EVALUATE("product:price($F.pid, $F.fixedPrice)"): new BigDecimal("0.00")]]></variableExpression>
     </variable>
-    <variable name="UNIT" class="java.math.BigDecimal">
+    <variable name="PRICEX1" class="java.math.BigDecimal">
+        <variableExpression><![CDATA[$V{FIXED}.add($V{UNIT})]]></variableExpression>
+    </variable>
+    <variable name="PRICEX2" class="java.math.BigDecimal">
         <variableExpression>
-            <![CDATA[($F{unitPrice} != null) ? $F{unitPrice}: new BigDecimal("0.00")]]></variableExpression>
+            <![CDATA[$V{FIXED}.add($V{UNIT}.multiply(new BigDecimal("2.00")))]]></variableExpression>
     </variable>
     <variable name="PRICEX10" class="java.math.BigDecimal">
         <variableExpression>
-            <![CDATA[$F{fixedPrice}.add($F{unitPrice}.multiply(new BigDecimal("10.00")))]]></variableExpression>
+            <![CDATA[$V{FIXED}.add($V{UNIT}.multiply(new BigDecimal("10.00")))]]></variableExpression>
     </variable>
     <variable name="currentPage" class="java.lang.Integer" resetType="Page">
         <variableExpression><![CDATA[$V{PAGE_NUMBER}]]></variableExpression>
@@ -517,7 +517,7 @@ order by product, fl.name, ul.name]]>
                 <reportElement key="textField" x="204" y="0" width="50" height="20"
                                uuid="2b389ef3-491a-4c30-903b-8909a4cefac0">
                     <printWhenExpression>
-                        <![CDATA[new Boolean($F{fixedPrice}.compareTo(new BigDecimal("0.00")) != 0)]]></printWhenExpression>
+                        <![CDATA[new Boolean($V{FIXED}.compareTo(new BigDecimal("0.00")) != 0)]]></printWhenExpression>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -528,13 +528,13 @@ order by product, fl.name, ul.name]]>
                 <textElement textAlignment="Right">
                     <paragraph lineSpacing="Single"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$F{fixedPrice}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$V{FIXED}]]></textFieldExpression>
             </textField>
             <textField pattern="##0.00" isBlankWhenNull="true">
                 <reportElement key="textField" x="259" y="0" width="54" height="20"
                                uuid="48707657-af4d-4a2e-88c9-f2c5df3cc70e">
                     <printWhenExpression>
-                        <![CDATA[new Boolean($F{unitPrice}.compareTo(new BigDecimal("0.00")) != 0)]]></printWhenExpression>
+                        <![CDATA[new Boolean($V{UNIT}.compareTo(new BigDecimal("0.00")) != 0)]]></printWhenExpression>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -545,7 +545,7 @@ order by product, fl.name, ul.name]]>
                 <textElement textAlignment="Right">
                     <paragraph lineSpacing="Single"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$F{unitPrice}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$V{UNIT}]]></textFieldExpression>
             </textField>
             <textField pattern="##0.00" isBlankWhenNull="true">
                 <reportElement key="textField" x="402" y="0" width="40" height="20"

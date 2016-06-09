@@ -101,6 +101,8 @@ public class ProductFunctions {
                 boolean taxInc = bean.getBoolean("showPricesTaxInclusive", true);
                 if (taxInc) {
                     result = priceRules.getTaxIncPrice(taxExPrice, product, practice, currency);
+                } else {
+                    result = currency.round(taxExPrice);
                 }
             }
         }

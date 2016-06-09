@@ -297,7 +297,7 @@ public class ProductPriceRules {
      * @param practice    the practice
      * @return the tax-exclusive price
      */
-    public BigDecimal getTaxExPriceFromTaxIncPrice(BigDecimal taxIncPrice, Product product, Party practice) {
+    public BigDecimal getTaxExPrice(BigDecimal taxIncPrice, Product product, Party practice) {
         BigDecimal price = taxIncPrice;
         BigDecimal taxRate = getTaxRate(product, practice);
         if (taxRate.compareTo(BigDecimal.ZERO) != 0) {

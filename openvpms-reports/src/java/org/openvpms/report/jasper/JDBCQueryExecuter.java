@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -28,9 +28,15 @@ import net.sf.jasperreports.engine.JRPropertiesMap;
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.JRValueParameter;
 import net.sf.jasperreports.engine.query.JRJdbcQueryExecuter;
+import org.apache.commons.jxpath.Functions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.AbstractExpressionEvaluator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,17 +55,51 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     private final PropertySet fields;
 
     /**
+     * The report fields.
+     */
+    private Map<String, JRField> reportFields = new HashMap<>();
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
+     * The extension functions.
+     */
+    private final Functions functions;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(JDBCQueryExecuter.class);
+
+    /**
      * Constructs an {@link JDBCQueryExecuter}.
      *
      * @param dataset    the report data set
      * @param parameters the report parameters
      * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param service    the archetype service
+     * @param lookups    the lookup service
      */
     public JDBCQueryExecuter(JRDataset dataset, Map<String, Object> parameters, Map<String, Object> fields,
-                             IArchetypeService service) {
+                             IArchetypeService service, ILookupService lookups, Functions functions) {
         super(DefaultJasperReportsContext.getInstance(), dataset, convert(dataset, parameters));
+        this.service = service;
+        this.lookups = lookups;
+        this.functions = functions;
         this.fields = (fields != null) ? new ResolvingPropertySet(fields, service) : null;
+        for (JRField field : dataset.getFields()) {
+            if (!field.getName().startsWith("[")) {
+                reportFields.put("F." + field.getName(), field);
+            }
+        }
     }
 
     /**
@@ -75,12 +115,14 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     /**
      * Wraps an {@code JRDataSource}, in order to support {@link #fields}.
      */
-    private class FieldDataSource implements JRDataSource {
+    public class FieldDataSource implements JRDataSource {
 
         /**
          * The data source to delegate to. May be {@code null} if the report has no SQL statement.
          */
         private JRDataSource dataSource;
+
+        private JDBCExpressionEvaluator evaluator;
 
         /**
          * Constructs an {@link FieldDataSource}.
@@ -89,6 +131,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
          */
         public FieldDataSource(JRDataSource dataSource) {
             this.dataSource = dataSource;
+            evaluator = new JDBCExpressionEvaluator(dataSource, fields, service, lookups, functions);
         }
 
         /**
@@ -109,10 +152,11 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
          */
         @Override
         public Object getFieldValue(JRField field) throws JRException {
-            if (fields != null && fields.exists(field.getName())) {
-                return fields.resolve(field.getName()).getValue();
-            }
-            return (dataSource != null) ? dataSource.getFieldValue(field) : null;
+            return evaluator.getValue(field);
+        }
+
+        public Object getValue(String expression) {
+            return evaluator.getExpressionValue(expression);
         }
     }
 
@@ -125,7 +169,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
      */
     private static Map<String, ? extends JRValueParameter> convert(JRDataset dataset, Map<String, Object> parameters) {
         JRParameter[] list = dataset.getParameters();
-        Map<String, Parameter> result = new HashMap<String, Parameter>();
+        Map<String, Parameter> result = new HashMap<>();
         if (list != null) {
             for (JRParameter parameter : list) {
                 String name = parameter.getName();
@@ -319,6 +363,94 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
         @Override
         public Object clone() {
             throw new JRRuntimeException("Clone not supported");
+        }
+    }
+
+    private class JDBCExpressionEvaluator extends AbstractExpressionEvaluator<Object> {
+
+        /**
+         * The data source.
+         */
+        private final JRDataSource dataSource;
+
+        /**
+         * Constructs a {@link JDBCExpressionEvaluator}.
+         *
+         * @param fields    additional report fields. These override any in the report. May be {@code null}
+         * @param service   the archetype service
+         * @param lookups   the lookup service
+         * @param functions the JXPath extension functions
+         */
+        public JDBCExpressionEvaluator(JRDataSource dataSource, PropertySet fields, IArchetypeService service,
+                                       ILookupService lookups, Functions functions) {
+            super(new Object(), fields, service, lookups, functions);
+            this.dataSource = dataSource;
+        }
+
+        public Object getValue(JRField field) {
+            String expression = field.getName();
+            Object result;
+            try {
+                if (isJXPath(expression)) {
+                    result = evaluate(expression);
+                } else if (isField(expression)) {
+                    result = getFieldValue(expression);
+                } else {
+                    result = dataSource.getFieldValue(field);
+                }
+            } catch (Exception exception) {
+                log.warn("Failed to evaluate: " + expression, exception);
+                // TODO localise
+                result = "Expression Error";
+            }
+            return result;
+        }
+
+        /**
+         * Returns a node value.
+         *
+         * @param name the node name
+         * @return {@code null}
+         */
+        @Override
+        protected Object getNodeValue(String name) {
+            return null;
+        }
+
+        @Override
+        protected IMObjectVariables createVariables() {
+            return new IMObjectVariables(service, lookups) {
+                /**
+                 * Determines if a variable exists.
+                 *
+                 * @param name the variable name
+                 * @return {@code true} if the variable exists
+                 */
+                @Override
+                public boolean exists(String name) {
+                    return reportFields.containsKey(name) || super.exists(name);
+                }
+
+                /**
+                 * Returns the value of the specified variable.
+                 *
+                 * @param varName variable name
+                 * @return Object value
+                 * @throws IllegalArgumentException if there is no such variable.
+                 */
+                @Override
+                public Object getVariable(String varName) {
+                    JRField field = reportFields.get(varName);
+                    if (field != null) {
+                        try {
+                            return dataSource.getFieldValue(field);
+                        } catch (JRException e) {
+                            throw new IllegalStateException("Failed to retrieve value for field " + varName, e);
+                        }
+                    }
+                    return super.getVariable(varName);
+                }
+            };
         }
     }
 
