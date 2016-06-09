@@ -107,11 +107,11 @@ public abstract class AbstractPricingContext implements PricingContext {
      */
     @Override
     public BigDecimal getPrice(Product product, ProductPrice price) {
-        BigDecimal serviceRatio = getServiceRatio(product);
         // TODO - calculate service ratio before or after tax?
         BigDecimal result = BigDecimal.ZERO;
         BigDecimal taxExPrice = price.getPrice();
         if (taxExPrice != null) {
+            BigDecimal serviceRatio = getServiceRatio(product);
             result = rules.getTaxIncPrice(taxExPrice, getTaxRate(product), currency);
             if (!MathRules.equals(serviceRatio, ONE)) {
                 result = currency.roundPrice(result.multiply(serviceRatio));

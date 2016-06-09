@@ -821,7 +821,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         JRQueryExecuter executer = null;
         Connection connection = (Connection) params.get(JRParameter.REPORT_CONNECTION);
         if (connection != null) {
-            executer = new JDBCQueryExecuter(report.getMainDataset(), params, fields, service);
+            executer = new JDBCQueryExecuter(report.getMainDataset(), params, fields, getArchetypeService(),
+                                             getLookupService(), getFunctions());
             JRDataSource dataSource = executer.createDatasource();
             params.put(JRParameter.REPORT_DATA_SOURCE, dataSource);
         }

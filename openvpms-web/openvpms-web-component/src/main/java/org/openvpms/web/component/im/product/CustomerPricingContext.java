@@ -37,7 +37,6 @@ public class CustomerPricingContext extends AbstractPricingContext {
      */
     private final Party customer;
 
-
     /**
      * The customer tax rules.
      */

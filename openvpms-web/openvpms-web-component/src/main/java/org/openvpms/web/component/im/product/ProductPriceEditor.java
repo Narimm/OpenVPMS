@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.NumericPropertyTransformer;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -127,12 +128,15 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
         practice = context.getPractice();
         currency = ContextHelper.getPracticeCurrency(context);
 
+        // allow entry of cost and price to 3 decimal places.
         costListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updatePrice();
             }
         };
-        getProperty(COST).addModifiableListener(costListener);
+        Property cost = getProperty(COST);
+        cost.setTransformer(new NumericPropertyTransformer(cost, false, 3));
+        cost.addModifiableListener(costListener);
 
         markupListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -146,7 +150,9 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
                 onPriceChanged();
             }
         };
-        getProperty(PRICE).addModifiableListener(priceListener);
+        Property price = getProperty(PRICE);
+        price.addModifiableListener(priceListener);
+        price.setTransformer(new NumericPropertyTransformer(price, false, 3));
         rules = ServiceHelper.getBean(ProductPriceRules.class);
         taxIncListener = new ModifiableListener() {
             @Override
@@ -427,8 +433,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     private void updatePriceFromTaxInclusivePrice() {
         Product product = (Product) getParent();
         if (product != null && practice != null && currency != null) {
-            BigDecimal price = rules.getTaxExPriceFromTaxIncPrice(taxIncPrice.getBigDecimal(BigDecimal.ZERO), product,
-                                                                  practice);
+            BigDecimal price = rules.getTaxExPrice(taxIncPrice.getBigDecimal(BigDecimal.ZERO), product, practice);
             setPrice(price);
             // now recalculate the tax-inc price from the tax ex, as this reflects what the use will see
             updateTaxInclusivePrice();
