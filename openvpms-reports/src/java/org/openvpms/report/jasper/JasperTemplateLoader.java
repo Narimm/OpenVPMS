@@ -149,11 +149,11 @@ public class JasperTemplateLoader implements RepositoryService {
      * Returns a resource given its URI.
      *
      * @param uri the resource URI
-     * @return the corresponding resource
+     * @return {@code null}
      */
     @Override
     public Resource getResource(final String uri) {
-        return getResource(uri, ReportResource.class);
+        return null;
     }
 
     /**
@@ -182,23 +182,22 @@ public class JasperTemplateLoader implements RepositoryService {
     /**
      * Returns a resource given its URI.
      * <p/>
-     * Note that this implementation throws ReportException if the report cannot be found, whereas the
-     * {@link RepositoryService} would typically return {@code null}
+     * Note that this implementation only supports {@code ReportResource} resource types.
      *
      * @param uri          the resource URI
      * @param resourceType the resource type. Must be a {@code ReportResource} in this implementation
-     * @return the corresponding resource
+     * @return the corresponding resource, or {@code null} if {@code resourceType} is not supported
      * @throws ReportException if the report cannot be found
      */
     @Override
     public <K extends Resource> K getResource(final String uri, final Class<K> resourceType) {
-        if (!resourceType.isAssignableFrom(ReportResource.class)) {
-            throw new UnsupportedOperationException("Cannot retrieve resources of type " + resourceType);
+        if (resourceType.isAssignableFrom(ReportResource.class)) {
+            JasperReport report = getSubreport(uri);
+            ReportResource resource = new ReportResource();
+            resource.setReport(report);
+            return resourceType.cast(resource);
         }
-        JasperReport report = getSubreport(uri);
-        ReportResource resource = new ReportResource();
-        resource.setReport(report);
-        return resourceType.cast(resource);
+        return null;
     }
 
     /**

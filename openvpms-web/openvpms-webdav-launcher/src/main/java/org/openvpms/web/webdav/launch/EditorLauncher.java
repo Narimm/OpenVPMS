@@ -89,7 +89,7 @@ public class EditorLauncher {
     /**
      * The main line.
      *
-     * @param args the command line arguments. This accepts single argument, the URL of the document to edit
+     * @param args the command line arguments. This accepts a single argument, the URL of the document to edit
      */
     public static void main(String[] args) {
         if (args.length == 1) {

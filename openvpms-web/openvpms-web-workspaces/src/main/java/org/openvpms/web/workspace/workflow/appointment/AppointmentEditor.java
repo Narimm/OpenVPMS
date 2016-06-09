@@ -96,6 +96,12 @@ public class AppointmentEditor extends CalendarEventEditor {
      */
     private boolean scheduleReminders;
 
+
+    /**
+     * Determines if reminders are enabled on the appointment type.
+     */
+    private boolean appointmentTypeReminders;
+
     /**
      * Determines if the sendReminder checkbox should be enabled.
      */
@@ -150,7 +156,7 @@ public class AppointmentEditor extends CalendarEventEditor {
         Entity appointmentType = (Entity) getParticipant("appointmentType");
         Entity schedule = getSchedule();
         smsPractice = SMSHelper.isSMSEnabled(getLayoutContext().getContext().getPractice());
-        scheduleReminders = rules.isScheduleRemindersEnabled(schedule);
+        scheduleReminders = rules.isRemindersEnabled(schedule);
         noReminder = rules.getNoReminderPeriod();
 
         if (appointmentType == null) {
@@ -160,6 +166,7 @@ public class AppointmentEditor extends CalendarEventEditor {
                 setParticipant("appointmentType", appointmentType);
             }
         }
+        appointmentTypeReminders = rules.isRemindersEnabled(appointmentType);
 
         getProperty("status").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -168,6 +175,9 @@ public class AppointmentEditor extends CalendarEventEditor {
         });
         sendReminder = new BoundCheckBox(getProperty(SEND_REMINDER));
         addStartEndTimeListeners();
+        if (act.isNew()) {
+            updateSendReminder(true);
+        }
     }
 
     /**
@@ -301,7 +311,7 @@ public class AppointmentEditor extends CalendarEventEditor {
     protected void initSchedule(Entity schedule) {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
-        scheduleReminders = schedule != null && rules.isScheduleRemindersEnabled(schedule);
+        scheduleReminders = schedule != null && rules.isRemindersEnabled(schedule);
     }
 
     /**
@@ -417,6 +427,8 @@ public class AppointmentEditor extends CalendarEventEditor {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+        appointmentTypeReminders = rules.isRemindersEnabled(getAppointmentType());
+        updateSendReminder(true);
     }
 
     /**
@@ -464,7 +476,7 @@ public class AppointmentEditor extends CalendarEventEditor {
     }
 
     /**
-     * Updates the send reminder flag, based on the practice, schedule and customer.
+     * Updates the send reminder flag, based on the practice, schedule, customer and appointment type.
      * <p/>
      * If SMS is disabled for the practice, schedule or customer, the flag is toggled off and disabled.
      * <p/>
@@ -475,7 +487,7 @@ public class AppointmentEditor extends CalendarEventEditor {
     private void updateSendReminder(boolean select) {
         Date startTime = getStartTime();
         Date now = new Date();
-        boolean enabled = smsPractice && scheduleReminders && noReminder != null &&
+        boolean enabled = smsPractice && scheduleReminders && appointmentTypeReminders && noReminder != null &&
                           startTime != null && startTime.after(now) && SMSHelper.canSMS(getCustomer());
         if (!enabled) {
             sendReminder.setSelected(false);
