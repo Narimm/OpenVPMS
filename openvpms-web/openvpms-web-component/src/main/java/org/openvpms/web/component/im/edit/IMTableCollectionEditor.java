@@ -200,13 +200,12 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     }
 
     /**
-     * Creates a new object, subject to a short name being selected, and
-     * current collection cardinality. This must be registered with the
-     * collection.
+     * Creates a new object, subject to a short name being selected, and current collection cardinality. This must be
+     * registered with the collection.
      * <p/>
-     * If an {@link IMObjectCreationListener} is registered, it will be
-     * notified on successful creation of an object.
+     * If an {@link IMObjectCreationListener} is registered, it will be notified on successful creation of an object.
      *
+     * @param shortName the archetype short name. May be {@code null}
      * @return a new object, or {@code null} if the object can't be created
      */
     public IMObject create(String shortName) {
