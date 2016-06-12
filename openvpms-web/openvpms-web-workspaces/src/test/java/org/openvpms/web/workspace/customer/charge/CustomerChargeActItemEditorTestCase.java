@@ -410,7 +410,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // verify the item matches that expected
         BigDecimal fixedPriceExTax = new BigDecimal("3.60"); // rounded due to minPrice
-        BigDecimal unitPriceExTax = new BigDecimal("18.00"); // rounded due to minPrice
+        BigDecimal unitPriceExTax = new BigDecimal("18.20"); // rounded due to minPrice
         BigDecimal totalExTax = unitPriceExTax.multiply(quantity).add(fixedPriceExTax);
         checkItem(item, patient, product, null, author, clinician, BigDecimal.ZERO, quantity, unitCost, unitPriceExTax,
                   fixedCost, fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
