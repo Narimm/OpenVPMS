@@ -17,7 +17,6 @@
 package org.openvpms.web.component.im.product;
 
 import org.openvpms.archetype.rules.math.Currency;
-import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -30,8 +29,6 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-
-import static java.math.BigDecimal.ONE;
 
 /**
  * Abstract implementation of {@link PricingContext}.
@@ -107,15 +104,12 @@ public abstract class AbstractPricingContext implements PricingContext {
      */
     @Override
     public BigDecimal getPrice(Product product, ProductPrice price) {
-        // TODO - calculate service ratio before or after tax?
         BigDecimal result = BigDecimal.ZERO;
         BigDecimal taxExPrice = price.getPrice();
         if (taxExPrice != null) {
             BigDecimal serviceRatio = getServiceRatio(product);
+            taxExPrice = taxExPrice.multiply(serviceRatio);
             result = rules.getTaxIncPrice(taxExPrice, getTaxRate(product), currency);
-            if (!MathRules.equals(serviceRatio, ONE)) {
-                result = currency.roundPrice(result.multiply(serviceRatio));
-            }
         }
         return result;
     }

@@ -110,6 +110,22 @@ public class ProductFunctions {
     }
 
     /**
+     * Rounds a price according to the practice currency rounding convention.
+     *
+     * @param price the price to round
+     * @return the rounded price
+     */
+    public BigDecimal round(BigDecimal price) {
+        BigDecimal result = (price != null) ? price : BigDecimal.ZERO;
+        Party practice = practiceRules.getPractice();
+        if (practice != null) {
+            Currency currency = practiceRules.getCurrency(practice);
+            result = currency.round(price);
+        }
+        return result;
+    }
+
+    /**
      * Returns a product given its identifier.
      *
      * @param productId the product identifier
