@@ -91,9 +91,9 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         rules = ServiceHelper.getBean(ProductPriceRules.class);
         taxRules = new TaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService()
         );
-        ProductExportQuery query = new ProductExportQuery(context);
+        ProductExportQuery query = new ProductExportQuery(context.getContext());
         PagedProductPricesTableModel model = new PagedProductPricesTableModel();
-        Browser<Product> browser = new DefaultIMObjectTableBrowser<Product>(query, model, context);
+        Browser<Product> browser = new DefaultIMObjectTableBrowser<>(query, model, context);
         init(browser, null);
         setCloseOnSelection(false);
     }
@@ -128,7 +128,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         ProductExportQuery query = getQuery();
         ProductWriter exporter = new ProductCSVWriter(ServiceHelper.getArchetypeService(),
                                                       rules, taxRules, ServiceHelper.getBean(DocumentHandlers.class));
-        Iterator<Product> iterator = new ResultSetIterator<Product>(query.query());
+        Iterator<Product> iterator = new ResultSetIterator<>(query.query());
         Document document;
         boolean includeLinkedPrices = query.includeLinkedPrices();
         PricingGroup pricingGroup = query.getPricingGroup();
@@ -171,7 +171,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
          */
         @Override
         protected List<ProductPrices> convertTo(List<Product> list) {
-            List<ProductPrices> result = new ArrayList<ProductPrices>();
+            List<ProductPrices> result = new ArrayList<>();
             boolean includeLinkedPrices = getQuery().includeLinkedPrices();
             PricingGroup pricingGroup = getQuery().getPricingGroup();
             for (Product product : list) {
@@ -204,7 +204,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
          */
         private List<ProductPrice> getPrices(Product product, String shortName, boolean includeLinkedPrices,
                                              PricingGroup pricingGroup) {
-            List<ProductPrice> result = new ArrayList<ProductPrice>();
+            List<ProductPrice> result = new ArrayList<>();
             ProductExportQuery query = getQuery();
             ProductExportQuery.Prices prices = query.getPrices();
             if (prices == ProductExportQuery.Prices.CURRENT) {
