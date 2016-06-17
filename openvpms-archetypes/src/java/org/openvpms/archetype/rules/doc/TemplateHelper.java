@@ -31,7 +31,8 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -91,7 +92,6 @@ public class TemplateHelper {
         ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT, false, true);
         query.add(Constraints.eq("name", name));
         query.add(Constraints.sort("id"));
-        query.setFirstResult(0);
         query.setMaxResults(1);
         Iterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
         return (iterator.hasNext()) ? iterator.next() : null;
@@ -242,12 +242,26 @@ public class TemplateHelper {
      */
     public Participation getDocumentParticipation(Entity template) {
         ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_PARTICIPATION, true, true);
-        query.add(new ObjectRefNodeConstraint("entity",
-                                              template.getObjectReference()));
-        query.setFirstResult(0);
+        query.add(Constraints.eq("entity", template));
         query.setMaxResults(1);
-        List<IMObject> rows = service.get(query).getResults();
-        return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
+        IMObjectQueryIterator<Participation> iterator = new IMObjectQueryIterator<Participation>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
+    }
+
+    /**
+     * Returns the file name of the content associated with an <em>entity.documentTemplate</em>.
+     *
+     * @param template the document template entity
+     * @return the file name, or {@code null} if none is found
+     */
+    public String getFileName(Entity template) {
+        ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_PARTICIPATION, true, true);
+        query.add(new NodeSelectConstraint("act.fileName"));
+        query.add(Constraints.eq("entity", template));
+        query.add(Constraints.join("act", "act"));
+        query.setMaxResults(1);
+        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
+        return iterator.hasNext() ? iterator.next().getString("act.fileName") : null;
     }
 
     /**
