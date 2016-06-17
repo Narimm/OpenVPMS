@@ -41,6 +41,7 @@
                     <property name="act.customerEstimation" value="Customer Estimate"/>
                     <property name="act.customerOrderPharmacy" value="Customer Pharmacy Order"/>
                     <property name="act.customerReturnPharmacy" value="Customer Pharmacy Return"/>
+                    <property name="act.customerReturnInvestigation" value="Investigation Return"/>
                     <property name="act.patientMedication" value="Patient Medication Label"/>
                     <property name="act.patientPrescription" value="Prescription"/>
                     <property name="act.patientReminder" value="Reminder Report"/>
@@ -59,6 +60,8 @@
                     <property name="act.stockTransfer" value="Stock Transfer"/>
                     <property name="act.customerAppointment" value="Appointment"/>
                     <property name="act.customerTask" value="Task"/>
+                    <property name="act.auditMessage" value="Audit Message"/>
+                    <property name="act.systemMessage" value="System Message"/>
                     <property name="act.userMessage" value="Message"/>
                     <property name="CUSTOMER_BALANCE" value="Customer Account Balance"/>
                     <property name="WORK_IN_PROGRESS_CHARGES" value="Work in Progress Charges"/>
