@@ -63,6 +63,7 @@
                     <property name="act.auditMessage" value="Audit Message"/>
                     <property name="act.systemMessage" value="System Message"/>
                     <property name="act.userMessage" value="Message"/>
+                    <property name="act.HL7Message" value="HL7 Message"/>
                     <property name="CUSTOMER_BALANCE" value="Customer Account Balance"/>
                     <property name="WORK_IN_PROGRESS_CHARGES" value="Work in Progress Charges"/>
                     <property name="GROUPED_REMINDERS" value="Grouped Reminders"/>
