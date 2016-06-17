@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -146,6 +146,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
             }
         });
         buttons.add(createPostButton());
+        buttons.add(createPrintButton());
         buttons.add(invoice);
         buttons.add(reverse);
         buttons.add(createCheckInboxButton());
@@ -176,6 +177,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         buttons.setEnabled(EDIT_ID, editEnabled);
         buttons.setEnabled(DELETE_ID, deleteEnabled);
         buttons.setEnabled(POST_ID, postEnabled);
+        enablePrintPreview(buttons, enable);
         buttons.setEnabled(INVOICE_ID, invoiceEnabled);
         buttons.setEnabled(REVERSE_ID, reverseEnabled);
     }
