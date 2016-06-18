@@ -22,19 +22,28 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.function.expression.ExpressionFunctions;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link ListFunctions} class.
@@ -108,6 +117,82 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("CANINE;FELINE;BOVINE", ctx.getValue("list:join(.,'species',';')"));
     }
 
+    /**
+     * Tesdts the {@link ListFunctions#values(IMObject, String)} method.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testValues() {
+        Party customer = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient(customer);
+        Party patient2 = TestHelper.createPatient(customer);
+        Party patient3 = TestHelper.createPatient(customer);
+        JXPathContext context = createContext(customer);
+        List<Party> values1 = (List<Party>) context.getValue("list:values(., 'patients.target')");
+        checkValues(values1, patient1, patient2, patient3);
+
+        List<Party> values2 = (List<Party>) context.getValue("list:values('patients.target')");
+        checkValues(values2, patient1, patient2, patient3);
+
+        List<Long> values3 = (List<Long>) context.getValue("list:values(., 'patients.target.id')");
+        checkValues(values3, patient1.getId(), patient2.getId(), patient3.getId());
+
+        List<Long> values4 = (List<Long>) context.getValue("list:values('patients.target.id')");
+        checkValues(values4, patient1.getId(), patient2.getId(), patient3.getId());
+    }
+
+    /**
+     * Tests the {@link ListFunctions#distinct(IMObject, String)} method.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testDistinct() {
+        Product product = TestHelper.createProduct();
+        Party customer = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(BigDecimal.TEN, customer, patient1, product,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct invoice = acts.get(0);
+        FinancialAct act1 = acts.get(1);
+        FinancialAct act2 = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient2,
+                                                                 product, BigDecimal.ONE);
+        FinancialAct act3 = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient2,
+                                                                 product, BigDecimal.ONE);
+        ActBean bean = new ActBean(invoice);
+        bean.addNodeRelationship("items", act2);
+        bean.addNodeRelationship("items", act3);
+        save(invoice, act1, act2, act3);
+
+        JXPathContext context = createContext(invoice);
+
+        List<Party> values1 = (List<Party>) context.getValue("list:distinct(., 'items.target.patient.entity')");
+        checkValues(values1, patient1, patient2);
+
+        List<Party> values2 = (List<Party>) context.getValue("list:distinct('items.target.patient.entity')");
+        checkValues(values2, patient1, patient2);
+
+        // check that they can be counted.
+        Number count = (Number) context.getValue("count(list:distinct(., 'items.target.patient.entity'))");
+        assertEquals(2, count.intValue());
+
+        List<Long> values3 = (List<Long>) context.getValue("list:distinct(., 'items.target.product.entity.id')");
+        checkValues(values3, product.getId());
+    }
+
+    /**
+     * Verifies that collection values match that expected.
+     *
+     * @param collection the collection
+     * @param values     the expected values
+     */
+    @SafeVarargs
+    private final <T> void checkValues(List<T> collection, T... values) {
+        assertEquals(values.length, collection.size());
+        for (T value : values) {
+            assertTrue(collection.contains(value));
+        }
+    }
     /**
      * Creates a pet.
      *
