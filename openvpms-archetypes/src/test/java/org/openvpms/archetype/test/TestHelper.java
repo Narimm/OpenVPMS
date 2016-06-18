@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -521,6 +521,24 @@ public class TestHelper {
         bean.setValue("currency", currency.getCode());
         bean.save();
         return party;
+    }
+
+    /**
+     * Returns the <em>party.organisationPractice</em> singleton creating one if it doesn't exist.
+     *
+     * @param rate the default tax rate
+     * @return the practice
+     */
+    public static Party getPractice(BigDecimal rate) {
+        Party practice = TestHelper.getPractice();
+        Lookup tax = (Lookup) create("lookup.taxType");
+        IMObjectBean taxBean = new IMObjectBean(tax);
+        taxBean.setValue("code", "XTAXTYPE" + Math.abs(new Random().nextInt()));
+        taxBean.setValue("rate", rate);
+        taxBean.save();
+        practice.addClassification(tax);
+        save(practice);
+        return practice;
     }
 
     /**

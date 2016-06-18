@@ -555,6 +555,19 @@ public class ProductPriceRules {
     }
 
     /**
+     * Returns the tax rate of a product.
+     *
+     * @param product  the product
+     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
+     * @return the product tax rate
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getTaxRate(Product product, Party practice) {
+        TaxRules rules = new TaxRules(practice, service);
+        return rules.getTaxRate(product);
+    }
+
+    /**
      * Updates an <em>productPrice.unitPrice</em> if required.
      *
      * @param price the price
@@ -575,27 +588,16 @@ public class ProductPriceRules {
     }
 
     /**
-     * Returns the tax rate of a product.
-     *
-     * @param product  the product
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @return the product tax rate
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private BigDecimal getTaxRate(Product product, Party practice) {
-        TaxRules rules = new TaxRules(practice, service);
-        return rules.getTaxRate(product);
-    }
-
-    /**
      * Returns a percentage / 100.
+     * <p/>
+     * This is expressed to 4 decimal places to support tax rates like "8.25%".
      *
      * @param percent the percent
      * @return {@code percent / 100 }
      */
     private BigDecimal getRate(BigDecimal percent) {
         if (percent.compareTo(ZERO) != 0) {
-            return MathRules.divide(percent, ONE_HUNDRED, 3);
+            return MathRules.divide(percent, ONE_HUNDRED, 4);
         }
         return ZERO;
     }

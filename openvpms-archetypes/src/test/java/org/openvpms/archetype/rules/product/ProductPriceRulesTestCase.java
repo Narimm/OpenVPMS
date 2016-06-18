@@ -34,7 +34,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -77,6 +76,19 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
      */
     private ProductPriceRules rules;
 
+    /**
+     * Sets up the test case.
+     * <p/>
+     * This sets up the practice to have a 10% tax on all products.
+     */
+    @Before
+    public void setUp() {
+        practice = TestHelper.getPractice(BigDecimal.TEN);
+        rules = new ProductPriceRules(getArchetypeService());
+        IMObjectBean bean = new IMObjectBean(practice);
+        Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
+        currency = currencies.getCurrency(bean.getString("currency"));
+    }
 
     /**
      * Tests the {@link ProductPriceRules#getProductPrice(Product, String, Date, Lookup)} method.
@@ -366,17 +378,18 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Sets up the test case.
+     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} method.
      * <p/>
-     * This sets up the practice to have a 10% tax on all products.
+     * This verifies that tax rates can be expressed to 2 decimal places.
      */
-    @Before
-    public void setUp() {
-        practice = createPractice();
-        rules = new ProductPriceRules(getArchetypeService());
-        IMObjectBean bean = new IMObjectBean(practice);
-        Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
-        currency = currencies.getCurrency(bean.getString("currency"));
+    @Test
+    public void testGetTaxIncPrice() {
+        practice = TestHelper.getPractice(new BigDecimal("8.25"));
+        ProductPrice unitPrice = createUnitPrice("16.665", "8.33", "100.10", "50.00", getToday(), null);     // active
+        Product product = TestHelper.createProduct();
+        product.addProductPrice(unitPrice);
+        BigDecimal price = rules.getTaxIncPrice(unitPrice.getPrice(), product, practice, currency);
+        checkEquals(new BigDecimal("18.04"), price);
     }
 
     /**
@@ -1113,23 +1126,4 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         assertEquals(expected, rules.getProductPrice(product, price, shortName, date, pricingGroup));
     }
 
-    /**
-     * Helper to create an <em>party.organisationPractice</em> with a 10% tax rate.
-     *
-     * @return the practice
-     */
-    private Party createPractice() {
-        Party practice = TestHelper.getPractice();
-
-        // add a 10% tax rate
-        Lookup tax = (Lookup) create("lookup.taxType");
-        IMObjectBean taxBean = new IMObjectBean(tax);
-        taxBean.setValue("code", "XTAXTYPE" + Math.abs(new Random().nextInt()));
-        taxBean.setValue("rate", new BigDecimal(10));
-        taxBean.save();
-        practice.addClassification(tax);
-        save(practice);
-
-        return practice;
-    }
 }

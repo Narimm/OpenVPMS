@@ -60,6 +60,11 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     private Map<String, JRField> reportFields = new HashMap<>();
 
     /**
+     * The report parameters.
+     */
+    private Map<String, String> reportParameters = new HashMap<>();
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -98,6 +103,11 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
         for (JRField field : dataset.getFields()) {
             if (!field.getName().startsWith("[")) {
                 reportFields.put("F." + field.getName(), field);
+            }
+        }
+        for (JRParameter parameter : dataset.getParameters()) {
+            if (parameter.isForPrompting() && !parameter.isSystemDefined()) {
+                reportParameters.put("P." + parameter.getName(), parameter.getName());
             }
         }
     }
@@ -428,7 +438,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
                  */
                 @Override
                 public boolean exists(String name) {
-                    return reportFields.containsKey(name) || super.exists(name);
+                    return reportFields.containsKey(name) || reportParameters.containsKey(name) || super.exists(name);
                 }
 
                 /**
@@ -446,6 +456,11 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
                             return dataSource.getFieldValue(field);
                         } catch (JRException e) {
                             throw new IllegalStateException("Failed to retrieve value for field " + varName, e);
+                        }
+                    } else {
+                        String parameter = reportParameters.get(varName);
+                        if (parameter != null) {
+                            return getParameterValue(parameter);
                         }
                     }
                     return super.getVariable(varName);

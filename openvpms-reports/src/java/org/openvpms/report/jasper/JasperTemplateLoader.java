@@ -134,6 +134,9 @@ public class JasperTemplateLoader implements RepositoryService {
 
     /**
      * Returns the expression evaluator.
+     * <p/>
+     * NOTE: this only supports evaluation of simple expressions. Expressions that invoke JasperReport functions aren't
+     * supported as these require a constructed JasperReport.
      *
      * @return the expression evaluator
      * @throws JRException if the evaluator can't be loaded

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -29,7 +29,7 @@ import org.openvpms.report.IMReport;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -123,9 +123,9 @@ public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeD
         public void test() {
             Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-            ArchetypeFunctionsFactory factory = new DefaultArchetypeFunctionsFactory(getArchetypeService(),
-                                                                                     getLookupService(), null, null);
-            IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), getLookupService(),
+            ArchetypeFunctionsFactory factory = new DefaultArchetypeFunctionsFactory(
+                    getArchetypeService(), getLookupService(), null, null, null);
+            IMReport<IMObject> report = new OpenOfficeIMReport<>(doc, getArchetypeService(), getLookupService(),
                                                                          getHandlers(), factory.create());
 
             Party party = createCustomer();
@@ -134,9 +134,8 @@ public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeD
             act.setValue("lowTotal", new BigDecimal("100"));
             act.setParticipant("participation.customer", party);
 
-            List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-            Document result = report.generate(objects,
-                                              DocFormats.ODT_TYPE);
+            List<IMObject> objects = Collections.singletonList((IMObject) act.getAct());
+            Document result = report.generate(objects, DocFormats.ODT_TYPE);
             Map<String, String> fields = getUserFields(result);
             assertEquals("4/08/2006",
                          fields.get("startTime"));  // @todo localise

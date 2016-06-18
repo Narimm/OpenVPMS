@@ -60,7 +60,7 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
 
         final IArchetypeService service = getArchetypeService();
-        functions = new DefaultArchetypeFunctionsFactory(service, getLookupService(), null, null) {
+        functions = new DefaultArchetypeFunctionsFactory(service, getLookupService(), null, null, null) {
             @Override
             public FunctionLibrary create(IArchetypeService service) {
                 FunctionLibrary library = super.create(service);

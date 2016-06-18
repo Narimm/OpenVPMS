@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.function;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.FunctionsFactory;
@@ -46,14 +47,15 @@ public class DefaultFunctionsFactory extends DefaultArchetypeFunctionsFactory {
     /**
      * Constructs an {@link DefaultFunctionsFactory}.
      *
-     * @param service    the archetype service
-     * @param lookups    the lookup service
-     * @param currencies hte currencies
-     * @param formatter  the patient age formatter. May be {@code null}
+     * @param service         the archetype service
+     * @param lookups         the lookup service
+     * @param practiceService the practice service
+     * @param currencies      hte currencies
+     * @param formatter       the patient age formatter. May be {@code null}
      */
-    public DefaultFunctionsFactory(IArchetypeService service, ILookupService lookups, Currencies currencies,
-                                   PatientAgeFormatter formatter) {
-        super(service, lookups, currencies, formatter);
+    public DefaultFunctionsFactory(IArchetypeService service, ILookupService lookups, PracticeService practiceService,
+                                   Currencies currencies, PatientAgeFormatter formatter) {
+        super(service, lookups, practiceService, currencies, formatter);
     }
 
     /**
