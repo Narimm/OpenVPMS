@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.factory;
 
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
@@ -32,6 +33,11 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The practice service.
+     */
+    private final PracticeService practiceService;
 
     /**
      * The lookup service.
@@ -51,15 +57,18 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
     /**
      * Constructs a {@link DefaultArchetypeFunctionsFactory}.
      *
-     * @param service    the archetype service
-     * @param lookups    the lookup service
-     * @param currencies the currencies
-     * @param formatter  the patient age formatter. May be {@code null}
+     * @param service         the archetype service
+     * @param lookups         the lookup service
+     * @param practiceService the practice service
+     * @param currencies      the currencies
+     * @param formatter       the patient age formatter. May be {@code null}
      */
-    public DefaultArchetypeFunctionsFactory(IArchetypeService service, ILookupService lookups, Currencies currencies,
+    public DefaultArchetypeFunctionsFactory(IArchetypeService service, ILookupService lookups,
+                                            PracticeService practiceService, Currencies currencies,
                                             PatientAgeFormatter formatter) {
         this.service = service;
         this.lookups = lookups;
+        this.practiceService = practiceService;
         this.currencies = currencies;
         this.formatter = formatter;
     }
@@ -82,6 +91,16 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
     @Override
     protected ILookupService getLookupService() {
         return lookups;
+    }
+
+    /**
+     * Returns the practice service.
+     *
+     * @return the practice service
+     */
+    @Override
+    protected PracticeService getPracticeService() {
+        return practiceService;
     }
 
     /**

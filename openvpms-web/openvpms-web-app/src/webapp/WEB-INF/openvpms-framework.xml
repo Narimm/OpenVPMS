@@ -219,6 +219,7 @@
     <bean id="functionsFactory" class="org.openvpms.web.component.function.DefaultFunctionsFactory">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="practiceService"/>
         <constructor-arg ref="currencies"/>
         <constructor-arg ref="patientAgeFormatter"/>
         <property name="macros" ref="macros"/>

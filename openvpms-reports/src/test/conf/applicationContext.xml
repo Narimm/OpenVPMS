@@ -162,6 +162,9 @@
         <constructor-arg>
             <null/>
         </constructor-arg>
+        <constructor-arg>
+            <null/>
+        </constructor-arg>
     </bean>
 
     <bean id="functions" class="org.apache.commons.jxpath.Functions" factory-bean="functionsFactory"

@@ -144,6 +144,7 @@
     <bean id="functionsFactory" class="org.openvpms.web.component.function.DefaultFunctionsFactory">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="practiceService"/>
         <constructor-arg ref="currencies"/>
         <constructor-arg>
             <null/>
@@ -247,7 +248,7 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <bean class="org.openvpms.archetype.rules.practice.PracticeService">
+    <bean id="practiceService" class="org.openvpms.archetype.rules.practice.PracticeService">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="practiceRules"/>
         <constructor-arg>

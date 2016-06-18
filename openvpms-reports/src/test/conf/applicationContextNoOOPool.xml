@@ -143,9 +143,12 @@
     </bean>
 
     <bean id="functionsFactory" class="org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory">
-        <constructor-arg ref="currencies"/>
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+        <constructor-arg>
+            <null/>
+        </constructor-arg>
+        <constructor-arg ref="currencies"/>
         <constructor-arg>
             <null/>
         </constructor-arg>

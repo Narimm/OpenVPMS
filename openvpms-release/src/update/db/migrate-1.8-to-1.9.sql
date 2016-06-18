@@ -1234,3 +1234,178 @@ INSERT INTO entity_details (entity_id, name, type, value)
                    FROM entity_details d
                    WHERE d.entity_id = appointmentType.entity_id
                          AND d.name = 'sendReminders');
+
+#
+# OVPMS-1770 Tax-exclusive product prices
+#
+DROP TABLE IF EXISTS product_tax_rates;
+
+CREATE TABLE product_tax_rates (
+  product_id BIGINT(20) PRIMARY KEY,
+  rate       DECIMAL(18, 3)
+);
+
+INSERT INTO product_tax_rates (product_id, rate)
+  SELECT
+    p.product_id,
+    sum(cast(rate.value AS DECIMAL(18, 3)))
+  FROM products p
+    JOIN entities e
+      ON p.product_id = e.entity_id
+    JOIN entity_classifications taxes
+      ON e.entity_id = taxes.entity_id
+    JOIN lookups tax
+      ON tax.lookup_id = taxes.lookup_id
+         AND tax.arch_short_name = 'lookup.taxType'
+    JOIN lookup_details rate
+      ON rate.lookup_id = tax.lookup_id
+         AND rate.name = 'rate'
+  WHERE NOT exists(SELECT *
+                   FROM entities practice
+                     JOIN entity_details d
+                       ON d.entity_id = practice.entity_id
+                          AND practice.arch_short_name = 'party.organisationPractice'
+                          AND practice.active = 1
+                          AND d.name = 'showPricesTaxInclusive')
+  GROUP BY e.entity_id;
+
+INSERT INTO product_tax_rates (product_id, rate)
+  SELECT
+    p.product_id,
+    sum(cast(rate.value AS DECIMAL(18, 3)))
+  FROM products p
+    JOIN entities ep ON p.product_id = ep.entity_id
+    JOIN entity_links r
+      ON p.product_id = r.source_id
+         AND r.arch_short_name = "entityLink.productType"
+    JOIN entities ptype
+      ON ptype.entity_id = r.target_id AND ptype.active = 1
+    JOIN entity_classifications taxes
+      ON ptype.entity_id = taxes.entity_id
+    JOIN lookups tax
+      ON tax.lookup_id = taxes.lookup_id
+         AND tax.arch_short_name = 'lookup.taxType'
+    JOIN lookup_details rate
+      ON rate.lookup_id = tax.lookup_id AND rate.name = 'rate'
+  WHERE NOT exists(SELECT *
+                   FROM product_tax_rates t
+                   WHERE t.product_id = p.product_id)
+        AND NOT exists(SELECT *
+                       FROM entities practice
+                         JOIN entity_details d
+                           ON d.entity_id = practice.entity_id
+                              AND practice.arch_short_name = 'party.organisationPractice'
+                              AND practice.active = 1
+                              AND d.name = 'showPricesTaxInclusive')
+  GROUP BY p.product_id;
+
+
+INSERT INTO product_tax_rates (product_id, rate)
+  SELECT
+    rates.product_id,
+    rates.rate
+  FROM (
+         SELECT
+           p.product_id,
+           (SELECT sum(cast(rate.value AS DECIMAL(18, 3)))
+            FROM entities o
+              JOIN entity_classifications taxes
+                ON o.entity_id = taxes.entity_id
+              JOIN lookups tax
+                ON tax.lookup_id = taxes.lookup_id
+                   AND tax.arch_short_name = 'lookup.taxType'
+              JOIN lookup_details rate
+                ON rate.lookup_id = tax.lookup_id AND rate.name = 'rate'
+            WHERE o.arch_short_name = 'party.organisationPractice' AND o.active = 1) rate
+         FROM products p
+         WHERE NOT exists(SELECT *
+                          FROM product_tax_rates t
+                          WHERE t.product_id = p.product_id)
+               AND NOT exists(SELECT *
+                              FROM entities practice
+                                JOIN entity_details d
+                                  ON d.entity_id = practice.entity_id
+                                     AND practice.arch_short_name = 'party.organisationPractice'
+                                     AND practice.active = 1
+                                     AND d.name = 'showPricesTaxInclusive')
+       ) rates
+  WHERE rate IS NOT NULL AND rate > 0;
+
+#
+# Update prices.
+#
+UPDATE product_prices pp
+  JOIN product_tax_rates rates
+    ON pp.product_id = rates.product_id
+SET pp.price = round(pp.price / (1 + rates.rate / 100), 3);
+
+#
+# Update markups.
+#
+UPDATE product_price_details d
+  JOIN (
+         SELECT
+           pp.product_price_id,
+           (round(pp.price / cast(cost.value AS DECIMAL(18, 3)), 3) - 1) * 100 markup
+         FROM product_price_details markup
+           JOIN product_prices pp
+             ON pp.product_price_id = markup.product_price_id
+                AND markup.name = 'markup'
+           JOIN product_price_details cost
+             ON pp.product_price_id = cost.product_price_id
+                AND cost.name = 'cost'
+           JOIN product_tax_rates rates
+             ON pp.product_id = rates.product_id
+         WHERE cast(cost.value AS DECIMAL(18, 3)) <> 0) markups
+    ON d.product_price_id = markups.product_price_id
+       AND markups.markup > 0
+       AND d.name = 'markup'
+SET d.value = markups.markup;
+
+#
+# Update max discounts.
+#
+UPDATE product_price_details d
+  JOIN (
+         SELECT
+           product_price_id,
+           markup,
+           round((markup / (100 + markup)) * 100, 2) newMaxDiscount,
+           maxDiscount
+         FROM (
+                SELECT
+                  p.product_price_id,
+                  cast(markup.value AS DECIMAL(18, 3)) markup,
+                  maxDiscount.value                    maxDiscount
+                FROM product_prices p
+                  JOIN product_price_details markup
+                    ON p.product_price_id = markup.product_price_id
+                       AND markup.name = 'markup'
+                  JOIN product_price_details maxdiscount
+                    ON p.product_price_id = maxdiscount.product_price_id
+                       AND maxdiscount.name = 'maxDiscount '
+                  JOIN product_tax_rates rates
+                    ON p.product_id = rates.product_id
+                WHERE cast(markup.value AS DECIMAL(18, 3)) <> 0) markups) calcs
+    ON calcs.product_price_id = d.product_price_id AND d.name = 'maxDiscount'
+       AND maxDiscount > newMaxDiscount
+SET d.value = calcs.newMaxDiscount;
+
+#
+# Insert the showPricesTaxInclusive flag. This prevents subseqent migration of prices if the script is run multiple
+# times.
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    p.entity_id,
+    'showPricesTaxInclusive',
+    'boolean',
+    'true'
+  FROM entities p
+  WHERE p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1 AND
+        NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = p.entity_id AND d.name = 'showPricesTaxInclusive');
+
+DROP TABLE product_tax_rates;

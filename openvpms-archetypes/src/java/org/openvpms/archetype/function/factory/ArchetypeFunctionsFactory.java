@@ -36,6 +36,7 @@ import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
@@ -99,7 +100,8 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(create("math", new MathFunctions()));
         library.addFunctions(create("openvpms", new ArchetypeServiceFunctions(service, lookups)));
         library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules)));
-        library.addFunctions(create("product", new ProductFunctions(new ProductPriceRules(service), rules, service)));
+        library.addFunctions(create("product", new ProductFunctions(new ProductPriceRules(service),
+                                                                    getPracticeService(), service)));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
         library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
         library.addFunctions(create("word", WordUtils.class));
@@ -119,6 +121,13 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
      * @return the lookup service
      */
     protected abstract ILookupService getLookupService();
+
+    /**
+     * Returns the practice service.
+     *
+     * @return the practice service
+     */
+    protected abstract PracticeService getPracticeService();
 
     /**
      * Returns the currencies.
