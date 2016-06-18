@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -31,7 +31,8 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -42,6 +43,7 @@ import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.GridFactory;
@@ -71,9 +73,10 @@ public class ProductExportQuery extends ProductQuery {
     private DateRange range;
 
     /**
-     * The product type to restrict products to. May be {@code null}
+     * The product type.
      */
-    private Entity productType;
+    private final SimpleProperty productType = new SimpleProperty("productType", null, Entity.class,
+                                                                  Messages.get("product.export.productType"));
 
     /**
      * The product income type code to restrict products to. May be {@code null}
@@ -117,11 +120,11 @@ public class ProductExportQuery extends ProductQuery {
     /**
      * Constructs a {@link ProductExportQuery}.
      *
-     * @param context the layout context
+     * @param context the context
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public ProductExportQuery(LayoutContext context) {
-        super(SHORT_NAMES, context.getContext());
+    public ProductExportQuery(Context context) {
+        super(SHORT_NAMES, context);
         setPricingGroup(PricingGroup.ALL); // don't use the practice location pricing group
     }
 
@@ -180,6 +183,24 @@ public class ProductExportQuery extends ProductQuery {
     }
 
     /**
+     * Sets the product type to filter products by.
+     *
+     * @param productType the product type. May be {@code null}
+     */
+    public void setProductType(Entity productType) {
+        this.productType.setValue(productType);
+    }
+
+    /**
+     * Returns the product type to filter products by.
+     *
+     * @return the product type, or {@code null} to select all products
+     */
+    public Entity getProductType() {
+        return (Entity) productType.getValue();
+    }
+
+    /**
      * Returns the preferred height of the query when rendered.
      *
      * @return the preferred height, or {@code null} if it has no preferred height
@@ -228,8 +249,7 @@ public class ProductExportQuery extends ProductQuery {
     @Override
     protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
         return new ProductExportResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), getSpecies(),
-                                          productType, getStockLocation(), incomeType, productGroup, sort,
-                                          getMaxResults());
+                                          getProductType(), getStockLocation(), incomeType, productGroup, sort, getMaxResults());
     }
 
     /**
@@ -242,22 +262,14 @@ public class ProductExportQuery extends ProductQuery {
                 .add(Constraints.sort("name"))
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS);
         final IMObjectListModel model = new IMObjectListModel(QueryHelper.query(query), true, false);
-        final SelectField field = SelectFieldFactory.create(model);
+        final SelectField field = BoundSelectFieldFactory.create(productType, model);
         field.setCellRenderer(IMObjectListCellRenderer.NAME);
-        field.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                setProductType((Entity) field.getSelectedItem());
-            }
-        });
 
-        Label label = LabelFactory.create("product.export.productType");
+        Label label = LabelFactory.create();
+        label.setText(productType.getDisplayName());
         container.add(label);
         container.add(field);
         getFocusGroup().add(field);
-    }
-
-    private void setProductType(Entity type) {
-        this.productType = type;
     }
 
     /**

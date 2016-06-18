@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -81,14 +81,14 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
      * <p/>
      * This implementation will return any existing unmodified contact of the requested short
      *
+     * @param shortName the archetype short name. May be {@code null}
      * @return a new object, or {@code null} if the object can't be created
      */
     @Override
-    public IMObject create() {
-        String shortName = getShortName();
+    public IMObject create(String shortName) {
         Contact contact = (Contact) getCollectionPropertyEditor().getUnmodified(shortName);
         if (contact == null || getEditor(contact).isModified()) {
-            contact = (Contact) super.create();
+            contact = (Contact) super.create(shortName);
             if (contact != null) {
                 boolean preferred = isPreferred(contact);
                 if (preferred) {

@@ -19,7 +19,9 @@ package org.openvpms.archetype.function.list;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
@@ -29,6 +31,8 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -172,6 +176,125 @@ public class ListFunctions {
             ++i;
         }
         return builder.toString();
+    }
+
+    /**
+     * Returns the values of a collection node.
+     *
+     * @param context the expression context. Must refer to an {@link IMObject}.
+     * @param node    the node name. May be a composite node
+     * @return the collection values
+     */
+    public List<Object> values(ExpressionContext context, String node) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof IMObject) {
+            return values((IMObject) value, node);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns the values of a collection node.
+     *
+     * @param object the object
+     * @param node   the node name. May be a composite node
+     * @return the collection values
+     */
+    public List<Object> values(IMObject object, String node) {
+        List<Object> result = new ArrayList<>();
+        values(object, node, result);
+        return result;
+    }
+
+    /**
+     * Returns the distinct values of a collection node.
+     *
+     * @param context the expression context. Must refer to an {@link IMObject}.
+     * @param node    the node name. May be a composite node
+     * @return the distinct collection values
+     */
+    public List<Object> distinct(ExpressionContext context, String node) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof IMObject) {
+            return distinct((IMObject) value, node);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns the distinct values of a collection node.
+     *
+     * @param object the object
+     * @param node   the node name. May be a composite node
+     * @return the distinct collection values
+     */
+    public List<Object> distinct(IMObject object, String node) {
+        LinkedHashSet<Object> result = new LinkedHashSet<>();
+        values(object, node, result);
+        return new ArrayList<>(result);
+    }
+
+    /**
+     * Collects the values of a collection node.
+     *
+     * @param object the object
+     * @param node   the node name. May be a composite node
+     * @param result the collected values
+     */
+    protected void values(IMObject object, String node, Collection<Object> result) {
+        List<IMObject> parents = new ArrayList<>();
+        parents.add(object);
+        String[] nodes = node.split("\\.");
+        for (int i = 0; i < nodes.length; ++i) {
+            boolean last = (i + 1 == nodes.length);
+            List<IMObject> children = new ArrayList<>();
+            for (IMObject parent : parents) {
+                IMObjectBean bean = new IMObjectBean(parent, service);
+                String name = nodes[i];
+                NodeDescriptor descriptor = bean.getDescriptor(name);
+                if (descriptor == null) {
+                    throw new PropertyResolverException(PropertyResolverException.ErrorCode.InvalidProperty, name);
+                }
+                if (descriptor.isCollection()) {
+                    for (IMObject child : bean.getValues(name)) {
+                        add(child, last, result, children, name);
+                    }
+                } else {
+                    Object child = bean.getValue(name);
+                    add(child, last, result, children, name);
+                }
+            }
+            parents = children;
+        }
+    }
+
+    /**
+     * Adds a value to a collection.
+     * <p/>
+     * If the value is a reference, the corresponding object is retrieved.
+     *
+     * @param value    the value to add
+     * @param last     determines if the last node is being retrieved
+     * @param result   the result collection, if its the last node
+     * @param children the children collection, used if the last node is not being retrieved
+     * @param name     the node name, for error reporting purposes
+     */
+    private void add(Object value, boolean last, Collection<Object> result, List<IMObject> children, String name) {
+        if (value instanceof IMObjectReference) {
+            value = service.get((IMObjectReference) value);
+        }
+        if (value != null) {
+            if (last) {
+                result.add(value);
+            } else if (value instanceof IMObject) {
+                children.add((IMObject) value);
+            } else {
+                // not the last node in the composite node, but not an IMObject
+                throw new PropertyResolverException(PropertyResolverException.ErrorCode.InvalidProperty, name);
+            }
+        }
     }
 
     /**
