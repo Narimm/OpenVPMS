@@ -119,9 +119,9 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * The final investigation statuses.
+     * The reviewed investigation status.
      */
-    private static final String[] FINAL_STATUS = new String[]{"FINAL"};
+    private static final String[] REVIEWED_STATUS = new String[]{"REVIEWED"};
 
     /**
      * Constructs an {@link InvestigationsQuery}.
@@ -264,7 +264,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         boolean exclude = false;
         Lookup selected = resultStatusSelector.getSelected();
         if (selected == INCOMPLETE_STATUS) {
-            resultStatus = FINAL_STATUS;
+            resultStatus = REVIEWED_STATUS;
             exclude = true;
         } else if (selected != null) {
             resultStatus = new String[]{selected.getCode()};
