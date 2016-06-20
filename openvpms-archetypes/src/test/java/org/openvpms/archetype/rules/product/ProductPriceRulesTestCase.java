@@ -230,22 +230,31 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getPrice} method.
+     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} and
+     * {@link ProductPriceRules#getTaxIncPrice(BigDecimal, BigDecimal, Currency)} methods.
+     * <p/>
+     * This verifies that tax rates can be expressed to 2 decimal places.
      */
     @Test
-    public void testGetPrice() {
-        checkGetPrice(createMedication());
-        checkGetPrice(createMerchandise());
-        checkGetPrice(createService());
-        checkGetPrice(createPriceTemplate());
-        checkGetPrice(createTemplate());
+    public void testGetTaxIncPrice() {
+        BigDecimal taxRate = new BigDecimal("8.25");
+        practice = TestHelper.getPractice(taxRate);
+        ProductPrice unitPrice = createUnitPrice("16.665", "8.33", "100.10", "50.00", getToday(), null);     // active
+        Product product = TestHelper.createProduct();
+        product.addProductPrice(unitPrice);
+        BigDecimal price1 = rules.getTaxIncPrice(unitPrice.getPrice(), product, practice, currency);
+        checkEquals(new BigDecimal("18.04"), price1);
+
+        BigDecimal price2 = rules.getTaxIncPrice(unitPrice.getPrice(), taxRate, currency);
+        checkEquals(new BigDecimal("18.04"), price2);
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getPrice} method, when the currency has a non-zero {@code minPrice}.
+     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} method,
+     * when the currency has a non-zero {@code minPrice}.
      */
     @Test
-    public void testGetPriceWithPriceRounding() {
+    public void testGetTaxIncPriceWithPriceRounding() {
         java.util.Currency AUD = java.util.Currency.getInstance("AUD");
 
         // remove tax as it complicates rounding tests
@@ -256,34 +265,33 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         Product product = TestHelper.createProduct();
         BigDecimal minDenomination = new BigDecimal("0.05");
         BigDecimal minPrice = new BigDecimal("0.20"); // round all prices to 0.20 increments
-        BigDecimal markup = BigDecimal.valueOf(100);  // 100% markup
 
         // test HALF_UP rounding
         Currency currency1 = new Currency(AUD, RoundingMode.HALF_UP, minDenomination, minPrice);
-        checkGetPrice(product, currency1, "0.09", markup, "0.20");
-        checkGetPrice(product, currency1, "0.15", markup, "0.40");
-        checkGetPrice(product, currency1, "0.22", markup, "0.40");
-        checkGetPrice(product, currency1, "0.25", markup, "0.60");
-        checkGetPrice(product, currency1, "0.75", markup, "1.60");
-        checkGetPrice(product, currency1, "1.25", markup, "2.60");
+        checkGetTaxIncPrice("0.18", "0.20", product, currency1);
+        checkGetTaxIncPrice("0.30", "0.40", product, currency1);
+        checkGetTaxIncPrice("0.44", "0.40", product, currency1);
+        checkGetTaxIncPrice("0.50", "0.60", product, currency1);
+        checkGetTaxIncPrice("1.50", "1.60", product, currency1);
+        checkGetTaxIncPrice("2.50", "2.60", product, currency1);
 
         // test HALF_DOWN rounding
         Currency currency2 = new Currency(AUD, RoundingMode.HALF_DOWN, minDenomination, minPrice);
-        checkGetPrice(product, currency2, "0.09", markup, "0.20");
-        checkGetPrice(product, currency2, "0.15", markup, "0.20");
-        checkGetPrice(product, currency2, "0.22", markup, "0.40");
-        checkGetPrice(product, currency2, "0.25", markup, "0.40");
-        checkGetPrice(product, currency2, "0.75", markup, "1.40");
-        checkGetPrice(product, currency2, "1.25", markup, "2.40");
+        checkGetTaxIncPrice("0.18", "0.20", product, currency2);
+        checkGetTaxIncPrice("0.30", "0.20", product, currency2);
+        checkGetTaxIncPrice("0.44", "0.40", product, currency2);
+        checkGetTaxIncPrice("0.50", "0.40", product, currency2);
+        checkGetTaxIncPrice("1.50", "1.40", product, currency2);
+        checkGetTaxIncPrice("2.50", "2.40", product, currency2);
 
         // test HALF_EVEN rounding
         Currency currency3 = new Currency(AUD, RoundingMode.HALF_EVEN, minDenomination, minPrice);
-        checkGetPrice(product, currency3, "0.09", markup, "0.20");
-        checkGetPrice(product, currency3, "0.15", markup, "0.40");
-        checkGetPrice(product, currency3, "0.22", markup, "0.40");
-        checkGetPrice(product, currency3, "0.25", markup, "0.40"); // round down as 0 is even
-        checkGetPrice(product, currency3, "0.75", markup, "1.60"); // round up as 1 is odd
-        checkGetPrice(product, currency3, "1.25", markup, "2.40"); // round down as 2 is even
+        checkGetTaxIncPrice("0.18", "0.20", product, currency3);
+        checkGetTaxIncPrice("0.30", "0.40", product, currency3);
+        checkGetTaxIncPrice("0.44", "0.40", product, currency3);
+        checkGetTaxIncPrice("0.50", "0.40", product, currency3); // round down as 0 is even
+        checkGetTaxIncPrice("1.50", "1.60", product, currency3); // round up as 1 is odd
+        checkGetTaxIncPrice("2.50", "2.40", product, currency3); // round down as 2 is even
     }
 
     /**
@@ -291,11 +299,10 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
      */
     @Test
     public void testGetMarkup() {
-        checkGetMarkup(createMedication());
-        checkGetMarkup(createMerchandise());
-        checkGetMarkup(createService());
-        checkGetMarkup(createPriceTemplate());
-        checkGetMarkup(createTemplate());
+        BigDecimal cost = BigDecimal.ONE;
+        BigDecimal price = new BigDecimal("2");
+        BigDecimal markup = rules.getMarkup(cost, price);
+        checkEquals(BigDecimal.valueOf(100), markup);
     }
 
     /**
@@ -375,21 +382,6 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
 
         ProductTestHelper.addServiceRatio(location, productType, BigDecimal.TEN);
         checkEquals(BigDecimal.TEN, rules.getServiceRatio(product, location));
-    }
-
-    /**
-     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} method.
-     * <p/>
-     * This verifies that tax rates can be expressed to 2 decimal places.
-     */
-    @Test
-    public void testGetTaxIncPrice() {
-        practice = TestHelper.getPractice(new BigDecimal("8.25"));
-        ProductPrice unitPrice = createUnitPrice("16.665", "8.33", "100.10", "50.00", getToday(), null);     // active
-        Product product = TestHelper.createProduct();
-        product.addProductPrice(unitPrice);
-        BigDecimal price = rules.getTaxIncPrice(unitPrice.getPrice(), product, practice, currency);
-        checkEquals(new BigDecimal("18.04"), price);
     }
 
     /**
@@ -972,40 +964,16 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getPrice(Product, BigDecimal, BigDecimal, Party, Currency)} method.
+     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} method.
      *
-     * @param product the product to test
+     * @param taxExPrice  the tax-exclusive price
+     * @param taxIncPrice the expected tax-inclusive price
+     * @param product     the product, to determine tax rates
+     * @param currency    the currency, for rounding
      */
-    private void checkGetPrice(Product product) {
-        BigDecimal markup = BigDecimal.valueOf(100); // 100% markup
-        checkGetPrice(product, currency, "1.00", markup, "2.20");
-    }
-
-    /**
-     * Tests the {@link ProductPriceRules#getPrice(Product, BigDecimal, BigDecimal, Party, Currency)} method.
-     *
-     * @param product       the product
-     * @param currency      the currency
-     * @param cost          the cost
-     * @param markup        the markup
-     * @param expectedPrice the epxected price
-     */
-    private void checkGetPrice(Product product, Currency currency, String cost, BigDecimal markup,
-                               String expectedPrice) {
-        BigDecimal price = rules.getPrice(product, new BigDecimal(cost), markup, practice, currency);
-        checkEquals(new BigDecimal(expectedPrice), price);
-    }
-
-    /**
-     * Tests the {@link ProductPriceRules#getMarkup} method.
-     *
-     * @param product the product to test
-     */
-    private void checkGetMarkup(Product product) {
-        BigDecimal cost = BigDecimal.ONE;
-        BigDecimal price = new BigDecimal("2.20");
-        BigDecimal markup = rules.getMarkup(product, cost, price, practice);
-        checkEquals(BigDecimal.valueOf(100), markup);
+    private void checkGetTaxIncPrice(String taxExPrice, String taxIncPrice, Product product, Currency currency) {
+        BigDecimal price = rules.getTaxIncPrice(new BigDecimal(taxExPrice), product, practice, currency);
+        checkEquals(new BigDecimal(taxIncPrice), price);
     }
 
     /**

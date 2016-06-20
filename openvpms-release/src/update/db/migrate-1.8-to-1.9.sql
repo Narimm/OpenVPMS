@@ -1391,6 +1391,19 @@ UPDATE product_price_details d
        AND maxDiscount > newMaxDiscount
 SET d.value = calcs.newMaxDiscount;
 
+UPDATE product_prices p
+  JOIN product_tax_rates rates
+    ON p.product_id = rates.product_id
+  LEFT JOIN product_price_details uom
+    ON p.product_price_id = uom.product_price_id
+       AND uom.name = "qtyUom"
+  LEFT JOIN lookups l
+    ON l.code = uom.value AND l.arch_short_name = 'lookup.uom'
+SET p.description = cast(concat('$ ', round(p.price, 2),
+                                if(l.name IS NULL, '', concat(' ', l.name)),
+                                ' (',
+                                date_format(p.start_time, '%d/%m/%y'), ' - ',
+                                if(p.end_time IS NULL, '', date_format(p.end_time, '%d/%m/%y')), ')') AS CHAR);
 #
 # Insert the showPricesTaxInclusive flag. This prevents subseqent migration of prices if the script is run multiple
 # times.

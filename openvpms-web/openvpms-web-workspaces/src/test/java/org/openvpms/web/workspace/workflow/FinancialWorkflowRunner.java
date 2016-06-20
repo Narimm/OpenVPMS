@@ -92,7 +92,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         // get the editor and add an item
         CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
         editor.setClinician(clinician);
-        Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice, practice);
+        Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         ChargeItemRelationshipCollectionEditor items = editor.getItems();
         addItem(editor, patient, product, BigDecimal.ONE, items.getEditorQueue());
         return dialog;
@@ -141,7 +141,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
      * @return the item editor
      */
     public CustomerChargeActItemEditor addVisitInvoiceItem(Party patient, BigDecimal fixedPrice, User clinician) {
-        Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice, getPractice());
+        Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         return addVisitInvoiceItem(patient, clinician, product);
     }
 
