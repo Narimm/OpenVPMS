@@ -366,59 +366,6 @@ public class ProductPriceRules {
     }
 
     /**
-     * Calculates a tax-inclusive product price using the following formula:
-     * <p/>
-     * {@code price = (cost * (1 + markup/100) ) * (1 + tax/100)}
-     *
-     * @param product  the product
-     * @param cost     the product cost
-     * @param markup   the markup percentage
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @param currency the currency, for rounding conventions
-     * @return the price
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public BigDecimal getPrice(Product product, BigDecimal cost, BigDecimal markup, Party practice, Currency currency) {
-        BigDecimal price = ZERO;
-        if (cost.compareTo(ZERO) != 0) {
-            BigDecimal markupDec = getRate(markup);
-            BigDecimal taxRate = getTaxRate(product, practice);
-            price = cost.multiply(ONE.add(markupDec)).multiply(ONE.add(getRate(taxRate)));
-            price = currency.roundPrice(price);
-        }
-        return price;
-    }
-
-    /**
-     * Calculates a product markup using the following formula:
-     * <p/>
-     * {@code markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100}
-     *
-     * @param product  the product
-     * @param cost     the product cost
-     * @param price    the price
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @return the markup
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public BigDecimal getMarkup(Product product, BigDecimal cost, BigDecimal price, Party practice) {
-        BigDecimal markup = ZERO;
-        if (cost.compareTo(ZERO) != 0) {
-            BigDecimal taxRate = ZERO;
-            if (product != null) {
-                taxRate = getTaxRate(product, practice);
-            }
-            markup = price.divide(
-                    cost.multiply(ONE.add(getRate(taxRate))), 3,
-                    RoundingMode.HALF_UP).subtract(ONE).multiply(ONE_HUNDRED);
-            if (markup.compareTo(ZERO) < 0) {
-                markup = ZERO;
-            }
-        }
-        return markup;
-    }
-
-    /**
      * Calculates the maximum discount that can be applied for a given markup.
      * <p/>
      * Uses the equation:

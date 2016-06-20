@@ -100,8 +100,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(create("math", new MathFunctions()));
         library.addFunctions(create("openvpms", new ArchetypeServiceFunctions(service, lookups)));
         library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules)));
-        library.addFunctions(create("product", new ProductFunctions(new ProductPriceRules(service),
-                                                                    getPracticeService(), service)));
+        library.addFunctions(new ProductFunctions(new ProductPriceRules(service), getPracticeService(), service));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
         library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
         library.addFunctions(create("word", WordUtils.class));
