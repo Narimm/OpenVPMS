@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -40,6 +40,7 @@ import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailDialogFactory;
 import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.BatchPrintDialog;
 import org.openvpms.web.component.print.BatchPrinter;
@@ -240,7 +241,8 @@ class PrintDocumentsTask extends AbstractTask {
         if (!list.isEmpty()) {
             HelpContext email = context.getHelpContext().subtopic("email");
             MailContext mailContext = new CustomerMailContext(context, email);
-            MailDialog dialog = new MailDialog(mailContext, new DefaultLayoutContext(context, email));
+            MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
+            MailDialog dialog = factory.create(mailContext, new DefaultLayoutContext(context, email));
             MailEditor editor = dialog.getMailEditor();
             for (IMObject object : list) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);

@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailDialogFactory;
 import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.event.VetoListener;
@@ -32,6 +33,7 @@ import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -550,7 +552,7 @@ public class InteractivePrinter implements Printer {
      * @param layoutContext the layout context
      */
     protected MailDialog createMailDialog(Document document, MailContext mailContext, LayoutContext layoutContext) {
-        final MailDialog dialog = new MailDialog(mailContext, layoutContext);
+        MailDialog dialog = ServiceHelper.getBean(MailDialogFactory.class).create(mailContext, layoutContext);
         MailEditor editor = dialog.getMailEditor();
         editor.setSubject(getDisplayName());
         editor.addAttachment(document);

@@ -136,32 +136,11 @@ public class MailDialog extends PopupDialog {
      * Constructs a {@link MailDialog}.
      *
      * @param mailContext the mail context
-     * @param context     the layout context
-     */
-    public MailDialog(MailContext mailContext, LayoutContext context) {
-        this(mailContext, (Contact) null, context);
-    }
-
-    /**
-     * Constructs a {@link MailDialog}.
-     *
-     * @param mailContext the mail context
      * @param preferred   the preferred contact. May be {@code null}
      * @param context     the layout context
      */
     public MailDialog(MailContext mailContext, Contact preferred, LayoutContext context) {
         this(mailContext, preferred, mailContext.createAttachmentBrowser(), context);
-    }
-
-    /**
-     * Constructs a {@code MailDialog}.
-     *
-     * @param mailContext the mail context
-     * @param documents   the document browser. May be {@code null}
-     * @param context     the layout context
-     */
-    public MailDialog(MailContext mailContext, Browser<Act> documents, LayoutContext context) {
-        this(mailContext, null, documents, context);
     }
 
     /**
@@ -339,6 +318,46 @@ public class MailDialog extends PopupDialog {
     }
 
     /**
+     * Creates a new {@link Mailer}.
+     *
+     * @param editor the mail editor
+     * @return a new mailer
+     */
+    protected Mailer createMailer(MailEditor editor) {
+        return ServiceHelper.getBean(MailerFactory.class).create(editor.getMailContext());
+    }
+
+    /**
+     * Sends the email.
+     *
+     * @param mailer the mailer
+     */
+    protected void send(Mailer mailer) {
+        mailer.send();
+    }
+
+    /**
+     * Populates a mailer from an editor.
+     *
+     * @param mailer the mailer
+     * @param editor the editor
+     */
+    protected void populate(Mailer mailer, MailEditor editor) {
+        mailer.setFrom(editor.getFrom());
+        mailer.setTo(editor.getTo());
+        mailer.setCc(editor.getCc());
+        mailer.setBcc(editor.getBcc());
+        mailer.setSubject(editor.getSubject());
+        mailer.setBody(editor.getMessage());
+        for (IMObjectReference attachment : editor.getAttachments()) {
+            Document document = (Document) IMObjectHelper.getObject(attachment, context.getContext());
+            if (document != null) {
+                mailer.addAttachment(document);
+            }
+        }
+    }
+
+    /**
      * Displays a popup of available email templates to select from.
      */
     private void onTemplate() {
@@ -405,20 +424,9 @@ public class MailDialog extends PopupDialog {
         try {
             Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
-                Mailer mailer = ServiceHelper.getBean(MailerFactory.class).create(editor.getMailContext());
-                mailer.setFrom(editor.getFrom());
-                mailer.setTo(editor.getTo());
-                mailer.setCc(editor.getCc());
-                mailer.setBcc(editor.getBcc());
-                mailer.setSubject(editor.getSubject());
-                mailer.setBody(editor.getMessage());
-                for (IMObjectReference attachment : editor.getAttachments()) {
-                    Document document = (Document) IMObjectHelper.getObject(attachment, context.getContext());
-                    if (document != null) {
-                        mailer.addAttachment(document);
-                    }
-                }
-                mailer.send();
+                Mailer mailer = createMailer(editor);
+                populate(mailer, editor);
+                send(mailer);
                 result = true;
             } else {
                 ValidationHelper.showError(Messages.get("mail.error.title"), validator, "mail.error.message", false);
@@ -479,7 +487,7 @@ public class MailDialog extends PopupDialog {
     /**
      * Displays the macros.
      */
-    protected void onMacro() {
+    private void onMacro() {
         MacroDialog dialog = new MacroDialog(context.getContext(), getHelpContext());
         dialog.show();
     }
