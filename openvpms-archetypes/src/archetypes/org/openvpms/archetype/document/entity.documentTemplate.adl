@@ -56,6 +56,7 @@
                     <property name="act.supplierAccountChargesCredit" value="Supplier Credit"/>
                     <property name="act.supplierAccountPayment" value="Supplier Remittance"/>
                     <property name="act.supplierAccountRefund" value="Supplier Refund"/>
+                    <property name="act.supplierReturn" value="Supplier Return"/>
                     <property name="act.stockAdjust" value="Stock Adjustment"/>
                     <property name="act.stockTransfer" value="Stock Transfer"/>
                     <property name="act.customerAppointment" value="Appointment"/>
