@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailDialogFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -271,7 +272,8 @@ public class CustomerSummary extends PartySummary {
                 Context context = getContext();
                 HelpContext help = getHelpContext().topic("customer/email");
                 MailContext mailContext = new CustomerMailContext(context, help);
-                MailDialog dialog = new MailDialog(mailContext, email, new DefaultLayoutContext(context, help));
+                MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
+                MailDialog dialog = factory.create(mailContext, email, new DefaultLayoutContext(context, help));
                 dialog.show();
             }
         });

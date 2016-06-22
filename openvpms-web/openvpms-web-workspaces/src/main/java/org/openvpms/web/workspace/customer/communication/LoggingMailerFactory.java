@@ -59,10 +59,21 @@ public class LoggingMailerFactory extends MailerFactory {
     public Mailer create(MailContext context) {
         Mailer result;
         if (CommunicationHelper.isLoggingEnabled(service)) {
-            result = new LoggingMailer(context, logger);
+            result = createLoggingMailer(context, logger);
         } else {
             result = super.create(context);
         }
         return result;
+    }
+
+    /**
+     * Creates a logging mailer.
+     *
+     * @param context the mail context
+     * @param logger  the logger
+     * @return a new {@link LoggingMailer}
+     */
+    protected LoggingMailer createLoggingMailer(MailContext context, CommunicationLogger logger) {
+        return new LoggingMailer(context, logger);
     }
 }

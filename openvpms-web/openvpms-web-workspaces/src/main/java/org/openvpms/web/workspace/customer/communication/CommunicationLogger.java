@@ -196,28 +196,58 @@ public class CommunicationLogger {
     protected ActBean createLog(String shortName, Party customer, Party patient, String address, String subject,
                                 String reason, String note, Party location) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = null;
-        if (principal instanceof UserDetails) {
+        User author = null;
+        if (principal instanceof User) {
+            author = (User) principal;
+        } else if (principal instanceof UserDetails) {
             String name = ((UserDetails) principal).getUsername();
-            user = rules.getUser(name);
+            author = rules.getUser(name);
         }
+        return createLog(shortName, customer, patient, author, address, subject, reason, note, location);
+    }
+
+    /**
+     * Creates a new <em>act.customerCommunication*</em> act.
+     *
+     * @param shortName the act short name to create
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param author    the author. May be {@code null}
+     * @param address   the address
+     * @param subject   the subject
+     * @param reason    the reason
+     * @param note      the note. May be {@code null}
+     * @param location  the location. May be {@code null}
+     * @return the act, wrapped in a bean
+     */
+    protected ActBean createLog(String shortName, Party customer, Party patient, User author, String address,
+                                String subject, String reason, String note, Party location) {
         Act act = (Act) IMObjectCreator.create(shortName);
         ActBean bean = new ActBean(act, service);
-        bean.addNodeParticipation("customer", customer);
-        if (patient != null) {
-            bean.addNodeParticipation("patient", patient);
-        }
-        if (user != null) {
-            bean.addNodeParticipation("author", user);
-        }
-        if (location != null) {
-            bean.addNodeParticipation("location", location);
-        }
+        bean.setNodeParticipant("customer", customer);
+        bean.setNodeParticipant("patient", patient);
+        bean.setNodeParticipant("author", author);
+        bean.setNodeParticipant("location", location);
         setValue(bean, "address", address);
         setValue(bean, "description", subject);
         bean.setValue("reason", reason);
         setValue(bean, "note", note);
         return bean;
+    }
+
+    /**
+     * Returns a concatenated list of addresses, separated by new lines.
+     *
+     * @param addresses the addresses. May be {@code null}
+     * @return the concatenated addresses. May be {@code null}
+     */
+    protected String getAddresses(String[] addresses) {
+        String result = null;
+        if (addresses != null) {
+            result = StringUtils.join(addresses, "\n");
+            result = truncate(result, 5000);
+        }
+        return result;
     }
 
     /**
@@ -227,25 +257,10 @@ public class CommunicationLogger {
      * @param name  the node name
      * @param value the value
      */
-    private void setValue(ActBean bean, String name, String value) {
+    protected void setValue(ActBean bean, String name, String value) {
         if (!StringUtils.isEmpty(value)) {
             bean.setValue(name, truncate(value, getLength(bean, name)));
         }
-    }
-
-    /**
-     * Returns a concatenated list of addresses, separated by new lines.
-     *
-     * @param addresses the addresses. May be {@code null}
-     * @return the concatenated addresses. May be {@code null}
-     */
-    private String getAddresses(String[] addresses) {
-        String result = null;
-        if (addresses != null) {
-            result = StringUtils.join(addresses, "\n");
-            result = truncate(result, 5000);
-        }
-        return result;
     }
 
     /**
