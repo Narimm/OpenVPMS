@@ -188,7 +188,7 @@ public class MailEditor extends AbstractModifiable {
      * @param context     the context
      */
     public MailEditor(final MailContext mailContext, Contact preferredTo, LayoutContext context) {
-        header = new MailHeader(mailContext, preferredTo, context);
+        header = createHeader(mailContext, preferredTo, context);
         this.context = context.getContext();
         this.help = context.getHelpContext();
         final Variables variables = mailContext.getVariables();
@@ -561,6 +561,27 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
+     * Returns the header.
+     *
+     * @return the header
+     */
+    protected MailHeader getHeader() {
+        return header;
+    }
+
+    /**
+     * Creates the mail header.
+     *
+     * @param mailContext the mail context
+     * @param preferredTo the preferred to address
+     * @param context     the layout context
+     * @return a new header
+     */
+    protected MailHeader createHeader(MailContext mailContext, Contact preferredTo, LayoutContext context) {
+        return new MailHeader(mailContext, preferredTo, context);
+    }
+
+    /**
      * Creates a message editor.
      *
      * @param message the message property
@@ -650,7 +671,7 @@ public class MailEditor extends AbstractModifiable {
      *
      * @return the component
      */
-    private SplitPane createComponent() {
+    protected SplitPane createComponent() {
         focus = new FocusGroup("MailEditor");
 
         int inset = StyleSheetHelper.getProperty("padding.large", 1);
