@@ -183,6 +183,15 @@ public abstract class AbstractPricingContext implements PricingContext {
     }
 
     /**
+     * Returns the currency.
+     *
+     * @return the currency
+     */
+    protected Currency getCurrency() {
+        return currency;
+    }
+
+    /**
      * Returns the price rules.
      *
      * @return the price rules
