@@ -144,6 +144,8 @@
 
     <bean id="reminderGeneratorFactory" class="org.openvpms.web.workspace.reporting.reminder.ReminderGeneratorFactory"/>
 
+    <bean class="org.openvpms.web.component.mail.MailDialogFactory"/>
+
     <bean id="mailerFactory" class="org.openvpms.web.workspace.customer.communication.LoggingMailerFactory">
         <constructor-arg ref="communicationLogger"/>
         <constructor-arg ref="practiceService"/>

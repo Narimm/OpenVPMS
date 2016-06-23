@@ -215,15 +215,44 @@ public class LoggingMailer implements Mailer {
         mailer.send();
         if (getContext() instanceof CustomerMailContext) {
             CustomerMailContext context = (CustomerMailContext) getContext();
-            Party customer = context.getCustomer();
-            Party location = context.getLocation();
-            if (customer != null) {
-                String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
-                String reason = (mailer.getAttachments().isEmpty()) ? "AD_HOC_EMAIL" : "FORWARDED_DOCUMENT";
+            log(context, mailer, logger);
+        }
+    }
 
-                logger.logEmail(customer, context.getPatient(), mailer.getTo(), mailer.getCc(), mailer.getBcc(),
-                                mailer.getSubject(), reason, mailer.getBody(), null, attachments, location);
-            }
+    /**
+     * Returns the mailer.
+     *
+     * @return the mailer
+     */
+    protected Mailer getMailer() {
+        return mailer;
+    }
+
+    /**
+     * Returns the logger.
+     *
+     * @return the logger
+     */
+    protected CommunicationLogger getLogger() {
+        return logger;
+    }
+
+    /**
+     * Logs an email to a customer.
+     *
+     * @param context the mail context
+     * @param mailer  the mailer
+     * @param logger  the logger
+     */
+    protected void log(CustomerMailContext context, Mailer mailer, CommunicationLogger logger) {
+        Party customer = context.getCustomer();
+        Party location = context.getLocation();
+        if (customer != null) {
+            String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
+            String reason = (mailer.getAttachments().isEmpty()) ? "AD_HOC_EMAIL" : "FORWARDED_DOCUMENT";
+
+            logger.logEmail(customer, context.getPatient(), mailer.getTo(), mailer.getCc(), mailer.getBcc(),
+                                 mailer.getSubject(), reason, mailer.getBody(), null, attachments, location);
         }
     }
 

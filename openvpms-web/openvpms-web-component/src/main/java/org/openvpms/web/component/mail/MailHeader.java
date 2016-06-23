@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -51,7 +51,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class MailHeader extends AbstractModifiable {
+public class MailHeader extends AbstractModifiable {
 
     /**
      * The mail context.
@@ -100,7 +100,7 @@ class MailHeader extends AbstractModifiable {
 
 
     /**
-     * Constructs an {@link MailHeader}.
+     * Constructs a {@link MailHeader}.
      *
      * @param mailContext the mail context
      * @param preferredTo the preferred to address
@@ -143,24 +143,6 @@ class MailHeader extends AbstractModifiable {
         cc.addModifiableListener(listener);
         bcc.addModifiableListener(listener);
         subject.addModifiableListener(listener);
-
-        TextField subjectText = BoundTextComponentFactory.create(subject, 40);
-        subjectText.setWidth(Styles.FULL_WIDTH);
-
-        Grid grid = GridFactory.create(2, createLabel("mail.from"), from.getComponent(),
-                                       createLabel("mail.to"), to.getComponent(),
-                                       createLabel("mail.cc"), cc.getComponent(),
-                                       createLabel("mail.bcc"), bcc.getComponent(),
-                                       createLabel("mail.subject"), subjectText);
-        grid.setColumnWidth(0, new Extent(10, Extent.PERCENT));
-        grid.setWidth(Styles.FULL_WIDTH);
-
-        component = ColumnFactory.create(Styles.LARGE_INSET, grid);
-
-        focus.add(to.getField());
-        focus.add(cc.getField());
-        focus.add(bcc.getField());
-        focus.add(subjectText);
     }
 
     /**
@@ -187,6 +169,10 @@ class MailHeader extends AbstractModifiable {
      * @return the header component
      */
     public Component getComponent() {
+        if (component == null) {
+            Grid grid = createHeader();
+            component = ColumnFactory.create(Styles.LARGE_INSET, grid);
+        }
         return component;
     }
 
@@ -336,6 +322,31 @@ class MailHeader extends AbstractModifiable {
     @Override
     public ErrorListener getErrorListener() {
         return null;
+    }
+
+    /**
+     * Lays out the header components in a grid.
+     *
+     * @return the grid
+     */
+    protected Grid createHeader() {
+        TextField subjectText = BoundTextComponentFactory.create(subject, 40);
+        subjectText.setWidth(Styles.FULL_WIDTH);
+
+        Grid grid = GridFactory.create(2, createLabel("mail.from"), from.getComponent(),
+                                       createLabel("mail.to"), to.getComponent(),
+                                       createLabel("mail.cc"), cc.getComponent(),
+                                       createLabel("mail.bcc"), bcc.getComponent(),
+                                       createLabel("mail.subject"), subjectText);
+        grid.setColumnWidth(0, new Extent(10, Extent.PERCENT));
+        grid.setWidth(Styles.FULL_WIDTH);
+
+
+        focus.add(to.getField());
+        focus.add(cc.getField());
+        focus.add(bcc.getField());
+        focus.add(subjectText);
+        return grid;
     }
 
     /**
