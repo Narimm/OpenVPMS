@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -75,6 +76,32 @@ public class ProductPricingContext extends AbstractPricingContext {
         super(currency, pricingGroup, location, priceRules);
         taxRules = new TaxRules(practice, ServiceHelper.getArchetypeService());
         includeTax = includeTax(practice);
+    }
+
+    /**
+     * Returns the tax-inclusive price given a tax-exclusive price.
+     * <p/>
+     * This implementation
+     *
+     * @param product the product
+     * @param price   the tax-exclusive price
+     * @return the tax-inclusive price, rounded according to the practice currency conventions
+     */
+    @Override
+    public BigDecimal getPrice(Product product, ProductPrice price) {
+        BigDecimal result;
+        if (includeTax) {
+            result = super.getPrice(product, price);
+        } else {
+            BigDecimal taxExPrice = price.getPrice();
+            if (taxExPrice != null) {
+                // don't round to the minimum price as this only applies when tax is included
+                result = getCurrency().round(taxExPrice);
+            } else {
+                result = BigDecimal.ZERO;
+            }
+        }
+        return result;
     }
 
     /**
