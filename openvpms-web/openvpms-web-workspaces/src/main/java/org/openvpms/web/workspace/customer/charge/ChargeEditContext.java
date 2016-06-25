@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.DoseManager;
@@ -37,10 +38,12 @@ public class ChargeEditContext extends PriceActEditContext {
     /**
      * Constructs a {@link ChargeEditContext}.
      *
-     * @param context the layout context
+     * @param customer the customer
+     * @param location the practice location. May be {@code null}
+     * @param context  the layout context
      */
-    public ChargeEditContext(LayoutContext context) {
-        super(context);
+    public ChargeEditContext(Party customer, Party location, LayoutContext context) {
+        super(customer, location, context);
         ProductRules rules = new ProductRules(getCachingArchetypeService());
         setDoseManager(new DoseManager(ServiceHelper.getBean(PatientRules.class), rules));
         editorQueue = new DefaultEditorQueue(context.getContext());

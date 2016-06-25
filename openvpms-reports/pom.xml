@@ -41,6 +41,12 @@
                 </includes>
                 <filtering>true</filtering>
             </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
         </resources>
         <testResources>
             <testResource>

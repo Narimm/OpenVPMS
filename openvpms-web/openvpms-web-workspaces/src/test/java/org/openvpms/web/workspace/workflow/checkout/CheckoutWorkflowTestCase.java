@@ -285,18 +285,19 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         workflow.start();
 
         // first task to pause should by the invoice edit task.
-        BigDecimal amount = BigDecimal.valueOf(20);
-        EditDialog dialog = workflow.addInvoiceItem(patient, amount, clinician);
+        BigDecimal fixedPrice = new BigDecimal("18.18");
+        EditDialog dialog = workflow.addInvoiceItem(patient, fixedPrice, clinician);
         if (save) {
             fireDialogButton(dialog, PopupDialog.APPLY_ID);          // save the invoice
         }
-        workflow.addInvoiceItem(patient, amount, clinician);                    // add another item. Won't be saved
+        workflow.addInvoiceItem(patient, fixedPrice, clinician);                    // add another item. Won't be saved
 
         // close the dialog
         cancelDialog(dialog, userClose);
 
         if (save) {
-            workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
+            BigDecimal fixedPriceIncTax = BigDecimal.valueOf(20);
+            workflow.checkInvoice(ActStatus.IN_PROGRESS, fixedPriceIncTax);
         } else {
             FinancialAct invoice = workflow.getInvoice();
             assertNotNull(invoice);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -28,7 +28,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -64,19 +63,17 @@ public class StatementRules {
 
 
     /**
-     * Creates a new <tt>StatementRules</tt>.
+     * Constructs a {@link StatementRules}.
      *
      * @param practice the practice
      * @param service  the archetype service
-     * @param lookups  the lookup service
      * @param rules    the customer account rules
      */
-    public StatementRules(Party practice, IArchetypeService service,
-                          ILookupService lookups, CustomerAccountRules rules) {
+    public StatementRules(Party practice, IArchetypeService service, CustomerAccountRules rules) {
         this.service = service;
         account = rules;
         acts = new StatementActHelper(service);
-        tax = new CustomerTaxRules(practice, service, lookups);
+        tax = new CustomerTaxRules(practice, service);
     }
 
     /**
@@ -85,7 +82,7 @@ public class StatementRules {
      *
      * @param customer the customer
      * @param date     the date
-     * @return <tt>true</tt> if end-of-period has been run on or after the date
+     * @return {@code true} if end-of-period has been run on or after the date
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean hasStatement(Party customer, Date date) {
@@ -115,22 +112,22 @@ public class StatementRules {
      * <li>the customer has an account type
      * (<em>lookup.customerAccountType</em>);</li>
      * <li>there is a non-zero overdue balance for the account fee date
-     * (derived from the specified date - <tt>accountFeeDays</tt>);</li>
-     * <li>the overdue balance is &gt= <tt>accountFeeBalance</tt>; and
+     * (derived from the specified date - {@code accountFeeDays});</li>
+     * <li>the overdue balance is &gt= {@code accountFeeBalance}; and
      * </li>
-     * <li>the account fee is greater than <tt>accountFeeMinimum</tt>.
+     * <li>the account fee is greater than {@code accountFeeMinimum}.
      * The account fee is calculated as:
      * <ul>
-     * <li><tt>overdue * accountFeeAmount</tt> if the <tt>accountFee</tt> is
-     * <tt>"PERCENTAGE"</tt>; or</li>
-     * <li><tt>accountFeeAmount</tt> if the <tt>accountFee</tt> is
-     * <tt>"FIXED"</tt></li>
+     * <li>{@code overdue * accountFeeAmount} if the {@code accountFee} is
+     * {@code "PERCENTAGE"}; or</li>
+     * <li>{@code accountFeeAmount} if the {@code accountFee} is
+     * {@code "FIXED"}</li>
      * </ul></li>
      * </ul>
      *
      * @param customer      the customer
      * @param statementDate the statement date
-     * @return the account fee, or <tt>BigDecimal.ZERO</tt> if there is no fee
+     * @return the account fee, or {@code BigDecimal.ZERO} if there is no fee
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getAccountFee(Party customer, Date statementDate) {
@@ -182,7 +179,7 @@ public class StatementRules {
      * Helper to return the account type for a customer.
      *
      * @param customer the customer
-     * @return the account type, or <tt>null</tt> if none is found
+     * @return the account type, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private AccountType getAccountType(Party customer) {

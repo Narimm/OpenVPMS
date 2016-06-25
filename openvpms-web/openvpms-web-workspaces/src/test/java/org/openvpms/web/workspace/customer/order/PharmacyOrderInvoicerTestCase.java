@@ -57,7 +57,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -109,15 +108,14 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     private Product product;
 
     /**
-     * The product fixed price.
+     * The fixed price, including tax.
      */
-    private BigDecimal fixedPrice;
+    private BigDecimal fixedPriceIncTax;
 
     /**
-     * The product unit price.
+     * The unit price, including tax.
      */
-    private BigDecimal unitPrice;
-
+    private BigDecimal unitPriceIncTax;
 
     /**
      * Sets up the test case.
@@ -126,8 +124,10 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     @Before
     public void setUp() {
         super.setUp();
-        fixedPrice = BigDecimal.valueOf(2);
-        unitPrice = TEN;
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        fixedPriceIncTax = BigDecimal.valueOf(2);
+        unitPriceIncTax = BigDecimal.TEN;
 
         // create a product linked to a pharmacy
         Party location = TestHelper.createLocation();
@@ -183,7 +183,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(SaveHelper.save(editor));
         FinancialAct charge = get(editor.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE));
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+        checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, quantity, null);
         checkCharge(charge, customer, author, clinician, tax, total);
     }
 
@@ -209,7 +209,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(SaveHelper.save(editor));
         FinancialAct charge = get(editor.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
+        checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, null, null);
         checkCharge(charge, customer, author, clinician, tax, total);
     }
 
@@ -242,7 +242,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(SaveHelper.save(editor2));
         FinancialAct charge = get(editor2.getObject());
         assertEquals(invoice, charge);
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+        checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, quantity, null);
         checkCharge(charge, customer, author, clinician, tax, total);
     }
 
@@ -279,7 +279,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(SaveHelper.save(editor2));
         FinancialAct charge = get(editor2.getObject());
         assertEquals(invoice, charge);
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, newTax, newTotal, newQty, null);
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, newTax, newTotal, newQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
 
@@ -321,8 +321,8 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertNotEquals(invoice, charge);
 
         // NOTE: item tax not rounded.
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, new BigDecimal("1.091"), newTotal,
-                  newOrderQty, null);
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("1.091"),
+                  newTotal, newOrderQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
 
@@ -361,7 +361,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE));
 
         // NOTE: item tax not rounded.
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, new BigDecimal("1.091"), newTotal,
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("1.091"), newTotal,
                   newQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
@@ -398,8 +398,8 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
 
         // NOTE: item tax not rounded.
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, new BigDecimal("1.091"), newTotal,
-                  newQty, null);
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("1.091"),
+                  newTotal, newQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
 
@@ -431,7 +431,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         charger2.charge(editor);
 
         assertTrue(SaveHelper.save(editor));
-        checkItem(invoice, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+        checkItem(invoice, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, quantity, null);
         checkCharge(invoice, customer, author, clinician, tax, total);
     }
 
@@ -460,9 +460,9 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         charger2.charge(editor);
 
         assertTrue(SaveHelper.save(editor));
-        checkItem(invoice, patient, product, ZERO, unitPrice, fixedPrice, new BigDecimal("0.182"), fixedPrice, ONE,
-                  ONE);
-        checkCharge(invoice, customer, author, clinician, new BigDecimal("0.18"), fixedPrice);
+        checkItem(invoice, patient, product, ZERO, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("0.182"),
+                  fixedPriceIncTax, ONE, ONE);
+        checkCharge(invoice, customer, author, clinician, new BigDecimal("0.18"), fixedPriceIncTax);
     }
 
     /**
@@ -482,7 +482,8 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(SaveHelper.save(editor));
         FinancialAct invoiceItem = getInvoiceItem(editor);
 
-        checkItem(editor.getObject(), patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
+        checkItem(editor.getObject(), patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, null,
+                  null);
 
         FinancialAct order1 = createOrder(customer, patient, product, quantity, invoiceItem);
         PharmacyOrderInvoicer charger1 = new TestPharmacyOrderInvoicer(order1, rules);
@@ -492,7 +493,8 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertFalse(charger1.requiresEdit());
         charger1.charge();
 
-        checkItem(editor.getObject(), patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+        checkItem(editor.getObject(), patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total,
+                  quantity, null);
 
         // verify that if another order for the same item is created, editing is required, as it would exceed the
         // original order quantity.
@@ -545,7 +547,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(SaveHelper.save(editor2));
         FinancialAct charge = get(editor2.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
+        checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, null, null);
         checkCharge(charge, customer, author, clinician, tax, total);
     }
 

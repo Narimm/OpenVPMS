@@ -21,7 +21,9 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.AlertListener;
@@ -32,6 +34,7 @@ import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
@@ -95,7 +98,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                   CollectionResultSetFactory factory) {
-        super(property, act, context, factory, new CustomerChargeEditContext(context));
+        super(property, act, context, factory, createEditContext(act, context));
         Prescriptions prescriptions;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
@@ -332,6 +335,23 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
                                                               getEditContext().getStock(), context);
         return (IMTableModel) model;
+    }
+
+    /**
+     * Creates a new charge edit context.
+     *
+     * @param act     the parent charge
+     * @param context the layout context
+     * @return a new charge edit context
+     */
+    private static CustomerChargeEditContext createEditContext(Act act, LayoutContext context) {
+        ActBean bean = new ActBean(act);
+        Party customer = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("customer"), context.getContext());
+        if (customer == null) {
+            throw new IllegalStateException(act.getArchetypeId().getShortName() + " has no customer");
+        }
+        Party location = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("location"), context.getContext());
+        return new CustomerChargeEditContext(customer, location, context);
     }
 
 }

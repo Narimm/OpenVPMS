@@ -81,6 +81,7 @@ import org.openvpms.web.workspace.workflow.messaging.UserMessageEditor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -200,8 +201,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateEstimationItemEditor() {
-        checkCreate("act.customerEstimationItem", "act.customerEstimation",
-                    EstimateItemEditor.class);
+        checkNoValidConstructor("act.customerEstimationItem", "act.customerEstimation", EstimateItemEditor.class);
     }
 
     /**
@@ -220,21 +220,17 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor} is created for
-     * <em>act.customerAccountInvoiceItem, act.customerAccountCreditItem and
-     * act.customerAccountCounterItem</em>
+     * Verifies that an {@link IllegalStateException} is thrown for <em>act.customerAccountInvoiceItem,
+     * act.customerAccountCreditItem and act.customerAccountCounterItem</em>
      */
     @Test
     public void testCreateCustomerInvoiceItemEditor() {
-        checkCreate("act.customerAccountInvoiceItem",
-                    "act.customerAccountChargesInvoice",
-                    DefaultCustomerChargeActItemEditor.class);
-        checkCreate("act.customerAccountCreditItem",
-                    "act.customerAccountChargesCredit",
-                    DefaultCustomerChargeActItemEditor.class);
-        checkCreate("act.customerAccountCounterItem",
-                    "act.customerAccountChargesCounter",
-                    DefaultCustomerChargeActItemEditor.class);
+        checkNoValidConstructor("act.customerAccountInvoiceItem", "act.customerAccountChargesInvoice",
+                                DefaultCustomerChargeActItemEditor.class);
+        checkNoValidConstructor("act.customerAccountCreditItem", "act.customerAccountChargesCredit",
+                                DefaultCustomerChargeActItemEditor.class);
+        checkNoValidConstructor("act.customerAccountCounterItem", "act.customerAccountChargesCounter",
+                                DefaultCustomerChargeActItemEditor.class);
     }
 
     /**
@@ -597,6 +593,8 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     private void checkCreate(String shortName, Class type) {
         LocalContext context = new LocalContext();
         context.setPractice(TestHelper.getPractice());
+        context.setCustomer(TestHelper.createCustomer());
+        context.setLocation(TestHelper.createLocation());
 
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         IMObject object = service.create(shortName);
@@ -624,6 +622,28 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
         assertNotNull("Failed to create editor", editor);
         assertEquals(type, editor.getClass());
+    }
+
+    /**
+     * Verifies that an IllegalStateException is thrown if an editor doesn't provide a valid constructor.
+     *
+     * @param shortName       name the archetype short name
+     * @param parentShortName the parent archetype short name
+     * @param type            the expected editor class
+     */
+    private void checkNoValidConstructor(String shortName, String parentShortName, Class type) {
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        context.getContext().setPractice(TestHelper.getPractice());
+        IMObject object = service.create(shortName);
+        assertNotNull("Failed to create object with shortname=" + shortName, object);
+        IMObject parent = service.create(parentShortName);
+        assertNotNull("Failed to create object with shortname=" + parentShortName, parent);
+        try {
+            ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
+            fail("Expected IllegalStateException to be thrown");
+        } catch (IllegalStateException exception) {
+            assertEquals("No valid constructor found for class: " + type.getName(), exception.getMessage());
+        }
     }
 
 }

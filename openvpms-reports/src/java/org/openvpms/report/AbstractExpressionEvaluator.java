@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -116,15 +116,12 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     public Object getValue(String expression) {
         Object result;
         try {
-            if (expression.startsWith("[") && expression.endsWith("]")) {
-                String eval = expression.substring(1, expression.length() - 1);
-                result = evaluate(eval);
+            if (isJXPath(expression)) {
+                result = evaluate(expression);
+            } else if (isField(expression)) {
+                result = getFieldValue(expression);
             } else {
-                if (fields != null && fields.exists(expression)) {
-                    result = getFieldValue(expression);
-                } else {
-                    result = getNodeValue(expression);
-                }
+                result = getNodeValue(expression);
             }
         } catch (Exception exception) {
             log.warn("Failed to evaluate: " + expression, exception);
@@ -132,6 +129,16 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
             result = "Expression Error";
         }
         return result;
+    }
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression
+     */
+    public Object getExpressionValue(String expression) {
+        return getContext().getValue(expression);
     }
 
     /**
@@ -164,24 +171,12 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     /**
      * Evaluates an expression.
      *
-     * @param expression the expression to evaluate
+     * @param expression the expression to evaluate. Must be of the form {@code [expr]}
      * @return the value of the expression
      */
     protected Object evaluate(String expression) {
-        if (context == null) {
-            context = JXPathHelper.newContext(object, functions);
-            if (fields != null) {
-                IMObjectVariables variables = new IMObjectVariables(service, lookups);
-                for (String name : fields.getNames()) {
-                    Object value = fields.get(name);
-                    if (value != null) {
-                        variables.add(name, value);
-                    }
-                }
-                context.setVariables(variables);
-            }
-        }
-        return context.getValue(expression);
+        String eval = expression.substring(1, expression.length() - 1);
+        return getExpressionValue(eval);
     }
 
     /**
@@ -218,6 +213,35 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      */
     protected IArchetypeService getService() {
         return service;
+    }
+
+    /**
+     * Determines if an expression refers to a field.
+     *
+     * @param expression the expression
+     * @return {@code true} if the expression refers to a field
+     */
+    protected boolean isField(String expression) {
+        return fields != null && fields.exists(expression);
+    }
+
+    /**
+     * Determines if an expression is an xpath expression.
+     *
+     * @param expression the expression
+     * @return {@code true} if the expression has a leading [ and trailing ]
+     */
+    protected boolean isJXPath(String expression) {
+        return expression.startsWith("[") && expression.endsWith("]");
+    }
+
+    /**
+     * Creates variables to evaluate expressions against.
+     *
+     * @return new variables
+     */
+    protected IMObjectVariables createVariables() {
+        return new IMObjectVariables(service, lookups);
     }
 
     /**
@@ -284,6 +308,28 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
             return exception.getLocalizedMessage();
         }
         return result;
+    }
+
+    /**
+     * Returns the context to evaluate expressions with.
+     *
+     * @return the context
+     */
+    private JXPathContext getContext() {
+        if (context == null) {
+            context = JXPathHelper.newContext(object, functions);
+            if (fields != null) {
+                IMObjectVariables variables = createVariables();
+                for (String name : fields.getNames()) {
+                    Object value = fields.get(name);
+                    if (value != null) {
+                        variables.add(name, value);
+                    }
+                }
+                context.setVariables(variables);
+            }
+        }
+        return context;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -275,21 +275,22 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         // first task is to edit the clinical event 
         VisitEditorDialog dialog = workflow.editVisit();
-        BigDecimal amount = BigDecimal.valueOf(20);
-        workflow.addVisitInvoiceItem(patient, amount, clinician);
+        BigDecimal fixedPrice = new BigDecimal("18.18");
+        workflow.addVisitInvoiceItem(patient, fixedPrice, clinician);
 
         // next is to edit the invoice
         if (save) {
             dialog.getEditor().selectCharges();
             fireDialogButton(dialog, PopupDialog.APPLY_ID);          // save the invoice
         }
-        workflow.addVisitInvoiceItem(patient, amount, clinician);    // add another item. Won't be saved
+        workflow.addVisitInvoiceItem(patient, fixedPrice, clinician);    // add another item. Won't be saved
 
         // close the dialog
         cancelDialog(dialog, userClose);
 
         if (save) {
-            workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
+            BigDecimal fixedPriceIncTax = BigDecimal.valueOf(20);
+            workflow.checkInvoice(ActStatus.IN_PROGRESS, fixedPriceIncTax);
         } else {
             FinancialAct invoice = workflow.getInvoice();
             assertNotNull(invoice);

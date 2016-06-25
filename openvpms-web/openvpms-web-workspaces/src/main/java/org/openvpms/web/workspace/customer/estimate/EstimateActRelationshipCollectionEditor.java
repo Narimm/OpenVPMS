@@ -18,8 +18,11 @@ package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.AbstractChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
@@ -39,7 +42,7 @@ public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemR
      * @param context  the layout context
      */
     public EstimateActRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        super(property, act, context, new ChargeEditContext(context));
+        super(property, act, context, createEditContext(act, context));
     }
 
     /**
@@ -72,6 +75,23 @@ public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemR
      */
     protected ChargeEditContext getEditContext() {
         return (ChargeEditContext) super.getEditContext();
+    }
+
+    /**
+     * Creates a charge edit context.
+     *
+     * @param act     the estimate
+     * @param context the layout context
+     * @return a new charge edit context
+     */
+    private static ChargeEditContext createEditContext(Act act, LayoutContext context) {
+        ActBean bean = new ActBean(act);
+        Party customer = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("customer"), context.getContext());
+        if (customer == null) {
+            throw new IllegalStateException(act.getArchetypeId().getShortName() + " has no customer");
+        }
+        Party location = context.getContext().getLocation();
+        return new ChargeEditContext(customer, location, context);
     }
 
 }

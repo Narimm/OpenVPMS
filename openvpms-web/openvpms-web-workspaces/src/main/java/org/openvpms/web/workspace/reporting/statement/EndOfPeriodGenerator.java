@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -71,10 +71,9 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
         int size = countCustomers(query);
         query.setMaxResults(1000);
 
-        IterableIMObjectQuery<Party> customers = new IterableIMObjectQuery<Party>(query);
+        IterableIMObjectQuery<Party> customers = new IterableIMObjectQuery<>(query);
         Processor<Party> processor = new EndOfPeriodProcessor(date, postCompletedCharges, practice,
                                                               ServiceHelper.getArchetypeService(),
-                                                              ServiceHelper.getLookupService(),
                                                               ServiceHelper.getBean(CustomerAccountRules.class));
         progressBarProcessor = new StatementProgressBarProcessor(processor, customers, size);
     }

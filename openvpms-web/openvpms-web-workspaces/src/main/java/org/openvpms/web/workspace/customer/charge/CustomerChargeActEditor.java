@@ -124,6 +124,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
         initParticipant("customer", customer);
         initParticipant("location", location);
         this.addDefaultItem = addDefaultItem;
+        initialise();
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             getItems().setTemplateProductListener(new TemplateProductListener() {
                 public void expanded(Product product) {

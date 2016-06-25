@@ -151,17 +151,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
     /**
      * Constructs an {@link EstimateItemEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the layout context
-     */
-    public EstimateItemEditor(Act act, Act parent, LayoutContext context) {
-        this(act, parent, new ChargeEditContext(context), context);
-    }
-
-    /**
-     * Constructs an {@link EstimateItemEditor}.
-     *
      * @param act           the act to edit
      * @param parent        the parent act
      * @param context       the edit context
@@ -767,4 +756,5 @@ public class EstimateItemEditor extends PriceActItemEditor {
         }
         return result;
     }
+
 }

@@ -166,12 +166,11 @@ public class CustomerChargeTestHelper {
      *
      * @param shortName  the product archetype short name
      * @param fixedPrice the fixed price
-     * @param practice   the practice, used to determine the tax rate
      * @return a new product
      */
-    public static Product createProduct(String shortName, BigDecimal fixedPrice, Party practice) {
+    public static Product createProduct(String shortName, BigDecimal fixedPrice) {
         Product product = createProduct(shortName);
-        product.addProductPrice(createFixedPrice(product, BigDecimal.ZERO, fixedPrice, practice));
+        product.addProductPrice(createFixedPrice(BigDecimal.ZERO, fixedPrice));
         TestHelper.save(product);
         return product;
     }
@@ -181,17 +180,16 @@ public class CustomerChargeTestHelper {
      *
      * @param shortName  the product archetype short name
      * @param fixedCost  the fixed cost
-     * @param fixedPrice the fixed price
+     * @param fixedPrice the fixed price, tax-exclusive
      * @param unitCost   the unit cost
-     * @param unitPrice  the unit price
-     * @param practice   the practice, used to determine the tax rate
+     * @param unitPrice  the unit price, tax-exclusive
      * @return a new product
      */
     public static Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice,
-                                        BigDecimal unitCost, BigDecimal unitPrice, Party practice) {
+                                        BigDecimal unitCost, BigDecimal unitPrice) {
         Product product = createProduct(shortName);
-        product.addProductPrice(createFixedPrice(product, fixedCost, fixedPrice, practice));
-        product.addProductPrice(createUnitPrice(product, unitCost, unitPrice, practice));
+        product.addProductPrice(createFixedPrice(fixedCost, fixedPrice));
+        product.addProductPrice(createUnitPrice(unitCost, unitPrice));
         TestHelper.save(product);
         return product;
     }
@@ -209,31 +207,26 @@ public class CustomerChargeTestHelper {
     /**
      * Helper to create a new fixed price.
      *
-     * @param product  the product
-     * @param cost     the cost price
-     * @param price    the price after markup
-     * @param practice the practice, used to determine the tax rate
+     * @param cost  the cost price
+     * @param price the price after markup
      * @return a new unit price
      */
-    public static ProductPrice createFixedPrice(Product product, BigDecimal cost, BigDecimal price, Party practice) {
-        return createPrice(product, ProductArchetypes.FIXED_PRICE, cost, price, practice);
+    public static ProductPrice createFixedPrice(BigDecimal cost, BigDecimal price) {
+        return createPrice(ProductArchetypes.FIXED_PRICE, cost, price);
     }
 
     /**
      * Helper to create a new product price.
      *
-     * @param product   the product
      * @param shortName the product price archetype short name
      * @param cost      the cost price
      * @param price     the price after markup
-     * @param practice  the practice, used to determine the tax rate
      * @return a new unit price
      */
-    public static ProductPrice createPrice(Product product, String shortName, BigDecimal cost, BigDecimal price,
-                                           Party practice) {
+    public static ProductPrice createPrice(String shortName, BigDecimal cost, BigDecimal price) {
         ProductPrice result = (ProductPrice) TestHelper.create(shortName);
         ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService());
-        BigDecimal markup = rules.getMarkup(product, cost, price, practice);
+        BigDecimal markup = rules.getMarkup(cost, price);
         result.setName("XPrice");
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("cost", cost);
@@ -245,14 +238,12 @@ public class CustomerChargeTestHelper {
     /**
      * Helper to create a new unit price.
      *
-     * @param product  the product
      * @param cost     the cost price
      * @param price    the price after markup
-     * @param practice the practice, used to determine the tax rate
      * @return a new unit price
      */
-    public static ProductPrice createUnitPrice(Product product, BigDecimal cost, BigDecimal price, Party practice) {
-        return createPrice(product, ProductArchetypes.UNIT_PRICE, cost, price, practice);
+    public static ProductPrice createUnitPrice(BigDecimal cost, BigDecimal price) {
+        return createPrice(ProductArchetypes.UNIT_PRICE, cost, price);
     }
 
     /**

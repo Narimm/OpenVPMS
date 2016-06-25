@@ -147,8 +147,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
     protected Browser<Product> createBrowser(Query<Product> query) {
         ProductQuery q = (ProductQuery) query;
         LayoutContext context = getLayoutContext();
-        ProductTableModel model = new ProductTableModel(q, context);
-        model.setLocation(editor.getLocation());
+        ProductTableModel model = new ProductTableModel(q, editor.getLocation(), context);
         return new DefaultIMObjectTableBrowser<>(query, model, context);
     }
 

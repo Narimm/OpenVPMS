@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -28,7 +28,6 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -55,10 +54,9 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     @Test
     public void testStatementDate() {
         IArchetypeService service = getArchetypeService();
-        ILookupService lookups = getLookupService();
         Date now = new Date();
         try {
-            new StatementProcessor(now, getPractice(), service, lookups, accountRules);
+            new StatementProcessor(now, getPractice(), service, accountRules);
             fail("Expected StatementProcessorException to be thrown");
         } catch (StatementProcessorException expected) {
             assertEquals(
@@ -69,7 +67,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
         try {
-            new StatementProcessor(calendar.getTime(), getPractice(), service, lookups, accountRules);
+            new StatementProcessor(calendar.getTime(), getPractice(), service, accountRules);
         } catch (StatementProcessorException exception) {
             fail("Construction failed with exception: " + exception);
         }
@@ -146,7 +144,6 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     @Test
     public void testProcessEndOfPeriod() {
         IArchetypeService service = getArchetypeService();
-        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
         customer.addClassification(createAccountType(30, DateUnits.DAYS,
@@ -181,7 +178,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         // process the customer's statement for 5/2. Amounts should be overdue
         // and a fee generated. COMPLETED acts should be posted.
         // The invoice4 invoice won't be included.
-        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups,
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, getPractice(), service,
                                                             accountRules);
         eop.process(customer);
 
@@ -219,7 +216,6 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     @Test
     public void testBackDatedStatements() {
         IArchetypeService service = getArchetypeService();
-        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
 
         // create an invoice
@@ -231,7 +227,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
         // run EOP for 31/12/2007.
         Date statementDate1 = getDate("2007-12-31");
-        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service, lookups,
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service,
                                                             accountRules);
         eop.process(customer);
 
@@ -257,7 +253,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
         // run EOP for the 31/1
         Date statementDate5 = getDate("2008-01-31");
-        eop = new EndOfPeriodProcessor(statementDate5, true, getPractice(), service, lookups, accountRules);
+        eop = new EndOfPeriodProcessor(statementDate5, true, getPractice(), service, accountRules);
         eop.process(customer);
 
         // check statement for 1/2. Balance should  be zero.
@@ -358,10 +354,9 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
                                        boolean reprint,
                                        boolean expectStatement) {
         IArchetypeService service = getArchetypeService();
-        ILookupService lookups = getLookupService();
         List<Act> acts;
-        StatementRules rules = new StatementRules(getPractice(), service, lookups, accountRules);
-        StatementProcessor processor = new StatementProcessor(statementDate, getPractice(), service, lookups,
+        StatementRules rules = new StatementRules(getPractice(), service, accountRules);
+        StatementProcessor processor = new StatementProcessor(statementDate, getPractice(), service,
                                                               accountRules);
         processor.setReprint(reprint);
         Listener listener = new Listener();
@@ -385,7 +380,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
     private class Listener implements ProcessorListener<Statement> {
 
-        private List<Statement> statements = new ArrayList<Statement>();
+        private List<Statement> statements = new ArrayList<>();
 
         private List<Statement> getStatements() {
             return statements;
@@ -398,7 +393,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     }
 
     private List<Act> getActs(Statement event) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         for (Act act : event.getActs()) {
             result.add(act);
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
@@ -172,9 +172,7 @@ public class Reverser {
      */
     private boolean canHideReversal(FinancialAct act) {
         if (!rules.isHidden(act)) {
-            StatementRules statementRules = new StatementRules(practice, ServiceHelper.getArchetypeService(),
-                                                               ServiceHelper.getLookupService(),
-                                                               rules);
+            StatementRules statementRules = new StatementRules(practice, ServiceHelper.getArchetypeService(), rules);
             ActBean bean = new ActBean(act);
             Party customer = (Party) bean.getNodeParticipant("customer");
             return customer != null && !statementRules.hasStatement(customer, act.getActivityStartTime());

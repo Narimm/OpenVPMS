@@ -18,11 +18,9 @@ package org.openvpms.archetype.rules.product.io;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -51,11 +49,6 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
      */
     private ProductUpdater updater;
 
-    /**
-     * The practice.
-     */
-    private Party practice;
-
 
     /**
      * Sets up the test case.
@@ -64,7 +57,6 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
     public void setUp() {
         ProductPriceRules rules = new ProductPriceRules(getArchetypeService());
         updater = new ProductUpdater(rules, getArchetypeService());
-        practice = (Party) create(PracticeArchetypes.PRACTICE);
     }
 
     /**
@@ -80,7 +72,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         data.addPrice(createFixedPriceData(-1, "1.08", "0.6", "20", "2013-04-01", null, true));
         data.addPrice(createUnitPriceData(-1, "2.55", "1.5", "17.5", "2013-04-03", null));
 
-        updater.update(product, data, practice);
+        updater.update(product, data);
         assertEquals(4, product.getProductPrices().size());
 
         assertEquals(getDate("2013-04-01"), fixed1.getToDate()); // price to date now the new price start date
@@ -106,7 +98,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         PriceData price = createUnitPriceData(unit1.getId(), "1.08", "0.6", "17.5", "2013-04-01", null);
         data1.addPrice(price);
 
-        updater.update(product, data1, practice);
+        updater.update(product, data1);
         assertEquals(1, product.getProductPrices().size());
 
         checkPrice(product, createUnitPrice("1.08", "0.6", "80", "17.5", "2013-04-01", null));
@@ -126,7 +118,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         data1.addPrice(createUnitPriceData(-1, "1.0", "0.5", "20", "2013-01-01", "2013-03-31"));
         // unit0. Prior to unit1.
 
-        updater.update(product, data1, practice);
+        updater.update(product, data1);
         assertEquals(2, product.getProductPrices().size());
 
         checkPrice(product, createUnitPrice("1.0", "0.5", "100", "20", "2013-01-01", "2013-03-31")); // unit0
@@ -138,7 +130,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductData data2 = createProduct(product, BigDecimal.ZERO, false);
         data2.addPrice(createUnitPriceData(-1, "1.92", "1.2", "10", "2013-01-02", null)); // overlaps unit1, unit0
         try {
-            updater.update(product, data2, practice);
+            updater.update(product, data2);
             fail("Expected ProductIOException");
         } catch (ProductIOException expected) {
             assertEquals("Unit price dates overlap an existing unit price", expected.getMessage());
@@ -148,7 +140,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductData data3 = createProduct(product, BigDecimal.ZERO, false);
         data3.addPrice(createUnitPriceData(-1, "1.92", "1.2", "10", "2012-12-31", "2013-01-02")); // overlaps unit0
         try {
-            updater.update(product, data3, practice);
+            updater.update(product, data3);
             fail("Expected ProductIOException");
         } catch (ProductIOException expected) {
             assertEquals("Unit price dates overlap an existing unit price", expected.getMessage());
@@ -168,7 +160,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         data1.addPrice(createFixedPriceData(-1, "1.0", "0.5", "20", "2013-01-01", "2013-03-31", true));
         // fixed0. Prior to fixed1.
 
-        updater.update(product, data1, practice);
+        updater.update(product, data1);
         assertEquals(2, product.getProductPrices().size());
 
         checkPrice(product, createFixedPrice("1.0", "0.5", "100", "20", "2013-01-01", "2013-03-31", true)); // fixed0
@@ -180,7 +172,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductData data2 = createProduct(product, BigDecimal.ZERO, false);
         data2.addPrice(createFixedPriceData(-1, "1.92", "1.2", "15", "2013-01-02", null, true));
         // overlaps fixed0, fixed1
-        updater.update(product, data2, practice);
+        updater.update(product, data2);
 
         checkPrice(product, createFixedPrice("1.0", "0.5", "100", "20", "2013-01-01", "2013-03-31", true)); // fixed0
         checkPrice(product, createFixedPrice("1.08", "0.6", "60", "10", "2013-04-01", null, true));         // fixed1
@@ -204,7 +196,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         data.addPrice(unit2);
         data.addPrice(unit2);
 
-        updater.update(product, data, practice);
+        updater.update(product, data);
         assertEquals(4, product.getProductPrices().size());
     }
 
@@ -218,7 +210,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         data.addPrice(createFixedPriceData(23, "1.0", "0.5", "10", "2013-01-01", null, true));
 
         try {
-            updater.update(product, data, practice);
+            updater.update(product, data);
             fail("Expected ProductIOException to be thrown");
         } catch (ProductIOException expected) {
             assertEquals("Price with identifier 23 not found", expected.getMessage());
@@ -243,12 +235,12 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         assertEquals(1, data.getFixedPrices().size()); // pulls in the linked price
 
         // update the product, and verify the linked price hasn't changed
-        updater.update(product, data, practice);
+        updater.update(product, data);
         assertEquals(0, product.getProductPrices().size());
 
         data.getFixedPrices().get(0).setPrice(BigDecimal.TEN);
         try {
-            updater.update(product, data, practice);
+            updater.update(product, data);
             fail("Expected ProductIOException to be thrown");
         } catch (ProductIOException expected) {
             assertEquals("Cannot update linked price", expected.getMessage());
@@ -263,7 +255,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         Product product = createProduct("P1", "Product 1");
         ProductData data = createProduct(product);
         data.setPrintedName("New Product 1");
-        updater.update(product, data, practice);
+        updater.update(product, data);
         IMObjectBean bean = new IMObjectBean(product);
 
         assertEquals("New Product 1", bean.getString("printedName"));
@@ -283,7 +275,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         PriceData unit3 = createUnitPriceData(-1, "1.92", "1.2", "10", "2013-04-02", null); // duplicates unit2
         data.addPrice(unit3);
 
-        updater.update(product, data, practice);
+        updater.update(product, data);
         assertEquals(2, product.getProductPrices().size());
 
         checkPrice(product, createUnitPrice("1.08", "0.6", "60", "10", "2013-02-02", "2013-04-01"));
@@ -304,7 +296,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         PriceData fixed3 = createFixedPriceData(-1, "1.92", "1.2", "10", "2013-04-02", null, true); // duplicates fixed2
         data.addPrice(fixed3);
 
-        updater.update(product, data, practice);
+        updater.update(product, data);
         assertEquals(2, product.getProductPrices().size());
 
         checkPrice(product, createFixedPrice("1.08", "0.6", "60", "10", "2013-02-02", "2013-04-01", true));
@@ -324,7 +316,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         data.getFixedPrices().get(0).setDefault(false);
         data.getFixedPrices().get(1).setDefault(false);
 
-        updater.update(product, data, practice);
+        updater.update(product, data);
         assertEquals(2, product.getProductPrices().size());
 
         checkPrice(product, createFixedPrice("1.08", "0.6", "80", "10", "2013-02-02", "2013-04-01", false));
