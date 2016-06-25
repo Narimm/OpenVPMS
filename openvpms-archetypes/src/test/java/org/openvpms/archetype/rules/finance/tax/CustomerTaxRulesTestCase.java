@@ -116,24 +116,6 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link CustomerTaxRules#getTaxExAmount(BigDecimal, Product, Party)} method.
-     */
-    @Test
-    public void getTaxExAmount() {
-        Party customer = createCustomer();
-        Product product = createProduct();
-        product.addClassification(taxType);
-
-        BigDecimal amount1 = rules.getTaxExAmount(BigDecimal.TEN, product, customer);
-        checkEquals(BigDecimal.TEN, amount1);
-
-        customer.addClassification(taxType); // tax exemption
-
-        BigDecimal amount2 = rules.getTaxExAmount(BigDecimal.TEN, product, customer);
-        checkEquals(new BigDecimal("9.091"), amount2);
-    }
-
-    /**
      * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)} method where the product has a 10% tax, but
      * the customer has a tax exemption.
      */
@@ -160,7 +142,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
         practice.addClassification(taxType);
 
         // need to refresh cache
-        rules = new CustomerTaxRules(practice, getArchetypeService(), getLookupService());
+        rules = new CustomerTaxRules(practice, getArchetypeService());
 
         // product is now charged at 10% tax rate
         checkEquals(BigDecimal.TEN, rules.getTaxRate(product, customer));
@@ -177,7 +159,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     public void setUp() {
         taxType = TestHelper.createTaxType(BigDecimal.TEN);
         practice = (Party) create("party.organisationPractice");
-        rules = new CustomerTaxRules(practice, getArchetypeService(), getLookupService());
+        rules = new CustomerTaxRules(practice, getArchetypeService());
     }
 
     /**

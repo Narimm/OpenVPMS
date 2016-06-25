@@ -270,51 +270,94 @@ public class ProductPriceRules {
     }
 
     /**
-     * Calculates a product price using the following formula:
+     * Calculates a tax-exclusive price, given the cost and markup.
      * <p/>
-     * {@code price = (cost * (1 + markup/100) ) * (1 + tax/100)}
+     * The formula is:
+     * {@code taxExPrice = cost * (1 + markup/100)}
      *
-     * @param product  the product
-     * @param cost     the product cost
-     * @param markup   the markup percentage
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @param currency the currency, for rounding conventions
-     * @return the price
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param cost   the cost
+     * @param markup the markup
+     * @return the tax-exclusive price
      */
-    public BigDecimal getPrice(Product product, BigDecimal cost, BigDecimal markup, Party practice, Currency currency) {
+    public BigDecimal getTaxExPrice(BigDecimal cost, BigDecimal markup) {
         BigDecimal price = ZERO;
         if (cost.compareTo(ZERO) != 0) {
             BigDecimal markupDec = getRate(markup);
-            BigDecimal taxRate = getTaxRate(product, practice);
-            price = cost.multiply(ONE.add(markupDec)).multiply(ONE.add(taxRate));
-            price = currency.roundPrice(price);
+            price = cost.multiply(ONE.add(markupDec));
         }
         return price;
     }
 
     /**
-     * Calculates a product markup using the following formula:
-     * <p/>
-     * {@code markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100}
+     * Calculates a tax exclusive price given the tax-inclusive price, and tax rates derived from the product and
+     * practice.
      *
-     * @param product  the product
-     * @param cost     the product cost
-     * @param price    the price
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @return the markup
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param taxIncPrice the tax-inclusive price
+     * @param product     the product
+     * @param practice    the practice
+     * @return the tax-exclusive price
      */
-    public BigDecimal getMarkup(Product product, BigDecimal cost, BigDecimal price, Party practice) {
+    public BigDecimal getTaxExPrice(BigDecimal taxIncPrice, Product product, Party practice) {
+        BigDecimal price = taxIncPrice;
+        BigDecimal taxRate = getTaxRate(product, practice);
+        if (taxRate.compareTo(BigDecimal.ZERO) != 0) {
+            price = taxIncPrice.divide(ONE.add(getRate(taxRate)), 3, RoundingMode.HALF_UP);
+        }
+        return price;
+    }
+
+    /**
+     * Calculates a tax-inclusive product price using the following formula:
+     * <p/>
+     * {@code price = taxExPrice * (1 + taxRate/100)}
+     * <p/>
+     * The price is rounded according to currency conventions.
+     *
+     * @param taxExPrice the tax-exclusive price
+     * @param product    the product
+     * @param practice   the practice
+     * @param currency   the currency, used for rounding
+     * @return the tax-exclusive price
+     */
+    public BigDecimal getTaxIncPrice(BigDecimal taxExPrice, Product product, Party practice, Currency currency) {
+        BigDecimal taxRate = getTaxRate(product, practice);
+        return getTaxIncPrice(taxExPrice, taxRate, currency);
+    }
+
+    /**
+     * Calculates a tax-inclusive product price using the following formula:
+     * <p/>
+     * {@code price = taxExPrice * (1 + taxRate/100)}
+     * <p/>
+     * The price is rounded according to currency conventions.
+     *
+     * @param taxExPrice the tax-exclusive price
+     * @param currency   the currency, used for rounding
+     * @return the tax-exclusive price
+     */
+    public BigDecimal getTaxIncPrice(BigDecimal taxExPrice, BigDecimal taxRate, Currency currency) {
+        BigDecimal price = taxExPrice;
+        if (taxRate.compareTo(BigDecimal.ZERO) != 0) {
+            price = taxExPrice.multiply(ONE.add(getRate(taxRate)));
+        }
+        price = currency.roundPrice(price);
+        return price;
+    }
+
+    /**
+     * Calculates a tax-exclusive price markup, given the cost and tax-exclusive price.
+     * <p/>
+     * The formula is:
+     * {@code markup = (price/cost - 1) * 100}
+     *
+     * @param cost  the cost
+     * @param price the tax-exclusive price
+     * @return the tax-exclusive price markup
+     */
+    public BigDecimal getMarkup(BigDecimal cost, BigDecimal price) {
         BigDecimal markup = ZERO;
         if (cost.compareTo(ZERO) != 0) {
-            BigDecimal taxRate = ZERO;
-            if (product != null) {
-                taxRate = getTaxRate(product, practice);
-            }
-            markup = price.divide(
-                    cost.multiply(ONE.add(taxRate)), 3,
-                    RoundingMode.HALF_UP).subtract(ONE).multiply(ONE_HUNDRED);
+            markup = price.divide(cost, 3, RoundingMode.HALF_UP).subtract(ONE).multiply(ONE_HUNDRED);
             if (markup.compareTo(ZERO) < 0) {
                 markup = ZERO;
             }
@@ -326,12 +369,12 @@ public class ProductPriceRules {
      * Calculates the maximum discount that can be applied for a given markup.
      * <p/>
      * Uses the equation:
-     * <code>(markup / (100 + markup)) * 100</code>
+     * {@code (markup / (100 + markup)) * 100}
      *
      * @param markup the markup expressed as a percentage
      * @return the discount as a percentage rounded down
      */
-    public BigDecimal calcMaxDiscount(BigDecimal markup) {
+    public BigDecimal getMaxDiscount(BigDecimal markup) {
         BigDecimal discount = DEFAULT_MAX_DISCOUNT;
         if (markup.compareTo(BigDecimal.ZERO) > 0) {
             discount = markup.divide(ONE_HUNDRED.add(markup), 3, RoundingMode.HALF_DOWN).multiply(ONE_HUNDRED);
@@ -340,18 +383,17 @@ public class ProductPriceRules {
     }
 
     /**
-     * Updates the cost node of any <em>productPrice.unitPrice</em>
-     * associated with a product active at the current time, and recalculates its price.
+     * Updates the cost node of any <em>productPrice.unitPrice</em> associated with a product active at the current
+     * time, and recalculates its price.
      * <p/>
      * Returns a list of unit prices whose cost and price have changed.
      *
      * @param product  the product
      * @param cost     the new cost
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
      * @param currency the currency, for rounding conventions
      * @return the list of any updated prices
      */
-    public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Party practice, Currency currency) {
+    public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Currency currency) {
         List<ProductPrice> result = null;
         IMObjectBean bean = new IMObjectBean(product, service);
         final Date now = new Date();
@@ -367,7 +409,7 @@ public class ProductPriceRules {
             cost = currency.round(cost);
             for (ProductPrice price : prices) {
                 if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
-                    if (updateUnitPrice(price, product, cost, practice, currency)) {
+                    if (updateUnitPrice(price, cost)) {
                         if (result == null) {
                             result = new ArrayList<>();
                         }
@@ -460,30 +502,6 @@ public class ProductPriceRules {
     }
 
     /**
-     * Updates an <em>productPrice.unitPrice</em> if required.
-     *
-     * @param price    the price
-     * @param product  the associated product
-     * @param cost     the cost price
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @param currency the currency, for rounding conventions
-     * @return {@code true} if the price was updated
-     */
-    private boolean updateUnitPrice(ProductPrice price, Product product, BigDecimal cost, Party practice,
-                                    Currency currency) {
-        IMObjectBean priceBean = new IMObjectBean(price, service);
-        BigDecimal old = priceBean.getBigDecimal("cost", ZERO);
-        if (!MathRules.equals(old, cost)) {
-            priceBean.setValue("cost", cost);
-            BigDecimal markup = priceBean.getBigDecimal("markup", ZERO);
-            BigDecimal newPrice = getPrice(product, cost, markup, practice, currency);
-            price.setPrice(newPrice);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Returns the tax rate of a product.
      *
      * @param product  the product
@@ -491,20 +509,42 @@ public class ProductPriceRules {
      * @return the product tax rate
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private BigDecimal getTaxRate(Product product, Party practice) {
+    public BigDecimal getTaxRate(Product product, Party practice) {
         TaxRules rules = new TaxRules(practice, service);
-        return getRate(rules.getTaxRate(product));
+        return rules.getTaxRate(product);
+    }
+
+    /**
+     * Updates an <em>productPrice.unitPrice</em> if required.
+     *
+     * @param price the price
+     * @param cost  the cost price
+     * @return {@code true} if the price was updated
+     */
+    private boolean updateUnitPrice(ProductPrice price, BigDecimal cost) {
+        IMObjectBean priceBean = new IMObjectBean(price, service);
+        BigDecimal old = priceBean.getBigDecimal("cost", ZERO);
+        if (!MathRules.equals(old, cost)) {
+            priceBean.setValue("cost", cost);
+            BigDecimal markup = priceBean.getBigDecimal("markup", ZERO);
+            BigDecimal newPrice = getTaxExPrice(cost, markup);
+            price.setPrice(newPrice);
+            return true;
+        }
+        return false;
     }
 
     /**
      * Returns a percentage / 100.
+     * <p/>
+     * This is expressed to 4 decimal places to support tax rates like "8.25%".
      *
      * @param percent the percent
      * @return {@code percent / 100 }
      */
     private BigDecimal getRate(BigDecimal percent) {
         if (percent.compareTo(ZERO) != 0) {
-            return MathRules.divide(percent, ONE_HUNDRED, 3);
+            return MathRules.divide(percent, ONE_HUNDRED, 4);
         }
         return ZERO;
     }

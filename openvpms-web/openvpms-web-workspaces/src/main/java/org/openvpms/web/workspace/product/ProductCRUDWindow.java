@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -357,7 +357,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     private void onImport(List<ProductData> data) {
         ProductImporter importer = new ProductImporter(ServiceHelper.getBean(ProductPriceRules.class),
                                                        ServiceHelper.getArchetypeService());
-        importer.run(data, getContext().getPractice());
+        importer.run(data);
         InformationDialog.show(Messages.get("product.import.title"), Messages.get("product.import.imported"));
     }
 

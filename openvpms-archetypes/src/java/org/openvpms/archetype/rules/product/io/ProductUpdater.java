@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
 import org.openvpms.archetype.rules.product.ProductPriceRules;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -64,18 +63,17 @@ class ProductUpdater {
     /**
      * Updates a product.
      *
-     * @param product  the product to update
-     * @param data     the product data to update the product with
-     * @param practice the practice, used to determine tax rates
+     * @param product the product to update
+     * @param data    the product data to update the product with
      */
-    public void update(Product product, ProductData data, Party practice) {
+    public void update(Product product, ProductData data) {
         ProductData changes = comparer.compare(product, data);
         if (changes != null) {
             List<ProductPrice> unitPrices = comparer.getUnitPrices(product, changes);
             List<ProductPrice> fixedPrices = comparer.getFixedPrices(product, changes);
 
-            updateProduct(product, changes.getUnitPrices(), unitPrices, practice);
-            updateProduct(product, changes.getFixedPrices(), fixedPrices, practice);
+            updateProduct(product, changes.getUnitPrices(), unitPrices);
+            updateProduct(product, changes.getFixedPrices(), fixedPrices);
 
             IMObjectBean bean = new IMObjectBean(product, service);
             if (bean.hasNode("printedName")) {
@@ -90,17 +88,16 @@ class ProductUpdater {
      * @param product  the product to update
      * @param prices   the prices to update with
      * @param existing the prices to update
-     * @param practice the practice, used to determine tax rates
      */
-    private void updateProduct(Product product, List<PriceData> prices, List<ProductPrice> existing, Party practice) {
+    private void updateProduct(Product product, List<PriceData> prices, List<ProductPrice> existing) {
         for (PriceData price : prices) {
             if (price.getId() != -1) {
                 // existing price
                 ProductPrice match = ProductIOHelper.getPrice(price, existing);
-                updatePrice(match, price, product, practice);
+                updatePrice(match, price);
             } else {
                 ProductPrice newPrice = (ProductPrice) service.create(price.getShortName());
-                updatePrice(newPrice, price, product, practice);
+                updatePrice(newPrice, price);
                 product.addProductPrice(newPrice);
             }
         }
@@ -109,13 +106,11 @@ class ProductUpdater {
     /**
      * Updates a price.
      *
-     * @param price    the price to update
-     * @param data     the data to update the price with
-     * @param product  the parent product
-     * @param practice the practice, used to determine tax rates
+     * @param price the price to update
+     * @param data  the data to update the price with
      */
-    private void updatePrice(ProductPrice price, PriceData data, Product product, Party practice) {
-        BigDecimal markup = rules.getMarkup(product, data.getCost(), data.getPrice(), practice);
+    private void updatePrice(ProductPrice price, PriceData data) {
+        BigDecimal markup = rules.getMarkup(data.getCost(), data.getPrice());
         IMObjectBean bean = new IMObjectBean(price, service);
         price.setPrice(data.getPrice());
         price.setFromDate(data.getFrom());

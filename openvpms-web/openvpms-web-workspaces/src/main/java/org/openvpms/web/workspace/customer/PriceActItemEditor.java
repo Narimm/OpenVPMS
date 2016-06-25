@@ -76,11 +76,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private boolean disableDiscounts;
 
     /**
-     * The service ratio.
-     */
-    private BigDecimal serviceRatio;
-
-    /**
      * The edit context.
      */
     private final PriceActEditContext editContext;
@@ -104,14 +99,10 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         this.editContext = context;
 
         Product product = getProduct();
-        Party location = getLocation();
-        serviceRatio = getServiceRatio(product, location);
-
         Property fixedPrice = getProperty("fixedPrice");
 
-        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup(), editContext.getCurrency(),
-                                           editContext.getPriceRules());
-        fixedEditor.setProduct(product, serviceRatio);
+        fixedEditor = new FixedPriceEditor(fixedPrice, context.getPricingContext());
+        fixedEditor.setProduct(product);
     }
 
     /**
@@ -139,15 +130,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     public BigDecimal getFixedPrice() {
         return getProperty("fixedPrice").getBigDecimal(BigDecimal.ZERO);
-    }
-
-    /**
-     * Returns the service ratio.
-     *
-     * @return the service ratio
-     */
-    public BigDecimal getServiceRatio() {
-        return serviceRatio;
     }
 
     /**
@@ -233,11 +215,10 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     @Override
     protected void productModified(Product product) {
         super.productModified(product);
-        serviceRatio = getServiceRatio(product, getLocation());
         if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            fixedEditor.setProduct(product, serviceRatio);
+            fixedEditor.setProduct(product);
         } else {
-            fixedEditor.setProduct(null, BigDecimal.ONE);
+            fixedEditor.setProduct(null);
         }
     }
 
@@ -495,21 +476,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Determines the service ratio for a product at a practice location.
-     *
-     * @param product  the product. May be {@code null}
-     * @param location the practice location. May be {@code null}
-     * @return the service ratio
-     */
-    protected BigDecimal getServiceRatio(Product product, Party location) {
-        BigDecimal result = BigDecimal.ONE;
-        if (product != null && location != null) {
-            result = editContext.getPriceRules().getServiceRatio(product, location);
-        }
-        return result;
-    }
-
-    /**
      * Returns the price of a product.
      * <p/>
      * This:
@@ -522,7 +488,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the price, minus any tax exclusions
      */
     protected BigDecimal getPrice(Product product, ProductPrice price) {
-        return editContext.getPrice(product, price, getServiceRatio(), getCustomer());
+        return editContext.getPrice(product, price);
     }
 
     /**

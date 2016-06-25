@@ -528,7 +528,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice) {
-        return CustomerChargeTestHelper.createProduct(shortName, fixedPrice, practice);
+        return CustomerChargeTestHelper.createProduct(shortName, fixedPrice);
     }
 
     /**
@@ -540,7 +540,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice, Entity pharmacy) {
-        Product product = CustomerChargeTestHelper.createProduct(shortName, fixedPrice, practice);
+        Product product = CustomerChargeTestHelper.createProduct(shortName, fixedPrice);
         EntityBean bean = new EntityBean(product);
         bean.addNodeTarget("pharmacy", pharmacy);
         bean.save();
@@ -552,13 +552,13 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * Helper to create a product.
      *
      * @param shortName  the product archetype short name
-     * @param fixedPrice the fixed price
-     * @param unitPrice  the unit price
+     * @param fixedPrice the fixed price, tax-exclusive
+     * @param unitPrice  the unit price, tax-exclusive
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice, BigDecimal unitPrice) {
         return CustomerChargeTestHelper.createProduct(shortName, BigDecimal.ZERO, fixedPrice, BigDecimal.ZERO,
-                                                      unitPrice, practice);
+                                                      unitPrice);
     }
 
     /**
@@ -566,14 +566,14 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      *
      * @param shortName  the product archetype short name
      * @param fixedCost  the fixed cost
-     * @param fixedPrice the fixed price
+     * @param fixedPrice the fixed price, tax-exclusive
      * @param unitCost   the unit cost
-     * @param unitPrice  the unit price
+     * @param unitPrice  the unit price, tax-exclusive
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal unitCost,
                                     BigDecimal unitPrice) {
-        return CustomerChargeTestHelper.createProduct(shortName, fixedCost, fixedPrice, unitCost, unitPrice, practice);
+        return CustomerChargeTestHelper.createProduct(shortName, fixedCost, fixedPrice, unitCost, unitPrice);
     }
 
     /**

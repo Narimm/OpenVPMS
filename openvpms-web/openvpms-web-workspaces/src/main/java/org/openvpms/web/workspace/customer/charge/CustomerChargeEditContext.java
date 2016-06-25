@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.stock.StockRules;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.workspace.customer.StockOnHand;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
@@ -46,10 +47,12 @@ public class CustomerChargeEditContext extends ChargeEditContext {
     /**
      * Constructs a {@link CustomerChargeEditContext}.
      *
-     * @param context the layout context
+     * @param customer the customer
+     * @param location the practice location. May be {@code null}
+     * @param context  the layout context
      */
-    public CustomerChargeEditContext(LayoutContext context) {
-        super(context);
+    public CustomerChargeEditContext(Party customer, Party location, LayoutContext context) {
+        super(customer, location, context);
         saveContext = new ChargeSaveContext();
         stock = new StockOnHand(new StockRules(getCachingArchetypeService()));
     }

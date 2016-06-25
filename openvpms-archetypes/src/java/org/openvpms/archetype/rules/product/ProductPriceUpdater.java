@@ -318,7 +318,7 @@ public class ProductPriceUpdater {
         BigDecimal listPrice = productSupplier.getListPrice();
         int packageSize = productSupplier.getPackageSize();
         BigDecimal cost = MathRules.divide(listPrice, packageSize, 3);
-        result = rules.updateUnitPrices(product, cost, getPractice(), getCurrency());
+        result = rules.updateUnitPrices(product, cost, getCurrency());
         if (!result.isEmpty()) {
             if (save) {
                 service.save(result);
@@ -340,6 +340,7 @@ public class ProductPriceUpdater {
      * @return a list of updated prices
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     private List<ProductPrice> collect(List<EntityLink> relationships, Transformer transformer, boolean save) {
         List<ProductPrice> result = null;
         for (EntityLink relationship : relationships) {

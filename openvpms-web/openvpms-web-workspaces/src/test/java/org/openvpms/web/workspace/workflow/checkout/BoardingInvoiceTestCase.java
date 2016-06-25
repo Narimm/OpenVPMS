@@ -121,11 +121,14 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testInvoiceSingleDay() {
-        BigDecimal unitPrice = BigDecimal.TEN;
-        BigDecimal firstPetProductDayPrice = BigDecimal.TEN;
-        BigDecimal firstPetProductNightPrice = BigDecimal.valueOf(20);
-        BigDecimal secondPetProductDayPrice = BigDecimal.valueOf(5);
-        BigDecimal secondPetProductNightPrice = BigDecimal.valueOf(15);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
+        BigDecimal firstPetProductDayPrice = new BigDecimal("9.09");
+        BigDecimal firstPetProductDayPriceIncTax = BigDecimal.TEN;
+        BigDecimal firstPetProductNightPrice = new BigDecimal("18.18");
+        BigDecimal secondPetProductDayPrice = new BigDecimal("4.54");
+        BigDecimal secondPetProductDayPriceIncTax = new BigDecimal("4.99");
+        BigDecimal secondPetProductNightPrice = new BigDecimal("13.64");
         Product firstPetProductDay = ProductTestHelper.createService(firstPetProductDayPrice, unitPrice);
         Product firstPetProductNight = ProductTestHelper.createService(firstPetProductNightPrice, unitPrice);
         Product secondPetProductDay = ProductTestHelper.createService(secondPetProductDayPrice, unitPrice);
@@ -156,12 +159,12 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
         assertEquals(2, items.size());
 
-        checkItem(items, patient1, firstPetProductDay, null, author, clinician, BigDecimal.ZERO, ONE, ZERO, unitPrice,
-                  ZERO, firstPetProductDayPrice, ZERO, new BigDecimal("1.818"), firstPetProductDayPrice.add(unitPrice),
-                  visit1.getEvent(), 0);
-        checkItem(items, patient2, secondPetProductDay, null, author, clinician, BigDecimal.ZERO, ONE, ZERO, unitPrice,
-                  ZERO, secondPetProductDayPrice, ZERO, new BigDecimal("1.364"),
-                  secondPetProductDayPrice.add(unitPrice), visit2.getEvent(), 0);
+        checkItem(items, patient1, firstPetProductDay, null, author, clinician, BigDecimal.ZERO, ONE, ZERO,
+                  unitPriceIncTax, ZERO, firstPetProductDayPriceIncTax, ZERO, new BigDecimal("1.818"),
+                  firstPetProductDayPriceIncTax.add(unitPriceIncTax), visit1.getEvent(), 0);
+        checkItem(items, patient2, secondPetProductDay, null, author, clinician, BigDecimal.ZERO, ONE, ZERO,
+                  unitPriceIncTax, ZERO, secondPetProductDayPriceIncTax, ZERO, new BigDecimal("1.363"),
+                  secondPetProductDayPriceIncTax.add(unitPriceIncTax), visit2.getEvent(), 0);
     }
 
     /**
@@ -169,12 +172,16 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testInvoiceMultipleDays() {
-        BigDecimal unitPrice = BigDecimal.TEN;
-        BigDecimal firstPetProductDayPrice = BigDecimal.TEN;
-        BigDecimal firstPetProductNightPrice = BigDecimal.valueOf(20);
-        BigDecimal secondPetProductDayPrice = BigDecimal.valueOf(5);
-        BigDecimal secondPetProductNightPrice = BigDecimal.valueOf(15);
-        BigDecimal lateCheckoutProductPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
+        BigDecimal firstPetProductDayPrice = new BigDecimal("9.09");
+        BigDecimal firstPetProductNightPrice = new BigDecimal("18.18");
+        BigDecimal firstPetProductNightPriceIncTax = BigDecimal.valueOf(20);
+        BigDecimal secondPetProductDayPrice = new BigDecimal("4.54");
+        BigDecimal secondPetProductNightPrice = new BigDecimal("13.64");
+        BigDecimal secondPetProductNightPriceIncTax = BigDecimal.valueOf(15);
+        BigDecimal lateCheckoutProductPrice = new BigDecimal("9.09");
+        BigDecimal lateCheckoutProductPriceIncTax = BigDecimal.TEN;
         Product firstPetProductDay = ProductTestHelper.createService(firstPetProductDayPrice, unitPrice);
         Product firstPetProductNight = ProductTestHelper.createService(firstPetProductNightPrice, unitPrice);
         Product secondPetProductDay = ProductTestHelper.createService(secondPetProductDayPrice, unitPrice);
@@ -207,17 +214,17 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
         assertEquals(3, items.size());
 
         BigDecimal quantity = BigDecimal.valueOf(5); // 5 nights
-        BigDecimal unitPriceXQty = unitPrice.multiply(quantity);
+        BigDecimal unitPriceXQty = unitPriceIncTax.multiply(quantity);
 
-        checkItem(items, patient1, firstPetProductNight, null, author, clinician, ZERO, quantity, ZERO, unitPrice, ZERO,
-                  firstPetProductNightPrice, ZERO, new BigDecimal("6.364"),
-                  firstPetProductNightPrice.add(unitPriceXQty), visit1.getEvent(), 0);
-        checkItem(items, patient2, secondPetProductNight, null, author, clinician, ZERO, quantity, ZERO, unitPrice,
-                  ZERO, secondPetProductNightPrice, ZERO, new BigDecimal("5.909"),
-                  secondPetProductNightPrice.add(unitPriceXQty), visit2.getEvent(), 0);
+        checkItem(items, patient1, firstPetProductNight, null, author, clinician, ZERO, quantity, ZERO, unitPriceIncTax,
+                  ZERO, firstPetProductNightPriceIncTax, ZERO, new BigDecimal("6.364"),
+                  firstPetProductNightPriceIncTax.add(unitPriceXQty), visit1.getEvent(), 0);
+        checkItem(items, patient2, secondPetProductNight, null, author, clinician, ZERO, quantity, ZERO,
+                  unitPriceIncTax, ZERO, secondPetProductNightPriceIncTax, ZERO, new BigDecimal("5.909"),
+                  secondPetProductNightPriceIncTax.add(unitPriceXQty), visit2.getEvent(), 0);
         checkItem(items, patient2, lateCheckoutProduct, null, author, clinician, ZERO, ONE, ZERO, ZERO, ZERO,
-                  lateCheckoutProductPrice, ZERO, new BigDecimal("0.909"), lateCheckoutProductPrice, visit2.getEvent(),
-                  0);
+                  lateCheckoutProductPriceIncTax, ZERO, new BigDecimal("0.909"), lateCheckoutProductPriceIncTax,
+                  visit2.getEvent(), 0);
     }
 
     /**
@@ -225,9 +232,13 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testInvoiceMultipleDaysWithTemplateProduct() {
-        BigDecimal unitPrice = BigDecimal.TEN;
-        BigDecimal price1 = BigDecimal.TEN;
-        BigDecimal price2 = BigDecimal.valueOf(20);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
+        BigDecimal price1 = new BigDecimal("9.09");
+        BigDecimal price1IncTax = BigDecimal.TEN;
+        BigDecimal price2 = new BigDecimal("18.18");
+        BigDecimal price2IncTax = BigDecimal.valueOf(20);
+
         Product template = ProductTestHelper.createTemplate("Z Boarding Template");
         Product product1 = ProductTestHelper.createService(price1, unitPrice);
         Product product2 = ProductTestHelper.createService(price2, unitPrice);
@@ -255,16 +266,16 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
         assertEquals(2, items.size());
 
         BigDecimal quantity = BigDecimal.valueOf(5); // 5 nights
-        BigDecimal unitPriceXQty = unitPrice.multiply(quantity);
+        BigDecimal unitPriceXQty = unitPriceIncTax.multiply(quantity);
 
-        checkItem(items, patient1, product1, template, author, clinician, quantity, quantity, ZERO, unitPrice, ZERO,
-                  price1, ZERO, new BigDecimal("5.455"), price1.add(unitPriceXQty), visit.getEvent(), 0);
+        checkItem(items, patient1, product1, template, author, clinician, quantity, quantity, ZERO, unitPriceIncTax,
+                  ZERO, price1IncTax, ZERO, new BigDecimal("5.455"), price1IncTax.add(unitPriceXQty), visit.getEvent(), 0);
 
         // the high quantity = 2 for product2, so need to double quantity
         BigDecimal two = BigDecimal.valueOf(2);
         checkItem(items, patient1, product2, template, author, clinician, quantity, quantity.multiply(two),
-                  ZERO, unitPrice, ZERO, price2, ZERO, new BigDecimal("10.909"),
-                  price2.add(unitPriceXQty.multiply(two)),
+                  ZERO, unitPriceIncTax, ZERO, price2IncTax, ZERO, new BigDecimal("10.909"),
+                  price2IncTax.add(unitPriceXQty.multiply(two)),
                   visit.getEvent(), 0);
     }
 

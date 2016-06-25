@@ -16,8 +16,6 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
@@ -47,11 +45,6 @@ public class IMObjectEditorFactory {
      * The fallback resource name.
      */
     private final String fallbackName;
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(IMObjectEditorFactory.class);
 
     /**
      * The default resource name.
@@ -99,9 +92,10 @@ public class IMObjectEditorFactory {
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      * @return an editor for {@code object}
+     * @throws IllegalStateException if a registered editor cannot be created
      */
     public IMObjectEditor create(IMObject object, IMObject parent, LayoutContext context) {
-        IMObjectEditor result = null;
+        IMObjectEditor result;
 
         String shortName = object.getArchetypeId().getShortName();
         ArchetypeHandler handler = getEditors().getHandler(shortName);
@@ -113,13 +107,13 @@ public class IMObjectEditorFactory {
                 try {
                     result = (IMObjectEditor) ctor.newInstance(object, parent, context);
                 } catch (Throwable throwable) {
-                    log.error(throwable, throwable);
+                    throw new IllegalStateException("Failed to construct " + type.getName() + " for "
+                                                    + object.getArchetypeId().getShortName(), throwable);
                 }
             } else {
-                log.error("No valid constructor found for class: " + type.getName());
+                throw new IllegalStateException("No valid constructor found for class: " + type.getName());
             }
-        }
-        if (result == null) {
+        } else {
             result = new DefaultIMObjectEditor(object, parent, context);
         }
         return result;

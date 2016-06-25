@@ -112,7 +112,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         discountGroup = createDiscountGroup(discount10, discount5);
         costDiscountGroup = createDiscountGroup(costDiscount0, costDiscount10);
 
-        rules = new DiscountRules(getArchetypeService(), getLookupService());
+        rules = new DiscountRules(getArchetypeService());
 
         // set up practice with 10% tax rate
         practice = (Party) TestHelper.create(PracticeArchetypes.PRACTICE);

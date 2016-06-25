@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.charge;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -27,9 +28,9 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.product.ProductHelper;
+import org.openvpms.web.component.im.product.CustomerPricingContext;
+import org.openvpms.web.component.im.product.PricingContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.DoseManager;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
@@ -55,11 +56,6 @@ public class PriceActEditContext {
     private final IArchetypeService service;
 
     /**
-     * The product price rules.
-     */
-    private final ProductPriceRules priceRules;
-
-    /**
      * The tax rules.
      */
     private final CustomerTaxRules taxRules;
@@ -68,11 +64,6 @@ public class PriceActEditContext {
      * The discount rules.
      */
     private final DiscountRules discountRules;
-
-    /**
-     * The practice currency.
-     */
-    private final Currency currency;
 
     /**
      * The dose manager. May be {@code null}
@@ -85,11 +76,18 @@ public class PriceActEditContext {
     private final boolean useMinimumQuantities;
 
     /**
+     * The product pricer.
+     */
+    private final PricingContext pricingContext;
+
+    /**
      * Constructs a {@link PriceActEditContext}.
      *
-     * @param context the layout context. The context supply a practice
+     * @param customer the customer
+     * @param location the practice location. May be {@code null}
+     * @param context  the layout context. The context must supply a practice
      */
-    public PriceActEditContext(LayoutContext context) {
+    public PriceActEditContext(Party customer, Party location, LayoutContext context) {
         this.practice = context.getContext().getPractice();
         if (practice == null) {
             throw new IllegalStateException("Context is missing the practice");
@@ -97,11 +95,13 @@ public class PriceActEditContext {
         IMObjectBean bean = new IMObjectBean(practice);
         useMinimumQuantities = bean.getBoolean("minimumQuantities", false);
         service = new CachingReadOnlyArchetypeService(context.getCache(), ServiceHelper.getArchetypeService());
-        ILookupService lookups = ServiceHelper.getLookupService();
-        priceRules = new ProductPriceRules(service);
-        taxRules = new CustomerTaxRules(practice, service, lookups);
-        discountRules = new DiscountRules(service, lookups);
-        currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);
+        ProductPriceRules priceRules = new ProductPriceRules(service);
+        taxRules = new CustomerTaxRules(practice, service);
+        discountRules = new DiscountRules(service);
+        Currency currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);
+        LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
+        pricingContext = new CustomerPricingContext(customer, location, currency, priceRules, locationRules,
+                                                    taxRules);
     }
 
     /**
@@ -111,6 +111,15 @@ public class PriceActEditContext {
      */
     public void setDoseManager(DoseManager doseManager) {
         this.doseManager = doseManager;
+    }
+
+    /**
+     * Returns the pricing context.
+     *
+     * @return the pricing context
+     */
+    public PricingContext getPricingContext() {
+        return pricingContext;
     }
 
     /**
@@ -125,9 +134,8 @@ public class PriceActEditContext {
      * @param price the price
      * @return the price, minus any tax exclusions
      */
-    public BigDecimal getPrice(Product product, ProductPrice price, BigDecimal serviceRatio, Party customer) {
-        BigDecimal amount = ProductHelper.getPrice(price, serviceRatio, currency);
-        return taxRules.getTaxExAmount(amount, product, customer);
+    public BigDecimal getPrice(Product product, ProductPrice price) {
+        return pricingContext.getPrice(product, price);
     }
 
     /**
@@ -161,30 +169,12 @@ public class PriceActEditContext {
     }
 
     /**
-     * Returns the practice currency.
-     *
-     * @return the practice currency
-     */
-    public Currency getCurrency() {
-        return currency;
-    }
-
-    /**
      * Returns the discount rules.
      *
      * @return rthe discount rules
      */
     public DiscountRules getDiscountRules() {
         return discountRules;
-    }
-
-    /**
-     * Returns the product price rules.
-     *
-     * @return the product price rules
-     */
-    public ProductPriceRules getPriceRules() {
-        return priceRules;
     }
 
     /**
@@ -204,4 +194,5 @@ public class PriceActEditContext {
     public boolean useMinimumQuantities() {
         return useMinimumQuantities;
     }
+
 }

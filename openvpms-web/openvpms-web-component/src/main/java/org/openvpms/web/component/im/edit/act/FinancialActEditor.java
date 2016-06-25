@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -57,6 +57,8 @@ public class FinancialActEditor extends ActEditor {
 
     /**
      * Constructs a {@link FinancialActEditor}.
+     * <p/>
+     * Subclasses should invoke {@link #initialise()}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -64,13 +66,6 @@ public class FinancialActEditor extends ActEditor {
      */
     protected FinancialActEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-        if (!isSavedPosted(act)) {
-            // If the act hasn't been POSTED, calculate the tax and amount as the tax rate may have changed.
-            // For tax-ex acts, this will affect the act total.
-            // If the act has been POSTED, amounts shouldn't change. If they do, it will be picked up at validation.
-            recalculateTax();
-            calculateAmount();
-        }
     }
 
     /**
@@ -92,6 +87,21 @@ public class FinancialActEditor extends ActEditor {
             List<Act> acts = getItems().getActs();
             BigDecimal tax = ActHelper.sum(getObject(), acts, "tax");
             taxAmount.setValue(tax);
+        }
+    }
+
+    /**
+     * Initialises the act.
+     * <p/>
+     * If the act hasn't been POSTED, calculate the tax and amount as the tax rate may have changed.
+     * For tax-ex acts, this will affect the act total.
+     * If the act has been POSTED, amounts shouldn't change. If they do, it will be picked up at validation.
+     */
+    protected void initialise() {
+        FinancialAct act = getObject();
+        if (!isSavedPosted(act)) {
+            recalculateTax();
+            calculateAmount();
         }
     }
 

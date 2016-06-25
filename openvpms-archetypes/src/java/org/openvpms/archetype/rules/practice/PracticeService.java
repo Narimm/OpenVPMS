@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.practice;
 
 import org.joda.time.Period;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -157,6 +158,16 @@ public class PracticeService {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the currency associated with a practice.
+     *
+     * @return the currency associated with a practice, or {@code null} if no practice is defined
+     */
+    public Currency getCurrency() {
+        Party practice = getPractice();
+        return (practice != null) ? rules.getCurrency(practice) : null;
     }
 
     /**

@@ -210,9 +210,9 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         BigDecimal itemTotal2 = BigDecimal.valueOf(50);
         BigDecimal itemTotal3 = new BigDecimal("41.25");
 
-        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
-        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
-        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+        Product product1 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("18.18"));
+        Product product2 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("45.45"));
+        Product product3 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("37.50"));
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
@@ -240,9 +240,9 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         BigDecimal itemTotal2 = BigDecimal.valueOf(50);
         BigDecimal itemTotal3 = new BigDecimal("41.25");
 
-        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
-        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
-        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+        Product product1 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("18.18"));
+        Product product2 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("45.45"));
+        Product product3 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("37.50"));
 
         for (int i = 0, j = 0; i < 3; ++i) {
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -294,9 +294,9 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         BigDecimal itemTotal2 = BigDecimal.valueOf(50);
         BigDecimal itemTotal3 = new BigDecimal("41.25");
 
-        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
-        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
-        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+        Product product1 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("18.18"));
+        Product product2 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("45.45"));
+        Product product3 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("37.50"));
 
         for (int i = 0, j = 0; i < 3; ++i) {
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -348,9 +348,9 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         BigDecimal itemTotal2 = BigDecimal.valueOf(50);
         BigDecimal itemTotal3 = new BigDecimal("41.25");
 
-        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
-        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
-        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+        Product product1 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("18.18"));
+        Product product2 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("45.45"));
+        Product product3 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("37.50"));
 
         for (int i = 0, j = 0; i < 3; ++i) {
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -395,9 +395,9 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         BigDecimal itemTotal2 = BigDecimal.valueOf(50);
         BigDecimal itemTotal3 = new BigDecimal("41.25");
 
-        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
-        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
-        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+        Product product1 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("18.18"));
+        Product product2 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("45.45"));
+        Product product3 = createProduct(ProductArchetypes.SERVICE, new BigDecimal("37.50"));
 
         for (int i = 0, j = 0; i < 3; ++i) {
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -444,7 +444,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
     public void testDeleteInvoice() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
-        BigDecimal fixedPrice = BigDecimal.valueOf(11);
+        BigDecimal fixedPrice = BigDecimal.TEN;
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
@@ -1130,7 +1130,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      * @param childActs the expected no. of child acts
      */
     private void checkTemplateExpansion(String shortName, int childActs) {
-        BigDecimal fixedPrice = ONE;
+        BigDecimal fixedPrice = new BigDecimal("0.91");
         Entity discount = DiscountTestHelper.createDiscount(TEN, true, DiscountRules.PERCENTAGE);
 
         Product template = ProductTestHelper.createTemplate("templateA");
@@ -1211,7 +1211,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      * @param charge the charge
      */
     private void checkDeleteCharge(FinancialAct charge) {
-        BigDecimal fixedPrice = BigDecimal.valueOf(11);
+        BigDecimal fixedPrice = BigDecimal.TEN;
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
@@ -1275,7 +1275,8 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         layoutContext.getContext().setLocation(location);
         layoutContext.getContext().setStockLocation(stockLocation);
 
-        BigDecimal fixedPrice = BigDecimal.valueOf(11);
+        BigDecimal fixedPrice = BigDecimal.TEN;
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(11);
         BigDecimal itemTax = BigDecimal.valueOf(1);
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal tax = itemTax.multiply(BigDecimal.valueOf(3));
@@ -1367,11 +1368,11 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
         BigDecimal discount = ZERO;
         checkItem(items, patient, product1, null, author, clinician, ZERO, quantity, ZERO, ZERO,
-                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+                  ZERO, fixedPriceIncTax, discount, itemTax, itemTotal, event, product1Acts);
         checkItem(items, patient, product2, null, author, clinician, ZERO, quantity, ZERO, ZERO,
-                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product2Acts);
+                  ZERO, fixedPriceIncTax, discount, itemTax, itemTotal, event, product2Acts);
         checkItem(items, patient, product3, null, author, clinician, ZERO, quantity, ZERO, ZERO,
-                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product3Acts);
+                  ZERO, fixedPriceIncTax, discount, itemTax, itemTotal, event, product3Acts);
 
         boolean add = bean.isA(CustomerAccountArchetypes.CREDIT);
         checkStock(product1, stockLocation, product1Stock, quantity, add);
@@ -1461,7 +1462,8 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
 
         BigDecimal quantity = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(11);
+        BigDecimal fixedPrice = BigDecimal.TEN;
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(11);
         BigDecimal discount = ZERO;
         BigDecimal itemTax = BigDecimal.valueOf(1);
         BigDecimal itemTotal = BigDecimal.valueOf(11);
@@ -1510,17 +1512,17 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
         if (TypeHelper.isA(charge, CustomerAccountArchetypes.COUNTER)) {
             checkItem(items, patient, product1, template, author, clinician, BigDecimal.ONE, quantity, ZERO, ZERO,
-                      ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+                      ZERO, fixedPriceIncTax, discount, itemTax, itemTotal, event, product1Acts);
         } else {
             // quantity derived from the product dose. As there is no unit price, the totals don't change
             checkItem(items, patient, product1, template, author, clinician, BigDecimal.ONE, new BigDecimal("4.2"),
-                      ZERO, ZERO, ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+                      ZERO, ZERO, ZERO, fixedPriceIncTax, discount, itemTax, itemTotal, event, product1Acts);
         }
 
         checkItem(items, patient, product2, template, author, clinician, BigDecimal.ONE, quantity, ZERO, ZERO,
-                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
+                  ZERO, fixedPriceIncTax, discount, itemTax, itemTotal, event, 0);
         checkItem(items, patient, product3, template, author, clinician, BigDecimal.ONE, quantity, ZERO, ZERO,
-                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
+                  ZERO, fixedPriceIncTax, discount, itemTax, itemTotal, event, 0);
     }
 
     /**
