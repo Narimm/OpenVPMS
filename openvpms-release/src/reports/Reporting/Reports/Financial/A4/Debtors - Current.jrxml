@@ -1,25 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.1.1.final using JasperReports Library version 6.1.1  -->
-<!-- 2015-11-04T02:38:58 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Current Debtors" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="ef0a451b-c462-4a73-bce6-4fc2b288f6e1">
+<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-06-20T05:26:24 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Current Debtors" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" uuid="ef0a451b-c462-4a73-bce6-4fc2b288f6e1">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
 	<parameter name="location" class="java.lang.String">
 		<parameterDescription><![CDATA[Customer Location]]></parameterDescription>
 	</parameter>
@@ -1178,7 +1171,7 @@ order by custLocn,acType,name;]]>
 					<subreportParameterExpression><![CDATA["act.customerAccountPayment"]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["Debtors - Current - SubReport2.jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA["Debtors - Current - SubReport1.jrxml"]]></subreportExpression>
 			</subreport>
 			<textField>
 				<reportElement x="0" y="1" width="12" height="13" uuid="1f25cb13-873d-469f-8823-b71c76f68f7a">
@@ -1195,10 +1188,10 @@ order by custLocn,acType,name;]]>
 		</band>
 	</detail>
 	<summary>
-		<band height="279" splitType="Stretch">
+		<band height="320" splitType="Stretch">
 			<printWhenExpression><![CDATA[$P{Explain}||(new Boolean($V{REPORT_COUNT}.intValue()==0))]]></printWhenExpression>
 			<staticText>
-				<reportElement x="0" y="24" width="534" height="255" isRemoveLineWhenBlank="true" uuid="21a9bd43-206f-4ba0-8f54-726ac1d57976">
+				<reportElement x="0" y="24" width="534" height="296" isRemoveLineWhenBlank="true" uuid="21a9bd43-206f-4ba0-8f54-726ac1d57976">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -1214,7 +1207,9 @@ The Last Invoice shown is the last Finalised Invoice.
 If the 'Show Outstanding 60+ only' box is checked then only customers with amounts outstanding for 60 or more days are shown; otherwise
 all customers with amounts outstanding will be shown and also those customers with credit balances if the 'Show Credit Balances' box is checked.  Credit amounts are shown as (123.45)
 Customers with zero balances are never shown even if they have In Progress transactions.
-Note that the Totals include all customers selected even if they have not been displayed. The Totals do not include inactive customers unless the Include Inactive Customers box is checked  The Total amounts are in whole dollars to allow large amounts to be displayed.]]></text>
+Note that the Totals include all customers selected even if they have not been displayed. The Totals do not include inactive customers unless the Include Inactive Customers box is checked  The Total amounts are in whole dollars to allow large amounts to be displayed.
+
+All amounts are tax inclusive.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="111" y="0" width="350" height="23" isRemoveLineWhenBlank="true" uuid="630d8111-7986-4e54-a1c1-c82b730ba953">
