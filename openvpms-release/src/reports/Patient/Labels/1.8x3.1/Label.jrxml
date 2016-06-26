@@ -28,7 +28,8 @@
     <import value="net.sf.jasperreports.engine.*"/>
     <import value="java.util.*"/>
     <import value="net.sf.jasperreports.engine.data.*"/>
-    <field name="patient.entity.name" class="java.lang.String"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<field name="patient.entity.name" class="java.lang.String"/>
     <field name="patient.entity.description" class="java.lang.String"/>
     <field name="product.entity.name" class="java.lang.String"/>
     <field name="startTime" class="java.util.Date"/>

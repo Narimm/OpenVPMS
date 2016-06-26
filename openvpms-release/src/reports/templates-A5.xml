@@ -12,20 +12,15 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <templates>
     <template name="Counter Sale" archetype="act.customerAccountChargesCounter" reportType="CUSTOMER"
               description="Counter Sale (A5)" path="Customer/Counter Sale/A5/Counter Sale.jrxml" mimeType="text/xml"
               docType="document.other"/>
-    <template name="Counter Sale Items" archetype="SUBREPORT" reportType="CUSTOMER"
-              description="Counter Sale Items (A5)" path="Customer/Counter Sale/A5/Counter Sale Items.jrxml"
-              mimeType="text/xml" docType="document.other"/>
     <template name="Credit" archetype="act.customerAccountChargesCredit" reportType="CUSTOMER" description="Credit (A5)"
               path="Customer/Credit/A5/Credit.jrxml" mimeType="text/xml" docType="document.other"/>
-    <template name="Credit Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Credit Items (A5)"
-              path="Customer/Credit/A5/Credit Items.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Credit Adjustment" archetype="act.customerAccountCreditAdjust" reportType="CUSTOMER"
               description="Credit Adjustment (A5)" path="Customer/Credit Adjustment/A5/Credit Adjustment.jrxml"
               mimeType="text/xml" docType="document.other"/>
@@ -36,23 +31,27 @@
               path="Customer/Estimate/A5/Estimate.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Estimate Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Estimate Items (A5)"
               path="Customer/Estimate/A5/Estimate Items.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Estimate Items-PT" archetype="SUBREPORT" reportType="CUSTOMER" description="Estimate Items-PT (A5)"
+              path="Customer/Estimate/A5/Estimate Items-PT.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Invoice" archetype="act.customerAccountChargesInvoice" reportType="CUSTOMER"
               description="Invoice (A5)" path="Customer/Invoice/A5/Invoice.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Invoice Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Items (A5)"
               path="Customer/Invoice/A5/Invoice Items.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Invoice Items-PT" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Items-PT (A5)"
+              path="Customer/Invoice/A5/Invoice Items-PT.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Invoice Notes" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Notes (A5)"
               path="Customer/Invoice/A5/Invoice Notes.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Invoice Reminders" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Reminders (A5)"
               path="Customer/Invoice/A5/Invoice Reminders.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Invoice Appointments" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Appointments"
+              path="Customer/Invoice/A5/Invoice Appointments.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Receipt" archetype="act.customerAccountPayment" reportType="CUSTOMER" description="Receipt (A5)"
               path="Customer/Receipt/A5/Receipt.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Receipt Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Receipt Items (A5)"
               path="Customer/Receipt/A5/Receipt Items.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Refund" archetype="act.customerAccountRefund" reportType="CUSTOMER" description="Refund (A5)"
               path="Customer/Refund/A5/Refund.jrxml" mimeType="text/xml" docType="document.other"/>
-    <template name="Refund Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Refund Items (A5)"
-              path="Customer/Refund/A5/Refund Items.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Desexing Certificate" archetype="act.patientDocumentForm" reportType="PATIENT"
               description="Desexing Certificate (A5)" path="Patient/Documents/A5/Desexing Certificate.odt"
               mimeType="application/vnd.oasis.opendocument.text" docType="document.other"/>
@@ -74,15 +73,17 @@
     <template name="Prescription" archetype="act.patientPrescription" reportType="PATIENT" description="Prescription"
               path="Patient/Medical Records/A4/Prescription.odt" mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
-    <template name="Stock Adjustment" archetype="act.stockAdjust" reportType="PRODUCT" description="Stock Adjustment"
-              path="Product/Stock Adjustment/A4/Stock Adjustment.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Stock Adjustment" archetype="act.stockAdjust" reportType="PRODUCT"
+              description="Stock Adjustment(A5)"
+              path="Product/Stock Adjustment/A5/Stock Adjustment.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Stock Adjustment Items" archetype="SUBREPORT" reportType="PRODUCT"
-              description="Stock Adjustment Items" path="Product/Stock Adjustment/A4/Stock Adjustment Items.jrxml"
+              description="Stock Adjustment Items" path="Product/Stock Adjustment/A5/Stock Adjustment Items.jrxml"
               mimeType="text/xml" docType="document.other"/>
-    <template name="Stock Transfer" archetype="act.stockTransfer" reportType="PRODUCT" description="Stock Transfer"
-              path="Product/Stock Transfer/A4/Stock Transfer.jrxml" mimeType="text/xml" docType="document.other"/>
-    <template name="Stock Transfer Items" archetype="SUBREPORT" reportType="PRODUCT" description="Stock Transfer Items"
-              path="Product/Stock Transfer/A4/Stock Transfer Items.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Stock Transfer" archetype="act.stockTransfer" reportType="PRODUCT" description="Stock Transfer(A5)"
+              path="Product/Stock Transfer/A5/Stock Transfer.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Stock Transfer Items" archetype="SUBREPORT" reportType="PRODUCT"
+              description="Stock Transfer Items(A5)"
+              path="Product/Stock Transfer/A5/Stock Transfer Items.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Customer Account Balance Report" archetype="CUSTOMER_BALANCE" reportType="FINANCIAL"
               description="Customer Account Balance Report" path="Reporting/Debtors/A4/Customer Account Balance.jrxml"
               mimeType="text/xml" docType="document.other"/>
@@ -91,8 +92,12 @@
               docType="document.other"/>
     <template name="Statement Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Statement Items (A5)"
               path="Reporting/Debtors/Statement/A5/Statement Items.jrxml" mimeType="text/xml" docType="document.other"/>
-    <template name="Bank Deposit" archetype="act.bankDeposit" reportType="FINANCIAL" description="Bank Deposit"
-              path="Reporting/Deposits/A4/Bank Deposit.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Statement Items-PT" archetype="SUBREPORT" reportType="CUSTOMER"
+              description="Statement Items-PT (A5)"
+              path="Reporting/Debtors/Statement/A5/Statement Items-PT.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Bank Deposit" archetype="act.bankDeposit" reportType="FINANCIAL" description="Bank Deposit(A5)"
+              path="Reporting/Deposits/A5/Bank Deposit.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Grouped Reminders Report" archetype="GROUPED_REMINDERS" reportType="PATIENT"
               description="Grouped Reminders Report" path="Reporting/Reminders/A4/Grouped Reminders.jrxml"
               mimeType="text/xml" docType="document.other"/>
@@ -162,6 +167,14 @@
               description="Export Customer Email Addresses"
               path="Reporting/Reports/Customer/A4/Export Customer Email Addresses.jrxml" mimeType="text/xml"
               docType="document.other"/>
+    <template name="Export Customer Phone Numbers for Sales" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Customer Phone Numbers for Sales"
+              path="Reporting/Reports/Customer/A4/Export Customer Phone Numbers for Sales.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Phone Numbers" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Customer Phone Numbers"
+              path="Reporting/Reports/Customer/A4/Export Customer Phone Numbers.jrxml" mimeType="text/xml"
+              docType="document.other"/>
     <template name="Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
               description="Clinician Sales Report" path="Reporting/Reports/Financial/A4/Clinician Sales Report.jrxml"
               mimeType="text/xml" docType="document.other"/>
@@ -172,10 +185,6 @@
     <template name="Debtors - Current - SubReport1" archetype="SUBREPORT" reportType="FINANCIAL"
               description="Debtors - Current - SubReport1"
               path="Reporting/Reports/Financial/A4/Debtors - Current - SubReport1.jrxml" mimeType="text/xml"
-              docType="document.other"/>
-    <template name="Debtors - Current - SubReport2" archetype="SUBREPORT" reportType="FINANCIAL"
-              description="Debtors - Current - SubReport2"
-              path="Reporting/Reports/Financial/A4/Debtors - Current - SubReport2.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Debtors - Historical" archetype="REPORT" reportType="FINANCIAL"
               description="Provides the debtors position at any date"
@@ -282,9 +291,6 @@
     <template name="Supplier Credit" archetype="act.supplierAccountChargesCredit" reportType="SUPPLIER"
               description="Supplier Credit (A5)" path="Supplier/Credit/A5/Supplier Credit.jrxml" mimeType="text/xml"
               docType="document.other"/>
-    <template name="Supplier Credit Items" archetype="SUBREPORT" reportType="SUPPLIER"
-              description="Supplier Credit Items (A5)" path="Supplier/Credit/A5/Supplier Credit Items.jrxml"
-              mimeType="text/xml" docType="document.other"/>
     <template name="Delivery" archetype="act.supplierDelivery" reportType="SUPPLIER" description="Delivery (A5)"
               path="Supplier/Delivery/A5/Delivery.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Delivery Items" archetype="SUBREPORT" reportType="SUPPLIER" description="Delivery Items (A5)"
@@ -311,6 +317,9 @@
     <template name="Supplier Remittance Items" archetype="SUBREPORT" reportType="SUPPLIER"
               description="Supplier Remittance Items (A5)" path="Supplier/Remittance/A5/Supplier Remittance Items.jrxml"
               mimeType="text/xml" docType="document.other"/>
+    <template name="Supplier Return" archetype="act.supplierReturn" reportType="SUPPLIER"
+              description="Supplier Return (A5)" path="Supplier/Return/A5/Supplier Return.jrxml"
+              mimeType="text/xml" docType="document.other"/>
     <template name="Appointment" archetype="act.customerAppointment" reportType="WORKFLOW"
               description="Appointment (A5)" path="Workflow/Appointment/A5/Appointment.jrxml" mimeType="text/xml"
               docType="document.other"/>
@@ -320,15 +329,25 @@
     <template name="Pharmacy Order Items" archetype="SUBREPORT" reportType="WORKFLOW" description="Pharmacy Order Items"
               path="Workflow/Customer Order/Pharmacy Order/A4/Pharmacy Order Items.jrxml" mimeType="text/xml"
               docType="document.other"/>
-    <template name="Pharmacy Return" archetype="act.customerOrderPharmacy" reportType="WORKFLOW"
+    <template name="Pharmacy Return" archetype="act.customerReturnPharmacy" reportType="WORKFLOW"
               description="Pharmacy Return" path="Workflow/Customer Order/Pharmacy Return/A4/Pharmacy Return.jrxml"
               mimeType="text/xml" docType="document.other"/>
-    <template name="Pharmacy Return Items" archetype="SUBREPORT" reportType="WORKFLOW"
-              description="Pharmacy Return Items"
-              path="Workflow/Customer Order/Pharmacy Return/A4/Pharmacy Return Items.jrxml" mimeType="text/xml"
-              docType="document.other"/>
-    <template name="Message" archetype="act.userMessage" reportType="WORKFLOW" description="Message"
-              path="Workflow/Message/A4/Message.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Message" archetype="act.userMessage" reportType="WORKFLOW" description="Message (A5)"
+              path="Workflow/Message/A5/Message.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Audit Message" archetype="act.auditMessage" reportType="WORKFLOW" description="Audit Message (A5)"
+              path="Workflow/Message/A5/Audit Message.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="System Message" archetype="act.systemMessage" reportType="WORKFLOW"
+              description="System Message (A5)"
+              path="Workflow/Message/A5/System Message.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Task" archetype="act.customerTask" reportType="WORKFLOW" description="Task (A5)"
               path="Workflow/Task/A5/Task.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Letterhead" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead"
+              path="Letterhead/A4/Letterhead.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Letterhead-A5" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead (A5)"
+              path="Letterhead/A5/Letterhead-A5.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Address Block" archetype="SUBREPORT" reportType="WORKFLOW" description="Address Block (A4)"
+              path="Letterhead/A4/AddressBlock.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Address Block-A5" archetype="SUBREPORT" reportType="WORKFLOW" description="Address Block (A5)"
+              path="Letterhead/A5/AddressBlock-A5.jrxml" mimeType="text/xml" docType="document.other"/>
+
 </templates>

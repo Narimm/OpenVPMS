@@ -27,6 +27,7 @@
     <property name="ireport.x" value="0"/>
     <property name="ireport.y" value="0"/>
     <property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
     <parameter name="Product Name" class="java.lang.String">
         <parameterDescription><![CDATA[Product Name]]></parameterDescription>
     </parameter>
