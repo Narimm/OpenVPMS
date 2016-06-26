@@ -29,18 +29,22 @@
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
         <data collection="contacts" archetype="contact.email" name="Main Clinic Accounts"
-              emailAddress="billing.opv.demo@gmail.com">
+              emailAddress="billing.opv.demo@gmail.com" preferred="true">
             <data collection="purposes" archetype="lookup.contactPurpose" childId="id:BILLING"/>
         </data>
         <data collection="contacts" archetype="contact.email" name="Main Clinic Reminders"
-              emailAddress="reminder.opv.demo@gmail.com">
+              emailAddress="reminder.opv.demo@gmail.com" preferred="false">
             <data collection="purposes" archetype="lookup.contactPurpose" childId="id:REMINDER"/>
         </data>
+        <data collection="contacts" archetype="contact.website" url="openvpms.org"/>
+        <data archetype="entityLink.locationLetterhead" source="id:OL1" target="id:LH1"/>
     </data>
     <data id="OL2" archetype="party.organisationLocation" name="Branch Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97629865"/>
         <data collection="contacts" archetype="contact.location" address="4/18 Station Street" suburb="Bayswater"
               state="VIC" postcode="3082"/>
+        <data collection="contacts" archetype="contact.website" url="openvpms.org"/>
+        <data archetype="entityLink.locationLetterhead" source="id:OL2" target="id:LH1"/>
     </data>
     <data id="MS1" archetype="entity.mailServer" name="Bigpond" host="mail.bigpond.com" port="587"
           username="opv.demo@bigpond.com" password="sample"/>
@@ -64,6 +68,43 @@
     <data id="OTC2" archetype="party.organisationOTC" name="Branch OTC"/>
     <data archetype="entityRelationship.locationOTC" source="id:OL1" target="id:OTC1"/>
     <data archetype="entityRelationship.locationOTC" source="id:OL2" target="id:OTC2"/>
+    <data id="LH1" archetype="entity.letterhead" name="Letterhead" companyID="ABN 123 456 789" logoFile="openvpms.png"
+          useProductTypes="true" remindersInvoice="true" appointmentsInvoice="true"
+          lastPageFooter="Optional last page footer. This is configurable via Slogan in the Letterhead &amp; Document Control. E.g. We are open 8am-6m Monday to Saturday. For out of hours emergencies, call (03) 9123 4567 for immediate veterinarian attention."
+          invoiceMsg="Optional invoice message. This is configurable via Invoice Message in the Letterhead &amp; Document Control. E.g.&#10;
+&#10;
+Thank you for choosing OpenVPMS Demonstration Practice - we appreciate your business."
+          invoicePay="Optional invoice payment instructions. These are configurable via Invoice Payment Instr. in the Letterhead &amp; Document Control. E.g.&#10;
+&#10;
+We accept payment by credit card, direct deposit and cheque.
+To pay by direct deposit, transfer to CBA account 'OpenVPMS Demonstration practice' 123-456-789 and email the confirmation.           "
+          receiptMsg="Optional receipt message. It is configurable via Receipt Message in the Letterhead &amp; Document Control. E.g.&#10;
+&#10;
+Thank you for your payment and for choosing OpenVPMS Demonstration Practice - we appreciate your business."
+          estimateMsg="Optional estimate message. It is configurable via Estimate Message in the Letterhead &amp; Document Control E.g.&#10;
+&#10;
+Please call us on (03) 9123 4567 if you have any queries about this estimate."
+          generalMsg="Optional message. This is configurable via General Message in the Letterhead &amp; Document Control"
+          orderMsg="Optional order message. This is configurable via Order Message in the Letterhead &amp; Document Control. E.g.&#10;
+&#10;
+Please deliver all packages to the rear of the building."
+          supplierMsg="Optional supplier message. This is configurable via Supplier Message in the Letterhead &amp; Document Control"
+          pharmacyMsg="Optional pharmacy message. This is configurable via Pharmacy Message in the Letterhead &amp; Document Control"
+          creditCardInstructions="Optional credit card instructions. These are configurable via Credit Card Instructions in the Letterhead &amp; Document Control. E.g.&#10;
+&#10;
+To pay by Visa, Mastercard or American Express, fill in the remittance advice and email, fax or post to the address shown. Alternatively, phone us on (03) 9123 4567."
+          directDepositInstructions="Optional direct deposit instructions. These are configurable via Direct Deposit Instructions in the Letterhead &amp; Document Control. E.g.&#10;
+&#10;
+To pay by direct deposit, transfer to CBA account 'OpenVPMS Demonstration practice' 123-456-789 and email the confirmation.           "
+          paymentOption3="Optional payment instructions. These are configurable via Payment Option 3 in the Letterhead &amp; Document Control. E.g&#10;
+&#10;
+To pay by cheque, make the cheque payable to OpenVPMS Demonstration Practice, fill in the remittance advice below and both to the address shown."
+          paymentOption4="Optional payment instructions. These are configurable via Payment Option 4 in the Letterhead &amp; Document Control. E.g. if you support PayPal or some other payment method. It may be left blank."
+          lineItemPrint="A"
+          groupRemindMsg="This is configurable via Reminder Message in the Letterhead &amp; Document Control. E.g.&#10;
+&#10;
+Our records indicate that your pet(s) named above are due for some in-clinic treatments."
+            />
     <data id="ART1" archetype="entity.documentTemplateSMSAppointment"
           name="Default Appointment Reminder SMS Template"
           description="&lt;patient&gt;'s appointment at &lt;location&gt; is confirmed for &lt;date/time&gt;. Call us on &lt;phone&gt; if you need to change the appointment"
