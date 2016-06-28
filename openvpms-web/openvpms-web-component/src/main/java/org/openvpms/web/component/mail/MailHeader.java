@@ -346,6 +346,7 @@ public class MailHeader extends AbstractModifiable {
         focus.add(cc.getField());
         focus.add(bcc.getField());
         focus.add(subjectText);
+        focus.setDefault(subjectText);
         return grid;
     }
 

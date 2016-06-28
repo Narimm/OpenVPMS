@@ -679,11 +679,13 @@ public class MailEditor extends AbstractModifiable {
         GridLayoutData rightInset = new GridLayoutData();
         rightInset.setInsets(new Insets(0, 0, inset, 0));
 
+        SplitPane component = SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL, "MailEditor", header.getComponent(),
+                ColumnFactory.create(LARGE_INSET, messageEditor));
         focus.add(header.getFocusGroup());
         focus.add(messageEditor);
         focus.setDefault(header.getFocusGroup().getDefaultFocus());
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "MailEditor", header.getComponent(),
-                                       ColumnFactory.create(LARGE_INSET, messageEditor));
+        return component;
     }
 
     /**
