@@ -361,7 +361,7 @@ public class EmailTemplateEvaluator {
                     log.error("Failed to get HTML document, id=" + document.getId(), exception);
                 }
             } else if (contextBean instanceof IMObject && factory.isIMObjectReport(document)) {
-                Reporter<IMObject> reporter = createReporter((IMObject) object, document, context);
+                Reporter<IMObject> reporter = createReporter((IMObject) contextBean, document, context);
                 result = getMessage(reporter);
             } else if (Converter.canConvert(document, DocFormats.HTML_TYPE)) {
                 byte[] converted = DocumentHelper.export(document, DocFormats.HTML_TYPE);
