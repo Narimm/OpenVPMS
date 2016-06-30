@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -22,6 +22,7 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.lookup.LookupPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.style.Styles;
@@ -48,6 +49,20 @@ public class NodeEditorFactory extends AbstractEditableComponentFactory {
     public NodeEditorFactory(Editors editors, LayoutContext context) {
         super(context, Styles.EDIT);
         this.editors = editors;
+    }
+
+    /**
+     * Returns an editor for a lookup property.
+     *
+     * @param property the lookup property
+     * @param context  the parent object
+     * @return a new editor for {@code property}
+     */
+    @Override
+    protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
+        LookupPropertyEditor editor = super.createLookupEditor(property, context);
+        editors.add(editor);
+        return editor;
     }
 
     /**
