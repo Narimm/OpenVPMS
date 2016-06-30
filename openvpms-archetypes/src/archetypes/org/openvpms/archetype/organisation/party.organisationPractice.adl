@@ -88,6 +88,16 @@
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="showProductTypeDuringCharging" path="/details/showProductTypeDuringCharging"
               type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="showReferrals" path="/details/showReferrals"
+              type="java.lang.String" minCardinality="0" maxCardinality="1" defaultValue="'ACTIVE'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ALWAYS" value="Always"/>
+                    <property name="ACTIVE" value="Active"/>
+                    <property name="NEVER" value="Never"/>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="ignoreListPriceDecreases" path="/details/ignoreListPriceDecreases"
               type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="logCommunication" path="/details/logCommunication" type="java.lang.Boolean"
