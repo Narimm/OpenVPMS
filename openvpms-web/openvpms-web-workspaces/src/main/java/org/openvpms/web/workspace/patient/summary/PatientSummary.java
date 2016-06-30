@@ -20,7 +20,9 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -29,11 +31,13 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -88,6 +92,20 @@ public class PatientSummary extends PartySummary {
      */
     private final ReminderRules reminderRules;
 
+    /**
+     * Value of <em>showReferrals</em> to indicate to always show referral information.
+     */
+    private static final String ALWAYS_SHOW_REFERRAL = "ALWAYS";
+
+    /**
+     * Value of <em>showReferrals</em> to indicate to show the active referral.
+     */
+    private static final String SHOW_ACTIVE_REFERRAL = "ACTIVE";
+
+    /**
+     * Value of <em>showReferrals</em> to indicate to never show referrals in the summary.
+     */
+    private static final String NEVER_SHOW_REFERRAL = "NEVER";
 
     /**
      * Constructs a {@link PatientSummary}.
@@ -145,7 +163,6 @@ public class PatientSummary extends PartySummary {
         result.add(getSpecies(patient));
         result.add(getBreed(patient));
         result.add(createSummaryGrid(patient));
-        result.add(addReferralVet(patient));
         return result;
     }
 
@@ -225,6 +242,7 @@ public class PatientSummary extends PartySummary {
         addDateOfBirth(patient, grid);
         addWeight(patient, grid);
         addMicrochip(patient, grid);
+        addReferral(patient, grid);
         return grid;
     }
 
@@ -355,30 +373,47 @@ public class PatientSummary extends PartySummary {
     }
 
     /**
-     * Displays the referral vet if indicated otherwise is empty.
+     * Displays the patient referral in a grid, based on the practice <em>showReferrals</em> node. If it is:
+     * <ul>
+     * <li>ALWAYS - the active referral is displayed, or if there is none, {@code None} is displayed </li>
+     * <li>ACTIVE - the active referral is displayed. If there is no active referral, nothing is displayed</li>
+     * <li>NEVER - no referral is displayed</li>
+     * </ul>
      *
      * @param patient the patient
-     * @return Grid with referral Vet info
+     * @param grid    the grid
      */
-    protected Grid addReferralVet(Party patient) {
-        Grid grid = GridFactory.create(1);
-        final Party vet = rules.getReferralVet(patient, new Date());
-        if (vet != null) {
-            Label title = LabelFactory.create("patient.referralvet");
-            Button name = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onShowReferralVet(vet);
+    protected void addReferral(Party patient, Grid grid) {
+        Party practice = getContext().getPractice();
+        String showReferral = NEVER_SHOW_REFERRAL;
+        if (practice != null) {
+            IMObjectBean bean = new IMObjectBean(practice);
+            showReferral = bean.getString("showReferrals", SHOW_ACTIVE_REFERRAL);
+        }
+        if (!NEVER_SHOW_REFERRAL.equals(showReferral)) {
+            final Party vet = rules.getReferralVet(patient, new Date());
+            if (vet != null || ALWAYS_SHOW_REFERRAL.equals(showReferral)) {
+                grid.add(LabelFactory.create("patient.referralvet"));
+                if (vet != null) {
+                    grid.add(new Label());
+                    Button name = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
+                        public void onAction(ActionEvent event) {
+                            onShowReferralVet(vet);
+                        }
+                    });
+                    name.setText(vet.getName());
+                    GridLayoutData layout = ComponentGrid.layout(1, 2);
+                    grid.add(RowFactory.create(Styles.INSET_X, layout, name));
+                    Component referralPractice = getReferralPractice(vet);
+                    if (referralPractice != null) {
+                        Row row = RowFactory.create(Styles.INSET_X, layout, referralPractice);
+                        grid.add(row);
+                    }
+                } else {
+                    grid.add(LabelFactory.create("imobject.none"));
                 }
-            });
-            name.setText(vet.getName());
-            grid.add(title);
-            grid.add(RowFactory.create(Styles.INSET_X, name));
-            Component practice = getReferralPractice(vet);
-            if (practice != null) {
-                grid.add(RowFactory.create(Styles.INSET_X, practice));
             }
         }
-        return grid;
     }
 
     /**
