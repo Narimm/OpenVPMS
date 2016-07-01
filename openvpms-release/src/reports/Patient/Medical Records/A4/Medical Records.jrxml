@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-17T06:09:57 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-07-01T16:32:19 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Medical Records" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" resourceBundle="localisation.reports" uuid="fe7895c1-122c-4fcb-934c-8b7ab03d9d16">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -355,7 +355,7 @@
 			</textField>
 		</band>
 		<band height="11">
-			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalNote"))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{shortName}.equals("act.patientClinicalNote") || $F{shortName}.equals("act.patientClinicalAddendum")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-15" stretchType="RelativeToBandHeight" x="148" y="0" width="390" height="11" isPrintWhenDetailOverflows="true" uuid="816fa88c-bf07-4988-a2f4-b97b7eebdcdf"/>
 				<box>
@@ -439,7 +439,7 @@
 			</textField>
 		</band>
 		<band height="11">
-			<printWhenExpression><![CDATA[new Boolean(!$F{shortName}.equals("act.patientClinicalEvent") && !$F{shortName}.equals("act.patientClinicalNote") && !$F{shortName}.startsWith("act.patientInvestigation") && !$F{shortName}.startsWith("act.customerAccountInvoiceItem"))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!$F{shortName}.equals("act.patientClinicalEvent") && !$F{shortName}.equals("act.patientClinicalNote") && !$F{shortName}.equals("act.patientClinicalAddendum") && !$F{shortName}.equals("act.patientInvestigation") && !$F{shortName}.equals("act.customerAccountInvoiceItem")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-14" stretchType="RelativeToBandHeight" x="148" y="0" width="358" height="11" isPrintWhenDetailOverflows="true" uuid="e2b44ef1-42fd-4d5c-ac95-02695854cdff"/>
 				<box>

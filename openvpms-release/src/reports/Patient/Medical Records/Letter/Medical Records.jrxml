@@ -353,7 +353,7 @@
 			</textField>
 		</band>
 		<band height="11">
-			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalNote"))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{shortName}.equals("act.patientClinicalNote") || $F{shortName}.equals("act.patientClinicalAddendum")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-15" stretchType="RelativeToBandHeight" x="152" y="0" width="401" height="10" isPrintWhenDetailOverflows="true" uuid="816fa88c-bf07-4988-a2f4-b97b7eebdcdf"/>
 				<box>
@@ -437,7 +437,7 @@
 			</textField>
 		</band>
 		<band height="11">
-			<printWhenExpression><![CDATA[new Boolean(!$F{shortName}.equals("act.patientClinicalEvent") && !$F{shortName}.equals("act.patientClinicalNote") && !$F{shortName}.startsWith("act.patientInvestigation") && !$F{shortName}.startsWith("act.customerAccountInvoiceItem"))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!$F{shortName}.equals("act.patientClinicalEvent") && !$F{shortName}.equals("act.patientClinicalNote") && !$F{shortName}.equals("act.patientClinicalAddendum") && !$F{shortName}.equals("act.patientInvestigation") && !$F{shortName}.equals("act.customerAccountInvoiceItem")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-14" stretchType="RelativeToBandHeight" x="152" y="0" width="368" height="10" isPrintWhenDetailOverflows="true" uuid="e2b44ef1-42fd-4d5c-ac95-02695854cdff"/>
 				<box>

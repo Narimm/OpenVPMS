@@ -401,7 +401,7 @@
 			</textField>
 		</band>
 		<band height="11">
-			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalNote"))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{shortName}.equals("act.patientClinicalNote") || $F{shortName}.equals("act.patientClinicalAddendum")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-15" stretchType="RelativeToBandHeight" x="152" y="0" width="401" height="10" isPrintWhenDetailOverflows="true" uuid="816fa88c-bf07-4988-a2f4-b97b7eebdcdf"/>
 				<box>
