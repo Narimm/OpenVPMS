@@ -1,30 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -43,17 +41,16 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class TaskTypeParticipationEditor
-    extends ParticipationEditor<Entity> {
+public class TaskTypeParticipationEditor extends ParticipationEditor<Entity> {
 
     /**
      * The work list, used to constrain task types types. May be {@code null}.
      */
-    private Party workList;
+    private Entity workList;
 
 
     /**
-     * Constructs a {@code TaskTypeParticipationEditor}.
+     * Constructs a {@link TaskTypeParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent act
@@ -76,7 +73,7 @@ public class TaskTypeParticipationEditor
      *
      * @param workList the work list. May be {@code null}
      */
-    public void setWorkList(Party workList) {
+    public void setWorkList(Entity workList) {
         this.workList = workList;
         if (workList != null) {
             IMObjectReference taskTypeRef = getEntityRef();
@@ -102,7 +99,12 @@ public class TaskTypeParticipationEditor
             @Override
             protected Query<Entity> createQuery(String name) {
                 Query<Entity> query = new TaskTypeQuery(workList, getLayoutContext().getContext());
-                query.setValue(name);
+                if (name != null) {
+                    Entity entity = getEntity();
+                    if (entity == null || !StringUtils.equals(entity.getName(), name)) {
+                        query.setValue(name);
+                    }
+                }
                 return query;
 
             }
@@ -116,7 +118,7 @@ public class TaskTypeParticipationEditor
      * @param taskType a reference to the task type
      * @return {@code true} if the work list has the task type
      */
-    private boolean hasTaskType(Party workList, IMObjectReference taskType) {
+    private boolean hasTaskType(Entity workList, IMObjectReference taskType) {
         EntityBean workListBean = new EntityBean(workList);
         List<EntityRelationship> relationships
             = workListBean.getValues("taskTypes", EntityRelationship.class);
@@ -134,7 +136,7 @@ public class TaskTypeParticipationEditor
      * @param workList the work list
      * @return the default task type, or {@code null} if none is found
      */
-    private Entity getDefaultTaskType(Party workList) {
+    private Entity getDefaultTaskType(Entity workList) {
         Entity result = null;
         EntityBean workListBean = new EntityBean(workList);
         List<EntityRelationship> relationships

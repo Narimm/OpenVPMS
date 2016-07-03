@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
@@ -221,6 +222,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // print acts and documents created since the events or invoice was created
         addTask(new PrintTask(visits, help.subtopic("print")));
 
+        // add a follow-up task, if it is cofigured for the practice location
+        if (followUp()) {
+            addTask(new FollowUpTask(help));
+        }
+
         if (flowSheetServiceFactory.supportsSmartFlowSheet(initial.getLocation())) {
             addTask(new BatchImportFlowSheetReportsTask(visits, help));
         }
@@ -327,6 +333,21 @@ public class CheckOutWorkflow extends WorkflowImpl {
         ConditionalTask post = new ConditionalTask(confirmPost, new ConditionalTask(checkUndispensed, postTasks));
         post.setRequired(false);
         return post;
+    }
+
+    /**
+     * Determines if a follow-up task should be created.
+     *
+     * @return {@code true} if a follow-up task should be created
+     */
+    private boolean followUp() {
+        boolean result = false;
+        Party practice = external.getPractice();
+        if (practice != null) {
+            IMObjectBean bean = new IMObjectBean(practice);
+            result = bean.getBoolean("followUpAtCheckOut");
+        }
+        return result;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -21,6 +21,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCollector;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupAssembler;
@@ -135,6 +136,7 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
 
         public Assembler() {
             addAssembler(new ArchetypeAuthorityAssembler());
+            addAssembler(new EntityLinkAssembler());
             addAssembler(new EntityRelationshipAssembler());
             addAssembler(new LookupAssembler());
             addAssembler(new LookupRelationshipAssembler());

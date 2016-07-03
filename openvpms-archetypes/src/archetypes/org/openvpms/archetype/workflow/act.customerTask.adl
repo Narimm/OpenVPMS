@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.customerTask.1.0" latest="true"
@@ -23,6 +23,8 @@
               filter="participation.customer"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.patient"/>
+        <node name="worklist" displayName="Work List" path="/participations" type="java.util.HashSet" minCardinality="1"
+              maxCardinality="1" filter="participation.worklist" hidden="true"/>
         <node name="taskType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.taskType"/>
         <node displayName="Started" name="startTime" path="/activityStartTime" type="java.util.Date"
@@ -47,20 +49,8 @@
         </node>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="worklist" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
-              filter="participation.worklist" hidden="true"/>
         <node name="appointments" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" hidden="true" minCardinality="0"
-              maxCardinality="1">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="actRelationship.customerAppointmentTask"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              maxCardinality="1" filter="actRelationship.customerAppointmentTask"/>
     </archetype>
 </archetypes>

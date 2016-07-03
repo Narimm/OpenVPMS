@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static org.openvpms.component.system.common.query.Constraints.and;
 import static org.openvpms.component.system.common.query.Constraints.gte;
@@ -304,6 +305,30 @@ public class QueryHelper {
     }
 
     /**
+     * Returns a case-insensitive pattern for matching expressions containing wildcards.
+     *
+     * @param expression the wildcard expression
+     * @return a new pattern
+     */
+    public static Pattern getWildcardPattern(String expression) {
+        StringBuilder builder = new StringBuilder(expression.length());
+        int length = expression.length();
+
+        // escape any regexp characters
+        for (int i = 0; i < length; ++i) {
+            char c = expression.charAt(i);
+            if ("[](){}.+?$^|#\\".indexOf(c) != -1) {
+                builder.append("\\");
+            }
+        }
+
+        // replace wildcards
+        String regex = builder.toString();
+        regex = regex.replace("*", ".*?");
+        return Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+    }
+
+    /**
      * Returns the first participation linked to an entity.
      *
      * @param entity    the entity
@@ -337,14 +362,14 @@ public class QueryHelper {
             String alias = arch.getAlias();
             if (alias != null && alias.startsWith(prefix)) {
                 String suffix = alias.substring(prefix.length());
-                    try {
-                        int id = Integer.valueOf(suffix);
-                        if (id > maxId) {
-                            maxId = id + 1;
-                        }
-                    } catch (NumberFormatException ignore) {
-                        // do nothing
+                try {
+                    int id = Integer.valueOf(suffix);
+                    if (id > maxId) {
+                        maxId = id + 1;
                     }
+                } catch (NumberFormatException ignore) {
+                    // do nothing
+                }
                 for (IConstraint child : arch.getConstraints()) {
                     maxId = getAliasSuffix(prefix, child, maxId);
                 }

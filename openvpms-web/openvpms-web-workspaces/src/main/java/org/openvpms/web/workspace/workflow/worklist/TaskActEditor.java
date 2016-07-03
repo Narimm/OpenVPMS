@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -79,7 +79,7 @@ public class TaskActEditor extends AbstractScheduleActEditor {
      *
      * @param workList the work list
      */
-    public void setWorkList(Party workList) {
+    public void setWorkList(Entity workList) {
         setParticipant("worklist", workList);
         TaskTypeParticipationEditor editor = getTaskTypeEditor();
         editor.setWorkList(workList);
@@ -90,8 +90,8 @@ public class TaskActEditor extends AbstractScheduleActEditor {
      *
      * @return the work list. May be {@code null}
      */
-    public Party getWorkList() {
-        return (Party) getParticipant("worklist");
+    public Entity getWorkList() {
+        return (Entity) getParticipant("worklist");
     }
 
     /**
