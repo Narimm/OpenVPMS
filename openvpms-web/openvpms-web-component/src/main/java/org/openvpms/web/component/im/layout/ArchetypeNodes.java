@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -445,9 +445,9 @@ public class ArchetypeNodes {
         for (int i = 0; i < order.size(); i += 2) {
             String node1 = order.get(i);
             String node2 = order.get(i + 1);
-            int index = indexOf(node1, descriptors);
+            int index = indexOf(node2, descriptors);
             if (index != -1) {
-                move(node2, index + 1, descriptors);
+                move(node1, index, descriptors);
             }
         }
     }

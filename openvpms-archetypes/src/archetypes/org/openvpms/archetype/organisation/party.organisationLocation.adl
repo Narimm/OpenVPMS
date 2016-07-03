@@ -118,5 +118,11 @@
                 <errorMessage>Duplicate active service ratio relationship</errorMessage>
             </assertion>
         </node>
+        <node name="followupWorkLists" displayName="Follow-up Work Lists" path="/entityLinks" type="java.util.HashSet"
+              baseName="EntityLink" minCardinality="0" maxCardinality="*" filter="entityLink.followupWorkList">
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active follow-up work list relationship</errorMessage>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>

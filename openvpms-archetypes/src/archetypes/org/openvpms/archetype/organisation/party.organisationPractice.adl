@@ -120,6 +120,8 @@
               maxCardinality="1" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="showPricesTaxInclusive" path="/details/showPricesTaxInclusive" minCardinality="0"
               maxCardinality="1" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="followUpAtCheckOut" path="/details/followUpAtCheckOut" minCardinality="0" maxCardinality="1"
+              type="java.lang.Boolean" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

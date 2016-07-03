@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.summary;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -23,13 +24,16 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IConstraint;
@@ -37,6 +41,8 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -47,9 +53,11 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -68,6 +76,7 @@ import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.customer.estimate.CustomerEstimates;
 import org.openvpms.web.workspace.customer.estimate.EstimateViewer;
 import org.openvpms.web.workspace.summary.PartySummary;
+import org.openvpms.web.workspace.workflow.worklist.FollowUpTaskEditor;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -192,7 +201,20 @@ public class PatientSummary extends PartySummary {
      * @return the patient Id
      */
     protected Component getPatientId(Party patient) {
-        return createLabel("patient.id", patient.getId());
+        Label patientId = createLabel("patient.id", patient.getId());
+        Button followup = ButtonFactory.create(null, "button.followup", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onFollowUp();
+            }
+        });
+        Row right = RowFactory.create(followup);
+
+        RowLayoutData rightLayout = new RowLayoutData();
+        rightLayout.setAlignment(Alignment.ALIGN_RIGHT);
+        rightLayout.setWidth(Styles.FULL_WIDTH);
+        right.setLayoutData(rightLayout);
+
+        return RowFactory.create(Styles.WIDE_CELL_SPACING, patientId, right);
     }
 
     /**
@@ -279,7 +301,7 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      * @return a button, or {@code null} if there are no reminders
      */
-    private Button getReminderButton(final Party patient) {
+    protected Button getReminderButton(final Party patient) {
         Button result = null;
         ReminderRules.DueState due = getDueState(patient);
         if (due != null) {
@@ -347,7 +369,7 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      * @param grid    the grid
      */
-    private void addWeight(Party patient, Grid grid) {
+    protected void addWeight(Party patient, Grid grid) {
         Label weightTitle = LabelFactory.create("patient.weight");
         Label weight = LabelFactory.create();
         weight.setText(getPatientWeight(patient));
@@ -446,6 +468,22 @@ public class PatientSummary extends PartySummary {
      */
     protected List<Alert> getAlerts(Party party) {
         return queryAlerts(party);
+    }
+
+    /**
+     * Invoked when the 'Follow-up' button is pressed.
+     */
+    protected void onFollowUp() {
+        Act act = (Act) IMObjectCreator.create(ScheduleArchetypes.TASK);
+        DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext().topic(act, "edit"));
+        List<Entity> workLists = FollowUpTaskEditor.getWorkLists(getContext());
+        if (workLists.isEmpty()) {
+            InformationDialog.show(Messages.get("patient.followup.noworklists"));
+        } else {
+            FollowUpTaskEditor editor = new FollowUpTaskEditor(act, workLists, context);
+            EditDialog dialog = EditDialogFactory.create(editor, getContext());
+            dialog.show();
+        }
     }
 
     /**

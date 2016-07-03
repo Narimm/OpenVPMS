@@ -222,6 +222,14 @@
         </properties>
     </style>
 
+    <style name="button.followup" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/followup.png"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="PatientSummary.ReminderDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>

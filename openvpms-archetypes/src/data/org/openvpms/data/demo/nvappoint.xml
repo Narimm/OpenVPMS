@@ -1454,9 +1454,15 @@
     <data id="OW2" archetype="party.organisationWorkList" name="Main Hospital List" maxSlots="50"/>
     <data id="OW3" archetype="party.organisationWorkList" name="Branch Waiting List" maxSlots="100"/>
     <data id="OW4" archetype="party.organisationWorkList" name="Branch Hospital List" maxSlots="50"/>
+    <data id="OW5" archetype="party.organisationWorkList" name="Dr Barton" maxSlots="100"/>
+    <data id="OW6" archetype="party.organisationWorkList" name="Dr Turner" maxSlots="100"/>
+    <data id="OW7" archetype="party.organisationWorkList" name="Dr Galbally" maxSlots="100"/>
     <data id="VW1" archetype="entity.organisationWorkListView" name="Main Work List View">
         <data archetype="entityRelationship.viewWorkList" source="id:VW1" target="id:OW1" sequence="0"/>
         <data archetype="entityRelationship.viewWorkList" source="id:VW1" target="id:OW2" sequence="1"/>
+        <data archetype="entityRelationship.viewWorkList" source="id:VW1" target="id:OW5" sequence="2"/>
+        <data archetype="entityRelationship.viewWorkList" source="id:VW1" target="id:OW6" sequence="3"/>
+        <data archetype="entityRelationship.viewWorkList" source="id:VW1" target="id:OW7" sequence="4"/>
         <data archetype="entityRelationship.locationWorkListView" source="id:OL1" target="id:VW1"/>
     </data>
     <data id="VW2" archetype="entity.organisationWorkListView" name="Branch Work List View">
@@ -1478,12 +1484,20 @@
     <data id="TT1" archetype="entity.taskType" name="Consultation" description="Consultation"/>
     <data id="TT2" archetype="entity.taskType" name="Surgery" description="Surgery"/>
     <data id="TT3" archetype="entity.taskType" name="Day Procedure" description="New Patient"/>
+    <data id="TT4" archetype="entity.taskType" name="Post-surgery follow-up" description="Post-surgery follow-up"/>
+    <data id="TT5" archetype="entity.taskType" name="To Do" description="To Do"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW1" target="id:TT1" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT2" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT3" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW3" target="id:TT1" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW4" target="id:TT2" noSlots="1"/>
     <data archetype="entityRelationship.worklistTaskType" source="id:OW4" target="id:TT3" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW5" target="id:TT4" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW5" target="id:TT5" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW6" target="id:TT4" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW6" target="id:TT5" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW7" target="id:TT4" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW7" target="id:TT5" noSlots="1"/>
 
     <data archetype="entity.calendarBlockType" name="Team Meeting" colour="0xd1ffb1"/>
     <data archetype="entity.calendarBlockType" name="Lunch" colour="0xd1ffb1"/>

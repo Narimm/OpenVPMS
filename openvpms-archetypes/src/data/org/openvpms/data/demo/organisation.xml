@@ -37,6 +37,12 @@
             <data collection="purposes" archetype="lookup.contactPurpose" childId="id:REMINDER"/>
         </data>
         <data collection="contacts" archetype="contact.website" url="openvpms.org"/>
+        <data collection="followupWorkLists" archetype="entityLink.followupWorkList" source="id:OL1" target="id:OW5"
+              sequence="0"/>
+        <data collection="followupWorkLists" archetype="entityLink.followupWorkList" source="id:OL1" target="id:OW6"
+              sequence="1"/>
+        <data collection="followupWorkLists" archetype="entityLink.followupWorkList" source="id:OL1" target="id:OW7"
+              sequence="2"/>
         <data archetype="entityLink.locationLetterhead" source="id:OL1" target="id:LH1"/>
     </data>
     <data id="OL2" archetype="party.organisationLocation" name="Branch Clinic" stockControl="true">

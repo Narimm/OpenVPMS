@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -197,7 +197,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
             public void onOK() {
                 T selected = dialog.getSelected();
                 if (selected != null) {
-                    context.addObject(selected);
+                    onSelected(selected, context);
                     notifyCompleted();
                 } else {
                     notifyCancelled(); // shouldn't occur
@@ -247,6 +247,18 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
 
         });
         dialog.show();
+    }
+
+    /**
+     * Invoked when an object is selected.
+     * <p/>
+     * This implementation adds it to the context.
+     *
+     * @param selected the selected object
+     * @param context  the context
+     */
+    protected void onSelected(T selected, TaskContext context) {
+        context.addObject(selected);
     }
 
     /**

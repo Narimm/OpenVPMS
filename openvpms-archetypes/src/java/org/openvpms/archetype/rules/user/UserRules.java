@@ -11,17 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.user;
 
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -67,7 +69,7 @@ public class UserRules {
         ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER_ARCHETYPES, true, true);
         query.add(new NodeConstraint("username", username));
         query.setMaxResults(1);
-        Iterator<User> iterator = new IMObjectQueryIterator<User>(service, query);
+        Iterator<User> iterator = new IMObjectQueryIterator<>(service, query);
         if (iterator.hasNext()) {
             return iterator.next();
         }
@@ -100,7 +102,7 @@ public class UserRules {
      *
      * @param user the user
      * @return {@code true} if the user is a clinician,
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     public boolean isClinician(User user) {
         if (TypeHelper.isA(user, UserArchetypes.USER)) {
@@ -156,11 +158,21 @@ public class UserRules {
      *
      * @param user the user
      * @return the default location, or the first location if there is no
-     *         default location or {@code null} if none is found
+     * default location or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getDefaultLocation(User user) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(user, "locations", service);
+    }
+
+    /**
+     * Returns the follow-up work lists associated with a user.
+     *
+     * @param user the user
+     * @return the follow-up work lists, in the order they are defined
+     */
+    public List<Entity> getFollowupWorkLists(User user) {
+        return new EntityBean(user, service).getNodeTargetEntities("followupWorkLists", SequenceComparator.INSTANCE);
     }
 
     /**

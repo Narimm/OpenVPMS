@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -134,7 +135,7 @@ public class LocationRules {
 
     /**
      * Returns the default stock location associated with a location.
-     * <p>
+     * <p/>
      * NOTE: retrieval of stock locations may be an expensive operation,
      * due to the no. of relationships to products.
      *
@@ -170,11 +171,22 @@ public class LocationRules {
     /**
      * Returns the location mail server.
      *
+     * @param location the practice location
      * @return the location server, or {@code null} if none is configured
      */
     public MailServer getMailServer(Party location) {
         Entity entity = getBean(location).getNodeTargetEntity("mailServer");
         return (entity != null) ? new MailServer(entity, service) : null;
+    }
+
+    /**
+     * Returns the follow-up work lists associated with a location.
+     *
+     * @param location the practice location
+     * @return the follow-up work lists, in the order they are defined in the location
+     */
+    public List<Entity> getFollowupWorkLists(Party location) {
+        return getBean(location).getNodeTargetEntities("followupWorkLists", SequenceComparator.INSTANCE);
     }
 
     /**

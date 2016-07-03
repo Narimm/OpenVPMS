@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -163,6 +163,23 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         checkComplex(archetype, nodes, product, "prices", "doses", "linked", "investigationTypes", "suppliers",
                      "stockLocations", "reminders", "documents", "discounts", "species", "updates", "classifications",
                      "identities", "equivalents", "taxes", "sourceRelationships");
+    }
+
+    /**
+     * Tests the behaviour of {@link ArchetypeNodes#order}.
+     */
+    @Test
+    public void testOrder() {
+        // default ordering
+        checkSimple(archetype, new ArchetypeNodes(), "id", "name", "description", "printedName", "drugSchedule",
+                    "activeIngredients", "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
+                    "dispInstructions", "type", "pharmacy", "templateOnly", "active", "usageNotes");
+
+        // now place the printedName before the description
+        ArchetypeNodes nodes = new ArchetypeNodes().order("printedName", "description");
+        checkSimple(archetype, nodes, "id", "name", "printedName", "description", "drugSchedule", "activeIngredients",
+                    "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "label", "dispInstructions",
+                    "type", "pharmacy", "templateOnly", "active", "usageNotes");
     }
 
     /**
