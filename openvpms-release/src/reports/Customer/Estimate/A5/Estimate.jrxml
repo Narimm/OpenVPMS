@@ -59,6 +59,9 @@
 	<field name="OpenVPMS.practice.showPricesTaxInclusive" class="java.lang.Boolean">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
+	<field name="[count(list:distinct(., &quot;items.target.patient.entity.id&quot;))]" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<variable name="CustomerFullName" class="java.lang.String" resetType="None">
 		<variableExpression><![CDATA[(($F{customer.entity.title} == null) ? "": $F{customer.entity.title}) + " " + (($F{customer.entity.firstName} == null) ? "": $F{customer.entity.firstName}) + " " + $F{customer.entity.lastName}]]></variableExpression>
 	</variable>
@@ -390,6 +393,9 @@
 				</reportElement>
 				<subreportParameter name="incTax">
 					<subreportParameterExpression><![CDATA[$V{incTax}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="patientCount">
+					<subreportParameterExpression><![CDATA[$F{[count(list:distinct(., "items.target.patient.entity.id"))]}.intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
 				<subreportExpression><![CDATA["Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml"]]></subreportExpression>

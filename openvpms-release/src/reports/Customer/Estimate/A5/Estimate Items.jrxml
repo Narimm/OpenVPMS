@@ -14,6 +14,7 @@
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
+	<parameter name="patientCount" class="java.lang.Integer" isForPrompting="false"/>
 	<field name="target.patient.entity.name" class="java.lang.String"/>
 	<field name="target.product.entity" class="java.lang.Object"/>
 	<field name="target.product.entity.name" class="java.lang.String"/>
@@ -86,7 +87,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		</groupHeader>
 		<groupFooter>
 			<band height="12" splitType="Stretch">
-				<printWhenExpression><![CDATA[$V{patientGroup_COUNT} > 1]]></printWhenExpression>
+				<printWhenExpression><![CDATA[($P{patientCount}>1)||(($F{target.patient.entity.name}==null)&&($P{patientCount}>0))]]></printWhenExpression>
 				<staticText>
 					<reportElement key="staticText-11" x="241" y="1" width="55" height="10" uuid="5b2f0742-dafd-4e95-a721-2c2b73689f8a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -346,7 +347,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		<band height="10" splitType="Stretch">
 			<printWhenExpression><![CDATA[(!$V{showTemplate})&&($F{target.highTotal}.compareTo(BigDecimal.ZERO) == 0?
 ($F{target.print} == null?Boolean.TRUE:$F{target.print}):Boolean.TRUE)]]></printWhenExpression>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement key="textField-4" x="37" y="0" width="189" height="9" uuid="1fb858b2-8a48-4c1e-b7d4-6b7216522417">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
