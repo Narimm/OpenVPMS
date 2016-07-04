@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-16T03:32:12 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-07-03T13:35:04 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Estimate Items" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="7c335e58-0529-4613-9006-80d5e6b01527">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -16,6 +16,7 @@
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
+	<parameter name="patientCount" class="java.lang.Integer" isForPrompting="false"/>
 	<field name="target.patient.entity.name" class="java.lang.String"/>
 	<field name="target.product.entity" class="java.lang.Object"/>
 	<field name="target.product.entity.name" class="java.lang.String"/>
@@ -88,7 +89,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		</groupHeader>
 		<groupFooter>
 			<band height="16" splitType="Stretch">
-				<printWhenExpression><![CDATA[$V{patientGroup_COUNT} > 1]]></printWhenExpression>
+				<printWhenExpression><![CDATA[($P{patientCount}>1)||(($F{target.patient.entity.name}==null)&&($P{patientCount}>0))]]></printWhenExpression>
 				<staticText>
 					<reportElement key="staticText-11" x="340" y="2" width="78" height="13" uuid="5b2f0742-dafd-4e95-a721-2c2b73689f8a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -348,7 +349,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		<band height="13" splitType="Stretch">
 			<printWhenExpression><![CDATA[(!$V{showTemplate})&&($F{target.highTotal}.compareTo(BigDecimal.ZERO) == 0?
 ($F{target.print} == null?Boolean.TRUE:$F{target.print}):Boolean.TRUE)]]></printWhenExpression>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement key="textField-4" x="52" y="0" width="268" height="13" uuid="1fb858b2-8a48-4c1e-b7d4-6b7216522417">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
