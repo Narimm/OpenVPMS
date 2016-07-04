@@ -54,6 +54,10 @@
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
             </assertion>
+            <assertion name="expression">
+                <property name="expression" value="highQty &gt;= lowQty"/>
+                <errorMessage>The High Qty must be >= the Low Qty</errorMessage>
+            </assertion>
         </node>
         <node name="fixedPrice" path="/details/fixedPrice"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
