@@ -36,6 +36,7 @@ import nextapp.echo2.app.Style;
 import nextapp.echo2.app.text.Document;
 import nextapp.echo2.app.text.StringDocument;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -509,8 +510,12 @@ public class RichTextArea extends TextComponent implements Sizeable, Insetable, 
      * @return the result of the expansion. May be {@code null}
      */
     protected String expand(String macro) {
-        String expansion = macros.expand(macro);
-        return StringEscapeUtils.escapeHtml(expansion);
+        String result = macros.expand(macro);
+        if (!StringUtils.isEmpty(result)) {
+            result = StringEscapeUtils.escapeHtml(result);
+            result = result.replace("\n", "<br/>").replace(" ", "&nbsp;");
+        }
+        return result;
     }
 
 }
