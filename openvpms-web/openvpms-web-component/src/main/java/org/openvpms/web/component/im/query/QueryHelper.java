@@ -320,6 +320,7 @@ public class QueryHelper {
             if ("[](){}.+?$^|#\\".indexOf(c) != -1) {
                 builder.append("\\");
             }
+            builder.append(c);
         }
 
         // replace wildcards
