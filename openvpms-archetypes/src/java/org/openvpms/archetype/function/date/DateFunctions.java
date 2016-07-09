@@ -11,10 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.date;
+
+import org.openvpms.archetype.rules.util.DateRules;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -78,6 +80,42 @@ public class DateFunctions {
     public DateFunctions(Locale locale, TimeZone zone) {
         this.locale = locale;
         this.zone = zone;
+    }
+
+    /**
+     * Returns the current date/time.
+     *
+     * @return the current date/time
+     */
+    public Date now() {
+        return new Date();
+    }
+
+    /**
+     * Returns today's date.
+     *
+     * @return today's date
+     */
+    public Date today() {
+        return DateRules.getToday();
+    }
+
+    /**
+     * Returns tomorrow's date.
+     *
+     * @return tomorrow's date
+     */
+    public Date tomorrow() {
+        return DateRules.getTomorrow();
+    }
+
+    /**
+     * Returns yesterday's date.
+     *
+     * @return yesterday's date
+     */
+    public Date yesterday() {
+        return DateRules.getYesterday();
     }
 
     /**
