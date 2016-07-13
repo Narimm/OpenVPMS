@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
@@ -30,6 +31,11 @@ import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
+import org.openvpms.web.component.im.lookup.LookupFilter;
+import org.openvpms.web.component.im.lookup.LookupQuery;
+import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -71,11 +77,6 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
      * Result status node name.
      */
     private static final String RESULT_STATUS = "status2";
-
-    /**
-     * Reviewed node name.
-     */
-    private static final String REVIEWED = "reviewed";
 
     /**
      * Constructs a {@link PatientInvestigationActLayoutStrategy}.
@@ -133,10 +134,10 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        if (isLocked() || hasInvoiceItem) {
+        if (context.isEdit() && (isLocked() || hasInvoiceItem)) {
             // note that that this replaces any prior product registration
             IMObjectComponentFactory factory = context.getComponentFactory();
-            addComponent(factory.create(createReadOnly(properties.get("status")), object));
+            addComponent(createStatus(object, properties));
             addComponent(factory.create(createReadOnly(properties.get("product")), object));
             addComponent(factory.create(createReadOnly(properties.get("investigationType")), object));
         }
@@ -185,7 +186,27 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
     @Override
     protected boolean makeReadOnly(Property property) {
         String name = property.getName();
-        return !property.isReadOnly() && !RESULT_STATUS.equals(name) && !REVIEWED.equals(name);
+        return !property.isReadOnly() && !RESULT_STATUS.equals(name);
+    }
+
+    /**
+     * Creates a component for the status node.
+     * <p/>
+     * If the act is POSTED or CANCELLED, this restricts the status to either of those values.
+     *
+     * @param object     the object
+     * @param properties the properties
+     * @return the status component
+     */
+    private ComponentState createStatus(IMObject object, PropertySet properties) {
+        Property property = properties.get("status");
+        LookupQuery query = new NodeLookupQuery(object, property);
+        String status = property.getString();
+        if (ActStatus.POSTED.equals(status) || ActStatus.CANCELLED.equals(status)) {
+            query = new LookupFilter(query, true, ActStatus.POSTED, ActStatus.CANCELLED);
+        }
+        LookupField field = LookupFieldFactory.create(property, query);
+        return new ComponentState(field, property);
     }
 
     /**
