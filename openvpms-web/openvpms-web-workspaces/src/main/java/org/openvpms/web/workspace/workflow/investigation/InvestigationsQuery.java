@@ -22,6 +22,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -72,6 +73,11 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     public static final String[] SHORT_NAMES = new String[]{InvestigationArchetypes.PATIENT_INVESTIGATION};
 
     /**
+     * Dummy incomplete status. Finds all investigations that aren't CANCELLED and don't have a REVIEWED result status.
+     */
+    public static final String INCOMPLETE = "INCOMPLETE";
+
+    /**
      * The location selector.
      */
     private final LocationSelectField location;
@@ -110,7 +116,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * Dummy incomplete status, used in the result status selector.
      */
-    private static Lookup INCOMPLETE_STATUS = new Lookup(new ArchetypeId("lookup.local"), "INCOMPLETE",
+    private static Lookup INCOMPLETE_STATUS = new Lookup(new ArchetypeId("lookup.local"), INCOMPLETE,
                                                          Messages.get("investigation.incomplete"));
 
     static {
@@ -179,6 +185,18 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      */
     public void setClinician(User clinician) {
         this.clinician.setSelectedItem(clinician);
+    }
+
+    /**
+     * Sets the result status to filter on.
+     * <p/>
+     * The {@link #INCOMPLETE} result status code can be used to return all incomplete investigations that haven't
+     * been cancelled nor reviewed.
+     *
+     * @param status the result status, or {@code null} to include all result statuses
+     */
+    public void setResultStatus(String status) {
+        resultStatusSelector.setSelected(status);
     }
 
     /**
@@ -260,19 +278,25 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
         Party location = (Party) this.location.getSelectedItem();
+        String[] statuses = getStatuses();
         String resultStatus[];
         boolean exclude = false;
         Lookup selected = resultStatusSelector.getSelected();
         if (selected == INCOMPLETE_STATUS) {
             resultStatus = REVIEWED_STATUS;
             exclude = true;
+            if (statuses.length == 0) {
+                // if 'All' status and 'Incomplete' result status is selected, exclude cancelled investigations,
+                // as these are effectively complete
+                statuses = new String[]{ActStatus.IN_PROGRESS, ActStatus.POSTED};
+            }
         } else if (selected != null) {
             resultStatus = new String[]{selected.getCode()};
         } else {
             resultStatus = new String[0];
         }
         return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location,
-                                          this.location.getLocations(), getFrom(), getTo(), getStatuses(),
+                                          this.location.getLocations(), getFrom(), getTo(), statuses,
                                           resultStatus, exclude, getMaxResults(), sort);
     }
 
