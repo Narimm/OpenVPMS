@@ -68,9 +68,16 @@ public class PatientHistoryActions extends ActActions<Act> {
 
     /**
      * Determines if an act can be deleted.
+     * <p/>
+     * An act may be deleted if:
+     * <ul>
+     * <li>isn't {@code POSTED}, locked or an invoice item; and</li>
+     * <li>it is an event, problem, note, or medication that isn't linked to anything else; or</li>
+     * <li>isn't linked to an an invoice item.
+     * </ul>
      *
      * @param act the act to check
-     * @return {@code true} if the act isn't an invoice item, and its status isn't {@code POSTED}
+     * @return {@code true} if the act can be deleted, otherwise {@code false}
      */
     @Override
     public boolean canDelete(Act act) {

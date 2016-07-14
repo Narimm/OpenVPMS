@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -82,7 +82,7 @@ public class IMObjectTableModelFactory {
             result = construct(handler, shortNames, query, null, context);
         }
         if (result == null) {
-            result = new DefaultDescriptorTableModel<T>(shortNames, query, context);
+            result = new DefaultDescriptorTableModel<>(shortNames, query, context);
         }
         return result;
     }
@@ -104,7 +104,7 @@ public class IMObjectTableModelFactory {
             result = construct(handler, null, null, null, context);
         }
         if (result == null) {
-            result = new DefaultIMObjectTableModel<T>();
+            result = new DefaultIMObjectTableModel<>();
         }
         return result;
     }
@@ -127,7 +127,7 @@ public class IMObjectTableModelFactory {
             result = construct(handler, shortNames, null, parent, context);
         }
         if (result == null) {
-            result = new DefaultDescriptorTableModel<T>(shortNames, context);
+            result = new DefaultDescriptorTableModel<>(shortNames, context);
         }
         return result;
     }
@@ -187,7 +187,8 @@ public class IMObjectTableModelFactory {
      */
     private static synchronized ArchetypeHandlers getTableModels() {
         if (models == null) {
-            models = new ArchetypeHandlers<IMObjectTableModel>("IMObjectTableModelFactory", IMObjectTableModel.class);
+            models = new ArchetypeHandlers<>("IMObjectTableModelFactory", "DefaultIMObjectTableModelFactory",
+                                             IMObjectTableModel.class);
         }
         return models;
     }
