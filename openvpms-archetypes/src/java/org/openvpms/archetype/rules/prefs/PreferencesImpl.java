@@ -50,17 +50,13 @@ import java.util.Set;
 class PreferencesImpl implements Preferences {
 
     /**
-     * The user these preferences belong to.
-     */
-    private final IMObjectReference user;
-
-    /**
      * The preferences.
      */
     private EntityBean bean;
 
-    private boolean save;
-
+    /**
+     * The preference groups.
+     */
     private final List<PreferenceGroup> groups = new ArrayList<>();
 
     /**
@@ -69,25 +65,14 @@ class PreferencesImpl implements Preferences {
     private final IArchetypeService service;
 
     /**
-     * The transaction manager.
-     */
-    private final PlatformTransactionManager transactionManager;
-
-    /**
      * Constructs a {@link PreferencesImpl}.
      *
-     * @param user        the user the preferences belong to
      * @param preferences the preferences entity
-     * @param save        determines if preferences should be saved
      * @param service     the archetype service
      */
-    public PreferencesImpl(User user, Entity preferences, boolean save, IArchetypeService service,
-                           PlatformTransactionManager transactionManager) {
-        this.user = user.getObjectReference();
-        this.save = save;
+    public PreferencesImpl(Entity preferences, IArchetypeService service) {
         bean = new EntityBean(preferences, service);
         this.service = service;
-        this.transactionManager = transactionManager;
     }
 
     /**
@@ -113,7 +98,11 @@ class PreferencesImpl implements Preferences {
      */
     @Override
     public void setPreference(String groupName, String name, Object value) {
-        setPreference(groupName, name, value, save);
+        PreferenceGroup group = getGroup(groupName);
+        Object current = group.get(name);
+        if (!ObjectUtils.equals(current, value)) {
+            group.set(name, value);
+        }
     }
 
     /**
@@ -205,39 +194,35 @@ class PreferencesImpl implements Preferences {
         return group.getNames();
     }
 
-    public static Preferences getPreferences(final User user, final IArchetypeService service,
-                                             PlatformTransactionManager transactionManager) {
-        Entity prefs = getPreferences(user.getObjectReference(), service, transactionManager);
-        IMObjectBean bean = new IMObjectBean(user, service);
-        boolean savePreferences = bean.getBoolean("savePreferences");
-        return new PreferencesImpl(user, prefs, savePreferences, service, transactionManager);
+    /**
+     * Returns preferences for a user.
+     *
+     * @param user    the user
+     * @param service the archetype service
+     * @return the preferences
+     */
+    public static Preferences getPreferences(User user, final IArchetypeService service) {
+        Entity prefs = getEntity(user, service);
+        return new PreferencesImpl(prefs, service);
     }
 
     /**
      * Returns the root preference entity for a user, creating and saving one if none exists.
      *
-     * @param user               the user reference
+     * @param user               the user
      * @param service            the archetype service
      * @param transactionManager the transaction manager
      * @return the root preference entity
      */
-    public static Entity getPreferences(final IMObjectReference user, final IArchetypeService service,
+    public static Entity getPreferences(final User user, final IArchetypeService service,
                                         PlatformTransactionManager transactionManager) {
         Entity prefs;
-        final ArchetypeQuery query = new ArchetypeQuery(PreferenceArchetypes.PREFERENCES);
-        query.add(Constraints.join("user").add(Constraints.eq("target", user)));
-        query.add(Constraints.sort("id"));
-        query.setMaxResults(1);
         TransactionTemplate template = new TransactionTemplate(transactionManager);
         prefs = template.execute(new TransactionCallback<Entity>() {
             @Override
             public Entity doInTransaction(TransactionStatus status) {
-                Entity prefs;
-                IMObjectQueryIterator<Entity> iterator = new IMObjectQueryIterator<>(service, query);
-                if (iterator.hasNext()) {
-                    prefs = iterator.next();
-                } else {
-                    prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
+                Entity prefs = getEntity(user, service);
+                if (prefs.isNew()) {
                     IMObjectBean bean = new IMObjectBean(prefs, service);
                     bean.addNodeTarget("user", user);
                     bean.save();
@@ -248,22 +233,27 @@ class PreferencesImpl implements Preferences {
         return prefs;
     }
 
-    private void setPreference(String groupName, String name, Object value, boolean save) {
-        PreferenceGroup group = getGroup(groupName);
-        Object current = group.get(name);
-        if (!ObjectUtils.equals(current, value)) {
-            group.set(name, value);
-            if (save) {
-                try {
-                    group.save();
-                } catch (Throwable exception) {
-                    reload();
-                    setPreference(groupName, name, value, false);
-                }
-            }
+    /**
+     * Returns the root preference entity for a user, creating it if it doesn't exist.
+     *
+     * @param user    the user
+     * @param service the archetype service
+     * @return the
+     */
+    protected static Entity getEntity(User user, IArchetypeService service) {
+        Entity prefs;
+        final ArchetypeQuery query = new ArchetypeQuery(PreferenceArchetypes.PREFERENCES);
+        query.add(Constraints.join("user").add(Constraints.eq("target", user)));
+        query.add(Constraints.sort("id"));
+        query.setMaxResults(1);
+        IMObjectQueryIterator<Entity> iterator = new IMObjectQueryIterator<>(service, query);
+        if (iterator.hasNext()) {
+            prefs = iterator.next();
+        } else {
+            prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
         }
+        return prefs;
     }
-
 
     /**
      * Returns the available group names. These correspond to the archetype short names of the target node of
@@ -276,6 +266,11 @@ class PreferencesImpl implements Preferences {
         return new LinkedHashSet<>(Arrays.asList(DescriptorHelper.getNodeShortNames(relationshipTypes, "target")));
     }
 
+    /**
+     * Returns the available preference relationship types.
+     *
+     * @return the releationship types
+     */
     protected String[] getRelationshipTypes() {
         return DescriptorHelper.getShortNames("entityLink.preferenceGroup*");
     }
@@ -326,30 +321,20 @@ class PreferencesImpl implements Preferences {
         return result;
     }
 
+    /**
+     * Adds a preference group.
+     *
+     * @param name             the group archetype short name
+     * @param relationshipType the relationship type
+     * @return the preference group
+     */
     private PreferenceGroup addGroup(String name, String relationshipType) {
-        return addGroup(name, relationshipType, save);
-    }
-
-    private PreferenceGroup addGroup(String name, String relationshipType, boolean save) {
         PreferenceGroup result;
         Entity entity = (Entity) service.create(name);
         bean.addNodeTarget("groups", relationshipType, entity);
-        if (save) {
-            try {
-                service.save(Arrays.asList(bean.getEntity(), entity));
-            } catch (Throwable exception) {
-                reload();
-                addGroup(name, relationshipType, false);
-            }
-        }
         result = new PreferenceGroup(entity, service);
         groups.add(result);
         return result;
     }
 
-    private void reload() {
-        Entity prefs = getPreferences(user, service, transactionManager);
-        bean = new EntityBean(prefs, service);
-        groups.clear();
-    }
 }

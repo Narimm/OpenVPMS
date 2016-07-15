@@ -111,6 +111,25 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     }
 
     /**
+     * Invoked when the workspace is displayed.
+     */
+    @Override
+    public void show() {
+        super.show();
+        checkPreferences();
+    }
+
+    /**
+     * Invoked when user preferences have changed.
+     * <p/>
+     * This is only invoked when the workspace is being shown.
+     */
+    @Override
+    public void preferencesChanged() {
+        checkPreferences();
+    }
+
+    /**
      * Returns the latest version of the current context object.
      *
      * @return the latest version of the context object, or {@link #getObject()} if they are the same
@@ -293,6 +312,15 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         if (window instanceof PatientRecordCRUDWindow) {
             Act event = getBrowser().getEvent(window.getObject());
             ((PatientRecordCRUDWindow) window).setEvent(event);
+        }
+    }
+
+    /**
+     * Checks preferences. If they have changed, forces a refresh to pick up the latest values.
+     */
+    protected void checkPreferences() {
+        if (monitor.changed()) {
+            layoutWorkspace(false);
         }
     }
 

@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.prefs.PreferenceService;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.system.common.util.MapPropertySet;
 
 import java.util.Collections;
 import java.util.Set;
@@ -97,7 +96,7 @@ public class UserPreferences implements Preferences {
      */
     public void refresh() {
         if (user != null) {
-            preferences = new SessionPreferences(service.getPreferences(user));
+            preferences = service.getPreferences(user);
             if (listener != null) {
                 listener.refreshed();
             }
@@ -215,160 +214,6 @@ public class UserPreferences implements Preferences {
     @Override
     public IMObjectReference getReference(String groupName, String name, IMObjectReference defaultValue) {
         return preferences != null ? preferences.getReference(groupName, name, defaultValue) : defaultValue;
-    }
-
-    /**
-     * Preferences that are stored for the duration of the session.
-     */
-    private static class SessionPreferences implements Preferences {
-
-        private Preferences preferences;
-
-        private MapPropertySet sessionPrefs = new MapPropertySet();
-
-        public SessionPreferences(Preferences preferences) {
-            this.preferences = preferences;
-        }
-
-        /**
-         * Returns the available preference group names.
-         *
-         * @return the group name
-         */
-        @Override
-        public Set<String> getGroupNames() {
-            return preferences.getGroupNames();
-        }
-
-        /**
-         * Returns the available preferences in a group.
-         *
-         * @param groupName the group name.
-         * @return the preference names
-         */
-        @Override
-        public Set<String> getNames(String groupName) {
-            return preferences.getNames(groupName);
-        }
-
-        /**
-         * Returns a user preference, given its preference group name and name.
-         *
-         * @param groupName    the preference group name
-         * @param name         the preference name
-         * @param defaultValue the default value, if the preference is unset. May be {@code null}
-         * @return the preference. May be {@code null}
-         */
-        @Override
-        public Object getPreference(String groupName, String name, Object defaultValue) {
-            String key = getKey(groupName, name);
-            if (sessionPrefs.exists(key)) {
-                return sessionPrefs.get(key);
-            }
-            return preferences.getPreference(groupName, name, defaultValue);
-        }
-
-        /**
-         * Sets a preference.
-         *
-         * @param groupName the preference group name
-         * @param name      the preference name
-         * @param value     the preference value. May be {@code null}
-         */
-        @Override
-        public void setPreference(String groupName, String name, Object value) {
-            sessionPrefs.set(getKey(groupName, name), value);
-        }
-
-        /**
-         * Returns a preference, given its preference group name and name.
-         *
-         * @param groupName    the preference group name
-         * @param name         the preference name
-         * @param defaultValue the default value, if the preference is unset. May be {@code null}
-         * @return the preference. May be {@code null}
-         */
-        @Override
-        public boolean getBoolean(String groupName, String name, boolean defaultValue) {
-            String key = getKey(groupName, name);
-            if (sessionPrefs.exists(key)) {
-                return sessionPrefs.getBoolean(key);
-            }
-            return preferences.getBoolean(groupName, name, defaultValue);
-        }
-
-        /**
-         * Returns a preference, given its preference group name and name.
-         *
-         * @param groupName    the preference group name
-         * @param name         the preference name
-         * @param defaultValue the default value, if the preference is unset. May be {@code null}
-         * @return the preference. May be {@code null}
-         */
-        @Override
-        public int getInt(String groupName, String name, int defaultValue) {
-            String key = getKey(groupName, name);
-            if (sessionPrefs.exists(key)) {
-                return sessionPrefs.getInt(key);
-            }
-            return preferences.getInt(groupName, name, defaultValue);
-        }
-
-        /**
-         * Returns a preference, given its preference group name and name.
-         *
-         * @param groupName    the preference group name
-         * @param name         the preference name
-         * @param defaultValue the default value, if the preference is unset. May be {@code null}
-         * @return the preference. May be {@code null}
-         */
-        @Override
-        public long getLong(String groupName, String name, long defaultValue) {
-            String key = getKey(groupName, name);
-            if (sessionPrefs.exists(key)) {
-                return sessionPrefs.getLong(key);
-            }
-            return preferences.getLong(groupName, name, defaultValue);
-        }
-
-        /**
-         * Returns a preference, given its preference group name and name.
-         *
-         * @param groupName    the preference group name
-         * @param name         the preference name
-         * @param defaultValue the default value, if the preference is unset. May be {@code null}
-         * @return the preference. May be {@code null}
-         */
-        @Override
-        public String getString(String groupName, String name, String defaultValue) {
-            String key = getKey(groupName, name);
-            if (sessionPrefs.exists(key)) {
-                return sessionPrefs.getString(key);
-            }
-            return preferences.getString(groupName, name, defaultValue);
-        }
-
-        /**
-         * Returns the reference value of a property.
-         *
-         * @param groupName    the preference group name
-         * @param name         the preference name
-         * @param defaultValue the default value, if the preference is unset. May be {@code null}
-         * @return the preference. May be {@code null}
-         */
-        @Override
-        public IMObjectReference getReference(String groupName, String name, IMObjectReference defaultValue) {
-            String key = getKey(groupName, name);
-            if (sessionPrefs.exists(key)) {
-                return sessionPrefs.getReference(key);
-            }
-            return preferences.getReference(groupName, name, defaultValue);
-        }
-
-        private String getKey(String groupName, String name) {
-            return groupName + "." + name;
-        }
-
     }
 
 }

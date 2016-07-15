@@ -50,14 +50,16 @@ public class PreferenceServiceImpl implements PreferenceService {
     }
 
     /**
-     * Returns the preferences for a user, creating them if required.
+     * Returns the preferences for a user.
+     * <p/>
+     * These preferences exist for the user session; changes and are not persistent.
      *
      * @param user the user
      * @return the user preferences
      */
     @Override
     public Preferences getPreferences(final User user) {
-        return PreferencesImpl.getPreferences(user, service, transactionManager);
+        return PreferencesImpl.getPreferences(user, service);
     }
 
     /**
@@ -68,6 +70,6 @@ public class PreferenceServiceImpl implements PreferenceService {
      */
     @Override
     public Entity getEntity(User user) {
-        return PreferencesImpl.getPreferences(user.getObjectReference(), service, transactionManager);
+        return PreferencesImpl.getPreferences(user, service, transactionManager);
     }
 }

@@ -143,7 +143,7 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
             setSortIcon();
         }
         // update session preferences
-        preferences.setPreference(PreferenceArchetypes.HISTORY, "sortOrder", ascending ? "ASC" : "DESC");
+        preferences.setPreference(PreferenceArchetypes.HISTORY, "sort", ascending ? "ASC" : "DESC");
     }
 
     /**
