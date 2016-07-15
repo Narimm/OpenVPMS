@@ -129,7 +129,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Constructs an {@link AbstractEditDialog}.
      *
      * @param editor  the editor. May be {@code null}
-     * @param title   the dialog title
+     * @param title   the dialog title. May be {@code null}
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param context the context

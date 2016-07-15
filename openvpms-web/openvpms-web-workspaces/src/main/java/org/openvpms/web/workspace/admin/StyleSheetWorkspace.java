@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin;
@@ -65,7 +65,7 @@ public class StyleSheetWorkspace extends AbstractWorkspace {
      * Constructs a {@link StyleSheetWorkspace}.
      */
     public StyleSheetWorkspace(Context context) {
-        super("admin", "stylesheet", context);
+        super("admin.stylesheet", context);
         ContextApplicationInstance app = ContextApplicationInstance.getInstance();
         styles = app.getStyleSheets();
         browser = new StyleBrowser(styles, app.getResolution());

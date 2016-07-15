@@ -60,7 +60,7 @@ public class CommunicationWorkspace extends CustomerActWorkspace<Act> {
      * Constructs a {@link CommunicationWorkspace}.
      */
     public CommunicationWorkspace(Context context) {
-        super("customer", "communication", context);
+        super("customer.communication", context);
         setChildArchetypes(Act.class, SHORT_NAMES);
         alertArchetypes = Archetypes.create(CustomerArchetypes.ALERT, Act.class);
     }

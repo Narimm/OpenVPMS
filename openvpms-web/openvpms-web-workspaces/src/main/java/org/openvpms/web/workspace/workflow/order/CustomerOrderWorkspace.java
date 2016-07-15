@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.order;
@@ -50,7 +50,7 @@ public class CustomerOrderWorkspace extends ResultSetCRUDWorkspace<FinancialAct>
      * @param mailContext the mail context
      */
     public CustomerOrderWorkspace(Context context, MailContext mailContext) {
-        super("workflow", "order", context);
+        super("workflow.order", context);
         setArchetypes(Archetypes.create(SHORT_NAMES, FinancialAct.class, Messages.get("workflow.order.type")));
         setMailContext(mailContext);
     }

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -54,26 +54,23 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
 
 
     /**
-     * Constructs an {@code AbstractCRUDWorkspace}.
+     * Constructs an {@link AbstractCRUDWorkspace}.
      * <p/>
-     * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
-     * be invoked to set archetypes that the workspace supports, before
-     * performing any operations.
+     * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must be invoked to set archetypes that the
+     * workspace supports, before performing any operations.
      *
-     * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId  the workspace localisation identifier
+     * @param id           the workspace id
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public AbstractCRUDWorkspace(String workspacesId, String workspaceId, Context context, boolean showSelector) {
-        this(workspacesId, workspaceId, null, null, context, showSelector);
+    public AbstractCRUDWorkspace(String id, Context context, boolean showSelector) {
+        this(id, null, null, context, showSelector);
     }
 
     /**
-     * Constructs an {@code AbstractCRUDWorkspace}, with a selector for the parent object.
+     * Constructs an {@link AbstractCRUDWorkspace}, with a selector for the parent object.
      *
-     * @param workspacesId    the workspace group localisation identifier
-     * @param workspaceId     the workspace localisation identifier
+     * @param id              the workspace id
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value before performing any operation
      * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
@@ -81,16 +78,15 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      *                        performing any operation
      * @param context         the context
      */
-    public AbstractCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
-                                 Archetypes<Child> childArchetypes, Context context) {
-        this(workspacesId, workspaceId, archetypes, childArchetypes, context, true);
+    public AbstractCRUDWorkspace(String id, Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
+                                 Context context) {
+        this(id, archetypes, childArchetypes, context, true);
     }
 
     /**
-     * Constructs an {@code AbstractCRUDWorkspace}.
+     * Constructs an {@link AbstractCRUDWorkspace}.
      *
-     * @param workspacesId    the workspace group localisation identifier
-     * @param workspaceId     the workspace localisation identifier
+     * @param id              the workspace id
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes} method
      *                        must be invoked to set a non-null value before performing any operation
      * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
@@ -99,9 +95,9 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      * @param context         the context
      * @param showSelector    if {@code true}, show a selector to select the parent object
      */
-    public AbstractCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
-                                 Archetypes<Child> childArchetypes, Context context, boolean showSelector) {
-        super(workspacesId, workspaceId, archetypes, context, showSelector);
+    public AbstractCRUDWorkspace(String id, Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
+                                 Context context, boolean showSelector) {
+        super(id, archetypes, context, showSelector);
         this.childArchetypes = childArchetypes;
     }
 
@@ -164,7 +160,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      * @return a new CRUD window
      */
     protected CRUDWindow<Child> createCRUDWindow() {
-        return new DefaultCRUDWindow<Child>(getChildArchetypes(), getContext(), getHelpContext());
+        return new DefaultCRUDWindow<>(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -190,15 +186,14 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      * <p/>
      * The archetypes are assigned a localised display name using the
      * resource bundle key:
-     * <em>&lt;workspacesId&gt;.&lt;workspaceId&gt;.createtype</em>
+     * <em>&lt;id&gt;.createtype</em>
      *
      * @param type       the type that the short names represent
      * @param shortNames the archetype short names
      */
     protected void setChildArchetypes(Class<Child> type, String... shortNames) {
-        String key = getWorkspacesId() + "." + getWorkspaceId() + ".createtype";
-        Archetypes<Child> archetypes = Archetypes.create(shortNames, type,
-                                                         Messages.get(key));
+        String key = getId() + ".createtype";
+        Archetypes<Child> archetypes = Archetypes.create(shortNames, type, Messages.get(key));
         setChildArchetypes(archetypes);
     }
 

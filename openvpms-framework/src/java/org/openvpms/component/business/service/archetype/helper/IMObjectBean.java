@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -36,9 +36,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.component.system.common.util.AbstractPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.math.BigDecimal;
@@ -50,14 +48,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 
 
 /**
@@ -68,16 +64,6 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
 public class IMObjectBean {
 
     /**
-     * The object.
-     */
-    private final IMObject object;
-
-    /**
-     * The archetype.
-     */
-    private ArchetypeDescriptor archetype;
-
-    /**
      * The archetype service.
      */
     private IArchetypeService service;
@@ -85,7 +71,7 @@ public class IMObjectBean {
     /**
      * Used to convert node values to a particular type.
      */
-    private PropertySet properties;
+    private NodePropertySet properties;
 
 
     /**
@@ -104,12 +90,8 @@ public class IMObjectBean {
      * @param service the archetype service. May be {@code null}
      */
     public IMObjectBean(IMObject object, IArchetypeService service) {
-        if (object == null) {
-            throw new IllegalArgumentException("Argument 'object' may not be null");
-        }
-        this.object = object;
         this.service = service;
-        this.properties = new NodePropertySet();
+        this.properties = new NodePropertySet(object);
     }
 
     /**
@@ -118,7 +100,7 @@ public class IMObjectBean {
      * @return the object
      */
     public IMObject getObject() {
-        return object;
+        return properties.getObject();
     }
 
     /**
@@ -127,7 +109,7 @@ public class IMObjectBean {
      * @return the reference
      */
     public IMObjectReference getReference() {
-        return object.getObjectReference();
+        return getObject().getObjectReference();
     }
 
     /**
@@ -137,7 +119,7 @@ public class IMObjectBean {
      * @return {@code true} if the object is one of {@code shortNames}
      */
     public boolean isA(String... shortNames) {
-        return TypeHelper.isA(object, shortNames);
+        return TypeHelper.isA(getObject(), shortNames);
     }
 
     /**
@@ -400,7 +382,7 @@ public class IMObjectBean {
      */
     public Object getValue(String name) {
         NodeDescriptor node = getNode(name);
-        return node.getValue(object);
+        return node.getValue(getObject());
     }
 
     /**
@@ -412,7 +394,7 @@ public class IMObjectBean {
      */
     public List<IMObject> getValues(String name) {
         NodeDescriptor node = getNode(name);
-        return node.getChildren(object);
+        return node.getChildren(getObject());
     }
 
     /**
@@ -1592,7 +1574,7 @@ public class IMObjectBean {
      */
     public void addValue(String name, IMObject value) {
         NodeDescriptor node = getNode(name);
-        node.addChildToCollection(object, value);
+        node.addChildToCollection(properties.getObject(), value);
     }
 
     /**
@@ -1603,7 +1585,7 @@ public class IMObjectBean {
      */
     public void removeValue(String name, IMObject value) {
         NodeDescriptor node = getNode(name);
-        node.removeChildFromCollection(object, value);
+        node.removeChildFromCollection(properties.getObject(), value);
     }
 
     /**
@@ -1616,18 +1598,11 @@ public class IMObjectBean {
      * @param target the target
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException if the relationship archetype is not found
+     * @throws IMObjectBeanException     if the relationship archetype is not found
      */
     public IMObjectRelationship addNodeTarget(String name, IMObjectReference target) {
         String shortName = getRelationshipShortName(name, target, "target");
-        IMObjectRelationship r = (IMObjectRelationship) getArchetypeService().create(shortName);
-        if (r == null) {
-            throw new IMObjectBeanException(ArchetypeNotFound, shortName);
-        }
-        r.setSource(object.getObjectReference());
-        r.setTarget(target);
-        addValue(name, r);
-        return r;
+        return addNodeTarget(name, shortName, target);
     }
 
     /**
@@ -1644,6 +1619,47 @@ public class IMObjectBean {
      */
     public IMObjectRelationship addNodeTarget(String name, IMObject target) {
         return addNodeTarget(name, target.getObjectReference());
+    }
+
+    /**
+     * Adds a new relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
+     * to the target.
+     *
+     * @param name      the node name
+     * @param shortName the relationship archetype short name
+     * @param target    the target
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the relationship archetype is not found
+     */
+    public IMObjectRelationship addNodeTarget(String name, String shortName, IMObject target) {
+        return addNodeTarget(name, shortName, target.getObjectReference());
+    }
+
+    /**
+     * Adds a new relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
+     * to the target.
+     *
+     * @param name      the node name
+     * @param shortName the relationship archetype short name
+     * @param target    the target
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the relationship archetype is not found
+     */
+    public IMObjectRelationship addNodeTarget(String name, String shortName, IMObjectReference target) {
+        IMObjectRelationship r = (IMObjectRelationship) getArchetypeService().create(shortName);
+        if (r == null) {
+            throw new IMObjectBeanException(ArchetypeNotFound, shortName);
+        }
+        r.setSource(getReference());
+        r.setTarget(target);
+        addValue(name, r);
+        return r;
     }
 
     /**
@@ -1691,6 +1707,7 @@ public class IMObjectBean {
      */
     public void save() {
         IArchetypeService service = getArchetypeService();
+        IMObject object = getObject();
         service.deriveValues(object);
         service.save(object);
     }
@@ -1730,7 +1747,7 @@ public class IMObjectBean {
     protected IMObject resolve(IMObjectReference ref) {
         IMObject result = null;
         if (ref != null) {
-            return getArchetypeService().get(ref);
+            result = getArchetypeService().get(ref);
         }
         return result;
     }
@@ -1754,13 +1771,7 @@ public class IMObjectBean {
      * @throws IMObjectBeanException if the archetype does not exist
      */
     protected ArchetypeDescriptor getArchetype() {
-        if (archetype == null) {
-            archetype = DescriptorHelper.getArchetypeDescriptor(object, getArchetypeService());
-            if (archetype == null) {
-                throw new IMObjectBeanException(ArchetypeNotFound, object.getArchetypeId().getShortName());
-            }
-        }
-        return archetype;
+        return properties.getArchetype();
     }
 
     /**
@@ -1812,7 +1823,7 @@ public class IMObjectBean {
      */
     protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedRefs(
             Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
-        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
+        List<IMObjectReference> result = new ArrayList<>();
         relationships = select(relationships, predicate);
         for (R relationship : relationships) {
             IMObjectReference ref = accessor.transform(relationship);
@@ -1843,7 +1854,7 @@ public class IMObjectBean {
         if (refs.isEmpty()) {
             result = Collections.emptyMap();
         } else {
-            result = new HashMap<R, T>();
+            result = new HashMap<>();
             for (Map.Entry<R, IMObjectReference> entry : refs.entrySet()) {
                 T object = resolve(entry.getValue(), type, active);
                 if (object != null) {
@@ -1865,7 +1876,7 @@ public class IMObjectBean {
      */
     protected <R extends IMObjectRelationship> Map<R, IMObjectReference> getRelationshipRefs(
             Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
-        Map<R, IMObjectReference> result = new HashMap<R, IMObjectReference>();
+        Map<R, IMObjectReference> result = new HashMap<>();
         relationships = select(relationships, predicate);
         for (R relationship : relationships) {
             IMObjectReference ref = accessor.transform(relationship);
@@ -1927,7 +1938,7 @@ public class IMObjectBean {
         if (refs.isEmpty()) {
             return Collections.emptyList();
         }
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         for (IMObjectReference ref : refs) {
             T object = resolve(ref, type, active);
             if (object != null) {
@@ -2073,7 +2084,7 @@ public class IMObjectBean {
      * @return the objects matching the predicate
      */
     protected <T> List<T> select(Collection<T> objects, Predicate predicate) {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         for (T object : objects) {
             if (predicate.evaluate(object)) {
                 result.add(object);
@@ -2153,12 +2164,7 @@ public class IMObjectBean {
      * @throws IMObjectBeanException if the descriptor doesn't exist
      */
     protected NodeDescriptor getNode(String name) {
-        NodeDescriptor node = getArchetype().getNodeDescriptor(name);
-        if (node == null) {
-            String shortName = object.getArchetypeId().getShortName();
-            throw new IMObjectBeanException(NodeDescriptorNotFound, name, shortName);
-        }
-        return node;
+        return properties.getNode(name);
     }
 
     /**
@@ -2169,7 +2175,7 @@ public class IMObjectBean {
      */
     private Object evaluate(String expression) {
         Object result;
-        JXPathContext context = JXPathHelper.newContext(object);
+        JXPathContext context = JXPathHelper.newContext(properties.getObject());
         result = context.getValue(expression);
         return result;
     }
@@ -2177,40 +2183,25 @@ public class IMObjectBean {
     /**
      * Implementation of {@link PropertySet} for nodes.
      */
-    private class NodePropertySet extends AbstractPropertySet {
+    private class NodePropertySet extends AbstractNodePropertySet {
 
         /**
-         * Returns the property names.
+         * Constructs an {@link NodePropertySet}.
          *
-         * @return the property names
+         * @param object the object
          */
-        public Set<String> getNames() {
-            return getArchetype().getNodeDescriptors().keySet();
+        public NodePropertySet(IMObject object) {
+            super(object);
         }
 
         /**
-         * Returns the value of a property.
+         * Returns the archetype service.
          *
-         * @param name the property name
-         * @return the value of the property
-         * @throws IMObjectBeanException if the descriptor doesn't exist
+         * @return the archetype service
          */
-        public Object get(String name) {
-            NodeDescriptor node = getNode(name);
-            return node.getValue(object);
-        }
-
-        /**
-         * Sets the value of a property.
-         *
-         * @param name  the propery name
-         * @param value the property value
-         * @throws IMObjectBeanException if the descriptor doesn't exist
-         * @throws OpenVPMSException     if the property cannot be set
-         */
-        public void set(String name, Object value) {
-            NodeDescriptor node = getNode(name);
-            node.setValue(object, value);
+        @Override
+        protected IArchetypeService getArchetypeService() {
+            return IMObjectBean.this.getArchetypeService();
         }
     }
 

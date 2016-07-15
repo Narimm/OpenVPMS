@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -72,7 +72,7 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
         } else {
             result = new ArrayList<Entity>();
             for (IMObjectReference reference : selections) {
-                Entity template = (Entity) IMObjectHelper.getObject(reference, null);
+                Entity template = (Entity) IMObjectHelper.getObject(reference);
                 if (template != null) {
                     result.add(template);
                 }

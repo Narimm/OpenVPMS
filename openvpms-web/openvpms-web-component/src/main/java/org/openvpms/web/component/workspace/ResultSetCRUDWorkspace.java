@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -41,17 +41,16 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
 
 
     /**
-     * Constructs a {@code ResultSetCRUDWorkspace}.
+     * Constructs a {@link ResultSetCRUDWorkspace}.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param context      the context
+     * @param id          the workspace id
+     * @param context     the context
      */
-    public ResultSetCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
-        super(workspacesId, workspaceId, context, false);
+    public ResultSetCRUDWorkspace(String id, Context context) {
+        super(id, context, false);
     }
 
     /**
@@ -127,7 +126,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     protected CRUDWindow<T> createCRUDWindow() {
         QueryBrowser<T> browser = getBrowser();
         return new ResultSetCRUDWindow<>(getArchetypes(), browser.getQuery(), browser.getResultSet(),
-                                          getContext(), getHelpContext());
+                                         getContext(), getHelpContext());
     }
 
     /**

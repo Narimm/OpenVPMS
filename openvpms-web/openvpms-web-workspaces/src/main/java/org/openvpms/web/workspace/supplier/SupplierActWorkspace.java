@@ -35,26 +35,24 @@ public abstract class SupplierActWorkspace<T extends Act>
         extends BrowserCRUDWorkspace<Party, T> {
 
     /**
-     * Constructs a {@code SupplierActWorkspace}.
+     * Constructs a {@link SupplierActWorkspace}.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param context      the context
+     * @param id          the workspace id
+     * @param context     the context
      */
-    public SupplierActWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, null, context);
+    public SupplierActWorkspace(String id, Context context) {
+        this(id, null, context);
     }
 
     /**
-     * Constructs a {@code SupplierActWorkspace}.
+     * Constructs a {@link SupplierActWorkspace}.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param archetypes   the archetype short names that this operates on
-     * @param context      the context
+     * @param id         the workspace id
+     * @param archetypes the archetype short names that this operates on
+     * @param context    the context
      */
-    public SupplierActWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        super(workspacesId, workspaceId, null, archetypes, context);
+    public SupplierActWorkspace(String id, Archetypes<T> archetypes, Context context) {
+        super(id, null, archetypes, context);
         setArchetypes(Party.class, "party.supplier*");
         setMailContext(new SupplierMailContext(context, getHelpContext()));
     }

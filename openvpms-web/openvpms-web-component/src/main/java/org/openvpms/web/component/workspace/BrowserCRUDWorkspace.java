@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -63,78 +63,68 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
 
 
     /**
-     * Constructs a {@code BrowserCRUDWorkspace}, with a selector to select the parent object.
+     * Constructs a {@link BrowserCRUDWorkspace}, with a selector to select the parent object.
      * <p/>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
+     * @param id      the workspace identifier
+     * @param context the context
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, context, true);
+    public BrowserCRUDWorkspace(String id, Context context) {
+        this(id, context, true);
     }
 
     /**
-     * Constructs a {@code BrowserCRUDWorkspace}.
+     * Constructs a {@link BrowserCRUDWorkspace}.
      * <p/>
-     * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
-     * be invoked to set archetypes that the workspace supports, before
-     * performing any operations.
+     * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must * be invoked to set archetypes that the
+     * workspace supports, before performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
+     * @param id           the workspace identifier
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Context context, boolean showSelector) {
-        super(workspacesId, workspaceId, context, showSelector);
+    public BrowserCRUDWorkspace(String id, Context context, boolean showSelector) {
+        super(id, context, showSelector);
     }
 
     /**
-     * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
-     * the parent object.
+     * Constructs a {@link BrowserCRUDWorkspace}, with a selector for the parent object.
      * <p/>
      * The {@link #setChildArchetypes} method must be invoked to set archetypes
      * that the workspace supports, before performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
+     * @param id           the workspace identifier
      * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                     method must be invoked to set a non-null value before performing any operation
      * @param context      the context
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
-                                Context context) {
-        this(workspacesId, workspaceId, archetypes, null, context);
+    public BrowserCRUDWorkspace(String id, Archetypes<Parent> archetypes, Context context) {
+        this(id, archetypes, null, context);
     }
 
     /**
-     * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
-     * the parent object.
+     * Constructs a {@link BrowserCRUDWorkspace}, with a selector for the parent object.
      *
-     * @param workspacesId    the workspaces localisation identifier
-     * @param workspaceId     the workspace localisation identifier
-     * @param archetypes      the archetypes that this operates on.
-     *                        If {@code null}, the {@link #setArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
+     * @param id              the workspace identifier
+     * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                        method must be invoked to set a non-null value before performing any operation
      * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
      *                        {@link #setChildArchetypes} method must be invoked to set a non-null value before
      *                        performing any operation
      * @param context         the context
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
-                                Archetypes<Child> childArchetypes, Context context) {
-        this(workspacesId, workspaceId, archetypes, childArchetypes, context, true);
+    public BrowserCRUDWorkspace(String id, Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
+                                Context context) {
+        this(id, archetypes, childArchetypes, context, true);
     }
 
     /**
-     * Constructs a new {@code BrowserCRUDWorkspace}.
+     * Constructs a {@link BrowserCRUDWorkspace}.
      *
-     * @param workspacesId    the workspaces localisation identifier
-     * @param workspaceId     the workspace localisation identifier
+     * @param id              the workspace identifier
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value before performing any operation
      * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
@@ -142,12 +132,10 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      *                        performing any operation
      * @param context         the context
      * @param showSelector    if {@code true}, show a selector to select the
-     *                        parent object
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
+    public BrowserCRUDWorkspace(String id, Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
                                 Context context, boolean showSelector) {
-        super(workspacesId, workspaceId, archetypes, childArchetypes, context, showSelector);
+        super(id, archetypes, childArchetypes, context, showSelector);
     }
 
     /**

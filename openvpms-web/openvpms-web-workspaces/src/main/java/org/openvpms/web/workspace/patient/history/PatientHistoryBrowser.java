@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -72,7 +72,7 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
         if (pagedModel != null) {
             // ensure the table model has the selected child act short names prior to performing the query
             PatientHistoryQuery query = getQuery();
-            pagedModel.setShortNames(query.getActItemShortNames());
+            pagedModel.setShortNames(query.getSelectedItemShortNames());
             pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
@@ -121,7 +121,7 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
      * @return a new paged table model
      */
     protected PagedActHierarchyTableModel<Act> createPagedModel(IMObjectTableModel<Act> model, PatientHistoryQuery query) {
-        return new PagedPatientHistoryTableModel((PatientHistoryTableModel) model, query.getActItemShortNames());
+        return new PagedPatientHistoryTableModel((PatientHistoryTableModel) model, query.getSelectedItemShortNames());
     }
 
     /**

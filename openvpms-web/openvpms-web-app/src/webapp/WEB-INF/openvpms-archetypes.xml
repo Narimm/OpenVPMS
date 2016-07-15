@@ -189,6 +189,11 @@
         <constructor-arg ref="txnManager"/>
     </bean>
 
+    <bean id="preferenceService" class="org.openvpms.archetype.rules.prefs.PreferenceServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                    DOCUMENT HANDLERS                               -->
     <!-- ================================================================== -->

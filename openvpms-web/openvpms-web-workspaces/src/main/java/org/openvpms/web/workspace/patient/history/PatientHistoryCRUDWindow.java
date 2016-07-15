@@ -350,7 +350,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return a new printer
      */
     private IMObjectReportPrinter<Act> createPrinter(Context context) {
-        PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
+        PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames());
         // need to use maxDepth=3 so that addendum records appear after the records they link to.
         PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,

@@ -11,20 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.workspace.CRUDWindow;
-import org.openvpms.web.workspace.customer.CustomerActWorkspace;
+import org.openvpms.web.workspace.customer.CustomerFinancialWorkspace;
 
 
 /**
@@ -32,7 +33,7 @@ import org.openvpms.web.workspace.customer.CustomerActWorkspace;
  *
  * @author Tim Anderson
  */
-public class EstimateWorkspace extends CustomerActWorkspace<Act> {
+public class EstimateWorkspace extends CustomerFinancialWorkspace<Act> {
 
     /**
      * The act statuses.
@@ -47,13 +48,13 @@ public class EstimateWorkspace extends CustomerActWorkspace<Act> {
     /**
      * Constructs an {@link EstimateWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences the user preferences
      */
-    public EstimateWorkspace(Context context) {
-        super("customer", "estimate", context);
+    public EstimateWorkspace(Context context, Preferences preferences) {
+        super("customer.estimate", context, preferences);
         setChildArchetypes(Act.class, EstimateArchetypes.ESTIMATE);
     }
-
 
     /**
      * Creates a new CRUD window for viewing and editing acts.
@@ -70,7 +71,7 @@ public class EstimateWorkspace extends CustomerActWorkspace<Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        return new DefaultActQuery<Act>(getObject(), "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION,
-                                        getChildArchetypes().getShortNames(), STATUSES);
+        return new DefaultActQuery<>(getObject(), "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION,
+                                     getChildArchetypes().getShortNames(), STATUSES);
     }
 }

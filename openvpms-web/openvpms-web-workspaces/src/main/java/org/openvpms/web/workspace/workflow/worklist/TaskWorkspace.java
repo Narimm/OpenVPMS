@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
-import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -38,12 +40,14 @@ import org.openvpms.web.workspace.workflow.scheduling.SchedulingWorkspace;
 public class TaskWorkspace extends SchedulingWorkspace {
 
     /**
-     * Constructs a {@code TaskWorkspace}.
+     * Constructs a {@link TaskWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public TaskWorkspace(Context context) {
-        super("workflow", "worklist", Archetypes.create("entity.organisationWorkListView", Entity.class), context);
+    public TaskWorkspace(Context context, Preferences preferences) {
+        super("workflow.worklist", Archetypes.create(ScheduleArchetypes.WORK_LIST_VIEW, Entity.class), context,
+              preferences, PreferenceArchetypes.WORK_LIST);
     }
 
     /**
@@ -63,7 +67,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @return a new browser
      */
     protected ScheduleBrowser createBrowser() {
-        return new TaskBrowser(getContext());
+        return new TaskBrowser(ServiceHelper.getPreferences(), getContext());
     }
 
     /**
@@ -166,11 +170,11 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * Returns the default schedule view for the specified practice location.
      *
      * @param location the practice location
+     * @param prefs    user preferences
      * @return the default schedule view, or {@code null} if there is no default
      */
-    protected Entity getDefaultView(Party location) {
-        LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-        return locationRules.getDefaultWorkListView(location);
+    protected Entity getDefaultView(Party location, Preferences prefs) {
+        return new TaskSchedules(location, prefs).getDefaultScheduleView();
     }
 
     /**

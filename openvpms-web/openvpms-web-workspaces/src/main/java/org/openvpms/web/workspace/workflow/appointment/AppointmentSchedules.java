@@ -11,15 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractSchedules;
@@ -38,15 +43,16 @@ public class AppointmentSchedules extends AbstractSchedules {
     /**
      * Appointment rules.
      */
-    private AppointmentRules rules;
+    private final AppointmentRules rules;
 
     /**
      * Constructs an {@link AppointmentSchedules}.
      *
      * @param location the location. May be {@code null}
+     * @param prefs    the user preferences
      */
-    public AppointmentSchedules(Party location) {
-        super(location, ScheduleArchetypes.SCHEDULE_VIEW);
+    public AppointmentSchedules(Party location, Preferences prefs) {
+        super(location, ScheduleArchetypes.SCHEDULE_VIEW, prefs);
         rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
@@ -64,14 +70,44 @@ public class AppointmentSchedules extends AbstractSchedules {
     }
 
     /**
-     * Returns the default schedule view for the specified location
+     * Returns the default schedule view.
      *
      * @return the default schedule view. May be {@code null}
      */
     @Override
     public Entity getDefaultScheduleView() {
+        IMObjectReference reference = getScheduleView(PreferenceArchetypes.SCHEDULING);
+        LocationRules rules = getLocationRules();
+        Entity view = null;
         Party location = getLocation();
-        return (location != null) ? getLocationRules().getDefaultScheduleView(location) : null;
+        if (reference != null && rules.hasScheduleView(location, reference)) {
+            // only use the view from preferences if it is available at the current location
+            view = (Entity) IMObjectHelper.getObject(reference);
+        }
+        if (view == null) {
+            view = rules.getDefaultScheduleView(location);
+        }
+        return view;
+    }
+
+    /**
+     * Returns the default schedule view.
+     * <p/>
+     * This uses the one from preferences if applicable, falling back to the default for the location if not.
+     *
+     * @param views the available schedule views
+     * @return the default schedule view. May be {@code null}
+     */
+    @Override
+    public Entity getDefaultScheduleView(List<Entity> views) {
+        Entity view = getScheduleView(PreferenceArchetypes.SCHEDULING, views);
+        if (view == null) {
+            Party location = getLocation();
+            if (location != null) {
+                view = getLocationRules().getDefaultScheduleView(location);
+            }
+        }
+        return view;
     }
 
     /**
@@ -84,6 +120,18 @@ public class AppointmentSchedules extends AbstractSchedules {
     public List<Entity> getSchedules(Entity view) {
         List<Party> schedules = rules.getSchedules(view);
         return new ArrayList<Entity>(schedules);
+    }
+
+    /**
+     * Returns the default schedule for the specified view.
+     *
+     * @param view      the view
+     * @param schedules the available schedules in the view
+     * @return the default schedule, or {@code null} for all schedules
+     */
+    @Override
+    public Entity getDefaultSchedule(Entity view, List<Entity> schedules) {
+        return getSchedule(PreferenceArchetypes.SCHEDULING, schedules);
     }
 
     /**

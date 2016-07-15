@@ -18,6 +18,9 @@ package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.PreferenceMonitor;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -56,18 +59,31 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private final DoubleClickMonitor click = new DoubleClickMonitor();
 
+    /**
+     * The user preferences.
+     */
+    private final Preferences preferences;
+
+    /**
+     * The preferences monitor.
+     */
+    private final PreferenceMonitor monitor;
 
     /**
      * Constructs a {@link PatientRecordWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public PatientRecordWorkspace(Context context) {
-        super("patient", "record", context);
+    public PatientRecordWorkspace(Context context, Preferences preferences) {
+        super("patient.record", context);
         setArchetypes(Party.class, "party.patient*");
         setChildArchetypes(Act.class, "act.patientClinicalEvent");
 
         setMailContext(new CustomerMailContext(context, getHelpContext()));
+        this.preferences = preferences;
+        monitor = new PreferenceMonitor(preferences);
+        monitor.add(PreferenceArchetypes.HISTORY);
     }
 
     /**
@@ -155,7 +171,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        return PatientQueryFactory.createHistoryQuery(getObject(), getContext().getPractice());
+        return new PatientHistoryQuery(getObject(), preferences);
     }
 
     /**
@@ -205,7 +221,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when an act is selected.
-     * <p>
+     * <p/>
      * This implementation edits the selected act, if the current view is a history view and it has been double
      * clicked on.
      *
@@ -230,7 +246,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when a browser object is viewed (aka 'browsed').
-     * <p>
+     * <p/>
      * This implementation sets the object in the CRUD window.
      *
      * @param object the selected object
@@ -243,7 +259,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when the object has been deleted.
-     * <p>
+     * <p/>
      * If the current window is a history view, this implementation attempts to select the next object in the browser,
      * or the prior object if there is no next object. This is so that when the browser is refreshed, the selection will
      * be retained.
@@ -267,7 +283,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when the browser is queried.
-     * <p>
+     * <p/>
      * This implementation selects the first available object and determines the associated event, if any.
      */
     @Override
@@ -298,7 +314,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Updates the current selection.
-     * <p>
+     * <p/>
      * TODO - this needs to be cleaned up. The CRUD window needs to be hooked directly into the browsers.
      * Main limitation at present is that CRUD window is created independently of the browser, and the workspace
      * acts as the intermediary. Should be refactored along the lines of VisitEditor

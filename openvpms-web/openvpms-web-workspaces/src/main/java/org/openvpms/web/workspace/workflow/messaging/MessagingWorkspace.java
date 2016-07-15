@@ -37,12 +37,12 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
 
     /**
-     * Constructs a {@code MessagingWorkspace}.
+     * Constructs a {@link MessagingWorkspace}.
      *
      * @param context the context
      */
     public MessagingWorkspace(Context context) {
-        super("workflow", "messaging", context, false);
+        super("workflow.messaging", context, false);
         setArchetypes(User.class, UserArchetypes.USER);
         setChildArchetypes(Act.class, MessageArchetypes.USER, MessageArchetypes.SYSTEM_MESSAGES,
                            MessageArchetypes.AUDIT);

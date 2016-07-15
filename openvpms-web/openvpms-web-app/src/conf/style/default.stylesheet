@@ -41,6 +41,21 @@
         </properties>
     </style>
 
+    <style name="button.preferences" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/gear.png"/>
+            </property>
+            <property name="rolloverEnabled" value="true"/>
+            <property name="rolloverBorder">
+                <border style="solid" size="1px" color="#000000"/>
+            </property>
+            <property name="border">
+                <border style="solid" size="1px" color="${theme.title.colour}"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="MainPane" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
@@ -1404,6 +1419,13 @@
         <properties>
             <property name="width" value="${dialog.medium.width}"/>
             <property name="height" value="${dialog.medium.height}"/>
+        </properties>
+    </style>
+
+    <style name="PreferencesDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.small.width}"/>
+            <property name="height" value="${dialog.small.height}"/>
         </properties>
     </style>
 

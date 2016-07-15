@@ -29,6 +29,8 @@ import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -44,6 +46,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.component.workspace.Refreshable;
@@ -177,13 +180,15 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
 
 
     /**
-     * Constructs a {@code MainPane}.
+     * Constructs a {@link MainPane}.
      *
-     * @param monitor the message monitor
-     * @param context the context
-     * @param factory the workspaces factory
+     * @param monitor     the message monitor
+     * @param context     the context
+     * @param factory     the workspaces factory
+     * @param preferences the user preferences
      */
-    public MainPane(MessageMonitor monitor, GlobalContext context, WorkspacesFactory factory) {
+    public MainPane(MessageMonitor monitor, GlobalContext context, WorkspacesFactory factory,
+                    UserPreferences preferences) {
         super(ORIENTATION_HORIZONTAL);
         setStyleName(STYLE);
         this.monitor = monitor;
@@ -209,10 +214,10 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         leftMenu = ColumnFactory.create(Styles.WIDE_CELL_SPACING, subMenu);
         currentWorkspaces = ContentPaneFactory.create(WORKSPACE_STYLE);
 
-        Button button = addWorkspaces(factory.createCustomerWorkspaces(context));
-        addWorkspaces(factory.createPatientWorkspaces(context));
+        Button button = addWorkspaces(factory.createCustomerWorkspaces(context, preferences));
+        addWorkspaces(factory.createPatientWorkspaces(context, preferences));
         addWorkspaces(factory.createSupplierWorkspaces(context));
-        addWorkspaces(factory.createWorkflowWorkspaces(context));
+        addWorkspaces(factory.createWorkflowWorkspaces(context, preferences));
         addWorkspaces(factory.createProductWorkspaces(context));
         addWorkspaces(factory.createReportingWorkspaces(context));
 
@@ -244,7 +249,30 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         add(left);
         add(right);
 
-        button.doAction();
+        String homePage = preferences.getString(PreferenceArchetypes.GENERAL, "homePage", "customer.information");
+        boolean found = false;
+        if (homePage != null) {
+            for (Workspaces spaces : workspaces) {
+                for (Workspace workspace : spaces.getWorkspaces()) {
+                    if (StringUtils.equals(workspace.getId(), homePage)) {
+                        found = true;
+                        select(spaces, workspace);
+                        break;
+                    }
+                }
+            }
+        }
+        if (!found) {
+            button.doAction();
+        }
+        preferences.setListener(new UserPreferences.Listener() {
+            @Override
+            public void refreshed() {
+                if (currentWorkspace != null) {
+                    currentWorkspace.preferencesChanged();
+                }
+            }
+        });
     }
 
     /**

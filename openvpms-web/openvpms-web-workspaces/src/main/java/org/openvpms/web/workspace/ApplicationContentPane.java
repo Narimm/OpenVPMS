@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.system.ServiceHelper;
@@ -45,20 +46,27 @@ public class ApplicationContentPane extends ContentPaneEx {
     private final WorkspacesFactory factory;
 
     /**
+     * The user preferences
+     */
+    private final UserPreferences preferences;
+
+    /**
      * The layout pane style name.
      */
     private static final String LAYOUT_STYLE = "ApplicationContentPane.Layout";
 
 
     /**
-     * Constructs an {@code ApplicationContentPane}.
+     * Constructs an {@link ApplicationContentPane}.
      *
-     * @param context the context
-     * @param factory the workspaces factory
+     * @param context     the context
+     * @param factory     the workspaces factory
+     * @param preferences the user preferences
      */
-    public ApplicationContentPane(GlobalContext context, WorkspacesFactory factory) {
+    public ApplicationContentPane(GlobalContext context, WorkspacesFactory factory, UserPreferences preferences) {
         this.context = context;
         this.factory = factory;
+        this.preferences = preferences;
     }
 
     /**
@@ -78,7 +86,7 @@ public class ApplicationContentPane extends ContentPaneEx {
         UserRules userRules = ServiceHelper.getBean(UserRules.class);
         MessageMonitor messageMonitor = ServiceHelper.getBean(MessageMonitor.class);
         layout.add(new TitlePane(practiceRules, userRules, context));
-        layout.add(new MainPane(messageMonitor, context, factory));
+        layout.add(new MainPane(messageMonitor, context, factory, preferences));
         add(layout);
     }
 

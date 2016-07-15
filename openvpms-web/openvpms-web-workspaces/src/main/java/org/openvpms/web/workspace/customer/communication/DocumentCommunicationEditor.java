@@ -170,7 +170,7 @@ public abstract class DocumentCommunicationEditor extends AbstractCommunicationE
      * @return the document, or {@code null} if none exists
      */
     private Document getDocument() {
-        return (Document) IMObjectHelper.getObject(document.getReference(), null);
+        return (Document) IMObjectHelper.getObject(document.getReference());
     }
 
 }

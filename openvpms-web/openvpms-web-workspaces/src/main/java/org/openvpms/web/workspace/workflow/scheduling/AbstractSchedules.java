@@ -11,14 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.prefs.Preferences;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.List;
 
 /**
  * Abstract implementation of the {@link Schedules} interface.
@@ -38,6 +44,11 @@ public abstract class AbstractSchedules implements Schedules {
     private final String viewShortName;
 
     /**
+     * User preferences.
+     */
+    private final Preferences prefs;
+
+    /**
      * The location rules.
      */
     private final LocationRules rules;
@@ -47,10 +58,12 @@ public abstract class AbstractSchedules implements Schedules {
      *
      * @param location      the location. May be {@code null}
      * @param viewShortName the schedule view archetype short name
+     * @param prefs         the user preferences
      */
-    public AbstractSchedules(Party location, String viewShortName) {
+    public AbstractSchedules(Party location, String viewShortName, Preferences prefs) {
         this.location = location;
         this.viewShortName = viewShortName;
+        this.prefs = prefs;
         rules = ServiceHelper.getBean(LocationRules.class);
     }
 
@@ -80,5 +93,39 @@ public abstract class AbstractSchedules implements Schedules {
      */
     protected LocationRules getLocationRules() {
         return rules;
+    }
+
+    /**
+     * Returns the schedule view from user preferences.
+     *
+     * @param preferenceGroup the preference group name. The group must have a 'view' node.
+     * @param views           the available schedule views
+     * @return the schedule view. May be {@code null}
+     */
+    protected Entity getScheduleView(String preferenceGroup, List<Entity> views) {
+        IMObjectReference reference = getScheduleView(preferenceGroup);
+        return IMObjectHelper.getObject(reference, views);
+    }
+
+    /**
+     * Returns the schedule view reference from user preferences.
+     *
+     * @param preferenceGroup the preference group name. The group must have a 'view' node.
+     * @return the schedule view reference. May be {@code null}
+     */
+    protected IMObjectReference getScheduleView(String preferenceGroup) {
+        return prefs.getReference(preferenceGroup, "view", null);
+    }
+
+    /**
+     * Returns the schedule from user preferences.
+     *
+     * @param preferenceGroup the preference group name. The group must have a 'schedule' node.
+     * @param schedules       the available schedules
+     * @return the schedule view. May be {@code null}
+     */
+    protected Entity getSchedule(String preferenceGroup, List<Entity> schedules) {
+        IMObjectReference reference = prefs.getReference(preferenceGroup, "schedule", null);
+        return IMObjectHelper.getObject(reference, schedules);
     }
 }

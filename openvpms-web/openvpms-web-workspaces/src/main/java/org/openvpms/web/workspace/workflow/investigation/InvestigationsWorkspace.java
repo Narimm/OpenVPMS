@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -50,7 +50,7 @@ public class InvestigationsWorkspace extends ResultSetCRUDWorkspace<Act> {
      * @param mailContext the mail context
      */
     public InvestigationsWorkspace(Context context, MailContext mailContext) {
-        super("workflow", "investigation", context);
+        super("workflow.investigation", context);
         setArchetypes(Archetypes.create(InvestigationArchetypes.PATIENT_INVESTIGATION, Act.class));
         setMailContext(mailContext);
     }

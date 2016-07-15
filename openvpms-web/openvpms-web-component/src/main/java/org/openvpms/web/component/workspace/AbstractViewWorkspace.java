@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -67,48 +67,43 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
 
 
     /**
-     * Constructs an {@code AbstractViewWorkspace}.
+     * Constructs an {@link AbstractViewWorkspace}.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param context      the context
+     * @param id          the workspace id
+     * @param context     the context
      */
-    public AbstractViewWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, null, context);
+    public AbstractViewWorkspace(String id, Context context) {
+        this(id, null, context);
     }
 
     /**
-     * Constructs a new {@code AbstractViewWorkspace}.
-     * <p/>
-     * If no archetypes are supplied, the {@link #setArchetypes} method must
-     * before performing any operations.
-     *
-     * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param archetypes   the archetype that this operates on. May be {@code null}
-     * @param context      the context
-     */
-    public AbstractViewWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        this(workspacesId, workspaceId, archetypes, context, true);
-    }
-
-    /**
-     * Constructs an {@code AbstractViewWorkspace}.
+     * Constructs an {@link AbstractViewWorkspace}.
      * <p/>
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
-     * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId  the workspace localisation identifier
+     * @param id         the workspace id
+     * @param archetypes the archetype that this operates on. May be {@code null}
+     * @param context    the context
+     */
+    public AbstractViewWorkspace(String id, Archetypes<T> archetypes, Context context) {
+        this(id, archetypes, context, true);
+    }
+
+    /**
+     * Constructs an {@link AbstractViewWorkspace}.
+     * <p/>
+     * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
+     *
+     * @param id           the workspace id
      * @param archetypes   the archetype that this operates on. May be {@code null}
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public AbstractViewWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes,
-                                 Context context, boolean showSelector) {
-        super(workspacesId, workspaceId, context);
+    public AbstractViewWorkspace(String id, Archetypes<T> archetypes, Context context, boolean showSelector) {
+        super(id, context);
         this.archetypes = archetypes;
         if (showSelector) {
             selector = createSelector();
@@ -170,13 +165,13 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * <p/>
      * The archetypes are assigned a localised display name using the
      * resource bundle key:
-     * <em>&lt;workspacesId&gt;.&lt;workspaceId&gt;.type</em>
+     * <em>&lt;id&gt;.type</em>
      *
      * @param type       the type that the short names represent
      * @param shortNames the archetype short names
      */
     protected void setArchetypes(Class<T> type, String... shortNames) {
-        String key = getWorkspacesId() + "." + getWorkspaceId() + ".type";
+        String key = getId() + ".type";
         setArchetypes(Archetypes.create(shortNames, type, Messages.get(key)));
     }
 
