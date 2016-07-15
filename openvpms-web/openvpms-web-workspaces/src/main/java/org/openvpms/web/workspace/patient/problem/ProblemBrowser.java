@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -81,7 +81,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
         if (pagedModel != null) {
             // ensure the table model has the selected child act short names prior to performing the query
             ProblemQuery query = getQuery();
-            pagedModel.setShortNames(query.getActItemShortNames());
+            pagedModel.setShortNames(query.getSelectedItemShortNames());
             pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
@@ -181,7 +181,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
          * @param query the problem query
          */
         public PagedProblemTableModel(IMTableModel<Act> model, ProblemQuery query) {
-            super((IMObjectTableModel<Act>) model, query.getActItemShortNames());
+            super((IMObjectTableModel<Act>) model, query.getSelectedItemShortNames());
         }
 
         /**

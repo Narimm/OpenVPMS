@@ -292,8 +292,6 @@
         <constructor-arg index="0" ref="styleSheetCache"/>
     </bean>
 
-    <bean id="preferences" class="org.openvpms.web.component.app.UserPreferences"/>
-
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
         <constructor-arg ref="defaultArchetypeService"/>
     </bean>
@@ -308,6 +306,10 @@
         <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,
         separated by '-' -->
         <property name="mask" value="Ctrl-Shift"/>
+    </bean>
+
+    <bean id="preferences" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.web.component.prefs.UserPreferences"/>
     </bean>
 
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">

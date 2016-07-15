@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -34,48 +34,43 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
  *
  * @author Tim Anderson
  */
-public abstract class CustomerActWorkspace<T extends Act>
-    extends BrowserCRUDWorkspace<Party, T> {
+public abstract class CustomerActWorkspace<T extends Act> extends BrowserCRUDWorkspace<Party, T> {
 
     /**
-     * Constructs a new {@code CustomerActWorkspace}.
+     * Constructs a {@link CustomerActWorkspace}.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param context     the context
+     * @param id      the workspace id
+     * @param context the context
      */
-    public CustomerActWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, null, context);
+    public CustomerActWorkspace(String id, Context context) {
+        this(id, null, context);
     }
 
 
     /**
-     * Constructs a {@code CustomerActWorkspace}.
+     * Constructs a {@link CustomerActWorkspace}.
      *
-     * @param workspacesId   the workspaces localisation identifier
-     * @param workspaceId   the workspace localisation identifier
+     * @param id            the workspace id
      * @param actArchetypes the act archetypes that this operates on
      * @param context       the context
      */
-    public CustomerActWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<T> actArchetypes, Context context) {
-        super(workspacesId, workspaceId, null, actArchetypes, context);
+    public CustomerActWorkspace(String id, Archetypes<T> actArchetypes, Context context) {
+        super(id, null, actArchetypes, context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
     /**
-     * Constructs a {@code CustomerActWorkspace}.
+     * Constructs a {@link CustomerActWorkspace}.
      *
-     * @param workspacesId     the workspaces localisation identifier
-     * @param workspaceId     the workspace localisation identifier
+     * @param id              the workspace id
      * @param partyArchetypes the party archetypes that this operates on
      * @param actArchetypes   the act archetypes that this operates on
      * @param context         the context
      */
-    public CustomerActWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes, Context context) {
-        super(workspacesId, workspaceId, partyArchetypes, actArchetypes, context);
+    public CustomerActWorkspace(String id, Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes,
+                                Context context) {
+        super(id, partyArchetypes, actArchetypes, context);
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 

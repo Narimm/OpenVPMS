@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -56,20 +56,23 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
     private SplitPane container;
 
     /**
+     * The tabbed pane container.
+     */
+    private Column tabContainer;
+
+    /**
      * The split pane style.
      */
     private static final String STYLE = "SplitPaneWithButtonRow";
-    private Column tabContainer;
 
     /**
      * Constructs an {@link TabbedWorkspace}.
      *
-     * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param context      the context
+     * @param id      the workspace id
+     * @param context the context
      */
-    public TabbedWorkspace(String workspacesId, String workspaceId, Context context) {
-        super(workspacesId, workspaceId, context);
+    public TabbedWorkspace(String id, Context context) {
+        super(id, context);
     }
 
     /**

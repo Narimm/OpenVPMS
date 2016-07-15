@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.info;
@@ -38,10 +38,10 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
-     * Constructs an {@code InformationWorkspace}.
+     * Constructs an {@link InformationWorkspace}.
      */
     public InformationWorkspace(Context context) {
-        super("customer", "info", context);
+        super("customer.information", context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }

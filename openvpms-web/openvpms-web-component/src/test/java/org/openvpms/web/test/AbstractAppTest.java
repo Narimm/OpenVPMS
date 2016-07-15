@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.test;
@@ -19,15 +19,17 @@ package org.openvpms.web.test;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Window;
 import org.junit.Before;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.prefs.PreferenceService;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.app.UserPreferences;
+import org.openvpms.web.component.prefs.UserPreferences;
 
 
 /**
@@ -45,8 +47,9 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         PracticeRules rules = new PracticeRules(getArchetypeService(), applicationContext.getBean(Currencies.class));
         LocationRules locationRules = new LocationRules(getArchetypeService());
         UserRules userRules = new UserRules(getArchetypeService());
+        PreferenceService preferences = Mockito.mock(PreferenceService.class);
         ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext(), rules, locationRules,
-                                                                        userRules, new UserPreferences()) {
+                                                                        userRules, new UserPreferences(preferences)) {
             /**
              * Switches the current workspace to display an object.
              *

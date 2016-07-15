@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -107,7 +108,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * The set of rendered objects.
      */
-    private Set<IMObjectReference> rendered = new HashSet<IMObjectReference>();
+    private Set<IMObjectReference> rendered = new HashSet<>();
 
     /**
      * The help context.
@@ -120,10 +121,15 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     private Variables variables;
 
     /**
+     * The user preferences.
+     */
+    private final Preferences preferences;
+
+    /**
      * The default deletion listener.
      */
     private static final IMObjectDeletionListener<IMObject> DEFAULT_DELETION_LISTENER
-            = new DefaultIMObjectDeletionListener<IMObject>();
+            = new DefaultIMObjectDeletionListener<>();
 
 
     /**
@@ -163,6 +169,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         NodeFilter showOptional = new BasicNodeFilter(true);
         filter = new ChainedNodeFilter(id, showOptional);
         layoutFactory = ServiceHelper.getBean(ViewLayoutStrategyFactory.class); // TODO - smelly
+        this.preferences = ServiceHelper.getPreferences();                      // TODO - smelly
     }
 
     /**
@@ -193,6 +200,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         mailContext = context.getMailContext();
         contextSwitchListener = context.getContextSwitchListener();
         this.help = help;
+        this.preferences = context.getPreferences();
     }
 
     /**
@@ -447,5 +455,15 @@ public abstract class AbstractLayoutContext implements LayoutContext {
                                            ServiceHelper.getLookupService());
         }
         return variables;
+    }
+
+    /**
+     * Returns the user preferences.
+     *
+     * @return the user preferences
+     */
+    @Override
+    public Preferences getPreferences() {
+        return preferences;
     }
 }

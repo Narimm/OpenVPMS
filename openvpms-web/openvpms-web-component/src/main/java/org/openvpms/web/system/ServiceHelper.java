@@ -19,6 +19,7 @@ package org.openvpms.web.system;
 import nextapp.echo2.app.ApplicationInstance;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.workflow.AppointmentService;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.archetype.rules.workflow.TaskService;
@@ -30,7 +31,6 @@ import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.macro.Macros;
 import org.openvpms.sms.ConnectionFactory;
-import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -174,8 +174,8 @@ public final class ServiceHelper {
      *
      * @return the user preferences
      */
-    public static UserPreferences getPreferences() {
-        return getContext().getBean(UserPreferences.class);
+    public static Preferences getPreferences() {
+        return getContext().getBean(Preferences.class);
     }
 
     /**

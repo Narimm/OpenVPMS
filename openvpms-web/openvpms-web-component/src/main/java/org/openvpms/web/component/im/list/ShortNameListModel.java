@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.list;
@@ -32,10 +32,15 @@ import java.util.List;
 public class ShortNameListModel extends AllNoneListModel {
 
     /**
+     * The short names. This excludes All/None.
+     */
+    private final String[] shortNames;
+
+    /**
      * The short names. The first column is the short name, the second the
      * corresponding display name.
      */
-    private final String[][] shortNames;
+    private final String[][] shortNameMap;
 
     /**
      * Constructs a {@link ShortNameListModel}.
@@ -112,6 +117,7 @@ public class ShortNameListModel extends AllNoneListModel {
         if (sort) {
             Arrays.sort(shortNames);
         }
+        this.shortNames = shortNames;
         String[][] map = new String[shortNames.length][2];
         for (int i = 0; i < shortNames.length; ++i) {
             String shortName = shortNames[i];
@@ -139,7 +145,7 @@ public class ShortNameListModel extends AllNoneListModel {
         if (none) {
             ++size;
         }
-        this.shortNames = new String[size][2];
+        this.shortNameMap = new String[size][2];
         if (all) {
             setAll(index++);
         }
@@ -147,7 +153,7 @@ public class ShortNameListModel extends AllNoneListModel {
             setNone(index++);
         }
         // copy the map, but leave room at the start for the All/None elements
-        System.arraycopy(map, 0, this.shortNames, index, map.length);
+        System.arraycopy(map, 0, this.shortNameMap, index, map.length);
     }
 
     /**
@@ -167,7 +173,7 @@ public class ShortNameListModel extends AllNoneListModel {
      * @return the size
      */
     public int size() {
-        return shortNames.length;
+        return shortNameMap.length;
     }
 
     /**
@@ -177,7 +183,7 @@ public class ShortNameListModel extends AllNoneListModel {
      * @return the short name or {@code null} if the index represents 'All' or 'None'
      */
     public String getShortName(int index) {
-        return shortNames[index][0];
+        return shortNameMap[index][0];
     }
 
     /**
@@ -187,7 +193,18 @@ public class ShortNameListModel extends AllNoneListModel {
      * @return the display name
      */
     public Object getDisplayName(int index) {
-        return shortNames[index][1];
+        return shortNameMap[index][1];
+    }
+
+    /**
+     * Returns the available short names.
+     * <p/>
+     * This excludes any 'All' or 'None'.
+     *
+     * @return the short names
+     */
+    public String[] getShortNames() {
+        return shortNames;
     }
 
     /**
@@ -198,8 +215,8 @@ public class ShortNameListModel extends AllNoneListModel {
      */
     public int indexOf(String shortName) {
         int result = -1;
-        for (int i = 0; i < shortNames.length; ++i) {
-            if (shortNames[i][0].equals(shortName)) {
+        for (int i = 0; i < shortNameMap.length; ++i) {
+            if (shortNameMap[i][0].equals(shortName)) {
                 result = i;
                 break;
             }

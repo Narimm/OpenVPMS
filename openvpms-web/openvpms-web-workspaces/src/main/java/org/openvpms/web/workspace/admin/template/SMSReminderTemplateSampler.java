@@ -127,7 +127,7 @@ public class SMSReminderTemplateSampler extends SMSTemplateSampler {
      * @return the reminder type. May be {@code nul}
      */
     protected Entity getReminderType() {
-        return (Entity) IMObjectHelper.getObject(reminderType.getReference(), null);
+        return (Entity) IMObjectHelper.getObject(reminderType.getReference());
     }
 
 }

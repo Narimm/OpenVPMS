@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ChangeEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -58,7 +59,6 @@ import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWind
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
-import org.openvpms.web.workspace.patient.mr.PatientQueryFactory;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
@@ -130,6 +130,11 @@ public class VisitEditor {
      * The help context.
      */
     private final HelpContext help;
+
+    /**
+     * User preferences.
+     */
+    private final Preferences preferences;
 
     /**
      * The problem CRUD window, or {@code null} if problem view is disabled.
@@ -204,7 +209,8 @@ public class VisitEditor {
         this.context = context;
         this.help = help;
 
-        query = PatientQueryFactory.createHistoryQuery(patient, context.getPractice());
+        preferences = ServiceHelper.getPreferences();
+        query = new PatientHistoryQuery(patient, preferences);
         query.setAllDates(true);
         query.setFrom(event.getActivityStartTime());
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
@@ -557,8 +563,9 @@ public class VisitEditor {
      * @param context  the context
      * @param listener listener for context switch events. May be {@code null}
      */
-    protected VisitProblemBrowserCRUDWindow createProblemBrowserCRUDWindow(Context context, ContextSwitchListener listener) {
-        ProblemQuery query = PatientQueryFactory.createProblemQuery(patient, context.getPractice());
+    protected VisitProblemBrowserCRUDWindow createProblemBrowserCRUDWindow(Context context,
+                                                                           ContextSwitchListener listener) {
+        ProblemQuery query = new ProblemQuery(patient, preferences);
         DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
         layout.setContextSwitchListener(listener);
         ProblemBrowser browser = new ProblemBrowser(query, layout);

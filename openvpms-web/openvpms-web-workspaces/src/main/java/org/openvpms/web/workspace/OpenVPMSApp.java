@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -40,7 +40,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.app.UserPreferences;
+import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.component.subscription.SubscriptionHelper;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.dialog.PopupDialog;
@@ -152,7 +152,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         setStyleSheet();
         window = new Window();
         updateTitle();
-        ApplicationContentPane pane = new ApplicationContentPane(getContext(), factory);
+        ApplicationContentPane pane = new ApplicationContentPane(getContext(), factory, getPreferences());
         lightBox = new LightBox();
         window.setContent(pane);
         pane.add(lightBox);
@@ -611,6 +611,5 @@ public class OpenVPMSApp extends ContextApplicationInstance {
                                         ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, message));
             getLayout().add(row);
         }
-
     }
 }

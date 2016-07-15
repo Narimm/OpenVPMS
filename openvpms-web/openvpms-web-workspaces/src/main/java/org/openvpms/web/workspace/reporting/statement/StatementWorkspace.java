@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -79,7 +79,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * @param mailContext the mail context
      */
     public StatementWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "statement", Act.class, context, mailContext);
+        super("reporting.statement", "reporting", "statement", Act.class, context, mailContext);
     }
 
     /**

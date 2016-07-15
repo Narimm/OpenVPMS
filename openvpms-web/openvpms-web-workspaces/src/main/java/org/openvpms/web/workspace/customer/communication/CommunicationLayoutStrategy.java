@@ -175,7 +175,7 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
         if (initMessage) {
             Property message = properties.get(MESSAGE);
             if (bean.hasNode(DOCUMENT)) {
-                Document content = (Document) IMObjectHelper.getObject(bean.getReference(DOCUMENT), null);
+                Document content = (Document) IMObjectHelper.getObject(bean.getReference(DOCUMENT));
                 if (content != null) {
                     TextDocumentHandler handler = new TextDocumentHandler(ServiceHelper.getArchetypeService());
                     messageProxy = new SimpleProperty(MESSAGE, handler.toString(content), String.class,

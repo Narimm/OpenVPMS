@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -40,8 +40,12 @@ import java.beans.PropertyChangeSupport;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractWorkspace<T extends IMObject>
-        implements Workspace<T> {
+public abstract class AbstractWorkspace<T extends IMObject> implements Workspace<T> {
+
+    /**
+     * The workspace id.
+     */
+    private final String id;
 
     /**
      * The current object. May be {@code null}.
@@ -52,16 +56,6 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * The workspace component.
      */
     private Component component;
-
-    /**
-     * The workpaces group localisation id.
-     */
-    private final String workspacesId;
-
-    /**
-     * The workspace localisation id.
-     */
-    private final String workspaceId;
 
     /**
      * Property change listener notifier.
@@ -85,16 +79,24 @@ public abstract class AbstractWorkspace<T extends IMObject>
 
 
     /**
-     * Constructs an {@code AbstractWorkspace}.
+     * Constructs an {@link AbstractWorkspace}.
      *
-     * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param context      the context
+     * @param id      the workspace identifier
+     * @param context the context
      */
-    public AbstractWorkspace(String workspacesId, String workspaceId, Context context) {
-        this.workspacesId = workspacesId;
-        this.workspaceId = workspaceId;
+    public AbstractWorkspace(String id, Context context) {
+        this.id = id;
         this.context = context;
+    }
+
+    /**
+     * Returns the workspace identifier.
+     *
+     * @return the workspace identifier
+     */
+    @Override
+    public String getId() {
+        return id;
     }
 
     /**
@@ -104,7 +106,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the resource bundle key the workspace title
      */
     public String getTitleKey() {
-        return "workspace." + workspacesId + "." + workspaceId;
+        return "workspace." + id;
     }
 
     /**
@@ -139,7 +141,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Renders the workspace summary.
      *
      * @return the component representing the workspace summary, or
-     *         {@code null} if there is no summary
+     * {@code null} if there is no summary
      */
     public Component getSummary() {
         return null;
@@ -251,6 +253,18 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
+     * Invoked when user preferences have changed.
+     * <p/>
+     * This is only invoked when the workspace is being shown.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    @Override
+    public void preferencesChanged() {
+
+    }
+
+    /**
      * Add a property change listener.
      *
      * @param name     the property name to listen on
@@ -270,11 +284,9 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @param name     the property name to remove the listener for
      * @param listener the listener to remove
      */
-    public void removePropertyChangeListener(String name,
-                                             PropertyChangeListener listener) {
+    public void removePropertyChangeListener(String name, PropertyChangeListener listener) {
         if (propertyChangeNotifier != null) {
-            propertyChangeNotifier.removePropertyChangeListener(
-                    name, listener);
+            propertyChangeNotifier.removePropertyChangeListener(name, listener);
         }
     }
 
@@ -289,8 +301,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     protected void firePropertyChange(String name, Object oldValue,
                                       Object newValue) {
         if (propertyChangeNotifier != null) {
-            propertyChangeNotifier.firePropertyChange(name, oldValue,
-                                                      newValue);
+            propertyChangeNotifier.firePropertyChange(name, oldValue, newValue);
         }
     }
 
@@ -320,7 +331,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return a new heading
      */
     protected Component createHeading() {
-        Component heading = Heading.getHeading(workspacesId, workspaceId);
+        Component heading = Heading.getHeading(id);
         KeyStrokeListener listener = new KeyStrokeListener();
         listener.addKeyCombination(getHelpContext().getKeyCode());
         listener.addActionListener(new ActionListener() {
@@ -334,28 +345,10 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
-     * Returns the workspace group localisation identifier.
-     *
-     * @return the workspace group localisation id.
-     */
-    protected String getWorkspacesId() {
-        return workspacesId;
-    }
-
-    /**
-     * Returns the workspace localisation identifier.
-     *
-     * @return the workspace localisation id
-     */
-    protected String getWorkspaceId() {
-        return workspaceId;
-    }
-
-    /**
      * Determines if the workspace should be refreshed.
      *
      * @return {@code true} if a later version of {@link #getObject()}
-     *         exists, or it has been deleted
+     * exists, or it has been deleted
      */
     protected boolean refreshWorkspace() {
         return getLatest() != getObject();
@@ -365,8 +358,8 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Returns the latest version of the current context object.
      *
      * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same, or {@code null} if the context object is
-     *         not supported by the workspace
+     * if they are the same, or {@code null} if the context object is
+     * not supported by the workspace
      */
     protected T getLatest() {
         return getLatest(getObject());
@@ -377,8 +370,8 @@ public abstract class AbstractWorkspace<T extends IMObject>
      *
      * @param context the current context object
      * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same, or {@code null} if the context object is
-     *         not supported by the workspace
+     * if they are the same, or {@code null} if the context object is
+     * not supported by the workspace
      */
     protected T getLatest(T context) {
         context = IMObjectHelper.reload(context);
@@ -400,11 +393,13 @@ public abstract class AbstractWorkspace<T extends IMObject>
 
     /**
      * Returns the help topic for this workspace.
+     * <p/>
+     * This implementation returns the workspace id with '.' replaced with '/'
      *
      * @return the help topic
      */
     protected String getHelpTopic() {
-        return workspacesId + "/" + workspaceId;
+        return id.replace('.', '/');
     }
 
 }

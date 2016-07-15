@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,6 +66,16 @@ public class IMObjectHelper {
 
     /**
      * Returns an object given its reference.
+     *
+     * @param reference the object reference. May be {@code null}
+     * @return the object corresponding to {@code reference} or {@code null} if none exists
+     */
+    public static IMObject getObject(IMObjectReference reference) {
+        return getObject(reference, (Context) null);
+    }
+
+    /**
+     * Returns an object given its reference.
      * This checks the specified context first. If not found in the context,
      * tries to retrieve it from the archetype service.
      * <p/>
@@ -101,7 +112,7 @@ public class IMObjectHelper {
      * @param reference the object reference. May be {@code null}
      * @param nodes     the nodes to return
      * @return the nodes of the object corresponding to {@code reference}
-     *         or {@code null} if none exists
+     * or {@code null} if none exists
      */
     public static NodeSet getNodes(IMObjectReference reference,
                                    String... nodes) {
@@ -186,7 +197,7 @@ public class IMObjectHelper {
      * @param shortNames the archetype range
      * @param context    the context
      * @return the object matching {@code reference}, or {@code shortNames},
-     *         or {@code null} if there are no matches
+     * or {@code null} if there are no matches
      */
     public static IMObject getObject(IMObjectReference reference,
                                      String[] shortNames, Context context) {
@@ -226,7 +237,7 @@ public class IMObjectHelper {
      * @param object the object
      * @param node   the node name
      * @return the value corresponding to {@code node}. May be
-     *         {@code null}
+     * {@code null}
      */
     public static Object getValue(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object);
@@ -240,7 +251,7 @@ public class IMObjectHelper {
      * @param shortName the short name
      * @param objects   the objects to search
      * @return the first object from the collection with matching short name, or
-     *         {@code null} if none exists.
+     * {@code null} if none exists.
      */
     public static <T extends IMObject> T
     getObject(String shortName, Collection<T> objects) {
@@ -252,6 +263,25 @@ public class IMObjectHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns an object corresponding to a reference, from a list of objects.
+     * <p/>
+     *
+     * @param reference the reference. May be {@code null}
+     * @param objects   the list of objects. May contain nulls.
+     * @return the corresponding object, or {@code null} if none is found
+     */
+    public static <T extends IMObject> T getObject(IMObjectReference reference, Collection<T> objects) {
+        if (reference != null) {
+            for (T object : objects) {
+                if (object != null && ObjectUtils.equals(object.getObjectReference(), reference)) {
+                    return object;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -327,7 +357,7 @@ public class IMObjectHelper {
      * @param shortNames the archetype range
      * @param context    the context
      * @return the current object being edited, or {@code null} if its type
-     *         doesn't matches the specified descriptor's archetype range
+     * doesn't matches the specified descriptor's archetype range
      */
     private static IMObject match(String[] shortNames, Context context) {
         IMObject result = null;
@@ -362,7 +392,7 @@ public class IMObjectHelper {
      * @param object the object. May be {@code null}
      * @param other  the object. May be {@code null}
      * @return {@code true} if the objects have the same object references
-     *         and version, otherwise {@code false}
+     * and version, otherwise {@code false}
      */
     public static boolean isSame(IMObject object, IMObject other) {
         if (object != null && other != null) {
@@ -379,8 +409,8 @@ public class IMObjectHelper {
      *
      * @param object the object
      * @return {@code true{@code  if a newer version exists,
-     *         otherwise {@code false}. If {@code object == null}
-     *         also returns {@code false}
+     * otherwise {@code false}. If {@code object == null}
+     * also returns {@code false}
      */
     public static boolean hasNewerVersion(IMObject object) {
         boolean result = false;

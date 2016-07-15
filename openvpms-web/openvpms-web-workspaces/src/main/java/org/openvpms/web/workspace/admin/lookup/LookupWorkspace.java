@@ -37,7 +37,7 @@ public class LookupWorkspace extends ResultSetCRUDWorkspace<Lookup> {
      * @param context the context
      */
     public LookupWorkspace(Context context) {
-        super("admin", "lookup", context);
+        super("admin.lookup", context);
         setArchetypes(Lookup.class, "lookup.*");
     }
 

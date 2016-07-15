@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.batch;
@@ -36,7 +36,7 @@ public class BatchWorkspace extends ResultSetCRUDWorkspace<Entity> {
      * @param context the context
      */
     public BatchWorkspace(Context context) {
-        super("product", "batch", context);
+        super("product.batch", context);
         setArchetypes(Entity.class, "entity.productBatch");
     }
 

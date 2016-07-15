@@ -58,6 +58,8 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="savePreferences" path="/details/savePreferences" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
