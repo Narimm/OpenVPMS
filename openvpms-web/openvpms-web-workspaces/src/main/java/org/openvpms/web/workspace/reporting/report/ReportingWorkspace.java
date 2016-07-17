@@ -195,7 +195,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     private Browser<Entity> createBrowser(ReportQuery query) {
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
         DefaultDescriptorTableModel<Entity> model = new DefaultDescriptorTableModel<>(
-                query.getShortNames(), context, "id", "name", "description", "archetype", "reportType");
+                query.getShortNames(), context, "id", "name", "description", "reportType");
         return new DefaultIMObjectTableBrowser<>(query, model, context);
     }
 
