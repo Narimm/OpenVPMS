@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.prefs;
 
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -50,16 +51,25 @@ public class PreferenceServiceImpl implements PreferenceService {
     }
 
     /**
-     * Returns the preferences for a user.
+     * Returns preferences for a user.
      * <p/>
-     * These preferences exist for the user session; changes and are not persistent.
+     * Any changes are made persistent.
      *
      * @param user the user
+     * @param save if {@code true}, changes will be made persistent
      * @return the user preferences
      */
     @Override
-    public Preferences getPreferences(final User user) {
-        return PreferencesImpl.getPreferences(user, service);
+    public Preferences getPreferences(User user, boolean save) {
+        Preferences result;
+        IMObjectReference reference = user.getObjectReference();
+        if (save) {
+            Entity entity = PreferencesImpl.getPreferences(reference, service, transactionManager);
+            result = new PreferencesImpl(reference, entity, service, transactionManager);
+        } else {
+            result = PreferencesImpl.getPreferences(reference, service);
+        }
+        return result;
     }
 
     /**
@@ -70,6 +80,6 @@ public class PreferenceServiceImpl implements PreferenceService {
      */
     @Override
     public Entity getEntity(User user) {
-        return PreferencesImpl.getPreferences(user, service, transactionManager);
+        return PreferencesImpl.getPreferences(user.getObjectReference(), service, transactionManager);
     }
 }

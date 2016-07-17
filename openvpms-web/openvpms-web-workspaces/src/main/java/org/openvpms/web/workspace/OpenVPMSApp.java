@@ -30,6 +30,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -40,6 +41,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.PreferenceSelectionHistory;
 import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.component.subscription.SubscriptionHelper;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
@@ -140,6 +142,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         if (monitor.getAutoLock() > 0) {
             getLockTaskQueue(DEFAULT_LOCK_POLL_INTERVAL);  // configure a queue to trigger polls of the server
         }
+        loadHistory();
     }
 
     /**
@@ -288,7 +291,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
     /**
      * Locks the application, until the user re-enters their password.
-     * <p>
+     * <p/>
      * This method may be invoked outside a servlet request, so a task is queued to lock the screen.
      * This task is invoked when the client synchronizes with the server, at most DEFAULT_LOCK_QUEUE seconds after
      * lock() is invoked.
@@ -310,7 +313,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
     /**
      * Unlocks the application.
-     * <p>
+     * <p/>
      * This method may be invoked outside a servlet request, so a task is queued to unlock the screen.
      */
     @Override
@@ -332,6 +335,22 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     protected void setContextChangeListener(ContextChangeListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Loads customer and patient selection history.
+     */
+    private void loadHistory() {
+        GlobalContext context = getContext();
+        UserPreferences prefs = getPreferences();
+        PreferenceSelectionHistory customer = new PreferenceSelectionHistory(context, GlobalContext.CUSTOMER_SHORTNAME, prefs,
+                                                                             PreferenceArchetypes.GENERAL,
+                                                                             "customerHistory");
+        PreferenceSelectionHistory patient = new PreferenceSelectionHistory(context, GlobalContext.PATIENT_SHORTNAME, prefs,
+                                                                            PreferenceArchetypes.GENERAL,
+                                                                            "patientHistory");
+        context.setHistory(customer.getShortName(), customer);
+        context.setHistory(patient.getShortName(), patient);
     }
 
     /**

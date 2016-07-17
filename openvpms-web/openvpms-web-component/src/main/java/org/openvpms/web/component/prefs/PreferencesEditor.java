@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
@@ -80,6 +81,19 @@ public class PreferencesEditor extends AbstractIMObjectEditor {
     @Override
     public IMObjectEditor newInstance() {
         return new PreferencesEditor(user, getLayoutContext());
+    }
+
+    /**
+     * Returns the help context for the editor.
+     * <p/>
+     * This returns the context for the selected tab.
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        IMObjectEditor selected = groups.getSelected();
+        return selected != null ? selected.getHelpContext() : super.getHelpContext();
     }
 
     /**

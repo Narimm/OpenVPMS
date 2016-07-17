@@ -40,7 +40,7 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="status" path="/details/status" type="java.lang.String" defaultValue="'ALL'">
+        <node name="status" path="/details/status" type="java.lang.String" defaultValue="'INCOMPLETE'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="ALL" value="All"/>

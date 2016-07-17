@@ -20,7 +20,7 @@
                displayName="Preferences User">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'User Preferences'"/>
+              derivedValue="'Preferences User'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
         <node name="source" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">

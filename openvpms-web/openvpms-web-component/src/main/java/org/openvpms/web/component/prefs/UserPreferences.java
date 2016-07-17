@@ -53,6 +53,11 @@ public class UserPreferences implements Preferences {
     private Preferences preferences;
 
     /**
+     * The persistent preferences.
+     */
+    private Preferences persistent;
+
+    /**
      * The user the preferences belong to.
      */
     private User user;
@@ -96,7 +101,8 @@ public class UserPreferences implements Preferences {
      */
     public void refresh() {
         if (user != null) {
-            preferences = service.getPreferences(user);
+            preferences = service.getPreferences(user, false);
+            persistent = null; // persistent preferences are loaded on demand
             if (listener != null) {
                 listener.refreshed();
             }
@@ -146,8 +152,26 @@ public class UserPreferences implements Preferences {
      */
     @Override
     public void setPreference(String groupName, String name, Object value) {
-        if (preferences != null) {
-            preferences.setPreference(groupName, name, value);
+        setPreference(groupName, name, value, false);
+    }
+
+    /**
+     * Sets a preference.
+     *
+     * @param groupName the preference group name
+     * @param name      the preference name
+     * @param value     the preference value. May be {@code null}
+     * @param save      if {@code true}, make the preference persitent, otherwise store it for the session
+     */
+    public void setPreference(String groupName, String name, Object value, boolean save) {
+        if (!save) {
+            setSession(groupName, name, value);
+        } else if (user != null) {
+            Preferences persistent = getPersistent();
+            persistent.setPreference(groupName, name, value);
+
+            // reflect it in the session preferences
+            setSession(groupName, name, value);
         }
     }
 
@@ -214,6 +238,31 @@ public class UserPreferences implements Preferences {
     @Override
     public IMObjectReference getReference(String groupName, String name, IMObjectReference defaultValue) {
         return preferences != null ? preferences.getReference(groupName, name, defaultValue) : defaultValue;
+    }
+
+    /**
+     * Sets a preference for the duration of the session.
+     *
+     * @param groupName the preference group name
+     * @param name      the preference name
+     * @param value     the preference value. May be {@code null}
+     */
+    protected void setSession(String groupName, String name, Object value) {
+        if (preferences != null) {
+            preferences.setPreference(groupName, name, value);
+        }
+    }
+
+    /**
+     * Returns persistent preferences. These dob't include any changes made locally.
+     *
+     * @return the persistent preferences
+     */
+    protected Preferences getPersistent() {
+        if (persistent == null) {
+            persistent = service.getPreferences(user, true);
+        }
+        return persistent;
     }
 
 }

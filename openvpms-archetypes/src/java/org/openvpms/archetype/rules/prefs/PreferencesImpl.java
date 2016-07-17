@@ -21,7 +21,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -50,6 +49,11 @@ import java.util.Set;
 class PreferencesImpl implements Preferences {
 
     /**
+     * The user the preferences belong to.
+     */
+    private final IMObjectReference user;
+
+    /**
      * The preferences.
      */
     private EntityBean bean;
@@ -65,14 +69,35 @@ class PreferencesImpl implements Preferences {
     private final IArchetypeService service;
 
     /**
-     * Constructs a {@link PreferencesImpl}.
+     * The transaction manager, or {@code null} if changes aren't persistent.
+     */
+    private final PlatformTransactionManager transactionManager;
+
+    /**
+     * Constructs a  {@link PreferencesImpl}. Changes aren't persistent.
      *
+     * @param user        the user the preferences belong to
      * @param preferences the preferences entity
      * @param service     the archetype service
      */
-    public PreferencesImpl(Entity preferences, IArchetypeService service) {
+    public PreferencesImpl(IMObjectReference user, Entity preferences, IArchetypeService service) {
+        this(user, preferences, service, null);
+    }
+
+    /**
+     * Constructs a {@link PreferencesImpl}.
+     *
+     * @param user               the user the preferences belong to
+     * @param preferences        the preferences entity
+     * @param service            the archetype service
+     * @param transactionManager the transaction manager, or {@code null} if changes aren't persistent
+     */
+    public PreferencesImpl(IMObjectReference user, Entity preferences, IArchetypeService service,
+                           PlatformTransactionManager transactionManager) {
+        this.user = user;
         bean = new EntityBean(preferences, service);
         this.service = service;
+        this.transactionManager = transactionManager;
     }
 
     /**
@@ -98,11 +123,8 @@ class PreferencesImpl implements Preferences {
      */
     @Override
     public void setPreference(String groupName, String name, Object value) {
-        PreferenceGroup group = getGroup(groupName);
-        Object current = group.get(name);
-        if (!ObjectUtils.equals(current, value)) {
-            group.set(name, value);
-        }
+        boolean save = transactionManager != null;
+        setPreference(groupName, name, value, save);
     }
 
     /**
@@ -201,9 +223,9 @@ class PreferencesImpl implements Preferences {
      * @param service the archetype service
      * @return the preferences
      */
-    public static Preferences getPreferences(User user, final IArchetypeService service) {
+    public static Preferences getPreferences(IMObjectReference user, final IArchetypeService service) {
         Entity prefs = getEntity(user, service);
-        return new PreferencesImpl(prefs, service);
+        return new PreferencesImpl(user, prefs, service);
     }
 
     /**
@@ -214,7 +236,7 @@ class PreferencesImpl implements Preferences {
      * @param transactionManager the transaction manager
      * @return the root preference entity
      */
-    public static Entity getPreferences(final User user, final IArchetypeService service,
+    public static Entity getPreferences(final IMObjectReference user, final IArchetypeService service,
                                         PlatformTransactionManager transactionManager) {
         Entity prefs;
         TransactionTemplate template = new TransactionTemplate(transactionManager);
@@ -240,7 +262,7 @@ class PreferencesImpl implements Preferences {
      * @param service the archetype service
      * @return the
      */
-    protected static Entity getEntity(User user, IArchetypeService service) {
+    protected static Entity getEntity(IMObjectReference user, IArchetypeService service) {
         Entity prefs;
         final ArchetypeQuery query = new ArchetypeQuery(PreferenceArchetypes.PREFERENCES);
         query.add(Constraints.join("user").add(Constraints.eq("target", user)));
@@ -306,11 +328,12 @@ class PreferencesImpl implements Preferences {
             }
         }
         if (result == null) {
+            boolean save = transactionManager != null;
             String[] relationshipTypes = getRelationshipTypes();
             for (String relationshipType : relationshipTypes) {
                 String[] shortNames = DescriptorHelper.getNodeShortNames(relationshipType, "target");
                 if (ArrayUtils.contains(shortNames, name)) {
-                    result = addGroup(name, relationshipType);
+                    result = addGroup(name, relationshipType, save);
                     break;
                 }
             }
@@ -326,15 +349,46 @@ class PreferencesImpl implements Preferences {
      *
      * @param name             the group archetype short name
      * @param relationshipType the relationship type
+     * @param save             if {@code true} make the group persistent
      * @return the preference group
      */
-    private PreferenceGroup addGroup(String name, String relationshipType) {
+    private PreferenceGroup addGroup(String name, String relationshipType, boolean save) {
         PreferenceGroup result;
         Entity entity = (Entity) service.create(name);
         bean.addNodeTarget("groups", relationshipType, entity);
+        if (save) {
+            try {
+                service.save(Arrays.asList(bean.getEntity(), entity));
+            } catch (Throwable exception) {
+                reload();
+                addGroup(name, relationshipType, false);
+            }
+        }
         result = new PreferenceGroup(entity, service);
         groups.add(result);
         return result;
     }
 
+
+    private void setPreference(String groupName, String name, Object value, boolean save) {
+        PreferenceGroup group = getGroup(groupName);
+        Object current = group.get(name);
+        if (!ObjectUtils.equals(current, value)) {
+            group.set(name, value);
+            if (save) {
+                try {
+                    group.save();
+                } catch (Throwable exception) {
+                    reload();
+                    setPreference(groupName, name, value, false);
+                }
+            }
+        }
+    }
+
+    private void reload() {
+        Entity prefs = getPreferences(user, service, transactionManager);
+        bean = new EntityBean(prefs, service);
+        groups.clear();
+    }
 }

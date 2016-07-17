@@ -27,14 +27,13 @@ import org.openvpms.component.business.domain.im.security.User;
 public interface PreferenceService {
 
     /**
-     * Returns the preferences for a user.
-     * <p/>
-     * These preferences exist for the user session; changes and are not persistent.
+     * Returns preferences for a user.
      *
      * @param user the user
+     * @param save if {@code true}, changes will be made persistent
      * @return the user preferences
      */
-    Preferences getPreferences(User user);
+    Preferences getPreferences(User user, boolean save);
 
     /**
      * Returns the root preference entity for a user, creating them if they don't exist.

@@ -133,7 +133,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param context the context
-     * @param help    the help context
+     * @param help    the help context. May be {@code null}
      */
     protected AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save,
                                  Context context, HelpContext help) {
