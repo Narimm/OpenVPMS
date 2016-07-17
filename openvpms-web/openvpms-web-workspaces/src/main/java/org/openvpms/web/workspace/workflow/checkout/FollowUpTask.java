@@ -20,9 +20,11 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.Tasks;
@@ -71,6 +73,19 @@ public class FollowUpTask extends Tasks {
             super(ScheduleArchetypes.TASK, true);
             setRequired(false);
             setSkip(true);
+        }
+
+        /**
+         * Starts the task.
+         *
+         * @param context the task context
+         */
+        @Override
+        public void start(TaskContext context) {
+            // copy the context so that the follow-up act isn't added to the global task context, interfering with
+            // the check-out task act
+            TaskContext copy = new DefaultTaskContext(new LocalContext(context), context.getHelpContext());
+            super.start(copy);
         }
 
         /**
