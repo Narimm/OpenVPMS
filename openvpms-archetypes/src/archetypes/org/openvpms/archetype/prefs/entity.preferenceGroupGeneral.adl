@@ -56,7 +56,9 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="selectionHistory" path="/details/selectionHistory" type="java.lang.String" hidden="true"
+        <node name="customerHistory" path="/details/customerHistory" type="java.lang.String" hidden="true"
+              minCardinality="0" maxLength="5000"/>
+        <node name="patientHistory" path="/details/patientHistory" type="java.lang.String" hidden="true"
               minCardinality="0" maxLength="5000"/>
     </archetype>
 </archetypes>

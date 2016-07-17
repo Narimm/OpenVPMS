@@ -68,6 +68,16 @@ public class PreferencesDialog extends AbstractEditDialog {
         return save;
     }
 
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        return getEditor() != null ? getEditor().getHelpContext() : super.getHelpContext();
+    }
+
     protected static HelpContext createHelpContext() {
         return new HelpContext("entity.preferences/edit", new HelpListener() {
             public void show(HelpContext help) {

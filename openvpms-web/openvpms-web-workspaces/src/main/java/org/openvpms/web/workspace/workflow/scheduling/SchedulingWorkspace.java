@@ -173,6 +173,15 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     }
 
     /**
+     * Returns the preferences.
+     *
+     * @return the preferences
+     */
+    protected Preferences getPreferences() {
+        return preferences;
+    }
+
+    /**
      * Checks preferences, refreshing the view if they have updated.
      */
     protected void checkPreferences() {

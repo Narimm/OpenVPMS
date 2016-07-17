@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingWorkspace;
@@ -67,7 +66,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @return a new browser
      */
     protected ScheduleBrowser createBrowser() {
-        return new TaskBrowser(ServiceHelper.getPreferences(), getContext());
+        return new TaskBrowser(getPreferences(), getContext());
     }
 
     /**

@@ -1422,3 +1422,280 @@ INSERT INTO entity_details (entity_id, name, type, value)
                    WHERE d.entity_id = p.entity_id AND d.name = 'showPricesTaxInclusive');
 
 DROP TABLE product_tax_rates;
+
+#
+# OVPMS-1783 User preferences
+#
+
+#
+# Create preferences for each user.
+#
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
+  SELECT
+    1,
+    linkId,
+    'entity.preferences',
+    '1.0',
+    'Preferences',
+    1
+  FROM entities u
+  WHERE u.arch_short_name = 'security.user' AND u.active = 1
+        AND NOT exists(SELECT *
+                       FROM entity_links l
+                       WHERE l.arch_short_name = 'entityLink.preferencesUser' AND l.target_id = u.entity_id);
+
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    u.linkId,
+    'entityLink.preferencesUser',
+    '1.0',
+    'Preferences User',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    p.entity_id,
+    u.entity_id
+  FROM entities p
+    JOIN entities u
+      ON u.arch_short_name = 'security.user'
+         AND p.arch_short_name = 'entity.preferences'
+         AND u.linkId = p.linkId
+  WHERE NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = p.entity_id
+            AND l.target_id = u.entity_id
+            AND l.arch_short_name = 'entityLink.preferencesUser');
+
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
+  SELECT
+    1,
+    linkId,
+    'entity.preferenceGroupCharge',
+    '1.0',
+    'Charges Preferences',
+    1
+  FROM entities p
+  WHERE p.arch_short_name = 'entity.preferences'
+        AND NOT exists(SELECT *
+                       FROM entity_links l
+                       WHERE l.arch_short_name = 'entityLink.preferenceGroupCharge' AND l.source_id = p.entity_id);
+
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    p.linkId,
+    'entityLink.preferenceGroupCharge',
+    '1.0',
+    'Charge Preferences',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    p.entity_id,
+    c.entity_id
+  FROM entities p
+    JOIN entities c
+      ON p.arch_short_name = 'entity.preferences'
+         AND c.arch_short_name = 'entity.preferenceGroupCharge'
+         AND p.linkId = c.linkId
+  WHERE NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = p.entity_id AND l.target_id = c.entity_id AND
+            l.arch_short_name = 'entityLink.preferenceGroupCharge');
+
+#
+# Migrate charge preferences from the practice.
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showProductType',
+    'boolean',
+    d.value
+  FROM entities c
+    JOIN entities p
+    JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND p.arch_short_name = 'party.organisationPractice'
+         AND p.active = 1
+         AND d.name = 'showProductTypeDuringCharging'
+  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showProductType');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showTemplate',
+    'boolean',
+    d.value
+  FROM entities c
+    JOIN entities p
+    JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND p.arch_short_name = 'party.organisationPractice'
+         AND p.active = 1
+         AND d.name = 'showTemplateDuringCharging'
+  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showTemplate');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showBatch',
+    'boolean',
+    d.value
+  FROM entities c
+    JOIN entities p
+    JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND p.arch_short_name = 'party.organisationPractice'
+         AND p.active = 1
+         AND d.name = 'showBatchDuringCharging'
+  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showBatch');
+
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
+  SELECT
+    1,
+    linkId,
+    'entity.preferenceGroupHistory',
+    '1.0',
+    'Patient History Preferences',
+    1
+  FROM entities p
+  WHERE p.arch_short_name = 'entity.preferences'
+        AND NOT exists(SELECT *
+                       FROM entity_links l
+                       WHERE l.arch_short_name = 'entityLink.preferenceGroupHistory' AND l.source_id = p.entity_id);
+
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    p.linkId,
+    'entityLink.preferenceGroupHistory',
+    '1.0',
+    'Patient History Preferences',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    p.entity_id,
+    c.entity_id
+  FROM entities p
+    JOIN entities c
+      ON p.arch_short_name = 'entity.preferences'
+         AND c.arch_short_name = 'entity.preferenceGroupHistory'
+         AND p.linkId = c.linkId
+  WHERE NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = p.entity_id AND l.target_id = c.entity_id AND
+            l.arch_short_name = 'entityLink.preferenceGroupHistory');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showClinician',
+    'boolean',
+    d.value
+  FROM entities c
+    JOIN entities p
+    JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND p.arch_short_name = 'party.organisationPractice'
+         AND p.active = 1
+         AND d.name = 'showClinicianInHistoryItems'
+  WHERE c.arch_short_name = 'entity.preferenceGroupHistory'
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showClinician');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'sort',
+    'string',
+    d.value
+  FROM entities c
+    JOIN entities p
+    JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND p.arch_short_name = 'party.organisationPractice'
+         AND p.active = 1
+         AND d.name = 'medicalRecordsSortOrder'
+  WHERE c.arch_short_name = 'entity.preferenceGroupHistory'
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'sort');
+
+#
+# Delete practice preferences.
+#
+DELETE d
+FROM entity_details d
+  JOIN entities p ON p.entity_id = d.entity_id AND p.arch_short_name = 'party.organisationPractice'
+WHERE d.name IN ('showProductTypeDuringCharging', 'showTemplateDuringCharging', 'showBatchDuringCharging',
+                 'showClinicianInHistoryItems', 'medicalRecordsSortOrder');
+
+#
+# Security authorities
+#
+DROP TABLE IF EXISTS new_authorities;
+CREATE TEMPORARY TABLE new_authorities (
+  name        VARCHAR(255) PRIMARY KEY,
+  description VARCHAR(255),
+  method      VARCHAR(255),
+  archetype   VARCHAR(255)
+);
+
+INSERT INTO new_authorities (name, description, method, archetype)
+VALUES ('Preferences Entity Create', 'Authority to Create Preferences', 'create', 'entity.preference*'),
+  ('Preferences Entity Save', 'Authority to Save Preferences', 'save', 'entity.preference*'),
+  ('Preferences Entity Remove', 'Authority to Remove Preferences', 'remove', 'entity.preference*');
+
+
+INSERT INTO granted_authorities (version, linkId, arch_short_name, arch_version, name, description, active, service_name, method, archetype)
+  SELECT
+    0,
+    UUID(),
+    'security.archetypeAuthority',
+    '1.0',
+    a.name,
+    a.description,
+    1,
+    'archetypeService',
+    a.method,
+    a.archetype
+  FROM new_authorities a
+  WHERE NOT exists(
+      SELECT *
+      FROM granted_authorities g
+      WHERE g.name = a.name);
+
+INSERT INTO roles_authorities (security_role_id, authority_id)
+  SELECT
+    r.security_role_id,
+    g.granted_authority_id
+  FROM security_roles r
+    JOIN granted_authorities g
+    JOIN new_authorities a
+      ON a.name = g.name
+  WHERE r.name = 'Base Role' AND NOT exists
+  (SELECT *
+   FROM roles_authorities x
+   WHERE x.security_role_id = r.security_role_id AND x.authority_id = g.granted_authority_id);
+
+DROP TABLE new_authorities;

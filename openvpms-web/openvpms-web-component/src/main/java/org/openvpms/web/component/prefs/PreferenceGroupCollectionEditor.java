@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.prefs;
 
+import echopointng.TabbedPane;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
@@ -23,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.AbstractEditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityLinkCollectionTargetPropertyEditor;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
@@ -32,8 +34,9 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.tabpane.TabPaneModel;
+import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
@@ -47,6 +50,16 @@ class PreferenceGroupCollectionEditor extends AbstractEditableIMObjectCollection
      * The focus group.
      */
     private final FocusGroup focus = new FocusGroup("PreferenceGroupCollection");
+
+    /**
+     * The tab pane model.
+     */
+    private ObjectTabPaneModel<IMObjectEditor> model;
+
+    /**
+     * The tab pane.
+     */
+    private TabbedPane pane;
 
     /**
      * Constructs a {@link PreferenceGroupCollectionEditor}.
@@ -108,6 +121,15 @@ class PreferenceGroupCollectionEditor extends AbstractEditableIMObjectCollection
     }
 
     /**
+     * Returns the selected editor.
+     *
+     * @return the selected editor, or {@code null} if no editor is selected
+     */
+    public IMObjectEditor getSelected() {
+        return pane != null ? model.getObject(pane.getSelectedIndex()) : null;
+    }
+
+    /**
      * Returns the collection property editor.
      *
      * @return the collection property editor
@@ -126,22 +148,25 @@ class PreferenceGroupCollectionEditor extends AbstractEditableIMObjectCollection
     @Override
     protected Component doLayout(LayoutContext context) {
         Component container = ColumnFactory.create(Styles.INSET_Y);
-        TabPaneModel model = new TabPaneModel(container);
+        model = new ObjectTabPaneModel<>(container);
         EntityLinkCollectionTargetPropertyEditor propertyEditor = getCollectionPropertyEditor();
         for (IMObject object : propertyEditor.getObjects()) {
             IMObjectEditor editor = propertyEditor.getEditor(object);
             if (editor == null) {
-                editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, getObject(), context);
+                HelpContext help = context.getHelpContext().topic(object.getArchetypeId().getShortName() + "/edit");
+                LayoutContext subContext = new DefaultLayoutContext(context, help);
+                editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, getObject(), subContext);
                 propertyEditor.setEditor(object, editor);
             }
-            model.addTab(editor.getDisplayName(), editor.getComponent());
+            model.addTab(editor, editor.getDisplayName(), editor.getComponent());
             focus.add(editor.getFocusGroup());
         }
-        container.add(TabbedPaneFactory.create(model));
+        pane = TabbedPaneFactory.create(model);
+        container.add(pane);
         return container;
     }
 
-    private static class PreferenceGroupCollectionPropertyEditor extends  EntityLinkCollectionTargetPropertyEditor {
+    private static class PreferenceGroupCollectionPropertyEditor extends EntityLinkCollectionTargetPropertyEditor {
 
         /**
          * Constructs an {@link PreferenceGroupCollectionPropertyEditor}.
