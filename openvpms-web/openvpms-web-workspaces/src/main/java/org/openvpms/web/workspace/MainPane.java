@@ -31,6 +31,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.PreferenceMonitor;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -155,6 +156,11 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     private Button messages;
 
     /**
+     * Monitors summary preferences changes.
+     */
+    private final PreferenceMonitor preferenceMonitor;
+
+    /**
      * The style name.
      */
     private static final String STYLE = "MainPane";
@@ -193,6 +199,8 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         setStyleName(STYLE);
         this.monitor = monitor;
         this.context = context;
+        preferenceMonitor = new PreferenceMonitor(preferences);
+        preferenceMonitor.add(PreferenceArchetypes.SUMMARY);
         listener = new MessageMonitor.MessageListener() {
             public void onMessage(Act message) {
                 updateMessageStatus(message);
@@ -268,9 +276,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         preferences.setListener(new UserPreferences.Listener() {
             @Override
             public void refreshed() {
-                if (currentWorkspace != null) {
-                    currentWorkspace.preferencesChanged();
-                }
+                onPreferencesChanged();
             }
         });
     }
@@ -426,6 +432,22 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         button.setFocusTraversalParticipant(false);
         this.workspaces.add(workspaces);
         return button;
+    }
+
+    /**
+     * Invoked when preferences change.
+     * <p/>
+     * Notifies the current workspace, and refreshes the summary if any summary preferences have changed.
+     */
+    private void onPreferencesChanged() {
+        if (currentWorkspace != null) {
+            currentWorkspace.preferencesChanged();
+            if (preferenceMonitor.changed()) {
+                // TODO -  this probably should be managed via the workspace, but for now is convenient to implement
+                // here
+                refreshSummary();
+            }
+        }
     }
 
     /**

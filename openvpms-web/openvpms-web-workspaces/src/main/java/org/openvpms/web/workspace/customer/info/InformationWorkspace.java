@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.customer.info;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
@@ -38,12 +39,21 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
-     * Constructs an {@link InformationWorkspace}.
+     * User preferences.
      */
-    public InformationWorkspace(Context context) {
+    private final Preferences preferences;
+
+    /**
+     * Constructs an {@link InformationWorkspace}.
+     *
+     * @param context     the context
+     * @param preferences user preferences
+     */
+    public InformationWorkspace(Context context, Preferences preferences) {
         super("customer.information", context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
+        this.preferences = preferences;
     }
 
     /**
@@ -66,7 +76,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     public Component getSummary() {
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        CustomerSummary summarizer = factory.createCustomerSummary(getContext(), getHelpContext());
+        CustomerSummary summarizer = factory.createCustomerSummary(getContext(), getHelpContext(), preferences);
         return summarizer.getSummary(getObject());
     }
 

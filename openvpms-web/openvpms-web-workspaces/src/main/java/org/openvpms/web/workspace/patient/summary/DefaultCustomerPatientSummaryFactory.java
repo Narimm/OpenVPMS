@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerSummary;
@@ -32,36 +33,40 @@ public class DefaultCustomerPatientSummaryFactory implements CustomerPatientSumm
     /**
      * Creates a customer/patient summary.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      * @return the summary
      */
     @Override
-    public CustomerPatientSummary createCustomerPatientSummary(Context context, HelpContext help) {
-        return new CustomerPatientSummary(context, help);
+    public CustomerPatientSummary createCustomerPatientSummary(Context context, HelpContext help,
+                                                               Preferences preferences) {
+        return new CustomerPatientSummary(context, help, preferences);
     }
 
     /**
      * Creates a component to summarise customer details.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      * @return the summary
      */
     @Override
-    public CustomerSummary createCustomerSummary(Context context, HelpContext help) {
-        return new CustomerSummary(context, help);
+    public CustomerSummary createCustomerSummary(Context context, HelpContext help, Preferences preferences) {
+        return new CustomerSummary(context, help, preferences);
     }
 
     /**
      * Creates a component to summarise patient details.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      * @return the summary
      */
     @Override
-    public PatientSummary createPatientSummary(Context context, HelpContext help) {
-        return new PatientSummary(context, help);
+    public PatientSummary createPatientSummary(Context context, HelpContext help, Preferences preferences) {
+        return new PatientSummary(context, help, preferences);
     }
 }

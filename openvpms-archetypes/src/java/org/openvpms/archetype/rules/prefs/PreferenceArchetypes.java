@@ -34,6 +34,11 @@ public class PreferenceArchetypes {
     public static final String GENERAL = "entity.preferenceGroupGeneral";
 
     /**
+     * Summary preferences archetype short name.
+     */
+    public static final String SUMMARY = "entity.preferenceGroupSummary";
+
+    /**
      * Charge preferences archetype short name.
      */
     public static final String CHARGE = "entity.preferenceGroupCharge";

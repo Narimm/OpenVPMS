@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.summary;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -53,14 +54,21 @@ public abstract class PartySummary {
     private final HelpContext help;
 
     /**
+     * The user preferences.
+     */
+    private final Preferences preferences;
+
+    /**
      * Constructs a {@code PartySummary}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      */
-    public PartySummary(Context context, HelpContext help) {
+    public PartySummary(Context context, HelpContext help, Preferences preferences) {
         this.context = context;
         this.help = help;
+        this.preferences = preferences;
     }
 
     /**
@@ -95,6 +103,15 @@ public abstract class PartySummary {
      */
     protected HelpContext getHelpContext() {
         return help;
+    }
+
+    /**
+     * Returns the user preferences.
+     *
+     * @return the preferences
+     */
+    protected Preferences getPreferences() {
+        return preferences;
     }
 
     /**
@@ -138,9 +155,9 @@ public abstract class PartySummary {
      * @return the party's alerts
      */
     protected List<Alert> queryAlerts(Party party) {
-        List<Alert> result = new ArrayList<Alert>();
+        List<Alert> result = new ArrayList<>();
         ResultSet<Act> set = createAlertsResultSet(party, 20);
-        ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(set);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
         while (iterator.hasNext()) {
             Act act = iterator.next();
             Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");

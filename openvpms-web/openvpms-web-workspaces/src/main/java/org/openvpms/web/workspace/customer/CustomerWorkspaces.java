@@ -44,13 +44,13 @@ public class CustomerWorkspaces extends AbstractWorkspaces {
     public CustomerWorkspaces(Context context, Preferences preferences) {
         super("customer");
 
-        addWorkspace(new InformationWorkspace(context));
-        addWorkspace(new CustomerDocumentWorkspace(context));
+        addWorkspace(new InformationWorkspace(context, preferences));
+        addWorkspace(new CustomerDocumentWorkspace(context, preferences));
         addWorkspace(new EstimateWorkspace(context, preferences));
         addWorkspace(new ChargeWorkspace(context, preferences));
-        addWorkspace(new PaymentWorkspace(context));
+        addWorkspace(new PaymentWorkspace(context, preferences));
         addWorkspace(new AccountWorkspace(context, preferences));
-        addWorkspace(new CommunicationWorkspace(context));
+        addWorkspace(new CommunicationWorkspace(context, preferences));
     }
 
 }
