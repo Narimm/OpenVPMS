@@ -47,7 +47,7 @@ public abstract class CustomerFinancialWorkspace<T extends Act> extends Customer
      * @param preferences the user preferences
      */
     public CustomerFinancialWorkspace(String id, Context context, Preferences preferences) {
-        super(id, context);
+        super(id, context, preferences);
         monitor = new PreferenceMonitor(preferences);
         monitor.add(PreferenceArchetypes.CHARGE);
     }

@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.customer.payment;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -42,17 +43,18 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
      * Payment and refund shortnames supported by the workspace.
      */
     private static final String[] SHORT_NAMES = {
-        CustomerAccountArchetypes.PAYMENT,
-        CustomerAccountArchetypes.REFUND};
+            CustomerAccountArchetypes.PAYMENT,
+            CustomerAccountArchetypes.REFUND};
 
 
     /**
-     * Constructs a {@code PaymentWorkspace}.
+     * Constructs a {@link PaymentWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public PaymentWorkspace(Context context) {
-        super("customer.payment", context);
+    public PaymentWorkspace(Context context, Preferences preferences) {
+        super("customer.payment", context, preferences);
         setChildArchetypes(FinancialAct.class, SHORT_NAMES);
     }
 
@@ -72,8 +74,7 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     protected Query<FinancialAct> createQuery() {
         String[] statuses = {FinancialActStatus.IN_PROGRESS, FinancialActStatus.ON_HOLD};
-        return new DefaultActQuery<FinancialAct>(getObject(), "customer", "participation.customer", SHORT_NAMES,
-                                                 statuses);
+        return new DefaultActQuery<>(getObject(), "customer", "participation.customer", SHORT_NAMES, statuses);
     }
 
     /**
@@ -98,7 +99,7 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
-        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
+        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<>(true, true);
         return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 

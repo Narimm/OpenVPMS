@@ -106,7 +106,8 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     @Override
     public Component getSummary() {
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
+                                                                              preferences);
         return summary.getSummary(getObject());
     }
 

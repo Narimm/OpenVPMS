@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.customer.document;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -32,12 +33,13 @@ import org.openvpms.web.workspace.customer.CustomerActWorkspace;
 public class CustomerDocumentWorkspace extends CustomerActWorkspace<DocumentAct> {
 
     /**
-     * Constructs a {@code CustomerDocumentWorkspace}.
+     * Constructs a {@link CustomerDocumentWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public CustomerDocumentWorkspace(Context context) {
-        super("customer.document", context);
+    public CustomerDocumentWorkspace(Context context, Preferences preferences) {
+        super("customer.document", context, preferences);
         setChildArchetypes(DocumentAct.class, CustomerDocumentQuery.SHORT_NAMES);
     }
 

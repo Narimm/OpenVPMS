@@ -30,12 +30,13 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -119,11 +120,12 @@ public class PatientSummary extends PartySummary {
     /**
      * Constructs a {@link PatientSummary}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      */
-    public PatientSummary(Context context, HelpContext help) {
-        super(context, help);
+    public PatientSummary(Context context, HelpContext help, Preferences preferences) {
+        super(context, help, preferences);
         rules = ServiceHelper.getBean(PatientRules.class);
         reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(), rules);
     }
@@ -406,12 +408,8 @@ public class PatientSummary extends PartySummary {
      * @param grid    the grid
      */
     protected void addReferral(Party patient, Grid grid) {
-        Party practice = getContext().getPractice();
-        String showReferral = NEVER_SHOW_REFERRAL;
-        if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice);
-            showReferral = bean.getString("showReferrals", SHOW_ACTIVE_REFERRAL);
-        }
+        String showReferral = getPreferences().getString(PreferenceArchetypes.SUMMARY, "showReferral",
+                                                         NEVER_SHOW_REFERRAL);
         if (!NEVER_SHOW_REFERRAL.equals(showReferral)) {
             final Party vet = rules.getReferralVet(patient, new Date());
             if (vet != null || ALWAYS_SHOW_REFERRAL.equals(showReferral)) {

@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerSummary;
@@ -32,28 +33,31 @@ public interface CustomerPatientSummaryFactory {
     /**
      * Creates a component to summarise customer and patient details.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      * @return the summary
      */
-    CustomerPatientSummary createCustomerPatientSummary(Context context, HelpContext help);
+    CustomerPatientSummary createCustomerPatientSummary(Context context, HelpContext help, Preferences preferences);
 
     /**
      * Creates a component to summarise customer details.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      * @return the summary
      */
-    CustomerSummary createCustomerSummary(Context context, HelpContext help);
+    CustomerSummary createCustomerSummary(Context context, HelpContext help, Preferences preferences);
 
     /**
      * Creates a component to summarise patient details.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      * @return the summary
      */
-    PatientSummary createPatientSummary(Context context, HelpContext help);
+    PatientSummary createPatientSummary(Context context, HelpContext help, Preferences preferences);
 
 }

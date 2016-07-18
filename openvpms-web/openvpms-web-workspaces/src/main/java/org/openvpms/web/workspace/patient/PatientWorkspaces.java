@@ -39,7 +39,7 @@ public class PatientWorkspaces extends AbstractWorkspaces {
      */
     public PatientWorkspaces(Context context, Preferences preferences) {
         super("patient");
-        addWorkspace(new InformationWorkspace(context));
+        addWorkspace(new InformationWorkspace(context, preferences));
         addWorkspace(new PatientRecordWorkspace(context, preferences));
     }
 

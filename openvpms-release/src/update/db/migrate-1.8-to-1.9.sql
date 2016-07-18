@@ -1474,9 +1474,49 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, acti
   SELECT
     1,
     linkId,
+    'entity.preferenceGroupSummary',
+    '1.0',
+    'Summary Preferences',
+    1
+  FROM entities p
+  WHERE p.arch_short_name = 'entity.preferences'
+        AND NOT exists(SELECT *
+                       FROM entity_links l
+                       WHERE l.arch_short_name = 'entityLink.preferenceGroupSummary' AND l.source_id = p.entity_id);
+
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    p.linkId,
+    'entityLink.preferenceGroupSummary',
+    '1.0',
+    'Summary Preferences',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    p.entity_id,
+    c.entity_id
+  FROM entities p
+    JOIN entities c
+      ON p.arch_short_name = 'entity.preferences'
+         AND c.arch_short_name = 'entity.preferenceGroupSummary'
+         AND p.linkId = c.linkId
+  WHERE NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = p.entity_id AND l.target_id = c.entity_id AND
+            l.arch_short_name = 'entityLink.preferenceGroupSummary');
+
+
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
+  SELECT
+    1,
+    linkId,
     'entity.preferenceGroupCharge',
     '1.0',
-    'Charges Preferences',
+    'Charge Preferences',
     1
   FROM entities p
   WHERE p.arch_short_name = 'entity.preferences'
@@ -1508,63 +1548,6 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
       FROM entity_links l
       WHERE l.source_id = p.entity_id AND l.target_id = c.entity_id AND
             l.arch_short_name = 'entityLink.preferenceGroupCharge');
-
-#
-# Migrate charge preferences from the practice.
-#
-INSERT INTO entity_details (entity_id, name, type, value)
-  SELECT
-    c.entity_id,
-    'showProductType',
-    'boolean',
-    d.value
-  FROM entities c
-    JOIN entities p
-    JOIN entity_details d
-      ON p.entity_id = d.entity_id
-         AND p.arch_short_name = 'party.organisationPractice'
-         AND p.active = 1
-         AND d.name = 'showProductTypeDuringCharging'
-  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
-        AND NOT exists(SELECT *
-                       FROM entity_details x
-                       WHERE x.entity_id = c.entity_id AND x.name = 'showProductType');
-
-INSERT INTO entity_details (entity_id, name, type, value)
-  SELECT
-    c.entity_id,
-    'showTemplate',
-    'boolean',
-    d.value
-  FROM entities c
-    JOIN entities p
-    JOIN entity_details d
-      ON p.entity_id = d.entity_id
-         AND p.arch_short_name = 'party.organisationPractice'
-         AND p.active = 1
-         AND d.name = 'showTemplateDuringCharging'
-  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
-        AND NOT exists(SELECT *
-                       FROM entity_details x
-                       WHERE x.entity_id = c.entity_id AND x.name = 'showTemplate');
-
-INSERT INTO entity_details (entity_id, name, type, value)
-  SELECT
-    c.entity_id,
-    'showBatch',
-    'boolean',
-    d.value
-  FROM entities c
-    JOIN entities p
-    JOIN entity_details d
-      ON p.entity_id = d.entity_id
-         AND p.arch_short_name = 'party.organisationPractice'
-         AND p.active = 1
-         AND d.name = 'showBatchDuringCharging'
-  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
-        AND NOT exists(SELECT *
-                       FROM entity_details x
-                       WHERE x.entity_id = c.entity_id AND x.name = 'showBatch');
 
 INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
   SELECT
@@ -1605,20 +1588,114 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
       WHERE l.source_id = p.entity_id AND l.target_id = c.entity_id AND
             l.arch_short_name = 'entityLink.preferenceGroupHistory');
 
+#
+# Migrate preferences from the practice.
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showCustomerAccount',
+    'boolean',
+    ifnull(d.value, 'true')
+  FROM entities c
+    JOIN entities p
+    LEFT JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND d.name = 'showCustomerAccountSummary'
+  WHERE c.arch_short_name = 'entity.preferenceGroupSummary'
+        AND p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showCustomerAccount');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showReferral',
+    'string',
+    ifnull(d.value, 'ACTIVE')
+  FROM entities c
+    JOIN entities p
+    LEFT JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND d.name = 'showReferrals'
+  WHERE c.arch_short_name = 'entity.preferenceGroupSummary'
+        AND p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showReferral');
+
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showProductType',
+    'boolean',
+    ifnull(d.value, 'false')
+  FROM entities c
+    JOIN entities p
+    LEFT JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND d.name = 'showProductTypeDuringCharging'
+  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
+        AND p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showProductType');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showTemplate',
+    'boolean',
+    ifnull(d.value, 'false')
+  FROM entities c
+    JOIN entities p
+    LEFT JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND d.name = 'showTemplateDuringCharging'
+  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
+        AND p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showTemplate');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    c.entity_id,
+    'showBatch',
+    'boolean',
+    ifnull(d.value, 'false')
+  FROM entities c
+    JOIN entities p
+    LEFT JOIN entity_details d
+      ON p.entity_id = d.entity_id
+         AND d.name = 'showBatchDuringCharging'
+  WHERE c.arch_short_name = 'entity.preferenceGroupCharge'
+        AND p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1
+        AND NOT exists(SELECT *
+                       FROM entity_details x
+                       WHERE x.entity_id = c.entity_id AND x.name = 'showBatch');
+
 INSERT INTO entity_details (entity_id, name, type, value)
   SELECT
     c.entity_id,
     'showClinician',
     'boolean',
-    d.value
+    ifnull(d.value, 'false')
   FROM entities c
     JOIN entities p
-    JOIN entity_details d
+    LEFT JOIN entity_details d
       ON p.entity_id = d.entity_id
-         AND p.arch_short_name = 'party.organisationPractice'
-         AND p.active = 1
          AND d.name = 'showClinicianInHistoryItems'
   WHERE c.arch_short_name = 'entity.preferenceGroupHistory'
+        AND p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1
         AND NOT exists(SELECT *
                        FROM entity_details x
                        WHERE x.entity_id = c.entity_id AND x.name = 'showClinician');
@@ -1628,15 +1705,15 @@ INSERT INTO entity_details (entity_id, name, type, value)
     c.entity_id,
     'sort',
     'string',
-    d.value
+    ifnull(d.value, 'DESC')
   FROM entities c
     JOIN entities p
-    JOIN entity_details d
+    LEFT JOIN entity_details d
       ON p.entity_id = d.entity_id
-         AND p.arch_short_name = 'party.organisationPractice'
-         AND p.active = 1
          AND d.name = 'medicalRecordsSortOrder'
   WHERE c.arch_short_name = 'entity.preferenceGroupHistory'
+        AND p.arch_short_name = 'party.organisationPractice'
+        AND p.active = 1
         AND NOT exists(SELECT *
                        FROM entity_details x
                        WHERE x.entity_id = c.entity_id AND x.name = 'sort');
@@ -1647,8 +1724,9 @@ INSERT INTO entity_details (entity_id, name, type, value)
 DELETE d
 FROM entity_details d
   JOIN entities p ON p.entity_id = d.entity_id AND p.arch_short_name = 'party.organisationPractice'
-WHERE d.name IN ('showProductTypeDuringCharging', 'showTemplateDuringCharging', 'showBatchDuringCharging',
-                 'showClinicianInHistoryItems', 'medicalRecordsSortOrder');
+WHERE d.name IN ('showCustomerAccountSummary', 'showReferrals', 'showProductTypeDuringCharging',
+                 'showTemplateDuringCharging', 'showBatchDuringCharging', 'showClinicianInHistoryItems',
+                 'medicalRecordsSortOrder');
 
 #
 # Security authorities

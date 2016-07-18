@@ -42,6 +42,6 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="sequence" type="java.lang.Integer" path="/sequence" hidden="true" minCardinality="0" defaultValue="40"/>
+        <node name="sequence" type="java.lang.Integer" path="/sequence" hidden="true" minCardinality="0" defaultValue="50"/>
     </archetype>
 </archetypes>

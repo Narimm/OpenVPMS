@@ -138,7 +138,8 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
         if (window != null) {
             Act act = window.getObject();
             CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
+                                                                                  preferences);
             return summary.getSummary(act);
         }
         return null;

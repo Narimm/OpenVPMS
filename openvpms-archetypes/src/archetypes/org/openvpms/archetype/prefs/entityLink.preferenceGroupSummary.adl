@@ -15,12 +15,12 @@
   -->
 
 <archetypes>
-    <archetype name="entityLink.preferenceGroupCharge.1.0" latest="true"
+    <archetype name="entityLink.preferenceGroupSummary.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
-               displayName="Charge Preferences">
+               displayName="Summary Preferences">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Charge Preferences'"/>
+              derivedValue="'Summary Preferences'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
         <node name="source" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
@@ -37,11 +37,11 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="entity.preferenceGroupCharge"/>
+                        <property name="shortName" value="entity.preferenceGroupSummary"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
         </node>
-        <node name="sequence" type="java.lang.Integer" path="/sequence" hidden="true" minCardinality="0" defaultValue="20"/>
+        <node name="sequence" type="java.lang.Integer" path="/sequence" hidden="true" minCardinality="0" defaultValue="10"/>
     </archetype>
 </archetypes>

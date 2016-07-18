@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.customer;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
@@ -37,15 +38,20 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 public abstract class CustomerActWorkspace<T extends Act> extends BrowserCRUDWorkspace<Party, T> {
 
     /**
+     * User preferences.
+     */
+    private final Preferences preferences;
+
+    /**
      * Constructs a {@link CustomerActWorkspace}.
      *
-     * @param id      the workspace id
-     * @param context the context
+     * @param id          the workspace id
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public CustomerActWorkspace(String id, Context context) {
-        this(id, null, context);
+    public CustomerActWorkspace(String id, Context context, Preferences preferences) {
+        this(id, null, context, preferences);
     }
-
 
     /**
      * Constructs a {@link CustomerActWorkspace}.
@@ -53,25 +59,13 @@ public abstract class CustomerActWorkspace<T extends Act> extends BrowserCRUDWor
      * @param id            the workspace id
      * @param actArchetypes the act archetypes that this operates on
      * @param context       the context
+     * @param preferences   user preferences
      */
-    public CustomerActWorkspace(String id, Archetypes<T> actArchetypes, Context context) {
+    public CustomerActWorkspace(String id, Archetypes<T> actArchetypes, Context context, Preferences preferences) {
         super(id, null, actArchetypes, context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
-    }
-
-    /**
-     * Constructs a {@link CustomerActWorkspace}.
-     *
-     * @param id              the workspace id
-     * @param partyArchetypes the party archetypes that this operates on
-     * @param actArchetypes   the act archetypes that this operates on
-     * @param context         the context
-     */
-    public CustomerActWorkspace(String id, Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes,
-                                Context context) {
-        super(id, partyArchetypes, actArchetypes, context);
-        setMailContext(new CustomerMailContext(context, getHelpContext()));
+        this.preferences = preferences;
     }
 
     /**
@@ -94,7 +88,7 @@ public abstract class CustomerActWorkspace<T extends Act> extends BrowserCRUDWor
     @Override
     public Component getSummary() {
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        CustomerSummary summarizer = factory.createCustomerSummary(getContext(), getHelpContext());
+        CustomerSummary summarizer = factory.createCustomerSummary(getContext(), getHelpContext(), preferences);
         return summarizer.getSummary(getObject());
     }
 

@@ -46,7 +46,7 @@ public class WorkflowWorkspaces extends AbstractWorkspaces {
         addWorkspace(new TaskWorkspace(context, preferences));
         addWorkspace(new MessagingWorkspace(context));
         PracticeMailContext mailContext = new PracticeMailContext(context);
-        addWorkspace(new InvestigationsWorkspace(context, mailContext));
+        addWorkspace(new InvestigationsWorkspace(context, mailContext, preferences));
         addWorkspace(new CustomerOrderWorkspace(context, mailContext));
     }
 }

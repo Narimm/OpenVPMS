@@ -30,11 +30,12 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextHelper;
@@ -87,13 +88,14 @@ public class CustomerSummary extends PartySummary {
 
 
     /**
-     * Constructs a {@code CustomerSummary}.
+     * Constructs a {@link CustomerSummary}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences the preferences
      */
-    public CustomerSummary(Context context, HelpContext help) {
-        super(context, help.topic("customer/summary"));
+    public CustomerSummary(Context context, HelpContext help, Preferences preferences) {
+        super(context, help.topic("customer/summary"), preferences);
         partyRules = ServiceHelper.getBean(CustomerRules.class);
         accountRules = ServiceHelper.getBean(CustomerAccountRules.class);
     }
@@ -121,13 +123,7 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create(Styles.SMALL_INSET, getEmail(email)));
         }
         final Context context = getContext();
-        Party practice = context.getPractice();
-        boolean accountSummary = true;
-        if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice);
-            accountSummary = bean.getBoolean("showCustomerAccountSummary");
-        }
-        if (accountSummary) {
+        if (getPreferences().getBoolean(PreferenceArchetypes.SUMMARY, "showCustomerAccount", true)) {
             Label balanceTitle = create("customer.account.balance");
             BigDecimal balance = accountRules.getBalance(party);
             Label balanceValue = create(balance);
@@ -160,7 +156,7 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create(Styles.SMALL_INSET, alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        if (SMSHelper.isSMSEnabled(practice)) {
+        if (SMSHelper.isSMSEnabled(context.getPractice())) {
             final List<Contact> contacts = ContactHelper.getSMSContacts(party);
             if (!contacts.isEmpty()) {
                 Context local = new LocalContext(context);
