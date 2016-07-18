@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.date;
@@ -226,6 +226,18 @@ public class RelativeDateParserTestCase {
     }
 
     /**
+     * Tests the {@link RelativeDateParser#}
+     */
+    @Test
+    public void testHours() {
+        Date date = TestHelper.getDatetime("2016-07-01 10:30:05");
+        checkEquals(date, "0h", "2016-07-01 10:30:05");
+        checkEquals(date, "1h", "2016-07-01 11:30:05");
+        checkEquals(date, "24h", "2016-07-02 10:30:05");
+        checkEquals(date, "-24h", "2016-06-30 10:30:05");
+    }
+
+    /**
      * Parses a string relative to date, and verifies the result matches that expected.
      *
      * @param expected the expected date string
@@ -268,5 +280,18 @@ public class RelativeDateParserTestCase {
         calendar.add(Calendar.MONTH, month);
         calendar.add(Calendar.YEAR, year);
         assertEquals(relative, calendar.getTime());
+    }
+
+    /**
+     * Verifies a date addition matches that expected.
+     *
+     * @param datetime the starting date time
+     * @param source   the expression to parse
+     * @param expected the expected result
+     */
+    private void checkEquals(Date datetime, String source, String expected) {
+        Date expectedDate = TestHelper.getDatetime(expected);
+        Date relative = parser.parse(source, datetime);
+        assertEquals(expectedDate, relative);
     }
 }

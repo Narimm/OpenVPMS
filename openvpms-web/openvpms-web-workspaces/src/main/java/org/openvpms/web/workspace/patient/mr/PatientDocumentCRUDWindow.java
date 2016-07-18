@@ -27,7 +27,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.workspace.DocumentActActions;
 import org.openvpms.web.component.workspace.DocumentCRUDWindow;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
 
 /**
@@ -48,6 +51,23 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
     }
 
     /**
+     * Invoked when a new object has been created.
+     * <p/>
+     * This implementation displays a confirmation when creating an investigation, as these won't be charged.
+     *
+     * @param object the new object
+     */
+    @Override
+    protected void onCreated(final DocumentAct object) {
+        if (TypeHelper.isA(object, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
+            confirmCreation(object, "patient.record.create.investigation.title",
+                            "patient.record.create.investigation.message", "newInvestigation");
+        } else {
+            super.onCreated(object);
+        }
+    }
+
+    /**
      * Creates a new {@link IMObjectViewer} for an object.
      *
      * @param object the object to view
@@ -65,9 +85,40 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
         }
     }
 
+    /**
+     * Confirms creation of an object.
+     *
+     * @param object  the object
+     * @param title   the dialog title key
+     * @param message the dialog message key
+     * @param help    the help key
+     */
+    private void confirmCreation(final DocumentAct object, String title, String message, String help) {
+        ConfirmationDialog dialog = new ConfirmationDialog(Messages.get(title), Messages.get(message),
+                                                           getHelpContext().subtopic(help));
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                PatientDocumentCRUDWindow.super.onCreated(object);
+            }
+        });
+        dialog.show();
+    }
+
     private static class PatientDocumentActions extends DocumentActActions {
 
         public static final PatientDocumentActions INSTANCE = new PatientDocumentActions();
+
+        /**
+         * Determines if an act can be deleted.
+         *
+         * @param act the act to check
+         * @return {@code true} if the act isn't locked
+         */
+        @Override
+        public boolean canDelete(DocumentAct act) {
+            return super.canDelete(act) && PatientHistoryActions.INSTANCE.canDelete(act);
+        }
 
         /**
          * Determines if an act is locked from changes.

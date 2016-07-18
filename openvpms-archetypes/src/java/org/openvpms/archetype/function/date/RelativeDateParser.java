@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.date;
@@ -53,7 +53,7 @@ public class RelativeDateParser {
     /**
      * The pattern.
      */
-    private final Pattern pattern = Pattern.compile("\\s*([\\+-]?\\d+)([dmwyq])([se]?)\\s*");
+    private final Pattern pattern = Pattern.compile("\\s*([\\+-]?\\d+)([hdmwyq])([se]?)\\s*");
 
     /**
      * Parses a date relative to the current time.
@@ -138,6 +138,8 @@ public class RelativeDateParser {
                     calendar.add(Calendar.MONTH, 3);         // go to next quarter
                     calendar.add(Calendar.DAY_OF_MONTH, -1); // back one day to to get end of quarter
                 }
+            } else if (field.equals("h")) {
+                calendar.add(Calendar.HOUR_OF_DAY, value);
             } else {
                 calendar.add(Calendar.YEAR, value);
                 if (se.equals("s")) {

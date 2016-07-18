@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -37,6 +39,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
@@ -119,11 +122,27 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      */
     @Override
     protected Component formatParent(ActBean bean) {
+        Component result;
         String date = formatDateRange(bean);
         String text = formatEventText(bean);
         Label summary = LabelFactory.create(null, Styles.BOLD);
         summary.setText(Messages.format("patient.record.summary.datedTitle", date, text));
-        return summary;
+
+        String detail = getText(bean.getAct(), false);
+        if (detail != null) {
+            Label detailLabel = getTextDetail(detail);
+
+            // create some padding, to indent the detail to the same level as the type.
+            Row padding = RowFactory.create(Styles.INSET, new Label(""));
+            Component dateSpacer = getDateSpacer();
+
+            result = new Column();
+            result.add(summary);
+            result.add(RowFactory.create(Styles.CELL_SPACING, padding, dateSpacer, detailLabel));
+        } else {
+            result = summary;
+        }
+        return result;
     }
 
     /**
@@ -171,7 +190,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * @return a new component
      */
     private Component getMedicationDetail(ActBean act) {
-        String text = getText(act.getAct());
+        String text = getText(act.getAct(), true);
         List<IMObjectReference> refs = act.getNodeSourceObjectRefs("invoiceItem");
         if (!refs.isEmpty()) {
             ArchetypeQuery query = new ArchetypeQuery(refs.get(0));
@@ -233,7 +252,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      */
     private boolean isEarliestEvent(Act event, List<IMObjectReference> references) {
         boolean result = false;
-        List<Long> dates = new ArrayList<Long>();
+        List<Long> dates = new ArrayList<>();
         // try and find all of the events in the list of objects first.
         for (Act object : getObjects()) {
             if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)

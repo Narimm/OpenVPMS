@@ -25,10 +25,11 @@
                         <string>act.patientClinicalAddendum</string>
                         <string>/details/note</string>
                     </entry>
-                    <entry>
+                    <!-- uncomment and customise to display details beneath the visit summary -->
+                    <!--entry>
                         <string>act.patientClinicalEvent</string>
                         <string>/description</string>
-                    </entry>
+                    </entry-->
                     <entry>
                         <string>act.patientClinicalProblem</string>
                         <string>/description</string>
@@ -68,10 +69,11 @@
                         <string>act.patientClinicalProblem</string>
                         <string>/description</string>
                     </entry>
-                    <entry>
+                    <!-- uncomment and customise to display details beneath the visit summary -->
+                    <!--entry>
                         <string>act.patientClinicalEvent</string>
-                        <string>openvpms:lookup(., 'reason')</string>
-                    </entry>
+                        <string>/description</string>
+                    </entry-->
                     <entry>
                         <string>act.patientClinicalNote</string>
                         <string>/details/note</string>
