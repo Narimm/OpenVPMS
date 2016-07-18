@@ -71,7 +71,9 @@ public class PatientDocumentActEditor extends DocumentActEditor {
      * @return {@code true} if the record is locked
      */
     public boolean isLocked() {
-        return ActStatus.POSTED.equals(getStatus()) || PatientHistoryActions.needsLock(getObject());
+        String status = getStatus();
+        return ActStatus.POSTED.equals(status) || ActStatus.CANCELLED.equals(status)
+               || PatientHistoryActions.needsLock(getObject());
     }
 
     /**

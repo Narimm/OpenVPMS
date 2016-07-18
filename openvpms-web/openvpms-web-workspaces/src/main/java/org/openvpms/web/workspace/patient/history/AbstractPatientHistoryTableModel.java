@@ -643,7 +643,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a new component
      */
     protected Label getTextDetail(Act act) {
-        String text = getText(act);
+        String text = getText(act, true);
         return getTextDetail(text);
     }
 
@@ -669,12 +669,15 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns the act detail as a string.
-     * If a jxpath expression is registered, this will be evaluated, otherwise the act description will be used.
+     * <p/>
+     * If a jxpath expression is registered, this will be evaluated. If not, and {@code useDescription} is {@code true}
+     * the act description will be used.
      *
-     * @param act the act
+     * @param act            the act
+     * @param useDescription if {@code true}, fall back to the act description if there is no expression registered
      * @return the text. May be {@code null}
      */
-    protected String getText(Act act) {
+    protected String getText(Act act, boolean useDescription) {
         String text = null;
         String shortName = act.getArchetypeId().getShortName();
         String expr = getExpression(shortName);
@@ -689,7 +692,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
                 log.error(exception, exception);
                 text = exception.getMessage();
             }
-        } else {
+        } else if (useDescription) {
             text = act.getDescription();
         }
         return text;
@@ -731,6 +734,17 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     }
 
     /**
+     * Returns an empty component styled to the same width as a date.
+     *
+     * @return a new component
+     */
+    protected Component getDateSpacer() {
+        LabelEx result = new LabelEx("");
+        result.setStyleName("MedicalRecordSummary.date");
+        return result;
+    }
+
+    /**
      * Helper to return the jxpath expression for an archetype short name.
      *
      * @param shortName the archetype short name
@@ -759,24 +773,23 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a component to represent the date
      */
     private Component getDate(Act act, int row) {
-        LabelEx date;
+        Component date;
         boolean showDate = true;
+        Date startTime = act.getActivityStartTime();
         if (row > 0) {
             Act prev = getObject(row - 1);
             if (!TypeHelper.isA(prev, parentShortName)
-                && ObjectUtils.equals(DateRules.getDate(act.getActivityStartTime()),
-                                      DateRules.getDate(prev.getActivityStartTime()))) {
-                // act belongs to the same parent act as the prior row,
-                // and has the same date, so don't display it again
+                && ObjectUtils.equals(DateRules.getDate(startTime), DateRules.getDate(prev.getActivityStartTime()))) {
+                // act belongs to the same parent act as the prior row, and has the same date, so don't display it again
                 showDate = false;
             }
         }
         if (showDate) {
             date = new LabelEx(DateFormatter.formatDate(act.getActivityStartTime(), false));
+            date.setStyleName("MedicalRecordSummary.date");
         } else {
-            date = new LabelEx("");
+            date = getDateSpacer();
         }
-        date.setStyleName("MedicalRecordSummary.date");
         return date;
     }
 

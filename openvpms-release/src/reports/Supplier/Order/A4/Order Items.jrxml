@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-14T17:36:07 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-07-15T14:54:07 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Order Items" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" resourceBundle="localisation.reports" uuid="75baa2b3-fcbf-4894-a1be-1aa544386f1a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -21,6 +21,9 @@
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
 	<field name="target.quantity" class="java.math.BigDecimal"/>
 	<field name="target.total" class="java.math.BigDecimal"/>
 	<field name="target.product.entity.name" class="java.lang.String"/>
@@ -31,7 +34,7 @@
 	<field name="target.packageUnits" class="java.lang.String"/>
 	<field name="target.tax" class="java.math.BigDecimal"/>
 	<field name="target.startTime" class="java.sql.Timestamp"/>
-	<sortField name="target.startTime"/>
+	<sortField name="target.product.entity.name"/>
 	<variable name="SUM_target.total" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.total}]]></variableExpression>
 	</variable>

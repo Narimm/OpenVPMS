@@ -82,7 +82,8 @@ public class FollowUpTask extends Tasks {
          */
         @Override
         public void start(TaskContext context) {
-            // copy the context so that the follow-up act isn't added to the global task context
+            // copy the context so that the follow-up act isn't added to the global task context, interfering with
+            // the check-out task act
             TaskContext copy = new DefaultTaskContext(new LocalContext(context), context.getHelpContext());
             super.start(copy);
         }

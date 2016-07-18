@@ -103,7 +103,8 @@ public class PreferenceSelectionHistory extends SelectionHistory {
      * @param context the context
      */
     protected void parseHistory(Context context) {
-        String[] values = preferences.getString(group, name, "").split(",");
+        String value = preferences.getString(group, name, null);
+        String[] values = (value != null) ? value.split(",") : new String[0];
         Map<Long, Date> map = new HashMap<>();
         for (int i = 0; i < values.length - 1; i += 2) {
             long id;
