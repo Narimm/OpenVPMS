@@ -264,7 +264,8 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
                 for (Workspace workspace : spaces.getWorkspaces()) {
                     if (StringUtils.equals(workspace.getId(), homePage)) {
                         found = true;
-                        select(spaces, workspace);
+                        spaces.setWorkspace(workspace);
+                        select(spaces);
                         break;
                     }
                 }
