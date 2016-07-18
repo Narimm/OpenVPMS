@@ -88,6 +88,9 @@
 				<subreportParameter name="IsEmail">
 					<subreportParameterExpression><![CDATA[$P{IsEmail}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="pageNo">
+					<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("patient")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
 			</subreport>

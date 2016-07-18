@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-07-01T16:32:19 -->
+<!-- 2016-07-17T11:26:02 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Medical Records" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" resourceBundle="localisation.reports" uuid="fe7895c1-122c-4fcb-934c-8b7ab03d9d16">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -46,6 +46,7 @@
 	<field name="title" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="clinician.entity.name" class="java.lang.String"/>
+	<field name="party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;))" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -88,6 +89,9 @@
 				</reportElement>
 				<subreportParameter name="IsEmail">
 					<subreportParameterExpression><![CDATA[$P{IsEmail}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pageNo">
+					<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("patient")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
