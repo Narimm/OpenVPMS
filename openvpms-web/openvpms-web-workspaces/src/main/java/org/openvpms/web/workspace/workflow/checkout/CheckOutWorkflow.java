@@ -222,7 +222,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // print acts and documents created since the events or invoice was created
         addTask(new PrintTask(visits, help.subtopic("print")));
 
-        // add a follow-up task, if it is cofigured for the practice location
+        // add a follow-up task, if it is configured for the practice location
         if (followUp()) {
             addTask(new FollowUpTask(help));
         }

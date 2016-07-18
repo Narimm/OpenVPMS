@@ -39,8 +39,8 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      * @param context the context
      */
     public InformationWorkspace(Context context) {
-        super("supplier", "info", Archetypes.create("party.supplier*", Party.class, Messages.get("supplier.info.type")),
-              context);
+        super("supplier.information",
+              Archetypes.create("party.supplier*", Party.class, Messages.get("supplier.info.type")), context);
         setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
 

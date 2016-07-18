@@ -1,22 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
@@ -30,7 +31,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.workspace.CRUDWindow;
-import org.openvpms.web.workspace.customer.CustomerActWorkspace;
+import org.openvpms.web.workspace.customer.CustomerFinancialWorkspace;
 
 
 /**
@@ -38,26 +39,26 @@ import org.openvpms.web.workspace.customer.CustomerActWorkspace;
  *
  * @author Tim Anderson
  */
-public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
+public class ChargeWorkspace extends CustomerFinancialWorkspace<FinancialAct> {
 
     /**
      * The act statuses to query, excluding POSTED.
      */
     private static final ActStatuses STATUSES = new ActStatuses(
-        "act.customerAccountChargesInvoice", FinancialActStatus.POSTED);
+            "act.customerAccountChargesInvoice", FinancialActStatus.POSTED);
     /**
      * The customer archetype short names.
      */
     private static final String[] CUSTOMER_SHORT_NAMES = {"party.customer*", "party.organisationOTC"};
 
-
     /**
-     * Constructs a {@code ChargeWorkspace}.
+     * Constructs a {@link ChargeWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences the user preferences
      */
-    public ChargeWorkspace(Context context) {
-        super("customer", "charge", context);
+    public ChargeWorkspace(Context context, Preferences preferences) {
+        super("customer.charge", context, preferences);
         setArchetypes(Party.class, CUSTOMER_SHORT_NAMES);
         setChildArchetypes(FinancialAct.class, "act.customerAccountCharges*");
     }
@@ -77,9 +78,8 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery() {
-        return new DefaultActQuery<FinancialAct>(
-            getObject(), "customer", "participation.customer",
-            getChildArchetypes().getShortNames(), STATUSES);
+        return new DefaultActQuery<>(getObject(), "customer", "participation.customer",
+                                     getChildArchetypes().getShortNames(), STATUSES);
     }
 
     /**
@@ -104,7 +104,7 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
-        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
+        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<>(true, true);
         return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 

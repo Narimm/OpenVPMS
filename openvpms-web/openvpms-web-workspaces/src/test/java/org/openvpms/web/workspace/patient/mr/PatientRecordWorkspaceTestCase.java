@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -270,7 +272,7 @@ public class PatientRecordWorkspaceTestCase extends AbstractAppTest {
          * @param context the context
          */
         public TestRecordWorkspace(Context context) {
-            super(context);
+            super(context, Mockito.mock(Preferences.class));
         }
 
         /**

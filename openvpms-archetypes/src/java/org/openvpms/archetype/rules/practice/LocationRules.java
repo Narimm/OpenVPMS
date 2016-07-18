@@ -102,6 +102,17 @@ public class LocationRules {
     }
 
     /**
+     * Determines if a location has a schedule view.
+     *
+     * @param location the practice location
+     * @param view     the view reference
+     * @return {@code true} if the location has the view, otherwise  {@code false}
+     */
+    public boolean hasScheduleView(Party location, IMObjectReference view) {
+        return getBean(location).getNodeTargetObjectRefs("scheduleViews").contains(view);
+    }
+
+    /**
      * Returns the default work list view associated with a location.
      *
      * @param location the location
@@ -121,6 +132,17 @@ public class LocationRules {
     public List<Entity> getWorkListViews(Party location) {
         EntityBean bean = getBean(location);
         return bean.getNodeTargetEntities("workListViews");
+    }
+
+    /**
+     * Determines if a location has a work list view.
+     *
+     * @param location the practice location
+     * @param view     the view reference
+     * @return {@code true} if the location has the view, otherwise  {@code false}
+     */
+    public boolean hasWorkListView(Party location, IMObjectReference view) {
+        return getBean(location).getNodeTargetObjectRefs("workListViews").contains(view);
     }
 
     /**

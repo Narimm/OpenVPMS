@@ -30,12 +30,12 @@ import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 public class TypeWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
-     * Constructs a {@code TypeWorkspace}.
+     * Constructs a {@link TypeWorkspace}.
      *
      * @param context the context
      */
     public TypeWorkspace(Context context) {
-        super("admin", "type", context);
+        super("admin.type", context);
         setArchetypes(Entity.class, "entity.*Type");
     }
 

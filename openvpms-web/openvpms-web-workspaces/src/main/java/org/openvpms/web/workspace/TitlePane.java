@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
 
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
@@ -32,17 +33,21 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.ImageCache;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
+import org.openvpms.web.component.prefs.PreferencesDialog;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.pane.ContentPane;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -116,14 +121,19 @@ public class TitlePane extends ContentPane {
         Label user = LabelFactory.create(null, "small");
         user.setText(Messages.format("label.user", getUserName()));
 
-        Row locationUserRow = RowFactory.create("CellSpacing", user);
+        Button preferences = ButtonFactory.create(null, "button.preferences", new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                editPreferences();
+            }
+        });
+        Row locationUserRow = RowFactory.create(Styles.CELL_SPACING, user, preferences);
 
         List<Party> locations = getLocations();
         if (!locations.isEmpty()) {
             Party defLocation = getDefaultLocation();
             Label location = LabelFactory.create("app.location", "small");
-            IMObjectListModel model = new IMObjectListModel(locations,
-                                                            false, false);
+            IMObjectListModel model = new IMObjectListModel(locations, false, false);
             locationSelector = SelectFieldFactory.create(model);
             if (defLocation != null) {
                 locationSelector.setSelectedItem(defLocation);
@@ -195,14 +205,9 @@ public class TitlePane extends ContentPane {
     private List<Party> getLocations() {
         List<Party> locations = Collections.emptyList();
         User user = context.getUser();
-        if (user != null) {
-            locations = userRules.getLocations(user);
-            if (locations.isEmpty()) {
-                Party practice = context.getPractice();
-                if (practice != null) {
-                    locations = practiceRules.getLocations(practice);
-                }
-            }
+        Party practice = context.getPractice();
+        if (user != null && practice != null) {
+            locations = userRules.getLocations(user, practice);
             IMObjectSorter.sort(locations, "name");
         }
         return locations;
@@ -226,6 +231,17 @@ public class TitlePane extends ContentPane {
             }
         }
         return location;
+    }
+
+    /**
+     * Edits user preferences.
+     */
+    private void editPreferences() {
+        User user = IMObjectHelper.reload(context.getUser());
+        if (user != null) {
+            PreferencesDialog dialog = new PreferencesDialog(user, new LocalContext(context));
+            dialog.show();
+        }
     }
 
 }

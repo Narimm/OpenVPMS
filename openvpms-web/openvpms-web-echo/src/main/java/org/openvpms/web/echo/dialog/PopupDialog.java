@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -157,9 +157,9 @@ public abstract class PopupDialog extends PopupWindow {
 
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
-     * @param title   the window title
+     * @param title   the window title. May be {@code null}
      * @param buttons the buttons to display
      */
     public PopupDialog(String title, String[] buttons) {
@@ -167,9 +167,9 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
-     * @param title   the window title
+     * @param title   the window title. May be {@code null}
      * @param buttons the buttons to display
      * @param help    the help context. May be {@code null}
      */
@@ -178,7 +178,7 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
      * @param title   the window title
      * @param style   the window style. May be {@code null}
@@ -189,9 +189,9 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
-     * @param title   the window title
+     * @param title   the window title. May be {@code null}
      * @param style   the window style. May be {@code null}
      * @param buttons the buttons to display
      * @param help    the help context. May be {@code null}
@@ -201,7 +201,7 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
      * @param title   the window title. May be {@code null}
      * @param style   the window style. May be {@code null}
@@ -258,7 +258,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Sets the default action when the close button is pressed.
-     * <p>
+     * <p/>
      * Defaults to the last button displayed.
      *
      * @param action the default action. May be {@code null}
@@ -269,7 +269,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Processes a user request to close the window (via the close button).
-     * <p>
+     * <p/>
      * If there is an {@link #defaultCloseAction}, this will be invoked.
      */
     @Override
@@ -369,7 +369,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Cancels the operation.
-     * <p>
+     * <p/>
      * This implementation closes the dialog, setting the action to {@link #CANCEL_ID}.
      */
     protected void doCancel() {
@@ -457,7 +457,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Invoked just prior to the dialog closing.
-     * <p>
+     * <p/>
      * This implementation is a no-op.
      */
     protected void onClosing() {

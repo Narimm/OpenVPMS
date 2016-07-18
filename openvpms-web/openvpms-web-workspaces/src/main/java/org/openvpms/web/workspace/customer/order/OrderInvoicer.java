@@ -400,7 +400,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         if (ref != null) {
             invoice = invoices.get(ref);
             if (invoice == null) {
-                invoice = (FinancialAct) IMObjectHelper.getObject(ref, null);
+                invoice = (FinancialAct) IMObjectHelper.getObject(ref);
                 if (invoice != null) {
                     invoices.put(ref, invoice);
                 }

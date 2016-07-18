@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
@@ -34,49 +35,37 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
  *
  * @author Tim Anderson
  */
-public abstract class CustomerActWorkspace<T extends Act>
-    extends BrowserCRUDWorkspace<Party, T> {
+public abstract class CustomerActWorkspace<T extends Act> extends BrowserCRUDWorkspace<Party, T> {
 
     /**
-     * Constructs a new {@code CustomerActWorkspace}.
-     *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param context     the context
+     * User preferences.
      */
-    public CustomerActWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, null, context);
+    private final Preferences preferences;
+
+    /**
+     * Constructs a {@link CustomerActWorkspace}.
+     *
+     * @param id          the workspace id
+     * @param context     the context
+     * @param preferences user preferences
+     */
+    public CustomerActWorkspace(String id, Context context, Preferences preferences) {
+        this(id, null, context, preferences);
     }
 
-
     /**
-     * Constructs a {@code CustomerActWorkspace}.
+     * Constructs a {@link CustomerActWorkspace}.
      *
-     * @param workspacesId   the workspaces localisation identifier
-     * @param workspaceId   the workspace localisation identifier
+     * @param id            the workspace id
      * @param actArchetypes the act archetypes that this operates on
      * @param context       the context
+     * @param preferences   user preferences
      */
-    public CustomerActWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<T> actArchetypes, Context context) {
-        super(workspacesId, workspaceId, null, actArchetypes, context);
+    public CustomerActWorkspace(String id, Archetypes<T> actArchetypes, Context context, Preferences preferences) {
+        super(id, null, actArchetypes, context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
-    }
-
-    /**
-     * Constructs a {@code CustomerActWorkspace}.
-     *
-     * @param workspacesId     the workspaces localisation identifier
-     * @param workspaceId     the workspace localisation identifier
-     * @param partyArchetypes the party archetypes that this operates on
-     * @param actArchetypes   the act archetypes that this operates on
-     * @param context         the context
-     */
-    public CustomerActWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes, Context context) {
-        super(workspacesId, workspaceId, partyArchetypes, actArchetypes, context);
-        setMailContext(new CustomerMailContext(context, getHelpContext()));
+        this.preferences = preferences;
     }
 
     /**
@@ -99,7 +88,7 @@ public abstract class CustomerActWorkspace<T extends Act>
     @Override
     public Component getSummary() {
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        CustomerSummary summarizer = factory.createCustomerSummary(getContext(), getHelpContext());
+        CustomerSummary summarizer = factory.createCustomerSummary(getContext(), getHelpContext(), preferences);
         return summarizer.getSummary(getObject());
     }
 

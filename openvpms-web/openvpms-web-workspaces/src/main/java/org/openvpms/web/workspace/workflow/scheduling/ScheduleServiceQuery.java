@@ -19,8 +19,10 @@ package org.openvpms.web.workspace.workflow.scheduling;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -53,7 +55,12 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
     /**
      * Schedule service.
      */
-    private ScheduleService service;
+    private final ScheduleService service;
+
+    /**
+     * The user preferences.
+     */
+    private final Preferences prefs;
 
     /**
      * The date selector.
@@ -76,10 +83,12 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      *
      * @param service   the schedule service
      * @param schedules the schedules
+     * @param prefs     the user preferences
      */
-    public ScheduleServiceQuery(ScheduleService service, Schedules schedules) {
+    public ScheduleServiceQuery(ScheduleService service, Schedules schedules, Preferences prefs) {
         super(schedules);
         this.service = service;
+        this.prefs = prefs;
     }
 
     /**
@@ -113,8 +122,7 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
     /**
      * Returns the selected clinician.
      *
-     * @return the selected clinician, or {@code null} if no clinician is
-     *         selected
+     * @return the selected clinician, or {@code null} if no clinician is selected
      */
     public User getClinician() {
         return (User) clinicianSelector.getSelectedItem();
@@ -147,6 +155,20 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
     }
 
     /**
+     * Returns the default clinician.
+     *
+     * @return the default clinician, or {@code null} to indicate all clinicians.
+     */
+    protected abstract IMObjectReference getDefaultClinician();
+
+    /**
+     * Returns the default highlight.
+     *
+     * @return the default highlight, or {@code null} if there is none
+     */
+    protected abstract Highlight getDefaultHighlight();
+
+    /**
      * Returns the events for a schedule and date.
      *
      * @param schedule the schedule
@@ -155,6 +177,15 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      */
     protected List<PropertySet> getEvents(Entity schedule, Date date) {
         return service.getEvents(schedule, date);
+    }
+
+    /**
+     * Returns the user preferences.
+     *
+     * @return the user preferences
+     */
+    protected Preferences getPreferences() {
+        return prefs;
     }
 
     /**
@@ -257,25 +288,32 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      * @return a new clinician selector
      */
     private SelectField createClinicianSelector() {
-        SelectField result = new ClinicianSelectField();
-        result.addActionListener(new ActionListener() {
+        ClinicianSelectField field = new ClinicianSelectField();
+        field.setSelected(getDefaultClinician());
+        field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
-        return result;
+        return field;
     }
 
     /**
      * Updates the highlight based on the selected schedule view.
      */
     private void updateHighlightField() {
-        Entity view = getScheduleView();
-        if (view != null) {
-            EntityBean bean = new EntityBean(view);
-            String code = bean.getString("highlight", Highlight.EVENT_TYPE.toString());
-            highlightSelector.setSelectedItem(code);
+        String code = null;
+        Highlight highlight = getDefaultHighlight();
+        if (highlight != null) {
+            code = highlight.toString();
+        } else {
+            Entity view = getScheduleView();
+            if (view != null) {
+                EntityBean bean = new EntityBean(view);
+                code = bean.getString("highlight", Highlight.EVENT_TYPE.toString());
+            }
         }
+        highlightSelector.setSelectedItem(code);
     }
 
 }

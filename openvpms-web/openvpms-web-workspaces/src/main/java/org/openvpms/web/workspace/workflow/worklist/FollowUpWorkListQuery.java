@@ -31,17 +31,19 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * .
+ * A query for follow-up work lists.
  *
  * @author Tim Anderson
  */
 public class FollowUpWorkListQuery extends AbstractEntityQuery<Entity> {
 
+    /**
+     * The work lists to filter.
+     */
     private final List<Entity> workLists;
 
     /**
-     * Construct a new {@code AbstractQuery} that queries objects with
-     * the specified primary short names.
+     * Constructs a {@link FollowUpWorkListQuery} that queries objects with the specified primary short names.
      */
     public FollowUpWorkListQuery(List<Entity> workLists) {
         super(new String[]{ScheduleArchetypes.ORGANISATION_WORKLIST}, Entity.class);

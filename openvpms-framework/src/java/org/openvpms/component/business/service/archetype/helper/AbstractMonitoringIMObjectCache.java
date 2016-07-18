@@ -11,10 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.impl;
+package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.DisposableBean;
  *
  * @author Tim Anderson
  */
-abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implements DisposableBean {
+public abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implements DisposableBean {
 
     /**
      * The archetype service.
@@ -53,10 +53,24 @@ abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implements Di
     private final Class<T> type;
 
 
+    /**
+     * Constructs an {@link AbstractMonitoringIMObjectCache}.
+     *
+     * @param service   the archetype service
+     * @param shortName the short name to cache
+     * @param type      the object types
+     */
     public AbstractMonitoringIMObjectCache(IArchetypeService service, String shortName, final Class<T> type) {
         this(service, new String[]{shortName}, type);
     }
 
+    /**
+     * Constructs an {@link AbstractMonitoringIMObjectCache}.
+     *
+     * @param service    the archetype service
+     * @param shortNames the short name to cache
+     * @param type       the object types
+     */
     public AbstractMonitoringIMObjectCache(IArchetypeService service, String[] shortNames, final Class<T> type) {
         this.service = service;
         this.shortNames = shortNames;

@@ -298,4 +298,8 @@
         <property name="mask" value="Alt"/>
     </bean>
 
+    <bean id="preferences" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.archetype.rules.prefs.Preferences"/>
+    </bean>
+
 </beans>

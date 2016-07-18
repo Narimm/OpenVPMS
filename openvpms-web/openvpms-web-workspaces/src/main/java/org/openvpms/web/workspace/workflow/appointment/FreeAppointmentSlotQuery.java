@@ -26,6 +26,7 @@ import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.list.ListModel;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.FreeSlotQuery;
@@ -130,9 +131,10 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
      * @param view     the current schedule view. May be {@code null}
      * @param schedule the current schedule. May be {@code null}
      * @param date     the current schedule date. May be {@code null}
+     * @param prefs    the user preferences
      */
-    public FreeAppointmentSlotQuery(Party location, Entity view, Entity schedule, Date date) {
-        super(new AppointmentSchedules(location));
+    public FreeAppointmentSlotQuery(Party location, Entity view, Entity schedule, Date date, Preferences prefs) {
+        super(new AppointmentSchedules(location, prefs));
         this.date = date;
         fromTime = createTime("fromTime", Messages.get("workflow.scheduling.appointment.find.fromTime"));
         toTime = createTime("toTime", Messages.get("workflow.scheduling.appointment.find.toTime"));

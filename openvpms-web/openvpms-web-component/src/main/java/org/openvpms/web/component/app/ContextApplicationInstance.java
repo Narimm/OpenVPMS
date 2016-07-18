@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.openvpms.web.echo.style.Style;
@@ -77,6 +78,11 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     private final UserRules userRules;
 
     /**
+     * The user preferences.
+     */
+    private final UserPreferences preferences;
+
+    /**
      * Constructs a {@link ContextApplicationInstance}.
      *
      * @param context       the context
@@ -91,6 +97,7 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
         this.practiceRules = practiceRules;
         this.locationRules = locationRules;
         this.userRules = userRules;
+        this.preferences = preferences;
         initUser();
         initPractice();
         initLocation();
@@ -205,6 +212,15 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     }
 
     /**
+     * Returns the user preferences.
+     *
+     * @return the user preferences
+     */
+    public UserPreferences getPreferences() {
+        return preferences;
+    }
+
+    /**
      * Clears the current context.
      */
     protected void clearContext() {
@@ -306,9 +322,9 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      * @param preferences the preferences
      */
     private void initPrefs(UserPreferences preferences) {
-        Party practice = context.getPractice();
-        if (practice != null) {
-            preferences.initialise(practice);
+        User user = context.getUser();
+        if (user != null) {
+            preferences.initialise(user);
         }
     }
 
@@ -320,7 +336,6 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     private void updateLocation(Party location) {
         Party deposit = null;
         Party till = null;
-        Entity scheduleView = null;
         Entity workListView = null;
         Party stockLocation = null;
 
@@ -328,13 +343,12 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
             // initialise the defaults for the location
             deposit = locationRules.getDefaultDepositAccount(location);
             till = locationRules.getDefaultTill(location);
-            scheduleView = locationRules.getDefaultScheduleView(location);
             workListView = locationRules.getDefaultWorkListView(location);
             stockLocation = locationRules.getDefaultStockLocation(location);
         }
         context.setDeposit(deposit);
         context.setTill(till);
-        context.setScheduleView(scheduleView);
+        context.setScheduleView(null);
         context.setSchedule(null);
         context.setWorkListView(workListView);
         context.setWorkList(null);

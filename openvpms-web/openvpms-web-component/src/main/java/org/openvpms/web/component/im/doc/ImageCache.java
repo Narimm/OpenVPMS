@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -127,7 +127,7 @@ public class ImageCache implements ServletContextAware {
         URLImageReference result = null;
         try {
             if (!file.exists()) {
-                Document document = (Document) IMObjectHelper.getObject(act.getDocument(), null);
+                Document document = (Document) IMObjectHelper.getObject(act.getDocument());
                 if (document != null) {
                     DocumentHandler handler = handlers.get(document);
                     File tmp = File.createTempFile("img", null, dir);

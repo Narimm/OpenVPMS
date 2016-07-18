@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
 import org.openvpms.web.component.workspace.AbstractWorkspaces;
@@ -34,17 +35,18 @@ import org.openvpms.web.workspace.workflow.worklist.TaskWorkspace;
 public class WorkflowWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs a {@code WorkflowWorkspaces}.
+     * Constructs a {@link WorkflowWorkspaces}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public WorkflowWorkspaces(Context context) {
+    public WorkflowWorkspaces(Context context, Preferences preferences) {
         super("workflow");
-        addWorkspace(new AppointmentWorkspace(context));
-        addWorkspace(new TaskWorkspace(context));
+        addWorkspace(new AppointmentWorkspace(context, preferences));
+        addWorkspace(new TaskWorkspace(context, preferences));
         addWorkspace(new MessagingWorkspace(context));
         PracticeMailContext mailContext = new PracticeMailContext(context);
-        addWorkspace(new InvestigationsWorkspace(context, mailContext));
+        addWorkspace(new InvestigationsWorkspace(context, mailContext, preferences));
         addWorkspace(new CustomerOrderWorkspace(context, mailContext));
     }
 }

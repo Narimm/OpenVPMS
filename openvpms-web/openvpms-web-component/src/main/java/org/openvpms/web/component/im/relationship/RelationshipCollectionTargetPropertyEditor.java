@@ -11,21 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
@@ -49,7 +46,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public abstract class RelationshipCollectionTargetPropertyEditor
+public abstract class RelationshipCollectionTargetPropertyEditor<R extends IMObjectRelationship>
         extends AbstractCollectionPropertyEditor {
 
     /**
@@ -60,12 +57,17 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     /**
      * The set of targets being edited, and their associated relationships.
      */
-    private Map<IMObject, IMObjectRelationship> targets;
+    private Map<IMObject, R> targets;
 
     /**
-     * The relationship short name.
+     * The relationship archetype short names.
      */
-    private final String relationshipType;
+    private final String[] relationshipShortNames;
+
+    /**
+     * The selected relationship type.
+     */
+    private String relationshipShortName;
 
     /**
      * The set of removed objects.
@@ -91,8 +93,8 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      */
     public RelationshipCollectionTargetPropertyEditor(CollectionProperty property, IMObject parent) {
         super(property);
-        // @todo - no support for multiple relationship archetypes
-        relationshipType = property.getArchetypeRange()[0];
+        relationshipShortNames = property.getArchetypeRange();
+        relationshipShortName = relationshipShortNames[0];
         this.parent = parent;
     }
 
@@ -106,12 +108,32 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     }
 
     /**
+     * Returns the relationship archetype short names.
+     *
+     * @return the relationship short names
+     */
+    public String[] getRelationshipShortNames() {
+        return relationshipShortNames;
+    }
+
+    /**
      * Returns the relationship archetype short name.
      *
      * @return the relationship short name
      */
     public String getRelationshipShortName() {
-        return relationshipType;
+        return relationshipShortName;
+    }
+
+    /**
+     * Sets the relationship archetype short name.
+     * <p/>
+     * Must be one of the archetypes returned by {@link #getRelationshipShortNames()}
+     *
+     * @param shortName the relationship short name
+     */
+    public void setRelationshipShortName(String shortName) {
+        this.relationshipShortName = shortName;
     }
 
     /**
@@ -122,9 +144,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      */
     @Override
     public String[] getArchetypeRange() {
-        ArchetypeDescriptor relationship = DescriptorHelper.getArchetypeDescriptor(relationshipType);
-        NodeDescriptor target = relationship.getNodeDescriptor("target");
-        return DescriptorHelper.getShortNames(target);
+        return RelationshipHelper.getTargetShortNames(relationshipShortNames);
     }
 
     /**
@@ -135,10 +155,10 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     @Override
     public boolean add(IMObject object) {
         boolean added = false;
-        IMObjectRelationship relationship = getTargets().get(object);
+        R relationship = getTargets().get(object);
         if (relationship == null) {
             try {
-                relationship = addRelationship(parent, object, relationshipType);
+                relationship = addRelationship(parent, object, relationshipShortName);
                 if (relationship != null) {
                     getTargets().put(object, relationship);
                     getProperty().add(relationship);
@@ -161,7 +181,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     @Override
     public boolean remove(IMObject object) {
         boolean removed = queueRemove(object);
-        IMObjectRelationship relationship = getTargets().remove(object);
+        R relationship = getTargets().remove(object);
         if (relationship != null) {
             removeRelationship(parent, object, relationship);
         }
@@ -185,8 +205,17 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * @param target the target object
      * @return the relationship, or {@code null} if none is found
      */
-    public IMObjectRelationship getRelationship(IMObject target) {
+    public R getRelationship(IMObject target) {
         return getTargets().get(target);
+    }
+
+    /**
+     * Returns the relationships.
+     *
+     * @return the relationships
+     */
+    public List<R> getRelationships() {
+        return new ArrayList<>(getTargets().values());
     }
 
     /**
@@ -198,14 +227,14 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * @return the new relationship, or {@code null} if it couldn't be created
      * @throws ArchetypeServiceException for any error
      */
-    protected abstract IMObjectRelationship addRelationship(IMObject source, IMObject target, String shortName);
+    protected abstract R addRelationship(IMObject source, IMObject target, String shortName);
 
     /**
      * Removes a relationship.
-     * <p>
+     * <p/>
      * Note that this should invoke {@link CollectionProperty#remove} method to remove the relationship
      * but must also perform removal on the target of the relationship.
-     * <p>
+     * <p/>
      * The former is required in order for the {@link #isModified()} state to be correctly determined.
      *
      * @param source       the source object to remove from
@@ -213,7 +242,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * @param relationship the relationship to remove
      * @return {@code true} if the relationship was removed
      */
-    protected abstract boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship);
+    protected abstract boolean removeRelationship(IMObject source, IMObject target, R relationship);
 
     /**
      * Saves the collection.
@@ -261,13 +290,12 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      *
      * @return the target objects
      */
-    protected Map<IMObject, IMObjectRelationship> getTargets() {
+    protected Map<IMObject, R> getTargets() {
         if (targets == null) {
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-            List<IMObject> relationships = super.getObjects();
+            List<R> relationships = super.getObjects();
             targets = new LinkedHashMap<>();
-            for (IMObject object : relationships) {
-                IMObjectRelationship relationship = (IMObjectRelationship) object;
+            for (R relationship : relationships) {
                 IMObject target = (relationship.getTarget() != null) ? service.get(relationship.getTarget()) : null;
                 if (target != null) {
                     targets.put(target, relationship);

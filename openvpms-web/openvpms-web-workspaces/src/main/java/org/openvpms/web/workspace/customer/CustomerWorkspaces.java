@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.customer;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.customer.account.AccountWorkspace;
@@ -37,18 +38,19 @@ public class CustomerWorkspaces extends AbstractWorkspaces {
     /**
      * Constructs a {@code CustomerWorkspaces}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences the user preferences
      */
-    public CustomerWorkspaces(Context context) {
+    public CustomerWorkspaces(Context context, Preferences preferences) {
         super("customer");
 
-        addWorkspace(new InformationWorkspace(context));
-        addWorkspace(new CustomerDocumentWorkspace(context));
-        addWorkspace(new EstimateWorkspace(context));
-        addWorkspace(new ChargeWorkspace(context));
-        addWorkspace(new PaymentWorkspace(context));
-        addWorkspace(new AccountWorkspace(context));
-        addWorkspace(new CommunicationWorkspace(context));
+        addWorkspace(new InformationWorkspace(context, preferences));
+        addWorkspace(new CustomerDocumentWorkspace(context, preferences));
+        addWorkspace(new EstimateWorkspace(context, preferences));
+        addWorkspace(new ChargeWorkspace(context, preferences));
+        addWorkspace(new PaymentWorkspace(context, preferences));
+        addWorkspace(new AccountWorkspace(context, preferences));
+        addWorkspace(new CommunicationWorkspace(context, preferences));
     }
 
 }

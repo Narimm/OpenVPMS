@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -19,15 +19,12 @@ package org.openvpms.web.component.im.edit.act;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 
@@ -36,7 +33,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class ActRelationshipCollectionPropertyEditor extends RelationshipCollectionTargetPropertyEditor {
+public class ActRelationshipCollectionPropertyEditor extends RelationshipCollectionTargetPropertyEditor<ActRelationship> {
 
     /**
      * Constructs an {@link ActRelationshipCollectionPropertyEditor}.
@@ -55,16 +52,7 @@ public class ActRelationshipCollectionPropertyEditor extends RelationshipCollect
      * @return the relationship, or {@code null}, if none is found
      */
     public ActRelationship getRelationship(Act target) {
-        return (ActRelationship) getTargets().get(target);
-    }
-
-    /**
-     * Returns the relationships.
-     *
-     * @return the relationships
-     */
-    public List<ActRelationship> getRelationships() {
-        return new ArrayList<ActRelationship>(getActs().values());
+        return getTargets().get(target);
     }
 
     /**
@@ -83,15 +71,14 @@ public class ActRelationshipCollectionPropertyEditor extends RelationshipCollect
      *
      * @param source    the source object
      * @param target    the target object
-     * @param shortName the relationship archetype short name
-     * @return the new relationship, or <tt>null</tt> if it couldn't be created
+     * @param shortName the relationship short name
+     * @return the new relationship, or {@code null} if it couldn't be created
      * @throws ArchetypeServiceException for any error
      */
-    protected IMObjectRelationship addRelationship(IMObject source,
-                                                   IMObject target,
-                                                   String shortName) {
+    @Override
+    protected ActRelationship addRelationship(IMObject source, IMObject target, String shortName) {
         ActBean bean = new ActBean((Act) source);
-        return bean.addRelationship(getRelationshipShortName(), (Act) target);
+        return bean.addRelationship(shortName, (Act) target);
     }
 
     /**
@@ -102,10 +89,9 @@ public class ActRelationshipCollectionPropertyEditor extends RelationshipCollect
      * @param relationship the relationship to remove
      * @return {@code true} if the relationship was removed
      */
-    protected boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
+    protected boolean removeRelationship(IMObject source, IMObject target, ActRelationship relationship) {
         Act targetAct = ((Act) target);
-        ActRelationship actRel = (ActRelationship) relationship;
-        targetAct.removeActRelationship(actRel);
+        targetAct.removeActRelationship(relationship);
 
         // Remove the relationship from the source act. This will generate events, so invoke last
         return getProperty().remove(relationship);

@@ -18,10 +18,11 @@ package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -34,7 +35,6 @@ import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.DoseManager;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
@@ -116,10 +116,10 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     @Override
     protected Row createControls(FocusGroup focus) {
         Row controls = super.createControls(focus);
-        final UserPreferences preferences = ServiceHelper.getPreferences();
-        boolean showBatch = preferences.getShowBatchDuringCharging();
-        boolean showTemplate = preferences.getShowTemplateDuringCharging();
-        boolean showProductType = preferences.getShowProductTypeDuringCharging();
+        final Preferences preferences = getContext().getPreferences();
+        boolean showBatch = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false);
+        boolean showTemplate = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showTemplate", false);
+        boolean showProductType = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showProductType", false);
 
         ChargeItemTableModel model = getModel();
         if (model.hasBatch()) {
@@ -128,8 +128,8 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
                 @Override
                 public void onAction(ActionEvent event) {
                     boolean selected = batch.isSelected();
-                    preferences.setShowBatchDuringCharging(selected);
-                    getModel().setShowBatch(preferences.getShowBatchDuringCharging());
+                    preferences.setPreference(PreferenceArchetypes.CHARGE, "showBatch", selected);
+                    getModel().setShowBatch(preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false));
                 }
             });
             controls.add(batch);
@@ -141,7 +141,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
             @Override
             public void onAction(ActionEvent event) {
                 boolean selected = template.isSelected();
-                preferences.setShowTemplateDuringCharging(selected);
+                preferences.setPreference(PreferenceArchetypes.CHARGE, "showTemplate", selected);
                 getModel().setShowTemplate(selected);
             }
         });
@@ -149,7 +149,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
             @Override
             public void onAction(ActionEvent event) {
                 boolean selected = productType.isSelected();
-                preferences.setShowProductTypeDuringCharging(selected);
+                preferences.setPreference(PreferenceArchetypes.CHARGE, "showProductType", selected);
                 getModel().setShowProductType(selected);
             }
         });
