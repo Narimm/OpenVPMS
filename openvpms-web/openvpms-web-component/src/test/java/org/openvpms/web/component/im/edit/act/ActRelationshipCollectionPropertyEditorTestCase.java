@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -72,20 +72,6 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         String[] range = editor.getArchetypeRange();
         assertEquals(1, range.length);
         assertEquals("act.customerEstimationItem", range[0]);
-    }
-
-    /**
-     * Tests {@link ActRelationshipCollectionPropertyEditor#getRelationshipShortName()}.
-     */
-    @Test
-    public void testGetRelationshipShortName() {
-        IMObject parent = createParent();
-        CollectionProperty property = getCollectionProperty(parent);
-        ActRelationshipCollectionPropertyEditor editor
-            = (ActRelationshipCollectionPropertyEditor) createEditor(
-            property, parent);
-        assertEquals("actRelationship.customerEstimationItem",
-                     editor.getRelationshipShortName());
     }
 
     /**

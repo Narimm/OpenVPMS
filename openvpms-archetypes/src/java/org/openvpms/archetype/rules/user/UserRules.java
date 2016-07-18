@@ -25,6 +25,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -148,9 +149,26 @@ public class UserRules {
      */
     @SuppressWarnings("unchecked")
     public List<Party> getLocations(User user) {
-        EntityBean bean = new EntityBean(user, service);
-        List locations = bean.getNodeTargetEntities("locations");
-        return (List<Party>) locations;
+        IMObjectBean bean = new IMObjectBean(user, service);
+        return bean.getNodeTargetObjects("locations", Party.class);
+    }
+
+    /**
+     * Returns the locations applicable to a user.
+     * <p/>
+     * These are the locations linked to the user, or if none, those linked to the practice.
+     *
+     * @param user     the user
+     * @param practice the practice
+     * @return the locations
+     */
+    public List<Party> getLocations(User user, Party practice) {
+        List<Party> locations = getLocations(user);
+        if (locations.isEmpty()) {
+            IMObjectBean bean = new IMObjectBean(practice, service);
+            locations = bean.getNodeTargetObjects("locations", Party.class);
+        }
+        return locations;
     }
 
     /**

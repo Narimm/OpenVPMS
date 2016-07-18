@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -73,13 +73,13 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
 
 
     /**
-     * Constructs a {@code ReminderWorkspace}.
+     * Constructs a {@link ReminderWorkspace}.
      *
      * @param context     the context
      * @param mailContext the mail context
      */
     public ReminderWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "reminder", Act.class, context, mailContext);
+        super("reporting.reminder", "reporting", "reminder", Act.class, context, mailContext);
     }
 
     /**

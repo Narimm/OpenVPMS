@@ -54,15 +54,6 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="medicalRecordsSortOrder" path="/details/medicalRecordsSortOrder"
-              type="java.lang.String" minCardinality="0" defaultValue='DESC'>
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="ASC" value="Ascending"/>
-                    <property name="DESC" value="Descending"/>
-                </propertyList>
-            </assertion>
-        </node>
         <node name="fileExportFormat" path="/details/fileExportFormat"
               type="java.lang.String" minCardinality="0" defaultValue='COMMA'>
             <assertion name="lookup.local">
@@ -76,28 +67,8 @@
               defaultValue="5"/>
         <node name="autoLogout" path="/details/autoLogout" type="java.lang.Integer" minCardinality="0"
               defaultValue="30"/>
-        <node name="showClinicianInHistoryItems" path="/details/showClinicianInHistoryItems" type="java.lang.Boolean"
-              defaultValue="false()"/>
         <node name="showProblemsInVisit" path="/details/showProblemsInVisit" type="java.lang.Boolean"
               defaultValue="false()"/>
-        <node name="showCustomerAccountSummary" path="/details/showCustomerAccountSummary" type="java.lang.Boolean"
-              defaultValue="true()"/>
-        <node name="showBatchDuringCharging" path="/details/showBatchDuringCharging" type="java.lang.Boolean"
-              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
-        <node name="showTemplateDuringCharging" path="/details/showTemplateDuringCharging" type="java.lang.Boolean"
-              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
-        <node name="showProductTypeDuringCharging" path="/details/showProductTypeDuringCharging"
-              type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
-        <node name="showReferrals" path="/details/showReferrals"
-              type="java.lang.String" minCardinality="0" maxCardinality="1" defaultValue="'ACTIVE'">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="ALWAYS" value="Always"/>
-                    <property name="ACTIVE" value="Active"/>
-                    <property name="NEVER" value="Never"/>
-                </propertyList>
-            </assertion>
-        </node>
         <node name="ignoreListPriceDecreases" path="/details/ignoreListPriceDecreases"
               type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="logCommunication" path="/details/logCommunication" type="java.lang.Boolean"

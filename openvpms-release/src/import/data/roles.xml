@@ -569,6 +569,17 @@
           description="Authority to Remove Document Logo Act"
           serviceName="archetypeService" method="remove" archetypeShortName="act.documentLogo"/>
 
+    <!-- Preferences authorities -->
+    <data id="CPREF" archetype="security.archetypeAuthority" name="Preferences Entity Create"
+          description="Authority to Create Preferences"
+          serviceName="archetypeService" method="create" archetypeShortName="entity.preference*"/>
+    <data id="SPREF" archetype="security.archetypeAuthority" name="Preferences Entity Save"
+          description="Authority to Save Preferences"
+          serviceName="archetypeService" method="save" archetypeShortName="entity.preference*"/>
+    <data id="RPREF" archetype="security.archetypeAuthority" name="Preferences Entity Delete"
+          description="Authority to Remove Preferences"
+          serviceName="archetypeService" method="remove" archetypeShortName="entity.preference*"/>
+
     <!-- ROLES -->
     <!-- Base Role that contains all the commonly required authorities -->
     <data id="ROLE1" archetype="security.role" name="Base Role">
@@ -658,6 +669,9 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CDLA"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SDLA"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RDLA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPREF"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPREF"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPREF"/>
     </data>
 
     <data id="ROLE_S" archetype="security.role" name="Stock Control">

@@ -21,6 +21,8 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -34,16 +36,15 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.StockOnHand;
 
 import java.math.BigDecimal;
@@ -184,10 +185,10 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     public ChargeItemTableModel(String[] shortNames, StockOnHand stock, LayoutContext context) {
         super(context);
         this.stock = stock;
-        UserPreferences preferences = ServiceHelper.getPreferences();
-        showTemplate = preferences.getShowTemplateDuringCharging();
-        showProductType = preferences.getShowProductTypeDuringCharging();
-        showBatch = preferences.getShowBatchDuringCharging();
+        Preferences preferences = context.getPreferences();
+        showTemplate = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showTemplate", false);
+        showProductType = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showProductType", false);
+        showBatch = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false);
         setTableColumnModel(createColumnModel(shortNames, context));
         if (showTemplate) {
             setDefaultSortColumn(templateIndex);

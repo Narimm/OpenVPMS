@@ -338,7 +338,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return a new printer
      */
     private IMObjectReportPrinter<Act> createPrinter(Context context) {
-        ProblemFilter filter = new ProblemFilter(query.getActItemShortNames(), query.isSortAscending());
+        ProblemFilter filter = new ProblemFilter(query.getSelectedItemShortNames(), query.isSortAscending());
         Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
                                                                              context);

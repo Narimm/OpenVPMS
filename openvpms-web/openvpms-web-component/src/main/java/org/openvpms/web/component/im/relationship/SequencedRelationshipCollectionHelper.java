@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
@@ -110,15 +111,13 @@ class SequencedRelationshipCollectionHelper {
      * @param map the map to sort
      * @return the sorted map entries
      */
-    public static List<Map.Entry<IMObject, IMObjectRelationship>> sort(
-            Map<IMObject, IMObjectRelationship> map) {
-        List<Map.Entry<IMObject, IMObjectRelationship>> entries = new ArrayList<>(map.entrySet());
-        Collections.sort(entries, new Comparator<Map.Entry<IMObject, IMObjectRelationship>>() {
+    public static List<Map.Entry<IMObject, EntityLink>> sort(Map<IMObject, EntityLink> map) {
+        List<Map.Entry<IMObject, EntityLink>> entries = new ArrayList<>(map.entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<IMObject, EntityLink>>() {
             @Override
-            public int compare(Map.Entry<IMObject, IMObjectRelationship> o1,
-                               Map.Entry<IMObject, IMObjectRelationship> o2) {
-                SequencedRelationship r1 = (SequencedRelationship) o1.getValue();
-                SequencedRelationship r2 = (SequencedRelationship) o2.getValue();
+            public int compare(Map.Entry<IMObject, EntityLink> o1, Map.Entry<IMObject, EntityLink> o2) {
+                SequencedRelationship r1 = o1.getValue();
+                SequencedRelationship r2 = o2.getValue();
                 int compare = Integer.compare(r1.getSequence(), r2.getSequence());
                 if (compare == 0) {
                     compare = Long.compare(r1.getId(), r2.getId());

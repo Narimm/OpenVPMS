@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -163,7 +163,7 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
             List<Act> result = new ArrayList<Act>();
             for (Map.Entry<IMObjectReference, Boolean> entry : selected.entrySet()) {
                 if (entry.getValue() == null || entry.getValue()) { // default to selected
-                    IMObject object = IMObjectHelper.getObject(entry.getKey(), null);
+                    IMObject object = IMObjectHelper.getObject(entry.getKey());
                     if (object != null) {
                         result.add((Act) object);
                     }

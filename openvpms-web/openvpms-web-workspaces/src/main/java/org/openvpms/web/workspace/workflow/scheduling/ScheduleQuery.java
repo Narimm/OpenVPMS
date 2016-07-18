@@ -47,6 +47,16 @@ public abstract class ScheduleQuery {
     private final Schedules schedules;
 
     /**
+     * The available views.
+     */
+    private final List<Entity> views;
+
+    /**
+     * The default schedule view.
+     */
+    private final Entity defaultView;
+
+    /**
      * The schedule selector.
      */
     private SelectField scheduleField;
@@ -83,6 +93,8 @@ public abstract class ScheduleQuery {
      */
     public ScheduleQuery(Schedules schedules) {
         this.schedules = schedules;
+        views = schedules.getScheduleViews();
+        defaultView = schedules.getDefaultScheduleView(views);
     }
 
     /**
@@ -115,8 +127,8 @@ public abstract class ScheduleQuery {
      * @param view the schedule view
      */
     public void setScheduleView(Entity view) {
-        if (viewField == null || !ObjectUtils.equals(viewField.getSelectedItem(), view)) {
-            getComponent();
+        getComponent();
+        if (!ObjectUtils.equals(viewField.getSelectedItem(), view)) {
             viewField.setSelectedItem(view);
             updateViewSchedules();
         }
@@ -260,8 +272,6 @@ public abstract class ScheduleQuery {
      */
     private SelectField createScheduleViewField() {
         SelectField result;
-        List<Entity> views = schedules.getScheduleViews();
-        Entity defaultView = schedules.getDefaultScheduleView();
         IMObjectListModel model = new IMObjectListModel(views, false, false);
         result = SelectFieldFactory.create(model);
         result.setCellRenderer(IMObjectListCellRenderer.NAME);
@@ -282,8 +292,18 @@ public abstract class ScheduleQuery {
      * @return a new select field
      */
     private SelectField createScheduleField() {
-        IMObjectListModel model = createScheduleModel();
+        List<Entity> viewSchedules = getViewSchedules();
+        IMObjectListModel model = createScheduleModel(viewSchedules);
         SelectField result = SelectFieldFactory.create(model);
+        if (defaultView != null && defaultView.equals(getScheduleView())) {
+            Entity schedule = schedules.getDefaultSchedule(defaultView, viewSchedules);
+            if (schedule != null) {
+                result.setSelectedItem(schedule);
+            } else {
+                result.setSelectedIndex(model.getAllIndex());
+            }
+        }
+
         result.setCellRenderer(IMObjectListCellRenderer.NAME);
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -308,7 +328,16 @@ public abstract class ScheduleQuery {
      * @return a new schedule model
      */
     private IMObjectListModel createScheduleModel() {
-        List<Entity> schedules = getViewSchedules();
+        return createScheduleModel(getViewSchedules());
+    }
+
+    /**
+     * Creates a model containing the schedules.
+     *
+     * @param schedules the schedules
+     * @return a new schedule model
+     */
+    private IMObjectListModel createScheduleModel(List<Entity> schedules) {
         return new IMObjectListModel(schedules, true, false);
     }
 

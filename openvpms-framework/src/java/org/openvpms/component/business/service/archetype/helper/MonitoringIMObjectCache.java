@@ -11,10 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.impl;
+package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -30,13 +30,12 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMObjectCache<T> {
+public class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMObjectCache<T> {
 
     /**
      * The cached objects, keyed on reference.
      */
-    private final Map<IMObjectReference, T> objects = new HashMap<>();
-
+    private final Map<IMObjectReference, T> objects;
 
     /**
      * Constructs a {@link MonitoringIMObjectCache}.
@@ -47,7 +46,23 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
      * @param prefetch  if {@code true}, pre-load objects from the archetype service
      */
     public MonitoringIMObjectCache(IArchetypeService service, String shortName, Class<T> type, boolean prefetch) {
+        this(service, shortName, type, new HashMap<IMObjectReference, T>(), prefetch);
+    }
+
+
+    /**
+     * Constructs a {@link MonitoringIMObjectCache}.
+     *
+     * @param service   the archetype service
+     * @param shortName the short name to cache
+     * @param type      the object types
+     * @param cache     the cache to use
+     * @param prefetch  if {@code true}, pre-load objects from the archetype service
+     */
+    public MonitoringIMObjectCache(IArchetypeService service, String shortName, Class<T> type,
+                                   Map<IMObjectReference, T> cache, boolean prefetch) {
         super(service, shortName, type);
+        this.objects = cache;
         if (prefetch) {
             load();
         }

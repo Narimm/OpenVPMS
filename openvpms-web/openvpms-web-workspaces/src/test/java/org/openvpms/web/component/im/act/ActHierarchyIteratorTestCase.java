@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -63,7 +65,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
         createEvent(patient, getDatetime("2007-01-10 11:45:00"));
 
         // query the events
-        PatientHistoryQuery query = new PatientHistoryQuery(patient);
+        PatientHistoryQuery query = new PatientHistoryQuery(patient, Mockito.mock(Preferences.class));
         query.getComponent();
 
         // check iteration to unlimited depth
@@ -103,7 +105,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
                                                   weight, problemNote, problem);
 
         // query the events
-        PatientHistoryQuery query = new PatientHistoryQuery(patient);
+        PatientHistoryQuery query = new PatientHistoryQuery(patient, Mockito.mock(Preferences.class));
         query.getComponent();
 
         // check iteration to unlimited depth
@@ -128,7 +130,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
      */
     private void checkIterator(PatientHistoryQuery query, int maxDepth, String[] shortNames, Act... acts) {
         int index = 0;
-        for (Act act : new ActHierarchyIterator<Act>(query, shortNames, maxDepth)) {
+        for (Act act : new ActHierarchyIterator<>(query, shortNames, maxDepth)) {
             assertEquals(acts[index++], act);
         }
         assertEquals(index, acts.length);
@@ -143,7 +145,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
      * @param shortNames the child act short names
      */
     private void checkIterator(PatientHistoryQuery query, int maxDepth, int expected, String... shortNames) {
-        Iterable<Act> summary = new ActHierarchyIterator<Act>(query, shortNames, maxDepth);
+        Iterable<Act> summary = new ActHierarchyIterator<>(query, shortNames, maxDepth);
         int acts = 0;
         Act event = null;
         for (Act act : summary) {

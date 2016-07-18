@@ -11,16 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.system.ServiceHelper;
@@ -30,14 +28,13 @@ import org.openvpms.web.system.ServiceHelper;
  * A {@link CollectionPropertyEditor} for collections of {@link LookupRelationship}s where the targets are being added
  * and removed.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LookupRelationshipCollectionTargetPropertyEditor
-        extends RelationshipCollectionTargetPropertyEditor {
+        extends RelationshipCollectionTargetPropertyEditor<LookupRelationship> {
 
     /**
-     * Constructs a <tt>LookupRelationshipCollectionTargetPropertyEditor</tt>.
+     * Constructs a {@link LookupRelationshipCollectionTargetPropertyEditor}.
      *
      * @param property the property to edit
      * @param parent   the parent object
@@ -51,21 +48,20 @@ public class LookupRelationshipCollectionTargetPropertyEditor
      *
      * @param source    the source object
      * @param target    the target object
-     * @param shortName the relationship archetype short name
-     * @return the new relationship, or <tt>null</tt> if it couldn't be created
-     * @throws ArchetypeServiceException for any error
+     * @param shortName the relationship short name
+     * @return the new relationship, or {@code null} if it couldn't be created
      */
-    protected IMObjectRelationship addRelationship(IMObject source, IMObject target, String shortName) {
+    @Override
+    protected LookupRelationship addRelationship(IMObject source, IMObject target, String shortName) {
         Lookup src = (Lookup) source;
         Lookup tgt = (Lookup) target;
         LookupRelationship relationship = (LookupRelationship) ServiceHelper.getArchetypeService().create(shortName);
-        if (relationship == null) {
-            throw new IllegalArgumentException("No archetype for shortName: " + shortName);
+        if (relationship != null) {
+            relationship.setSource(source.getObjectReference());
+            relationship.setTarget(tgt.getObjectReference());
+            src.addLookupRelationship(relationship);
+            tgt.addLookupRelationship(relationship);
         }
-        relationship.setSource(src.getObjectReference());
-        relationship.setTarget(tgt.getObjectReference());
-        src.addLookupRelationship(relationship);
-        tgt.addLookupRelationship(relationship);
         return relationship;
     }
 
@@ -77,10 +73,9 @@ public class LookupRelationshipCollectionTargetPropertyEditor
      * @param relationship the relationship to remove
      * @return {@code true} if the relationship was removed
      */
-    protected boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
+    protected boolean removeRelationship(IMObject source, IMObject target, LookupRelationship relationship) {
         Lookup tgt = (Lookup) target;
-        LookupRelationship rel = (LookupRelationship) relationship;
-        tgt.removeLookupRelationship(rel);
+        tgt.removeLookupRelationship(relationship);
 
         // Remove the relationship from the lookup entity. This will generate events, so invoke last
         return getProperty().remove(relationship);

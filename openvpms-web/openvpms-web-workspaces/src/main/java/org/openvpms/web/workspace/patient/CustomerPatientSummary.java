@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -55,17 +56,24 @@ public class CustomerPatientSummary {
      */
     private final HelpContext help;
 
+    /**
+     * User preferences.
+     */
+    private final Preferences preferences;
+
 
     /**
      * Constructs a {@link CustomerPatientSummary}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      */
-    public CustomerPatientSummary(Context context, HelpContext help) {
+    public CustomerPatientSummary(Context context, HelpContext help, Preferences preferences) {
         rules = ServiceHelper.getBean(PatientRules.class);
         this.context = context;
         this.help = help;
+        this.preferences = preferences;
     }
 
     /**
@@ -173,7 +181,7 @@ public class CustomerPatientSummary {
      * @return the customer summary component
      */
     protected Component getCustomerSummary(Party customer, Context context) {
-        CustomerSummary summary = new CustomerSummary(context, help);
+        CustomerSummary summary = new CustomerSummary(context, help, preferences);
         return summary.getSummary(customer);
     }
 
@@ -185,7 +193,7 @@ public class CustomerPatientSummary {
      * @return the customer summary component
      */
     protected Component getPatientSummary(Party patient, Context context) {
-        PatientSummary summary = new PatientSummary(context, help);
+        PatientSummary summary = new PatientSummary(context, help, preferences);
         return summary.getSummary(patient);
     }
 }

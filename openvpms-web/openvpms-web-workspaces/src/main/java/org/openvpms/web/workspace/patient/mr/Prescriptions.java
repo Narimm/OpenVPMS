@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -250,7 +250,7 @@ public class Prescriptions {
                 result = prescription;
             }
             if (result == null) {
-                Act act = (Act) IMObjectHelper.getObject(relationship.getSource(), null);
+                Act act = (Act) IMObjectHelper.getObject(relationship.getSource());
                 if (act != null) {
                     result = new Prescription(act, rules, this);
                     prescriptions.put(act.getObjectReference(), result);

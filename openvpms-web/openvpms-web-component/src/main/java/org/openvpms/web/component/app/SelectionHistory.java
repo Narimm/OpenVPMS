@@ -1,18 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -44,7 +45,7 @@ public class SelectionHistory {
     /**
      * The selection history.
      */
-    private List<Selection> selections = new ArrayList<Selection>();
+    private List<Selection> selections = new ArrayList<>();
 
     /**
      * The history capacity. On exceeding this limit, the oldest selection is removed.
@@ -145,14 +146,25 @@ public class SelectionHistory {
 
 
         /**
-         * Constructs a {@code Selection}.
+         * Constructs a {@link Selection}.
          *
          * @param reference the object reference
          * @param context   the context
          */
         public Selection(IMObjectReference reference, Context context) {
+            this(reference, new Date(), context);
+        }
+
+        /**
+         * Constructs a {@link Selection}.
+         *
+         * @param reference the object reference
+         * @param time      the time the selection occurred
+         * @param context   the context
+         */
+        protected Selection(IMObjectReference reference, Date time, Context context) {
             this.reference = reference;
-            this.time = new Date();
+            this.time = time;
             this.context = context;
         }
 

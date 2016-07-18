@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.joda.time.Period;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -372,7 +373,8 @@ public class AppointmentEditor extends CalendarEventEditor {
     private Component getCustomerAlerts(Party customer) {
         Component result = null;
         LayoutContext context = getLayoutContext();
-        CustomerSummary summary = new CustomerSummary(context.getContext(), context.getHelpContext());
+        CustomerSummary summary = new CustomerSummary(context.getContext(), context.getHelpContext(),
+                                                      context.getPreferences());
         AlertSummary alerts = summary.getAlertSummary(customer);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", BOLD),
@@ -392,8 +394,9 @@ public class AppointmentEditor extends CalendarEventEditor {
         LayoutContext layout = getLayoutContext();
         Context context = layout.getContext();
         HelpContext help = layout.getHelpContext();
+        Preferences preferences = layout.getPreferences();
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        AlertSummary alerts = factory.createPatientSummary(context, help).getAlertSummary(patient);
+        AlertSummary alerts = factory.createPatientSummary(context, help, preferences).getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", BOLD),
                                           alerts.getComponent());

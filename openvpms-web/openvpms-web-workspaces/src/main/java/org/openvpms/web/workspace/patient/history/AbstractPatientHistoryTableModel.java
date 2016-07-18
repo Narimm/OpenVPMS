@@ -39,6 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -48,7 +49,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.cache.LRUIMObjectCache;
@@ -125,7 +125,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     /**
      * Determines if the clinician is shown in history items.
      */
-    private boolean showClinician;
+    private final boolean showClinician;
 
     /**
      * The archetype service.
@@ -204,11 +204,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         model.addColumn(new TableColumn(SUMMARY_COLUMN));
         model.addColumn(new TableColumn(SPACER_COLUMN));
         setTableColumnModel(model);
-        Party practice = context.getContext().getPractice();
-        if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice);
-            showClinician = bean.getBoolean("showClinicianInHistoryItems");
-        }
+        showClinician = context.getPreferences().getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
         ArchetypeFunctionsFactory factory = ServiceHelper.getBean(ArchetypeFunctionsFactory.class);
         IArchetypeService archetypeService = ServiceHelper.getArchetypeService();
         cache = new LRUIMObjectCache(cacheSize, archetypeService);

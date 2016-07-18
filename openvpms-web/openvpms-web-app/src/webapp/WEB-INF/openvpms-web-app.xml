@@ -88,7 +88,9 @@
 
     <bean class="org.openvpms.web.component.help.HelpTopics"/>
 
-    <bean id="preferences" class="org.openvpms.web.component.app.UserPreferences" scope="session"/>
+    <bean id="preferences" class="org.openvpms.web.component.prefs.UserPreferences" scope="session">
+        <constructor-arg ref="preferenceService"/>
+    </bean>
 
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
         <constructor-arg ref="archetypeRuleService"/>
@@ -131,7 +133,7 @@
         <constructor-arg ref="documentHandlers"/>
         <!--
         By default, images are stored in an ImageCache directory under that pointed to by javax.servlet.context.tempdir.
-        This can be changed by passing an explicit directory e.g.:
+        This can be refreshed by passing an explicit directory e.g.:
         <constructor-arg value="file:c:\tmp"/>
         -->
     </bean>

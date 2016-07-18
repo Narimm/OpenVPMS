@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -47,7 +47,7 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      * @param mailContext the mail context
      */
     public TillWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "till", context);
+        super("reporting.till", context);
         setArchetypes(Party.class, TillArchetypes.TILL);
         setChildArchetypes(FinancialAct.class, TillArchetypes.TILL_BALANCE);
         setMailContext(mailContext);

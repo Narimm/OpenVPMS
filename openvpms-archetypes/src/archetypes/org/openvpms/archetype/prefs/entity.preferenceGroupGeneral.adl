@@ -1,0 +1,64 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.preferenceGroupGeneral.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="General">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="0" maxLength="100" hidden="true"
+              defaultValue="'General Preferences'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" hidden="true"/>
+        <node name="homePage" path="/details/homePage" type="java.lang.String" defaultValue="'customer.information'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="customer.information" value="Customers - Information"/>
+                    <property name="customer.document" value="Customers - Documents"/>
+                    <property name="customer.estimate" value="Customers - Estimates"/>
+                    <property name="customer.charge" value="Customers - Charges"/>
+                    <property name="customer.payment" value="Customers - Payments"/>
+                    <property name="customer.account" value="Customers - Accounts"/>
+                    <property name="customer.communication" value="Customers - Communications"/>
+                    <property name="patient.information" value="Patients - Information"/>
+                    <property name="patient.record" value="Patients - Medical Records"/>
+                    <property name="supplier.document" value="Suppliers - Documents"/>
+                    <property name="supplier.order" value="Suppliers - Orders"/>
+                    <property name="supplier.delivery" value="Suppliers - Deliveries"/>
+                    <property name="supplier.charge" value="Suppliers - Charges"/>
+                    <property name="supplier.payment" value="Suppliers - Payments"/>
+                    <property name="supplier.account" value="Suppliers - Account"/>
+                    <property name="workflow.scheduling" value="Workflow - Scheduling"/>
+                    <property name="workflow.worklist" value="Workflow - Work Lists"/>
+                    <property name="workflow.messaing" value="Workflow - Messaging"/>
+                    <property name="workflow.investigation" value="Workflow - Investigations"/>
+                    <property name="product.information" value="Products - Information"/>
+                    <property name="product.stock" value="Products - Stock Management"/>
+                    <property name="product.batch" value="Products - Batches"/>
+                    <property name="reporting.till" value="Reporting - Till Balancing"/>
+                    <property name="reporting.deposit" value="Reporting - Deposits"/>
+                    <property name="reporting.debtor" value="Reporting - Debtors"/>
+                    <property name="reporting.wip" value="Reporting - Work In Progress"/>
+                    <property name="reporting.reminder" value="Reporting - Reminders"/>
+                    <property name="reporting.report" value="Reporting - Reports"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="customerHistory" path="/details/customerHistory" type="java.lang.String" hidden="true"
+              minCardinality="0" maxLength="5000"/>
+        <node name="patientHistory" path="/details/patientHistory" type="java.lang.String" hidden="true"
+              minCardinality="0" maxLength="5000"/>
+    </archetype>
+</archetypes>

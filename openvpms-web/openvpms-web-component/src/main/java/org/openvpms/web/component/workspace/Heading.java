@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -27,21 +27,20 @@ import org.openvpms.web.resource.i18n.Messages;
 /**
  * Helper class to generate a workspace heading.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public final class Heading {
 
     /**
      * Returns the heading component.
      *
-     * @param workspacesId the workspace group localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @return the heading component
      */
-    public static Component getHeading(String workspacesId, String workspaceId) {
+    public static Component getHeading(String workspaceId) {
+        String workspacesId = workspaceId.substring(0, workspaceId.indexOf('.'));
         String workspaces = Messages.get("workspaces." + workspacesId);
-        String workspace = Messages.get("workspace." + workspacesId + "." + workspaceId);
+        String workspace = Messages.get("workspace." + workspaceId);
         workspaces = ShortcutHelper.getText(workspaces);
         workspace = ShortcutHelper.getText(workspace);
         String text = Messages.format("workspace.heading", workspaces, workspace);

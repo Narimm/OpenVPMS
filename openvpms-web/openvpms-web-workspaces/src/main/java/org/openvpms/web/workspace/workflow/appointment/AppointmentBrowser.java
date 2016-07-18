@@ -83,7 +83,7 @@ import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.D
 
 /**
  * Appointment browser.
- * <p>
+ * <p/>
  * This provides two tabs:
  * <ol><li>Appointments<br/>
  * Provides a query to select appointments, and renders blocks of appointments in different hours a
@@ -183,7 +183,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param context  the context
      */
     public AppointmentBrowser(Party location, LayoutContext context) {
-        this(new AppointmentQuery(location), context);
+        this(new AppointmentQuery(location, context.getPreferences()), context);
     }
 
     /**
@@ -387,7 +387,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
 
     /**
      * Invoked when a cell is selected.
-     * <p>
+     * <p/>
      * Notifies listeners of the selection.
      *
      * @param event the event
@@ -554,7 +554,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         if (freeSlotQuery == null) {
             Party location = getContext().getLocation();
             freeSlotQuery = new FreeAppointmentSlotQuery(location, getScheduleView(), getSelectedSchedule(),
-                                                         getQuery().getDate());
+                                                         getQuery().getDate(), context.getPreferences());
             freeSlotBrowser = new FreeAppointmentSlotBrowser(freeSlotQuery, context);
             freeSlotBrowser.addBrowserListener(new AbstractBrowserListener<Slot>() {
                 @Override

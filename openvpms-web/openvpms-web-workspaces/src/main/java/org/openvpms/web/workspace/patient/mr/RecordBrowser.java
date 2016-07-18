@@ -311,7 +311,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @return a new {@link CRUDWindow}
      */
     protected ProblemBrowser createProblemBrowser(Party patient, LayoutContext layout) {
-        ProblemQuery query = PatientQueryFactory.createProblemQuery(patient, layout.getContext().getPractice());
+        ProblemQuery query = new ProblemQuery(patient, layout.getPreferences());
         return new ProblemBrowser(query, layout);
     }
 

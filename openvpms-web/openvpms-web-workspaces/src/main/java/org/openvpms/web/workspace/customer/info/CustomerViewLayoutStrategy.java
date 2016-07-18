@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.info;
@@ -64,7 +64,7 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
         super.doTabLayout(object, properties, model, context, shortcuts);
         Browser<Act> appointments = getAppointments((Party) object, context);
 
-        String label = Messages.get("customer.info.appointments");
+        String label = Messages.get("customer.information.appointments");
         if (shortcuts && model.size() < 10) {
             label = getShortcut(label, model.size() + 1);
         }

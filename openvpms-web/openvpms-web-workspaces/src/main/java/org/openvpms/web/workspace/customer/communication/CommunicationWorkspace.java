@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.communication;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
@@ -58,9 +59,12 @@ public class CommunicationWorkspace extends CustomerActWorkspace<Act> {
 
     /**
      * Constructs a {@link CommunicationWorkspace}.
+     *
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public CommunicationWorkspace(Context context) {
-        super("customer", "communication", context);
+    public CommunicationWorkspace(Context context, Preferences preferences) {
+        super("customer.communication", context, preferences);
         setChildArchetypes(Act.class, SHORT_NAMES);
         alertArchetypes = Archetypes.create(CustomerArchetypes.ALERT, Act.class);
     }

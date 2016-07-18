@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -19,10 +19,13 @@ package org.openvpms.web.workspace.workflow.worklist;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
@@ -32,6 +35,7 @@ import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleServiceQuery;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel.Highlight;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,14 +68,14 @@ public class TaskQuery extends ScheduleServiceQuery {
         COMPLETE     // Complete acts
     }
 
-
     /**
-     * Constructs {@code TaskQuery}.
+     * Constructs {@link TaskQuery}.
      *
      * @param context the context
+     * @param prefs   the user preferences
      */
-    public TaskQuery(Context context) {
-        super(ServiceHelper.getTaskService(), new TaskSchedules(context.getLocation()));
+    public TaskQuery(Context context, Preferences prefs) {
+        super(ServiceHelper.getTaskService(), new TaskSchedules(context.getLocation(), prefs), prefs);
         statusRangeListener = new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();
@@ -89,12 +93,49 @@ public class TaskQuery extends ScheduleServiceQuery {
         super.doLayout(container);
         statusRange = SelectFieldFactory.create(StatusRange.values());
         statusRange.setCellRenderer(new StatusRangeListCellRenderer());
-        statusRange.setSelectedItem(StatusRange.INCOMPLETE);
+        String preference = getPreferences().getString(PreferenceArchetypes.WORK_LIST, "status",
+                                                       StatusRange.INCOMPLETE.toString());
+        StatusRange defaultStatus;
+        try {
+            defaultStatus = StatusRange.valueOf(preference);
+        } catch (IllegalArgumentException exception) {
+            defaultStatus = StatusRange.INCOMPLETE;
+        }
+        statusRange.setSelectedItem(defaultStatus);
         statusRange.addActionListener(statusRangeListener);
 
         container.add(LabelFactory.create("actquery.status"));
         container.add(statusRange);
         getFocusGroup().add(statusRange);
+    }
+
+    /**
+     * Returns the default clinician.
+     *
+     * @return the default clinician, or {@code null} to indicate all clinicians.
+     */
+    @Override
+    protected IMObjectReference getDefaultClinician() {
+        return getPreferences().getReference(PreferenceArchetypes.WORK_LIST, "clinician", null);
+    }
+
+    /**
+     * Returns the default highlight.
+     *
+     * @return the default highlight, or {@code null} if there is none
+     */
+    @Override
+    protected Highlight getDefaultHighlight() {
+        Highlight result = null;
+        String highlight = getPreferences().getString(PreferenceArchetypes.WORK_LIST, "highlight", null);
+        if (highlight != null) {
+            try {
+                result = Highlight.valueOf(highlight);
+            } catch (IllegalArgumentException exception) {
+                // do nothing
+            }
+        }
+        return result;
     }
 
     /**
@@ -133,7 +174,7 @@ public class TaskQuery extends ScheduleServiceQuery {
         StatusRange range = getStatusRange();
         if (!events.isEmpty() && range != StatusRange.ALL) {
             boolean complete = range == StatusRange.COMPLETE;
-            result = new ArrayList<PropertySet>();
+            result = new ArrayList<>();
             for (PropertySet event : events) {
                 String status = event.getString(ScheduleEvent.ACT_STATUS);
                 if (complete) {
@@ -183,10 +224,8 @@ public class TaskQuery extends ScheduleServiceQuery {
          * @param index  the object index
          * @return the rendered object
          */
-        protected Object getComponent(Component list, StatusRange object,
-                                      int index) {
-            return Messages.get("workflow.scheduling.statusrange."
-                                + object.name());
+        protected Object getComponent(Component list, StatusRange object, int index) {
+            return Messages.get("workflow.scheduling.statusrange." + object.name());
         }
 
         /**
@@ -209,8 +248,7 @@ public class TaskQuery extends ScheduleServiceQuery {
          * @param index  the object index
          * @return <code>true</code> if the object represents 'None'.
          */
-        protected boolean isNone(Component list, StatusRange object,
-                                 int index) {
+        protected boolean isNone(Component list, StatusRange object, int index) {
             return false;
         }
     }

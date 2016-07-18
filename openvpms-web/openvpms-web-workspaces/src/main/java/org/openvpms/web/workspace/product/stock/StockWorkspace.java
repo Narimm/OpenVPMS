@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -38,10 +38,9 @@ public class StockWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @param context the context
      */
     public StockWorkspace(Context context) {
-        super("product", "stock", context, false);
+        super("product.stock", context, false);
         setArchetypes(Party.class, StockArchetypes.STOCK_LOCATION);
-        setChildArchetypes(Act.class, StockArchetypes.STOCK_TRANSFER,
-                           StockArchetypes.STOCK_ADJUST);
+        setChildArchetypes(Act.class, StockArchetypes.STOCK_TRANSFER, StockArchetypes.STOCK_ADJUST);
     }
 
     /**
