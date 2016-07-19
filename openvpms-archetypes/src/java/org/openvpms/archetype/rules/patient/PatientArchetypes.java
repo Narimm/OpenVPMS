@@ -170,4 +170,9 @@ public class PatientArchetypes {
      * Customer note act short name.
      */
     public static final String CUSTOMER_NOTE = "act.patientCustomerNote";
+
+    /**
+     * Microchip short name.
+     */
+    public static final String MICROCHIP = "entityIdentity.microchip";
 }

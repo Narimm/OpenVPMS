@@ -35,6 +35,16 @@
               minCardinality="0" maxCardinality="1" filter="entityLink.productType"/>
         <node name="templateOnly" displayName="Use only in Templates" path="/details/templateOnly"
               type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="patientIdentity" type="java.lang.String" path="/details/patientIdentity" minCardinality="0"
+              maxCardinality="1">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="entityIdentity.microchip" value="Microchip"/>
+                    <property name="entityIdentity.petTag" value="Pet Tag"/>
+                    <!--property name="entityIdentity.rabiesTag" value="Rabies Tag"/-->
+                </propertyList>
+            </assertion>
+        </node>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="prices" path="/productPrices" parentChild="true"
               type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">
