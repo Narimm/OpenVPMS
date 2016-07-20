@@ -1295,14 +1295,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     if (skipped || cancelled) {
                         collection.remove(editor.getObject());
                     }
-        if (queue.isComplete()) {
-            moveFocusToProduct();
+                    if (queue.isComplete()) {
+                        moveFocusToProduct();
 
-            // force the parent collection editor to re-check the validation status of
-            // this editor, in order for the Add button to be enabled.
-            getListeners().notifyListeners(CustomerChargeActItemEditor.this);
-        }
-    }
+                        // force the parent collection editor to re-check the validation status of
+                        // this editor, in order for the Add button to be enabled.
+                        getListeners().notifyListeners(CustomerChargeActItemEditor.this);
+                    }
+                }
             });
         }
     }
@@ -1560,21 +1560,26 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Adds a patient identity for a product, if one is configured.
+     * <p/>
+     * Only one identity will be added, i.e. the quantity is ignored.
      *
      * @param product the product
      */
     private void addPatientIdentity(Product product) {
-        IMObjectBean bean = new IMObjectBean(product);
-        if (bean.hasNode("patientIdentity")) {
-            String shortName = bean.getString("patientIdentity");
-            if (shortName != null) {
-                Context context = getLayoutContext().getContext();
-                HelpContext help = getHelpContext();
-                PatientIdentityEditor editor = PatientIdentityEditor.create(getPatient(), shortName, context, help);
-                if (editor != null) {
-                    EditorQueue queue = getEditorQueue();
-                    EditDialog dialog = editor.edit(false);
-                    queue.queue(dialog);
+        Party patient = getPatient();
+        if (patient != null && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+            IMObjectBean bean = new IMObjectBean(product);
+            if (bean.hasNode("patientIdentity")) {
+                String shortName = bean.getString("patientIdentity");
+                if (shortName != null) {
+                    Context context = getLayoutContext().getContext();
+                    HelpContext help = getHelpContext();
+                    PatientIdentityEditor editor = PatientIdentityEditor.create(patient, shortName, context, help);
+                    if (editor != null) {
+                        EditorQueue queue = getEditorQueue();
+                        EditDialog dialog = editor.edit(true);
+                        queue.queue(dialog);
+                    }
                 }
             }
         }

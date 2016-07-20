@@ -41,7 +41,7 @@
                 <propertyList name="entries">
                     <property name="entityIdentity.microchip" value="Microchip"/>
                     <property name="entityIdentity.petTag" value="Pet Tag"/>
-                    <!--property name="entityIdentity.rabiesTag" value="Rabies Tag"/-->
+                    <property name="entityIdentity.rabiesTag" value="Rabies Tag"/>
                 </propertyList>
             </assertion>
         </node>
