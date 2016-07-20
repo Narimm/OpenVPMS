@@ -454,10 +454,10 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     @Override
     protected void onBrowserSelected(int selected) {
+        super.onBrowserSelected(selected);
         if (selected == communicationIndex) {
             query(communication); // always refresh
         }
-        super.onBrowserSelected(selected);
     }
 
     /**
