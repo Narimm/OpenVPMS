@@ -6892,6 +6892,9 @@
 
     </data>
 
+    <data id="P907" archetype="product.merchandise" name="Microchip" patientIdentity="entityIdentity.microchip">
+    </data>
+
     <data id="MAN1" archetype="party.supplierManufacturer" name="Boehringer Ingelheim"
           description="Boehringer Ingelheim Pty Ltd">
         <data collection="contacts" archetype="contact.location" address="8 Waterloo Roard" suburb="NORTH_RYDE_2113"
