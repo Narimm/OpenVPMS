@@ -25,6 +25,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -42,6 +43,8 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.layout.ComponentGrid;
@@ -60,6 +63,7 @@ import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -76,6 +80,7 @@ import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.customer.estimate.CustomerEstimates;
 import org.openvpms.web.workspace.customer.estimate.EstimateViewer;
+import org.openvpms.web.workspace.patient.PatientIdentityEditor;
 import org.openvpms.web.workspace.summary.PartySummary;
 import org.openvpms.web.workspace.workflow.worklist.FollowUpTaskEditor;
 
@@ -385,14 +390,35 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      * @param grid    the grid
      */
-    protected void addMicrochip(Party patient, Grid grid) {
+    protected void addMicrochip(final Party patient, Grid grid) {
+        Label title = LabelFactory.create("patient.microchip");
+        final Row container = new Row();
+        grid.add(title);
+        grid.add(container);
+        refreshMicrochip(patient, container);
+    }
+
+    /**
+     * Refreshes the microchip display.
+     *
+     * @param patient the patient
+     * @param container the microchip container
+     */
+    protected void refreshMicrochip(final Party patient, final Component container) {
+        container.removeAll();
         String identity = rules.getMicrochipNumber(patient);
         if (identity != null) {
-            Label microchipTitle = LabelFactory.create("patient.microchip");
             Label microchip = LabelFactory.create();
             microchip.setText(identity);
-            grid.add(microchipTitle);
-            grid.add(microchip);
+            container.add(microchip);
+        } else {
+            Button add = ButtonFactory.create("button.add", Styles.DEFAULT, false, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onCreateMicrochip(patient, container);
+                }
+            });
+            container.add(add);
         }
     }
 
@@ -482,6 +508,34 @@ public class PatientSummary extends PartySummary {
             EditDialog dialog = EditDialogFactory.create(editor, getContext());
             dialog.show();
         }
+    }
+
+    /**
+     * Invoked to create a new microchip linked to the patient.
+     *
+     * @param patient the patient
+     * @param container the container to display the microchip
+     */
+    protected void onCreateMicrochip(Party patient, final Component container) {
+        final PatientIdentityEditor editor = PatientIdentityEditor.create(patient, PatientArchetypes.MICROCHIP,
+                                                                          getContext(), getHelpContext());
+        EditDialog dialog = editor.edit(false);
+        dialog.addWindowPaneListener(
+                new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        Party latest = editor.getPatient();
+                        refreshMicrochip(latest, container);
+
+                        // if the patient is selected, refresh it
+                        GlobalContext globalContext = ContextApplicationInstance.getInstance().getContext();
+                        if (ObjectUtils.equals(latest, globalContext.getPatient())) {
+                            globalContext.setPatient(latest);
+                        }
+                    }
+                }
+        );
+        dialog.show();
     }
 
     /**

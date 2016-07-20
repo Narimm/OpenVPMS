@@ -44,9 +44,11 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundProperty;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.clinician.ClinicianParticipationEditor;
+import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -77,9 +79,11 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
+import org.openvpms.web.workspace.patient.PatientIdentityEditor;
 import org.openvpms.web.workspace.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.workspace.patient.mr.PrescriptionMedicationActEditor;
@@ -846,6 +850,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateInvestigations(product);
         updateReminders(product);
         updateOnHandQuantity();
+        if (product != null) {
+            addPatientIdentity(product);
+        }
 
         boolean showPrint = updatePrint(product);
 
@@ -1549,6 +1556,33 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             bean.removeParticipation(STOCK_LOCATION_PARTICIPATION);
         }
         return stockLocation != null ? stockLocation.getObjectReference() : null;
+    }
+
+    /**
+     * Adds a patient identity for a product, if one is configured.
+     * <p/>
+     * Only one identity will be added, i.e. the quantity is ignored.
+     *
+     * @param product the product
+     */
+    private void addPatientIdentity(Product product) {
+        Party patient = getPatient();
+        if (patient != null && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+            IMObjectBean bean = new IMObjectBean(product);
+            if (bean.hasNode("patientIdentity")) {
+                String shortName = bean.getString("patientIdentity");
+                if (shortName != null) {
+                    Context context = getLayoutContext().getContext();
+                    HelpContext help = getHelpContext();
+                    PatientIdentityEditor editor = PatientIdentityEditor.create(patient, shortName, context, help);
+                    if (editor != null) {
+                        EditorQueue queue = getEditorQueue();
+                        EditDialog dialog = editor.edit(true);
+                        queue.queue(dialog);
+                    }
+                }
+            }
+        }
     }
 
     /**
