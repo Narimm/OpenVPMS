@@ -1495,7 +1495,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
     NULL,
     NULL,
     NULL,
-    0,
+    10,
     p.entity_id,
     c.entity_id
   FROM entities p
@@ -1535,7 +1535,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
     NULL,
     NULL,
     NULL,
-    0,
+    20,
     p.entity_id,
     c.entity_id
   FROM entities p
@@ -1574,7 +1574,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
     NULL,
     NULL,
     NULL,
-    0,
+    30,
     p.entity_id,
     c.entity_id
   FROM entities p
