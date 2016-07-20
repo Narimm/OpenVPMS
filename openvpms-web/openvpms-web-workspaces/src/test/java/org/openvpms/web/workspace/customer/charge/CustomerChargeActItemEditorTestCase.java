@@ -37,6 +37,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -46,6 +47,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -578,6 +581,51 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         editor.setProduct(product);
         checkEquals(quantity, item.getQuantity());
         assertFalse((editor.isDefaultQuantity()));
+    }
+
+    /**
+     * Verifies that a product with a microchip Patient Identity displays a prompt to add a microchip.
+     */
+    @Test
+    public void testMicrochip() {
+        User author = TestHelper.createUser();
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layout.getContext().setUser(author); // to propagate to acts
+
+        Party patient = TestHelper.createPatient();
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        Product product = createProduct(ProductArchetypes.MERCHANDISE);
+        IMObjectBean bean = new IMObjectBean(product);
+        bean.setValue("patientIdentity", PatientArchetypes.MICROCHIP);
+        bean.save();
+
+        CustomerChargeEditContext editContext = createEditContext(layout);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
+        editor.setQuantity(BigDecimal.ONE);
+        editor.setPatient(patient);
+        editor.setProduct(product);
+
+        // editor should be invalid
+        assertFalse(editor.isValid());
+        assertTrue(editContext.getEditorQueue().getCurrent() instanceof EditDialog);
+        EditDialog dialog = (EditDialog) editContext.getEditorQueue().getCurrent();
+        IMObjectEditor microchip = dialog.getEditor();
+        microchip.getProperty("microchip").setValue("123456789");
+        checkSavePopup(editContext.getEditorQueue(), PatientArchetypes.MICROCHIP, false);
+        checkSave(charge, editor);
+
+        patient = get(patient);
+        assertEquals(1, patient.getIdentities().size());
+        EntityIdentity identity = patient.getIdentities().iterator().next();
+        assertEquals("123456789", identity.getIdentity());
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
     }
 
     /**
