@@ -23,9 +23,10 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -48,7 +49,7 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
     /**
      * The set of selected templates.
      */
-    private Set<IMObjectReference> selections;
+    private Set<IMObjectReference> selections = new HashSet<>();
 
     /**
      * Constructs a {@link PatientDocumentTemplateBrowser}.
@@ -56,8 +57,10 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
      * @param query   the document template query
      * @param context the context
      */
-    public PatientDocumentTemplateBrowser(Query<Entity> query, LayoutContext context) {
+    public PatientDocumentTemplateBrowser(ScheduleDocumentTemplateQuery query, LayoutContext context) {
         super(query, context);
+        preselect(query.getSchedule());
+        preselect(query.getWorkList());
     }
 
     /**
@@ -70,7 +73,7 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
         if (selections.isEmpty()) {
             result = Collections.emptyList();
         } else {
-            result = new ArrayList<Entity>();
+            result = new ArrayList<>();
             for (IMObjectReference reference : selections) {
                 Entity template = (Entity) IMObjectHelper.getObject(reference);
                 if (template != null) {
@@ -98,12 +101,13 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
      */
     @Override
     protected IMTableModel<Entity> createTableModel(LayoutContext context) {
-        selections = new HashSet<IMObjectReference>();
         return new PrintTableModel(selections);
     }
 
     /**
      * Notifies listeners when an object is selected.
+     * <p/>
+     * This implementation toggles the checkbox.
      *
      * @param selected the selected object
      */
@@ -113,8 +117,32 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
         super.notifySelected(selected);
     }
 
+    /**
+     * Invoked when a check box is toggled.
+     * <p/>
+     * This notifies listeners.
+     *
+     * @param selected the selected object
+     */
     protected void notifyToggled(Entity selected) {
         super.notifySelected(selected);
+    }
+
+    /**
+     * Prselects documents flagged for printing by a schedule or work list.
+     *
+     * @param entity the schedule/work list. May be {@code null}
+     */
+    private void preselect(Entity entity) {
+        if (entity != null) {
+            IMObjectBean bean = new IMObjectBean(entity);
+            for (IMObjectRelationship relationship : bean.getValues("templates", IMObjectRelationship.class)) {
+                IMObjectBean relBean = new IMObjectBean(relationship);
+                if (relationship.getTarget() != null && relBean.getBoolean("print")) {
+                    selections.add(relationship.getTarget());
+                }
+            }
+        }
     }
 
     private class PrintTableModel extends BaseIMObjectTableModel<Entity> {
@@ -122,7 +150,7 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
         /**
          * The print check boxes.
          */
-        private List<CheckBox> print = new ArrayList<CheckBox>();
+        private List<CheckBox> print = new ArrayList<>();
 
         /**
          * The print column.
@@ -154,7 +182,7 @@ class PatientDocumentTemplateBrowser extends IMObjectTableBrowser<Entity> {
         @Override
         public void setObjects(List<Entity> objects) {
             super.setObjects(objects);
-            print = new ArrayList<CheckBox>();
+            print = new ArrayList<>();
             for (final Entity object : objects) {
                 boolean selected = selections.contains(object.getObjectReference());
                 final CheckBox e = CheckBoxFactory.create(selected);
