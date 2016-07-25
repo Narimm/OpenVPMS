@@ -16,6 +16,8 @@
 
 package org.openvpms.web.component.im.product;
 
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
@@ -29,10 +31,16 @@ import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
  * Participation editor for products.
+ * <p/>
+ * For customer and patient acts, when the practice has useLocationProducts == true, products are filtered by
+ * location and stock location.
+ * <p/>
+ * For all other acts, no location filtering occurs.
  *
  * @author Tim Anderson
  */
@@ -69,6 +77,11 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     private boolean excludeTemplateOnlyProducts;
 
     /**
+     * Determines if products that don't have a location relationship should be excluded.
+     */
+    private boolean useLocationProducts;
+
+    /**
      * The product short names that may be queried.
      */
     private String[] shortNames;
@@ -78,7 +91,7 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be {@code null}
+     * @param context       the layout context
      */
     public ProductParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
@@ -88,6 +101,17 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
                                                + participation.getArchetypeId().getShortName());
         }
         resetShortNames();
+        if (TypeHelper.isA(parent, "act.customer*", "act.patient*")) {
+            // for customer and patient acts, restrict product selection to those available at the
+            // practice location/stock location, when useLocationProducts == true.
+            Party practice = context.getContext().getPractice();
+            if (practice != null) {
+                useLocationProducts = ServiceHelper.getBean(PracticeRules.class).useLocationProducts(practice);
+                if (useLocationProducts) {
+                    setLocations(context.getContext().getLocation());
+                }
+            }
+        }
     }
 
     /**
@@ -146,9 +170,28 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     }
 
     /**
+     * Sets the practice location, and default stock location for the location.
+     *
+     * @param location the location. May be {@code null}
+     */
+    public void setLocations(Party location) {
+        Party stockLocation = null;
+        setLocation(location);
+        if (location != null) {
+            LocationRules bean = ServiceHelper.getBean(LocationRules.class);
+            stockLocation = bean.getDefaultStockLocation(location);
+        }
+        setStockLocation(stockLocation);
+    }
+
+    /**
      * Sets the practice location.
      * <p/>
-     * This is used to determine price service ratios.
+     * This is used to:
+     * <ul>
+     * <li>determine price service ratios.</li>
+     * <li>exclude service and template products, when {@link #useLocationProducts()} == true</li>
+     * </ul>
      *
      * @param location the practice location. May be {@code null}
      */
@@ -166,9 +209,8 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     }
 
     /**
-     * Sets the stock location. If set, only those products that have
-     * an relationship with the location, or no stock relationships at all
-     * will be returned.
+     * Sets the stock location. If set, only those products that have a relationship with the location, or no stock
+     * relationships at all will be returned.
      *
      * @param location the stock location. May be {@code null}
      */
@@ -220,6 +262,24 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      */
     public boolean getExcludeTemplateOnlyProducts() {
         return excludeTemplateOnlyProducts;
+    }
+
+    /**
+     * Determines if products must be present at the location in order to select them.
+     *
+     * @param useLocationProducts if {@code true}, products must be present at the location to select them
+     */
+    public void setUseLocationProducts(boolean useLocationProducts) {
+        this.useLocationProducts = useLocationProducts;
+    }
+
+    /**
+     * Determines if products must be present at the location in order to select them.
+     *
+     * @return {@code true} if products must be present at the location to select them
+     */
+    public boolean useLocationProducts() {
+        return useLocationProducts;
     }
 
     /**

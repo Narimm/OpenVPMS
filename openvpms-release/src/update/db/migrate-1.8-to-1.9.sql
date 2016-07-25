@@ -1777,3 +1777,19 @@ INSERT INTO roles_authorities (security_role_id, authority_id)
    WHERE x.security_role_id = r.security_role_id AND x.authority_id = g.granted_authority_id);
 
 DROP TABLE new_authorities;
+
+#
+# OVPMS-1787 Product location filter.
+#
+INSERT INTO entity_link_details (id, type, value, name)
+  SELECT
+    l.id,
+    'string',
+    'ALWAYS',
+    'location'
+  FROM entity_links l
+  WHERE l.arch_short_name = 'entityLink.productIncludes'
+        AND NOT exists(SELECT *
+                       FROM entity_link_details d
+                       WHERE d.id = l.id
+                             AND d.name = 'location');

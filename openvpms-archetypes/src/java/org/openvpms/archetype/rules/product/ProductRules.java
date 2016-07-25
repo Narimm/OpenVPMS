@@ -371,6 +371,21 @@ public class ProductRules {
     }
 
     /**
+     * Determines if a product can be used at the specified location.
+     * <p/>
+     * This is only applicable to service and template products. For other products, it always returns {@code true}.
+     * For medication and merchandise products, the stock location must be checked.
+     *
+     * @param product  the product
+     * @param location the practice location
+     * @return {@code true} if the product can be used at the location
+     */
+    public boolean canUseProductAtLocation(Product product, Party location) {
+        IMObjectBean bean = new IMObjectBean(product, service);
+        return !bean.getNodeTargetObjectRefs("locations").contains(location.getObjectReference());
+    }
+
+    /**
      * Returns the product concentration.
      *
      * @param product the product

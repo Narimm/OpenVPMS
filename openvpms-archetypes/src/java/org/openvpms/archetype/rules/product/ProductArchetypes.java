@@ -96,6 +96,23 @@ public class ProductArchetypes {
     public static final String PRODUCT_INCLUDES = "entityLink.productIncludes";
 
     /**
+     * Product template include value for the location node, indicating to always include the product.
+     */
+    public static final String ALWAYS_INCLUDE = "ALWAYS";
+
+    /**
+     * Product template include value for the location node, indicating to skip the product if it is not available
+     * at the location.
+     */
+    public static final String SKIP_IF_MISSING = "SKIP";
+
+    /**
+     * Product template include value for the location node, indicating to fail if the product is not available
+     * at the location.
+     */
+    public static final String FAIL_IF_MISSING = "FAIL";
+
+    /**
      * Product dose short name.
      */
     public static final String DOSE = "entity.productDose";

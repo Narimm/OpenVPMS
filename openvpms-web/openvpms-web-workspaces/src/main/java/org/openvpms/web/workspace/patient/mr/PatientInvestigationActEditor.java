@@ -36,7 +36,6 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
@@ -45,9 +44,9 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.product.ProductQuery;
+import org.openvpms.web.component.im.product.ProductReferenceEditor;
 import org.openvpms.web.component.im.product.ProductResultSet;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -79,21 +78,28 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
      */
     public PatientInvestigationActEditor(DocumentAct act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        if (act.isNew()) {
+            initParticipant("location", context.getContext().getLocation());
+        }
         productEditor = new SingleParticipationCollectionEditor(getCollectionProperty("product"), act, context) {
             @Override
             protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
                 return new ProductParticipationEditor((Participation) object, (Act) getObject(), context) {
+                    {
+                        if (useLocationProducts()) {
+                            // make sure products are restricted to the location where the investigation was created
+                            setLocations(PatientInvestigationActEditor.this.getLocation());
+                        }
+                    }
+
                     @Override
                     protected IMObjectReferenceEditor<Product> createEntityEditor(Property property) {
-                        return new ProductInvestigationTypeReferenceEditor(property, getObject(), getContext());
+                        return new ProductInvestigationTypeReferenceEditor(this, property, getContext());
                     }
                 };
             }
         };
         getEditors().add(productEditor);
-        if (act.isNew()) {
-            initParticipant("location", context.getContext().getLocation());
-        }
     }
 
     /**
@@ -134,10 +140,19 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     /**
      * Sets the location.
      *
-     * @param location the product. May be {@code null}
+     * @param location the location. May be {@code null}
      */
     public void setLocation(Party location) {
         setParticipant("location", location);
+    }
+
+    /**
+     * Returns the location.
+     *
+     * @return the location. May be {@code null}
+     */
+    public Party getLocation() {
+        return (Party) getParticipant("location");
     }
 
     /**
@@ -296,17 +311,18 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     /**
      * A product reference editor that constrains products to those linked to the investigation type.
      */
-    private class ProductInvestigationTypeReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
+    private class ProductInvestigationTypeReferenceEditor extends ProductReferenceEditor {
 
         /**
          * Constructs a {@link ProductInvestigationTypeReferenceEditor}.
          *
-         * @param property the reference property
-         * @param parent   the parent object. May be {@code null}
+         * @param editor   the parent editor
+         * @param property the product reference property
          * @param context  the layout context
          */
-        public ProductInvestigationTypeReferenceEditor(Property property, IMObject parent, LayoutContext context) {
-            super(property, parent, context);
+        public ProductInvestigationTypeReferenceEditor(ProductParticipationEditor editor, Property property,
+                                                       LayoutContext context) {
+            super(editor, property, context);
         }
 
         /**
@@ -319,16 +335,23 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
         @Override
         protected Query<Product> createQuery(String name) {
             ProductQuery query = new ProductQuery(getProperty().getArchetypeRange(), getLayoutContext().getContext()) {
+                /**
+                 * Creates a new {@link ProductResultSet}.
+                 *
+                 * @param sort the sort criteria. May be {@code null}
+                 * @return a new {@link ProductResultSet}
+                 */
                 @Override
-                protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
+                protected ProductResultSet getResultSet(SortConstraint[] sort) {
                     return new ProductInvestigationTypeResultSet(getArchetypeConstraint(), getValue(),
-                                                                 isIdentitySearch(), getSpecies(), getStockLocation(),
-                                                                 sort, getMaxResults());
+                                                                 isIdentitySearch(), getSpecies(),
+                                                                 useLocationProducts(), getLocation(),
+                                                                 getStockLocation(), sort, getMaxResults());
                 }
             };
             query.setValue(name);
             query.setAuto(true);
-            return query;
+            return getQuery(query);
         }
 
         /**
@@ -355,15 +378,24 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
         /**
          * Constructs a {@link ProductInvestigationTypeResultSet}.
          *
-         * @param archetypes       the archetypes to query
-         * @param value            the value to query on. May be {@code null}
-         * @param searchIdentities if {@code true} search on identity name
-         * @param sort             the sort criteria. May be {@code null}
-         * @param rows             the maximum no. of rows per page
+         * @param archetypes          the archetypes to query
+         * @param value               the value to query on. May be {@code null}
+         * @param searchIdentities    if {@code true} search on identity name
+         * @param useLocationProducts if {@code true}, products must not be present at the location, have be present at
+         *                            the stock location to be returned
+         * @param location            the location used to exclude service and template products. May be {@code null}.
+         *                            Only relevant when {@code useLocationProducts == true}
+         * @param stockLocation       if {@code useLocationProducts == false}, products must either have the stock
+         *                            location, or no stock location. If {@code useLocationProducts == true}, products
+         *                            must have the stock location
+         * @param sort                the sort criteria. May be {@code null}
+         * @param rows                the maximum no. of rows per page
          */
         public ProductInvestigationTypeResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
-                                                 String species, Party stockLocation, SortConstraint[] sort, int rows) {
-            super(archetypes, value, searchIdentities, species, stockLocation, sort, rows);
+                                                 String species, boolean useLocationProducts, Party location,
+                                                 Party stockLocation, SortConstraint[] sort, int rows) {
+            super(archetypes, value, searchIdentities, species, useLocationProducts, location, stockLocation, sort,
+                  rows);
         }
 
         /**

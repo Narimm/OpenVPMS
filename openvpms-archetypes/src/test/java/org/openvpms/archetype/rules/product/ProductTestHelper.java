@@ -43,15 +43,33 @@ import static org.openvpms.archetype.test.TestHelper.save;
 public class ProductTestHelper {
 
     /**
-     * Helper to create a product linked to a product type.
+     * Creates a medication product.
+     *
+     * @return a new product
+     */
+    public static Product createMedication() {
+        return TestHelper.createProduct();
+    }
+
+    /**
+     * Helper to create a medication product linked to a product type.
      *
      * @param productType the product type
      * @return a new product
      */
-    public static Product createProduct(Entity productType) {
+    public static Product createMedication(Entity productType) {
         Product product = TestHelper.createProduct();
         addProductType(product, productType);
         return product;
+    }
+
+    /**
+     * Helper to create a merchandise product.
+     *
+     * @return a new product
+     */
+    public static Product createMerchandise() {
+        return TestHelper.createProduct(ProductArchetypes.MERCHANDISE, null);
     }
 
     /**
@@ -80,6 +98,15 @@ public class ProductTestHelper {
         service.addProductPrice(unit);
         save(service);
         return service;
+    }
+
+    /**
+     * Helper to create a price template.
+     *
+     * @return a new product
+     */
+    public static Product createPriceTemplate() {
+        return TestHelper.createProduct(ProductArchetypes.PRICE_TEMPLATE, null);
     }
 
     /**
@@ -206,8 +233,29 @@ public class ProductTestHelper {
      * @param investigationType the investigation type
      */
     public static void addInvestigationType(Product product, Entity investigationType) {
-        EntityBean bean = new EntityBean(product);
+        IMObjectBean bean = new IMObjectBean(product);
         bean.addNodeTarget("investigationTypes", investigationType);
+        bean.save();
+    }
+
+    /**
+     * Creates a template.
+     *
+     * @return a new template
+     */
+    public static Product createTemplate() {
+        return TestHelper.createProduct(ProductArchetypes.TEMPLATE, null);
+    }
+
+    /**
+     * Adds a location exclusion to a service or template product.
+     *
+     * @param product  the product
+     * @param location the location
+     */
+    public static void addLocationExclusion(Product product, Party location) {
+        IMObjectBean bean = new IMObjectBean(product);
+        bean.addNodeTarget("locations", location);
         bean.save();
     }
 
@@ -218,7 +266,7 @@ public class ProductTestHelper {
      * @return a new template
      */
     public static Product createTemplate(String name) {
-        Product template = (Product) TestHelper.create(ProductArchetypes.TEMPLATE);
+        Product template = TestHelper.createProduct(ProductArchetypes.TEMPLATE, null, false);
         template.setName(name);
         TestHelper.save(template);
         return template;
@@ -322,7 +370,7 @@ public class ProductTestHelper {
      */
     public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity,
                                   boolean zeroPrice) {
-        addInclude(template, include, lowQuantity, highQuantity, 0, 0, zeroPrice);
+        addInclude(template, include, lowQuantity, highQuantity, 0, 0, zeroPrice, ProductArchetypes.ALWAYS_INCLUDE);
     }
 
     /**
@@ -336,7 +384,8 @@ public class ProductTestHelper {
      */
     public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity, int minWeight,
                                   int maxWeight) {
-        addInclude(template, include, lowQuantity, highQuantity, minWeight, maxWeight, false);
+        addInclude(template, include, lowQuantity, highQuantity, minWeight, maxWeight, false,
+                   ProductArchetypes.ALWAYS_INCLUDE);
     }
 
     /**
@@ -348,7 +397,21 @@ public class ProductTestHelper {
      * @param zeroPrice the zero price indicator
      */
     public static void addInclude(Product template, Product include, int quantity, boolean zeroPrice) {
-        addInclude(template, include, quantity, quantity, 0, 0, zeroPrice);
+        addInclude(template, include, quantity, quantity, 0, 0, zeroPrice, ProductArchetypes.ALWAYS_INCLUDE);
+    }
+
+    /**
+     * Adds an include to the template with no weight restrictions, the same low and high quantities, and a location
+     * indicator.
+     *
+     * @param template  the template
+     * @param include   the product to include
+     * @param quantity  the low and high quantity
+     * @param location    determines when to include the product. See {@link ProductArchetypes#ALWAYS_INCLUDE},
+     *                    {@link ProductArchetypes#SKIP_IF_MISSING}, {@link ProductArchetypes#FAIL_IF_MISSING}
+     */
+    public static void addInclude(Product template, Product include, int quantity, String location) {
+        addInclude(template, include, quantity, quantity, 0, 0, false, location);
     }
 
     /**
@@ -360,9 +423,11 @@ public class ProductTestHelper {
      * @param minWeight   the minimum weight
      * @param maxWeight   the maximum weight
      * @param zeroPrice   the zero price indicator
+     * @param location    determines when to include the product. See {@link ProductArchetypes#ALWAYS_INCLUDE},
+     *                    {@link ProductArchetypes#SKIP_IF_MISSING}, {@link ProductArchetypes#FAIL_IF_MISSING}
      */
     public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity, int minWeight,
-                                  int maxWeight, boolean zeroPrice) {
+                                  int maxWeight, boolean zeroPrice, String location) {
         EntityBean bean = new EntityBean(template);
         IMObjectRelationship relationship = bean.addNodeTarget("includes", include);
         IMObjectBean relBean = new IMObjectBean(relationship);
@@ -371,6 +436,7 @@ public class ProductTestHelper {
         relBean.setValue("minWeight", minWeight);
         relBean.setValue("maxWeight", maxWeight);
         relBean.setValue("zeroPrice", zeroPrice);
+        relBean.setValue("location", location);
         bean.save();
     }
 

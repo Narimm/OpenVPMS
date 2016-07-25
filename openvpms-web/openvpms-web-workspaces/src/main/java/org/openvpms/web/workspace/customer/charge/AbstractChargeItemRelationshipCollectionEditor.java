@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ProductTemplateExpander;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -156,6 +157,21 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
         controls.add(template);
         controls.add(productType);
         return controls;
+    }
+
+    /**
+     * Creates a new product template expander.
+     * <p/>
+     * This implementation will restrict products to those of the location and stock location,
+     * if {@link PriceActEditContext#useLocationProducts} is {@code true}.
+     *
+     * @return a new product template expander
+     */
+    @Override
+    protected ProductTemplateExpander getProductTemplateExpander() {
+        PriceActEditContext context = getEditContext();
+        return new ProductTemplateExpander(context.useLocationProducts(), context.getLocation(),
+                                           context.getStockLocation());
     }
 
     /**

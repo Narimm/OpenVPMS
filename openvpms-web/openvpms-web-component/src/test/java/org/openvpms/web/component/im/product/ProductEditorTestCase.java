@@ -63,7 +63,7 @@ public class ProductEditorTestCase extends AbstractAppTest {
         ProductEditor editor = createEditor(product);
         IMObjectTableCollectionEditor prices = (IMObjectTableCollectionEditor) editor.getPricesEditor();
 
-        // add a new price. This won't be added to the product until the product-supplier relationship is populaated
+        // add a new price. This won't be added to the product until the product-supplier relationship is populated
         ProductPriceEditor priceEditor = (ProductPriceEditor) prices.add(ProductArchetypes.UNIT_PRICE);
         assertNotNull(priceEditor);
         checkEquals(BigDecimal.ZERO, priceEditor.getCost());

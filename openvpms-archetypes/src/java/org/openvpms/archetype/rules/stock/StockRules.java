@@ -141,6 +141,17 @@ public class StockRules {
     }
 
     /**
+     * Determines if a product has a relationship with the specified stock location.
+     *
+     * @param product       the product
+     * @param stockLocation the stock location
+     * @return {@code true} if there is ar relationship
+     */
+    public boolean hasStockRelationship(Product product, Party stockLocation) {
+        return getStockRelationship(product, stockLocation.getObjectReference()) != null;
+    }
+
+    /**
      * Updates the stock quantity for a product at the specified stock location.
      *
      * @param product       the product

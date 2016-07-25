@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.reminder;
@@ -118,16 +118,16 @@ public class ReminderEditor extends PatientActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        Editor editor = getEditor("reminderType");
+        Editor reminderType = getEditor("reminderType");
 
-        if (editor != null) {
+        if (reminderType != null) {
             // add a listener to update the due date when the reminder type is modified
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onReminderTypeChanged();
                 }
             };
-            editor.addModifiableListener(listener);
+            reminderType.addModifiableListener(listener);
         }
     }
 

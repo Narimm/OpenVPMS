@@ -37,7 +37,6 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
-import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
@@ -161,7 +160,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
-        setDisableDiscounts(getDisableDiscounts(getLocation()));
         if (act.isNew()) {
             // default the act start time to today
             act.setActivityStartTime(new Date());
@@ -425,20 +423,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Invoked when layout has completed.
-     */
-    @Override
-    protected void onLayoutCompleted() {
-        super.onLayoutCompleted();
-        ProductParticipationEditor product = getProductEditor();
-        if (product != null) {
-            // register the location in order to determine service ratios
-            product.setLocation(getLocation());
-            product.setExcludeTemplateOnlyProducts(true);
-        }
-    }
-
-    /**
      * Invoked when the product is changed, to update prices.
      *
      * @param product the product. May be {@code null}
@@ -622,7 +606,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal quantity = getLowQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (getDisableDiscounts() || amount.compareTo(ZERO) != 0) {
+            if (disableDiscounts() || amount.compareTo(ZERO) != 0) {
                 Property discount = getProperty(LOW_DISCOUNT);
                 result = discount.setValue(amount);
             }
@@ -644,7 +628,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal quantity = getHighQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (getDisableDiscounts() || amount.compareTo(ZERO) != 0) {
+            if (disableDiscounts() || amount.compareTo(ZERO) != 0) {
                 Property discount = getProperty(HIGH_DISCOUNT);
                 result = discount.setValue(amount);
             }
@@ -743,7 +727,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
         if (TypeHelper.isA(product, TEMPLATE)) {
             result = TEMPLATE_NODES;
         } else {
-            if (getDisableDiscounts()) {
+            if (disableDiscounts()) {
                 result = new ArchetypeNodes().exclude(LOW_DISCOUNT, HIGH_DISCOUNT);
             }
             if (showPrint) {
