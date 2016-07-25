@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -28,7 +28,6 @@ import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -92,18 +91,16 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
             }
 
             String title = Messages.get("workflow.print.title");
-            Query<Entity> query;
-            query = new ScheduleDocumentTemplateQuery(schedule, worklist);
             HelpContext help = context.getHelpContext().subtopic("print");
             final PatientDocumentTemplateBrowser browser = new PatientDocumentTemplateBrowser(
-                    query, new DefaultLayoutContext(context, help));
+                    new ScheduleDocumentTemplateQuery(schedule, worklist), new DefaultLayoutContext(context, help));
             String[] buttons = canCancel() ? PopupDialog.OK_SKIP_CANCEL : PopupDialog.OK_SKIP;
-            dialog = new BrowserDialog<Entity>(title, buttons, browser, help);
-            dialog.getButtons().setEnabled(PopupDialog.OK_ID, false);
+            dialog = new BrowserDialog<>(title, buttons, browser, help);
+            enableOK(browser);
             browser.addBrowserListener(new AbstractBrowserListener<Entity>() {
                 @Override
                 public void selected(Entity object) {
-                    dialog.getButtons().setEnabled(PopupDialog.OK_ID, browser.hasSelections());
+                    enableOK(browser);
                 }
             });
             dialog.setCloseOnSelection(false);
@@ -196,6 +193,15 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
     protected PrintActTask createPrintTask(Act document, CustomerMailContext mailContext,
                                            PrintIMObjectTask.PrintMode printMode) {
         return new PrintPatientActTask(document, mailContext, printMode);
+    }
+
+    /**
+     * Enables the OK button if the browser has selections.
+     *
+     * @param browser the browser
+     */
+    private void enableOK(PatientDocumentTemplateBrowser browser) {
+        dialog.getButtons().setEnabled(PopupDialog.OK_ID, browser.hasSelections());
     }
 
     /**
