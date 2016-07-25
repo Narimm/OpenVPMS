@@ -343,7 +343,7 @@
               path="Workflow/Task/Letter/Task.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Letterhead" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead (Letter)"
               path="Letterhead/Letter/Letterhead.jrxml" mimeType="text/xml" docType="document.other"/>
-	<template name="Address Block" archetype="SUBREPORT" reportType="WORKFLOW" description="Address Block (Letter)"
-              path="Letterhead/Letter/AddressBlock.jrxml" mimeType="text/xml" docType="document.other"/>
+	<template name="Letterhead AddressBlock" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead AddressBlock (Letter)"
+              path="Letterhead/Letter/Letterhead AddressBlock.jrxml" mimeType="text/xml" docType="document.other"/>
 			  
 </templates>
