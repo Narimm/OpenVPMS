@@ -340,9 +340,9 @@
               path="Letterhead/A4/Letterhead.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Letterhead-A5" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead (A5)"
               path="Letterhead/A5/Letterhead-A5.jrxml" mimeType="text/xml" docType="document.other"/>
-	<template name="Address Block" archetype="SUBREPORT" reportType="WORKFLOW" description="Address Block (A4)"
-              path="Letterhead/A4/AddressBlock.jrxml" mimeType="text/xml" docType="document.other"/>
-	<template name="Address Block-A5" archetype="SUBREPORT" reportType="WORKFLOW" description="Address Block (A5)"
-              path="Letterhead/A5/AddressBlock-A5.jrxml" mimeType="text/xml" docType="document.other"/>
+	<template name="Letterhead AddressBlock" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead AddressBlock (A4)"
+              path="Letterhead/A4/Letterhead AddressBlock.jrxml" mimeType="text/xml" docType="document.other"/>
+	<template name="Letterhead AddressBlock-A5" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead AddressBlock (A5)"
+              path="Letterhead/A5/Letterhead AddressBlock-A5.jrxml" mimeType="text/xml" docType="document.other"/>
 
 </templates>

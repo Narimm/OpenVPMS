@@ -218,7 +218,7 @@
 					<subreportParameterExpression><![CDATA[$F{[party:getBillingAddress(openvpms:get(.,'supplier.entity'))]}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("supplier")]]></dataSourceExpression>
-				<subreportExpression><![CDATA["AddressBlock"+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+" AddressBlock"+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="false">
 				<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="539" height="25" isPrintWhenDetailOverflows="true" uuid="d395f61e-76ee-4881-8eb6-e91b661e0d96">
