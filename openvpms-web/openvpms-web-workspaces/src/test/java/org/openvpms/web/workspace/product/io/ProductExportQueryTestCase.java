@@ -40,8 +40,8 @@ public class ProductExportQueryTestCase extends AbstractQueryTest<Product> {
     public void testQueryByProductType() {
         Entity type1 = ProductTestHelper.createProductType();
         Entity type2 = ProductTestHelper.createProductType();
-        Product product1 = ProductTestHelper.createProduct(type1);
-        Product product2 = ProductTestHelper.createProduct(type2);
+        Product product1 = ProductTestHelper.createMedication(type1);
+        Product product2 = ProductTestHelper.createMedication(type2);
         Product product3 = TestHelper.createProduct();
 
         ProductExportQuery query = new ProductExportQuery(new LocalContext());

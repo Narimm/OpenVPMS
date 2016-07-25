@@ -175,6 +175,7 @@ public class PracticeRules {
         }
         return result;
     }
+
     /**
      * Returns the default prescription expiry date, based on the practice settings for the
      * <em>prescriptionExpiryPeriod</em> and <em>prescriptionExpiryUnits</em> nodes.
@@ -225,6 +226,17 @@ public class PracticeRules {
             }
         }
         return enabled;
+    }
+
+    /**
+     * Determines if products should be filtered by location.
+     *
+     * @param practice the practice
+     * @return {@code true} if products should be filtered by location
+     */
+    public boolean useLocationProducts(Party practice) {
+        IMObjectBean bean = new IMObjectBean(practice, service);
+        return bean.getBoolean("useLocationProducts");
     }
 
     /**

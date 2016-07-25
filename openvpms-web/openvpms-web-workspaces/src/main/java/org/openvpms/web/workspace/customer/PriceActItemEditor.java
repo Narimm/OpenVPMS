@@ -26,8 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
@@ -69,11 +67,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * The unit price.
      */
     private ProductPrice unitProductPrice;
-
-    /**
-     * If {@code true}, disable discounts.
-     */
-    private boolean disableDiscounts;
 
     /**
      * The edit context.
@@ -248,9 +241,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     @Override
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
-        if (editContext.useMinimumQuantities()) {
-            restrictProductSelection();
-        }
+        restrictProductSelection();
     }
 
     /**
@@ -292,21 +283,12 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Determines if discounting should be disabled.
-     *
-     * @param disable if {@code true} disable discounts
-     */
-    protected void setDisableDiscounts(boolean disable) {
-        disableDiscounts = disable;
-    }
-
-    /**
      * Determines if discounting has been disabled.
      *
      * @return {@code true} if discounts are disabled
      */
-    protected boolean getDisableDiscounts() {
-        return disableDiscounts;
+    protected boolean disableDiscounts() {
+        return editContext.disableDiscounts();
     }
 
     /**
@@ -376,7 +358,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
             BigDecimal amount = calculateDiscount();
             // If discount amount calculates to zero don't update any existing value as may have been manually modified
             // unless discounts are disabled (in which case amount should be zero).
-            if (disableDiscounts || amount.compareTo(BigDecimal.ZERO) != 0) {
+            if (disableDiscounts() || amount.compareTo(BigDecimal.ZERO) != 0) {
                 Property discount = getProperty("discount");
                 result = discount.setValue(amount);
             }
@@ -406,7 +388,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected BigDecimal calculateDiscount(BigDecimal unitPrice, BigDecimal quantity) {
         BigDecimal amount = BigDecimal.ZERO;
-        if (!disableDiscounts) {
+        if (!disableDiscounts()) {
             Party customer = getCustomer();
             Party patient = getPatient();
             Product product = getProduct();
@@ -518,15 +500,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Returns a read-only archetype service, backed by a cache.
-     *
-     * @return a caching archetype service
-     */
-    protected IArchetypeService getCachingService() {
-        return editContext.getCachingArchetypeService();
-    }
-
-    /**
      * Helper to return a product price for a product.
      *
      * @param product   the product
@@ -556,40 +529,43 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Determines if discounts are disabled for a practice location.
-     *
-     * @param location the practice location. May be {@code null}
-     * @return {@code true} if discounts are disabled
-     */
-    protected boolean getDisableDiscounts(Party location) {
-        boolean result = false;
-        if (location != null) {
-            IMObjectBean bean = new IMObjectBean(location);
-            result = bean.getBoolean("disableDiscounts");
-        }
-        return result;
-    }
-
-    /**
-     * Restricts product selection if the item has a minimum quantity.
-     * <p/>
-     * When a minimum quantity is in place, this only allows a product to be replaced with one of the same type.
+     * Restricts product selection:
+     * <ul>
+     * <li>to exclude template-only products</li>
+     * <li>if the item has a minimum quantity<br/>
+     * When a minimum quantity is in place, this only allows a product to be replaced with one of the same type
      * <br/>
      * This is to handle the case where the preferred product is out of stock.
+     * </li>
+     * </ul>
      */
     protected void restrictProductSelection() {
         ProductParticipationEditor editor = getProductEditor(false);
         if (editor != null) {
-            if (!MathRules.isZero(getMinimumQuantity())) {
-                IMObjectReference product = editor.getEntityRef();
-                if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
-                    // doesn't apply to services - these should be read-only
-                    editor.setShortNames(product.getArchetypeId().getShortName());
+            // register the location in order to determine service ratios, and restrict products if useLocationProducts
+            // is true. Note that registering the location and stock location shouldn't be required, as these should
+            // be inherited from the context.
+            Party location = getLocation();
+            boolean useLocationProducts = editContext.useLocationProducts();
+            editor.setUseLocationProducts(useLocationProducts);
+            editor.setLocation(location);
+            editor.setExcludeTemplateOnlyProducts(true);
+            if (useLocationProducts) {
+                editor.setStockLocation(editContext.getStockLocation());
+            }
+
+            if (editContext.useMinimumQuantities()) {
+                if (!MathRules.isZero(getMinimumQuantity())) {
+                    IMObjectReference product = editor.getEntityRef();
+                    if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
+                        // doesn't apply to services - these should be read-only
+                        editor.setShortNames(product.getArchetypeId().getShortName());
+                    } else {
+                        editor.resetShortNames();
+                    }
                 } else {
                     editor.resetShortNames();
                 }
-            } else {
-                editor.resetShortNames();
             }
         }
     }

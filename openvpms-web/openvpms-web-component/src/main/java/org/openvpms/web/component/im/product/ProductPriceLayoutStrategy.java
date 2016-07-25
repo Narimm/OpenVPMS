@@ -54,9 +54,9 @@ public class ProductPriceLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected ArchetypeNodes getArchetypeNodes(IMObject object, LayoutContext context) {
         ArchetypeNodes nodes;
-        if (PricingGroupHelper.hasPricingGroups((ProductPrice) object)) {
+        if (ProductHelper.hasPricingGroups((ProductPrice) object)) {
             nodes = super.getArchetypeNodes(object, context);
-        } else if (!context.isEdit() || !PricingGroupHelper.pricingGroupsConfigured()) {
+        } else if (!context.isEdit() || !ProductHelper.pricingGroupsConfigured()) {
             nodes = new ArchetypeNodes().exclude("pricingGroups");
         } else {
             nodes = super.getArchetypeNodes(object, context);

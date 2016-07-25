@@ -91,6 +91,8 @@
               maxCardinality="1" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="showPricesTaxInclusive" path="/details/showPricesTaxInclusive" minCardinality="0"
               maxCardinality="1" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="useLocationProducts" path="/details/useLocationProducts" minCardinality="0" maxCardinality="1"
+              type="java.lang.Boolean" defaultValue="false()"/>
         <node name="followUpAtCheckOut" path="/details/followUpAtCheckOut" minCardinality="0" maxCardinality="1"
               type="java.lang.Boolean" defaultValue="false()"/>
         <node name="contacts" path="/contacts"

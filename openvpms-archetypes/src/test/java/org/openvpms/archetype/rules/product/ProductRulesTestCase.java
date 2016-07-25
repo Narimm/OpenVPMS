@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
@@ -31,6 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -84,9 +84,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Entity dose = createDose(species, ZERO, TEN, ONE, ONE);
         ProductTestHelper.addDose(product, dose);
 
-        Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
-        stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
-        save(stockLocation);
+        Party stockLocation = ProductTestHelper.createStockLocation();
         stockRules.updateStock(product, stockLocation, TEN);
 
         // add a linked product. This should *not* be copied
@@ -140,6 +138,33 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         // stock quantity should not be copied
         checkEquals(ZERO, stockRules.getStock(copy, stockLocation));
+    }
+
+    /**
+     * Copies a service product with a linked location.
+     */
+    @Test
+    public void testCopyProductWithLocation() {
+        Product product = ProductTestHelper.createService();
+
+        // add a location exclusion. This should not be copied.
+        IMObjectBean bean = new IMObjectBean(product);
+        Party location = TestHelper.createLocation();
+        bean.addNodeTarget("locations", location);
+        bean.save();
+
+        // now perform the copy
+        String name = "Copy";
+        Product copy = rules.copy(product, name);
+
+        // verify it is a copy
+        assertTrue(product.getId() != copy.getId());
+        assertEquals(product.getArchetypeId(), copy.getArchetypeId());
+        assertEquals(name, copy.getName());
+
+        // verify the copy refers to the same location
+        EntityBean copyBean = new EntityBean(copy);
+        assertEquals(copyBean.getNodeTargetEntity("locations"), location);
     }
 
     /**
@@ -360,6 +385,31 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(product.getObjectReference(), bean.getNodeTargetObjectRef("product", false));
         assertEquals(expiry, rules.getBatchExpiry(batch));
         assertEquals(manufacturer.getObjectReference(), bean.getNodeTargetObjectRef("manufacturer"));
+    }
+
+    /**
+     * Tests the {@link ProductRules#canUseProductAtLocation(Product, Party)} method.
+     */
+    @Test
+    public void testCanUseProductAtLocation() {
+        Product medication = ProductTestHelper.createMedication();
+        Product merchandise = ProductTestHelper.createMerchandise();
+        Product service = ProductTestHelper.createService();
+        Product template = ProductTestHelper.createTemplate();
+        Party location = TestHelper.createLocation();
+
+        // will always return true for medication and merchandise products
+        assertTrue(rules.canUseProductAtLocation(medication, location));
+        assertTrue(rules.canUseProductAtLocation(merchandise, location));
+        assertTrue(rules.canUseProductAtLocation(service, location));
+        assertTrue(rules.canUseProductAtLocation(template, location));
+
+        // exclude the location for the service and template and verify they can no longer by used
+        ProductTestHelper.addLocationExclusion(service, location);
+        ProductTestHelper.addLocationExclusion(template, location);
+
+        assertFalse(rules.canUseProductAtLocation(service, location));
+        assertFalse(rules.canUseProductAtLocation(template, location));
     }
 
     /**

@@ -162,7 +162,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
     public void testPharmacyOrder() {
         Entity productType = createProductType(pharmacy);
         Product product1 = createPharmacyProduct(pharmacy);
-        Product product2 = ProductTestHelper.createProduct(productType);
+        Product product2 = ProductTestHelper.createMedication(productType);
         Product product3 = TestHelper.createProduct(); // not ordered via a pharmacy
         Act event = PatientTestHelper.createEvent(patient, clinician);
         Act item1 = createItem(product1, ONE, event);
@@ -205,7 +205,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         List<TestLaboratoryOrderService.LabOrder> orders = laboratoryOrderService.getOrders();
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), TestLaboratoryOrderService.LabOrder.Type.CREATE, patient, investigation.getId(),
-                   item1.getActivityStartTime(), clinician, laboratory);
+                   investigation.getActivityStartTime(), clinician, laboratory);
         assertEquals(InvestigationActStatus.SENT, investigation.getStatus2());
 
         // patient information updates should not be sent
