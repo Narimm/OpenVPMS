@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -129,6 +129,7 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
             save(newPractice);
             fail("Expected save of another active practice to fail");
         } catch (Exception expected) {
+            // do nothing
         }
 
         // mark the new practice inactive and save again. Should succeed.
@@ -186,6 +187,20 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
         Currency currency = rules.getCurrency(practice);
         assertEquals("AUD", currency.getCode());
         assertEquals(2, currency.getDefaultFractionDigits());
+    }
+
+    /**
+     * Tests the {@link PracticeRules#useLocationProducts(Party)} method.
+     */
+    @Test
+    public void testUseLocationProducts() {
+        Party practice = createPractice();
+
+        assertFalse(rules.useLocationProducts(practice));
+
+        IMObjectBean bean = new IMObjectBean(practice);
+        bean.setValue("useLocationProducts", true);
+        assertTrue(rules.useLocationProducts(practice));
     }
 
     /**

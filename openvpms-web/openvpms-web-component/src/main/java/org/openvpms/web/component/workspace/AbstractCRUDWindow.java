@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -24,11 +24,13 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.DelegatingContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
@@ -230,7 +232,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Returns the object's archetype descriptor.
      *
      * @return the object's archetype descriptor or {@code null} if there
-     *         is no object set
+     * is no object set
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
         T object = getObject();
@@ -807,7 +809,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new layout context.
      */
     protected LayoutContext createLayoutContext(HelpContext help) {
-        return new DefaultLayoutContext(true, getContext(), help);
+        return new DefaultLayoutContext(true, new LocationContext(getContext()), help);
     }
 
     /**
@@ -838,4 +840,69 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             context.setObject(shortName, null);
         }
     }
+
+    /**
+     * A delegating context where location and stock location changes are not propagated.
+     * <p/>
+     * This is to prevent changes that an editor makes to the location/stock location from propagating to the global
+     * context.
+     */
+    protected static class LocationContext extends DelegatingContext {
+
+        private Party location;
+
+        private Party stockLocation;
+
+        /**
+         * Constructs a {@link LocationContext}.
+         *
+         * @param context the context to delegate to
+         */
+        public LocationContext(Context context) {
+            super(context);
+            this.location = context.getLocation();
+            this.stockLocation = context.getStockLocation();
+        }
+
+        /**
+         * Sets the current location.
+         *
+         * @param location the current location
+         */
+        @Override
+        public void setLocation(Party location) {
+            this.location = location;
+        }
+
+        /**
+         * Returns the current location.
+         *
+         * @return the current location
+         */
+        @Override
+        public Party getLocation() {
+            return location;
+        }
+
+        /**
+         * Sets the current stock location.
+         *
+         * @param location the current location
+         */
+        @Override
+        public void setStockLocation(Party location) {
+            this.stockLocation = location;
+        }
+
+        /**
+         * Returns the current stock location.
+         *
+         * @return the current stock location, or {@code null} if there is no current location
+         */
+        @Override
+        public Party getStockLocation() {
+            return stockLocation;
+        }
+    }
+
 }

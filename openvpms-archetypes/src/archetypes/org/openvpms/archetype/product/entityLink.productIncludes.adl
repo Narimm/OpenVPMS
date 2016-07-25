@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -56,6 +56,16 @@
                     <property name="KILOGRAMS" value="Kilograms"/>
                     <property name="GRAMS" value="Grams"/>
                     <property name="POUNDS" value="Pounds"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="location" path="/details/location" type="java.lang.String"
+              minCardinality="0" maxLength="30" defaultValue="'ALWAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ALWAYS" value="Always Include"/>
+                    <property name="FAIL" value="Fail if Missing"/>
+                    <property name="SKIP" value="Skip if Missing"/>
                 </propertyList>
             </assertion>
         </node>

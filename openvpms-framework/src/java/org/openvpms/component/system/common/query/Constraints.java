@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -274,6 +275,17 @@ public class Constraints {
     }
 
     /**
+     * Creates a new is-a constraint, to determine if an alias or node is of a particular archetype.
+     *
+     * @param name the alias or qualified node name
+     * @param shortNames the archetype short names
+     * @return a new constraint
+     */
+    public static IsAConstraint isA(String name, String... shortNames) {
+        return new IsAConstraint(name, shortNames);
+    }
+
+    /**
      * Creates an inner join on a node.
      *
      * @param name the node name
@@ -375,7 +387,9 @@ public class Constraints {
      */
     public static OrConstraint or(IConstraint... constraints) {
         OrConstraint result = new OrConstraint();
-        result.setConstraints(Arrays.asList(constraints));
+        for (IConstraint constraint : constraints) {
+            result.add(constraint);
+        }
         return result;
     }
 

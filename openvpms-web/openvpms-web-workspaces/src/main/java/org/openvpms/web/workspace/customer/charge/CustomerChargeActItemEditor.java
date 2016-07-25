@@ -24,10 +24,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -63,7 +60,6 @@ import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.product.BatchParticipationEditor;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
-import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -97,7 +93,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import static java.math.BigDecimal.ZERO;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
@@ -163,16 +158,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Listener for changes to the batch.
      */
     private final ModifiableListener batchListener;
-
-    /**
-     * Stock rules.
-     */
-    private StockRules rules;
-
-    /**
-     * Reminder rules.
-     */
-    private ReminderRules reminderRules;
 
     /**
      * The quantity.
@@ -285,13 +270,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         quantity = new Quantity(quantityProperty, act, getLayoutContext());
         stockQuantity = new StockQuantity(act, context.getStock(), getLayoutContext());
 
-        setDisableDiscounts(getDisableDiscounts(getLocation()));
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
 
-        rules = new StockRules(getCachingService());
-        reminderRules = new ReminderRules(getCachingService(), ServiceHelper.getBean(PatientRules.class));
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onQuantityChanged();
@@ -746,14 +728,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
-
-        ProductParticipationEditor product = getProductEditor();
-        if (product != null) {
-            // register the location in order to determine service ratios
-            product.setLocation(getLocation());
-            product.setExcludeTemplateOnlyProducts(true);
-        }
-
         PatientParticipationEditor patient = getPatientEditor();
         if (patient != null) {
             // add a listener to update the dispensing, investigation and reminder acts when the patient changes
@@ -1096,7 +1070,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 reminders.remove(act);
             }
             if (product != null) {
-                Map<Entity, EntityRelationship> reminderTypes = getReminderTypes(product);
+                Map<Entity, EntityRelationship> reminderTypes = getEditContext().getReminderTypes(product);
                 for (Map.Entry<Entity, EntityRelationship> entry : reminderTypes.entrySet()) {
                     Entity reminderType = entry.getKey();
                     EntityRelationship relationship = entry.getValue();
@@ -1116,7 +1090,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             reminder.setMarkMatchingRemindersCompleted(false);
 
                             // override the due date calculated from the reminder type
-                            Date dueDate = reminderRules.calculateProductReminderDueDate(startTime, relationship);
+                            Date dueDate = getEditContext().getReminderDueDate(startTime, relationship);
                             reminder.setEndTime(dueDate);
                         }
                         reminders.addEdited(editor);
@@ -1252,23 +1226,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (bean.hasNode(node)) {
             result = bean.getNodeTargetEntities(node);
             Collections.sort(result, IMObjectSorter.getNameComparator(true));
-        }
-        return result;
-    }
-
-    /**
-     * Helper to return the reminder types and their relationships for a product.
-     * <p/>
-     * If there are multiple reminder types, these will be sorted on name.
-     *
-     * @param product the product
-     * @return a the reminder type relationships
-     */
-    private Map<Entity, EntityRelationship> getReminderTypes(Product product) {
-        Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
-        Map<Entity, EntityRelationship> result = new TreeMap<>(IMObjectSorter.getNameComparator(true));
-        for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
-            result.put(entry.getValue(), entry.getKey());
         }
         return result;
     }
@@ -1540,14 +1497,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private IMObjectReference updateStockLocation(Product product) {
         Party stockLocation = null;
         if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
-            Act parent = (Act) getParent();
-            if (parent != null) {
-                ActBean bean = new ActBean(parent);
-                Party location = (Party) getObject(bean.getNodeParticipantRef("location"));
-                if (location != null) {
-                    stockLocation = rules.getStockLocation(product, location);
-                }
-            }
+            stockLocation = getEditContext().getStockLocation(product);
         }
         ActBean bean = new ActBean(getObject());
         if (stockLocation != null) {
@@ -1621,7 +1571,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             filter.add(DISPENSING);
             filter.add(INVESTIGATIONS);
             filter.add(REMINDERS);
-            if (getDisableDiscounts()) {
+            if (disableDiscounts()) {
                 filter.add(DISCOUNT);
             }
             boolean medication = TypeHelper.isA(product, MEDICATION);

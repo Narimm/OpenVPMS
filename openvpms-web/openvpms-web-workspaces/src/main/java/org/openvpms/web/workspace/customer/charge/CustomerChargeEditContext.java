@@ -16,11 +16,22 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
-import org.openvpms.archetype.rules.stock.StockRules;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectSorter;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.StockOnHand;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
+
+import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Edit context for customer charges.
@@ -40,6 +51,11 @@ public class CustomerChargeEditContext extends ChargeEditContext {
     private final StockOnHand stock;
 
     /**
+     * The reminder rules.
+     */
+    private final ReminderRules reminderRules;
+
+    /**
      * The prescriptions. May be {@code null}.
      */
     private Prescriptions prescriptions;
@@ -54,7 +70,8 @@ public class CustomerChargeEditContext extends ChargeEditContext {
     public CustomerChargeEditContext(Party customer, Party location, LayoutContext context) {
         super(customer, location, context);
         saveContext = new ChargeSaveContext();
-        stock = new StockOnHand(new StockRules(getCachingArchetypeService()));
+        reminderRules = new ReminderRules(getCachingArchetypeService(), ServiceHelper.getBean(PatientRules.class));
+        stock = new StockOnHand(getStockRules());
     }
 
     /**
@@ -91,6 +108,35 @@ public class CustomerChargeEditContext extends ChargeEditContext {
      */
     public Prescriptions getPrescriptions() {
         return prescriptions;
+    }
+
+    /**
+     * Helper to return the reminder types and their relationships for a product.
+     * <p/>
+     * If there are multiple reminder types, these will be sorted on name.
+     *
+     * @param product the product
+     * @return a the reminder type relationships
+     */
+    public Map<Entity, EntityRelationship> getReminderTypes(Product product) {
+        Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
+        Map<Entity, EntityRelationship> result = new TreeMap<>(IMObjectSorter.getNameComparator(true));
+        for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
+            result.put(entry.getValue(), entry.getKey());
+        }
+        return result;
+    }
+
+    /**
+     * Calculates the due date for a product reminder.
+     *
+     * @param startTime    the start time
+     * @param relationship the product reminder relationship
+     * @return the due date for the reminder
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Date getReminderDueDate(Date startTime, EntityRelationship relationship) {
+        return reminderRules.calculateProductReminderDueDate(startTime, relationship);
     }
 
 }

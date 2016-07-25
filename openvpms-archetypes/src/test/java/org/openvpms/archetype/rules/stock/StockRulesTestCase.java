@@ -30,13 +30,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link StockRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StockRulesTestCase extends AbstractStockTest {
 
@@ -141,6 +141,24 @@ public class StockRulesTestCase extends AbstractStockTest {
         rules.transfer(product, from, to, quantity);
         checkEquals(quantity.negate(), rules.getStock(product, from));
         checkEquals(quantity, rules.getStock(product, to));
+    }
+
+    /**
+     * Tests the {@link StockRules#hasStockRelationship(Product, Party)} method.
+     */
+    @Test
+    public void testHasStock() {
+        Product product = TestHelper.createProduct();
+        Party stockLocation = createStockLocation();
+
+        assertFalse(rules.hasStockRelationship(product, stockLocation));
+
+        rules.updateStock(product, stockLocation, BigDecimal.ONE);
+        assertTrue(rules.hasStockRelationship(product, stockLocation));
+
+        // verify relationship still exists with no stock
+        rules.updateStock(product, stockLocation, BigDecimal.ZERO);
+        assertTrue(rules.hasStockRelationship(product, stockLocation));
     }
 
     /**

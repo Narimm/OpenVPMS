@@ -506,7 +506,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
      * @return a new product
      */
     private Product createProduct(Entity productType) {
-        return ProductTestHelper.createProduct(productType);
+        return ProductTestHelper.createMedication(productType);
     }
 
     /**

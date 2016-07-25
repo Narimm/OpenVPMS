@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -20,11 +20,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
@@ -44,6 +47,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -75,6 +79,7 @@ public class EstimateEditor extends ActEditor {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
         addStartEndTimeListeners();
+        initLocation();
         initParticipant("customer", context.getContext().getCustomer());
     }
 
@@ -104,6 +109,23 @@ public class EstimateEditor extends ActEditor {
      */
     public ActRelationshipCollectionEditor getDocuments() {
         return (ActRelationshipCollectionEditor) getEditors().getEditor("documents");
+    }
+
+    /**
+     * Initialises the context with the stock location as this determines which products are available.
+     *
+     * @return the practice location for the charge
+     */
+    protected Party initLocation() {
+        Context context = getLayoutContext().getContext();
+        Party location = context.getLocation();
+        Party stockLocation = null;
+        if (location != null) {
+            LocationRules rules = ServiceHelper.getBean(LocationRules.class);
+            stockLocation = rules.getDefaultStockLocation(location);
+        }
+        context.setStockLocation(stockLocation);
+        return location;
     }
 
     /**
@@ -249,7 +271,7 @@ public class EstimateEditor extends ActEditor {
      * @return the total
      */
     private BigDecimal calculateTotal(List<Act> acts, String node) {
-        return ActHelper.sum((Act) getObject(), acts, node);
+        return ActHelper.sum(getObject(), acts, node);
     }
 
 }

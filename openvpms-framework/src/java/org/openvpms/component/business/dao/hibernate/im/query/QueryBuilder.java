@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -37,6 +37,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.ExistsConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IdConstraint;
+import org.openvpms.component.system.common.query.IsAConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -743,6 +744,32 @@ public class QueryBuilder {
     }
 
     /**
+     * Process an {@link IsAConstraint}.
+     *
+     * @param constraint the constraint
+     * @param context the query context
+     */
+    private void process(IsAConstraint constraint, QueryContext context) {
+        String name = constraint.getName();
+        String[] shortNames = constraint.getShortNames();
+
+        boolean or = false;
+        if (shortNames.length > 1) {
+            context.pushLogicalOperator(LogicalOperator.OR);
+            or = true;
+        }
+
+        for (String shortName : shortNames) {
+            String value = shortName.replace('*', '%'); // convert wildcards to SQL
+            context.addConstraint(getAliasOrQualifiedName(name, context), "archetypeId.shortName", RelationalOp.EQ,
+                                  value);
+        }
+        if (or) {
+            context.popLogicalOperator();
+        }
+    }
+
+    /**
      * Process the appropriate constraint
      *
      * @param constraint the constraint to process
@@ -784,6 +811,8 @@ public class QueryBuilder {
             process((NotConstraint) constraint, context);
         } else if (constraint instanceof ExistsConstraint) {
             process((ExistsConstraint) constraint, context);
+        } else if (constraint instanceof IsAConstraint) {
+            process((IsAConstraint) constraint, context);
         } else {
             throw new QueryBuilderException(QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
                                             constraint.getClass().getName());

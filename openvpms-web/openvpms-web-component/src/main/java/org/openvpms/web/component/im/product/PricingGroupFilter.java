@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -62,8 +62,8 @@ public class PricingGroupFilter {
      * @param context the layout context
      */
     public PricingGroupFilter(LayoutContext context) {
-        pricingGroup = PricingGroupHelper.getPricingGroup(context.getContext());
-        needsFilter = PricingGroupHelper.pricingGroupsConfigured();
+        pricingGroup = ProductHelper.getPricingGroup(context.getContext());
+        needsFilter = ProductHelper.pricingGroupsConfigured();
     }
 
     /**
@@ -101,7 +101,7 @@ public class PricingGroupFilter {
      */
     public List<IMObject> getPrices(List<IMObject> prices) {
         if (!showAll) {
-            return PricingGroupHelper.filterPrices(prices, pricingGroup);
+            return ProductHelper.filterPrices(prices, pricingGroup);
         }
         return prices;
     }

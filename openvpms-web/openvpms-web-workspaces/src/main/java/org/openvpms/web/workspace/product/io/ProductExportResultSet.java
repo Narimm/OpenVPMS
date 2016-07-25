@@ -67,7 +67,7 @@ public class ProductExportResultSet extends ProductResultSet {
     public ProductExportResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
                                   String species, Entity productType, Party stockLocation, String incomeType,
                                   String productGroup, SortConstraint[] sort, int rows) {
-        super(archetypes, value, searchIdentities, species, stockLocation, sort, rows);
+        super(archetypes, value, searchIdentities, species, false, null, stockLocation, sort, rows);
         this.productType = productType;
         this.incomeType = incomeType;
         this.productGroup = productGroup;

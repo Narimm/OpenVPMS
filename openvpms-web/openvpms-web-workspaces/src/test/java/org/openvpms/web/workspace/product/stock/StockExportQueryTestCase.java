@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -211,7 +211,7 @@ public class StockExportQueryTestCase extends AbstractAppTest {
      * @return the product
      */
     private Product createProduct(String name, Entity productType) {
-        Product product = ProductTestHelper.createProduct(productType);
+        Product product = ProductTestHelper.createMedication(productType);
         product.setName(name);
         save(product);
         return product;

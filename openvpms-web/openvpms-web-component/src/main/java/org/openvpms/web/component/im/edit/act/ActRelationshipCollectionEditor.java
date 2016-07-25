@@ -448,8 +448,17 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
             PatientRules rules = ServiceHelper.getBean(PatientRules.class);
             weight = rules.getWeight(patient);
         }
-        ProductTemplateExpander expander = new ProductTemplateExpander();
+        ProductTemplateExpander expander = getProductTemplateExpander();
         return expander.expand(template, weight, quantity, getContext().getCache());
+    }
+
+    /**
+     * Creates a new product template expander.
+     *
+     * @return a new product template expander
+     */
+    protected ProductTemplateExpander getProductTemplateExpander() {
+        return new ProductTemplateExpander(false, null, null);
     }
 
     /**
