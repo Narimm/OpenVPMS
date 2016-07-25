@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -31,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.CustomerPricingContext;
 import org.openvpms.web.component.im.product.PricingContext;
+import org.openvpms.web.component.im.product.ProductHelper;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.DoseManager;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
@@ -51,6 +53,11 @@ public class PriceActEditContext {
     private final Party practice;
 
     /**
+     * The practice location.
+     */
+    private final Party location;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -61,14 +68,32 @@ public class PriceActEditContext {
     private final CustomerTaxRules taxRules;
 
     /**
+     * The location rules.
+     */
+    private final LocationRules locationRules;
+
+    /**
      * The discount rules.
      */
     private final DiscountRules discountRules;
 
     /**
+     * Stock rules.
+     */
+    private final StockRules stockRules;
+
+    /**
      * The dose manager. May be {@code null}
      */
     private DoseManager doseManager;
+
+
+    private final boolean disableDiscounts;
+
+    /**
+     * Determines if products must be present at the location in order to select them.
+     */
+    private final boolean useLocationProducts;
 
     /**
      * Determines if minimum quantity restrictions are in place.
@@ -92,16 +117,19 @@ public class PriceActEditContext {
         if (practice == null) {
             throw new IllegalStateException("Context is missing the practice");
         }
+        this.location = location;
+        disableDiscounts = getDisableDiscounts(location);
+        useLocationProducts = ProductHelper.useLocationProducts(context.getContext());
         IMObjectBean bean = new IMObjectBean(practice);
         useMinimumQuantities = bean.getBoolean("minimumQuantities", false);
         service = new CachingReadOnlyArchetypeService(context.getCache(), ServiceHelper.getArchetypeService());
         ProductPriceRules priceRules = new ProductPriceRules(service);
         taxRules = new CustomerTaxRules(practice, service);
         discountRules = new DiscountRules(service);
+        stockRules = new StockRules(service);
         Currency currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);
-        LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-        pricingContext = new CustomerPricingContext(customer, location, currency, priceRules, locationRules,
-                                                    taxRules);
+        locationRules = ServiceHelper.getBean(LocationRules.class);
+        pricingContext = new CustomerPricingContext(customer, location, currency, priceRules, locationRules, taxRules);
     }
 
     /**
@@ -151,6 +179,34 @@ public class PriceActEditContext {
     }
 
     /**
+     * Returns the practice location.
+     *
+     * @return the practice location. May be {@code null}
+     */
+    public Party getLocation() {
+        return location;
+    }
+
+    /**
+     * Returns the stock location.
+     *
+     * @return the stock location. May be {@code null}
+     */
+    public Party getStockLocation() {
+        return location != null ? locationRules.getDefaultStockLocation(location) : null;
+    }
+
+    /**
+     * Returns the stock location associated with a product.
+     *
+     * @param product the product
+     * @return the stock location. May be {@code null}
+     */
+    public Party getStockLocation(Product product) {
+        return (location != null) ? stockRules.getStockLocation(product, location) : null;
+    }
+
+    /**
      * Returns a caching read-only archetype service, used to improve performance accessing common reference data.
      *
      * @return a caching archetype service
@@ -187,12 +243,54 @@ public class PriceActEditContext {
     }
 
     /**
+     * Returns the stock rules.
+     *
+     * @return the stock rules
+     */
+    public StockRules getStockRules() {
+        return stockRules;
+    }
+
+    /**
+     * Determines if discounts are disabled at the practice location.
+     *
+     * @return {@code true} if discounts are disabled at the practice location
+     */
+    public boolean disableDiscounts() {
+        return disableDiscounts;
+    }
+
+    /**
+     * Determines if products must be present at the location in order to select them.
+     *
+     * @return {@code true} if if products must be present at the location in order to select them
+     */
+    public boolean useLocationProducts() {
+        return useLocationProducts;
+    }
+
+    /**
      * Determines if minimum quantity restrictions are in place.
      *
      * @return {@code true} if minimum quantity restrictions are in place
      */
     public boolean useMinimumQuantities() {
         return useMinimumQuantities;
+    }
+
+    /**
+     * Determines if discounts are disabled at a  practice location.
+     *
+     * @param location the location. May be {@code null}
+     * @return {@code true} if discounts are disabled
+     */
+    private boolean getDisableDiscounts(Party location) {
+        boolean result = false;
+        if (location != null) {
+            IMObjectBean bean = new IMObjectBean(location);
+            result = bean.getBoolean("disableDiscounts");
+        }
+        return result;
     }
 
 }

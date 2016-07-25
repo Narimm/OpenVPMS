@@ -79,6 +79,10 @@
         <node name="suppliers" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="*"
               filter="entityLink.productSupplier"/>
+        <node name="locations" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="0" filter="entityLink.productLocation" hidden="true">
+            <!-- dummy node for querying purposes -->
+        </node>
         <node name="stockLocations" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="*"
               filter="entityLink.productStockLocation">

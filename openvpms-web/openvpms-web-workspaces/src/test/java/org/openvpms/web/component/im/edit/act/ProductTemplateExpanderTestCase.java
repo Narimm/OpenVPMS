@@ -20,7 +20,10 @@ import org.apache.commons.lang.ObjectUtils;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
 import org.openvpms.web.test.AbstractAppTest;
@@ -31,7 +34,9 @@ import java.util.Collection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.openvpms.archetype.rules.product.ProductTestHelper.addInclude;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.addLocationExclusion;
 import static org.openvpms.archetype.rules.product.ProductTestHelper.createTemplate;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.setStockQuantity;
 
 /**
  * Tests the {@link ProductTemplateExpander}.
@@ -164,6 +169,76 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
     }
 
     /**
+     * Tests the behaviour of filtering products by location in conjunction with the
+     * {@link ProductArchetypes#ALWAYS_INCLUDE}, {@link ProductArchetypes#FAIL_IF_MISSING} and
+     * {@link ProductArchetypes#SKIP_IF_MISSING} location options.
+     */
+    @Test
+    public void testLocations() {
+        Party locationA = TestHelper.createLocation();
+        Party stockLocationA = ProductTestHelper.createStockLocation();
+        Party locationB = TestHelper.createLocation();
+        Party stockLocationB = ProductTestHelper.createStockLocation();
+
+        // create 2 products not linked to either a stock location or location
+        Product product1 = ProductTestHelper.createMedication();
+        Product product2 = ProductTestHelper.createService();
+
+        // create a template with 2 products with location set to ALWAYS_LOCATION, and verify the both products
+        // are in the expansion
+        Product templateA = createTemplate("templateA");
+        addInclude(templateA, product1, 1, ProductArchetypes.ALWAYS_INCLUDE);
+        addInclude(templateA, product2, 1, ProductArchetypes.ALWAYS_INCLUDE);
+
+        Collection<TemplateProduct> includes1 = expand(templateA, Weight.ZERO, BigDecimal.ONE, locationA,
+                                                       stockLocationA);
+        assertEquals(2, includes1.size());
+        checkInclude(includes1, product1, 1, 1, false);
+        checkInclude(includes1, product2, 1, 1, false);
+
+        // create a template with 2 products with location set to FAIL_IF_MISSING
+        Product product3 = ProductTestHelper.createMerchandise();
+        Product product4 = ProductTestHelper.createService();
+        setStockQuantity(product3, stockLocationB, BigDecimal.ONE);
+        addLocationExclusion(product4, locationA);
+
+        Product templateB = createTemplate("templateB");
+        addInclude(templateB, product3, 1, ProductArchetypes.FAIL_IF_MISSING);
+        addInclude(templateB, product4, 1, ProductArchetypes.FAIL_IF_MISSING);
+
+        // perform expansion for locationA and stockLocationA. It should fail as product3 is only available at
+        // stockLocationB, and product4 is not available at locationA
+        Collection<TemplateProduct> includes2 = expand(templateB, Weight.ZERO, BigDecimal.ONE, locationA,
+                                                       stockLocationA);
+        assertEquals(0, includes2.size());
+
+        // now perform expansion for locationB and stockLocationB. Expansion should succeed
+        Collection<TemplateProduct> includes3 = expand(templateB, Weight.ZERO, BigDecimal.ONE, locationB,
+                                                       stockLocationB);
+        checkInclude(includes3, product3, 1, 1, false);
+        checkInclude(includes3, product4, 1, 1, false);
+
+        // create a template with 3 products, 2 with location set to SKIP_IF_MISSING.
+        Product templateC = createTemplate("templateC");
+        addInclude(templateC, product2, 1, ProductArchetypes.ALWAYS_INCLUDE);
+        addInclude(templateC, product3, 1, ProductArchetypes.SKIP_IF_MISSING);
+        addInclude(templateC, product4, 1, ProductArchetypes.SKIP_IF_MISSING);
+
+        // perform expansion against locationA, stockLocationA. Only product2 should be included
+        Collection<TemplateProduct> includes4 = expand(templateC, Weight.ZERO, BigDecimal.ONE, locationA,
+                                                       stockLocationA);
+        assertEquals(1, includes4.size());
+        checkInclude(includes4, product2, 1, 1, false);
+
+        // perform expansion against location\B, stockLocationB. All 3 products should be included
+        Collection<TemplateProduct> includes5 = expand(templateC, Weight.ZERO, BigDecimal.ONE, locationB,
+                                                       stockLocationB);
+        checkInclude(includes5, product2, 1, 1, false);
+        checkInclude(includes5, product3, 1, 1, false);
+        checkInclude(includes5, product4, 1, 1, false);
+    }
+
+    /**
      * Expands a template.
      *
      * @param template the template to expand
@@ -173,6 +248,22 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
      */
     private Collection<TemplateProduct> expand(Product template, Weight weight, BigDecimal quantity) {
         ProductTemplateExpander expander = new ProductTemplateExpander();
+        return expander.expand(template, weight, quantity, new SoftRefIMObjectCache(getArchetypeService()));
+    }
+
+    /**
+     * Expands a template, restricting products to those available at a location/stock location.
+     *
+     * @param template      the template to expand
+     * @param weight        the patient weight
+     * @param quantity      the quantity
+     * @param location      the practice location
+     * @param stockLocation the stock location
+     * @return the expanded template
+     */
+    private Collection<TemplateProduct> expand(Product template, Weight weight, BigDecimal quantity, Party location,
+                                               Party stockLocation) {
+        ProductTemplateExpander expander = new ProductTemplateExpander(true, location, stockLocation);
         return expander.expand(template, weight, quantity, new SoftRefIMObjectCache(getArchetypeService()));
     }
 
@@ -195,6 +286,5 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         }
         fail("TemplateProduct not found");
     }
-
 
 }

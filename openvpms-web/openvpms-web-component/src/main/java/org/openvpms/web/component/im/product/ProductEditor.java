@@ -98,6 +98,11 @@ public class ProductEditor extends AbstractIMObjectEditor {
     private static final String STOCK_LOCATIONS = "stockLocations";
 
     /**
+     * Locations nodes.
+     */
+    private static final String LOCATIONS = "locations";
+
+    /**
      * Suppliers node.
      */
     private static final String SUPPLIERS = "suppliers";
@@ -118,6 +123,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
         super(object, parent, layoutContext);
         CollectionProperty suppliers = getCollectionProperty(SUPPLIERS);
         CollectionProperty stock = getCollectionProperty(STOCK_LOCATIONS);
+        CollectionProperty locations = getCollectionProperty(LOCATIONS);
         if (suppliers != null && stock != null) {
             RelationshipCollectionEditor stockLocations
                     = new MultipleEntityLinkCollectionEditor(stock, object, getLayoutContext()) {
@@ -131,6 +137,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
                 }
             };
             getEditors().add(stockLocations);
+        }
+        if (locations != null) {
+            getEditors().add(new ProductLocationCollectionEditor(locations, object, getLayoutContext()));
         }
         updater = new ProductPriceUpdater(ServiceHelper.getBean(ProductPriceRules.class),
                                           ServiceHelper.getBean(PracticeRules.class),
@@ -201,6 +210,10 @@ public class ProductEditor extends AbstractIMObjectEditor {
         RelationshipCollectionEditor stockLocations = (RelationshipCollectionEditor) getEditor(STOCK_LOCATIONS, false);
         if (stockLocations != null) {
             strategy.addComponent(new ComponentState(stockLocations));
+        }
+        ProductLocationCollectionEditor locations = (ProductLocationCollectionEditor) getEditor(LOCATIONS, false);
+        if (locations != null) {
+            strategy.addComponent(new ComponentState(locations));
         }
         return strategy;
     }

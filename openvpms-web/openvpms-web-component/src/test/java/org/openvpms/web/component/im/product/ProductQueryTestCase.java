@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.product;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.test.TestHelper;
@@ -26,6 +28,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.AbstractEntityQueryTest;
+import org.openvpms.web.component.im.query.QueryTestHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -37,6 +40,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
+
+    /**
+     * The stock rules.
+     */
+    private StockRules rules;
 
     /**
      * Product archetype short names.
@@ -54,6 +62,16 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
      * Feline species lookup code.
      */
     private static final String FELINE = "FELINE";
+
+    /**
+     * Sets up the test case.
+     */
+    @Override
+    @Before
+    public void setUp() {
+        super.setUp();
+        rules = new StockRules(getArchetypeService());
+    }
 
     /**
      * Tests constraining the query on stock location.
@@ -85,7 +103,7 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
         checkExists(product2, query, matches, true);
         checkExists(product3, query, matches, true);
 
-        // now constraint to stockLocation1. Note that product3 is returned as it has not stock location relationship
+        // now constraint to stockLocation1. Note that product3 is returned as it has no stock location relationship
         query.setStockLocation(stockLocation1);
         matches = getObjectRefs(query);
         checkExists(product1, query, matches, true);
@@ -141,7 +159,6 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
      */
     @Test
     public void testQueryBySpeciesAndStockLocation() {
-        StockRules rules = new StockRules(getArchetypeService());
         Party stockLocation1 = createStockLocation();
         Party stockLocation2 = createStockLocation();
 
@@ -233,6 +250,58 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
         checkExists(product1, query, matches, true);
         checkExists(product2, query, matches, true);
         checkExists(product3, query, matches, true);
+    }
+
+    /**
+     * Tests exclusion of products via {@link ProductQuery#setUseLocationProducts(boolean)}.
+     */
+    @Test
+    public void testUseLocationProducts() {
+        Party stockLocation = createStockLocation();
+        Party location = TestHelper.createLocation();
+
+        Product medication1 = ProductTestHelper.createMedication();
+        Product medication2 = ProductTestHelper.createMedication();
+        Product merchandise1 = ProductTestHelper.createMerchandise();
+        Product merchandise2 = ProductTestHelper.createMerchandise();
+        Product service1 = ProductTestHelper.createService();
+        Product service2 = ProductTestHelper.createService();
+        Product template1 = ProductTestHelper.createTemplate();
+        Product template2 = ProductTestHelper.createTemplate();
+        Product priceTemplate1 = ProductTestHelper.createPriceTemplate();
+
+        rules.updateStock(medication1, stockLocation, BigDecimal.ONE);
+        rules.updateStock(merchandise1, stockLocation, BigDecimal.ONE);
+        ProductTestHelper.addLocationExclusion(service1, location);
+        ProductTestHelper.addLocationExclusion(template1, location);
+
+        ProductQuery query = createQuery();
+
+        // test default behaviour
+        QueryTestHelper.checkExists(query, medication1, medication2, merchandise1, merchandise2, service1, service2,
+                                    template1, template2, priceTemplate1);
+
+        // verify location has no effect until useLocationProducts = true
+        query.setLocation(location);
+        QueryTestHelper.checkExists(query, medication1, medication2, merchandise1, merchandise2, service1, service2,
+                                    template1, template2, priceTemplate1);
+
+        // verify useLocationProducts = true has no effect until the location or stockLocation is set
+        query.setLocation(null);
+        query.setUseLocationProducts(true);
+        QueryTestHelper.checkExists(query, medication1, medication2, merchandise1, merchandise2, service1, service2,
+                                    template1, template2, priceTemplate1);
+
+        // set the location. Products with the location are *excluded*
+        query.setLocation(location);
+        QueryTestHelper.checkExists(query, medication1, medication2, merchandise1, merchandise2, service2,
+                                    template2, priceTemplate1);
+        QueryTestHelper.checkNotExists(query, service1, template1);
+
+        // set the stock location. Products with the stock location are *included*
+        query.setStockLocation(stockLocation);
+        QueryTestHelper.checkExists(query, medication1, merchandise1, service2, template2, priceTemplate1);
+        QueryTestHelper.checkNotExists(query, medication2, merchandise2, service1, template1);
     }
 
     /**

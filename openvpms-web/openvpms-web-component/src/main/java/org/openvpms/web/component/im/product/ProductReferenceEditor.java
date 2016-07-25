@@ -60,7 +60,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
+public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
 
     /**
      * The parent editor.
@@ -168,9 +168,9 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
                 }
             }
             Party location = editor.getStockLocation();
-            if (location != null) {
-                productQuery.setStockLocation(location);
-            }
+            productQuery.setUseLocationProducts(editor.useLocationProducts());
+            productQuery.setLocation(editor.getLocation());
+            productQuery.setStockLocation(location);
             productQuery.setExcludeTemplateOnlyProducts(editor.getExcludeTemplateOnlyProducts());
         }
         return query;

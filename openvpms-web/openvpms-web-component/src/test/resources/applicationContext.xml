@@ -212,6 +212,10 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean class="org.openvpms.archetype.rules.practice.LocationRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
         <constructor-arg ref="archetypeService"/>
     </bean>

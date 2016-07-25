@@ -594,8 +594,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient();
         Entity productType1 = ProductTestHelper.createProductType("Z Vaccination 1");
         Entity productType2 = ProductTestHelper.createProductType("Z Vaccination 2");
-        Product product1 = ProductTestHelper.createProduct(productType1);
-        Product product2 = ProductTestHelper.createProduct(productType2);
+        Product product1 = ProductTestHelper.createMedication(productType1);
+        Product product2 = ProductTestHelper.createMedication(productType2);
         Product product3 = TestHelper.createProduct();
         Entity reminderType = ReminderTestHelper.createReminderType();
         Act reminder1 = createReminder(patient, reminderType, product1, "2016-04-13 11:59:59", IN_PROGRESS);

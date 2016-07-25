@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,11 +33,27 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Pricing group helper methods.
+ * Product helper methods.
  *
  * @author Tim Anderson
  */
-public class PricingGroupHelper {
+public class ProductHelper {
+
+    /**
+     * Determines if a products are being filtered by practice location.
+     *
+     * @param context the context
+     * @return {@code true} if products are being filtered by practice location
+     */
+    public static boolean useLocationProducts(Context context) {
+        boolean useLocationProducts = false;
+        Party practice = context.getPractice();
+        if (practice != null) {
+            PracticeRules rules = ServiceHelper.getBean(PracticeRules.class);
+            useLocationProducts = rules.useLocationProducts(practice);
+        }
+        return useLocationProducts;
+    }
 
     /**
      * Returns the pricing group for the context practice location.

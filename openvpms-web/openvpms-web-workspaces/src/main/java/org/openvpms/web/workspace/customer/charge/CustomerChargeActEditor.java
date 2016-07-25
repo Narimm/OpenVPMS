@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -40,6 +41,7 @@ import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -116,13 +118,11 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      * @param context        the layout context
      * @param addDefaultItem if {@code true} add a default item if the act has none
      */
-    public CustomerChargeActEditor(FinancialAct act, IMObject parent,
-                                   LayoutContext context, boolean addDefaultItem) {
+    public CustomerChargeActEditor(FinancialAct act, IMObject parent, LayoutContext context, boolean addDefaultItem) {
         super(act, parent, context);
+        Party location = initLocation();
         Party customer = context.getContext().getCustomer();
-        Party location = context.getContext().getLocation();
         initParticipant("customer", customer);
-        initParticipant("location", location);
         this.addDefaultItem = addDefaultItem;
         initialise();
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
@@ -331,6 +331,33 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      */
     public CustomerChargeDocuments getUnprintedDocuments() {
         return unprintedDocuments;
+    }
+
+    /**
+     * Initialises the practice location.
+     * <p/>
+     * This populates the charge with the location if it is unset, as the location determines pricing.
+     * <p/>
+     * The context is updated with the charge's location and the stock location as this determines which products
+     * are available.
+     *
+     * @return the practice location for the charge
+     */
+    protected Party initLocation() {
+        Context context = getLayoutContext().getContext();
+        Party location = getLocation();
+        if (location == null) {
+            location = context.getLocation();
+            initParticipant("location", location);
+        }
+        context.setLocation(location);
+        Party stockLocation = null;
+        if (location != null) {
+            LocationRules rules = ServiceHelper.getBean(LocationRules.class);
+            stockLocation = rules.getDefaultStockLocation(location);
+        }
+        context.setStockLocation(stockLocation);
+        return location;
     }
 
     /**
@@ -642,4 +669,5 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             }
         }
     }
+
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -51,9 +51,19 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     private String species;
 
     /**
-     * The stock location to constrain the query to. May be {@code null}.
+     * Determines if products should be restricted to those available at the location or stock location.
+     */
+    private boolean useLocationProducts;
+
+    /**
+     * The location to constrain the query to. May be {@code null}.
      */
     private Party location;
+
+    /**
+     * The stock location to constrain the query to. May be {@code null}.
+     */
+    private Party stockLocation;
 
     /**
      * The pricing group.
@@ -65,7 +75,6 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      */
     private boolean excludeTemplateOnlyProducts;
 
-
     /**
      * Constructs a {@link ProductQuery} that queries products with the specified short names.
      *
@@ -76,13 +85,7 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     public ProductQuery(String[] shortNames, Context context) {
         super(shortNames, Product.class);
 
-        Party location = context.getLocation();
-        if (location != null) {
-            LocationRules rules = ServiceHelper.getBean(LocationRules.class);
-            pricingGroup = new PricingGroup(rules.getPricingGroup(location));
-        } else {
-            pricingGroup = new PricingGroup(null);
-        }
+        setLocation(context.getLocation());
     }
 
     /**
@@ -104,12 +107,27 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
+     * Sets the practice location to constraint the query to.
+     *
+     * @param location the practice location
+     */
+    public void setLocation(Party location) {
+        this.location = location;
+        if (location != null) {
+            LocationRules rules = ServiceHelper.getBean(LocationRules.class);
+            pricingGroup = new PricingGroup(rules.getPricingGroup(location));
+        } else {
+            pricingGroup = new PricingGroup(null);
+        }
+    }
+
+    /**
      * Sets the stock location to constrain the query to.
      *
      * @param location the stock location
      */
     public void setStockLocation(Party location) {
-        this.location = location;
+        this.stockLocation = location;
     }
 
     /**
@@ -118,7 +136,7 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      * @return the stock location. May be {@code null}
      */
     public Party getStockLocation() {
-        return location;
+        return stockLocation;
     }
 
     /**
@@ -137,6 +155,24 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      */
     public void setExcludeTemplateOnlyProducts(boolean exclude) {
         this.excludeTemplateOnlyProducts = exclude;
+    }
+
+    /**
+     * Determines if products must be present at the location or stock location to be returned.
+     *
+     * @param useLocationProducts if {@code true}, products must be present at the location/stock location
+     */
+    public void setUseLocationProducts(boolean useLocationProducts) {
+        this.useLocationProducts = useLocationProducts;
+    }
+
+    /**
+     * Determines if products must be present at the location or stock location to be returned.
+     *
+     * @return {@code true} if products must be present at the location/stock location
+     */
+    public boolean useLocationProducts() {
+        return useLocationProducts;
     }
 
     /**
@@ -240,9 +276,9 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      * @param sort the sort criteria. May be {@code null}
      * @return a new {@link ProductResultSet}
      */
-    private ProductResultSet getResultSet(SortConstraint[] sort) {
-        return new ProductResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), species, location,
-                                    sort, getMaxResults());
+    protected ProductResultSet getResultSet(SortConstraint[] sort) {
+        return new ProductResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), species,
+                                    useLocationProducts, location, stockLocation, sort, getMaxResults());
     }
 
 }
