@@ -605,7 +605,14 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
                     context.setPatient(selected.getPatient());
                     Party party = browser.getSelectedParty();
                     if (party != null) {
-                        changeContext(party);
+                        // use the current workspace, if it supports the selected party, otherwise switch to
+                        // an appropriate one
+                        if (currentWorkspace != null && currentWorkspace.canUpdate(
+                                party.getArchetypeId().getShortName())) {
+                            currentWorkspace.update(party);
+                        } else {
+                            changeContext(party);
+                        }
                     }
                 }
             }
