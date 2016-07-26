@@ -249,7 +249,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 		<groupExpression><![CDATA[$V{prodTypeOrder}]]></groupExpression>
 		<groupFooter>
 			<band height="10">
-				<printWhenExpression><![CDATA[(!$F{target.product.entity.type.target.detailInvoice})&&(!$V{showTemplate})]]></printWhenExpression>
+				<printWhenExpression><![CDATA[(!$F{target.product.entity.type.target.detailInvoice})&&($V{prodTypeTotal}.compareTo(BigDecimal.ZERO)!=0)&&(!$V{showTemplate})]]></printWhenExpression>
 				<textField pattern="" isBlankWhenNull="false">
 					<reportElement key="textField-7" isPrintRepeatedValues="false" x="9" y="0" width="38" height="9" uuid="c8061ac8-d44f-41d3-8f82-ba4078e3d4fc"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
