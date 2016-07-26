@@ -81,7 +81,7 @@ public class EmailDocumentTemplateLayoutStrategy extends AbstractDocumentTemplat
     }
 
     /**
-     * Adds a text area for a node, restricting its height to 2 EM.
+     * Adds a text area for a node, restricting its width to 50 EX and height to 2 EM.
      *
      * @param name       the node name
      * @param properties the properties
@@ -93,6 +93,7 @@ public class EmailDocumentTemplateLayoutStrategy extends AbstractDocumentTemplat
         ComponentState state = context.getComponentFactory().create(property, object);
         if (state.getComponent() instanceof TextArea) {
             TextArea component = (TextArea) state.getComponent();
+            component.setWidth(new Extent(50, Extent.EX));
             component.setHeight(new Extent(2, Extent.EM));
         }
         addComponent(state);

@@ -129,14 +129,14 @@ public class DocumentTestHelper {
     }
 
     /**
-     * Creates a text <em>entity.documentTemplateEmail</em>.
+     * Creates a text <em>entity.documentTemplateEmailSystem</em>.
      *
      * @param subject the email subject
      * @param message the email message
      * @return a new template
      */
     public static Entity createEmailTemplate(String subject, String message) {
-        Entity entity = (Entity) TestHelper.create(DocumentArchetypes.EMAIL_TEMPLATE);
+        Entity entity = (Entity) TestHelper.create(DocumentArchetypes.SYSTEM_EMAIL_TEMPLATE);
         IMObjectBean template = new IMObjectBean(entity);
         template.setValue("name", subject);
         template.setValue("subject", subject);

@@ -60,7 +60,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
-import static org.openvpms.archetype.rules.doc.DocumentArchetypes.EMAIL_TEMPLATE;
+import static org.openvpms.archetype.rules.doc.DocumentArchetypes.USER_EMAIL_TEMPLATE;
 
 
 /**
@@ -361,9 +361,9 @@ public class MailDialog extends PopupDialog {
      * Displays a popup of available email templates to select from.
      */
     private void onTemplate() {
-        Query<Entity> query = QueryFactory.create(EMAIL_TEMPLATE, context.getContext());
+        Query<Entity> query = QueryFactory.create(USER_EMAIL_TEMPLATE, context.getContext());
         Browser<Entity> browser = BrowserFactory.create(query, context);
-        String title = Messages.format("imobject.select.title", DescriptorHelper.getDisplayName(EMAIL_TEMPLATE));
+        String title = Messages.format("imobject.select.title", DescriptorHelper.getDisplayName(USER_EMAIL_TEMPLATE));
         final BrowserDialog<Entity> dialog = new BrowserDialog<>(title, browser, getHelpContext().subtopic("template"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override

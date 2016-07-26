@@ -27,7 +27,10 @@
                         <property name="shortName" value="entity.documentTemplate"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName" value="entity.documentTemplateEmail"/>
+                        <property name="shortName" value="entity.documentTemplateEmailUser"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.documentTemplateEmailSystem"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
