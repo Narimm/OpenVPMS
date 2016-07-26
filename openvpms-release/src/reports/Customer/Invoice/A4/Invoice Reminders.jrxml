@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-13T12:02:59 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-07-26T01:54:16 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Reminders" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" uuid="73d919ae-324c-40b9-9464-15331ebe71c4">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -34,9 +34,12 @@
 	<field name="[date:format(openvpms:get(.,&quot;endTime&quot;),&quot;yyyyMMdd&quot;)]" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="product.entity.type.target.name" class="java.lang.String"/>
+	<field name="product.entity.type.target.name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<sortField name="[date:format(openvpms:get(.,&quot;endTime&quot;),&quot;yyyyMMdd&quot;)]"/>
 	<sortField name="typeSort" order="Descending" type="Variable"/>
+	<sortField name="reminderType.entity.name"/>
 	<sortField name="patient.entity.name" order="Descending"/>
 	<variable name="NotShown" class="java.lang.Integer">
 		<variableExpression><![CDATA[$V{REPORT_COUNT}-$P{MaxLines}]]></variableExpression>
@@ -50,6 +53,10 @@
 	</variable>
 	<variable name="CountLines" class="java.lang.Integer" incrementType="Group" incrementGroup="prodType-group" calculation="Count">
 		<variableExpression><![CDATA[$V{typeSort}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="CountTypes" class="java.lang.Integer" resetType="Group" resetGroup="prodType-group" calculation="DistinctCount">
+		<variableExpression><![CDATA[$F{reminderType.entity.name}]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
 	<group name="date-group">
@@ -69,7 +76,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{endTime})]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="prodType-group">
+				<textField evaluationTime="Band">
 					<reportElement x="220" y="0" width="120" height="13" isPrintWhenDetailOverflows="true" uuid="da7cefb1-b245-4523-83b5-070d71e57f18">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -89,10 +96,18 @@
 					<textElement>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{typeSort}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{product.entity.type.target.name}==null?$F{reminderType.entity.name}:
+	($V{CountTypes}>1?($F{product.entity.type.target.name}+" [various]"):
+		($F{reminderType.entity.name}.equals( $F{product.entity.type.target.name})?
+			$F{reminderType.entity.name} :
+			  		($F{product.entity.type.target.name})+" ["+$F{reminderType.entity.name}+"]")))
+]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
+	</group>
+	<group name="reminderType-group">
+		<groupExpression><![CDATA[$F{reminderType.entity.name}]]></groupExpression>
 	</group>
 	<group name="patient-group">
 		<groupExpression><![CDATA[$F{patient.entity.name}]]></groupExpression>
@@ -194,7 +209,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{reminderType.entity.name}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="date-group">
+			<textField isStretchWithOverflow="true">
 				<reportElement x="170" y="0" width="130" height="11" uuid="5c9240bd-f7d3-4a2e-948e-b3afd6cd1485">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>

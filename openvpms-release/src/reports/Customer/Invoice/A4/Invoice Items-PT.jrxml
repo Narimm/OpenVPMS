@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-21T05:41:45 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-07-26T03:37:40 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Items-VP" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" resourceBundle="localisation.reports" uuid="686e7611-94db-45b0-b0e3-4aa94b5c752b">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -251,7 +251,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 		<groupExpression><![CDATA[$V{prodTypeOrder}]]></groupExpression>
 		<groupFooter>
 			<band height="13">
-				<printWhenExpression><![CDATA[(!$F{target.product.entity.type.target.detailInvoice})&&(!$V{showTemplate})]]></printWhenExpression>
+				<printWhenExpression><![CDATA[(!$F{target.product.entity.type.target.detailInvoice})&&($V{prodTypeTotal}.compareTo(BigDecimal.ZERO)!=0)&&(!$V{showTemplate})]]></printWhenExpression>
 				<textField pattern="" isBlankWhenNull="false">
 					<reportElement key="textField-7" isPrintRepeatedValues="false" x="13" y="0" width="54" height="13" uuid="c8061ac8-d44f-41d3-8f82-ba4078e3d4fc"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">

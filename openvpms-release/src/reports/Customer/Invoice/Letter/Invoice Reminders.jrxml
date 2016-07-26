@@ -32,9 +32,12 @@
 	<field name="[date:format(openvpms:get(.,&quot;endTime&quot;),&quot;yyyyMMdd&quot;)]" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="product.entity.type.target.name" class="java.lang.String"/>
+	<field name="product.entity.type.target.name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<sortField name="[date:format(openvpms:get(.,&quot;endTime&quot;),&quot;yyyyMMdd&quot;)]"/>
 	<sortField name="typeSort" order="Descending" type="Variable"/>
+	<sortField name="reminderType.entity.name"/>
 	<sortField name="patient.entity.name" order="Descending"/>
 	<variable name="NotShown" class="java.lang.Integer">
 		<variableExpression><![CDATA[$V{REPORT_COUNT}-$P{MaxLines}]]></variableExpression>
@@ -48,6 +51,10 @@
 	</variable>
 	<variable name="CountLines" class="java.lang.Integer" incrementType="Group" incrementGroup="prodType-group" calculation="Count">
 		<variableExpression><![CDATA[$V{typeSort}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="CountTypes" class="java.lang.Integer" resetType="Group" resetGroup="prodType-group" calculation="DistinctCount">
+		<variableExpression><![CDATA[$F{reminderType.entity.name}]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
 	<group name="date-group">
@@ -67,7 +74,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{endTime})]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="prodType-group">
+				<textField evaluationTime="Band">
 					<reportElement x="226" y="0" width="124" height="12" isPrintWhenDetailOverflows="true" uuid="da7cefb1-b245-4523-83b5-070d71e57f18">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -87,10 +94,17 @@
 					<textElement>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{typeSort}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{product.entity.type.target.name}==null?$F{reminderType.entity.name}:
+	($V{CountTypes}>1?($F{product.entity.type.target.name}+" [various]"):
+		($F{reminderType.entity.name}.equals( $F{product.entity.type.target.name})?
+			$F{reminderType.entity.name} :
+			  		($F{product.entity.type.target.name})+" ["+$F{reminderType.entity.name}+"]")))]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
+	</group>
+	<group name="reminderType-group">
+		<groupExpression><![CDATA[$F{reminderType.entity.name}]]></groupExpression>
 	</group>
 	<group name="patient-group">
 		<groupExpression><![CDATA[$F{patient.entity.name}]]></groupExpression>
@@ -192,7 +206,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{reminderType.entity.name}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="date-group">
+			<textField isStretchWithOverflow="true">
 				<reportElement x="175" y="0" width="134" height="10" uuid="5c9240bd-f7d3-4a2e-948e-b3afd6cd1485">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
