@@ -190,7 +190,7 @@ public class EmailTemplateEvaluatorTestCase extends AbstractAppTest {
      * @return a new template
      */
     private Entity createTemplate(String type, String subject, String content) {
-        Entity template = (Entity) create(DocumentArchetypes.EMAIL_TEMPLATE);
+        Entity template = (Entity) create(DocumentArchetypes.SYSTEM_EMAIL_TEMPLATE);
         IMObjectBean bean = new IMObjectBean(template);
         bean.setValue("subject", subject);
         bean.setValue("subjectType", type);

@@ -29,7 +29,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 
 /**
- * Editor for <em>entity.documentTemplateEmail</em> entities.
+ * Editor for <em>entity.documentTemplateEmail*</em> entities.
  *
  * @author Tim Anderson
  */

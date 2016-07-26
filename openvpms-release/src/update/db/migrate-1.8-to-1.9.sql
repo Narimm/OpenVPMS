@@ -1793,3 +1793,17 @@ INSERT INTO entity_link_details (id, type, value, name)
                        FROM entity_link_details d
                        WHERE d.id = l.id
                              AND d.name = 'location');
+
+#
+# OVPMS-1759 Separate mail templates from pre-fill templates
+#
+UPDATE entities e
+SET e.arch_short_name = 'entity.documentTemplateEmailSystem'
+WHERE e.arch_short_name = 'entity.documentTemplateEmail'
+      AND exists(SELECT *
+                 FROM entity_links l
+                 WHERE l.target_id = e.entity_id AND l.arch_short_name = 'entityLink.documentTemplateEmail');
+
+UPDATE entities e
+SET e.arch_short_name = 'entity.documentTemplateEmailUser'
+WHERE e.arch_short_name = 'entity.documentTemplateEmail';
