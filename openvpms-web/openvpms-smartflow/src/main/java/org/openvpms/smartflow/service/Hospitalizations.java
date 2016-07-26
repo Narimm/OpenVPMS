@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.smartflow.service;
 
 import org.openvpms.smartflow.model.Hospitalization;
@@ -55,6 +71,7 @@ public interface Hospitalizations {
      * Returns the medical records report PDF for a hospitalization.
      *
      * @param hospitalizationId the hospitalization identifier
+     * @return the medical records report PDF
      */
     @GET
     @Path("/{hospitalizationId}/medicalrecordsreport")
@@ -62,29 +79,32 @@ public interface Hospitalizations {
     Response getMedicalRecordsReport(@PathParam("hospitalizationId") String hospitalizationId);
 
     /**
-     * Returns the inventory report PDF for a hospitalization.
+     * Returns the billing report PDF for a hospitalization.
      *
      * @param hospitalizationId the hospitalization identifier
+     * @return the billing report PDF
      */
     @GET
-    @Path("/{hospitalizationId}/inventoryreport")
+    @Path("/{hospitalizationId}/billingreport")
     @Produces({"application/pdf"})
-    Response getInventoryReport(@PathParam("hospitalizationId") String hospitalizationId);
+    Response getBillingReport(@PathParam("hospitalizationId") String hospitalizationId);
 
     /**
-     * Returns the tech notes report PDF for a hospitalization.
+     * Returns the notes report PDF for a hospitalization.
      *
      * @param hospitalizationId the hospitalization identifier
+     * @return the notes report PDF
      */
     @GET
-    @Path("/{hospitalizationId}/technotesreport")
+    @Path("/{hospitalizationId}/notesreport")
     @Produces({"application/pdf"})
-    Response getTechNotesReport(@PathParam("hospitalizationId") String hospitalizationId);
+    Response getNotesReport(@PathParam("hospitalizationId") String hospitalizationId);
 
     /**
      * Returns the flow sheet report PDF for a hospitalization.
      *
      * @param hospitalizationId the hospitalization identifier
+     * @return the flow sheet report PDF
      */
     @GET
     @Path("/{hospitalizationId}/flowsheetreport")

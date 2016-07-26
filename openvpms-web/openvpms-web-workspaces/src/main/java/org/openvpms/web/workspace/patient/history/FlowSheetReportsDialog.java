@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -52,14 +52,14 @@ public class FlowSheetReportsDialog extends PopupDialog {
     private final CheckBox medicalRecords;
 
     /**
-     * Determines if the inventory report is imported.
+     * Determines if the billing report is imported.
      */
-    private final CheckBox inventory;
+    private final CheckBox billing;
 
     /**
-     * Determines if the tech notes report is imported.
+     * Determines if the notes report is imported.
      */
-    private final CheckBox techNotes;
+    private final CheckBox notes;
 
     /**
      * Determines if the flow sheet report is imported.
@@ -72,14 +72,14 @@ public class FlowSheetReportsDialog extends PopupDialog {
     private static final String MEDICAL = "patient.record.flowsheet.import.medical";
 
     /**
-     * Inventory report label.
+     * Billing report label.
      */
-    private static final String INVENTORY = "patient.record.flowsheet.import.inventory";
+    private static final String BILLING = "patient.record.flowsheet.import.billing";
 
     /**
-     * Tech notes report label.
+     * Notes report label.
      */
-    private static final String TECH_NOTES = "patient.record.flowsheet.import.technotes";
+    private static final String NOTES = "patient.record.flowsheet.import.notes";
 
     /**
      * Flow sheet report label.
@@ -107,14 +107,14 @@ public class FlowSheetReportsDialog extends PopupDialog {
         ActionListener listener = new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                boolean enable = medicalRecords.isSelected() || inventory.isSelected() || techNotes.isSelected()
+                boolean enable = medicalRecords.isSelected() || billing.isSelected() || notes.isSelected()
                                  || flowSheet.isSelected();
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
         medicalRecords = CheckBoxFactory.create(MEDICAL, true, listener);
-        inventory = CheckBoxFactory.create(INVENTORY, true, listener);
-        techNotes = CheckBoxFactory.create(TECH_NOTES, true, listener);
+        billing = CheckBoxFactory.create(BILLING, true, listener);
+        notes = CheckBoxFactory.create(NOTES, true, listener);
         flowSheet = CheckBoxFactory.create(FLOW_SHEET, true, listener);
     }
 
@@ -129,11 +129,11 @@ public class FlowSheetReportsDialog extends PopupDialog {
         if (medicalRecords.isSelected()) {
             service.saveMedicalRecords(getName(MEDICAL), context);
         }
-        if (inventory.isSelected()) {
-            service.saveInventoryReport(getName(INVENTORY), context);
+        if (billing.isSelected()) {
+            service.saveBillingReport(getName(BILLING), context);
         }
-        if (techNotes.isSelected()) {
-            service.saveTechNotesReport(getName(TECH_NOTES), context);
+        if (notes.isSelected()) {
+            service.saveNotesReport(getName(NOTES), context);
         }
         if (flowSheet.isSelected()) {
             service.saveFlowSheetReport(getName(FLOW_SHEET), context);
@@ -149,7 +149,7 @@ public class FlowSheetReportsDialog extends PopupDialog {
     @Override
     protected void doLayout() {
         Label label = LabelFactory.create("patient.record.flowsheet.import.message", Styles.BOLD);
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, inventory, techNotes,
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, billing, notes,
                                              flowSheet);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
     }

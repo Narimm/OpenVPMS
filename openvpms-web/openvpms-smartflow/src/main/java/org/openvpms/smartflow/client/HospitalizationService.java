@@ -220,31 +220,31 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
-     * Saves a inventory report associated with a patient visit, to the patient visit.
+     * Saves a billing report associated with a patient visit, to the patient visit.
      *
      * @param name    the name to use for the file, excluding the extension
      * @param context the patient context
      */
-    public void saveInventoryReport(String name, PatientContext context) {
+    public void saveBillingReport(String name, PatientContext context) {
         saveReport(name, context, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
-                return service.getInventoryReport(id);
+                return service.getBillingReport(id);
             }
         });
     }
 
     /**
-     * Saves a tech notes report associated with a patient visit, to the patient visit.
+     * Saves a notes report associated with a patient visit, to the patient visit.
      *
      * @param name    the name to use for the file, excluding the extension
      * @param context the patient context
      */
-    public void saveTechNotesReport(String name, PatientContext context) {
+    public void saveNotesReport(String name, PatientContext context) {
         saveReport(name, context, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
-                return service.getTechNotesReport(id);
+                return service.getNotesReport(id);
             }
         });
     }
