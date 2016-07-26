@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="entityRelationship.worklistDocumentTemplate.1.0"
                latest="true"
@@ -22,7 +23,6 @@
               hidden="true" minCardinality="0"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" minCardinality="0"/>
-        <node name="sequence" type="java.lang.Integer" path="/sequence" hidden="true" minCardinality="0"/>
         <node name="source" displayName="Work List" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
