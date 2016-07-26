@@ -154,7 +154,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                           + "\"hospitalizationGuid\":null,\"dateCreated\":\"2015-08-25T12:51:01.000+10:00\","
                           + "\"treatmentTemplateName\":null,\"temperatureUnits\":null,\"weightUnits\":\"kg\","
                           + "\"weight\":5.1,\"estimatedDaysOfStay\":2,\"fileNumber\":\"30\",\"caution\":false,"
-                          + "\"dnr\":false,\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":[\"Checkup\"],"
+                          + "\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":[\"Checkup\"],"
                           + "\"cageNumber\":null,\"color\":null,\"reportPath\":null,\"status\":null,"
                           + "\"patient\":{\"objectType\":\"patient\",\"patientId\":\"30\",\"name\":\"Fido\","
                           + "\"birthday\":\"2014-06-21T10:00:00.000+10:00\",\"sex\":\"M\",\"species\":\"Canine\","
@@ -236,7 +236,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                           + "\"hospitalizationGuid\":null,\"dateCreated\":\"2015-08-25T12:51:01.000+10:00\","
                           + "\"treatmentTemplateName\":null,\"temperatureUnits\":null,\"weightUnits\":\"kg\","
                           + "\"weight\":5.1,\"estimatedDaysOfStay\":2,\"fileNumber\":\"30\",\"caution\":false,"
-                          + "\"dnr\":false,\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":[\"CHECKUP\"],"
+                          + "\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":[\"CHECKUP\"],"
                           + "\"cageNumber\":null,\"color\":null,\"reportPath\":null,\"status\":null,"
                           + "\"newHospitalizationProperty\":\"foo\","
                           + "\"patient\":{\"objectType\":\"patient\",\"patientId\":\"30\",\"name\":\"Fido\","
@@ -267,7 +267,6 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         assertEquals(2, result.getEstimatedDaysOfStay());
         assertEquals("30", result.getFileNumber());
         assertFalse(result.getCaution());
-        assertFalse(result.getDnr());
         assertEquals("Dr Seuss", result.getDoctorName());
         assertNull(result.getMedicId());
         assertEquals(new String[]{"CHECKUP"}[0], result.getDiseases()[0]);

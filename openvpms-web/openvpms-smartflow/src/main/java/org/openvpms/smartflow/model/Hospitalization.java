@@ -98,11 +98,6 @@ public class Hospitalization {
     private boolean caution;
 
     /**
-     * Whether to show dnr stripe on a flowsheet or not. Optional.
-     */
-    private boolean dnr;
-
-    /**
      * The name of the doctor on duty. Optional.
      */
     private String doctorName;
@@ -374,24 +369,6 @@ public class Hospitalization {
      */
     public void setCaution(boolean caution) {
         this.caution = caution;
-    }
-
-    /**
-     * Determines whether to show a DNR stripe on a flowsheet or not.
-     *
-     * @return {@code true} if a DNR stripe should be displayed
-     */
-    public boolean getDnr() {
-        return dnr;
-    }
-
-    /**
-     * Sets whether to show a DNR stripe on a flowsheet or not.
-     *
-     * @param dnr if {@code true}, a DNR stripe should be displayed
-     */
-    public void setDnr(boolean dnr) {
-        this.dnr = dnr;
     }
 
     /**
