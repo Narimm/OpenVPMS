@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.practice.PracticeService;
@@ -81,6 +82,11 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
     private CustomerRules customerRules;
 
     /**
+     * The patient rules.
+     */
+    private PatientRules patientRules;
+
+    /**
      * The practice service.
      */
     private TestPracticeService practiceService;
@@ -130,6 +136,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
                                                                      applicationContext.getBean(Macros.class));
         evaluator = new AppointmentReminderEvaluator(getArchetypeService(), smsEvaluator);
         customerRules = new CustomerRules(getArchetypeService(), getLookupService());
+        patientRules = new PatientRules(practiceRules, getArchetypeService(), getLookupService());
         dateFrom = TestHelper.getDate("2015-11-01");
 
         Entity scheduleView1 = ScheduleTestHelper.createScheduleView();
@@ -250,6 +257,60 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that the reminderError node is populated if a customer is inactive.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testInactiveCustomer() throws Exception {
+        Entity config = createJobConfig();
+
+        Party customer1 = createCustomer();
+        Party customer2 = createCustomer();
+        customer2.setActive(false);
+        save(customer2);
+        Act appointment1 = createAppointment(dateFrom, schedule1, customer1, true);
+        Act appointment2 = createAppointment(dateFrom, schedule1, customer2, true);
+
+        final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
+        SMSService smsService = Mockito.mock(SMSService.class);
+        runJob(config, startDate, smsService);
+
+        checkSent(appointment1);
+        checkNotSent(appointment2, "Customer is inactive. No SMS will be sent");
+    }
+
+    /**
+     * Verifies that the reminderError node is populated if a patient is inactive or deceased.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testInvalidPatient() throws Exception {
+        Entity config = createJobConfig();
+
+        Party customer1 = createCustomer();
+        Party patient1 = TestHelper.createPatient(customer1);
+        Party patient2 = TestHelper.createPatient(customer1);
+        patient2.setActive(false);
+        save(patient2);
+        Party patient3 = TestHelper.createPatient(customer1);
+        patientRules.setDeceased(patient3);
+        Act appointment1 = createAppointment(dateFrom, schedule1, customer1, patient1, true);
+        Act appointment2 = createAppointment(dateFrom, schedule1, customer1, patient2, true);
+        Act appointment3 = createAppointment(dateFrom, schedule1, customer1, patient3, true);
+
+        final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
+        SMSService smsService = Mockito.mock(SMSService.class);
+        runJob(config, startDate, smsService);
+
+        checkSent(appointment1);
+        checkNotSent(appointment2, "Patient is inactive. No SMS will be sent");
+        checkNotSent(appointment3, "Patient is deceased. No SMS will be sent");
+    }
+
+
+    /**
      * Verifies that the reminderError node is populated if a customer doesn't have an SMS contact.
      *
      * @throws Exception for any error
@@ -289,7 +350,8 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         IArchetypeRuleService archetypeService = (IArchetypeRuleService) getArchetypeService();
         LocationRules locationRules = new LocationRules(getArchetypeService());
         AppointmentReminderJob job = new AppointmentReminderJob(config, smsService, archetypeService, customerRules,
-                                                                practiceService, locationRules, evaluator) {
+                                                                patientRules, practiceService, locationRules,
+                                                                evaluator) {
             @Override
             protected Date getStartDate() {
                 return startDate;
@@ -419,7 +481,8 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         IArchetypeRuleService archetypeService = (IArchetypeRuleService) getArchetypeService();
         LocationRules locationRules = new LocationRules(getArchetypeService());
         AppointmentReminderJob job = new AppointmentReminderJob(config, smsService, archetypeService, customerRules,
-                                                                practiceService, locationRules, evaluator) {
+                                                                patientRules, practiceService, locationRules,
+                                                                evaluator) {
             @Override
             protected Date getStartDate() {
                 return startDate;
@@ -506,8 +569,22 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
      * @return a new appointment
      */
     private Act createAppointment(Date startTime, Entity schedule, Party customer, boolean sendReminder) {
-        Date endTime = DateRules.getDate(startTime, 1, DateUnits.HOURS);
         Party patient = TestHelper.createPatient(customer);
+        return createAppointment(startTime, schedule, customer, patient, sendReminder);
+    }
+
+    /**
+     * Creates a new appointment.
+     *
+     * @param startTime    the appointment start time
+     * @param schedule     the schedule
+     * @param customer     the customer
+     * @param patient      the patient
+     * @param sendReminder if {@code true} indicates to send reminders
+     * @return a new appointment
+     */
+    private Act createAppointment(Date startTime, Entity schedule, Party customer, Party patient, boolean sendReminder) {
+        Date endTime = DateRules.getDate(startTime, 1, DateUnits.HOURS);
         Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, customer, patient);
         act.setStatus(AppointmentStatus.PENDING);
         ActBean bean = new ActBean(act);

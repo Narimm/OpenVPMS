@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.Period;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -93,6 +94,11 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      * The customer rules.
      */
     private final CustomerRules customerRules;
+
+    /**
+     * The patient rules.
+     */
+    private final PatientRules patientRules;
 
     /**
      * The practice service.
@@ -182,17 +188,20 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      * @param service          the SMS service
      * @param archetypeService the archetype service
      * @param customerRules    the customer rules
+     * @param patientRules     the patient rules
      * @param practiceService  the practice service
      * @param locationRules    the location rules
      * @param evaluator        the appointment reminder evaluator
      */
     public AppointmentReminderJob(Entity configuration, SMSService service, IArchetypeRuleService archetypeService,
-                                  CustomerRules customerRules, PracticeService practiceService,
-                                  LocationRules locationRules, AppointmentReminderEvaluator evaluator) {
+                                  CustomerRules customerRules, PatientRules patientRules,
+                                  PracticeService practiceService, LocationRules locationRules,
+                                  AppointmentReminderEvaluator evaluator) {
         this.configuration = configuration;
         this.service = service;
         this.archetypeService = archetypeService;
         this.customerRules = customerRules;
+        this.patientRules = patientRules;
         this.practiceService = practiceService;
         this.locationRules = locationRules;
         this.evaluator = evaluator;
@@ -326,7 +335,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     protected boolean send(ActBean bean, Party practice, Entity defaultTemplate, Map<Party, Entity> templates) {
         boolean sent = false;
         Party customer = (Party) bean.getNodeParticipant("customer");
-        if (customer != null) {
+        if (customer != null && isCustomerValid(customer, bean) && isPatientValid(bean)) {
             Contact contact = getSMSContact(customer);
             if (contact == null) {
                 addError(bean, Messages.get("sms.appointment.nocontact"));
@@ -404,6 +413,45 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
             }
         }
         return location;
+    }
+
+    /**
+     * Determines if the appointment customer is valid.
+     *
+     * @param customer the customer
+     * @param bean     the appointment bean
+     * @return {@code true} if the customer is valid
+     */
+    private boolean isCustomerValid(Party customer, ActBean bean) {
+        boolean valid = customer.isActive();
+        if (!valid) {
+            addError(bean, Messages.get("sms.appointment.customerinactive"));
+        }
+        return valid;
+    }
+
+    /**
+     * Determines if the appointment patient is valid. It is valid if no patient is present, or it is active and
+     * not deceased.
+     *
+     * @param bean the appointment bean
+     * @return {@code true} if the patient is valid
+     */
+    private boolean isPatientValid(ActBean bean) {
+        boolean valid;
+        Party patient = (Party) bean.getNodeParticipant("patient");
+        if (patient == null) {
+            valid = true;
+        } else if (patientRules.isDeceased(patient)) {
+            addError(bean, Messages.get("sms.appointment.patientdeceased"));
+            valid = false;
+        } else if (!patient.isActive()) {
+            addError(bean, Messages.get("sms.appointment.patientinactive"));
+            valid = false;
+        } else {
+            valid = true;
+        }
+        return valid;
     }
 
     /**
