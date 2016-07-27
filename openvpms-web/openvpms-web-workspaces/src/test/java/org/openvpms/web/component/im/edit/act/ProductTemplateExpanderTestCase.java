@@ -20,7 +20,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -169,12 +168,10 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
     }
 
     /**
-     * Tests the behaviour of filtering products by location in conjunction with the
-     * {@link ProductArchetypes#ALWAYS_INCLUDE}, {@link ProductArchetypes#FAIL_IF_MISSING} and
-     * {@link ProductArchetypes#SKIP_IF_MISSING} location options.
+     * Tests the behaviour of filtering products by location in conjunction with the skipIfMissing option.
      */
     @Test
-    public void testLocations() {
+    public void testUseLocationProducts() {
         Party locationA = TestHelper.createLocation();
         Party stockLocationA = ProductTestHelper.createStockLocation();
         Party locationB = TestHelper.createLocation();
@@ -184,27 +181,26 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Product product1 = ProductTestHelper.createMedication();
         Product product2 = ProductTestHelper.createService();
 
-        // create a template with 2 products with location set to ALWAYS_LOCATION, and verify the both products
-        // are in the expansion
+        // create a template with 2 products with skipIfMissing set to true, and verify only the service is in the
+        // expansion
         Product templateA = createTemplate("templateA");
-        addInclude(templateA, product1, 1, ProductArchetypes.ALWAYS_INCLUDE);
-        addInclude(templateA, product2, 1, ProductArchetypes.ALWAYS_INCLUDE);
+        addInclude(templateA, product1, 1, 1, 0, 0, false, true);
+        addInclude(templateA, product2, 1, 1, 0, 0, false, true);
 
         Collection<TemplateProduct> includes1 = expand(templateA, Weight.ZERO, BigDecimal.ONE, locationA,
                                                        stockLocationA);
-        assertEquals(2, includes1.size());
-        checkInclude(includes1, product1, 1, 1, false);
+        assertEquals(1, includes1.size());
         checkInclude(includes1, product2, 1, 1, false);
 
-        // create a template with 2 products with location set to FAIL_IF_MISSING
+        // create a template with 2 products with skipIfMissing set to false
         Product product3 = ProductTestHelper.createMerchandise();
         Product product4 = ProductTestHelper.createService();
         setStockQuantity(product3, stockLocationB, BigDecimal.ONE);
         addLocationExclusion(product4, locationA);
 
         Product templateB = createTemplate("templateB");
-        addInclude(templateB, product3, 1, ProductArchetypes.FAIL_IF_MISSING);
-        addInclude(templateB, product4, 1, ProductArchetypes.FAIL_IF_MISSING);
+        addInclude(templateB, product3, 1, 1, 0, 0, false, false);
+        addInclude(templateB, product4, 1, 1, 0, 0, false, false);
 
         // perform expansion for locationA and stockLocationA. It should fail as product3 is only available at
         // stockLocationB, and product4 is not available at locationA
@@ -218,11 +214,11 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         checkInclude(includes3, product3, 1, 1, false);
         checkInclude(includes3, product4, 1, 1, false);
 
-        // create a template with 3 products, 2 with location set to SKIP_IF_MISSING.
+        // create a template with 3 products, 2 with skipIfMissing set to true.
         Product templateC = createTemplate("templateC");
-        addInclude(templateC, product2, 1, ProductArchetypes.ALWAYS_INCLUDE);
-        addInclude(templateC, product3, 1, ProductArchetypes.SKIP_IF_MISSING);
-        addInclude(templateC, product4, 1, ProductArchetypes.SKIP_IF_MISSING);
+        addInclude(templateC, product2, 1, 1, 0, 0, false, false);
+        addInclude(templateC, product3, 1, 1, 0, 0, false, true);
+        addInclude(templateC, product4, 1, 1, 0, 0, false, true);
 
         // perform expansion against locationA, stockLocationA. Only product2 should be included
         Collection<TemplateProduct> includes4 = expand(templateC, Weight.ZERO, BigDecimal.ONE, locationA,
@@ -230,9 +226,10 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         assertEquals(1, includes4.size());
         checkInclude(includes4, product2, 1, 1, false);
 
-        // perform expansion against location\B, stockLocationB. All 3 products should be included
+        // perform expansion against locationB, stockLocationB. All 3 products should be included
         Collection<TemplateProduct> includes5 = expand(templateC, Weight.ZERO, BigDecimal.ONE, locationB,
                                                        stockLocationB);
+        assertEquals(3, includes5.size());
         checkInclude(includes5, product2, 1, 1, false);
         checkInclude(includes5, product3, 1, 1, false);
         checkInclude(includes5, product4, 1, 1, false);

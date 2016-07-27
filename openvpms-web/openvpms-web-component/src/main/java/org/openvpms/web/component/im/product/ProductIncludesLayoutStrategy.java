@@ -63,7 +63,7 @@ public class ProductIncludesLayoutStrategy extends AbstractLayoutStrategy {
         nodes.simple("target");
         nodes.first("target");
         if (!useLocationProducts) {
-            nodes.exclude("location");
+            nodes.exclude("skipIfMissing");
         }
 
         setArchetypeNodes(nodes);

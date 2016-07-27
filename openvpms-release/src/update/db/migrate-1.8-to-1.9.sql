@@ -1784,15 +1784,15 @@ DROP TABLE new_authorities;
 INSERT INTO entity_link_details (id, type, value, name)
   SELECT
     l.id,
-    'string',
-    'ALWAYS',
-    'location'
+    'boolean',
+    'false',
+    'skipIfMissing'
   FROM entity_links l
   WHERE l.arch_short_name = 'entityLink.productIncludes'
         AND NOT exists(SELECT *
                        FROM entity_link_details d
                        WHERE d.id = l.id
-                             AND d.name = 'location');
+                             AND d.name = 'skipIfMissing');
 
 #
 # OVPMS-1759 Separate mail templates from pre-fill templates
