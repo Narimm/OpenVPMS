@@ -19,7 +19,6 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRQuery;
-import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.SimpleJasperReportsContext;
 import net.sf.jasperreports.engine.design.JasperDesign;
@@ -71,7 +70,8 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
     public AbstractTemplatedJasperIMReport(Document template, IArchetypeService service, ILookupService lookups,
                                            DocumentHandlers handlers, Functions functions) {
         super(service, lookups, handlers, functions);
-        this.loader = new JasperTemplateLoader(template, service, handlers);
+        SimpleJasperReportsContext context = getJasperReportsContext();
+        loader = init(new JasperTemplateLoader(template, service, handlers, context), context);
         this.name = template.getName();
     }
 
@@ -88,7 +88,8 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
     public AbstractTemplatedJasperIMReport(JasperDesign design, IArchetypeService service, ILookupService lookups,
                                            DocumentHandlers handlers, Functions functions) {
         super(service, lookups, handlers, functions);
-        this.loader = new JasperTemplateLoader(design, service, handlers);
+        SimpleJasperReportsContext context = getJasperReportsContext();
+        loader = init(new JasperTemplateLoader(design, service, handlers, context), context);
         this.name = design.getName();
     }
 
@@ -152,15 +153,16 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
     }
 
     /**
-     * Creates a {@link JasperFillManager} that will lazily load sub-reports.
+     * Initialises the context with the loader, in order to lazily load sub-reports.
      *
-     * @return a new fill manager
+     * @param loader  the loader
+     * @param context the context
+     * @return the loader
      */
-    @Override
-    protected JasperFillManager createFillManager() {
-        SimpleJasperReportsContext context = new SimpleJasperReportsContext();
+    private JasperTemplateLoader init(JasperTemplateLoader loader, SimpleJasperReportsContext context) {
+        // register the loader to lazily load sub-reports
         context.setExtensions(RepositoryService.class, Collections.singletonList(loader));
-        return JasperFillManager.getInstance(context);
+        return loader;
     }
 
 }

@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.SimpleReportContext;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
@@ -31,11 +32,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import java.io.InputStream;
 import java.util.Map;
 
-
 /**
  * Jasper Report helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Tim Amderson
  */
 public class JasperReportHelper {
 
@@ -45,17 +45,18 @@ public class JasperReportHelper {
      * @param name     the report name
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @return the jasper report template or <tt>null</tt> if none can be found
+     * @param context  the jasper reports context
+     * @return the jasper report template or {@code null} if none can be found
      * @throws DocumentException for any document error
      * @throws JRException       if the report can't be deserialized
      */
-    public static JasperDesign getReport(String name, IArchetypeService service,
-                                         DocumentHandlers handlers)
+    public static JasperDesign getReport(String name, IArchetypeService service, DocumentHandlers handlers,
+                                         JasperReportsContext context)
             throws JRException {
         TemplateHelper helper = new TemplateHelper(service);
         Document document = helper.getDocument(name);
         if (document != null) {
-            return getReport(document, handlers);
+            return getReport(document, handlers, context);
         }
         return null;
     }
@@ -65,19 +66,19 @@ public class JasperReportHelper {
      *
      * @param document the document
      * @param handlers the document handlers
+     * @param context  the jasper reports context
      * @return a new jasper report
      * @throws DocumentException for any document error
      * @throws JRException       if the report can't be deserialized
      */
-    public static JasperDesign getReport(Document document,
-                                         DocumentHandlers handlers)
+    public static JasperDesign getReport(Document document,  DocumentHandlers handlers, JasperReportsContext context)
             throws JRException {
 
         InputStream stream = null;
         try {
             DocumentHandler handler = handlers.get(document);
             stream = handler.getContent(document);
-            return JRXmlLoader.load(stream);
+            return JRXmlLoader.load(context, stream);
         } finally {
             IOUtils.closeQuietly(stream);
         }
