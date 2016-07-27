@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -56,6 +57,11 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
     private Iterator<IMObject> iterator;
 
     /**
+     * Report parameters.
+     */
+    private final Map<String, Object> parameters;
+
+    /**
      * Additional fields. May be {@code null}
      */
     private final PropertySet fields;
@@ -72,9 +78,31 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
 
 
     /**
+     * Constructs a {@link IMObjectCollectionDataSource} for a collection of objects.
+     *
+     * @param objects    the objects
+     * @param parameters the report parameters. These may be accessed using {@code $P.<parameter name>}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
+     */
+    public IMObjectCollectionDataSource(Iterable<IMObject> objects, Map<String, Object> parameters, PropertySet fields,
+                                        IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                                        Functions functions) {
+        super(service, lookups, handlers, functions);
+        collection = objects;
+        iterator = collection.iterator();
+        this.parameters = (parameters != null) ? getParameters(parameters) : null;
+        this.fields = fields;
+    }
+
+    /**
      * Constructs a {@link IMObjectCollectionDataSource} for a collection node.
      *
      * @param parent     the parent object
+     * @param parameters the report parameters. May be {@code null}
      * @param fields     additional report fields. These override any in the report. May be {@code null}
      * @param descriptor the collection descriptor
      * @param service    the archetype service
@@ -83,9 +111,9 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
      * @param functions  the JXPath extension functions
      * @param sortNodes  the sort nodes
      */
-    public IMObjectCollectionDataSource(IMObject parent, PropertySet fields, NodeDescriptor descriptor,
-                                        IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
-                                        Functions functions, String... sortNodes) {
+    protected IMObjectCollectionDataSource(IMObject parent, Map<String, Object> parameters, PropertySet fields,
+                                           NodeDescriptor descriptor, IArchetypeService service, ILookupService lookups,
+                                           DocumentHandlers handlers, Functions functions, String... sortNodes) {
         super(service, lookups, handlers, functions);
         List<IMObject> values = descriptor.getChildren(parent);
         for (String sortNode : sortNodes) {
@@ -93,26 +121,9 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
         }
         collection = values;
         iterator = collection.iterator();
+        this.parameters = parameters;
         this.fields = fields;
         displayName = descriptor.getDisplayName();
-    }
-
-    /**
-     * Constructs a {@link IMObjectCollectionDataSource} for a collection of objects.
-     *
-     * @param objects   the objects
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param handlers  the document handlers
-     * @param functions the JXPath extension functions
-     */
-    public IMObjectCollectionDataSource(Iterable<IMObject> objects, PropertySet fields, IArchetypeService service,
-                                        ILookupService lookups, DocumentHandlers handlers, Functions functions) {
-        super(service, lookups, handlers, functions);
-        collection = objects;
-        iterator = collection.iterator();
-        this.fields = fields;
     }
 
     /**
@@ -123,8 +134,8 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
     public boolean next() {
         boolean result = iterator.hasNext();
         if (result) {
-            current = new IMObjectDataSource(iterator.next(), fields, getArchetypeService(), getLookupService(),
-                                             getDocumentHandlers(), getFunctions());
+            current = new IMObjectDataSource(iterator.next(), parameters, fields, getArchetypeService(),
+                                             getLookupService(), getDocumentHandlers(), getFunctions());
         }
         return result;
     }
@@ -156,7 +167,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
      * Gets the field value for the current position.
      *
      * @return an object containing the field value. The object type must be the
-     *         field object type.
+     * field object type.
      * @throws JRException for any error
      */
     public Object getFieldValue(JRField field) throws JRException {
@@ -169,6 +180,16 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
             }
         }
         return result;
+    }
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    public Object evaluate(String expression) {
+        return current != null ? current.evaluate(expression) : null;
     }
 
     /**

@@ -38,6 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.AbstractReportTest;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ReportException;
+import org.openvpms.report.jasper.function.EvaluateFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
@@ -69,6 +70,9 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
 
     /**
      * Tests the {@link TemplatedJasperIMObjectReport#generate(Iterable, Map, Map, String)} method.
+     * <p/>
+     * This verifies that a parameter may be passed and accessed using the {@link EvaluateFunction#EVALUATE(String)}
+     * method.
      *
      * @throws Exception for any error
      */
@@ -88,9 +92,11 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
         fields.put("Globals.Location", location);
 
         // generate the report as a CSV to allow comparison
-        Document csv = report.generate(list, null, fields, DocFormats.CSV_TYPE);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("param1", "Hello"); // this is passed to the report, and accessed using EVALUATE()
+        Document csv = report.generate(list, parameters, fields, DocFormats.CSV_TYPE);
         String string = IOUtils.toString(getHandlers().get(document).getContent(csv), "UTF-8");
-        assertEquals("Foo,Bar,Main Clinic", string.trim());
+        assertEquals("Foo,Bar,Main Clinic,Hello", string.trim());
     }
 
     /**

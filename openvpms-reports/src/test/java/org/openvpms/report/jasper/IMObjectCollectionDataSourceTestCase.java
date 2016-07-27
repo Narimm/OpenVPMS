@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,15 +46,14 @@ public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSo
     @Test
     public void testExpressionDataSource() throws Exception {
         Party customer = TestHelper.createCustomer(false);
-        List<IMObject> objects = Arrays.<IMObject>asList(customer);
-        Map<String, Object> fields = new HashMap<String, Object>();
+        List<IMObject> objects = Collections.<IMObject>singletonList(customer);
+        Map<String, Object> fields = new HashMap<>();
         fields.put("Globals.A", "A");
         fields.put("Globals.1", 1);
         PropertySet f = new ResolvingPropertySet(fields, getArchetypeService());
         Functions functions = applicationContext.getBean(Functions.class);
-        IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects, f,
-                                                                           getArchetypeService(), getLookupService(),
-                                                                           handlers, functions);
+        IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects, null, f, getArchetypeService(),
+                                                                           getLookupService(), handlers, functions);
         assertTrue(ds.next());
         checkExpressionDataSource(ds, f);
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -47,34 +47,36 @@ public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMO
      */
     private NodeResolver resolver;
 
-
     /**
      * Constructs a {@link IMObjectExpressionEvaluator}.
      *
-     * @param object    the object
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param object     the object
+     * @param parameters parameters available to expressions as variables. May be {@code null}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public IMObjectExpressionEvaluator(IMObject object, Map<String, Object> fields, IArchetypeService service,
-                                       ILookupService lookups, Functions functions) {
-        super(object, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, functions);
+    public IMObjectExpressionEvaluator(IMObject object, Map<String, Object> parameters, Map<String, Object> fields,
+                                       IArchetypeService service, ILookupService lookups, Functions functions) {
+        super(object, parameters, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, functions);
     }
 
     /**
      * Constructs a {@link IMObjectExpressionEvaluator}.
      *
-     * @param object    the object
-     * @param resolver  the node resolver. May be {@code null}
-     * @param fields    fields to pass to the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param object     the object
+     * @param resolver   the node resolver. May be {@code null}
+     * @param parameters parameters available to expressions as variables. May be {@code null}
+     * @param fields     fields to pass to the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public IMObjectExpressionEvaluator(IMObject object, NodeResolver resolver, PropertySet fields,
-                                       IArchetypeService service, ILookupService lookups, Functions functions) {
-        super(object, fields, service, lookups, functions);
+    public IMObjectExpressionEvaluator(IMObject object, NodeResolver resolver, Map<String, Object> parameters,
+                                       PropertySet fields, IArchetypeService service, ILookupService lookups,
+                                       Functions functions) {
+        super(object, parameters, fields, service, lookups, functions);
         this.resolver = resolver;
     }
 

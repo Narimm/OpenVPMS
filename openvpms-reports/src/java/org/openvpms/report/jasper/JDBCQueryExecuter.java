@@ -168,7 +168,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
         }
 
         public Object getValue(String expression) {
-            return evaluator.getExpressionValue(expression);
+            return evaluator.evaluate(expression);
         }
     }
 
@@ -189,7 +189,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
          */
         public JDBCExpressionEvaluator(JRDataSource dataSource, PropertySet fields, IArchetypeService service,
                                        ILookupService lookups, Functions functions) {
-            super(new Object(), fields, service, lookups, functions);
+            super(new Object(), null, fields, service, lookups, functions);
             this.dataSource = dataSource;
         }
 
@@ -198,7 +198,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
             Object result;
             try {
                 if (isJXPath(expression)) {
-                    result = evaluate(expression);
+                    result = getJXPathValue(expression);
                 } else if (isField(expression)) {
                     result = getFieldValue(expression);
                 } else {
