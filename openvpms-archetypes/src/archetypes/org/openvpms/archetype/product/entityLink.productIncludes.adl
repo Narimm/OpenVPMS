@@ -59,16 +59,8 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="location" path="/details/location" type="java.lang.String"
-              minCardinality="0" maxLength="30" defaultValue="'ALWAYS'">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="ALWAYS" value="Always Include"/>
-                    <property name="FAIL" value="Fail if Missing"/>
-                    <property name="SKIP" value="Skip if Missing"/>
-                </propertyList>
-            </assertion>
-        </node>
+        <node name="skipIfMissing" path="/details/skipIfMissing" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="false()"/>
         <node name="zeroPrice" path="/details/zeroPrice" type="java.lang.Boolean" minCardinality="0"
               defaultValue="false()"/>
         <node name="print" path="/details/print" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"/>

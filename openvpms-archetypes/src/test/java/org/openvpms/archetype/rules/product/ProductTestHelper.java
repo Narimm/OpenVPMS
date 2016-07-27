@@ -370,7 +370,7 @@ public class ProductTestHelper {
      */
     public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity,
                                   boolean zeroPrice) {
-        addInclude(template, include, lowQuantity, highQuantity, 0, 0, zeroPrice, ProductArchetypes.ALWAYS_INCLUDE);
+        addInclude(template, include, lowQuantity, highQuantity, 0, 0, zeroPrice, false);
     }
 
     /**
@@ -384,8 +384,7 @@ public class ProductTestHelper {
      */
     public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity, int minWeight,
                                   int maxWeight) {
-        addInclude(template, include, lowQuantity, highQuantity, minWeight, maxWeight, false,
-                   ProductArchetypes.ALWAYS_INCLUDE);
+        addInclude(template, include, lowQuantity, highQuantity, minWeight, maxWeight, false, false);
     }
 
     /**
@@ -397,37 +396,22 @@ public class ProductTestHelper {
      * @param zeroPrice the zero price indicator
      */
     public static void addInclude(Product template, Product include, int quantity, boolean zeroPrice) {
-        addInclude(template, include, quantity, quantity, 0, 0, zeroPrice, ProductArchetypes.ALWAYS_INCLUDE);
-    }
-
-    /**
-     * Adds an include to the template with no weight restrictions, the same low and high quantities, and a location
-     * indicator.
-     *
-     * @param template  the template
-     * @param include   the product to include
-     * @param quantity  the low and high quantity
-     * @param location    determines when to include the product. See {@link ProductArchetypes#ALWAYS_INCLUDE},
-     *                    {@link ProductArchetypes#SKIP_IF_MISSING}, {@link ProductArchetypes#FAIL_IF_MISSING}
-     */
-    public static void addInclude(Product template, Product include, int quantity, String location) {
-        addInclude(template, include, quantity, quantity, 0, 0, false, location);
+        addInclude(template, include, quantity, quantity, 0, 0, zeroPrice, false);
     }
 
     /**
      * Adds an include to the template.
      *
-     * @param template    the template
-     * @param include     the product to include
-     * @param lowQuantity the include quantity
-     * @param minWeight   the minimum weight
-     * @param maxWeight   the maximum weight
-     * @param zeroPrice   the zero price indicator
-     * @param location    determines when to include the product. See {@link ProductArchetypes#ALWAYS_INCLUDE},
-     *                    {@link ProductArchetypes#SKIP_IF_MISSING}, {@link ProductArchetypes#FAIL_IF_MISSING}
+     * @param template      the template
+     * @param include       the product to include
+     * @param lowQuantity   the include quantity
+     * @param minWeight     the minimum weight
+     * @param maxWeight     the maximum weight
+     * @param zeroPrice     the zero price indicator
+     * @param skipIfMissing if {@code true}, skip the product if it is not available at the location
      */
     public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity, int minWeight,
-                                  int maxWeight, boolean zeroPrice, String location) {
+                                  int maxWeight, boolean zeroPrice, boolean skipIfMissing) {
         EntityBean bean = new EntityBean(template);
         IMObjectRelationship relationship = bean.addNodeTarget("includes", include);
         IMObjectBean relBean = new IMObjectBean(relationship);
@@ -436,7 +420,7 @@ public class ProductTestHelper {
         relBean.setValue("minWeight", minWeight);
         relBean.setValue("maxWeight", maxWeight);
         relBean.setValue("zeroPrice", zeroPrice);
-        relBean.setValue("location", location);
+        relBean.setValue("skipIfMissing", skipIfMissing);
         bean.save();
     }
 

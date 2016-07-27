@@ -51,14 +51,14 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
     private static final int WEIGHT_INDEX = HIGH_QUANTITY_INDEX + 1;
 
     /**
-     * The location index.
+     * The skip if missing index.
      */
-    private static final int LOCATION_INDEX = WEIGHT_INDEX + 1;
+    private static final int SKIP_INDEX = WEIGHT_INDEX + 1;
 
     /**
      * The zero price index.
      */
-    private static final int ZERO_PRICE_INDEX = LOCATION_INDEX + 1;
+    private static final int ZERO_PRICE_INDEX = SKIP_INDEX + 1;
 
     /**
      * The print index.
@@ -124,7 +124,7 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
         model.addColumn(new DescriptorTableColumn(HIGH_QUANTITY_INDEX, "highQuantity", archetype));
         model.addColumn(createTableColumn(WEIGHT_INDEX, "product.weight"));
         if (ProductHelper.useLocationProducts(getContext().getContext())) {
-            model.addColumn(new DescriptorTableColumn(LOCATION_INDEX, "location", archetype));
+            model.addColumn(new DescriptorTableColumn(SKIP_INDEX, "skipIfMissing", archetype));
         }
         model.addColumn(new DescriptorTableColumn(ZERO_PRICE_INDEX, "zeroPrice", archetype));
         model.addColumn(new DescriptorTableColumn(PRINT_INDEX, "print", true, archetype));

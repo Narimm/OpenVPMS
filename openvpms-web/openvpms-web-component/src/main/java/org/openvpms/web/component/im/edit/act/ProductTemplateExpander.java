@@ -188,10 +188,10 @@ public class ProductTemplateExpander {
             Product product = include.getProduct(cache);
             if (product != null) {
                 boolean skip = false;
-                if (useLocationProducts && !include.alwaysInclude()) {
+                if (useLocationProducts) {
                     Party location = checkProductLocation(product);
                     if (location != null) {
-                        if (include.failIfMissing()) {
+                        if (!include.skipIfMissing()) {
                             reportLocationError(template, product, location);
                             result = false;
                         } else {
@@ -350,9 +350,9 @@ public class ProductTemplateExpander {
         private final boolean print;
 
         /**
-         * The location inclusion constraint.
+         * Determines if products are skipped if they are not available at the location.
          */
-        private final String location;
+        private final boolean skipIfMissing;
 
         /**
          * Constructs an {@link Include}.
@@ -369,7 +369,7 @@ public class ProductTemplateExpander {
             zeroPrice = bean.getBoolean("zeroPrice");
             print = bean.getBoolean("print", true);
             product = relationship.getTarget();
-            location = bean.getString("location", ProductArchetypes.ALWAYS_INCLUDE);
+            skipIfMissing = bean.getBoolean("skipIfMissing");
         }
 
         /**
@@ -401,30 +401,12 @@ public class ProductTemplateExpander {
         }
 
         /**
-         * Determines if the product should always be included, ignoring any location/stock relationships.
-         *
-         * @return {@code true} if the product should always be included
-         */
-        public boolean alwaysInclude() {
-            return !failIfMissing() && !skipIfMissing();
-        }
-
-        /**
-         * Determines if template expansion should fail if the product isn't available at the location.
-         *
-         * @return {@code true} if template expansion should fail
-         */
-        public boolean failIfMissing() {
-            return ProductArchetypes.FAIL_IF_MISSING.equals(location);
-        }
-
-        /**
          * Determines if the product should be skipped, if it isn't available at the location.
          *
          * @return {@code true} if the product should be skipped
          */
         public boolean skipIfMissing() {
-            return ProductArchetypes.SKIP_IF_MISSING.equals(location);
+            return skipIfMissing;
         }
 
     }
