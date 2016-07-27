@@ -25,6 +25,7 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.ReportContext;
+import net.sf.jasperreports.engine.SimpleJasperReportsContext;
 import net.sf.jasperreports.engine.export.HtmlExporter;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -35,6 +36,7 @@ import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
 import net.sf.jasperreports.engine.query.JRQueryExecuter;
+import net.sf.jasperreports.engine.query.JRQueryExecuterFactoryBundle;
 import net.sf.jasperreports.export.Exporter;
 import net.sf.jasperreports.export.ExporterConfiguration;
 import net.sf.jasperreports.export.ExporterInput;
@@ -82,6 +84,7 @@ import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -117,6 +120,16 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * The JXPath extension functions.
      */
     private final Functions functions;
+
+    /**
+     * The jasper reports context.
+     */
+    private final SimpleJasperReportsContext context;
+
+    /**
+     * The JDBC query factory.
+     */
+    private final JDBCQueryExecuterFactory factory;
 
     /**
      * The supported mime types.
@@ -161,6 +174,13 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         this.lookups = lookups;
         this.handlers = handlers;
         this.functions = functions;
+        context = new SimpleJasperReportsContext();
+
+        // need to register the factory even if its not used, as they are registered when the template is loaded.
+        factory = new JDBCQueryExecuterFactory(service, lookups, functions);
+        List<JDBCQueryExecutorFactoryBundle> extensions = Collections.singletonList(
+                new JDBCQueryExecutorFactoryBundle(factory));
+        context.setExtensions(JRQueryExecuterFactoryBundle.class, extensions);
     }
 
     /**
@@ -271,8 +291,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         JasperReport report = getReport();
         JRQueryExecuter executer = null;
         try {
-            executer = initDataSource(properties, fields, report);
-            JasperPrint print = createFillManager().fill(report, properties);
+            executer = initDataSource(properties, fields, report, context);
+            JasperPrint print = JasperFillManager.getInstance(context).fill(report, properties);
             document = export(print, properties, mimeType);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
@@ -397,8 +417,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         }
         JRQueryExecuter executer = null;
         try {
-            executer = initDataSource(params, fields, report);
-            JasperPrint print = createFillManager().fill(getReport(), params);
+            executer = initDataSource(params, fields, report, context);
+            JasperPrint print = JasperFillManager.getInstance(context).fill(getReport(), params);
             print(print, properties);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
@@ -473,7 +493,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         }
         properties.put("dataSource", source);  // custom data source name, to avoid casting
         properties.put(JRParameter.REPORT_DATA_SOURCE, source);
-        return createFillManager().fill(getReport(), properties, source);
+        return JasperFillManager.getInstance(context).fill(getReport(), properties, source);
     }
 
     /**
@@ -802,27 +822,31 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     protected abstract JREvaluator getEvaluator() throws JRException;
 
     /**
-     * Creates a {@link JasperFillManager} that will lazily load sub-reports.
+     * Returns the jasper reports context.
      *
-     * @return a new fill manager
+     * @return a the jasper reports context
      */
-    protected abstract JasperFillManager createFillManager();
+    protected SimpleJasperReportsContext getJasperReportsContext() {
+        return context;
+    }
 
     /**
      * Initialises a JDBC data source, if required.
      *
-     * @param params the report parameters
-     * @param fields a map of additional field names and their values, to pass to the report. May be {@code null}
-     * @param report the report
+     * @param params  the report parameters
+     * @param fields  additional fields available to the report. May be {@code null}
+     * @param report  the report
+     * @param context the jasper reports context
      * @throws JRException if the data source cannot be created
      */
-    private JRQueryExecuter initDataSource(Map<String, Object> params, Map<String, Object> fields, JasperReport report)
+    private JRQueryExecuter initDataSource(Map<String, Object> params, Map<String, Object> fields, JasperReport report,
+                                           SimpleJasperReportsContext context)
             throws JRException {
         JRQueryExecuter executer = null;
         Connection connection = (Connection) params.get(JRParameter.REPORT_CONNECTION);
         if (connection != null) {
-            executer = new JDBCQueryExecuter(report.getMainDataset(), params, fields, getArchetypeService(),
-                                             getLookupService(), getFunctions());
+            factory.setFields(fields);
+            executer = factory.createQueryExecuter(context, report, params);
             JRDataSource dataSource = executer.createDatasource();
             params.put(JRParameter.REPORT_DATA_SOURCE, dataSource);
         }

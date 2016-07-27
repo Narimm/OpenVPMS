@@ -19,6 +19,7 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.fill.JREvaluator;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
@@ -68,6 +69,11 @@ public class JasperTemplateLoader implements RepositoryService {
     private final DocumentHandlers handlers;
 
     /**
+     * The jasper reports context.
+     */
+    private final JasperReportsContext context;
+
+    /**
      * The compiled report.
      */
     private final JasperReport report;
@@ -88,18 +94,21 @@ public class JasperTemplateLoader implements RepositoryService {
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
+     * @param context  the jasper reports context
      * @throws ReportException if the report cannot be created
      */
-    public JasperTemplateLoader(Document template, IArchetypeService service, DocumentHandlers handlers) {
+    public JasperTemplateLoader(Document template, IArchetypeService service, DocumentHandlers handlers,
+                                JasperReportsContext context) {
         this.name = template.getName();
         this.service = service;
+        this.context = context;
         this.handlers = handlers;
 
         InputStream stream = null;
         try {
             DocumentHandler handler = handlers.get(template);
             stream = handler.getContent(template);
-            JasperDesign design = JRXmlLoader.load(stream);
+            JasperDesign design = JRXmlLoader.load(context, stream);
             report = compile(design);
         } catch (DocumentException | JRException exception) {
             throw new ReportException(exception, FailedToCreateReport, template.getName(), exception.getMessage());
@@ -114,12 +123,15 @@ public class JasperTemplateLoader implements RepositoryService {
      * @param design   the master report design
      * @param service  the archetype service
      * @param handlers the document handlers
+     * @param context  the jasper reports context
      * @throws ReportException if the report cannot be created
      */
-    public JasperTemplateLoader(JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
+    public JasperTemplateLoader(JasperDesign design, IArchetypeService service, DocumentHandlers handlers,
+                                JasperReportsContext context) {
         this.name = design.getName();
         this.service = service;
         this.handlers = handlers;
+        this.context = context;
         report = compile(design);
     }
 
@@ -229,7 +241,7 @@ public class JasperTemplateLoader implements RepositoryService {
         JasperReport compiled = subReports.get(name);
         if (compiled == null) {
             try {
-                JasperDesign report = JasperReportHelper.getReport(name, service, handlers);
+                JasperDesign report = JasperReportHelper.getReport(name, service, handlers, context);
                 if (report == null) {
                     throw new ReportException(FailedToFindSubReport, name, this.name);
                 }

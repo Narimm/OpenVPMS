@@ -18,6 +18,7 @@ package org.openvpms.report.jasper.tools;
 
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.view.JasperViewer;
@@ -151,7 +152,7 @@ public class JasperReportTool extends ReportTool {
         JasperIMReport<IMObject> report;
         try {
             if (doc.getName().endsWith(DocFormats.JRXML_EXT)) {
-                design = JasperReportHelper.getReport(doc, handlers);
+                design = JasperReportHelper.getReport(doc, handlers, DefaultJasperReportsContext.getInstance());
                 report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers, factory.create(service));
             } else {
                 throw new ReportException(UnsupportedTemplate, doc.getName());
