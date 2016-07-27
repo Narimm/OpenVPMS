@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -39,4 +39,12 @@ public interface ExpressionEvaluator {
      * @return the result of the expression
      */
     String getFormattedValue(String expression);
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression
+     */
+    Object evaluate(String expression);
 }

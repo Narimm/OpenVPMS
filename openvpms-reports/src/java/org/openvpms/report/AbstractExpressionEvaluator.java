@@ -42,6 +42,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 
 /**
@@ -55,6 +56,11 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      * The object.
      */
     private final T object;
+
+    /**
+     * Parameters available to expressions as variables. May be {@code null}
+     */
+    private final Map<String, Object> parameters;
 
     /**
      * Additional report fields. May be {@code null}.
@@ -90,15 +96,17 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     /**
      * Constructs an {@link AbstractExpressionEvaluator}.
      *
-     * @param object    the object
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param object     the object
+     * @param parameters parameters available to expressions as variables. May be {@code null}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public AbstractExpressionEvaluator(T object, PropertySet fields, IArchetypeService service,
-                                       ILookupService lookups, Functions functions) {
+    public AbstractExpressionEvaluator(T object, Map<String, Object> parameters, PropertySet fields,
+                                       IArchetypeService service, ILookupService lookups, Functions functions) {
         this.object = object;
+        this.parameters = parameters;
         this.fields = fields;
         this.service = service;
         this.lookups = lookups;
@@ -107,7 +115,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
 
     /**
      * Returns the value of an expression.
-     * If the expression is of the form [expr] it will be evaluated using {@link #evaluate(String)} else it will be
+     * If the expression is of the form [expr] it will be evaluated using {@link #getJXPathValue(String)} else it will be
      * evaluated using {@link #getNodeValue(String)}.
      *
      * @param expression the expression
@@ -117,7 +125,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
         Object result;
         try {
             if (isJXPath(expression)) {
-                result = evaluate(expression);
+                result = getJXPathValue(expression);
             } else if (isField(expression)) {
                 result = getFieldValue(expression);
             } else {
@@ -137,7 +145,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      * @param expression the expression
      * @return the result of the expression
      */
-    public Object getExpressionValue(String expression) {
+    public Object evaluate(String expression) {
         return getContext().getValue(expression);
     }
 
@@ -174,9 +182,9 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      * @param expression the expression to evaluate. Must be of the form {@code [expr]}
      * @return the value of the expression
      */
-    protected Object evaluate(String expression) {
+    protected Object getJXPathValue(String expression) {
         String eval = expression.substring(1, expression.length() - 1);
-        return getExpressionValue(eval);
+        return evaluate(eval);
     }
 
     /**
@@ -216,6 +224,15 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     }
 
     /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookups() {
+        return lookups;
+    }
+
+    /**
      * Determines if an expression refers to a field.
      *
      * @param expression the expression
@@ -241,7 +258,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      * @return new variables
      */
     protected IMObjectVariables createVariables() {
-        return new IMObjectVariables(service, lookups);
+        return parameters != null && !parameters.isEmpty() ? new Variables() : new IMObjectVariables(service, lookups);
     }
 
     /**
@@ -318,12 +335,14 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     private JXPathContext getContext() {
         if (context == null) {
             context = JXPathHelper.newContext(object, functions);
-            if (fields != null) {
+            if (fields != null || parameters != null) {
                 IMObjectVariables variables = createVariables();
-                for (String name : fields.getNames()) {
-                    Object value = fields.get(name);
-                    if (value != null) {
-                        variables.add(name, value);
+                if (fields != null) {
+                    for (String name : fields.getNames()) {
+                        Object value = fields.get(name);
+                        if (value != null) {
+                            variables.add(name, value);
+                        }
                     }
                 }
                 context.setVariables(variables);
@@ -371,4 +390,41 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
         }
         return result;
     }
+
+    /**
+     * Variables that include report parameters.
+     */
+    protected class Variables extends IMObjectVariables {
+        public Variables() {
+            super(service, lookups);
+        }
+
+        /**
+         * Determines if a variable exists.
+         *
+         * @param name the variable name
+         * @return {@code true} if the variable exists
+         */
+        @Override
+        public boolean exists(String name) {
+            return super.exists(name) || parameters.containsKey(name);
+        }
+
+        /**
+         * Returns the value of the specified variable.
+         *
+         * @param varName variable name
+         * @return Object value
+         * @throws IllegalArgumentException if there is no such variable.
+         */
+        @Override
+        public Object getVariable(String varName) {
+            if (parameters.containsKey(varName)) {
+                return parameters.get(varName);
+            } else {
+                return super.getVariable(varName);
+            }
+        }
+    }
+
 }

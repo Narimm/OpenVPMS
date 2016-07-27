@@ -486,7 +486,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     public JasperPrint report(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields)
             throws JRException {
-        JRDataSource source = createDataSource(objects, fields);
+        JRDataSource source = createDataSource(objects, parameters, fields);
         HashMap<String, Object> properties = new HashMap<>(getDefaultParameters());
         if (parameters != null) {
             properties.putAll(parameters);
@@ -499,11 +499,13 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     /**
      * Creates a data source for a collection of objects.
      *
-     * @param objects an iterator over the collection of objects
-     * @param fields  a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param objects    an iterator over the collection of objects
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a new data source
      */
-    protected abstract JRRewindableDataSource createDataSource(Iterable<T> objects, Map<String, Object> fields);
+    protected abstract JRRewindableDataSource createDataSource(Iterable<T> objects, Map<String, Object> parameters,
+                                                               Map<String, Object> fields);
 
     /**
      * Returns the archetype service.

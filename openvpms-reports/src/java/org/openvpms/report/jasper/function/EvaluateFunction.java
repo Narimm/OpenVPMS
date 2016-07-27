@@ -23,7 +23,7 @@ import net.sf.jasperreports.functions.annotations.Function;
 import net.sf.jasperreports.functions.annotations.FunctionCategories;
 import net.sf.jasperreports.functions.annotations.FunctionParameter;
 import net.sf.jasperreports.functions.annotations.FunctionParameters;
-import org.openvpms.report.jasper.JDBCQueryExecuter;
+import org.openvpms.report.jasper.AbstractDataSource;
 
 /**
  * Provides a JasperReport function to evaluate an xpath expression.
@@ -43,8 +43,8 @@ public class EvaluateFunction extends AbstractFunctionSupport {
     @FunctionParameters({@FunctionParameter("expression")})
     public Object EVALUATE(String expression) {
         JRDataSource dataSource = (JRDataSource) getContext().getParameterValue(JRParameter.REPORT_DATA_SOURCE, true);
-        if (dataSource instanceof JDBCQueryExecuter.FieldDataSource) {
-            return ((JDBCQueryExecuter.FieldDataSource) dataSource).getValue(expression);
+        if (dataSource instanceof AbstractDataSource) {
+            return ((AbstractDataSource) dataSource).evaluate(expression);
         }
         return null;
     }

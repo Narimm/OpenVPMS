@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -23,10 +23,13 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -38,6 +41,12 @@ import static org.junit.Assert.assertNull;
  * @author Tim Anderson
  */
 public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
+
+    /**
+     * The xpath extension functions.
+     */
+    @Autowired
+    private Functions functions;
 
     /**
      * Tests the {@link ObjectSetExpressionEvaluator#getValue(String)} method.
@@ -53,8 +62,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
         set.set("act.customer", customer);
         set.set("anull", null);
 
-        Functions functions = applicationContext.getBean(Functions.class);
-        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, (PropertySet) null,
+        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, null, (PropertySet) null,
                                                                              getArchetypeService(), getLookupService(),
                                                                              functions);
         assertEquals(10, eval.getValue("int"));
@@ -89,8 +97,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
         IMObject customer = createCustomer("Foo", "Bar");
         set.set("act.customer", customer);
 
-        Functions functions = applicationContext.getBean(Functions.class);
-        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, (PropertySet) null,
+        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, null, (PropertySet) null,
                                                                              getArchetypeService(), getLookupService(),
                                                                              functions);
         assertEquals("10", eval.getFormattedValue("int"));
@@ -113,4 +120,20 @@ public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
         assertEquals("2.00", eval.getFormattedValue("[1 + 1]"));
     }
 
+    /**
+     * Verifies that parameters can be supplied and evaluated using
+     * {@link ObjectSetExpressionEvaluator#evaluate(String)}.
+     */
+    @Test
+    public void testParameters() {
+        ObjectSet set = new ObjectSet();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("P.param1", 1);
+        parameters.put("P.param2", "abc");
+        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, parameters, (PropertySet) null,
+                                                                             getArchetypeService(), getLookupService(),
+                                                                             functions);
+        assertEquals(1, eval.evaluate("$P.param1"));
+        assertEquals("abc", eval.evaluate("$P.param2"));
+    }
 }

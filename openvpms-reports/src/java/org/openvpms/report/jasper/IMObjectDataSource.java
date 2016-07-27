@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -52,6 +52,11 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     private final IMObject object;
 
     /**
+     * Report parameters.
+     */
+    private final Map<String, Object> parameters;
+
+    /**
      * Additional fields. May be {@code null}
      */
     private final PropertySet fields;
@@ -79,34 +84,39 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     /**
      * Constructs an {@link IMObjectDataSource}.
      *
-     * @param object    the source object
-     * @param fields    a map of additional field names and their values, to pass to the report. May be {@code null}
-     * @param service   the archetype service
-     * @param handlers  the document handlers
-     * @param functions the JXPath extension functions
+     * @param object     the source object
+     * @param parameters the report parameters. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param service    the archetype service
+     * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
      */
-    public IMObjectDataSource(IMObject object, Map<String, Object> fields, IArchetypeService service,
-                              ILookupService lookups, DocumentHandlers handlers, Functions functions) {
-        this(object, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, handlers,
-             functions);
+    public IMObjectDataSource(IMObject object, Map<String, Object> parameters, Map<String, Object> fields,
+                              IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                              Functions functions) {
+        this(object, parameters, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups,
+             handlers, functions);
     }
 
     /**
      * Constructs an {@link IMObjectDataSource}.
      *
-     * @param object    the source object
-     * @param fields    fields to pass to the report. May be {@code null}
-     * @param service   the archetype service
-     * @param handlers  the document handlers
-     * @param functions the JXPath extension functions
+     * @param object     the source object
+     * @param parameters the report parameters. May be {@code null}
+     * @param fields     fields to pass to the report. May be {@code null}
+     * @param service    the archetype service
+     * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
      */
-    public IMObjectDataSource(IMObject object, PropertySet fields, IArchetypeService service,
-                              ILookupService lookups, DocumentHandlers handlers, Functions functions) {
+    public IMObjectDataSource(IMObject object, Map<String, Object> parameters, PropertySet fields,
+                              IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                              Functions functions) {
         super(service, lookups, handlers, functions);
         this.object = object;
+        this.parameters = parameters;
         this.fields = fields;
         resolver = new NodeResolver(object, service);
-        evaluator = new IMObjectExpressionEvaluator(object, resolver, fields, service, lookups, functions);
+        evaluator = new IMObjectExpressionEvaluator(object, resolver, parameters, fields, service, lookups, functions);
         this.handlers = handlers;
     }
 
@@ -135,8 +145,8 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
         if (descriptor == null) {
             throw new JRException("No node found for field=" + name);
         }
-        return new IMObjectCollectionDataSource(object, fields, descriptor, getArchetypeService(), getLookupService(),
-                                                getDocumentHandlers(), getFunctions(), sortNodes);
+        return new IMObjectCollectionDataSource(object, parameters, fields, descriptor, getArchetypeService(),
+                                                getLookupService(), getDocumentHandlers(), getFunctions(), sortNodes);
     }
 
     /**
@@ -158,7 +168,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
             throw new JRException("Unsupported value type=" + ((value != null) ? value.getClass() : null)
                                   + " returned by expression=" + expression);
         }
-        return new IMObjectCollectionDataSource(iterable, fields, getArchetypeService(), getLookupService(),
+        return new IMObjectCollectionDataSource(iterable, parameters, fields, getArchetypeService(), getLookupService(),
                                                 getDocumentHandlers(), getFunctions());
     }
 
@@ -180,6 +190,16 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
             }
         }
         return value;
+    }
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    public Object evaluate(String expression) {
+        return evaluator.evaluate(expression);
     }
 
 }

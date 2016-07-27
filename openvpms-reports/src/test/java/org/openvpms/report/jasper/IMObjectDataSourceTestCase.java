@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -101,7 +101,7 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
     public void testExpressionDataSource() throws Exception {
         IMObject object = TestHelper.createCustomer(false);
 
-        Map<String, Object> fields = new HashMap<String, Object>();
+        Map<String, Object> fields = new HashMap<>();
         fields.put("Globals.A", "A");
         fields.put("Globals.1", 1);
         IMObjectDataSource ds = createDataSource(object, fields);
@@ -116,7 +116,7 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
     @Test
     public void testFields() throws Exception {
         IMObject object = createCustomer("Foo", "Bar");
-        Map<String, Object> fields = new HashMap<String, Object>();
+        Map<String, Object> fields = new HashMap<>();
         fields.put("fieldA", "A");
         fields.put("field.B", "B");
         fields.put("field1", 1);
@@ -149,7 +149,6 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         assertEquals("Bar", ds.getFieldValue(exprCustomerLastName));
 
         assertFalse(ds.next());
-
     }
 
     /**
@@ -171,8 +170,8 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
      */
     private IMObjectDataSource createDataSource(IMObject object, Map<String, Object> fields) {
         Functions functions = applicationContext.getBean(Functions.class);
-        return new IMObjectDataSource(object, fields, getArchetypeService(), getLookupService(), handlers,
-                                      functions);
+        return new IMObjectDataSource(object, new HashMap<String, Object>(), fields, getArchetypeService(),
+                                      getLookupService(), handlers, functions);
     }
 
 }

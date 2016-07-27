@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -27,6 +27,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.report.ObjectSetExpressionEvaluator;
 
 import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -34,7 +35,7 @@ import java.util.Iterator;
  *
  * @author Tim Anderson
  */
-class ObjectSetDataSource implements JRRewindableDataSource {
+class ObjectSetDataSource extends AbstractDataSource implements JRRewindableDataSource {
 
     /**
      * The current object.
@@ -52,43 +53,34 @@ class ObjectSetDataSource implements JRRewindableDataSource {
     private Iterator<ObjectSet> iterator;
 
     /**
+     * The report parameters. May be {@code null}.
+     */
+    private final Map<String, Object> parameters;
+
+    /**
      * Additional fields. May be {@code null}
      */
     private final PropertySet fields;
 
     /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
-
-    /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
-    /**
-     * The JXPath extension functions.
-     */
-    private final Functions functions;
-
-
-    /**
      * Constructs a {@link ObjectSetDataSource}.
      *
      * @param collection the iterator
+     * @param parameters the report parameters. These may be accessed using {@code $P.<parameter name>}.
+     *                   May be {@code} null
      * @param fields     additional report fields. These override any in the report. May be {@code null}
      * @param service    the archetype service
      * @param lookups    the lookup service
      * @param functions  the JXPath extension functions
      */
-    public ObjectSetDataSource(Iterable<ObjectSet> collection, PropertySet fields, IArchetypeService service,
+    public ObjectSetDataSource(Iterable<ObjectSet> collection, Map<String, Object> parameters, PropertySet fields,
+                               IArchetypeService service,
                                ILookupService lookups, Functions functions) {
+        super(service, lookups, functions);
         this.collection = collection;
         this.iterator = collection.iterator();
+        this.parameters = (parameters != null) ? getParameters(parameters) : null;
         this.fields = fields;
-        this.service = service;
-        this.lookups = lookups;
-        this.functions = functions;
     }
 
     /**
@@ -100,7 +92,8 @@ class ObjectSetDataSource implements JRRewindableDataSource {
     public boolean next() throws JRException {
         try {
             if (iterator.hasNext()) {
-                current = new ObjectSetExpressionEvaluator(iterator.next(), fields, service, lookups, functions);
+                current = new ObjectSetExpressionEvaluator(iterator.next(), parameters, fields, getArchetypeService(),
+                                                           getLookupService(), getFunctions());
                 return true;
             }
             return false;
@@ -116,6 +109,17 @@ class ObjectSetDataSource implements JRRewindableDataSource {
      */
     public Object getFieldValue(JRField field) throws JRException {
         return current.getValue(field.getName());
+    }
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    @Override
+    public Object evaluate(String expression) {
+        return current != null ? current.evaluate(expression) : null;
     }
 
     /**
