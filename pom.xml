@@ -7,8 +7,8 @@
   ~ the License. You may obtain a copy of the License at
   ~ http://www.openvpms.org/license/
   ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~  Software distributed under the License is distributed on an 'AS IS' basis,
+  ~  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
@@ -37,8 +37,8 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</connection>
-        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</developerConnection>
+        <connection>scm:git:ssh://git@github.com:Narimm/OpenVPMS.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:Narimm/OpenVPMS.git</developerConnection>
     </scm>
 
     <issueManagement>
@@ -270,7 +270,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
-                    <version>1.0-beta-2</version>
+                    <version>1.4</version>
                     <executions>
                         <execution>
                             <phase>validate</phase>
@@ -280,6 +280,7 @@
                         </execution>
                     </executions>
                     <configuration>
+                        <shortRevisionLength>5</shortRevisionLength>
                         <doCheck>false</doCheck>
                         <doUpdate>false</doUpdate>
                         <revisionOnScmFailure>-1</revisionOnScmFailure>
@@ -583,6 +584,7 @@
                 <release.jdbc.password>${build.jdbc.password}</release.jdbc.password>
                 <smartflow.url>https://sfs-public.azurewebsites.net/api/v3</smartflow.url>
                 <smartflow.emrApiKey>873af17b2163255a3eb70a7d7413be152657bfab</smartflow.emrApiKey>
+                <release.mysqldump.path>mysqldump</release.mysqldump.path>
             </properties>
         </profile>
         <profile>
@@ -605,6 +607,7 @@
         <module>openvpms-web</module>
         <module>openvpms-etl</module>
         <module>openvpms-release</module>
+        <module>openvpms-custom-release</module>
     </modules>
 
     <repositories>
@@ -671,9 +674,19 @@
             </snapshots>
         </repository>
         <repository>
+            <id>ibiblio</id>
+            <name>ibiblio</name>
+            <url>http://maven.ibiblio.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+                <checksumPolicy>fail</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
             <id>jboss</id>
             <name>jboss</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public-jboss</url>
             <snapshots>
                 <enabled>false</enabled>
                 <checksumPolicy>fail</checksumPolicy>

@@ -26,6 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openvpms-web-jobs</artifactId>
+    <name>OpenVPMS Web Jobs</name>
 
     <dependencies>
         <dependency>

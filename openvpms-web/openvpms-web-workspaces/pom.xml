@@ -26,6 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openvpms-web-workspaces</artifactId>
+    <name>OpenVPMS Web Workspaces</name>
 
     <build>
         <resources>

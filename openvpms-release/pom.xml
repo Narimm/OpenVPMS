@@ -242,7 +242,7 @@
                         <echo message="Dumping database"/>
                         <!-- todo - need alternative dump for other databases -->
                         <mkdir dir="target/db"/>
-                        <exec executable="mysqldump" output="target/db/db.sql" failOnError="true" logError="true">
+                        <exec executable="${release.mysqldump.path}" output="target/db/db.sql" failOnError="true" logError="true">
                             <arg line="${build.jdbc.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}"/>
                         </exec>
                     </tasks>
@@ -307,7 +307,7 @@
 
     <properties>
         <jdbc.admin.username>root</jdbc.admin.username>
-        <jdbc.admin.password>root</jdbc.admin.password>
+        <jdbc.admin.password>password</jdbc.admin.password>
     </properties>
 
 </project>
