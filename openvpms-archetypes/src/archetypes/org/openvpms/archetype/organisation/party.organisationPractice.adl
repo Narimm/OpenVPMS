@@ -95,6 +95,30 @@
               type="java.lang.Boolean" defaultValue="false()"/>
         <node name="followUpAtCheckOut" path="/details/followUpAtCheckOut" minCardinality="0" maxCardinality="1"
               type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="shortUserNameFormat" path="/details/shortUserNameFormat"
+              type="java.lang.String" minCardinality="0" defaultValue="'NAME'">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userNameFormat"/>
+                <errorMessage>Invalid user name format</errorMessage>
+            </assertion>
+        </node>
+        <node name="mediumUserNameFormat" path="/details/mediumUserNameFormat"
+              type="java.lang.String" minCardinality="0" defaultValue="'TITLE_NAME'">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userNameFormat"/>
+                <errorMessage>Invalid user name format</errorMessage>
+            </assertion>
+        </node>
+        <node name="longUserNameFormat" path="/details/longUserNameFormat"
+              type="java.lang.String" minCardinality="0" defaultValue="'TITLE_NAME_QUALIFICATIONS'">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userNameFormat"/>
+                <errorMessage>Invalid user name format</errorMessage>
+            </assertion>
+        </node>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

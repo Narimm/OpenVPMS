@@ -33,12 +33,24 @@
                 <errorMessage>Invalid password</errorMessage>
             </assertion>
         </node>
-        <node name="name" path="/name" type="java.lang.String" displayName="Full Name"
-              minCardinality="1" maxLength="100">
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100">
             <assertion name="propercase"/>
         </node>
         <node name="description" path="/description" type="java.lang.String" displayName="Description"/>
-        <node name="colour" path="/details/colour" type="java.lang.String" maxLength="10"/>
+        <node name="title" path="/details/title" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.personTitle"/>
+            </assertion>
+        </node>
+        <node name="firstName" path="/details/firstName" type="java.lang.String" minCardinality="0" maxLength="30">
+            <assertion name="propercase"/>
+        </node>
+        <node name="lastName" path="/details/lastName" type="java.lang.String" minCardinality="0" maxLength="30">
+            <assertion name="propercase"/>
+        </node>
+        <node name="qualifications" path="/details/qualifications" type="java.lang.String" minCardinality="0"
+              maxLength="30"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node dislayName="User Level" name="userLevel" path="/details/userLevel" type="java.lang.String"
               minCardinality="0">
@@ -58,6 +70,7 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="colour" path="/details/colour" type="java.lang.String" maxLength="10"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
