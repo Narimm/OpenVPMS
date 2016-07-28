@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -46,8 +44,7 @@ import java.util.Set;
 /**
  * Merges two parties.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class PartyMerger {
 
@@ -73,7 +70,7 @@ public abstract class PartyMerger {
 
 
     /**
-     * Creates a new <tt>PartyMerger</tt>.
+     * Constructs a {@link PartyMerger}.
      *
      * @param type    the short name of the type of parties that may be merged
      * @param service the archetype service
@@ -81,32 +78,47 @@ public abstract class PartyMerger {
     public PartyMerger(String type, IArchetypeService service) {
         this.type = type;
         this.service = service;
-        relationshipCopier = new IMObjectCopier(
-                new EntityRelationshipCopyHandler(), service);
-        contactCopier = new IMObjectCopier(
-                new ContactCopyHandler(), service);
+        relationshipCopier = new IMObjectCopier(new EntityRelationshipCopyHandler(), service);
+        contactCopier = new IMObjectCopier(new ContactCopyHandler(), service);
     }
 
     /**
      * Merges one {@link Party} with another.
      * <p/>
-     * On completion, the 'to' party will contain all of the 'from'
-     * party's contacts, identities, classifications and relationships,
-     * and any act participations will be changed to reference the 'to'
+     * On completion, the 'to' party will contain all of the 'from' party's contacts, identities, classifications and
+     * relationships, any act participations will be changed to reference the 'to'
      * party. The 'from' party will be deleted.
+     * <p/>
+     * This operation should be invoked within a transaction.
      *
      * @param from the party to merge from
      * @param to   the party to merge to
      */
     public void merge(Party from, Party to) {
         if (from.getObjectReference().equals(to.getObjectReference())) {
-            throw new MergeException(
-                    MergeException.ErrorCode.CannotMergeToSameObject,
-                    getDisplayName());
+            throw new MergeException(MergeException.ErrorCode.CannotMergeToSameObject, getDisplayName());
         }
         checkParty(from);
         checkParty(to);
 
+        Set<IMObject> merged = new LinkedHashSet<>();
+        merge(from, to, merged);
+        service.save(merged);
+        service.remove(from);
+    }
+
+    /**
+     * Merges one {@link Party} with another.
+     * <p/>
+     * On completion, the 'to' party will contain all of the 'from' party's contacts, identities, classifications and
+     * relationships, any act participations will be changed to reference the 'to'
+     * party.
+     *
+     * @param from   the party to merge from
+     * @param to     the party to merge to
+     * @param merged the set of changed objects
+     */
+    protected void merge(Party from, Party to, Set<IMObject> merged) {
         copyContacts(from, to);
         copyClassifications(from, to);
         copyEntityRelationships(from, to);
@@ -114,7 +126,6 @@ public abstract class PartyMerger {
 
         List<IMObject> participations = moveParticipations(from, to);
 
-        Set<IMObject> merged = new LinkedHashSet<IMObject>();
         merged.add(to);
         merged.addAll(participations);
 
@@ -125,8 +136,6 @@ public abstract class PartyMerger {
                 merged.add(other);
             }
         }
-        service.save(merged);
-        service.remove(from);
     }
 
     /**
@@ -167,8 +176,7 @@ public abstract class PartyMerger {
      */
     protected void copyEntityRelationships(Party from, Party to) {
         for (EntityRelationship relationship : from.getEntityRelationships()) {
-            EntityRelationship copy = copyEntityRelationship(relationship, from,
-                                                             to);
+            EntityRelationship copy = copyEntityRelationship(relationship, from, to);
             if (!exists(copy, to)) {
                 to.addEntityRelationship(copy);
             }
@@ -187,8 +195,7 @@ public abstract class PartyMerger {
      * @return the copied relationship
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected EntityRelationship copyEntityRelationship(
-            EntityRelationship relationship, Party from, Party to) {
+    protected EntityRelationship copyEntityRelationship(EntityRelationship relationship, Party from, Party to) {
         IMObjectReference fromRef = from.getObjectReference();
         IMObjectReference toRef = to.getObjectReference();
 
@@ -281,9 +288,9 @@ public abstract class PartyMerger {
      *
      * @param relationship the relationship
      * @param party        the party to check against
-     * @return <tt>true</tt> if a relationship exists that has the same
-     *         archetype id, source, and target, and is still active;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if a relationship exists that has the same
+     * archetype id, source, and target, and is still active;
+     * otherwise {@code false}
      */
     protected boolean exists(EntityRelationship relationship, Party party) {
         boolean result = false;
@@ -303,7 +310,7 @@ public abstract class PartyMerger {
 
     /**
      * Returns the related entity in a relationship.
-     * This is the source or target of the relationship that isn't the same as <tt>from</tt>.
+     * This is the source or target of the relationship that isn't the same as {@code from}.
      *
      * @param from         the merge from party
      * @param to           the merge to party
@@ -330,8 +337,8 @@ public abstract class PartyMerger {
     /**
      * Returns the entity with the specified reference.
      *
-     * @param reference the reference. May be <tt>null</tt>
-     * @return the corresponding entity, or <tt>null</tt> if none is found
+     * @param reference the reference. May be {@code null}
+     * @return the corresponding entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Entity getEntity(IMObjectReference reference) {

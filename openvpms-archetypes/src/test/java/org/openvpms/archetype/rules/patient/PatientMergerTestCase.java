@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -177,6 +177,51 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
         Party merged = checkMerge(from, to);
         bean = new EntityBean(merged);
         assertNotNull(bean.getRelationship(discount));
+    }
+
+    /**
+     * Verifies that if either patient is desxed, the merged patient is desexed.
+     */
+    @Test
+    public void testMergeDesexed() {
+        Party from1 = TestHelper.createPatient();
+        Party to1 = TestHelper.createPatient();
+
+        Party merged1 = checkMerge(from1, to1);
+        assertFalse(rules.isDesexed(merged1));
+
+        Party from2 = TestHelper.createPatient();
+        Party to2 = TestHelper.createPatient();
+        rules.setDesexed(from2);
+        Party merged2 = checkMerge(from2, to2);
+        assertTrue(rules.isDesexed(merged2));
+
+        Party from3 = TestHelper.createPatient();
+        Party to3 = TestHelper.createPatient();
+        rules.setDesexed(to3);
+
+        Party merged3 = checkMerge(from3, to3);
+        assertTrue(rules.isDesexed(merged3));
+    }
+
+    /**
+     * Verifies that if either patient is deceased, the merged patient is deceased.
+     */
+    @Test
+    public void testMergeDeceased() {
+        Party from1 = TestHelper.createPatient();
+        Party to1 = TestHelper.createPatient();
+
+        rules.setDeceased(from1);
+        Party merged1 = checkMerge(from1, to1);
+        assertTrue(rules.isDeceased(merged1));
+
+        Party from2 = TestHelper.createPatient();
+        Party to2 = TestHelper.createPatient();
+        rules.setDeceased(to2);
+
+        Party merged2 = checkMerge(from2, to2);
+        assertTrue(rules.isDeceased(merged2));
     }
 
     /**
