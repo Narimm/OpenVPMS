@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.expression;
@@ -129,6 +129,44 @@ public class ExpressionFunctions extends AbstractObjectFunctions {
      */
     public String concatIf(String value1, String value2, String value3) {
         return concatIf(new String[]{value1, value2, value3});
+    }
+
+    /**
+     * Concatenates a list of values if all of them are non-null/empty.
+     *
+     * @param value1 the first value
+     * @param value2 the second value
+     * @param value3 the third value
+     * @param value4 the fourth value
+     * @return the concatenated values, or an empty string if a value is null or empty
+     */
+    public String concatIf(String value1, String value2, String value3, String value4) {
+        return concatIf(new String[]{value1, value2, value3, value4});
+    }
+
+    /**
+     * Concatenates a list of values if all of them are non-null/empty.
+     *
+     * @param value1 the first value
+     * @param value2 the second value
+     * @param value3 the third value
+     * @param value4 the fourth value
+     * @param value5 the fifth value
+     * @return the concatenated values, or an empty string if a value is null or empty
+     */
+    public String concatIf(String value1, String value2, String value3, String value4, String value5) {
+        return concatIf(new String[]{value1, value2, value3, value4, value5});
+    }
+
+    /**
+     * Returns the first argument if not null or empty, otherwise returns the second.
+     *
+     * @param value     the value to check
+     * @param elseValue the value to return if {@code value} is null or empty
+     * @return {@code value} or {@code elseValue} if {@code value} is {@code null} or empty
+     */
+    public Object ifempty(String value, String elseValue) {
+        return !StringUtils.isEmpty(value) ? value : elseValue;
     }
 
     /**

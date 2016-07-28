@@ -98,7 +98,7 @@ public abstract class AbstractDataSource implements JRDataSource {
      * Helper to prefix parameter names with P. to distinguish them from other variables.
      *
      * @param parameters the parameters
-     * @return the prefixed parametetrs
+     * @return the prefixed parameters
      */
     protected Map<String, Object> getParameters(Map<String, Object> parameters) {
         Map<String, Object> result = new HashMap<>();

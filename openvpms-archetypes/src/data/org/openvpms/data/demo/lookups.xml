@@ -192,4 +192,26 @@
     <data archetype="lookup.customerReferral" code="WEBSITE" name="Website"/>
     <data archetype="lookup.customerVet" code="DR_BLOGGS" name="Dr Bloggs"/>
     <data archetype="lookup.customerInsurance" code="PET_INSURE" name="Pet Insure Australia"/>
+    <data archetype="lookup.userNameFormat" code="NAME"
+          name="Name"
+          description="User name format including the name only"
+          expression="expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name)"/>
+    <data archetype="lookup.userNameFormat" code="TITLE_NAME" name="Title and Name"
+          description="User name format including the title and name"
+          expression="concat(expr:concatIf($title,' '),
+                             expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name))"/>
+    <data archetype="lookup.userNameFormat" code="TITLE_NAME_QUALIFICATIONS"
+          name="Title, Name and Qualifications"
+          description="User name format including the title, name, and qualifications"
+          expression="concat(expr:concatIf($title,' '),
+                             expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name),
+                             expr:concatIf(', ', $qualifications))"/>
+    <data archetype="lookup.userNameFormat" code="LOGIN_NAME"
+          name="Login name"
+          description="User name format including the login name"
+          expression="$username"/>
+    <data archetype="lookup.userNameFormat" code="DESCRIPTION"
+          name="Description"
+          description="User name format including the description"
+          expression="expr:ifempty($description, $name)"/>
 </archetype>

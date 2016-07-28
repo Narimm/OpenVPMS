@@ -1807,3 +1807,96 @@ WHERE e.arch_short_name = 'entity.documentTemplateEmail'
 UPDATE entities e
 SET e.arch_short_name = 'entity.documentTemplateEmailUser'
 WHERE e.arch_short_name = 'entity.documentTemplateEmail';
+
+#
+# OVPMS-1789 Standardise security.user name attributes, and provide reporting support
+#
+DROP TABLE IF EXISTS new_lookups;
+CREATE TEMPORARY TABLE new_lookups (
+  code        VARCHAR(255) PRIMARY KEY,
+  name        VARCHAR(255),
+  description VARCHAR(255),
+  expression  VARCHAR(5000)
+);
+
+INSERT INTO new_lookups (code, name, description, expression)
+VALUES ('NAME', 'Name', 'User name format including the name only',
+        'expr:ifempty(expr:concatIf($firstName, '' '', $lastName), $name)'),
+  ('TITLE_NAME', 'Title and Name', 'User name format including the title and name',
+   'concat(expr:concatIf($title,'' ''),
+                        expr:ifempty(expr:concatIf($firstName, '' '', $lastName), $name))'),
+  ('TITLE_NAME_QUALIFICATIONS', 'Title, Name and Qualifications',
+   'User name format including the title, name, and qualifications',
+   'concat(expr:concatIf($title,'' ''),
+                             expr:ifempty(expr:concatIf($firstName, '' '', $lastName), $name),
+                             expr:concatIf('', '', $qualifications))'),
+  ('LOGIN_NAME', 'Login name', 'User name format including the login name', '$username'),
+  ('DESCRIPTION', 'Description', 'User name format including the description', 'expr:ifempty($description, $name)');
+
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.userNameFormat',
+    1,
+    '1.0',
+    code,
+    name,
+    description,
+    0
+  FROM new_lookups l
+  WHERE NOT exists(SELECT *
+                   FROM lookups e
+                   WHERE e.arch_short_name = 'lookup.userNameFormat' AND e.code = l.code);
+
+INSERT INTO lookup_details (lookup_id, type, value, name)
+  SELECT
+    l.lookup_id,
+    'string',
+    n.expression,
+    'expression'
+  FROM lookups l
+    JOIN new_lookups n
+      ON l.code = n.code
+         AND l.arch_short_name = 'lookup.userNameFormat'
+         AND NOT exists(SELECT *
+                        FROM lookup_details d
+                        WHERE d.lookup_id = l.lookup_id
+                              AND d.name = 'expression');
+DROP TABLE new_lookups;
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'shortUserNameFormat',
+    'string',
+    'NAME'
+  FROM entities e
+  WHERE e.arch_short_name = 'party.organisationPractice'
+        AND NOT exists(SELECT *
+                       FROM entity_details d
+                       WHERE d.entity_id = e.entity_id AND d.name = 'shortUserNameFormat');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'mediumUserNameFormat',
+    'string',
+    'TITLE_NAME'
+  FROM entities e
+  WHERE e.arch_short_name = 'party.organisationPractice'
+        AND NOT exists(SELECT *
+                       FROM entity_details d
+                       WHERE d.entity_id = e.entity_id AND d.name = 'mediumUserNameFormat');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'longUserNameFormat',
+    'string',
+    'TITLE_NAME_QUALIFICATIONS'
+  FROM entities e
+  WHERE e.arch_short_name = 'party.organisationPractice'
+        AND NOT exists(SELECT *
+                       FROM entity_details d
+                       WHERE d.entity_id = e.entity_id AND d.name = 'longUserNameFormat');

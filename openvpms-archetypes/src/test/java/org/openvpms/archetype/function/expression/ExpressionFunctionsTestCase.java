@@ -11,15 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.function;
+package org.openvpms.archetype.function.expression;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.function.expression.ExpressionFunctions;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 import static org.junit.Assert.assertEquals;
@@ -85,14 +84,33 @@ public class ExpressionFunctionsTestCase {
      */
     @Test
     public void testConcatIf() {
+        // 2 arguments
         assertEquals("", ctx.getValue("expr:concatIf('x','')"));
         assertEquals("", ctx.getValue("expr:concatIf('','x')"));
         assertEquals("xy", ctx.getValue("expr:concatIf('x','y')"));
 
+        // 3 arguments
         assertEquals("", ctx.getValue("expr:concatIf('','x','x')"));
         assertEquals("", ctx.getValue("expr:concatIf('x','','x')"));
         assertEquals("", ctx.getValue("expr:concatIf('x','x','')"));
         assertEquals("xyx", ctx.getValue("expr:concatIf('x','y','x')"));
+
+        // 4 arguments
+        assertEquals("", ctx.getValue("expr:concatIf('','x','x','x')"));
+        assertEquals("abcd", ctx.getValue("expr:concatIf('a','b','c','d')"));
+
+        // 5 arguments
+        assertEquals("", ctx.getValue("expr:concatIf('','x','x','x', 'x')"));
+        assertEquals("abcde", ctx.getValue("expr:concatIf('a','b','c','d','e')"));
+    }
+
+    /**
+     * Tests the {@link ExpressionFunctions#ifempty(String, String)}
+     */
+    @Test
+    public void testIfEmpty() {
+        assertEquals("x", ctx.getValue("expr:ifempty('x','y')"));
+        assertEquals("y", ctx.getValue("expr:ifempty('','y')"));
     }
 
     /**

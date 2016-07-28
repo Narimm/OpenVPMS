@@ -30,6 +30,7 @@ import org.openvpms.archetype.function.party.PartyFunctions;
 import org.openvpms.archetype.function.product.ProductFunctions;
 import org.openvpms.archetype.function.reminder.ReminderFunctions;
 import org.openvpms.archetype.function.supplier.SupplierFunctions;
+import org.openvpms.archetype.function.user.UserFunctions;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
@@ -58,6 +59,7 @@ import org.openvpms.component.system.common.jxpath.ObjectFunctions;
  * <li><em>openvpms</em> - {@link ArchetypeServiceFunctions}</li>
  * <li><em>party</em> - {@link PartyFunctions}</li>
  * <li><em>reminder</em> - {@link ReminderFunctions}</li>
+ * <li><em>user</em> - {@link UserFunctions}</li>
  * <li><em>word</em> - {@code WordUtils}</li>
  * </ul>
  *
@@ -91,6 +93,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         CustomerRules customerRules = new CustomerRules(service, lookups);
         ReminderRules reminderRules = new ReminderRules(service, patientRules);
         SupplierRules supplierRules = new SupplierRules(service);
+        PracticeService practiceService = getPracticeService();
         FunctionLibrary library = new FunctionLibrary();
         library.addFunctions(create("date", new DateFunctions()));
         library.addFunctions(new ExpressionFunctions("expr"));
@@ -100,9 +103,10 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(create("math", new MathFunctions()));
         library.addFunctions(create("openvpms", new ArchetypeServiceFunctions(service, lookups)));
         library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules)));
-        library.addFunctions(new ProductFunctions(new ProductPriceRules(service), getPracticeService(), service));
+        library.addFunctions(new ProductFunctions(new ProductPriceRules(service), practiceService, service));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
         library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
+        library.addFunctions(new UserFunctions(service, practiceService, lookups, library));
         library.addFunctions(create("word", WordUtils.class));
         return library;
     }
