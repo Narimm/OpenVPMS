@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.report;
 
+import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -26,6 +27,7 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.Report;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
@@ -201,7 +203,11 @@ public class SQLReportPrinter extends AbstractPrinter {
         try {
             connection = getConnection();
             params.put(connectionName, connection);
-            return report.generate(params, ReportContextFactory.create(context), mimeType);
+            Document document = report.generate(params, ReportContextFactory.create(context), mimeType);
+            String fileName = new FileNameFormatter().format(template.getName(), null, template);
+            String extension = FilenameUtils.getExtension(document.getName());
+            document.setName(fileName + "." + extension);
+            return document;
         } finally {
             closeConnection(connection);
         }
