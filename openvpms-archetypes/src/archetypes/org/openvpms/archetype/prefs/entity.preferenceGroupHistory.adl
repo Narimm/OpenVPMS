@@ -26,6 +26,8 @@
               maxCardinality="1" defaultValue="false()"/>
         <node name="showCharges" path="/details/showCharges" type="java.lang.Boolean" minCardinality="0"
               maxCardinality="1" defaultValue="false()"/>
+        <node name="showBatches" path="/details/showBatches" type="java.lang.Boolean" minCardinality="0"
+              maxCardinality="1" defaultValue="false()"/>
         <node name="sort" path="/details/sort" type="java.lang.String" minCardinality="1" defaultValue='DESC'>
             <assertion name="lookup.local">
                 <propertyList name="entries">

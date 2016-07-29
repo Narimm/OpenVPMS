@@ -154,9 +154,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
     @Override
     protected Component formatItem(ActBean bean) {
         Component detail;
-        if (bean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
-            detail = getMedicationDetail(bean);
-        } else if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
+        if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
             detail = getInvoiceItemDetail(bean);
         } else if (bean.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
             detail = getProblemDetail(bean);
@@ -164,6 +162,35 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
             detail = super.formatItem(bean);
         }
         return detail;
+    }
+
+    /**
+     * Returns a component for the detail of an <em>act.patientMedication</em>.
+     *
+     * @param bean        the act bean
+     * @param showBatches if (@code true}, include any batch number
+     */
+    @Override
+    protected Component getMedicationDetail(ActBean bean, boolean showBatches) {
+        String text = getText(bean.getAct(), true);
+        List<IMObjectReference> refs = bean.getNodeSourceObjectRefs("invoiceItem");
+        if (!refs.isEmpty()) {
+            ArchetypeQuery query = new ArchetypeQuery(refs.get(0));
+            query.getArchetypeConstraint().setAlias("act");
+            query.add(new NodeSelectConstraint("total"));
+            query.setMaxResults(1);
+            ObjectSetQueryIterator iter = new ObjectSetQueryIterator(query);
+            if (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                text = Messages.format("patient.record.summary.medication", text,
+                                       NumberFormatter.formatCurrency(set.getBigDecimal("act.total")));
+            }
+        }
+        Component component = getTextDetail(text);
+        if (showBatches) {
+            component = addBatch(bean, component);
+        }
+        return component;
     }
 
     /**
@@ -180,30 +207,6 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
         FinancialAct act = (FinancialAct) bean.getAct();
         String text = Messages.format("patient.record.summary.invoiceitem", name, act.getQuantity(),
                                       NumberFormatter.formatCurrency(act.getTotal()));
-        return getTextDetail(text);
-    }
-
-    /**
-     * Returns a component for the detail of an act.patientMedication.
-     *
-     * @param act the act
-     * @return a new component
-     */
-    private Component getMedicationDetail(ActBean act) {
-        String text = getText(act.getAct(), true);
-        List<IMObjectReference> refs = act.getNodeSourceObjectRefs("invoiceItem");
-        if (!refs.isEmpty()) {
-            ArchetypeQuery query = new ArchetypeQuery(refs.get(0));
-            query.getArchetypeConstraint().setAlias("act");
-            query.add(new NodeSelectConstraint("total"));
-            query.setMaxResults(1);
-            ObjectSetQueryIterator iter = new ObjectSetQueryIterator(query);
-            if (iter.hasNext()) {
-                ObjectSet set = iter.next();
-                text = Messages.format("patient.record.summary.medication", text,
-                                       NumberFormatter.formatCurrency(set.getBigDecimal("act.total")));
-            }
-        }
         return getTextDetail(text);
     }
 
