@@ -54,6 +54,9 @@
         <className>org.openvpms.web.component.mail.MailException</className>
     </exclude-exception>
     <exclude-exception>
+        <className>org.openvpms.web.workspace.admin.archetype.ArchetypeEditorException</className>
+    </exclude-exception>
+    <exclude-exception>
         <className>org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderException</className>
     </exclude-exception>
     <exclude-exception>
