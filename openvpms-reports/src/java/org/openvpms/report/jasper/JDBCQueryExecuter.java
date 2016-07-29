@@ -124,7 +124,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     /**
      * Wraps an {@code JRDataSource}, in order to support {@link #fields}.
      */
-    public class FieldDataSource implements JRDataSource {
+    public class FieldDataSource extends AbstractDataSource {
 
         /**
          * The data source to delegate to. May be {@code null} if the report has no SQL statement.
@@ -142,6 +142,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
          * @param dataSource the data source to wrap. May be {@code null}
          */
         public FieldDataSource(JRDataSource dataSource) {
+            super(service, lookups, functions);
             this.dataSource = dataSource;
             evaluator = new JDBCExpressionEvaluator(dataSource, fields, service, lookups, functions);
         }
@@ -167,7 +168,14 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
             return evaluator.getValue(field);
         }
 
-        public Object getValue(String expression) {
+        /**
+         * Evaluates an xpath expression.
+         *
+         * @param expression the expression
+         * @return the result of the expression. May be {@code null}
+         */
+        @Override
+        public Object evaluate(String expression) {
             return evaluator.evaluate(expression);
         }
     }
