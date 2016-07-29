@@ -38,12 +38,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
@@ -55,16 +58,21 @@ import org.openvpms.component.system.common.cache.LRUIMObjectCache;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.StyleSheetHelper;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
@@ -128,6 +136,11 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private final boolean showClinician;
 
     /**
+     * Determines if product batches are shown in history items.
+     */
+    private final boolean showBatches;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -152,6 +165,11 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * The width of the clinician column, in pixels.
      */
     private int clinicianWidth = -1;
+
+    /**
+     * Listener to view a batch.
+     */
+    private ContextSwitchListener batchViewer;
 
     /**
      * The jxpath function library.
@@ -204,7 +222,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         model.addColumn(new TableColumn(SUMMARY_COLUMN));
         model.addColumn(new TableColumn(SPACER_COLUMN));
         setTableColumnModel(model);
-        showClinician = context.getPreferences().getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
+        Preferences preferences = context.getPreferences();
+        showClinician = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
+        showBatches = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showBatches", false);
         ArchetypeFunctionsFactory factory = ServiceHelper.getBean(ArchetypeFunctionsFactory.class);
         IArchetypeService archetypeService = ServiceHelper.getArchetypeService();
         cache = new LRUIMObjectCache(cacheSize, archetypeService);
@@ -483,7 +503,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a component representing the item
      */
     protected Component formatItem(ActBean bean) {
-        if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
+        if (bean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
+            return getMedicationDetail(bean, showBatches);
+        } else if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
             return getDocumentDetail((DocumentAct) bean.getAct());
         }
         return getTextDetail(bean.getAct());
@@ -612,6 +634,79 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             clinician = Messages.get("patient.record.summary.clinician.none");
         }
         return clinician;
+    }
+
+    /**
+     * Returns a component for the detail of an <em>act.patientMedication</em>.
+     *
+     * @param bean        the act bean
+     * @param showBatches if (@code true}, include any batch number
+     */
+    protected Component getMedicationDetail(ActBean bean, boolean showBatches) {
+        Component component = getTextDetail(bean.getAct());
+        if (showBatches) {
+            component = addBatch(bean, component);
+        }
+        return component;
+    }
+
+    /**
+     * Adds a batch to the medication display, if one is present.
+     *
+     * @param bean       the act bean
+     * @param medication the medication component
+     * @return the medication and batch, if one is present, otherwise just the medication
+     */
+    protected Component addBatch(ActBean bean, Component medication) {
+        Component result;
+        if (showBatches) {
+            Component batch = getBatch(bean);
+            if (batch != null) {
+                result = ColumnFactory.create(Styles.CELL_SPACING, medication, batch);
+            } else {
+                result = medication;
+            }
+        } else {
+            result = medication;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a component representing a medication batch, if it has one.
+     *
+     * @param bean the medication act bean
+     * @return the batch component, or {@code null} if the medication has no batch
+     */
+    protected Component getBatch(ActBean bean) {
+        Component result = null;
+        IMObjectReference reference = bean.getNodeParticipantRef("batch");
+        if (reference != null) {
+            if (batchViewer == null) {
+                batchViewer = new ContextSwitchListener() {
+                    @Override
+                    public void switchTo(IMObject object) {
+                        onShowBatch(object);
+                    }
+
+                    @Override
+                    public void switchTo(String shortName) {
+
+                    }
+                };
+            }
+            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(reference, batchViewer,
+                                                                         getContext().getContext());
+            result = RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("patient.record.summary.batch"),
+                                       viewer.getComponent());
+        }
+        return result;
+    }
+
+    private void onShowBatch(IMObject object) {
+        HelpContext help = context.getHelpContext().topic(object, "view");
+        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object, context.getContext(), help);
+        dialog.show();
     }
 
     /**
