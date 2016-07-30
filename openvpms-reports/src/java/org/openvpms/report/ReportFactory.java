@@ -93,7 +93,7 @@ public class ReportFactory {
         Report report;
         if (DocFormats.hasExtension(template, DocFormats.JRXML_EXT)) {
             IArchetypeService serviceProxy = proxy(service);
-            Functions functions = factory.create(serviceProxy);
+            Functions functions = factory.create(serviceProxy, true);
             report = new TemplatedJasperIMObjectReport(template, serviceProxy, lookups, handlers, functions);
         } else {
             throw new ReportException(UnsupportedTemplate, name);
@@ -122,7 +122,7 @@ public class ReportFactory {
     public IMReport<IMObject> createIMObjectReport(Document template) {
         IMReport<IMObject> report;
         IArchetypeService serviceProxy = proxy(service);
-        Functions functions = factory.create(serviceProxy);
+        Functions functions = factory.create(serviceProxy, true);
 
         String ext = FilenameUtils.getExtension(template.getName());
         if (ext != null) {
@@ -190,7 +190,7 @@ public class ReportFactory {
         String ext = FilenameUtils.getExtension(template.getName());
         if (ext != null) {
             IArchetypeService serviceProxy = proxy(service);
-            Functions functions = factory.create(serviceProxy);
+            Functions functions = factory.create(serviceProxy, true);
             if (isJRXML(ext)) {
                 report = new TemplatedJasperObjectSetReport(template, serviceProxy, lookups, handlers, functions);
             } else if (isODT(ext)) {

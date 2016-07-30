@@ -229,7 +229,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         IArchetypeService archetypeService = ServiceHelper.getArchetypeService();
         cache = new LRUIMObjectCache(cacheSize, archetypeService);
         service = new CachingReadOnlyArchetypeService(cache, archetypeService);
-        functions = factory.create(service);
+        functions = factory.create(service, true);
         initStyles();
     }
 

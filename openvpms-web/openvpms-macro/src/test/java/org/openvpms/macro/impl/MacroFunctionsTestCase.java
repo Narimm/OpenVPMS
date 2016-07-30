@@ -62,8 +62,8 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
         final IArchetypeService service = getArchetypeService();
         functions = new DefaultArchetypeFunctionsFactory(service, getLookupService(), null, null, null) {
             @Override
-            public FunctionLibrary create(IArchetypeService service) {
-                FunctionLibrary library = super.create(service);
+            public FunctionLibrary create(IArchetypeService service, boolean cache) {
+                FunctionLibrary library = super.create(service, cache);
                 library.addFunctions(create("macro", new MacroFunctions(macros)));
                 return library;
             }

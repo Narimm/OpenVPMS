@@ -153,7 +153,7 @@ public class JasperReportTool extends ReportTool {
         try {
             if (doc.getName().endsWith(DocFormats.JRXML_EXT)) {
                 design = JasperReportHelper.getReport(doc, handlers, DefaultJasperReportsContext.getInstance());
-                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers, factory.create(service));
+                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers, factory.create());
             } else {
                 throw new ReportException(UnsupportedTemplate, doc.getName());
             }
