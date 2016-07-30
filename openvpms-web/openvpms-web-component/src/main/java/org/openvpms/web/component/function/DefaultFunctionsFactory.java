@@ -71,11 +71,12 @@ public class DefaultFunctionsFactory extends DefaultArchetypeFunctionsFactory {
      * Creates a new {@code FunctionLibrary} containing functions that use the specified {@link IArchetypeService}.
      *
      * @param service the archetype service
+     * @param cache if {@code true}, indicates that functions may use caching
      * @return the functions
      */
     @Override
-    public FunctionLibrary create(IArchetypeService service) {
-        FunctionLibrary library = super.create(service);
+    public FunctionLibrary create(IArchetypeService service, boolean cache) {
+        FunctionLibrary library = super.create(service, cache);
         library.addFunctions(create("macro", new MacroFunctions(macros)));
         return library;
     }

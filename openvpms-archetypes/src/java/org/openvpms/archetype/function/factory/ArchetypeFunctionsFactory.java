@@ -30,6 +30,7 @@ import org.openvpms.archetype.function.party.PartyFunctions;
 import org.openvpms.archetype.function.product.ProductFunctions;
 import org.openvpms.archetype.function.reminder.ReminderFunctions;
 import org.openvpms.archetype.function.supplier.SupplierFunctions;
+import org.openvpms.archetype.function.user.CachingUserFunctions;
 import org.openvpms.archetype.function.user.UserFunctions;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.party.CustomerRules;
@@ -75,16 +76,17 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
     @Override
     public Functions create() {
         IArchetypeService service = getArchetypeService();
-        return create(service);
+        return create(service, false);
     }
 
     /**
-     * Creates a new {@code FunctionLibrary} containing functions that use specified {@link IArchetypeService}.
+     * Creates a new {@code FunctionLibrary} containing functions that use the specified {@link IArchetypeService}.
      *
      * @param service the archetype service
+     * @param cache   if {@code true}, indicates that functions may use caching
      * @return the functions
      */
-    public FunctionLibrary create(IArchetypeService service) {
+    public FunctionLibrary create(IArchetypeService service, boolean cache) {
         ILookupService lookups = getLookupService();
         PatientAgeFormatter formatter = getPatientAgeFormatter();
 
@@ -106,7 +108,11 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(new ProductFunctions(new ProductPriceRules(service), practiceService, service));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
         library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
-        library.addFunctions(new UserFunctions(service, practiceService, lookups, library));
+        if (cache) {
+            library.addFunctions(new CachingUserFunctions(service, practiceService, lookups, library, 1024));
+        } else {
+            library.addFunctions(new UserFunctions(service, practiceService, lookups, library));
+        }
         library.addFunctions(create("word", WordUtils.class));
         return library;
     }

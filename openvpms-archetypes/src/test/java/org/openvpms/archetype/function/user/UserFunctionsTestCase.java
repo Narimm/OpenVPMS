@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the {@link UserFunctions} class.
+ * Tests the {@link UserFunctions} and {@link CachingUserFunctions} classes.
  *
  * @author Tim Anderson
  */
@@ -141,8 +141,28 @@ public class UserFunctionsTestCase extends ArchetypeServiceTest {
      * @param expected the expected result
      */
     private void checkFormat(User user, String style, String expected) {
+        checkFormat(user, style, expected, false);
+        checkFormat(user, style, expected, true);
+    }
+
+    /**
+     * Verifies the {@link UserFunctions#format(User, String)} and {@link UserFunctions#formatById(long, String)}
+     * return the expected values.
+     *
+     * @param user     the user
+     * @param style    the format style
+     * @param expected the expected result
+     * @param cache    if {@code true}, use {@link CachingUserFunctions} otherwise use {@link UserFunctions}
+     */
+    private void checkFormat(User user, String style, String expected, boolean cache) {
         FunctionLibrary library = new FunctionLibrary();
-        library.addFunctions(new UserFunctions(getArchetypeService(), practiceService, getLookupService(), library));
+        if (cache) {
+            library.addFunctions(new CachingUserFunctions(getArchetypeService(), practiceService, getLookupService(),
+                                                          library, 1024));
+        } else {
+            library.addFunctions(new UserFunctions(getArchetypeService(), practiceService, getLookupService(),
+                                                   library));
+        }
         library.addFunctions(new ExpressionFunctions("expr"));
 
         // test the user based format
