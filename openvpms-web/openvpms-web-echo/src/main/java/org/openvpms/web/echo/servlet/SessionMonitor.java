@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -268,7 +268,15 @@ public class SessionMonitor implements DisposableBean {
     @Override
     public void destroy() {
         log.info("Shutting down SessionMonitor");
-        executor.shutdown();
+        executor.shutdownNow();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                log.error("Pool did not terminate");
+            }
+        } catch (InterruptedException exception) {
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
         monitors.clear();
     }
 
