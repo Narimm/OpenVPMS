@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-08-01T03:10:00 -->
+<!-- 2016-08-02T06:41:52 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Label Address Large" pageWidth="252" pageHeight="102" orientation="Landscape" columnWidth="236" leftMargin="8" rightMargin="8" topMargin="8" bottomMargin="8" uuid="5360069e-917e-408e-8ff8-819414fc712a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,6 +19,10 @@
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showLogo" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.TRUE]]></defaultValueExpression>
 	</parameter>
 	<field name="patient.entity.name" class="java.lang.String"/>
 	<field name="patient.entity.description" class="java.lang.String"/>
@@ -184,6 +188,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{showLogo}]]></printWhenExpression>
 				</reportElement>
 				<imageExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.logoFile}]]></imageExpression>
 			</image>
