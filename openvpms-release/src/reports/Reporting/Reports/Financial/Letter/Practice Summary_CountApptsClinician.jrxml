@@ -3,8 +3,9 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
@@ -32,7 +33,7 @@ sum(a.status='PENDING') as pendingCount,
 sum(a.status in('IN_PROGRESS','BILLED','CHECKED_IN')) as progressCount,
 count(*) as apptCount,
 ifnull(ev.name,'--None--') as cl_name,
-ev.description as cl_descr
+ev.entity_id as clinician_id
 from acts a
 join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
 left join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
@@ -46,16 +47,16 @@ and a.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVA
 group by pv.entity_id order by ev.name]]>
 	</queryString>
 	<field name="totalPatientCount" class="java.lang.Long"/>
-	<field name="patientCount" class="java.lang.Long"/>
-	<field name="cl_name" class="java.lang.String"/>
-	<field name="cl_descr" class="java.lang.String"/>
 	<field name="totalCustomerCount" class="java.lang.Long"/>
+	<field name="patientCount" class="java.lang.Long"/>
 	<field name="customerCount" class="java.lang.Long"/>
 	<field name="completedCount" class="java.math.BigDecimal"/>
 	<field name="cancelledCount" class="java.math.BigDecimal"/>
 	<field name="pendingCount" class="java.math.BigDecimal"/>
 	<field name="progressCount" class="java.math.BigDecimal"/>
 	<field name="apptCount" class="java.lang.Long"/>
+	<field name="cl_name" class="java.lang.String"/>
+	<field name="clinician_id" class="java.lang.Long"/>
 	<variable name="SumApptCount" class="java.lang.Long" calculation="Sum">
 		<variableExpression><![CDATA[$F{apptCount}]]></variableExpression>
 	</variable>
@@ -76,6 +77,9 @@ group by pv.entity_id order by ev.name]]>
 	</variable>
 	<variable name="SumInProgCount" class="java.lang.Long" calculation="Sum">
 		<variableExpression><![CDATA[$F{progressCount}]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -233,7 +237,7 @@ In Prog.]]></text>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new String($F{cl_name}+(($F{cl_descr}==null)?"":" - "+$F{cl_descr}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Auto" pattern="#,##0%">
 				<reportElement x="363" y="0" width="31" height="14" uuid="2411a227-26c5-4222-bb18-89c7cdce7cae">

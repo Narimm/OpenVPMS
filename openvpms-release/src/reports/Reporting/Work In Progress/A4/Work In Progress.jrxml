@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-20T16:53:57 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-07-30T10:45:04 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Work In Progress" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" resourceBundle="localisation.reports" uuid="fe7895c1-122c-4fcb-934c-8b7ab03d9d16">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -18,7 +18,9 @@
 	</parameter>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<field name="startTime" class="java.util.Date"/>
-	<field name="clinician.entity.id" class="java.lang.Long"/>
+	<field name="customer.entity.id" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="status" class="java.lang.String"/>
 	<field name="reason" class="java.lang.String"/>
 	<field name="displayName" class="java.lang.String"/>
@@ -231,7 +233,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textFieldExpression><![CDATA[$F{customer.entity.name}+" (ID: "+$F{clinician.entity.id}.toString()+")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{customer.entity.name}+" (ID: "+$F{customer.entity.id}.toString()+")"]]></textFieldExpression>
 			</textField>
 			<textField pattern="##0.00" isBlankWhenNull="true">
 				<reportElement key="textField" x="467" y="0" width="66" height="13" uuid="06c8acdd-11c3-40f3-8c51-e5a79eeeb9ee"/>

@@ -5,7 +5,8 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -27,11 +28,11 @@
 		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
-		<![CDATA[SELECT location_name, clinician_name, clinician_descr, count(customer_id) as customers,
+		<![CDATA[SELECT location_name, clinician_id, count(customer_id) as customers,
       sum(total) as total, sum(invoices) as invoices
 FROM
 (SELECT
-     l.`name` as location_name, c.`name` AS clinician_name, c.description as clinician_descr, e.entity_id as customer_id,
+     l.name as location_name, c.entity_id AS clinician_id, c.name AS clinician_name, e.entity_id as customer_id,
      sum(if(credit,-(f.total - f.tax_amount),(f.total - f.tax_amount)))as total, count(a.act_id) as invoices
 FROM
   `acts` a
@@ -47,16 +48,16 @@ WHERE
  AND a.activity_start_time <= date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
  AND (a.arch_short_name LIKE "act.customerAccountCharges%")
 GROUP BY
-     location_name, clinician_name,customer_id) as b
+     location_name, clinician_id,customer_id) as b
 GROUP BY
-    location_name, clinician_name]]>
+    location_name, clinician_id
+order by   location_name, clinician_name]]>
 	</queryString>
 	<field name="location_name" class="java.lang.String"/>
-	<field name="clinician_name" class="java.lang.String"/>
+	<field name="clinician_id" class="java.lang.Long"/>
 	<field name="customers" class="java.lang.Long"/>
 	<field name="total" class="java.math.BigDecimal"/>
 	<field name="invoices" class="java.math.BigDecimal"/>
-	<field name="clinician_descr" class="java.lang.String"/>
 	<variable name="TOTAL_SALES" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{total}]]></variableExpression>
 	</variable>
@@ -74,6 +75,9 @@ GROUP BY
 	</variable>
 	<variable name="TOTAL_CUSTOMERS" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{customers}]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
 	</variable>
 	<group name="Location">
 		<groupExpression><![CDATA[$F{location_name}]]></groupExpression>
@@ -428,8 +432,7 @@ GROUP BY
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[(($F{clinician_name} == null)? "No Clinician":$F{clinician_name})
-+(($F{clinician_descr} == null)?"":(" - "+$F{clinician_descr}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="false">
 				<reportElement key="textField-4" x="320" y="2" width="66" height="13" uuid="e87662b0-83a6-4b32-884f-32f4eb735bbc"/>

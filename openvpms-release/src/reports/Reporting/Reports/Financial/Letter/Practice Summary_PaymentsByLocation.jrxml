@@ -3,8 +3,9 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
@@ -55,8 +56,8 @@ left join entities ec on ec.entity_id = pc.entity_id
 left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'participation.location'
 left join entities el on el.entity_id = pl.entity_id
 left join financial_acts f on a.act_id = f.financial_act_id
-left join participations pv on pv.act_id = a.act_id and pv.arch_short_name = 'participation.clinician'
-left join entities ev on ev.entity_id = pv.entity_id
+#left join participations pv on pv.act_id = a.act_id and pv.arch_short_name = 'participation.clinician'
+#left join entities ev on ev.entity_id = pv.entity_id
 where a.arch_short_name in('act.customerAccountPayment','act.customerAccountRefund','act.customerAccountCreditAdjust','act.customerAccountDebitAdjust','act.customerAccountBadDebt')
 and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
 and a.status = 'POSTED'

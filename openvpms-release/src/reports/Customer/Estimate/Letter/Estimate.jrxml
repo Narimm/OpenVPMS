@@ -49,10 +49,7 @@
 		<fieldDescription><![CDATA[Estimate Title]]></fieldDescription>
 	</field>
 	<field name="endTime" class="java.util.Date"/>
-	<field name="clinician.entity.description" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="clinician.entity.name" class="java.lang.String">
+	<field name="clinician.entity.id" class="java.lang.Long">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="OpenVPMS.location.letterhead.target.useProductTypes" class="java.lang.Boolean"/>
@@ -75,6 +72,9 @@
 	</variable>
 	<variable name="RefName" class="java.lang.String">
 		<variableExpression><![CDATA[($F{customer.entity.companyName} != null) ? ($F{customer.entity.companyName}+"     ").substring(0,5).toUpperCase(): ($F{customer.entity.lastName}+"     ").substring(0,5).toUpperCase()]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'long')")]]></variableExpression>
 	</variable>
 	<background>
 		<band height="20" splitType="Stretch"/>
@@ -115,10 +115,9 @@
 				<textElement textAlignment="Right"/>
 				<text><![CDATA[by: ]]></text>
 			</staticText>
-			<textField>
+			<textField evaluationTime="Auto">
 				<reportElement positionType="Float" x="44" y="170" width="306" height="15" uuid="b23208cd-4876-4045-b900-51fa0b7b92bd"/>
-				<textFieldExpression><![CDATA[$F{clinician.entity.name}==null?"":
-($F{clinician.entity.name}+(($F{clinician.entity.description}==null)?"":" - "+$F{clinician.entity.description}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?" ":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-8" positionType="Float" x="370" y="170" width="102" height="15" uuid="c488176c-4f47-4d64-97f6-d4f49042ea98"/>

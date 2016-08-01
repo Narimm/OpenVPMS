@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-20T05:44:26 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-08-01T03:49:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_CountVisitsClinician" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="90fa74b2-3788-43f1-8c4c-337e43039c0b">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
@@ -22,7 +24,7 @@ and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL
 ) as totalPatientCount,
 count(distinct pp.entity_id) as patientCount, count(*) as visitCount,
        ifnull(ec.name,'--None--') as cl_name,
-       ec.description as cl_descr
+       ec.entity_id as clinician_id
 from acts a
 join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
 left join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.clinician'
@@ -31,19 +33,22 @@ left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'pa
 left join entities el on el.entity_id = pl.entity_id
 where a.arch_short_name = 'act.patientClinicalEvent'
 and a.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
-group by pc.entity_id order by ec.description
+group by pc.entity_id order by ec.name
 ;]]>
 	</queryString>
 	<field name="totalPatientCount" class="java.lang.Long"/>
 	<field name="patientCount" class="java.lang.Long"/>
 	<field name="visitCount" class="java.lang.Long"/>
 	<field name="cl_name" class="java.lang.String"/>
-	<field name="cl_descr" class="java.lang.String"/>
+	<field name="clinician_id" class="java.lang.Long"/>
 	<variable name="SumVisitCount" class="java.lang.Long" calculation="Sum">
 		<variableExpression><![CDATA[$F{visitCount}]]></variableExpression>
 	</variable>
 	<variable name="SumPatientCount" class="java.lang.Long" calculation="Sum">
 		<variableExpression><![CDATA[$F{patientCount}]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -98,7 +103,7 @@ group by pc.entity_id order by ec.description
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new String($F{cl_name}+(($F{cl_descr}==null)?"":" - "+$F{cl_descr}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="270" y="0" width="75" height="15" uuid="b271db08-8db6-4522-8dee-45fcdb72cf53"/>

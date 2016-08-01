@@ -16,7 +16,9 @@
 	</parameter>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<field name="startTime" class="java.util.Date"/>
-	<field name="clinician.entity.id" class="java.lang.Long"/>
+	<field name="customer.entity.id" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="status" class="java.lang.String"/>
 	<field name="reason" class="java.lang.String"/>
 	<field name="displayName" class="java.lang.String"/>
@@ -229,7 +231,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textFieldExpression><![CDATA[$F{customer.entity.name}+" (ID: "+$F{clinician.entity.id}.toString()+")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{customer.entity.name}+" (ID: "+$F{customer.entity.id}.toString()+")"]]></textFieldExpression>
 			</textField>
 			<textField pattern="##0.00" isBlankWhenNull="true">
 				<reportElement key="textField" x="480" y="0" width="68" height="12" uuid="06c8acdd-11c3-40f3-8c51-e5a79eeeb9ee"/>

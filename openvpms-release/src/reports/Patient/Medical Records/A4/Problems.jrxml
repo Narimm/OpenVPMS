@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-07-17T11:28:02 -->
+<!-- 2016-08-01T03:44:04 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Medical Records" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" resourceBundle="localisation.reports" uuid="fe7895c1-122c-4fcb-934c-8b7ab03d9d16">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -45,8 +45,11 @@
 	<field name="patient.entity.id" class="java.lang.Long"/>
 	<field name="title" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
-	<field name="clinician.entity.name" class="java.lang.String"/>
+	<field name="clinician.entity.id" class="java.lang.Long"/>
 	<field name="presentingComplaint" class="java.lang.String"/>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'medium')")]]></variableExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -298,8 +301,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="SansSerif" size="8" isBold="true" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{clinician.entity.name}==null?"":
-($F{clinician.entity.name}+(($F{clinician.entity.description}==null)?"":" - "+$F{clinician.entity.description}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?" ":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-9" x="480" y="0" width="58" height="11" uuid="0f7fc688-3bac-4636-ae4e-8d50e0afeba3"/>
