@@ -937,18 +937,7 @@ SET a.status = 'POSTED',
   a.status2  = 'REVIEWED'
 WHERE a.arch_short_name = 'act.patientInvestigation'
       AND a.status = 'COMPLETED'
-      AND a.status2 IS NULL
-      AND d.printed = TRUE;
-
-UPDATE acts a
-  JOIN document_acts d
-    ON a.act_id = d.document_act_id
-SET a.status = 'IN_PROGRESS',
-  a.status2  = 'RECEIVED'
-WHERE a.arch_short_name = 'act.patientInvestigation'
-      AND a.status = 'COMPLETED'
-      AND a.status2 IS NULL
-      AND d.printed = FALSE;
+      AND a.status2 IS NULL;
 
 UPDATE acts a
   JOIN document_acts d
@@ -956,17 +945,7 @@ UPDATE acts a
 SET a.status2 = 'REVIEWED'
 WHERE a.arch_short_name = 'act.patientInvestigation'
       AND a.status = 'CANCELLED'
-      AND a.status2 IS NULL
-      AND d.printed = TRUE;
-
-UPDATE acts a
-  JOIN document_acts d
-    ON a.act_id = d.document_act_id
-SET a.status2 = 'PENDING'
-WHERE a.arch_short_name = 'act.patientInvestigation'
-      AND a.status = 'CANCELLED'
-      AND a.status2 IS NULL
-      AND d.printed = FALSE;
+      AND a.status2 IS NULL;
 
 UPDATE acts a
 SET a.status = 'IN_PROGRESS',
@@ -982,18 +961,16 @@ SET a.status = 'POSTED',
   a.status2  = 'REVIEWED'
 WHERE a.arch_short_name = 'act.patientInvestigation'
       AND a.status = 'FINAL'
-      AND d.printed = TRUE
       AND a.status2 IS NULL;
 
-UPDATE acts a
-  JOIN document_acts d
-    ON a.act_id = d.document_act_id
-SET a.status = 'POSTED',
-  a.status2  = 'RECEIVED'
-WHERE a.arch_short_name = 'act.patientInvestigation'
-      AND a.status = 'FINAL'
-      AND a.status2 IS NULL
-      AND d.printed = FALSE;
+
+# Migrate the act.patient*Version acts to set the status node
+UPDATE acts
+SET status = 'IN_PROGRESS'
+WHERE arch_short_name IN
+      ('act.patientDocumentAttachmentVersion', 'act.patientDocumentImageVersion', 'act.patientInvestigationVersion',
+       'act.patientDocumentLetterVersion')
+      AND status IS NULL;
 
 #
 # OVPMS-1720 Smart Flow Sheet Improvement Stage 1
@@ -1277,7 +1254,7 @@ INSERT INTO product_tax_rates (product_id, rate)
     JOIN entities ep ON p.product_id = ep.entity_id
     JOIN entity_links r
       ON p.product_id = r.source_id
-         AND r.arch_short_name = "entityLink.productType"
+         AND r.arch_short_name = 'entityLink.productType'
     JOIN entities ptype
       ON ptype.entity_id = r.target_id AND ptype.active = 1
     JOIN entity_classifications taxes
