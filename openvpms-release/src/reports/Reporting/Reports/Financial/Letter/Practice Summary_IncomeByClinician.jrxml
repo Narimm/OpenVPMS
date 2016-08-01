@@ -3,8 +3,9 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
@@ -96,8 +97,7 @@ sum(if((ai.arch_short_name = 'act.customerAccountInvoiceItem') or
 sum(if((ai.arch_short_name = 'act.customerAccountInvoiceItem') or
 	((ai.arch_short_name = 'act.customerAccountCounterItem') and (ec.name not like '%Counter Sales'))
 	,if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as invoiceItemTotalTax,
-       ifnull(ev.name,'--None--') as cl_name,
-       ev.description as cl_descr
+       ev.entity_id as clinician_id
 from acts a
 left join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
 left join entities ec on ec.entity_id = pc.entity_id
@@ -122,24 +122,23 @@ group by pv.entity_id order by ev.name
 	<field name="totalCustomerCount" class="java.lang.Long"/>
 	<field name="totalNewCustomerCount" class="java.lang.Long"/>
 	<field name="customerCount" class="java.lang.Long"/>
-	<field name="creditItemTotalEx" class="java.math.BigDecimal"/>
-	<field name="creditItemTotalInc" class="java.math.BigDecimal"/>
-	<field name="creditItemTotalTax" class="java.math.BigDecimal"/>
-	<field name="counterItemTotalEx" class="java.math.BigDecimal"/>
-	<field name="counterItemTotalInc" class="java.math.BigDecimal"/>
-	<field name="counterItemTotalTax" class="java.math.BigDecimal"/>
-	<field name="invoiceItemTotalEx" class="java.math.BigDecimal"/>
-	<field name="invoiceItemTotalInc" class="java.math.BigDecimal"/>
-	<field name="invoiceItemTotalTax" class="java.math.BigDecimal"/>
 	<field name="lineItemCount" class="java.lang.Long"/>
 	<field name="lineItemTotalEx" class="java.math.BigDecimal"/>
 	<field name="lineItemTotalInc" class="java.math.BigDecimal"/>
 	<field name="lineItemTotalTax" class="java.math.BigDecimal"/>
 	<field name="creditItemCount" class="java.lang.Long"/>
+	<field name="creditItemTotalEx" class="java.math.BigDecimal"/>
+	<field name="creditItemTotalInc" class="java.math.BigDecimal"/>
+	<field name="creditItemTotalTax" class="java.math.BigDecimal"/>
 	<field name="counterItemCount" class="java.lang.Long"/>
+	<field name="counterItemTotalEx" class="java.math.BigDecimal"/>
+	<field name="counterItemTotalInc" class="java.math.BigDecimal"/>
+	<field name="counterItemTotalTax" class="java.math.BigDecimal"/>
 	<field name="invoiceItemCount" class="java.lang.Long"/>
-	<field name="cl_name" class="java.lang.String"/>
-	<field name="cl_descr" class="java.lang.String"/>
+	<field name="invoiceItemTotalEx" class="java.math.BigDecimal"/>
+	<field name="invoiceItemTotalInc" class="java.math.BigDecimal"/>
+	<field name="invoiceItemTotalTax" class="java.math.BigDecimal"/>
+	<field name="clinician_id" class="java.lang.Long"/>
 	<variable name="SumCustomerCount" class="java.lang.Long" calculation="Sum">
 		<variableExpression><![CDATA[$F{customerCount}]]></variableExpression>
 	</variable>
@@ -178,6 +177,9 @@ group by pv.entity_id order by ev.name
 	</variable>
 	<variable name="SumCreditTax" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{creditItemTotalTax}]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -259,7 +261,7 @@ group by pv.entity_id order by ev.name
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new String($F{cl_name}+(($F{cl_descr}==null)?"":" - "+$F{cl_descr}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤#,##0">
 				<reportElement x="172" y="14" width="77" height="13" isRemoveLineWhenBlank="true" uuid="f919477d-fc8b-47a8-8c52-55933fb85b31">

@@ -58,6 +58,7 @@
 	<queryString language="SQL">
 		<![CDATA[SELECT
      ifnull(clin.name,'--NO Clinician--') AS clinician_name, clin.description as clinician_descr,
+     clin.entity_id as clinician_id,
 	 ifnull(loc.name,'--NO Location--') as location,
 	 ifnull(cust.name,'--NO Customer--') as custName, 
 	 ifnull(cust.entity_id,0) as custId,
@@ -95,6 +96,7 @@ ORDER BY
 	</queryString>
 	<field name="clinician_name" class="java.lang.String"/>
 	<field name="clinician_descr" class="java.lang.String"/>
+	<field name="clinician_id" class="java.lang.Long"/>
 	<field name="location" class="java.lang.String"/>
 	<field name="custName" class="java.lang.String"/>
 	<field name="custId" class="java.lang.Long"/>
@@ -122,19 +124,22 @@ ORDER BY
 	<variable name="TOTAL-PRODUCT-QTY" class="java.math.BigDecimal" resetType="Group" resetGroup="product-group" calculation="Sum">
 		<variableExpression><![CDATA[$F{qty}]]></variableExpression>
 	</variable>
+	<variable name="clinician" class="java.lang.String" resetType="Group" resetGroup="clinician-group">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
+	</variable>
 	<group name="clinician-group">
 		<groupExpression><![CDATA[$F{clinician_name}]]></groupExpression>
 		<groupHeader>
 			<band height="17">
-				<textField>
-					<reportElement x="0" y="0" width="359" height="17" uuid="00648ecb-b9a0-49f1-b5f6-e1e29dc27350">
+				<textField evaluationTime="Group" evaluationGroup="clinician-group">
+					<reportElement x="0" y="0" width="329" height="17" uuid="00648ecb-b9a0-49f1-b5f6-e1e29dc27350">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
 					<textElement>
 						<font size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{clinician_name}+(($F{clinician_descr} == null)?"":(" - "+$F{clinician_descr}))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="clinician-group" pattern="#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField" x="389" y="0" width="103" height="17" uuid="2dbccbaf-13a8-40ce-ba95-17cdef82af9f">

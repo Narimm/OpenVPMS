@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-07-03T16:58:03 -->
+<!-- 2016-08-01T04:05:49 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Estimate" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="8c42a3ea-6f37-49f5-803e-e1f46987b877">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -51,10 +51,7 @@
 		<fieldDescription><![CDATA[Estimate Title]]></fieldDescription>
 	</field>
 	<field name="endTime" class="java.util.Date"/>
-	<field name="clinician.entity.description" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="clinician.entity.name" class="java.lang.String">
+	<field name="clinician.entity.id" class="java.lang.Long">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="OpenVPMS.location.letterhead.target.useProductTypes" class="java.lang.Boolean"/>
@@ -77,6 +74,9 @@
 	</variable>
 	<variable name="RefName" class="java.lang.String">
 		<variableExpression><![CDATA[($F{customer.entity.companyName} != null) ? ($F{customer.entity.companyName}+"     ").substring(0,5).toUpperCase(): ($F{customer.entity.lastName}+"     ").substring(0,5).toUpperCase()]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'long')")]]></variableExpression>
 	</variable>
 	<background>
 		<band height="20" splitType="Stretch"/>
@@ -117,10 +117,9 @@
 				<textElement textAlignment="Right"/>
 				<text><![CDATA[by: ]]></text>
 			</staticText>
-			<textField>
+			<textField evaluationTime="Auto">
 				<reportElement positionType="Float" x="43" y="181" width="297" height="16" uuid="b23208cd-4876-4045-b900-51fa0b7b92bd"/>
-				<textFieldExpression><![CDATA[$F{clinician.entity.name}==null?"":
-($F{clinician.entity.name}+(($F{clinician.entity.description}==null)?"":" - "+$F{clinician.entity.description}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?" ":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-8" positionType="Float" x="360" y="181" width="99" height="16" uuid="c488176c-4f47-4d64-97f6-d4f49042ea98"/>

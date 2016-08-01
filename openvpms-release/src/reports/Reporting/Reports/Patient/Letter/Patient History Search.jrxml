@@ -5,7 +5,8 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -51,7 +52,7 @@
   ls.name as species,
   lb.name as breed,
   adn.value as notes,
-  cl.name as clinician,
+  cl.entity_id as clinician_id,
   a.activity_start_time as visitDate
 from acts a
   join participations ppa on ppa.act_id = a.act_id and ppa.arch_short_name='participation.patient'
@@ -84,13 +85,16 @@ order by a.activity_start_time desc limit $P{limit};]]>
 	<field name="species" class="java.lang.String"/>
 	<field name="breed" class="java.lang.String"/>
 	<field name="notes" class="java.lang.String"/>
-	<field name="clinician" class="java.lang.String"/>
+	<field name="clinician_id" class="java.lang.Long"/>
 	<field name="visitDate" class="java.sql.Timestamp"/>
 	<variable name="patient1" class="java.lang.String">
 		<variableExpression><![CDATA[$F{patient}+" "+$F{custLastName}+" ("+$F{patientId}.toString()+")"]]></variableExpression>
 	</variable>
 	<variable name="age_years" class="java.lang.Float">
 		<variableExpression><![CDATA[new Float($F{age_days}.floatValue()/365.)]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -389,12 +393,12 @@ order by a.activity_start_time desc limit $P{limit};]]>
 					<pen lineStyle="Dotted"/>
 				</graphicElement>
 			</line>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="56" width="93" height="19" uuid="9a15a3ab-ca74-4eb5-a1e8-b0a3611e7634"/>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{clinician}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

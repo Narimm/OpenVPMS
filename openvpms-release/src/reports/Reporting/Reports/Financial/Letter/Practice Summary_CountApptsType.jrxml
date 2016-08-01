@@ -3,8 +3,9 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
@@ -30,32 +31,30 @@ sum(a.status='COMPLETED') as completedCount,
 sum(a.status='CANCELLED') as cancelledCount,
 sum(a.status='PENDING') as pendingCount,
 sum(a.status in('IN_PROGRESS','BILLED','CHECKED_IN')) as progressCount,
-count(*) as apptCount,
-ifnull(ev.name,'--None--') as cl_name,
-ev.description as cl_descr
+count(*) as apptCount
+#ifnull(ev.name,'--None--') as cl_name,
+#ev.description as cl_descr
 from acts a
 join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
 left join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
-left join participations pv on pv.act_id = a.act_id and pv.arch_short_name = 'participation.clinician'
-left join entities ev on ev.entity_id = pv.entity_id
+#left join participations pv on pv.act_id = a.act_id and pv.arch_short_name = 'participation.clinician'
+#left join entities ev on ev.entity_id = pv.entity_id
 left join participations pt on pt.act_id = a.act_id and pt.arch_short_name = 'participation.appointmentType'
 left join entities et on et.entity_id = pt.entity_id
 where a.arch_short_name = 'act.customerAppointment'
 and a.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
 group by et.entity_id order by et.name]]>
 	</queryString>
+	<field name="apptType" class="java.lang.String"/>
 	<field name="totalPatientCount" class="java.lang.Long"/>
-	<field name="patientCount" class="java.lang.Long"/>
-	<field name="cl_name" class="java.lang.String"/>
-	<field name="cl_descr" class="java.lang.String"/>
 	<field name="totalCustomerCount" class="java.lang.Long"/>
+	<field name="patientCount" class="java.lang.Long"/>
 	<field name="customerCount" class="java.lang.Long"/>
 	<field name="completedCount" class="java.math.BigDecimal"/>
 	<field name="cancelledCount" class="java.math.BigDecimal"/>
 	<field name="pendingCount" class="java.math.BigDecimal"/>
 	<field name="progressCount" class="java.math.BigDecimal"/>
 	<field name="apptCount" class="java.lang.Long"/>
-	<field name="apptType" class="java.lang.String"/>
 	<variable name="SumApptCount" class="java.lang.Long" calculation="Sum">
 		<variableExpression><![CDATA[$F{apptCount}]]></variableExpression>
 	</variable>

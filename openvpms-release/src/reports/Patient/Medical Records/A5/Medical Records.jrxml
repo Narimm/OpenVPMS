@@ -43,8 +43,11 @@
 	<field name="patient.entity.id" class="java.lang.Long"/>
 	<field name="title" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
-	<field name="clinician.entity.name" class="java.lang.String"/>
+	<field name="clinician.entity.id" class="java.lang.Long"/>
 	<field name="party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;))" class="java.lang.String"/>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'medium')")]]></variableExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -296,8 +299,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="SansSerif" size="5" isBold="true" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{clinician.entity.name}==null?"":
-($F{clinician.entity.name}+(($F{clinician.entity.description}==null)?"":" - "+$F{clinician.entity.description}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?" ":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-9" x="340" y="0" width="41" height="8" uuid="0f7fc688-3bac-4636-ae4e-8d50e0afeba3"/>

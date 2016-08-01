@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-20T05:44:32 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-07-30T10:16:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_PaymentsByLocation" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="dd537f8a-6c10-4be2-9d7d-a27c29e7149b">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
@@ -57,8 +58,8 @@ left join entities ec on ec.entity_id = pc.entity_id
 left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'participation.location'
 left join entities el on el.entity_id = pl.entity_id
 left join financial_acts f on a.act_id = f.financial_act_id
-left join participations pv on pv.act_id = a.act_id and pv.arch_short_name = 'participation.clinician'
-left join entities ev on ev.entity_id = pv.entity_id
+#left join participations pv on pv.act_id = a.act_id and pv.arch_short_name = 'participation.clinician'
+#left join entities ev on ev.entity_id = pv.entity_id
 where a.arch_short_name in('act.customerAccountPayment','act.customerAccountRefund','act.customerAccountCreditAdjust','act.customerAccountDebitAdjust','act.customerAccountBadDebt')
 and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
 and a.status = 'POSTED'

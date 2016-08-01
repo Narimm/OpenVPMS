@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-18T13:04:45 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-08-01T03:46:39 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Appointment" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" uuid="954eb068-c533-4120-a574-2ee5b47e4a72">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -34,9 +34,11 @@
 	<field name="patient.entity.name" class="java.lang.String"/>
 	<field name="appointmentType.entity.name" class="java.lang.String"/>
 	<field name="reason" class="java.lang.String"/>
-	<field name="clinician.entity.name" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
-	<field name="clinician.entity.description" class="java.lang.String"/>
+	<field name="clinician.entity.id" class="java.lang.Long"/>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'medium')")]]></variableExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -180,8 +182,7 @@
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="198" y="21" width="251" height="16" uuid="0e19ad3c-44e3-45aa-9e6d-7d65af73e78a"/>
-				<textFieldExpression><![CDATA[$F{clinician.entity.name}==null?"":
-($F{clinician.entity.name}+(($F{clinician.entity.description}==null)?"":" - "+$F{clinician.entity.description}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{clinician}==null?" ":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-11" x="125" y="21" width="73" height="16" uuid="d5852e51-a088-49e3-9bdb-95393a51145a"/>
