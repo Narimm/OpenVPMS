@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-08-02T06:41:46 -->
+<!-- 2016-08-03T06:38:21 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Label Video Top" pageWidth="223" pageHeight="129" orientation="Landscape" columnWidth="189" leftMargin="17" rightMargin="17" topMargin="8" bottomMargin="8" uuid="5360069e-917e-408e-8ff8-819414fc712a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -25,10 +25,6 @@
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
-	</parameter>
-	<parameter name="showLogo" class="java.lang.Boolean" isForPrompting="false">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[Boolean.TRUE]]></defaultValueExpression>
 	</parameter>
 	<field name="patient.entity.name" class="java.lang.String"/>
 	<field name="patient.entity.description" class="java.lang.String"/>
@@ -89,10 +85,10 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<printWhenExpression><![CDATA[!($F{product.entity.printedName}==null?Boolean.FALSE:$F{product.entity.printedName}.equals("LABEL-CSB"))]]></printWhenExpression>
 				</reportElement>
 				<box topPadding="0" leftPadding="3" bottomPadding="0" rightPadding="0">
-					<topPen lineWidth="2.0"/>
-					<leftPen lineWidth="2.0"/>
-					<bottomPen lineWidth="2.0"/>
-					<rightPen lineWidth="2.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center">
 					<font fontName="SansSerif" size="8"/>
@@ -104,10 +100,10 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<printWhenExpression><![CDATA[!($F{product.entity.printedName}==null?Boolean.FALSE:$F{product.entity.printedName}.equals("LABEL-CSB"))]]></printWhenExpression>
 				</reportElement>
 				<box topPadding="0" leftPadding="2" bottomPadding="0" rightPadding="0">
-					<topPen lineWidth="2.0"/>
-					<leftPen lineWidth="2.0"/>
-					<bottomPen lineWidth="2.0"/>
-					<rightPen lineWidth="2.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="6"/>
@@ -186,39 +182,43 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="15" splitType="Stretch">
+		<band height="23" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<image onErrorType="Blank">
-				<reportElement x="0" y="0" width="42" height="15" uuid="2072043e-4942-4346-b69a-658bb8ada7d6">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{showLogo}]]></printWhenExpression>
-				</reportElement>
-				<imageExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.logoFile}]]></imageExpression>
-			</image>
 			<textField>
-				<reportElement x="42" y="0" width="147" height="8" uuid="5997540f-d196-4ebd-a526-01911026c894">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<reportElement x="0" y="1" width="139" height="11" uuid="5997540f-d196-4ebd-a526-01911026c894">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="5" isBold="true"/>
+					<font size="8" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{[party:getLetterheadContacts($OpenVPMS.location)/name]}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="42" y="8" width="147" height="7" uuid="6f0391cf-5783-4a37-9c9a-3f482a865907">
+				<reportElement x="0" y="12" width="189" height="11" uuid="6f0391cf-5783-4a37-9c9a-3f482a865907">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font fontName="SansSerif" size="5" isBold="false"/>
+					<font fontName="SansSerif" size="8" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Ph:"+$F{[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]}+" "+
-$F{[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="189" height="1" uuid="1f631c28-b38b-4e02-8e2b-daa706a78f2b"/>
+			</line>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="139" y="1" width="50" height="11" uuid="00c8d17f-9d24-42df-96a8-d29761b87f08">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
