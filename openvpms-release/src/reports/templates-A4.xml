@@ -64,7 +64,7 @@
               description="Vaccination Certificate" path="Patient/Documents/A4/Vaccination Certificate.odt"
               mimeType="application/vnd.oasis.opendocument.text" docType="document.other"/>
     <template name="Drug Label" archetype="act.patientMedication" reportType="PATIENT" description="Drug Label (Diskette)"
-              path="Patient/Labels/Diskette/Label.jrxml" mimeType="text/xml" docType="document.other"/>
+              path="Patient/Labels/Diskette/Label.jrxml" mimeType="text/xml" docType="document.other" orientation="LANDSCAPE"/>
     <template name="Medical Records" archetype="act.patientClinicalEvent" reportType="PATIENT"
               description="Medical Records" path="Patient/Medical Records/A4/Medical Records.jrxml" mimeType="text/xml"
               docType="document.other"/>
