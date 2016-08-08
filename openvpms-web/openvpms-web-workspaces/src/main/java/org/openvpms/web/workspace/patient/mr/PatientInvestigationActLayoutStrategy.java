@@ -36,8 +36,7 @@ import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupFilter;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
-import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.IMPrinterFactory;
+import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -219,7 +218,7 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
     private void onPrint(IMObject object, Context context, HelpContext help) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
+            IMObjectReportPrinter<IMObject> printer = new IMObjectReportPrinter<>(object, locator, context);
             InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {
