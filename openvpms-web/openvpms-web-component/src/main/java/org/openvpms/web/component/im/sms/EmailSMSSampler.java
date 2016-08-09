@@ -28,7 +28,6 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.SMSException;
@@ -135,10 +134,9 @@ class EmailSMSSampler extends AbstractModifiable {
     /**
      * Constructs a {@link EmailSMSSampler}.
      *
-     * @param config   the configuration
-     * @param location the practice location. May {@code null}
+     * @param config the configuration
      */
-    public EmailSMSSampler(Entity config, Party location) {
+    public EmailSMSSampler(Entity config) {
         this.config = config;
         IMObjectBean bean = new IMObjectBean(config);
         sms = new SMSEditor(new LocalContext());

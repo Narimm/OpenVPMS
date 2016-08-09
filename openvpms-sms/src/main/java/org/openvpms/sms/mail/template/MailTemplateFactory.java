@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
@@ -44,7 +42,8 @@ public class MailTemplateFactory {
      */
     private static final String[] RESERVED = {"name", "description", "website", "from", "fromExpression", "to",
                                               "toExpression", "replyTo", "replyToExpression", "subject",
-                                              "subjectExpression", "text", "textExpression", "phone", "message"};
+                                              "subjectExpression", "text", "textExpression", "phone", "message",
+                                              "active"};
 
     /**
      * Constructs a <tt>MailTemplatePopulator</tt>.
@@ -78,10 +77,11 @@ public class MailTemplateFactory {
         result.setText(getString(configBean, "text"));
         result.setTextExpression(getString(configBean, "textExpression"));
         for (NodeDescriptor descriptor : archetype.getNodeDescriptorsAsArray()) {
-            if (String.class.getName().equals(descriptor.getType())
+            String type = descriptor.getType();
+            if ((String.class.getName().equals(type) || Boolean.class.getName().equals(type))
                 && !ArrayUtils.contains(RESERVED, descriptor.getName())) {
                 Object value = descriptor.getValue(config);
-                result.addVariable(descriptor.getName(), value != null ? value.toString() : null);
+                result.addVariable(descriptor.getName(), value);
             }
         }
         return result;
