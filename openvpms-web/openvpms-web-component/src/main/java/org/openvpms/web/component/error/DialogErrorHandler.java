@@ -93,21 +93,11 @@ public class DialogErrorHandler extends ErrorHandler {
     }
 
     /**
-     * Determines if the error can be displayed in the browser.
-     *
-     * @return {@code true} if the error can be displayed in the browser
-     */
-    private static boolean canDisplay() {
-        ApplicationInstance instance = ApplicationInstance.getActive();
-        return instance != null && instance.getDefaultWindow() != null;
-    }
-
-    /**
      * Determines if an error dialog is already being displayed.
      *
      * @return {@code true} if an error dialog is already being displayed
      */
-    private static boolean inError() {
+    public boolean inError() {
         Window root = ApplicationInstance.getActive().getDefaultWindow();
         for (Component component : root.getContent().getComponents()) {
             if (component instanceof ErrorDialog) {
@@ -117,5 +107,15 @@ public class DialogErrorHandler extends ErrorHandler {
         return false;
     }
 
+
+    /**
+     * Determines if the error can be displayed in the browser.
+     *
+     * @return {@code true} if the error can be displayed in the browser
+     */
+    private boolean canDisplay() {
+        ApplicationInstance instance = ApplicationInstance.getActive();
+        return instance != null && instance.getDefaultWindow() != null;
+    }
 
 }
