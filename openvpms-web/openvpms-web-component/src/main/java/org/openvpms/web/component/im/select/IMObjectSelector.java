@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.web.component.error.DialogErrorHandler;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -35,6 +36,7 @@ import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.DocumentListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
@@ -287,10 +289,19 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Pops up a dialog to select an object.
      * <p/>
-     * Only pops up a dialog if one isn't already visible.
+     * Only pops up a dialog if one isn't already visible, and no error dialog is being displayed.
+     * <p/>
+     * This last requirement avoids the following event sequence:
+     * <ol>
+     * <li>text is entered in the field, and enter pressed</li>
+     * <li>echo invokes document listener (i.e. {@link #onTextChanged()})</li>
+     * <li>the selector listener is triggered, but clears the text and displays an error message. This can
+     * occur if a product template fails to expand</li>
+     * <li>echo invokes the action listener (i.e. {@link #onSelect()})</li>
+     * </ol>
      */
     protected void onSelect() {
-        if (!inSelect) {
+        if (!inSelect && !inError()) {
             onSelect(createQuery(), false);
         }
     }
@@ -474,6 +485,16 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
         if (listener != null) {
             listener.selected(getObject());
         }
+    }
+
+    /**
+     * Determines if an error dialog is being displayed.
+     *
+     * @return {@code true} if an error dialog is being displayed
+     */
+    private boolean inError() {
+        ErrorHandler handler = ErrorHandler.getInstance();
+        return handler instanceof DialogErrorHandler && ((DialogErrorHandler) handler).inError();
     }
 
 }

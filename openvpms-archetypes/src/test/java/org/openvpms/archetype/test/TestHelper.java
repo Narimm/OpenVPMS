@@ -519,6 +519,7 @@ public class TestHelper {
 
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("currency", currency.getCode());
+        bean.setValue("useLocationProducts", false);
         bean.save();
         return party;
     }
