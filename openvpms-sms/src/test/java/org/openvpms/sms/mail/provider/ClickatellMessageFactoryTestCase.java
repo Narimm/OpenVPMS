@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.provider;
@@ -65,9 +65,10 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
         assertFalse(bean.hasNode("subjectExpression"));
         assertFalse(bean.hasNode("text"));
         assertEquals("concat(\"user:\", $user, $nl, \"password:\", $password, $nl, \"api_id:\", $apiId, $nl, " +
-                     "\"to:\", $phone, $nl, \"reply:\", $replyTo, expr:if(boolean($senderId), " +
-                     "concat($nl, \"from:\", $senderId), \"\"), $nl, \"text:\", " +
-                     "replace($message, $nl, concat($nl, \"text:\")))",
+                     "\"to:\", $phone, $nl, \"reply:\", $replyTo, " +
+                     "expr:if(boolean($senderId), concat($nl, \"from:\", $senderId), \"\"), " +
+                     "expr:if($twoWaySMS, concat($nl, \"mo: 1\"), \"\"), $nl, " +
+                     "\"text:\", replace($message, $nl, concat($nl, \"text:\")))",
                      bean.getString("textExpression"));
     }
 
@@ -83,19 +84,19 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
         String apiId = "apiId";
         String senderId = "foobar";
 
-        Entity config1 = createConfig("61", "0", from, user, password, apiId, reply, senderId);
-        Entity config2 = createConfig(null, null, from, user, password, apiId, reply, senderId);
+        Entity config1 = createConfig("61", "0", from, user, password, apiId, reply, senderId, false);
+        Entity config2 = createConfig(null, null, from, user, password, apiId, reply, senderId, true); // enable mo: 1
 
-        checkMessage(config1, "0411234567", "61411234567", from, reply, user, password, apiId);
-        checkMessage(config1, "+61411234567", "61411234567", from, reply, user, password, apiId);
+        checkMessage(config1, "0411234567", "61411234567", from, reply, user, password, apiId, false);
+        checkMessage(config1, "+61411234567", "61411234567", from, reply, user, password, apiId, false);
 
         // check configuration with no country prefix nor area code
-        checkMessage(config2, "0411234567", "0411234567", from, reply, user, password, apiId);
-        checkMessage(config2, "+61411234567", "61411234567", from, reply, user, password, apiId);
+        checkMessage(config2, "0411234567", "0411234567", from, reply, user, password, apiId, true);
+        checkMessage(config2, "+61411234567", "61411234567", from, reply, user, password, apiId, true);
     }
 
     private void checkMessage(Entity config, String phone, String expectedPhone, String from, String reply, String user,
-                              String password, String apiId) {
+                              String password, String apiId, boolean twoWaySMS) {
         MailTemplateFactory templateFactory = new MailTemplateFactory(getArchetypeService());
         MailMessageFactory factory = new TemplatedMailMessageFactory(templateFactory.getTemplate(config));
         String text = "text\nover\nmultiple\nlines";
@@ -104,8 +105,9 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
         assertEquals(from, message.getFrom());
         assertEquals("sms@messaging.clickatell.com", message.getTo());
         assertEquals(null, message.getSubject());
+        String mo = (twoWaySMS) ? "\nmo: 1" : "";
         String expectedText = "user:" + user + "\npassword:" + password + "\napi_id:" + apiId + "\nto:" + expectedPhone
-                              + "\nreply:" + reply + "\nfrom:foobar"
+                              + "\nreply:" + reply + "\nfrom:foobar" + mo
                               + "\ntext:text\ntext:over\ntext:multiple\ntext:lines";
         assertEquals(expectedText, message.getText());
     }
@@ -121,10 +123,11 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
      * @param apiId         the api id
      * @param replyTo       the replyTo address
      * @param senderId      the sender Id. May be {@code null}
+     * @param twoWaySMS     the 2 way SMS flag
      * @return a new configuration
      */
     private Entity createConfig(String countryPrefix, String areaPrefix, String from, String user, String password,
-                                String apiId, String replyTo, String senderId) {
+                                String apiId, String replyTo, String senderId, boolean twoWaySMS) {
         Entity config = (Entity) create("entity.SMSConfigEmailClickatell");
         IMObjectBean bean = new IMObjectBean(config);
         bean.setValue("from", from);
@@ -135,6 +138,7 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
         bean.setValue("senderId", senderId);
         bean.setValue("areaPrefix", areaPrefix);
         bean.setValue("countryPrefix", countryPrefix);
+        bean.setValue("twoWaySMS", twoWaySMS);
         getArchetypeService().deriveValues(config);
         getArchetypeService().validateObject(config);
         return config;

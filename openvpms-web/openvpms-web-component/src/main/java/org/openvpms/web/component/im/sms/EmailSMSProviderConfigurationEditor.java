@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -54,7 +54,7 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
     public EmailSMSProviderConfigurationEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
 
-        sampler = new EmailSMSSampler(object, layoutContext.getContext().getLocation());
+        sampler = new EmailSMSSampler(object);
 
         if (object.isNew()) {
             // default the from address to that of the practice, if it has one
