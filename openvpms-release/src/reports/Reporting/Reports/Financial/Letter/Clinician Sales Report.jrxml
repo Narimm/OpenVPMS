@@ -758,7 +758,7 @@ You can limit the data by Clinician, Location, Product and Product Type. All the
 The 'Location Totals', 'Product Type Totals' and 'Product Totals' options control whether or not the location, product type and product totals are shown. Selecting 'Product Totals' will functionally select 'Location Totals' and 'Product Type Totals'; selecting 'Product Type Totals' will functionally select 'Location Totals'.
 Individual line items are shown if the 'Show Details' option is selected.
 The percentages shown are the percentage of that item of the Grand Total.
-Only finalised transactions are included.
+Only finalised transactions are included. The clinician is that set for the line item.
 All amounts are tax exclusive.]]></text>
 			</staticText>
 			<line>

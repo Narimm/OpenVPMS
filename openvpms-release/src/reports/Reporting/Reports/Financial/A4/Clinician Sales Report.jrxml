@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-07-31T05:20:00 -->
+<!-- 2016-08-09T08:18:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Clinician Sales Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="11f784eb-fc6f-4f37-a9da-d50da3705e7d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -760,7 +760,7 @@ You can limit the data by Clinician, Location, Product and Product Type. All the
 The 'Location Totals', 'Product Type Totals' and 'Product Totals' options control whether or not the location, product type and product totals are shown. Selecting 'Product Totals' will functionally select 'Location Totals' and 'Product Type Totals'; selecting 'Product Type Totals' will functionally select 'Location Totals'.
 Individual line items are shown if the 'Show Details' option is selected.
 The percentages shown are the percentage of that item of the Grand Total.
-Only finalised transactions are included.
+Only finalised transactions are included. The clinician is that set for the line item.
 All amounts are tax exclusive.]]></text>
 			</staticText>
 			<line>
