@@ -45,6 +45,7 @@
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="clinician.entity.id" class="java.lang.Long"/>
 	<field name="party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;))" class="java.lang.String"/>
+	<field name="batch.entity.name" class="java.lang.String"/>
 	<variable name="clinician" class="java.lang.String">
 		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'medium')")]]></variableExpression>
 	</variable>
@@ -528,6 +529,7 @@
 			</textField>
 		</band>
 		<band height="8">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientMedication") )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-11" x="105" y="0" width="201" height="8" isRemoveLineWhenBlank="true" uuid="e89754a8-a10c-461e-ab5c-c066075fd1af"/>
@@ -541,6 +543,22 @@
 					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="8">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[$F{shortName}.equals("act.patientMedication") && $F{batch.entity.name} != null]]></printWhenExpression>
+			<textField>
+				<reportElement x="105" y="0" width="201" height="8" uuid="4b694f48-b028-4971-8247-31aa00cf3a18">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{batch.entity.name} != null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="5" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{text.batch} + ": " + $F{batch.entity.name}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

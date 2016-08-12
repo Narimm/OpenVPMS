@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-08-01T03:44:07 -->
+<!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 6.1.0  -->
+<!-- 2016-08-12T14:27:09 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Medical Records" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" resourceBundle="localisation.reports" uuid="fe7895c1-122c-4fcb-934c-8b7ab03d9d16">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -47,6 +47,7 @@
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="clinician.entity.id" class="java.lang.Long"/>
 	<field name="party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;))" class="java.lang.String"/>
+	<field name="batch.entity.name" class="java.lang.String"/>
 	<variable name="clinician" class="java.lang.String">
 		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'medium')")]]></variableExpression>
 	</variable>
@@ -530,6 +531,7 @@
 			</textField>
 		</band>
 		<band height="11">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientMedication") )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-11" x="148" y="0" width="284" height="11" isRemoveLineWhenBlank="true" uuid="e89754a8-a10c-461e-ab5c-c066075fd1af"/>
@@ -543,6 +545,22 @@
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="11">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[$F{shortName}.equals("act.patientMedication") && $F{batch.entity.name} != null]]></printWhenExpression>
+			<textField>
+				<reportElement x="148" y="0" width="284" height="11" uuid="4b694f48-b028-4971-8247-31aa00cf3a18">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{batch.entity.name} != null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{text.batch} + ": " + $F{batch.entity.name}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
