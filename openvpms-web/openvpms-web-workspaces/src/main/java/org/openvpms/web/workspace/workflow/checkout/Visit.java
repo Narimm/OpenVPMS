@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.workflow.checkout;
 
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.CageType;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -201,6 +202,16 @@ class Visit {
      */
     public int getDays(Date endTime) {
         return appointmentRules.getBoardingNights(event.getActivityStartTime(), getEndTime(endTime));
+    }
+
+    /**
+     * Determines if the pet is staying overnight.
+     *
+     * @param endTime the end time to use, if the event hasn't ended
+     * @return {@code true} if the pet is staying overnight
+     */
+    public boolean isOvernight(Date endTime) {
+        return !DateRules.dateEquals(event.getActivityStartTime(), getEndTime(endTime));
     }
 
     /**

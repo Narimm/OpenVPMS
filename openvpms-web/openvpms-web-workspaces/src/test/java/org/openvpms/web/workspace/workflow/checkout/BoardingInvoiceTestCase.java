@@ -279,6 +279,58 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
                   visit.getEvent(), 0);
     }
 
+
+    /**
+     * Verifies if a pet stays less than 24 hours overnight, the overnight products are charged.
+     */
+    @Test
+    public void testInvoiceOvernightLessThan24Hours() {
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
+        BigDecimal firstPetProductDayPrice = new BigDecimal("9.09");
+        BigDecimal firstPetProductNightPrice = new BigDecimal("18.18");
+        BigDecimal firstPetProductNightPriceIncTax = new BigDecimal("20.00");
+        BigDecimal secondPetProductDayPrice = new BigDecimal("4.54");
+        BigDecimal secondPetProductNightPrice = new BigDecimal("13.64");
+        BigDecimal secondPetProductNightPriceIncTax = new BigDecimal("15.00");
+        Product firstPetProductDay = ProductTestHelper.createService(firstPetProductDayPrice, unitPrice);
+        Product firstPetProductNight = ProductTestHelper.createService(firstPetProductNightPrice, unitPrice);
+        Product secondPetProductDay = ProductTestHelper.createService(secondPetProductDayPrice, unitPrice);
+        Product secondPetProductNight = ProductTestHelper.createService(secondPetProductNightPrice, unitPrice);
+        Entity cageType = ScheduleTestHelper.createCageType("Z Test Cage", firstPetProductDay, firstPetProductNight,
+                                                            secondPetProductDay, secondPetProductNight);
+
+        Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
+
+        Visits visits = new Visits(customer, appointmentRules, patientRules);
+        Visit visit1 = createVisit("2016-03-24 10:00:00", "2016-03-25 09:00:00", schedule, customer, patient1, visits);
+        Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-25 09:00:00", schedule, customer, patient2, visits);
+        visits.add(visit1);
+        visits.add(visit2);
+        visit1.setFirstPet(true);
+        visit2.setFirstPet(false);
+
+        FinancialAct invoice = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createEditor(invoice);
+
+        BoardingInvoicer invoicer = new BoardingInvoicer();
+        invoicer.invoice(visits, editor);
+
+        assertTrue(SaveHelper.save(editor));
+        invoice = get(invoice);
+        ActBean bean = new ActBean(invoice);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(2, items.size());
+
+        checkItem(items, patient1, firstPetProductNight, null, author, clinician, BigDecimal.ZERO, ONE, ZERO,
+                  unitPriceIncTax, ZERO, firstPetProductNightPriceIncTax, ZERO, new BigDecimal("2.727"),
+                  firstPetProductNightPriceIncTax.add(unitPriceIncTax), visit1.getEvent(), 0);
+        checkItem(items, patient2, secondPetProductNight, null, author, clinician, BigDecimal.ZERO, ONE, ZERO,
+                  unitPriceIncTax, ZERO, secondPetProductNightPriceIncTax, ZERO, new BigDecimal("2.273"),
+                  secondPetProductNightPriceIncTax.add(unitPriceIncTax), visit2.getEvent(), 0);
+    }
+
     /**
      * Creates an editor for an invoice.
      *

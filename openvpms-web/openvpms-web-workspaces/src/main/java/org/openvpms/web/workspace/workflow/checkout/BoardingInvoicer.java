@@ -80,7 +80,8 @@ class BoardingInvoicer extends AbstractInvoicer {
     private void chargeBoarding(Visit visit, Date endTime, CustomerChargeActEditor editor) {
         CageType cageType = visit.getCageType();
         int days = visit.getDays(endTime);
-        Product product = cageType.getProduct(days, visit.isFirstPet());
+        boolean overnight = days > 1 || visit.isOvernight(endTime);
+        Product product = cageType.getProduct(days, overnight, visit.isFirstPet());
         if (product != null) {
             BigDecimal quantity = BigDecimal.valueOf(days);
             addItem(visit.getPatient(), product, quantity, editor);
