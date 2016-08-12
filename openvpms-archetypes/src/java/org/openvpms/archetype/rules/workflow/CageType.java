@@ -86,17 +86,18 @@ public class CageType {
     /**
      * Returns the product to charge.
      *
-     * @param days     the no. of days being stayed
-     * @param firstPet if {@code true}, the first-pet product should be used, otherwise the second-pet product should
-     *                 be used
+     * @param days      the no. of days being stayed
+     * @param overnight determines if the pet is staying overnight, when {@code days == 1}
+     * @param firstPet  if {@code true}, the first-pet product should be used, otherwise the second-pet product should
+     *                  be used
      * @return the product
      */
-    public Product getProduct(int days, boolean firstPet) {
+    public Product getProduct(int days, boolean overnight, boolean firstPet) {
         Product result;
         if (firstPet) {
-            result = getFirstPetProduct(days);
+            result = getFirstPetProduct(days, overnight);
         } else {
-            result = getSecondPetProduct(days);
+            result = getSecondPetProduct(days, overnight);
         }
         return result;
     }
@@ -159,15 +160,17 @@ public class CageType {
     /**
      * Returns the product to charge the first pet.
      * <p/>
-     * If the pet is staying multiple days, the {@link #getFirstPetProductOvernight()} is used.
+     * If the pet is staying multiple days or {@code overnight == true}, the {@link #getFirstPetProductOvernight()} is
+     * used.
      * If this is not specified, then the {@link #getFirstPetProductDay()} is used.
      *
-     * @param days the no. of days the pet is staying
+     * @param days       the no. of days the pet is staying
+     * @param overnight determines if the pet is staying overnight, when {@code days == 1}
      * @return the first pet product
      */
-    protected Product getFirstPetProduct(int days) {
+    protected Product getFirstPetProduct(int days, boolean overnight) {
         Product result = null;
-        if (days > 1) {
+        if (days > 1 || overnight) {
             result = getFirstPetProductOvernight();
         }
         if (result == null) {
@@ -179,23 +182,25 @@ public class CageType {
     /**
      * Returns the product to charge the second pet.
      * <p/>
-     * If the second pet is staying multiple days, the {@link #getSecondPetProductOvernight()} is used.
+     * If the second pet is staying multiple days or {@code overnight == true}, the
+     * {@link #getSecondPetProductOvernight()} is used.
      * If this is not specified, then the {@link #getSecondPetProductDay()} is used.
-     * If neither are present, then the {@link #getFirstPetProduct(int)} product is used.
+     * If neither are present, then the {@link #getFirstPetProduct(int, boolean)} product is used.
      *
-     * @param days the no. of days the pet is staying
+     * @param days       the no. of days the pet is staying
+     * @param overnight determines if the pet is staying overnight, when {@code days == 1}
      * @return the second pet product
      */
-    protected Product getSecondPetProduct(int days) {
+    protected Product getSecondPetProduct(int days, boolean overnight) {
         Product result = null;
-        if (days > 1) {
+        if (days > 1 || overnight) {
             result = getSecondPetProductOvernight();
         }
         if (result == null) {
             result = getSecondPetProductDay();
         }
         if (result == null) {
-            result = getFirstPetProduct(days);
+            result = getFirstPetProduct(days, overnight);
         }
         return result;
     }
