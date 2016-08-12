@@ -45,6 +45,7 @@
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="clinician.entity.id" class="java.lang.Long"/>
 	<field name="presentingComplaint" class="java.lang.String"/>
+	<field name="batch.entity.name" class="java.lang.String"/>
 	<variable name="clinician" class="java.lang.String">
 		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'medium')")]]></variableExpression>
 	</variable>
@@ -361,7 +362,7 @@
 		</band>
 		<band height="11">
 			<printWhenExpression><![CDATA[new Boolean($F{shortName}.startsWith("act.patientClinicalEvent"))]]></printWhenExpression>
-			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
 				<reportElement key="textField-10" x="8" y="0" width="57" height="10" uuid="5068a2ea-2257-4022-9e5a-c726a140939e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -546,6 +547,22 @@
 					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="11">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[$F{shortName}.equals("act.patientMedication") && $F{batch.entity.name} != null]]></printWhenExpression>
+			<textField>
+				<reportElement x="152" y="0" width="292" height="10" uuid="4b694f48-b028-4971-8247-31aa00cf3a18">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{batch.entity.name} != null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{text.batch} + ": " + $F{batch.entity.name}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
