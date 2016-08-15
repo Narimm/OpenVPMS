@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.MacroException;
@@ -59,9 +60,14 @@ class MacroContext {
     private final Variables variables;
 
     /**
+     * The JXPath extension functions that macros may invoke.
+     */
+    private final FunctionLibrary functions;
+
+    /**
      * Tracks currently running macros to avoid recursion.
      */
-    private Deque<String> running = new ArrayDeque<String>();
+    private Deque<String> running = new ArrayDeque<>();
 
 
     /**
@@ -71,12 +77,15 @@ class MacroContext {
      * @param factory   the macro factory
      * @param object    the object to evaluate macros against. May be {@code null}
      * @param variables the user variables. May be {@code null}
+     * @param functions the JXPath extension functions that macros may invoke
      */
-    public MacroContext(Map<String, Macro> macros, MacroFactory factory, Object object, Variables variables) {
+    public MacroContext(Map<String, Macro> macros, MacroFactory factory, Object object, Variables variables,
+                        FunctionLibrary functions) {
         this.macros = macros;
         this.factory = factory;
         this.object = object;
         this.variables = variables;
+        this.functions = functions;
     }
 
     /**
@@ -95,6 +104,15 @@ class MacroContext {
      */
     public Variables getVariables() {
         return variables;
+    }
+
+    /**
+     * Returns the JXPath extension functions that macros may invoke.
+     *
+     * @return the functions
+     */
+    public FunctionLibrary getFunctions() {
+        return functions;
     }
 
     /**

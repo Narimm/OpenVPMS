@@ -427,8 +427,9 @@
 
     <bean id="macros" class="org.openvpms.macro.impl.LookupMacros">
         <constructor-arg ref="lookupService"/>
-        <constructor-arg ref="defaultArchetypeService"/>
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="functionsFactory"/>
     </bean>
 
     <!-- ================================================================== -->

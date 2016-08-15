@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -52,7 +52,7 @@ public abstract class AbstractExpressionMacroRunner extends MacroRunner {
         if (object == null) {
             object = DUMMY;
         }
-        jxPathContext = JXPathHelper.newContext(object);
+        jxPathContext = JXPathHelper.newContext(object, context.getFunctions());
         jxPathContext.setVariables(new MacroVariables(context.getVariables()));
     }
 
@@ -91,7 +91,7 @@ public abstract class AbstractExpressionMacroRunner extends MacroRunner {
         /**
          * Internal variables.
          */
-        private Map<String, Object> declared = new HashMap<String, Object>();
+        private Map<String, Object> declared = new HashMap<>();
 
         /**
          * Constructs an {@link org.openvpms.macro.impl.ExpressionMacroRunner.MacroVariables}.

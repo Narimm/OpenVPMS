@@ -28,7 +28,6 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.macro.Macros;
 import org.openvpms.report.ReportFactory;
 
 import static org.junit.Assert.assertEquals;
@@ -44,7 +43,7 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * The macros.
      */
-    private Macros macros;
+    private LookupMacros macros;
 
     /**
      * The JXPath extension functions factory.
@@ -71,7 +70,8 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
 
         ReportFactory factory = new ReportFactory(service, getLookupService(), new DocumentHandlers(service),
                                                   functions);
-        macros = new LookupMacros(getLookupService(), service, factory);
+        macros = new LookupMacros(getLookupService(), service, factory, functions);
+        macros.afterPropertiesSet();
     }
 
     /**

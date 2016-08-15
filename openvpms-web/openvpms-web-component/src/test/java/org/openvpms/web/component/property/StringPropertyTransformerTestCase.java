@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.macro.Macros;
 import org.openvpms.macro.impl.LookupMacros;
 import org.openvpms.report.ReportFactory;
 
@@ -98,7 +97,8 @@ public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
         ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
         ReportFactory factory = new ReportFactory(getArchetypeService(), lookups,
                                                   new DocumentHandlers(getArchetypeService()), functions);
-        Macros macros = new LookupMacros(lookups, getArchetypeService(), factory);
+        LookupMacros macros = new LookupMacros(lookups, getArchetypeService(), factory, functions);
+        macros.afterPropertiesSet();
         StringPropertyTransformer handler = new StringPropertyTransformer(property, macros);
 
         Object text1 = handler.apply("macro1");
