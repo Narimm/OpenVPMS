@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
@@ -173,8 +174,9 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
 
         // run the report macro against the customer
         ReportMacro macro = new ReportMacro(lookup, service);
-        MacroContext context = new MacroContext(Collections.<String, Macro>emptyMap(), null, null, variables);
         ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
+        MacroContext context = new MacroContext(Collections.<String, Macro>emptyMap(), null, null, variables,
+                                                functions.create(new ReadOnlyArchetypeService(service), false));
         ReportFactory factory = new ReportFactory(service, getLookupService(), handlers, functions);
         ReportMacroRunner runner = new ReportMacroRunner(context, factory);
         return runner.run(macro, "");

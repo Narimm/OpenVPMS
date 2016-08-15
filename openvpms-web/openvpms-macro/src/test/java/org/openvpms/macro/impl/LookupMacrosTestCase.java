@@ -16,26 +16,27 @@
 
 package org.openvpms.macro.impl;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
+import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.MapVariables;
 import org.openvpms.macro.Position;
 import org.openvpms.report.ReportFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -49,7 +50,7 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     /**
      * The macros.
      */
-    private Macros macros;
+    private LookupMacros macros;
 
     /**
      * The first macro.
@@ -380,9 +381,29 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
      * Verifies that the $nl variable is evaluates as a new line.
      */
     @Test
-    public void testNewLines(){
+    public void testNewLines() {
         MacroTestHelper.createMacro("newlinetest", "concat('a', $nl, 'b')");
         assertEquals("a\nb", macros.run("newlinetest", new Object()));
+    }
+
+    /**
+     * Verify that macros can't save changes via the archetype service.
+     */
+    @Test
+    public void testMacrosCantUpdateDatabase() {
+        Party patient = TestHelper.createPatient();
+        MacroTestHelper.createMacro("updatedbtest", "party:setPatientDeceased(.)");
+
+        try {
+            macros.run("updatedbtest", patient);
+            fail("Expected macro to fail");
+        } catch (Throwable expected) {
+            // do nothing
+        }
+        // make sure it hasn't updated
+        patient = get(patient);
+        IMObjectBean bean = new IMObjectBean(patient);
+        assertFalse(bean.getBoolean("deceased"));
     }
 
     /**
@@ -403,36 +424,19 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("recursivemacro1", "$recursivemacro2");
         MacroTestHelper.createMacro("recursivemacro2", "$recursivemacro1");
 
-        ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
+        ArchetypeFunctionsFactory functions = new DefaultArchetypeFunctionsFactory(getArchetypeService(), getLookupService(), null, null, null) {
+            @Override
+            public FunctionLibrary create(IArchetypeService service, boolean cache) {
+                FunctionLibrary library = super.create(service, cache);
+                library.addFunctions(create("macro", new MacroFunctions(macros)));
+                return library;
+            }
+        };
         ILookupService lookups = getLookupService();
         ReportFactory factory = new ReportFactory(getArchetypeService(), lookups,
                                                   new DocumentHandlers(getArchetypeService()), functions);
-        macros = new LookupMacros(lookups, getArchetypeService(), factory);
-
-        // register the macro functions
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("macro", new TestMacroFunctions(macros));
-        new JXPathHelper(properties);
-    }
-
-    /**
-     * Hack to ensure that {@link MacroFunctions} is always working with the current instance of {@link LookupMacros}.
-     * <p/>
-     * This is required as JXPathHelper caches functions in a singleton.
-     */
-    private static class TestMacroFunctions extends MacroFunctions {
-
-        private static Macros macros;
-
-        public TestMacroFunctions(Macros macros) {
-            super(macros);
-            this.macros = macros;
-        }
-
-        @Override
-        public String eval(String macro, Object context) {
-            return macros.run(macro, context);
-        }
+        macros = new LookupMacros(lookups, getArchetypeService(), factory, functions);
+        macros.afterPropertiesSet();
     }
 
 }

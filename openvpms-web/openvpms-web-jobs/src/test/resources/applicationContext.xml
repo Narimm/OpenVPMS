@@ -277,9 +277,10 @@
     <!-- ================================================================== -->
 
     <bean id="macros" class="org.openvpms.macro.impl.LookupMacros">
-        <constructor-arg index="0" ref="lookupService"/>
-        <constructor-arg index="1" ref="archetypeService"/>
-        <constructor-arg index="2" ref="reportFactory"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="functionsFactory"/>
     </bean>
 
     <!-- ================================================================== -->

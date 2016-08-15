@@ -11,19 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.business.service.archetype.ReadOnlyArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.MacroException;
@@ -31,6 +34,7 @@ import org.openvpms.macro.Macros;
 import org.openvpms.macro.Position;
 import org.openvpms.report.ReportFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,12 +49,12 @@ import java.util.StringTokenizer;
 /**
  * An implementation of {@link Macros} that obtains macro definitions from <em>lookup.macro</em> and
  * <em>lookup.macroReport</em> lookups.
- * <p>
+ * <p/>
  * These are monitored for updates to ensure that the macros reflect those in the database.
  *
  * @author Tim Anderson
  */
-public class LookupMacros implements Macros, DisposableBean {
+public class LookupMacros implements Macros, InitializingBean, DisposableBean {
 
     /**
      * The macros, keyed on code
@@ -66,6 +70,16 @@ public class LookupMacros implements Macros, DisposableBean {
      * The macro factory.
      */
     private final MacroFactory factory;
+
+    /**
+     * The factory for
+     */
+    private final ArchetypeFunctionsFactory functionsFactory;
+
+    /**
+     * The JXPath extension functions that macros may invoke.
+     */
+    private FunctionLibrary functions;
 
     /**
      * The listener to monitor macro updates.
@@ -89,12 +103,14 @@ public class LookupMacros implements Macros, DisposableBean {
      * @param lookups the lookup service
      * @param service the archetype service
      * @param factory the document handlers
+     * @param functions the JXPath extension functions that macros may invoke
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public LookupMacros(ILookupService lookups, IArchetypeService service, ReportFactory factory) {
+    public LookupMacros(ILookupService lookups, IArchetypeService service, ReportFactory factory,
+                        ArchetypeFunctionsFactory functions) {
         this.service = service;
         this.factory = new MacroFactory(service, factory);
-
+        this.functionsFactory = functions;
         for (String shortName : MacroArchetypes.LOOKUP_MACROS) {
             addMacros(shortName, lookups);
         }
@@ -113,6 +129,19 @@ public class LookupMacros implements Macros, DisposableBean {
     }
 
     /**
+     * Invoked by a BeanFactory after it has set all bean properties supplied
+     * <p>This method allows the bean instance to perform initialization only
+     * possible when all bean properties have been set and to throw an
+     * exception in the event of misconfiguration.
+     */
+    @Override
+    public void afterPropertiesSet() {
+        // Create a read-only archetype service to ensure that macros cannot update the database
+        // Need to create the functions here in order to support registration of MacroFunctions
+        functions = functionsFactory.create(new ReadOnlyArchetypeService(service), false);
+    }
+
+    /**
      * Determines if a macro exists.
      *
      * @param macro the macro name
@@ -124,7 +153,7 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs a macro.
-     * <p>
+     * <p/>
      * If the macro code is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param macro  the macro code
@@ -138,7 +167,7 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs a macro.
-     * <p>
+     * <p/>
      * If the macro code is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param macro     the macro code
@@ -154,7 +183,7 @@ public class LookupMacros implements Macros, DisposableBean {
         if (m != null) {
             ScopedVariables scoped = pushVariables(variables);
             try {
-                MacroContext context = new MacroContext(macros, factory, object, scoped);
+                MacroContext context = new MacroContext(macros, factory, object, scoped, functions);
                 result = context.run(m, token.getNumericPrefix());
             } catch (MacroException exception) {
                 throw exception;
@@ -169,9 +198,9 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs all macros in the supplied text.
-     * <p>
+     * <p/>
      * When a macro is encountered, it will be replaced with the macro value.
-     * <p>
+     * <p/>
      * If a macro is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param text   the text to parse
@@ -184,9 +213,9 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs all macros in the supplied text.
-     * <p>
+     * <p/>
      * When a macro is encountered, it will be replaced with the macro value.
-     * <p>
+     * <p/>
      * If a macro is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param text      the text to parse
@@ -202,11 +231,11 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs all macros in the supplied text.
-     * <p>
+     * <p/>
      * When a macro is encountered, it will be replaced with the macro value.
-     * <p>
+     * <p/>
      * If a macro is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
-     * <p>
+     * <p/>
      * If a macro fails to expand, the macro will be left in the text, unless {@code failOnError} is {@code true},
      * where an exception will be thrown.
      *
@@ -226,7 +255,7 @@ public class LookupMacros implements Macros, DisposableBean {
         int oldPos = position != null ? position.getOldPosition() : -1;
         int index = 0;   // index into the text
         try {
-            MacroContext context = new MacroContext(macros, factory, object, scoped);
+            MacroContext context = new MacroContext(macros, factory, object, scoped, functions);
 
             StringTokenizer tokens = new StringTokenizer(text, " \t\n\r", true);
             while (tokens.hasMoreTokens()) {
