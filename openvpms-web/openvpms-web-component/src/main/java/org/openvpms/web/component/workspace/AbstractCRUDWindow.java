@@ -722,11 +722,23 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         if (editor.isDeleted()) {
             onDeleted((T) editor.getObject());
         } else if (editor.isSaved()) {
-            onSaved((T) editor.getObject(), isNew);
+            onSaved(editor, isNew);
         } else {
-            // cancelled
-            onRefresh((T) editor.getObject());
+            // cancelled/no changes to save
+            onRefresh(editor);
         }
+    }
+
+    /**
+     * Invoked when the editor is saved and closed.
+     *
+     * @param editor the editor
+     * @param isNew  determines if the object is a new instance
+     */
+    @SuppressWarnings("unchecked")
+    protected void onSaved(IMObjectEditor editor, boolean isNew) {
+        onSaved((T) editor.getObject(), isNew);
+        setSelectionPath(editor.getSelectionPath());
     }
 
     /**
@@ -788,6 +800,17 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
                 ErrorHelper.show(exception);
             }
         }
+    }
+
+    /**
+     * Invoked on editor completion, when the object needs to be refreshed.
+     *
+     * @param editor the editor
+     */
+    @SuppressWarnings("unchecked")
+    protected void onRefresh(IMObjectEditor editor) {
+        onRefresh((T) editor.getObject());
+        setSelectionPath(editor.getSelectionPath());
     }
 
     /**
