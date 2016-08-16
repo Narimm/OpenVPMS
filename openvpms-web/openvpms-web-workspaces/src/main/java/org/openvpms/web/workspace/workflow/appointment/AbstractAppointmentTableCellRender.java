@@ -102,18 +102,27 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
      * @param sendReminder  if {@code true}, a reminder should be sent for this appointment
      * @param reminderSent  the date a reminder was sent. May be {@code null}
      * @param reminderError the reminder error, if the reminder couldn't be sent. May be {@code null}
+     * @param onlineBooking determines if the appointment is from an online booking
      * @return a component representing the label with optional popup
      */
     protected Component createLabelWithNotes(String text, String notes, boolean sendReminder, Date reminderSent,
-                                             String reminderError) {
+                                             String reminderError, boolean onlineBooking) {
         Component result = createLabelWithNotes(text, notes);
-        if (sendReminder || reminderSent != null || reminderError != null) {
+        boolean hasReminder = sendReminder || reminderSent != null || reminderError != null;
+        if (hasReminder || onlineBooking) {
             if (!(result instanceof Row)) {
                 result = RowFactory.create(Styles.CELL_SPACING, result);
             }
-            Label reminder = createReminderIcon(reminderSent, reminderError);
-            reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
-            result.add(reminder);
+            if (hasReminder) {
+                Label reminder = createReminderIcon(reminderSent, reminderError);
+                reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
+                result.add(reminder);
+            }
+            if (onlineBooking) {
+                Label booking = LabelFactory.create(null, "Appointment.OnlineBooking");
+                booking.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
+                result.add(booking);
+            }
         }
         return result;
     }
@@ -172,9 +181,10 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
             }
         }
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
+        boolean onlineBooking = event.exists("bookingNotes") && !StringUtils.isEmpty(event.getString("bookingNotes"));
         result = createLabelWithNotes(text, notes, event.getBoolean(ScheduleEvent.SEND_REMINDER),
                                       event.getDate(ScheduleEvent.REMINDER_SENT),
-                                      event.getString(ScheduleEvent.REMINDER_ERROR));
+                                      event.getString(ScheduleEvent.REMINDER_ERROR), onlineBooking);
         return result;
     }
 
