@@ -543,7 +543,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 if (act == null) {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                            Messages.get("workflow.scheduling.appointment.paste.noexist"));
-                    onRefresh(null);        // force redraw
+                    onRefresh((Act) null);    // force redraw
                     browser.clearMarked();
                 } else if (browser.isCut() && TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT) &&
                            !AppointmentStatus.PENDING.equals(act.getStatus())) {

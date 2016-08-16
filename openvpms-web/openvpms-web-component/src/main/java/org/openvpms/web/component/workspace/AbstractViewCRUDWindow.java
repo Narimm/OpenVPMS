@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -26,9 +26,12 @@ import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
+
+import java.util.List;
 
 
 /**
@@ -94,6 +97,19 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
             setSelectionPath(viewer.getSelectionPath());
         }
         super.edit();
+    }
+
+    /**
+     * Sets the selection path.
+     *
+     * @param path the path. May be {@code null}
+     */
+    @Override
+    public void setSelectionPath(List<Selection> path) {
+        super.setSelectionPath(path);
+        if (path != null && viewer != null) {
+            viewer.setSelectionPath(path);
+        }
     }
 
     /**

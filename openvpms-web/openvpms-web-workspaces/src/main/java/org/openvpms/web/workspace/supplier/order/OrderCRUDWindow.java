@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -265,12 +265,12 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
                 dialog.close();
                 String message = Messages.format("supplier.order.generated.message", processor.getOrders());
                 InformationDialog.show(title, message);
-                onRefresh(null);
+                onRefresh((FinancialAct) null);
             }
 
             public void error(Throwable exception) {
                 ErrorHelper.show(exception);
-                onRefresh(null);
+                onRefresh((FinancialAct) null);
             }
         });
         dialog.show();
