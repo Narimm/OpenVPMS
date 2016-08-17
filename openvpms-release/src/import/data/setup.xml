@@ -64,10 +64,10 @@
     <data archetype="lookup.uom" code="PACKET" unitCode="PA"/>
     <data archetype="lookup.uom" code="VIAL" unitCode="VI"/>
     <data archetype="lookup.uom" code="BOX" unitCode="BX"/>
-    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM"/>
-    <data archetype="lookup.uom" code="LITRES" unitCode="LTR"/>
+    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM" printedName="g"/>
+    <data archetype="lookup.uom" code="LITRES" unitCode="LTR" printedName="l"/>
     <data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
-    <data archetype="lookup.uom" code="MLS" unitCode="MLT"/>
+    <data archetype="lookup.uom" code="MLS" unitCode="MLT" printedName="ml"/>
     <data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
     <data archetype="lookup.customerType" code="SMALL_ANIMAL"/>
     <data archetype="lookup.customerType" code="LARGE_ANIMAL"/>

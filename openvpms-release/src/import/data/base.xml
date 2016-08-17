@@ -46,8 +46,8 @@
     <data archetype="lookup.visitReason" code="OTHER"/>
     <data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true"/>
     <data archetype="lookup.messageReason" code="OTHER" name="Other"/>
-    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM"/>
-    <data id="Pounds" archetype="lookup.uom" code="POUNDS"/>
+    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" printedName="kg"/>
+    <data id="Pounds" archetype="lookup.uom" code="POUNDS" printedName="lb"/>
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>

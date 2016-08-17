@@ -80,13 +80,13 @@
     <data archetype="lookup.uom" code="PACKET" unitCode="PA"/>
     <data archetype="lookup.uom" code="VIAL" unitCode="VI"/>
     <data archetype="lookup.uom" code="BOX" unitCode="BX"/>
-    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM"/>
-    <data archetype="lookup.uom" code="LITRES" unitCode="LTR"/>
+    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM" printedName="g"/>
+    <data archetype="lookup.uom" code="LITRES" unitCode="LTR" printedName="l"/>
     <data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
-    <data archetype="lookup.uom" code="MLS" unitCode="MLT"/>
+    <data archetype="lookup.uom" code="MLS" unitCode="MLT" printedName="ml"/>
     <data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
-    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" unitCode="KGM"/>
-    <data id="Pounds" archetype="lookup.uom" code="POUNDS" unitCode="LBR"/>
+    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" unitCode="KGM" printedName="kg"/>
+    <data id="Pounds" archetype="lookup.uom" code="POUNDS" unitCode="LBR" printedName="lb"/>
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
