@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -22,7 +22,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertyState;
 
@@ -55,10 +59,14 @@ public class NodeResolver implements PropertyResolver {
     private final IArchetypeService service;
 
     /**
+     * The lookup service. May be {@code null}
+     */
+    private final ILookupService lookups;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(NodeResolver.class);
-
 
     /**
      * Constructs a {@link NodeResolver}.
@@ -67,9 +75,21 @@ public class NodeResolver implements PropertyResolver {
      * @param service the archetype service
      */
     public NodeResolver(IMObject root, IArchetypeService service) {
+        this(root, service, null);
+    }
+
+    /**
+     * Constructs a {@link NodeResolver}.
+     *
+     * @param root    the root object
+     * @param service the archetype service
+     * @param lookups the lookup service. May be {@code null}
+     */
+    public NodeResolver(IMObject root, IArchetypeService service, ILookupService lookups) {
         this.root = root;
         archetype = service.getArchetypeDescriptor(root.getArchetypeId());
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -112,7 +132,7 @@ public class NodeResolver implements PropertyResolver {
             if (node == null) {
                 throw new NodeResolverException(InvalidProperty, name);
             }
-            Object value = getValue(object, node);
+            Object value = getValue(object, node, true);
             if (value == null) {
                 // object missing.
                 object = null;
@@ -121,25 +141,33 @@ public class NodeResolver implements PropertyResolver {
                 throw new NodeResolverException(InvalidObject, name);
             }
             object = (IMObject) value;
-            archetype = service.getArchetypeDescriptor(
-                    object.getArchetypeId());
+            archetype = service.getArchetypeDescriptor(object.getArchetypeId());
             name = name.substring(index + 1);
         }
         if (object != null) {
-            NodeDescriptor leafNode = archetype.getNodeDescriptor(name);
+            NodeDescriptor leafNode = (archetype != null) ? archetype.getNodeDescriptor(name) : null;
             Object value;
             if (leafNode == null) {
-                if ("displayName".equals(name)) {
+                if ("displayName".equals(name) && archetype != null) {
                     value = archetype.getDisplayName();
                 } else if ("shortName".equals(name)) {
                     value = object.getArchetypeId().getShortName();
                 } else if ("uid".equals(name)) {
                     value = object.getId();
+                } else if (object instanceof Lookup) {
+                    // local lookup
+                    if ("name".equals(name)) {
+                        value = object.getName();
+                    } else if ("code".equals(name)) {
+                        value = ((Lookup) object).getCode();
+                    } else {
+                        throw new NodeResolverException(InvalidProperty, name);
+                    }
                 } else {
                     throw new NodeResolverException(InvalidProperty, name);
                 }
             } else {
-                value = getValue(object, leafNode);
+                value = getValue(object, leafNode, false);
             }
             state = new PropertyState(object, archetype, name, leafNode, value);
         } else {
@@ -152,19 +180,23 @@ public class NodeResolver implements PropertyResolver {
      * Returns the value of a node, converting any object references or
      * single element arrays to their corresponding IMObject instance.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
+     * @param parent         the parent object
+     * @param descriptor     the node descriptor
+     * @param resolveLookups if {@code true}, retrieve lookups, rather than return their codes
      */
-    private Object getValue(IMObject parent, NodeDescriptor descriptor) {
+    private Object getValue(IMObject parent, NodeDescriptor descriptor, boolean resolveLookups) {
         Object result;
         if (descriptor.isObjectReference()) {
             result = getObject(parent, descriptor);
-        } else if (descriptor.isCollection() &&
-                   descriptor.getMaxCardinality() == 1) {
+        } else if (descriptor.isCollection() && descriptor.getMaxCardinality() == 1) {
             List<IMObject> values = descriptor.getChildren(parent);
             result = (!values.isEmpty()) ? values.get(0) : null;
         } else {
             result = descriptor.getValue(parent);
+            if (result != null && resolveLookups && lookups != null && descriptor.isLookup()) {
+                LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, lookups);
+                result = assertion.getLookup(parent, result.toString());
+            }
         }
         return result;
     }

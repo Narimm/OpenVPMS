@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -79,7 +79,7 @@ public class ArchetypeServiceFunctions {
      * @return List<IMObject>
      */
     public List<IMObject> resolveRefs(List<IMObjectReference> references) {
-        List<IMObject> objects = new ArrayList<IMObject>();
+        List<IMObject> objects = new ArrayList<>();
         for (IMObjectReference ref : references) {
             objects.add(service.get(ref));
         }
@@ -210,7 +210,7 @@ public class ArchetypeServiceFunctions {
     public Object defaultLookup(IMObject object, String node) {
         Lookup lookup = null;
         if (object != null) {
-            NodeResolver resolver = new NodeResolver(object, service);
+            NodeResolver resolver = new NodeResolver(object, service, lookups);
             PropertyState state = resolver.resolve(node);
             NodeDescriptor descriptor = state.getNode();
             if (descriptor == null) {
@@ -245,7 +245,7 @@ public class ArchetypeServiceFunctions {
      * @see NodeResolver
      */
     private Object getNode(IMObject object, String node) {
-        NodeResolver resolver = new NodeResolver(object, service);
+        NodeResolver resolver = new NodeResolver(object, service, lookups);
         return resolver.getObject(node);
     }
 
@@ -277,7 +277,7 @@ public class ArchetypeServiceFunctions {
      * @see NodeResolver
      */
     private Object getProperty(PropertySet set, String property) {
-        PropertyResolver resolver = new PropertySetResolver(set, service);
+        PropertyResolver resolver = new PropertySetResolver(set, service, lookups);
         return resolver.getObject(property);
     }
 

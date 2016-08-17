@@ -83,7 +83,7 @@ public class JDBCQueryExecuterFactory extends JRJdbcQueryExecuterFactory {
      * @param fields a map of additional field names and their values, to pass to the report. May be {@code null}
      */
     public void setFields(Map<String, Object> fields) {
-        this.fields = (fields != null) ? new ResolvingPropertySet(fields, service) : null;
+        this.fields = (fields != null) ? new ResolvingPropertySet(fields, service, lookups) : null;
     }
 
     /**

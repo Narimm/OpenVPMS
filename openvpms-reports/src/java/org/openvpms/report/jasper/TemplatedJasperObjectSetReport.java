@@ -61,9 +61,10 @@ public class TemplatedJasperObjectSetReport extends AbstractTemplatedJasperIMRep
     @Override
     protected JRRewindableDataSource createDataSource(Iterable<ObjectSet> objects, Map<String, Object> parameters,
                                                       Map<String, Object> fields) {
-        PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, getArchetypeService()) : null;
-        return new ObjectSetDataSource(objects, parameters, f, getArchetypeService(), getLookupService(),
-                                       getFunctions());
+        ILookupService lookups = getLookupService();
+        IArchetypeService service = getArchetypeService();
+        PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, service, lookups) : null;
+        return new ObjectSetDataSource(objects, parameters, f, service, lookups, getFunctions());
     }
 
 }

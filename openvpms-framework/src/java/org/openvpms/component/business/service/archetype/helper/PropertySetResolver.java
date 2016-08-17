@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
 
 
@@ -40,15 +41,15 @@ public class PropertySetResolver extends AbstractPropertyResolver {
      */
     private final PropertySet set;
 
-
     /**
      * Constructs a {@link PropertySetResolver}.
      *
      * @param set     the property set
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public PropertySetResolver(PropertySet set, IArchetypeService service) {
-        super(service);
+    public PropertySetResolver(PropertySet set, IArchetypeService service, ILookupService lookups) {
+        super(service, lookups);
         this.set = set;
     }
 

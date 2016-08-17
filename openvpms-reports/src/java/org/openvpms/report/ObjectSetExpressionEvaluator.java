@@ -55,8 +55,8 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
      */
     public ObjectSetExpressionEvaluator(ObjectSet set, Map<String, Object> parameters, Map<String, Object> fields,
                                         IArchetypeService service, ILookupService lookups, Functions functions) {
-        this(set, parameters, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups,
-             functions);
+        this(set, parameters, fields != null ? new ResolvingPropertySet(fields, service, lookups) : null, service,
+             lookups, functions);
     }
 
     /**
@@ -91,7 +91,7 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
                 object = set.get(objectName);
                 if (object instanceof IMObject) {
                     if (!StringUtils.isEmpty(nodeName)) {
-                        NodeResolver resolver = new NodeResolver((IMObject) object, getService());
+                        NodeResolver resolver = new NodeResolver((IMObject) object, getService(), getLookups());
                         object = getValue(nodeName, resolver);
                         break;
                     }

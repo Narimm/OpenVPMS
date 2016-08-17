@@ -79,9 +79,11 @@ public class TemplatedJasperIMObjectReport extends AbstractTemplatedJasperIMRepo
     @Override
     protected JRRewindableDataSource createDataSource(Iterable<IMObject> objects, Map<String, Object> parameters,
                                                       Map<String, Object> fields) {
-        PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, getArchetypeService()) : null;
-        return new IMObjectCollectionDataSource(objects, parameters, f, getArchetypeService(), getLookupService(),
-                                                getDocumentHandlers(), getFunctions());
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, service, lookups) : null;
+        return new IMObjectCollectionDataSource(objects, parameters, f, service, lookups, getDocumentHandlers(),
+                                                getFunctions());
     }
 
 }

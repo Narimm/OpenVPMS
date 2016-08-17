@@ -126,7 +126,7 @@ public class MacroVariables extends IMObjectVariables {
     /**
      * Mapping of variable name to archetype short name.
      */
-    public static final Map<String, String> MAPPINGS = new HashMap<String, String>();
+    public static final Map<String, String> MAPPINGS = new HashMap<>();
 
 
     static {
@@ -187,11 +187,13 @@ public class MacroVariables extends IMObjectVariables {
      *
      * @param variables the variables
      * @param service   the archetype service
+     * @param lookups   the lookup service
      * @return a new property resolver
      */
     @Override
-    protected PropertyResolver createResolver(final PropertySet variables, IArchetypeService service) {
-        return new AbstractPropertyResolver(service) {
+    protected PropertyResolver createResolver(final PropertySet variables, IArchetypeService service,
+                                              ILookupService lookups) {
+        return new AbstractPropertyResolver(service, lookups) {
             @Override
             protected Object get(String name) {
                 String mapping = MAPPINGS.get(name);

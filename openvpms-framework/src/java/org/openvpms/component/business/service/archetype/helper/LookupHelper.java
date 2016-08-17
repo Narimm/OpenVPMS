@@ -93,7 +93,7 @@ public class LookupHelper {
      */
     public static String getName(IArchetypeService service, ILookupService lookupService, IMObject object,
                                  String node) {
-        NodeResolver resolver = new NodeResolver(object, service);
+        NodeResolver resolver = new NodeResolver(object, service, lookupService);
         PropertyState state = resolver.resolve(node);
         NodeDescriptor descriptor = state.getNode();
         if (descriptor == null) {

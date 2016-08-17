@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -47,7 +47,7 @@ public class IMObjectVariables implements Variables, org.apache.commons.jxpath.V
     /**
      * The lookup service.
      */
-    private final ILookupService lookupService;
+    private final ILookupService lookups;
 
     /**
      * The variables.
@@ -73,7 +73,7 @@ public class IMObjectVariables implements Variables, org.apache.commons.jxpath.V
      */
     public IMObjectVariables(IArchetypeService service, ILookupService lookups) {
         this.service = service;
-        this.lookupService = lookups;
+        this.lookups = lookups;
     }
 
     /**
@@ -174,10 +174,12 @@ public class IMObjectVariables implements Variables, org.apache.commons.jxpath.V
      *
      * @param variables the variables
      * @param service   the archetype service
+     * @param lookups   the lookup service
      * @return a new property resolver
      */
-    protected PropertyResolver createResolver(PropertySet variables, IArchetypeService service) {
-        resolver = new PropertySetResolver(variables, service) {
+    protected PropertyResolver createResolver(PropertySet variables, IArchetypeService service,
+                                              ILookupService lookups) {
+        resolver = new PropertySetResolver(variables, service, lookups) {
             @Override
             public Object getObject(String name) {
                 return IMObjectVariables.this.getValue(resolve(name));
@@ -198,7 +200,7 @@ public class IMObjectVariables implements Variables, org.apache.commons.jxpath.V
         NodeDescriptor descriptor = state.getNode();
         Object value;
         if (descriptor != null && descriptor.isLookup()) {
-            value = LookupHelper.getName(service, lookupService, descriptor, state.getParent());
+            value = LookupHelper.getName(service, lookups, descriptor, state.getParent());
         } else {
             value = state.getValue();
         }
@@ -212,7 +214,7 @@ public class IMObjectVariables implements Variables, org.apache.commons.jxpath.V
      */
     protected PropertyResolver getResolver() {
         if (resolver == null) {
-            resolver = createResolver(variables, service);
+            resolver = createResolver(variables, service, lookups);
         }
         return resolver;
     }

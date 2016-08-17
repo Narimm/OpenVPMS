@@ -59,7 +59,8 @@ public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMO
      */
     public IMObjectExpressionEvaluator(IMObject object, Map<String, Object> parameters, Map<String, Object> fields,
                                        IArchetypeService service, ILookupService lookups, Functions functions) {
-        super(object, parameters, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, functions);
+        super(object, parameters, fields != null ? new ResolvingPropertySet(fields, service, lookups) : null, service,
+              lookups, functions);
     }
 
     /**
@@ -88,7 +89,7 @@ public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMO
      */
     protected Object getNodeValue(String name) {
         if (resolver == null) {
-            resolver = new NodeResolver(getObject(), getService());
+            resolver = new NodeResolver(getObject(), getService(), getLookups());
         }
         return getValue(name, resolver);
     }

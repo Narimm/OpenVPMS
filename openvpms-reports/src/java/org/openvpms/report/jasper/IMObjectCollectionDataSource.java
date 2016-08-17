@@ -211,7 +211,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
         Comparator comparator = ComparatorUtils.naturalComparator();
         comparator = ComparatorUtils.nullLowComparator(comparator);
 
-        Transformer transformer = new NodeTransformer(sortNode, getArchetypeService());
+        Transformer transformer = new NodeTransformer(sortNode, getArchetypeService(), getLookupService());
         TransformingComparator transComparator = new TransformingComparator(transformer, comparator);
         Collections.sort(objects, transComparator);
     }
@@ -228,16 +228,22 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
          */
         private final IArchetypeService service;
 
+        /**
+         * The lookup service.
+         */
+        private final ILookupService lookups;
 
         /**
          * Constructs a {@code NodeTransformer}.
          *
          * @param name    the field name
          * @param service the archetype service
+         * @param lookups the lookup service
          */
-        public NodeTransformer(String name, IArchetypeService service) {
+        public NodeTransformer(String name, IArchetypeService service, ILookupService lookups) {
             this.name = name;
             this.service = service;
+            this.lookups = lookups;
         }
 
         /**
@@ -249,7 +255,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
         public Object transform(Object input) {
             Object result;
             IMObject object = (IMObject) input;
-            NodeResolver resolver = new NodeResolver(object, service);
+            NodeResolver resolver = new NodeResolver(object, service, lookups);
             try {
                 result = resolver.getObject(name);
                 if (!(result instanceof Comparable)) {
