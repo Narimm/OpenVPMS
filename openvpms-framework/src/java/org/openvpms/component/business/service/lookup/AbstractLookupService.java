@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -204,6 +204,7 @@ public abstract class AbstractLookupService implements ILookupService {
     /**
      * Return a list of lookups for a given object and node value.
      * <p/>
+     * Inactive lookups will be excluded, unless they are explicitly referred to.<br/>
      * This will limit lookups returned if the node refers to the source or target of a lookup relationship.
      *
      * @param object the object
@@ -221,7 +222,7 @@ public abstract class AbstractLookupService implements ILookupService {
     }
 
     /**
-     * Returns a lookup based on the value of a node.
+     * Returns a lookup based on the value of a node. The lookup may be inactive.
      *
      * @param object the object
      * @param node   the node name
@@ -243,7 +244,7 @@ public abstract class AbstractLookupService implements ILookupService {
     }
 
     /**
-     * Returns a lookup's name based on the value of a node.
+     * Returns a lookup's name based on the value of a node. The lookup may be inactive.
      *
      * @param object the object
      * @param node   the node name
