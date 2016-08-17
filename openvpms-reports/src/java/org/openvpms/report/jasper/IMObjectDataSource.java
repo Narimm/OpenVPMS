@@ -94,7 +94,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     public IMObjectDataSource(IMObject object, Map<String, Object> parameters, Map<String, Object> fields,
                               IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
                               Functions functions) {
-        this(object, parameters, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups,
+        this(object, parameters, fields != null ? new ResolvingPropertySet(fields, service, lookups) : null, service, lookups,
              handlers, functions);
     }
 
@@ -115,7 +115,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
         this.object = object;
         this.parameters = parameters;
         this.fields = fields;
-        resolver = new NodeResolver(object, service);
+        resolver = new NodeResolver(object, service, lookups);
         evaluator = new IMObjectExpressionEvaluator(object, resolver, parameters, fields, service, lookups, functions);
         this.handlers = handlers;
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertyState;
 
 import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
@@ -44,15 +45,22 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
     /**
      * The archetype service.
      */
-    protected final IArchetypeService service;
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
 
     /**
      * Constructs an {@link AbstractPropertyResolver}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public AbstractPropertyResolver(IArchetypeService service) {
+    public AbstractPropertyResolver(IArchetypeService service, ILookupService lookups) {
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -123,7 +131,7 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
      * @throws PropertyResolverException if the name is invalid
      */
     protected PropertyState resolve(IMObject object, String name) {
-        NodeResolver resolver = new NodeResolver(object, service);
+        NodeResolver resolver = new NodeResolver(object, service, lookups);
         return resolver.resolve(name);
     }
 

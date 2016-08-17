@@ -50,7 +50,7 @@ public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSo
         Map<String, Object> fields = new HashMap<>();
         fields.put("Globals.A", "A");
         fields.put("Globals.1", 1);
-        PropertySet f = new ResolvingPropertySet(fields, getArchetypeService());
+        PropertySet f = new ResolvingPropertySet(fields, getArchetypeService(), getLookupService());
         Functions functions = applicationContext.getBean(Functions.class);
         IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects, null, f, getArchetypeService(),
                                                                            getLookupService(), handlers, functions);

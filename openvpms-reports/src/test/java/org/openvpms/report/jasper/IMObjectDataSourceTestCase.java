@@ -105,7 +105,7 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         fields.put("Globals.A", "A");
         fields.put("Globals.1", 1);
         IMObjectDataSource ds = createDataSource(object, fields);
-        checkExpressionDataSource(ds, new ResolvingPropertySet(fields, getArchetypeService()));
+        checkExpressionDataSource(ds, new ResolvingPropertySet(fields, getArchetypeService(), getLookupService()));
     }
 
     /**

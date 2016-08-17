@@ -53,6 +53,11 @@ public class ListFunctions {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The sorter.
      */
     private final IMObjectSorter sorter;
@@ -66,6 +71,7 @@ public class ListFunctions {
      */
     public ListFunctions(IArchetypeService service, ILookupService lookups) {
         this.service = service;
+        this.lookups = lookups;
         sorter = new IMObjectSorter(service, lookups);
     }
 
@@ -166,7 +172,7 @@ public class ListFunctions {
             if (i > 0) {
                 builder.append(separator);
             }
-            NodeResolver resolver = new NodeResolver(object, service);
+            NodeResolver resolver = new NodeResolver(object, service, lookups);
             try {
                 Object value = resolver.getObject(node);
                 builder.append(value);
