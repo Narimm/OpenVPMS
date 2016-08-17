@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -19,9 +19,11 @@ package org.openvpms.component.business.service.lookup;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -262,6 +264,84 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     }
 
     /**
+     * Verifies that the {@link ILookupService#getLookup(IMObject, String)}
+     * and {@link ILookupService#getName(IMObject, String)} methods can return inactive lookups for remote and
+     * target lookups.
+     */
+    @Test
+    public void testInactiveLookups() {
+        Lookup canine = createLookup("lookup.species", "CANINE");
+        Lookup canineBreed = createLookup("lookup.breed", "BLOODHOUND");
+        LookupUtil.addRelationship(getArchetypeService(), "lookupRelationship.speciesBreed", canine, canineBreed);
+        Lookup feline = createLookup("lookup.species", "FELINE");
+        Lookup felineBreed = createLookup("lookup.breed", "ABYSSINIAN");
+        LookupUtil.addRelationship(getArchetypeService(), "lookupRelationship.speciesBreed", feline, felineBreed);
+        save(canine, canineBreed, feline, felineBreed);
+
+        IMObjectBean bean = createBean("party.patientpet");
+        bean.setValue("species", canine.getCode());
+        bean.setValue("breed", canineBreed.getCode());
+
+        IMObject patient = bean.getObject();
+        Lookup species1 = lookupService.getLookup(patient, "species");
+        assertEquals(canine, species1);
+
+        Collection<Lookup> list1 = lookupService.getLookups(patient, "species");
+        checkLookups(list1, true, canine, feline);
+
+        Lookup breed1 = lookupService.getLookup(patient, "breed");
+        assertEquals(canineBreed, breed1);
+
+        Collection<Lookup> list2 = lookupService.getLookups(patient, "breed");
+        checkLookups(list2, true, canineBreed);
+        checkLookups(list2, false, felineBreed);
+
+        canine.setActive(false);
+        save(canine);
+
+        Lookup species2 = lookupService.getLookup(patient, "species");
+        assertEquals(canine, species2);
+
+        Collection<Lookup> list3 = lookupService.getLookups(patient, "species");
+        checkLookups(list3, true, canine, feline);
+
+        Lookup breed2 = lookupService.getLookup(patient, "breed");
+        assertEquals(canineBreed, breed2);
+
+        Collection<Lookup> list4 = lookupService.getLookups(patient, "breed");
+        checkLookups(list4, true, canineBreed);
+        checkLookups(list4, false, felineBreed);
+
+        canineBreed.setActive(false);
+        save(canineBreed);
+
+        Lookup breed3 = lookupService.getLookup(patient, "breed");
+        assertEquals(canineBreed, breed3);
+
+        Collection<Lookup> list5 = lookupService.getLookups(patient, "breed");
+        checkLookups(list5, true, canineBreed);
+        checkLookups(list5, false, felineBreed);
+
+        // verify the getName() method also handles inactive lookups
+        assertNotNull(canine.getName());
+        assertNotNull(canineBreed.getName());
+        assertEquals(canine.getName(), lookupService.getName(patient, "species"));
+        assertEquals(canineBreed.getName(), lookupService.getName(patient, "breed"));
+
+        // now swap the species. The getLookups() methods should no longer return the CANINE species
+        bean.setValue("species", feline.getCode());
+        bean.setValue("breed", felineBreed.getCode());
+
+        Collection<Lookup> list6 = lookupService.getLookups(patient, "species");
+        checkLookups(list6, true, feline);
+        checkLookups(list6, false, canine);
+
+        Collection<Lookup> list7 = lookupService.getLookups(patient, "breed");
+        checkLookups(list7, true, felineBreed);
+        checkLookups(list7, false, canineBreed);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -287,6 +367,7 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
      */
     protected void setLookupService(ILookupService service) {
         lookupService = service;
+        new LookupServiceHelper(service);
     }
 
     /**
@@ -312,4 +393,9 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
 
     }
 
+    private void checkLookups(Collection<Lookup> lookups, boolean exists, Lookup... expected) {
+        for (Lookup lookup : expected) {
+            assertEquals(exists, lookups.contains(lookup));
+        }
+    }
 }

@@ -647,14 +647,15 @@ public class TestHelper {
      */
     public static Lookup getLookup(String shortName, String code, String name, boolean save) {
         Lookup lookup;
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
         QueryIterator<Lookup> iter = new IMObjectQueryIterator<>(query);
         if (iter.hasNext()) {
             lookup = iter.next();
-            if (!StringUtils.equals(name, lookup.getName())) {
+            if (!StringUtils.equals(name, lookup.getName()) || !lookup.isActive()) {
                 lookup.setName(name);
+                lookup.setActive(true);
             } else {
                 save = false;
             }

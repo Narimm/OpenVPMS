@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
@@ -27,18 +25,21 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
-import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.*;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.util.Collection;
 import java.util.List;
 
+import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.InvalidLookupAssertion;
+import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.InvalidLookupRelationshipArchetypeDefinition;
+import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.LookupRelationshipArchetypeNotDefined;
+import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.NoArchetypeRangeInLookupRelationship;
+
 
 /**
  * Abstract implementation of the {@link LookupAssertion} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 abstract class AbstractLookupAssertion implements LookupAssertion {
 
@@ -64,14 +65,13 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
 
 
     /**
-     * Constructs a new <code>AbstractLookupAssertion</code>.
+     * Constructs an {@link AbstractLookupAssertion}.
      *
      * @param descriptor the assertion descriptor
      * @param type       the assertion type
      * @param service    the archetype service
      */
-    public AbstractLookupAssertion(AssertionDescriptor descriptor,
-                                   String type, IArchetypeService service,
+    public AbstractLookupAssertion(AssertionDescriptor descriptor, String type, IArchetypeService service,
                                    ILookupService lookupService) {
         this.descriptor = descriptor;
         this.type = type;
@@ -105,14 +105,13 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @throws LookupHelperException if invoked
      */
     public List<Lookup> getLookups() {
-        throw new LookupHelperException(InvalidLookupAssertion,
-                                        new Object[]{descriptor.getName()});
+        throw new LookupHelperException(InvalidLookupAssertion, new Object[]{descriptor.getName()});
     }
 
     /**
      * Returns the lookups for this assertion.
-     * This implementation delegates to
-     * {@link LookupAssertion#getLookups()}.
+     * <p/>
+     * This implementation delegates to {@link LookupAssertion#getLookups()}.
      *
      * @param context the context
      * @return a list of lookups
@@ -124,26 +123,25 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
 
     /**
      * Returns the lookup with the specified code.
+     * <p/>
      * This implementation throws {@link LookupHelperException}.
      *
      * @param code the lookup code
-     * @return the lookup matching <code>code</code>, or <code>null</code> if
-     *         none is found
+     * @return the lookup matching {@code code}, or {@code null} if none is found
      * @throws LookupHelperException if invoked
      */
     public Lookup getLookup(String code) {
-        throw new LookupHelperException(InvalidLookupAssertion,
-                                        new Object[]{descriptor.getName()});
+        throw new LookupHelperException(InvalidLookupAssertion, new Object[]{descriptor.getName()});
     }
 
     /**
      * Returns the lookup with the specified code.
-     * This implementation delegates to
-     * {@link LookupAssertion#getLookup(String)}.
+     * <p/>
+     * This implementation delegates to {@link LookupAssertion#getLookup(String)}.
      *
      * @param context the context
-     * @return the lookup matching <code>code</code>, or <code>null</code> if
-     *         none is found
+     * @return the lookup matching {@code code}, or {@code null} if
+     * none is found
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if this method is unsupported by the
      *                                   lookup type
@@ -154,14 +152,13 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
 
     /**
      * Returns the name of the lookup with the specified code.
+     * <p/>
      * This implementation uses to {@link #getLookup(String)}.
      *
      * @param code the lookup code
-     * @return the name of the lookup matching <code>code</code>, or
-     *         <code>null</code> if none is found
+     * @return the name of the lookup matching {@code code}, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws LookupHelperException     if this method is unsupported by the
-     *                                   lookup type
+     * @throws LookupHelperException     if this method is unsupported by the lookup type
      */
     public String getName(String code) {
         Lookup lookup = getLookup(code);
@@ -172,12 +169,10 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * Returns the name of the lookup with the specified code.
      * This method delegates to {@link #getName(String)}.
      *
-     * @param context the context. May be <code>null</code>
-     * @return the name of the lookup matching <code>code</code>, or
-     *         <code>null</code> if none is found
+     * @param context the context. May be {@code null}
+     * @return the name of the lookup matching {@code code}, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws LookupHelperException     if this method is unsupported by the
-     *                                   lookup type
+     * @throws LookupHelperException     if this method is unsupported by the lookup type
      */
     public String getName(IMObject context, String code) {
         return getName(code);
@@ -186,7 +181,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     /**
      * Returns the default lookup.
      *
-     * @return the default lookup or <tt>null</tt> if there is no default
+     * @return the default lookup or {@code null} if there is no default
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Lookup getDefault() {
@@ -220,7 +215,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * Returns the value of the named property from the assertion descriptor.
      *
      * @param name the property name
-     * @return the property value, or <code>null</code> if it doesn't exist
+     * @return the property value, or {@code null} if it doesn't exist
      */
     protected String getProperty(String name) {
         return LookupAssertionHelper.getValue(descriptor, name);
@@ -234,17 +229,15 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @param nodePath              the jxpath to the lookup code
      * @param relationshipShortName the lookup relationship short name
      * @param relationshipNode      the lookup relationship node
-     * @return the corresponding lookup, or <code>null</code> if none is found
+     * @return the corresponding lookup, or {@code null} if none is found
      */
-    protected Lookup getLookup(IMObject context, String nodePath,
-                               String relationshipShortName,
+    protected Lookup getLookup(IMObject context, String nodePath, String relationshipShortName,
                                String relationshipNode) {
         Lookup result = null;
         String code = getPathValue(context, nodePath);
-        String[] shortNames = getArchetypeShortNames(relationshipShortName,
-                                                     relationshipNode);
+        String[] shortNames = getArchetypeShortNames(relationshipShortName, relationshipNode);
         for (String shortName : shortNames) {
-            result = lookupService.getLookup(shortName, code);
+            result = lookupService.getLookup(shortName, code, false);
             if (result != null) {
                 break;
             }
@@ -259,31 +252,23 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @param relationship the relationship archetype
      * @param node         the node name
      * @return an array of archetype short names
-     * @throws LookupHelperException if the relationship or node is doesn't
-     *                               exist, or the node descriptor doesn't
+     * @throws LookupHelperException if the relationship or node is doesn't exist, or the node descriptor doesn't
      *                               specify an archetype range
      */
-    protected String[] getArchetypeShortNames(String relationship,
-                                              String node) {
-        ArchetypeDescriptor archetype = service.getArchetypeDescriptor(
-                relationship);
+    protected String[] getArchetypeShortNames(String relationship, String node) {
+        ArchetypeDescriptor archetype = service.getArchetypeDescriptor(relationship);
         if (archetype == null) {
-            throw new LookupHelperException(
-                    LookupRelationshipArchetypeNotDefined,
-                    new Object[]{relationship});
+            throw new LookupHelperException(LookupRelationshipArchetypeNotDefined, new Object[]{relationship});
         }
         NodeDescriptor ndesc = archetype.getNodeDescriptor(node);
         if (ndesc == null) {
-            throw new LookupHelperException(
-                    InvalidLookupRelationshipArchetypeDefinition,
-                    new Object[]{relationship, node});
+            throw new LookupHelperException(InvalidLookupRelationshipArchetypeDefinition,
+                                            new Object[]{relationship, node});
         }
 
         String[] types = ndesc.getArchetypeRange();
         if (types.length == 0) {
-            throw new LookupHelperException(
-                    NoArchetypeRangeInLookupRelationship,
-                    new Object[]{relationship, node});
+            throw new LookupHelperException(NoArchetypeRangeInLookupRelationship, new Object[]{relationship, node});
         }
 
         return types;

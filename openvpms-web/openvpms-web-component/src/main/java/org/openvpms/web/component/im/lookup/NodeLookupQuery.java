@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -31,6 +31,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -110,9 +111,9 @@ public class NodeLookupQuery extends AbstractLookupQuery {
             if (node != null) {
                 LookupAssertion assertion = LookupAssertionFactory.create(node, service, lookupService);
                 if (object != null) {
-                    result = filter(assertion.getLookups(object));
+                    result = new ArrayList<>(assertion.getLookups(object));
                 } else {
-                    result = filter(assertion.getLookups());
+                    result = new ArrayList<>(assertion.getLookups());
                 }
             }
         } catch (OpenVPMSException error) {
