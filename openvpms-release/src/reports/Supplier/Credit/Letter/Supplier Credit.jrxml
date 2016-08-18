@@ -51,7 +51,7 @@
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<background>
-		<band height="20" splitType="Stretch"/>
+		<band height="19" splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="146" splitType="Stretch">
@@ -320,9 +320,9 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="38">
+		<band height="25">
 			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
-				<reportElement key="staticText-1" stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="554" height="38" uuid="62b53ac1-2073-4119-b9f1-53ea53019333">
+				<reportElement key="staticText-1" stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="554" height="24" uuid="62b53ac1-2073-4119-b9f1-53ea53019333">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[($F{OpenVPMS.location.letterhead.target.lastPageFooter}==null)?Boolean.FALSE:
@@ -335,7 +335,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="13" isBold="true" isItalic="true"/>
+					<font size="9" isBold="true" isItalic="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.lastPageFooter}]]></textFieldExpression>
@@ -364,7 +364,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="11" isBold="true" isItalic="true"/>
+					<font size="9" isBold="true" isItalic="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.supplierMsg}]]></textFieldExpression>

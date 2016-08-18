@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-16T05:04:19 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-08-18T04:50:52 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Items" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" resourceBundle="localisation.reports" uuid="686e7611-94db-45b0-b0e3-4aa94b5c752b">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -52,6 +52,7 @@
 	<field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
 	<field name="target.print" class="java.lang.Boolean"/>
 	<field name="target.shortName" class="java.lang.String"/>
+	<field name="target.product.entity.sellingUnits.printedName" class="java.lang.String"/>
 	<sortField name="target.patient.entity.name"/>
 	<sortField name="showTemplate" order="Descending" type="Variable"/>
 	<sortField name="target.template.entity.name"/>
@@ -92,6 +93,9 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 	<variable name="SUM_taxR" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$V{taxR}]]></variableExpression>
 	</variable>
+	<variable name="units" class="java.lang.String">
+		<variableExpression><![CDATA[$F{target.product.entity.sellingUnits.printedName}==null?" ":$F{target.product.entity.sellingUnits.printedName}]]></variableExpression>
+	</variable>
 	<group name="patientGroup" minHeightToStartNewPage="50">
 		<groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>
 		<groupHeader>
@@ -120,7 +124,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 			<band height="15" splitType="Stretch">
 				<printWhenExpression><![CDATA[(!$P{isOTC})&&(($P{patientCount}>1)||(($F{target.patient.entity.name}==null)&&($P{patientCount}>0)))]]></printWhenExpression>
 				<staticText>
-					<reportElement key="staticText-11" x="400" y="2" width="66" height="13" isRemoveLineWhenBlank="true" uuid="5b2f0742-dafd-4e95-a721-2c2b73689f8a">
+					<reportElement key="staticText-11" x="405" y="2" width="66" height="13" isRemoveLineWhenBlank="true" uuid="5b2f0742-dafd-4e95-a721-2c2b73689f8a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -138,7 +142,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<text><![CDATA[Patient Total]]></text>
 				</staticText>
 				<textField evaluationTime="Auto" pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-6" x="466" y="2" width="61" height="13" isRemoveLineWhenBlank="true" uuid="31d18577-4ffd-42c0-b22e-0be46799a562"/>
+					<reportElement key="textField-6" x="471" y="2" width="61" height="13" isRemoveLineWhenBlank="true" uuid="31d18577-4ffd-42c0-b22e-0be46799a562"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -152,7 +156,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<textFieldExpression><![CDATA[$V{patientTotal}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement key="line-3" x="400" y="2" width="127" height="1" isRemoveLineWhenBlank="true" uuid="d2ad1f0f-326a-4927-bd12-761e2674023b">
+					<reportElement key="line-3" x="405" y="2" width="127" height="1" isRemoveLineWhenBlank="true" uuid="d2ad1f0f-326a-4927-bd12-761e2674023b">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 				</line>
@@ -185,7 +189,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{target.startTime})]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤ #,##0.00">
-					<reportElement x="466" y="0" width="61" height="13" uuid="7c1788e0-7efd-4524-a8a0-ffe225b2ef27">
+					<reportElement x="471" y="0" width="61" height="13" uuid="7c1788e0-7efd-4524-a8a0-ffe225b2ef27">
 						<property name="local_mesure_unitheight" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 						<property name="local_mesure_unity" value="pixel"/>
@@ -197,11 +201,24 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<textFieldExpression><![CDATA[$V{templateTotal}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="527" y="0" width="11" height="13" uuid="e40c265d-423c-4c46-b715-26f1c942aac6">
+					<reportElement x="527" y="0" width="6" height="13" uuid="e40c265d-423c-4c46-b715-26f1c942aac6">
 						<printWhenExpression><![CDATA[$P{incTax}?Boolean.FALSE:$V{templateTax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Center"/>
 					<text><![CDATA[*]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="textField-3" x="395" y="0" width="47" height="13" uuid="efb497d3-7783-40d4-b25c-33dd7402c170"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[1]]></text>
 				</staticText>
 			</band>
 		</groupFooter>
@@ -242,7 +259,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<text><![CDATA[Service Provided]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-8" x="466" y="2" width="61" height="16" uuid="4c8aebc1-bc35-434f-9c2d-d0722ccd514f"/>
+				<reportElement key="staticText-8" x="471" y="2" width="61" height="16" uuid="4c8aebc1-bc35-434f-9c2d-d0722ccd514f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -255,7 +272,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<text><![CDATA[Amount]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="395" y="2" width="47" height="16" uuid="301dc52e-c3bd-4498-993d-71972fc2490b"/>
+				<reportElement key="staticText-9" x="395" y="2" width="57" height="16" uuid="301dc52e-c3bd-4498-993d-71972fc2490b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -283,7 +300,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="13" splitType="Stretch">
+		<band height="14" splitType="Stretch">
 			<property name="local_mesure_unitheight" value="pixel"/>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[(!$V{showTemplate})&&($F{target.total}.compareTo(BigDecimal.ZERO) == 0?
@@ -322,7 +339,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-2" x="466" y="0" width="61" height="13" uuid="bb9a1d07-56f9-4901-a658-af513c5b28ff">
+				<reportElement key="textField-2" x="471" y="0" width="61" height="13" uuid="bb9a1d07-56f9-4901-a658-af513c5b28ff">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
@@ -338,12 +355,28 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<textFieldExpression><![CDATA[$P{incTax}?$F{target.total}:$F{target.total}.subtract($V{taxR})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="527" y="0" width="11" height="13" uuid="bea6d7a7-c445-41ab-81d9-b923c6e0194f">
+				<reportElement x="532" y="0" width="6" height="13" uuid="bea6d7a7-c445-41ab-81d9-b923c6e0194f">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{incTax}?Boolean.FALSE:$F{target.tax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[*]]></text>
 			</staticText>
+			<textField>
+				<reportElement key="textField-3" x="445" y="0" width="25" height="13" uuid="9ae47ae3-b703-442b-902a-0f67a1224f56">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{units}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<pageFooter>
@@ -353,7 +386,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		<band height="58" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement key="staticText-11" positionType="Float" x="353" y="16" width="89" height="13" isRemoveLineWhenBlank="true" uuid="e6b3e0c9-48f5-4cf1-8e13-98789f15fe14">
+				<reportElement key="staticText-11" positionType="Float" x="358" y="16" width="89" height="13" isRemoveLineWhenBlank="true" uuid="e6b3e0c9-48f5-4cf1-8e13-98789f15fe14">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
 				</reportElement>
@@ -370,7 +403,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<text><![CDATA[Tax Total]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-11" positionType="Float" x="353" y="29" width="89" height="16" uuid="7c05f5ce-32e7-4cba-b021-26be83e840e5"/>
+				<reportElement key="staticText-11" positionType="Float" x="358" y="29" width="89" height="16" uuid="7c05f5ce-32e7-4cba-b021-26be83e840e5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -384,7 +417,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<text><![CDATA[TOTAL]]></text>
 			</staticText>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="449" y="29" width="78" height="16" uuid="e2a83f7a-0139-4ecb-8b29-ff68b9e78406"/>
+				<reportElement key="textField-6" positionType="Float" x="454" y="29" width="78" height="16" uuid="e2a83f7a-0139-4ecb-8b29-ff68b9e78406"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -398,7 +431,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="449" y="45" width="78" height="13" isRemoveLineWhenBlank="true" uuid="17f20068-adbb-4c0f-bade-6daa3298c47a">
+				<reportElement key="textField-6" positionType="Float" x="454" y="45" width="78" height="13" isRemoveLineWhenBlank="true" uuid="17f20068-adbb-4c0f-bade-6daa3298c47a">
 					<printWhenExpression><![CDATA[$P{incTax}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -414,7 +447,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<textFieldExpression><![CDATA[$V{SUM_taxR}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="449" y="3" width="78" height="13" isRemoveLineWhenBlank="true" uuid="83cfa93f-b58c-46b2-8bf8-5e71e8e382bf">
+				<reportElement key="textField-6" positionType="Float" x="454" y="3" width="78" height="13" isRemoveLineWhenBlank="true" uuid="83cfa93f-b58c-46b2-8bf8-5e71e8e382bf">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
@@ -432,7 +465,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<textFieldExpression><![CDATA[$V{SUM_target.total}.subtract($V{SUM_taxR})]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="449" y="16" width="78" height="13" isRemoveLineWhenBlank="true" uuid="926249d4-5ec3-4c31-8a10-ccdc9e86f412">
+				<reportElement key="textField-6" positionType="Float" x="454" y="16" width="78" height="13" isRemoveLineWhenBlank="true" uuid="926249d4-5ec3-4c31-8a10-ccdc9e86f412">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
@@ -490,7 +523,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				</reportElement>
 			</line>
 			<textField>
-				<reportElement key="staticText-11" positionType="Float" x="290" y="45" width="152" height="13" isRemoveLineWhenBlank="true" uuid="e0b4bf0a-06b6-43e3-a65c-d6b5ee73311c">
+				<reportElement key="staticText-11" positionType="Float" x="295" y="45" width="152" height="13" isRemoveLineWhenBlank="true" uuid="e0b4bf0a-06b6-43e3-a65c-d6b5ee73311c">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{incTax}]]></printWhenExpression>
 				</reportElement>
@@ -507,7 +540,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				<textFieldExpression><![CDATA["Total includes "+$R{text.taxName}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-11" positionType="Float" x="353" y="3" width="89" height="13" isRemoveLineWhenBlank="true" uuid="6536f1dd-5a45-4755-aade-f025377c4680">
+				<reportElement key="staticText-11" positionType="Float" x="358" y="3" width="89" height="13" isRemoveLineWhenBlank="true" uuid="6536f1dd-5a45-4755-aade-f025377c4680">
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
 				</reportElement>
 				<box>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-21T04:35:58 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-08-11T14:13:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Receipt" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="8c42a3ea-6f37-49f5-803e-e1f46987b877">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -20,7 +20,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontSize="10"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
@@ -50,6 +50,7 @@
 	<field name="OpenVPMS.location.letterhead.target.invoicePay" class="java.lang.String"/>
 	<field name="reference" class="java.lang.String"/>
 	<field name="status" class="java.lang.String"/>
+	<field name="hide" class="java.lang.Boolean"/>
 	<variable name="CustomerFullName" class="java.lang.String" resetType="None">
 		<variableExpression><![CDATA[(($F{customer.entity.title} == null) ? "": $F{customer.entity.title}) + " " + (($F{customer.entity.firstName} == null) ? "": $F{customer.entity.firstName}) + " " + $F{customer.entity.lastName}]]></variableExpression>
 	</variable>
@@ -58,7 +59,18 @@
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<background>
-		<band height="20" splitType="Stretch"/>
+		<band height="780" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<staticText>
+				<reportElement x="179" y="34" width="180" height="719" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
+					<printWhenExpression><![CDATA[$F{hide}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Right">
+					<font fontName="SansSerif" size="120" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cancelled]]></text>
+			</staticText>
+		</band>
 	</background>
 	<title>
 		<band height="155" splitType="Stretch">
@@ -341,9 +353,9 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="40">
+		<band height="26">
 			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
-				<reportElement key="staticText-1" stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="539" height="40" uuid="62b53ac1-2073-4119-b9f1-53ea53019333">
+				<reportElement key="staticText-1" stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="539" height="26" uuid="62b53ac1-2073-4119-b9f1-53ea53019333">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[($F{OpenVPMS.location.letterhead.target.lastPageFooter}==null)?Boolean.FALSE:
@@ -356,7 +368,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true" isItalic="true"/>
+					<font size="10" isBold="true" isItalic="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.lastPageFooter}]]></textFieldExpression>
@@ -384,7 +396,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="12" isBold="true" isItalic="true"/>
+					<font size="10" isBold="true" isItalic="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.receiptMsg}]]></textFieldExpression>
