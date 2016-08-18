@@ -71,6 +71,9 @@
 	<field name="OpenVPMS.practice.showPricesTaxInclusive" class="java.lang.Boolean">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
+	<field name="[count(list:distinct(., &quot;items.target.patient.entity.id&quot;))]" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<variable name="incTax" class="java.lang.Boolean">
 		<variableExpression><![CDATA[$F{OpenVPMS.practice.showPricesTaxInclusive}]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
@@ -160,6 +163,9 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 	</variable>
 	<variable name="ImbalanceAmount" class="java.math.BigDecimal">
 		<variableExpression><![CDATA[$V{DEBIT_TOTAL}.subtract($V{CREDIT_TOTAL}).subtract($V{DEBIT_TOTAL_ALL}).add($V{CREDIT_TOTAL_ALL})]]></variableExpression>
+	</variable>
+	<variable name="isOTC" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{shortName}.equals("act.customerAccountChargesCounter")]]></variableExpression>
 	</variable>
 	<group name="Dummy Group" footerPosition="ForceAtBottom">
 		<groupFooter>
@@ -553,7 +559,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 		<groupFooter>
 			<band height="115">
 				<staticText>
-					<reportElement key="staticText-12" positionType="Float" x="219" y="47" width="58" height="12" isRemoveLineWhenBlank="true" uuid="ebccdc0d-e1c1-4fec-9515-d06aaeca87f3">
+					<reportElement key="staticText-12" positionType="Float" x="225" y="47" width="57" height="12" isRemoveLineWhenBlank="true" uuid="ebccdc0d-e1c1-4fec-9515-d06aaeca87f3">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<box>
@@ -568,7 +574,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<text><![CDATA[Balance]]></text>
 				</staticText>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField" positionType="Float" x="279" y="47" width="45" height="12" isRemoveLineWhenBlank="true" uuid="0ef5f847-8506-4e2c-8d29-be254a52f285">
+					<reportElement key="textField" positionType="Float" x="284" y="47" width="46" height="12" isRemoveLineWhenBlank="true" uuid="0ef5f847-8506-4e2c-8d29-be254a52f285">
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					</reportElement>
@@ -584,7 +590,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$V{BALANCE}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement key="staticText-13" positionType="Float" isPrintRepeatedValues="false" x="219" y="59" width="58" height="11" isRemoveLineWhenBlank="true" uuid="4d970376-d835-4a3c-a0bf-de25e86f73d1">
+					<reportElement key="staticText-13" positionType="Float" isPrintRepeatedValues="false" x="225" y="59" width="57" height="11" isRemoveLineWhenBlank="true" uuid="4d970376-d835-4a3c-a0bf-de25e86f73d1">
 						<printWhenExpression><![CDATA[$P{overdueBalance}.compareTo( BigDecimal.ZERO )>0]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -599,7 +605,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<text><![CDATA[Overdue]]></text>
 				</staticText>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField" positionType="Float" isPrintRepeatedValues="false" x="279" y="59" width="45" height="11" isRemoveLineWhenBlank="true" uuid="dbd24e74-c427-4e75-9dd5-f37054673722">
+					<reportElement key="textField" positionType="Float" isPrintRepeatedValues="false" x="284" y="59" width="46" height="11" isRemoveLineWhenBlank="true" uuid="dbd24e74-c427-4e75-9dd5-f37054673722">
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<printWhenExpression><![CDATA[$P{overdueBalance}.compareTo( BigDecimal.ZERO )>0]]></printWhenExpression>
@@ -616,7 +622,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$P{overdueBalance}]]></textFieldExpression>
 				</textField>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-6" positionType="Float" x="279" y="36" width="45" height="11" isRemoveLineWhenBlank="true" uuid="d6d71714-c7d9-4654-9016-88b61ee14708">
+					<reportElement key="textField-6" positionType="Float" x="284" y="36" width="46" height="11" isRemoveLineWhenBlank="true" uuid="d6d71714-c7d9-4654-9016-88b61ee14708">
 						<property name="local_mesure_unitx" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -634,7 +640,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$V{hiddenOK}?$V{DEBIT_TOTAL_TAX}:$V{DEBIT_TOTAL_TAX_ALL}]]></textFieldExpression>
 				</textField>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-7" positionType="Float" x="326" y="36" width="45" height="11" isRemoveLineWhenBlank="true" uuid="44524899-e556-4eb5-b1ed-8bb584c68a3d">
+					<reportElement key="textField-7" positionType="Float" x="330" y="36" width="45" height="11" isRemoveLineWhenBlank="true" uuid="44524899-e556-4eb5-b1ed-8bb584c68a3d">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<printWhenExpression><![CDATA[$V{incTax}]]></printWhenExpression>
 					</reportElement>
@@ -650,7 +656,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$V{hiddenOK}?$V{CREDIT_TOTAL_TAX}:$V{CREDIT_TOTAL_TAX_ALL}]]></textFieldExpression>
 				</textField>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-6" positionType="Float" x="279" y="25" width="45" height="11" isRemoveLineWhenBlank="true" uuid="9269a76f-7ebe-4b44-8d6b-439e3111fdd2">
+					<reportElement key="textField-6" positionType="Float" x="284" y="25" width="46" height="11" isRemoveLineWhenBlank="true" uuid="9269a76f-7ebe-4b44-8d6b-439e3111fdd2">
 						<property name="local_mesure_unitx" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -668,7 +674,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$V{hiddenOK}?$V{DEBIT_TOTAL}.add($V{DEBIT_TOTAL_TAX}):$V{DEBIT_TOTAL_ALL}.add( $V{DEBIT_TOTAL_TAX_ALL})]]></textFieldExpression>
 				</textField>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-7" positionType="Float" x="326" y="25" width="45" height="11" isRemoveLineWhenBlank="true" uuid="b6a0427c-f9df-4cb1-9816-308fd4c3970d">
+					<reportElement key="textField-7" positionType="Float" x="330" y="25" width="45" height="11" isRemoveLineWhenBlank="true" uuid="b6a0427c-f9df-4cb1-9816-308fd4c3970d">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<printWhenExpression><![CDATA[!$V{incTax}]]></printWhenExpression>
 					</reportElement>
@@ -684,7 +690,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$V{hiddenOK}?$V{CREDIT_TOTAL}.add($V{CREDIT_TOTAL_TAX}):$V{CREDIT_TOTAL_ALL}.add( $V{CREDIT_TOTAL_TAX_ALL})]]></textFieldExpression>
 				</textField>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-6" positionType="Float" x="279" y="13" width="45" height="12" isRemoveLineWhenBlank="true" uuid="f5973e20-99b3-493a-a7a5-81514e105006">
+					<reportElement key="textField-6" positionType="Float" x="284" y="13" width="46" height="12" isRemoveLineWhenBlank="true" uuid="f5973e20-99b3-493a-a7a5-81514e105006">
 						<property name="local_mesure_unitx" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -702,7 +708,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$V{hiddenOK}?$V{DEBIT_TOTAL_TAX}:$V{DEBIT_TOTAL_TAX_ALL}]]></textFieldExpression>
 				</textField>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-7" positionType="Float" x="326" y="13" width="45" height="12" isRemoveLineWhenBlank="true" uuid="d9d8ea51-48a0-4a3f-b044-f79bca0ccc2d">
+					<reportElement key="textField-7" positionType="Float" x="330" y="13" width="45" height="12" isRemoveLineWhenBlank="true" uuid="d9d8ea51-48a0-4a3f-b044-f79bca0ccc2d">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<printWhenExpression><![CDATA[!$V{incTax}]]></printWhenExpression>
 					</reportElement>
@@ -725,7 +731,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[($P{overdueBalance}.compareTo(BigDecimal.ZERO) == 0) ? $F{customer.entity.type.generalMessage} : $F{customer.entity.type.overdueMessage}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="staticText-15" positionType="Float" x="190" y="36" width="87" height="11" isRemoveLineWhenBlank="true" uuid="bd4e4989-8cd2-44c5-90b8-f89f9036fc1a">
+					<reportElement key="staticText-15" positionType="Float" x="195" y="36" width="87" height="11" isRemoveLineWhenBlank="true" uuid="bd4e4989-8cd2-44c5-90b8-f89f9036fc1a">
 						<printWhenExpression><![CDATA[$V{incTax}]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -740,7 +746,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA["Includes "+$R{text.taxName}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement key="staticText-15" x="194" y="2" width="82" height="11" isRemoveLineWhenBlank="true" uuid="1709d501-6100-4f09-9828-85b196bdf197">
+					<reportElement key="staticText-15" x="200" y="2" width="82" height="11" isRemoveLineWhenBlank="true" uuid="1709d501-6100-4f09-9828-85b196bdf197">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<box>
@@ -755,7 +761,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<text><![CDATA[Transaction Total]]></text>
 				</staticText>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-6" x="279" y="2" width="45" height="11" isRemoveLineWhenBlank="true" uuid="560ece69-5bd7-4bef-9ee5-000cd1db1d25">
+					<reportElement key="textField-6" x="284" y="2" width="46" height="11" isRemoveLineWhenBlank="true" uuid="560ece69-5bd7-4bef-9ee5-000cd1db1d25">
 						<property name="local_mesure_unitx" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -772,7 +778,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<textFieldExpression><![CDATA[$V{hiddenOK}?$V{DEBIT_TOTAL}:$V{DEBIT_TOTAL_ALL}]]></textFieldExpression>
 				</textField>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-7" x="326" y="2" width="45" height="11" isRemoveLineWhenBlank="true" uuid="aec26342-9c7f-4cf4-b70b-989d87335088">
+					<reportElement key="textField-7" x="330" y="2" width="45" height="11" isRemoveLineWhenBlank="true" uuid="aec26342-9c7f-4cf4-b70b-989d87335088">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<box>
@@ -790,7 +796,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<reportElement key="line-3" x="0" y="1" width="381" height="1" uuid="a2840ca5-cba8-4c96-a964-3d48ba08b247"/>
 				</line>
 				<staticText>
-					<reportElement key="staticText-15" positionType="Float" x="219" y="13" width="58" height="12" isRemoveLineWhenBlank="true" uuid="1ef97549-23a4-409b-a232-c6a2f34f56dc">
+					<reportElement key="staticText-15" positionType="Float" x="225" y="13" width="57" height="12" isRemoveLineWhenBlank="true" uuid="1ef97549-23a4-409b-a232-c6a2f34f56dc">
 						<printWhenExpression><![CDATA[!$V{incTax}]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -806,7 +812,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="staticText-15" positionType="Float" x="190" y="25" width="87" height="11" isRemoveLineWhenBlank="true" uuid="9a32b3e6-8ac3-499b-82e5-b706c16a2adf">
+					<reportElement key="staticText-15" positionType="Float" x="195" y="25" width="87" height="11" isRemoveLineWhenBlank="true" uuid="9a32b3e6-8ac3-499b-82e5-b706c16a2adf">
 						<printWhenExpression><![CDATA[!$V{incTax}]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -1073,7 +1079,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<text><![CDATA[Description]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="279" y="1" width="45" height="9" uuid="367cedbc-9c10-4358-a37c-09688a7acfef">
+				<reportElement key="staticText-9" x="282" y="1" width="46" height="9" uuid="367cedbc-9c10-4358-a37c-09688a7acfef">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="local_mesure_unitx" value="pixel"/>
@@ -1091,7 +1097,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<text><![CDATA[Debit]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-11" x="326" y="1" width="45" height="9" uuid="f0954121-e35a-47f2-b55e-1040f6466a1c">
+				<reportElement key="staticText-11" x="330" y="1" width="45" height="9" uuid="f0954121-e35a-47f2-b55e-1040f6466a1c">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="local_mesure_unitx" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -1153,7 +1159,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<textFieldExpression><![CDATA[$F{displayName}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField" x="279" y="1" width="45" height="9" uuid="241c7d76-8789-4a59-9795-b4e787f7206d">
+				<reportElement key="textField" x="284" y="1" width="46" height="9" uuid="241c7d76-8789-4a59-9795-b4e787f7206d">
 					<printWhenExpression><![CDATA[(!$V{printLineItems}) && (!$F{credit}.booleanValue())]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1168,7 +1174,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-5" x="326" y="1" width="45" height="9" uuid="09391450-5831-430a-8c53-3765c90adc1e">
+				<reportElement key="textField-5" x="330" y="1" width="45" height="9" uuid="09391450-5831-430a-8c53-3765c90adc1e">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[(!$V{printLineItems}) && ($F{credit}.booleanValue())]]></printWhenExpression>
@@ -1196,11 +1202,18 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<subreportParameter name="incTax">
 					<subreportParameterExpression><![CDATA[$V{incTax}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="patientCount">
+					<subreportParameterExpression><![CDATA[$V{isOTC}?0:$F{[count(list:distinct(., "items.target.patient.entity.id"))]}.intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="isOTC">
+					<subreportParameterExpression><![CDATA[$V{isOTC}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
 				<subreportExpression><![CDATA["Statement Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml"]]></subreportExpression>
 			</subreport>
 			<staticText>
-				<reportElement x="374" y="0" width="7" height="9" uuid="625dcaef-339d-462a-8d3b-7b3dd7db1f1a">
+				<reportElement x="377" y="0" width="4" height="9" uuid="625dcaef-339d-462a-8d3b-7b3dd7db1f1a">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[$V{incTax}?Boolean.FALSE:$V{tax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center"/>
@@ -1210,7 +1223,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 		<band height="10">
 			<printWhenExpression><![CDATA[$V{printLineItems}   && (!$V{hide})]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField" x="279" y="1" width="45" height="9" isRemoveLineWhenBlank="true" uuid="94bd7623-f5c7-41d1-bfe0-b98e40e1b8d9">
+				<reportElement key="textField" x="284" y="1" width="46" height="9" isRemoveLineWhenBlank="true" uuid="94bd7623-f5c7-41d1-bfe0-b98e40e1b8d9">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean(($F{shortName}.contains("customerAccountCharges"))&&(!$F{credit}.booleanValue()))]]></printWhenExpression>
 				</reportElement>
@@ -1224,7 +1237,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="279" y="0" width="45" height="1" uuid="fb05b46e-42c9-40d3-8aa8-3a30a2919c31">
+				<reportElement x="284" y="0" width="46" height="1" uuid="fb05b46e-42c9-40d3-8aa8-3a30a2919c31">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean(($F{shortName}.contains("customerAccountCharges"))&&(!$F{credit}.booleanValue()))]]></printWhenExpression>
 				</reportElement>
@@ -1233,7 +1246,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				</graphicElement>
 			</line>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField" x="326" y="1" width="45" height="9" isRemoveLineWhenBlank="true" uuid="fce5484a-fd25-4fd4-8e53-9e3e3fbabc92">
+				<reportElement key="textField" x="330" y="1" width="45" height="9" isRemoveLineWhenBlank="true" uuid="fce5484a-fd25-4fd4-8e53-9e3e3fbabc92">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean(($F{shortName}.contains("customerAccountCharges"))&&($F{credit}.booleanValue()))]]></printWhenExpression>
 				</reportElement>
@@ -1247,7 +1260,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="326" y="0" width="45" height="1" uuid="345df1f0-9aae-4660-9ce5-070379016cce">
+				<reportElement x="330" y="0" width="45" height="1" uuid="345df1f0-9aae-4660-9ce5-070379016cce">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean(($F{shortName}.contains("customerAccountCharges"))&&($F{credit}.booleanValue()))]]></printWhenExpression>
 				</reportElement>
@@ -1256,7 +1269,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				</graphicElement>
 			</line>
 			<staticText>
-				<reportElement x="374" y="0" width="7" height="9" uuid="e9ff8dd6-5518-4c06-9786-ba9ed5667966">
+				<reportElement x="377" y="0" width="4" height="9" uuid="e9ff8dd6-5518-4c06-9786-ba9ed5667966">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[$V{incTax}?Boolean.FALSE:$V{tax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 				</reportElement>

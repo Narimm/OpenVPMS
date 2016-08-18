@@ -362,7 +362,7 @@
 		</band>
 		<band height="11">
 			<printWhenExpression><![CDATA[new Boolean($F{shortName}.startsWith("act.patientClinicalEvent"))]]></printWhenExpression>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
 				<reportElement key="textField-10" x="8" y="0" width="57" height="10" uuid="5068a2ea-2257-4022-9e5a-c726a140939e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

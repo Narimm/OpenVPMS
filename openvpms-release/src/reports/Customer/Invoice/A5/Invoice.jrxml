@@ -18,7 +18,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="7"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontSize="7"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
@@ -58,6 +58,7 @@
 	<field name="OpenVPMS.practice.showPricesTaxInclusive" class="java.lang.Boolean">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
+	<field name="hide" class="java.lang.Boolean"/>
 	<variable name="TOTAL_DISCOUNT" class="java.math.BigDecimal"/>
 	<variable name="CustomerFullName" class="java.lang.String" resetType="None">
 		<variableExpression><![CDATA[(($F{customer.entity.title} == null) ? "": $F{customer.entity.title}) + " " + (($F{customer.entity.firstName} == null) ? "": $F{customer.entity.firstName}) + " " + $F{customer.entity.lastName}]]></variableExpression>
@@ -237,7 +238,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center">
-						<font size="8" isBold="true" isItalic="true"/>
+						<font size="7" isBold="true" isItalic="true"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.invoiceMsg}]]></textFieldExpression>
@@ -264,7 +265,18 @@
 		</groupFooter>
 	</group>
 	<background>
-		<band height="20" splitType="Stretch"/>
+		<band height="552" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<staticText>
+				<reportElement x="127" y="24" width="127" height="508" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
+					<printWhenExpression><![CDATA[$F{hide}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Right">
+					<font fontName="SansSerif" size="84" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cancelled]]></text>
+			</staticText>
+		</band>
 	</background>
 	<title>
 		<band height="110" splitType="Stretch">
@@ -556,9 +568,9 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="29">
+		<band height="19">
 			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
-				<reportElement key="staticText-1" stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="381" height="28" uuid="62b53ac1-2073-4119-b9f1-53ea53019333">
+				<reportElement key="staticText-1" stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="381" height="18" uuid="62b53ac1-2073-4119-b9f1-53ea53019333">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[($F{OpenVPMS.location.letterhead.target.lastPageFooter}==null)?Boolean.FALSE:
@@ -571,7 +583,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="9" isBold="true" isItalic="true"/>
+					<font size="7" isBold="true" isItalic="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.lastPageFooter}]]></textFieldExpression>
