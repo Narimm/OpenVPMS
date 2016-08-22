@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
@@ -40,6 +41,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.ruleengine.RuleEngineException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -551,6 +553,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testReverse() {
+        checkReverse(createInitialBalance(new BigDecimal(25)), CREDIT_ADJUST);
+
         checkReverseCharge(createChargesInvoice(new BigDecimal(100)), CREDIT, CREDIT_ITEM);
 
         checkReverseCharge(createChargesCredit(new BigDecimal(50)), INVOICE, INVOICE_ITEM);
@@ -586,8 +590,6 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkReverse(createCreditAdjust(new BigDecimal(15)), DEBIT_ADJUST);
 
         checkReverse(createBadDebt(new BigDecimal(20)), DEBIT_ADJUST);
-
-        checkReverse(createInitialBalance(new BigDecimal(25)), CREDIT_ADJUST);
     }
 
     /**
@@ -1146,17 +1148,50 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
+     * Tests the {@link CustomerAccountRules#hasAccountActs(Party)} method.
+     */
+    @Test
+    public void testHasAccountActs() {
+        Party customer = getCustomer();
+        CustomerAccountRules rules = getRules();
+        assertFalse(rules.hasAccountActs(customer));
+        save(createChargesInvoice(BigDecimal.TEN));
+        assertTrue(rules.hasAccountActs(customer));
+    }
+
+    /**
      * Verifies that when an act is saved, a <em>participation.customerAccountBalance</em> is associated with it.
+     * <p/>
+     * This ensures that the:
+     * <ul>
+     *    <li>customer has no prior account acts before saving</li>
+     *    <li>has account acts after saving</li>
+     *    <li>{@link CustomerBalanceUpdater#checkInitialBalance(FinancialAct)} is invoked to reject initial
+     * balances being saved when other account acts are present</li>
+     * </ul>
      *
      * @param acts the acts. The first act is the parent charge/credit
      */
     private void checkAddToBalance(List<FinancialAct> acts) {
+        CustomerAccountRules rules = getRules();
+        Party customer = getCustomer();
         ActBean bean = new ActBean(acts.get(0));
         assertNull(bean.getParticipant("participation.customerAccountBalance"));
         save(acts);
         Act act = get(acts.get(0));
         bean = new ActBean(act);
         assertEquals(getCustomer(), bean.getParticipant("participation.customerAccountBalance"));
+        assertTrue(rules.hasAccountActs(customer));
+
+        try {
+            save(createInitialBalance(BigDecimal.TEN));
+            fail("Expected save of Initial Balance to fail");
+        } catch (RuleEngineException expected) {
+            Throwable rootCause = ExceptionUtils.getRootCause(expected);
+            assertTrue(rootCause instanceof CustomerAccountRuleException);
+            CustomerAccountRuleException cause = (CustomerAccountRuleException) rootCause;
+            assertEquals(CustomerAccountRuleException.ErrorCode.CannotCreateInitialBalance, cause.getErrorCode());
+        }
     }
 
     /**
@@ -1164,13 +1199,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      *
      * @param act the act
      */
-    private void checkAddToBalance(Act act) {
-        ActBean bean = new ActBean(act);
-        assertNull(bean.getParticipant("participation.customerAccountBalance"));
-        save(act);
-        act = get(act);
-        bean = new ActBean(act);
-        assertEquals(getCustomer(), bean.getParticipant("participation.customerAccountBalance"));
+    private void checkAddToBalance(FinancialAct act) {
+        checkAddToBalance(Collections.singletonList(act));
     }
 
     /**

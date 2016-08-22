@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException;
@@ -200,14 +201,20 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Invoked when the 'adjust' button is pressed.
      */
     protected void onAdjust() {
-        String[] shortNames = {"act.customerAccountDebitAdjust",
-                               "act.customerAccountCreditAdjust",
-                               "act.customerAccountInitialBalance",
-                               "act.customerAccountBadDebt"};
-        Archetypes<FinancialAct> archetypes = Archetypes.create(
-                shortNames, FinancialAct.class,
-                Messages.get("customer.account.createtype"));
-        onCreate(archetypes);
+        Party customer = getContext().getCustomer();
+        CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
+        if (customer != null) {
+            String[] shortNames = {CustomerAccountArchetypes.DEBIT_ADJUST,
+                                   CustomerAccountArchetypes.CREDIT_ADJUST,
+                                   CustomerAccountArchetypes.BAD_DEBT};
+            if (!rules.hasAccountActs(customer)) {
+                // only allow Initial Balance acts if there are no other customer account acts
+                shortNames = (String[]) ArrayUtils.add(shortNames, 0, CustomerAccountArchetypes.INITIAL_BALANCE);
+            }
+            Archetypes<FinancialAct> archetypes = Archetypes.create(shortNames, FinancialAct.class,
+                                                                    Messages.get("customer.account.createtype"));
+            onCreate(archetypes);
+        }
     }
 
     /**

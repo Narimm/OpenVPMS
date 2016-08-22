@@ -1,37 +1,35 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Locale;
 
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * {@link CustomerAccountRuleException}  test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class CustomerAccountRuleExceptionTestCase extends TestCase {
+public class CustomerAccountRuleExceptionTestCase {
 
     /**
      * Verifies that the messages are generated correctly.
@@ -42,13 +40,15 @@ public class CustomerAccountRuleExceptionTestCase extends TestCase {
         Locale.setDefault(Locale.US);
 
         assertEquals("Need to update tests to incorporate new messages",
-                     2, CustomerAccountRuleException.ErrorCode.values().length);
+                     3, CustomerAccountRuleException.ErrorCode.values().length);
 
         checkException(CustomerAccountRuleException.ErrorCode.MissingCustomer,
                        "No Customer specified in act foo", "foo");
         checkException(CustomerAccountRuleException.ErrorCode.InvalidBalance,
                        "Invalid foo0 total. Expected $0.00 but got $1.00",
                        "foo0", BigDecimal.ZERO, BigDecimal.ONE);
+        checkException(CustomerAccountRuleException.ErrorCode.CannotCreateInitialBalance,
+                       "Cannot create Initial Balance. The customer has an existing balance.");
     }
 
     /**

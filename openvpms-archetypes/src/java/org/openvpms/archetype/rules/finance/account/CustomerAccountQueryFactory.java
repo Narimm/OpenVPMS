@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.finance.account;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -31,8 +32,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 /**
  * Helper to create queries for customer account acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerAccountQueryFactory {
 
@@ -136,17 +136,27 @@ public class CustomerAccountQueryFactory {
     }
 
     /**
-     * Creates a query for all acts matching the specified short names,
-     * for a customer.
+     * Creates a query for all acts matching the specified short names, for a customer.
      *
      * @param customer   the customer
      * @param shortNames the act archetype short names
      * @return the corresponding query
      */
     public static ArchetypeQuery createQuery(Party customer, String[] shortNames) {
+        return createQuery(customer.getObjectReference(), shortNames);
+    }
+
+    /**
+     * Creates a query for all acts matching the specified short names, for a customer.
+     *
+     * @param customer   the customer reference
+     * @param shortNames the act archetype short names
+     * @return the corresponding query
+     */
+    public static ArchetypeQuery createQuery(IMObjectReference customer, String[] shortNames) {
         ShortNameConstraint archetypes = Constraints.shortName("act", shortNames, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
-        JoinConstraint join = Constraints.join("customer").add(Constraints.eq("entity", customer.getObjectReference()));
+        JoinConstraint join = Constraints.join("customer").add(Constraints.eq("entity", customer));
         OrConstraint or = new OrConstraint();
 
         // re-specify the act short names, this time on the participation act

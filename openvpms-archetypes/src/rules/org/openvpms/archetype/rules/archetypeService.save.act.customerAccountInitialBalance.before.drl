@@ -30,6 +30,9 @@
         <java:consequence>
             import org.openvpms.archetype.rules.finance.account.CustomerBalanceUpdater;
             CustomerBalanceUpdater updater = new CustomerBalanceUpdater(service);
+            if (act.isNew()) {
+                updater.checkInitialBalance(act);
+            }
             updater.addToBalance(act);
         </java:consequence>
     </rule>
