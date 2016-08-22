@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -23,8 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 /**
  * Exception class for Customer account rule exceptions.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerAccountRuleException extends OpenVPMSException {
 
@@ -34,6 +33,7 @@ public class CustomerAccountRuleException extends OpenVPMSException {
     public enum ErrorCode {
         MissingCustomer,
         InvalidBalance,
+        CannotCreateInitialBalance,
     }
 
     /**
