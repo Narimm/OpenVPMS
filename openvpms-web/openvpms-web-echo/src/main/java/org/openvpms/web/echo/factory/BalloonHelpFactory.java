@@ -11,15 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
 
 import echopointng.BalloonHelp;
-import echopointng.TemplatePanel;
-import echopointng.template.StringTemplateDataSource;
-import org.apache.commons.lang.StringEscapeUtils;
+import nextapp.echo2.app.Label;
 import org.openvpms.web.echo.style.Styles;
 
 
@@ -37,11 +35,10 @@ public class BalloonHelpFactory {
      * @return a new {@code BalloonHelp}
      */
     public static BalloonHelp create(String text) {
-        String xml = "<bdo>" + StringEscapeUtils.escapeXml(text) + "</bdo>";
         BalloonHelp result = new BalloonHelp();
-        StringTemplateDataSource dataSource = new StringTemplateDataSource(xml);
-        dataSource.setCachingHints(null); // no caching
-        result.setPopUp(new TemplatePanel(dataSource));
+        Label label = LabelFactory.create(true, true);
+        label.setText(text);
+        result.setPopUp(label);
         result.setStyleName(Styles.DEFAULT);
         return result;
     }
