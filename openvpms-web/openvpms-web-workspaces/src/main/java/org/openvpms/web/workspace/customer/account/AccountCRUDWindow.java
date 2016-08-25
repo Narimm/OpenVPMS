@@ -28,15 +28,19 @@ import org.openvpms.archetype.tools.account.AccountBalanceTool;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
@@ -110,6 +114,32 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     public void setObject(FinancialAct object) {
         super.setObject(object);
         updateContext(CustomerAccountArchetypes.INVOICE, object);
+    }
+
+    /**
+     * Invoked when the 'print' button is pressed.
+     */
+    @Override
+    protected void onPrint() {
+        final FinancialAct object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else {
+            IMObjectBean bean = new IMObjectBean(object);
+            if (bean.hasNode("hide") && bean.getBoolean("hide")) {
+                String displayName = DescriptorHelper.getDisplayName(object);
+                String title = Messages.format("customer.account.printhidden.title", displayName);
+                String message = Messages.format("customer.account.printhidden.message", displayName, object.getId());
+                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        print(object);
+                    }
+                });
+            } else {
+                print(object);
+            }
+        }
     }
 
     /**
