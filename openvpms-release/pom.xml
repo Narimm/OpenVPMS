@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>jasperreports-scaler</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
