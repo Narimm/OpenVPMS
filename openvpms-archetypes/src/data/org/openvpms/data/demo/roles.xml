@@ -519,15 +519,24 @@
     <data id="RWRKAPP" archetype="security.archetypeAuthority" name="Appointment Remove"
           description="Authority to Remove Appointment"
           serviceName="archetypeService" method="remove" archetypeShortName="act.customerAppointment"/>
-    <data id="CWRKAPPS" archetype="security.archetypeAuthority" name="Appointment Series Create"
-          description="Authority to Create Appointment Series"
-          serviceName="archetypeService" method="create" archetypeShortName="act.customerAppointmentSeries"/>
-    <data id="SWRKAPPS" archetype="security.archetypeAuthority" name="Appointment Series Save"
-          description="Authority to Save Appointment Series"
-          serviceName="archetypeService" method="save" archetypeShortName="act.customerAppointmentSeries"/>
-    <data id="RWRKAPPS" archetype="security.archetypeAuthority" name="Appointment Series Remove"
-          description="Authority to Remove Appointment Series"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.customerAppointmentSeries"/>
+    <data id="CWRKCES" archetype="security.archetypeAuthority" name="Calendar Event Series Create"
+          description="Authority to Create Calendar Event Series"
+          serviceName="archetypeService" method="create" archetypeShortName="act.calendarEventSeries"/>
+    <data id="SWRKCES" archetype="security.archetypeAuthority" name="Calendar Event Series Save"
+          description="Authority to Save Calendar Event Series"
+          serviceName="archetypeService" method="save" archetypeShortName="act.calendarEventSeries"/>
+    <data id="RWRKCES" archetype="security.archetypeAuthority" name="Calendar Event Series Remove"
+          description="Authority to Remove Calendar Event Series"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.calendarEventSeries"/>
+    <data id="CWRKCB" archetype="security.archetypeAuthority" name="Calendar Block Create"
+          description="Authority to Create Calendar Block"
+          serviceName="archetypeService" method="create" archetypeShortName="act.calendarBlock"/>
+    <data id="SWRKCB" archetype="security.archetypeAuthority" name="Calendar Block Save"
+          description="Authority to Save Calendar Block"
+          serviceName="archetypeService" method="save" archetypeShortName="act.calendarBlock"/>
+    <data id="RWRKCB" archetype="security.archetypeAuthority" name="Calendar Block Remove"
+          description="Authority to Remove Calendar Block"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.calendarBlock"/>
     <!-- Task Authorities -->
     <data id="CWRKTAS" archetype="security.archetypeAuthority" name="Task Create" description="Authority to Create Task"
           serviceName="archetypeService" method="create" archetypeShortName="act.customerTask"/>
@@ -643,9 +652,12 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKAPP"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKAPP"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKAPP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKAPPS"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKAPPS"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKAPPS"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKCES"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKCES"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKCES"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKCB"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKCB"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKCB"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKTAS"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKTAS"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKTAS"/>

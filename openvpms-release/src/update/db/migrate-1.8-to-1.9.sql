@@ -1167,6 +1167,75 @@ UPDATE act_relationships r
 SET r.arch_short_name = 'actRelationship.calendarEventSeries'
 WHERE r.arch_short_name = 'actRelationship.customerAppointmentSeries';
 
+# update existing authorities
+UPDATE granted_authorities
+SET name      = 'Calendar Event Series Create',
+  description = 'Authority to Create Calendar Event Series',
+  archetype   = 'act.calendarEventSeries'
+WHERE archetype = 'act.customerAppointmentSeries' AND method = 'create';
+
+UPDATE granted_authorities
+SET name      = 'Calendar Event Series Save',
+  description = 'Authority to Save Calendar Event Series',
+  archetype   = 'act.calendarEventSeries'
+WHERE archetype = 'act.customerAppointmentSeries' AND method = 'save';
+
+UPDATE granted_authorities
+SET name      = 'Calendar Event Series Remove',
+  description = 'Authority to Remove Calendar Event Series',
+  archetype   = 'act.calendarEventSeries'
+WHERE archetype = 'act.customerAppointmentSeries' AND method = 'remove';
+
+DROP TABLE IF EXISTS new_authorities;
+CREATE TEMPORARY TABLE new_authorities (
+  name        VARCHAR(255) PRIMARY KEY,
+  description VARCHAR(255),
+  method      VARCHAR(255),
+  archetype   VARCHAR(255)
+);
+
+# create new authorities
+INSERT INTO new_authorities (name, description, method, archetype)
+VALUES ('Calendar Block Create', 'Authority to Create Calendar Block', 'create', 'act.calendarBlock'),
+  ('Calendar Block Save', 'Authority to Save Calendar Block', 'save', 'act.calendarBlock'),
+  ('Calendar Block Remove', 'Authority to Remove Calendar Block', 'remove', 'act.calendarBlock'),
+  ('Calendar Event Series Create', 'Authority to Create Calendar Event Series', 'create', 'act.calendarEventSeries'),
+  ('Calendar Event Series Save', 'Authority to Save Calendar Event Series', 'save', 'act.calendarEventSeries'),
+  ('Calendar Event Series Remove', 'Authority to Remove Calendar Event Series', 'remove', 'act.calendarEventSeries');
+
+INSERT INTO granted_authorities (version, linkId, arch_short_name, arch_version, name, description, active, service_name, method, archetype)
+  SELECT
+    0,
+    UUID(),
+    'security.archetypeAuthority',
+    '1.0',
+    a.name,
+    a.description,
+    1,
+    'archetypeService',
+    a.method,
+    a.archetype
+  FROM new_authorities a
+  WHERE NOT exists(
+      SELECT *
+      FROM granted_authorities g
+      WHERE g.name = a.name);
+
+INSERT INTO roles_authorities (security_role_id, authority_id)
+  SELECT
+    r.security_role_id,
+    g.granted_authority_id
+  FROM security_roles r
+    JOIN granted_authorities g
+    JOIN new_authorities a
+      ON a.name = g.name
+  WHERE r.name = 'Base Role' AND NOT exists
+  (SELECT *
+   FROM roles_authorities x
+   WHERE x.security_role_id = r.security_role_id AND x.authority_id = g.granted_authority_id);
+
+DROP TABLE new_authorities;
+
 #
 # OVPMS-1769 Distinguish between SMS appointment reminders and general SMSes in communications log
 #
