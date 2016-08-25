@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -466,24 +466,25 @@ public class FinancialTestHelper extends TestHelper {
     public static Lookup createAccountType(int paymentTerms, DateUnits paymentUom, BigDecimal accountFeeAmount,
                                            int accountFeeDays) {
         return createAccountType(paymentTerms, paymentUom, accountFeeAmount, AccountType.FeeType.FIXED, accountFeeDays,
-                                 ZERO);
+                                 ZERO, "Accounting Fee");
     }
 
     /**
      * Helper to create and save a new <em>lookup.customerAccountType</em>
      * classification.
      *
-     * @param paymentTerms     the payment terms
-     * @param paymentUom       the payment units
-     * @param accountFeeAmount the account fee
-     * @param accountFeeType   the account fee type
-     * @param accountFeeDays   the account fee days
-     * @param feeBalance       the minimum balance when an account fee applies
+     * @param paymentTerms      the payment terms
+     * @param paymentUom        the payment units
+     * @param accountFeeAmount  the account fee
+     * @param accountFeeType    the account fee type
+     * @param accountFeeDays    the account fee days
+     * @param feeBalance        the minimum balance when an account fee applies
+     * @param accountFeeMessage the account fee message. May be {@code null}
      * @return a new classification
      */
     public static Lookup createAccountType(int paymentTerms, DateUnits paymentUom, BigDecimal accountFeeAmount,
                                            AccountType.FeeType accountFeeType, int accountFeeDays,
-                                           BigDecimal feeBalance) {
+                                           BigDecimal feeBalance, String accountFeeMessage) {
         Lookup lookup = (Lookup) create("lookup.customerAccountType");
         IMObjectBean bean = new IMObjectBean(lookup);
         bean.setValue("code", "XCUSTOMER_ACCOUNT_TYPE" + Math.abs(new Random().nextInt()));
@@ -493,6 +494,7 @@ public class FinancialTestHelper extends TestHelper {
         bean.setValue("accountFeeAmount", accountFeeAmount);
         bean.setValue("accountFeeDays", accountFeeDays);
         bean.setValue("accountFeeBalance", feeBalance);
+        bean.setValue("accountFeeMessage", accountFeeMessage);
         save(lookup);
         return lookup;
     }
