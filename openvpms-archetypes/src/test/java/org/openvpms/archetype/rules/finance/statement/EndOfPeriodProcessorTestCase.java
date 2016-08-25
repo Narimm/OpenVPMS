@@ -290,7 +290,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         BigDecimal closingBalance = amount.add(feeAmount);
         checkOpeningBalance(acts.get(0), amount);
-        checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
+        checkDebitAdjust(acts.get(1), feeAmount, "Accounting Fee");
         checkClosingBalance(acts.get(2), closingBalance, amount);
 
         // verify the fee has been added to the balance
@@ -309,7 +309,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // 30 days account fee days i.e 30 days before overdue fees are
         // generated, charging 1.25% on overdue fees
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feePercent, AccountType.FeeType.PERCENTAGE, 30, BigDecimal.ZERO);
+                30, DateUnits.DAYS, feePercent, AccountType.FeeType.PERCENTAGE, 30, BigDecimal.ZERO,
+                "Test Accounting Fee");
         customer.addClassification(accountType);
         save(customer);
 
@@ -348,7 +349,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         BigDecimal feeAmount = new BigDecimal("0.63");   // ((50 * 1.25) / 100) rounded to 2 places
         BigDecimal closingBalance = amount.add(feeAmount);
         checkOpeningBalance(acts.get(0), amount);
-        checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
+        checkDebitAdjust(acts.get(1), feeAmount, "Test Accounting Fee");
         checkClosingBalance(acts.get(2), closingBalance, amount);
 
         // verify the fee has been added to the balance
@@ -548,7 +549,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         checkOpeningBalance(acts.get(0), balance);
         checkAct(acts.get(1), invoice2.get(0), POSTED);
-        checkAct(acts.get(2), DEBIT_ADJUST, feeAmount);
+        checkDebitAdjust(acts.get(2), feeAmount, "Accounting Fee");
 
         balance = balance.multiply(BigDecimal.valueOf(2));
         checkClosingBalance(acts.get(3), balance, amount);
@@ -636,7 +637,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     }
 
     /**
-     * Verifies that no accounting fee is generated if the overdue amount
+     * Verifies that no Test Accounting Fee is generated if the overdue amount
      * is less than the fee balance amount.
      * <p/>
      * On completion, the following acts should be present:
@@ -657,7 +658,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // create account type where 30 days must elapse before overdue fees are
         // generated for amounts >= $10
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 30, feeBalance);
+                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 30, feeBalance, "Test Accounting Fee");
         customer.addClassification(accountType);
         save(customer);
 
@@ -708,7 +709,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     }
 
     /**
-     * Verifies that an accounting fee is generated if the overdue amount
+     * Verifies that an Test Accounting Fee is generated if the overdue amount
      * is equal to the fee balance amount.
      * <p/>
      * On completion, the following acts should be present:
@@ -732,7 +733,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // create account type where 30 days must elapse before overdue fees are
         // generated for amounts >= $10
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 30, feeBalance);
+                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 30, feeBalance, "Test Accounting Fee");
         customer.addClassification(accountType);
         save(customer);
 
@@ -774,7 +775,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         BigDecimal closingBalance = amount3.add(feeAmount);
         checkOpeningBalance(acts.get(0), amount);
         checkAct(acts.get(1), payment, POSTED);
-        checkAct(acts.get(2), DEBIT_ADJUST, feeAmount);
+        checkDebitAdjust(acts.get(2), feeAmount, "Test Accounting Fee");
         checkClosingBalance(acts.get(3), closingBalance, amount3);
 
         // verify the fee has been added to the balance
@@ -812,7 +813,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // create account type where 60 days must elapse before fees are
         // generated for amounts >= $10. Amounts are overdue after 30 days
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 60, feeBalance);
+                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 60, feeBalance, "Test Accounting Fee");
         customer.addClassification(accountType);
         save(customer);
 
@@ -858,7 +859,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(3, acts.size());
         BigDecimal closingBalance = amount.add(feeAmount);
         checkOpeningBalance(acts.get(0), amount);
-        checkAct(acts.get(1), DEBIT_ADJUST, feeAmount);
+        checkDebitAdjust(acts.get(1), feeAmount, "Test Accounting Fee");
         checkClosingBalance(acts.get(2), closingBalance, amount);
 
         // verify the fee has been added to the balance
@@ -888,8 +889,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      * @param amount  the expected amount
      * @param overdue the expected overdue amount
      */
-    private void checkClosingBalance(Act act, BigDecimal amount,
-                                     BigDecimal overdue) {
+    private void checkClosingBalance(Act act, BigDecimal amount, BigDecimal overdue) {
         checkAct(act, CLOSING_BALANCE, amount, FinancialActStatus.POSTED);
         ActBean bean = new ActBean(act);
         checkEquals(overdue, bean.getBigDecimal("overdueBalance"));

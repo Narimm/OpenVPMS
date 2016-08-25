@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -84,7 +85,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
         Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, feeAmount, 30);
+                30, DateUnits.DAYS, feeAmount, AccountType.FeeType.FIXED, 30, BigDecimal.ZERO,
+                "Test Accounting Fee");
         customer.addClassification(accountType);
         save(customer);
 
@@ -133,7 +135,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         FinancialAct fee = (FinancialAct) acts.get(3);
 
         // check the fee. This should not have been saved
-        checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
+        checkDebitAdjust(fee, feeAmount, "Test Accounting Fee");
         assertTrue(fee.isNew());
     }
 
@@ -146,8 +148,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         IArchetypeService service = getArchetypeService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
-        customer.addClassification(createAccountType(30, DateUnits.DAYS,
-                                                     feeAmount));
+        customer.addClassification(createAccountType(30, DateUnits.DAYS, feeAmount));
         save(customer);
 
         List<FinancialAct> invoices1 = createChargesInvoice(new Money(100));
@@ -178,8 +179,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         // process the customer's statement for 5/2. Amounts should be overdue
         // and a fee generated. COMPLETED acts should be posted.
         // The invoice4 invoice won't be included.
-        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, getPractice(), service,
-                                                            accountRules);
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, accountRules);
         eop.process(customer);
 
         List<Act> acts = processStatement(statementDate, customer);
@@ -207,10 +207,9 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         statementDate = getDate("2007-02-06");
         acts = processStatement(statementDate, customer);
         assertEquals(3, acts.size());
-        checkAct(acts.get(0), "act.customerAccountOpeningBalance",
-                 new BigDecimal("225.00"));
+        checkAct(acts.get(0), "act.customerAccountOpeningBalance", new BigDecimal("225.00"));
         checkAct(acts.get(1), invoice4, ActStatus.COMPLETED);
-        checkAct(acts.get(2), "act.customerAccountDebitAdjust", feeAmount);
+        checkDebitAdjust(acts.get(2), feeAmount, "Accounting Fee");
     }
 
     @Test

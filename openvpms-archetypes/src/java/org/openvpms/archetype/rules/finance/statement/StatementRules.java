@@ -16,8 +16,10 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -160,18 +162,23 @@ public class StatementRules {
      * @param startTime the act start time
      * @return the adjustment act
      */
-    public FinancialAct createAccountingFeeAdjustment(Party customer,
-                                                      BigDecimal fee,
-                                                      Date startTime) {
-        FinancialAct act = (FinancialAct) service.create(
-                "act.customerAccountDebitAdjust");
+    public FinancialAct createAccountingFeeAdjustment(Party customer, BigDecimal fee, Date startTime) {
+        FinancialAct act = (FinancialAct) service.create(CustomerAccountArchetypes.DEBIT_ADJUST);
         ActBean bean = new ActBean(act, service);
-        bean.addParticipation("participation.customer", customer);
+        bean.addNodeParticipation("customer", customer);
         act.setTotal(new Money(fee));
         act.setActivityStartTime(startTime);
         act.setStatus(ActStatus.POSTED);
         tax.calculateTax(act);
-        bean.setValue("notes", "Accounting Fee"); // TODO - localise
+
+        String notes = "Accounting Fee";
+        AccountType accountType = getAccountType(customer);
+        if (accountType != null) {
+            if (!StringUtils.isEmpty(accountType.getAccountFeeMessage())) {
+                notes = accountType.getAccountFeeMessage();
+            }
+        }
+        bean.setValue("notes", notes);
         return act;
     }
 
