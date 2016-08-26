@@ -1,49 +1,38 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.dao.hibernate.usertype;
 
-// java core
-import java.io.Serializable;
+import com.thoughtworks.xstream.XStream;
+import org.apache.commons.lang.ObjectUtils;
+import org.hibernate.HibernateException;
+import org.hibernate.usertype.UserType;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 
-// java sql
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-// hibernate
-import org.hibernate.HibernateException;
-import org.hibernate.usertype.UserType;
-
-//codehaus xstream
-import com.thoughtworks.xstream.XStream;
-
-// openvpms-framework
-import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
-
 /**
- * This user type will stream an {@link PropertyMap} into an 
- * XML buffer, which will eventually be persisted
+ * This user type will stream an {@link PropertyMap} into an XML buffer, which will eventually be persisted.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author Jim Alateras
  */
 public class PropertyMapUserType implements UserType, Serializable {
 
@@ -58,7 +47,7 @@ public class PropertyMapUserType implements UserType, Serializable {
     private static final int[] SQL_TYPES = {Types.VARCHAR};
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public PropertyMapUserType() {
         super();
@@ -68,7 +57,7 @@ public class PropertyMapUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#sqlTypes()
      */
     public int[] sqlTypes() {
-         return SQL_TYPES;
+        return SQL_TYPES;
     }
 
     /* (non-Javadoc)
@@ -82,15 +71,7 @@ public class PropertyMapUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#equals(java.lang.Object, java.lang.Object)
      */
     public boolean equals(Object obj1, Object obj2) throws HibernateException {
-        if (obj1 == obj2) {
-            return true;
-        }
-
-        if (obj1 == null || obj2 == null) {
-            return false;
-        } else {
-            return obj1.equals(obj2);
-        }
+        return ObjectUtils.equals(obj1, obj2);
     }
 
     /* (non-Javadoc)
@@ -107,7 +88,7 @@ public class PropertyMapUserType implements UserType, Serializable {
             throws HibernateException, SQLException {
         String value = rs.getString(names[0]);
         if (value != null) {
-            return (PropertyMap) new XStream().fromXML(value);
+            return new XStream().fromXML(value);
         }
         return null;
     }
@@ -135,27 +116,27 @@ public class PropertyMapUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#isMutable()
      */
     public boolean isMutable() {
-        return false;
+        return true;
     }
 
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#assemble(java.io.Serializable, java.lang.Object)
      */
     public Object assemble(Serializable cached, Object owner) throws HibernateException {
-        return cached;
+        return deepCopy(cached);
     }
 
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#disassemble(java.lang.Object)
      */
     public Serializable disassemble(Object value) throws HibernateException {
-        return (Serializable)value;
+        return (Serializable) deepCopy(value);
     }
 
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#replace(java.lang.Object, java.lang.Object, java.lang.Object)
      */
     public Object replace(Object original, Object target, Object owner) throws HibernateException {
-        return original;
+        return deepCopy(original);
     }
 }

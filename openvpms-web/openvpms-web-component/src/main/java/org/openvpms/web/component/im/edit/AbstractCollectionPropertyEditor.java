@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -423,11 +423,21 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             IMObject[] edited = this.edited.toArray(new IMObject[this.edited.size()]);
             for (IMObject object : edited) {
-                service.save(object);
+                save(object, service);
                 this.edited.remove(object);
                 saved = true;
             }
         }
+    }
+
+    /**
+     * Saves an object.
+     *
+     * @param object  the object to save
+     * @param service the archetype service
+     */
+    protected void save(IMObject object, IArchetypeService service) {
+        service.save(object);
     }
 
     /**
