@@ -58,22 +58,5 @@
 				</errorMessage>
 			</assertion>
 		</node>
-		<node name="node" path="/assertionDescriptors"
-			parentChild="true" type="java.util.LinkedHashMap"
-			baseName="assertionDescriptor" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.*" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName" value="descriptor.assertion" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>
-					Can only add assertion descriptors
-				</errorMessage>
-			</assertion>
-		</node>
 	</archetype>
 </archetypes>

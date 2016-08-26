@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="descriptor.node.1.0" latest="true"
                primary="false"
@@ -43,23 +44,6 @@
         <node name="hidden" path="/hidden" type="java.lang.Boolean"/>
         <node name="readOnly" path="/readOnly" type="java.lang.Boolean"/>
         <node name="assertionDescriptors" path="/assertionDescriptors"
-              parentChild="true" type="java.util.LinkedHashMap"
-              baseName="assertionDescriptor" maxCardinality="*">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="assertion.*"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="descriptor.assertion"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>
-                    Can only add assertion descriptors
-                </errorMessage>
-            </assertion>
-        </node>
-        <node name="node" path="/assertionDescriptors"
               parentChild="true" type="java.util.LinkedHashMap"
               baseName="assertionDescriptor" maxCardinality="*">
             <assertion name="archetypeRange">
