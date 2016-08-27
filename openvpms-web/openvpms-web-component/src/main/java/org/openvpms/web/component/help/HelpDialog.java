@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.help;
@@ -38,7 +38,9 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.component.subscription.SubscriptionHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ModalDialog;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -94,6 +96,11 @@ public class HelpDialog extends ModalDialog {
     private static final Log log = LogFactory.getLog(HelpDialog.class);
 
     /**
+     * Server timeout in milliseconds.
+     */
+    private static final int TIMEOUT = 10 * 1000;
+
+    /**
      * Constructs a {@link HelpDialog}.
      *
      * @param topics   the help topics
@@ -101,20 +108,21 @@ public class HelpDialog extends ModalDialog {
      * @param features browser feature string. May be {@code null}
      */
     public HelpDialog(HelpTopics topics, IArchetypeService service, String features) {
-        this(null, null, topics, service, features);
+        this(null, null, null, topics, service, features);
     }
 
     /**
      * Constructs a {@link HelpDialog}.
      *
-     * @param topic    the topic. May be {@code null}
-     * @param topicURL the topic URL. May be {@code null}
-     * @param topics   the help topics
-     * @param service  the archetype service
-     * @param features browser feature string. May be {@code null}
+     * @param topic     the topic. May be {@code null}
+     * @param topicURL  the topic URL. May be {@code null}
+     * @param parentURL the parent URL. May be {@code null}
+     * @param topics    the help topics
+     * @param service   the archetype service
+     * @param features  browser feature string. May be {@code null}
      */
-    protected HelpDialog(String topic, final String topicURL, HelpTopics topics, IArchetypeService service,
-                         String features) {
+    protected HelpDialog(String topic, final String topicURL, String parentURL, HelpTopics topics,
+                         IArchetypeService service, String features) {
         super(Messages.get("helpdialog.title"), "HelpDialog", OK);
         this.topics = topics;
         this.features = features;
@@ -128,15 +136,14 @@ public class HelpDialog extends ModalDialog {
                 label.setText(Messages.format("helpdialog.nohelp.topic", topic));
                 component = label;
             } else {
-                String parent = getExistingParent(topicURL);
                 StringBuilder content = new StringBuilder();
                 content.append("<div xmlns='http://www.w3.org/1999/xhtml'>");
                 content.append("<p>");
                 content.append(Messages.format("helpdialog.nohelp.create", topicURL));
                 content.append("</p>");
-                if (parent != null) {
+                if (parentURL != null) {
                     content.append("<p>");
-                    content.append(Messages.format("helpdialog.nohelp.parent", parent));
+                    content.append(Messages.format("helpdialog.nohelp.parent", parentURL));
                     content.append("</p>");
                 }
                 content.append("</div>");
@@ -192,16 +199,46 @@ public class HelpDialog extends ModalDialog {
     public static void show(String topic, HelpTopics topics, IArchetypeService service, String features) {
         String url = getTopicURL(topic, topics);
         if (url != null) {
-            if (exists(url)) {
-                openWindow(url, features);
-            } else {
-                HelpDialog dialog = new HelpDialog(topic, url, topics, service, features);
-                dialog.show();
+            try {
+                Topic resource = new Topic(url);
+                if (resource.exists()) {
+                    openWindow(url, features);
+                } else if (resource.notFound()) {
+                    Topic parentResource = resource.findParent();
+                    if (parentResource == null || parentResource.exists()) {
+                        String parent = (parentResource != null) ? parentResource.getURL() : null;
+                        HelpDialog dialog = new HelpDialog(topic, url, parent, topics, service, features);
+                        dialog.show();
+                    } else {
+                        showError(resource);
+                    }
+                } else if (resource.unavailable()) {
+                    ErrorHelper.show(Messages.get("helpdialog.title"), Messages.get("helpdialog.unavailable"));
+                } else {
+                    showError(resource);
+                }
+            } catch (IOException exception) {
+                ErrorHelper.show(Messages.get("helpdialog.title"),
+                                 Messages.format("helpdialog.error", exception.getMessage()));
             }
         } else {
-            HelpDialog dialog = new HelpDialog(topic, null, topics, service, features);
+            HelpDialog dialog = new HelpDialog(topic, null, null, topics, service, features);
             dialog.show();
         }
+    }
+
+    /**
+     * Shows an error for a topic.
+     *
+     * @param resource the topic resource
+     */
+    private static void showError(Topic resource) {
+        if (log.isErrorEnabled()) {
+            log.error("Failed to open help for URL=" + resource.getURL() + ", response=" + resource.getResponseCode());
+        }
+        String status = Messages.format("helpdialog.errorstatus", resource.getResponseCode());
+        String message = Messages.format("helpdialog.error", status);
+        ErrorHandler.getInstance().error(Messages.get("helpdialog.title"), message, null, null);
     }
 
     /**
@@ -345,55 +382,116 @@ public class HelpDialog extends ModalDialog {
     }
 
     /**
-     * Tries to locate an existing URL for the given topic URL.
-     *
-     * @param topicURL the topic URL
-     * @return the closest parent URL to the topic that exists, or {@code null} if none is found
+     * Helper to determine if a topic URL exists.
      */
-    private String getExistingParent(String topicURL) {
-        String result = null;
-        try {
-            URI uri = new URI(topicURL);
-            String path = uri.getPath();
-            while (!StringUtils.isEmpty(path)) {
-                if (!path.endsWith("/")) {
-                    uri = uri.resolve(".");
-                } else {
-                    uri = uri.resolve("..");
-                }
-                String parent = uri.toURL().toString();
-                if (exists(parent)) {
-                    result = parent;
-                    break;
-                }
-                path = uri.getPath();
-            }
-        } catch (URISyntaxException | MalformedURLException exception) {
-            log.debug(exception, exception);
-        }
-        return result;
-    }
+    private static class Topic {
 
-    /**
-     * Determines if a topic URL exists.
-     *
-     * @param topicURL the topic URL
-     * @return {@code true} if the topic URL exists, otherwise {@code false}
-     */
-    private static boolean exists(String topicURL) {
-        boolean exists = false;
-        try {
+        /**
+         * The topic URL.
+         */
+        private final String topicURL;
+
+        /**
+         * The response code when accessing the topic URL.
+         */
+        private int responseCode;
+
+        /**
+         * Constructs a {@link Topic}.
+         *
+         * @param topicURL the topic URL
+         * @throws IOException for any I/O error
+         */
+        public Topic(String topicURL) throws IOException {
+            this.topicURL = topicURL;
             URL url = new URL(topicURL);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
-            int responseCode = connection.getResponseCode();
-            if (responseCode >= 200 && responseCode <= 399) {
-                exists = true;
-            }
-        } catch (IOException exception) {
-            log.warn(exception.getMessage(), exception);
+            connection.setConnectTimeout(TIMEOUT);
+            connection.setReadTimeout(TIMEOUT);
+            responseCode = connection.getResponseCode();
+            connection.disconnect();
         }
-        return exists;
+
+        /**
+         * Returns the topic URL.
+         *
+         * @return the topic URL
+         */
+        public String getURL() {
+            return topicURL;
+        }
+
+        /**
+         * Returns the response code from accessing the URL.
+         *
+         * @return the response code
+         */
+        public int getResponseCode() {
+            return responseCode;
+        }
+
+        /**
+         * Determines if the topic URL exists.
+         *
+         * @return {@code true} if the topic URL exists
+         */
+        public boolean exists() {
+            return responseCode >= 200 && responseCode < 400;
+        }
+
+        /**
+         * Determines if the topic URL was not found.
+         *
+         * @return {@code true} if the topic URL was not found
+         */
+        public boolean notFound() {
+            return responseCode == 404;
+        }
+
+        /**
+         * Determines if the topic URL is unavailable.
+         *
+         * @return {@code true} if the topic URL is unavailable
+         */
+        public boolean unavailable() {
+            return responseCode == 503;
+        }
+
+        /**
+         * Finds a parent of the topic URL.
+         *
+         * @return a parent topic, or {@code null} if there is no parent. If non-null, check the response code to
+         * determine if the parent can be accessed
+         * @throws IOException for any I/O error
+         */
+        public Topic findParent() throws IOException {
+            Topic result = null;
+            try {
+                URI uri = new URI(topicURL);
+                String path = uri.getPath();
+                while (!StringUtils.isEmpty(path)) {
+                    if (!path.endsWith("/")) {
+                        uri = uri.resolve(".");
+                    } else {
+                        uri = uri.resolve("..");
+                    }
+
+                    String parentURL = uri.toURL().toString();
+                    Topic parent = new Topic(parentURL);
+                    if (parent.notFound()) {
+                        path = uri.getPath();
+                    } else {
+                        result = parent;
+                        break;
+                    }
+                }
+            } catch (URISyntaxException | MalformedURLException exception) {
+                log.debug(exception, exception);
+            }
+            return result;
+        }
+
     }
 
 }
