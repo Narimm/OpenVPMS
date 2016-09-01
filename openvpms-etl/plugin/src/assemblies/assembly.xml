@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!-- http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html -->
@@ -34,33 +34,8 @@
             <!--useStrictFiltering>true</useStrictFiltering-->
             <scope>runtime</scope>
             <excludes>
-                <exclude>commons-collections:commons-collections</exclude>
-                <exclude>commons-io:commons-io</exclude>
-                <exclude>commons-lang:commons-lang</exclude>
-                <exclude>commons-logging:commons-logging</exclude>
-                <exclude>com.ibm.icu:icu4j</exclude>
-                <exclude>drools:drools-all-jdk5</exclude>
-                <exclude>drools:jsr94</exclude>
-                <exclude>janino:janino</exclude>
-                <exclude>javax.servlet:jstl</exclude>
-                <exclude>javax.servlet:servlet-api</exclude>
-                <exclude>jaxen:jaxen</exclude>
-                <exclude>jdom:jdom</exclude>
-                <exclude>jsap:JSAP</exclude>
-                <exclude>jug:jug</exclude>
-                <exclude>log4j:log4j</exclude>
-                <exclude>oro:oro</exclude>
-                <exclude>aopalliance:aopalliance</exclude>
-                <exclude>org.ccil.cowan.tagsoup:tagsoup</exclude>
-                <exclude>org.springframework:spring-aop</exclude>
-                <exclude>org.springframework:spring-web</exclude>
-                <exclude>org.springframework:spring-webmvc</exclude>
-                <exclude>springmodules:springmodules</exclude>
                 <exclude>stax:stax</exclude>
-                <exclude>stax:stax-api</exclude>
-                <exclude>taglibs:standard</exclude>
                 <exclude>xalan:xalan</exclude>
-                <exclude>xom:xom</exclude>
             </excludes>
         </dependencySet>
     </dependencySets>
