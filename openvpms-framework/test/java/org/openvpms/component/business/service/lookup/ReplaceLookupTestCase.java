@@ -1,23 +1,20 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.service.lookup;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -26,6 +23,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -40,12 +38,16 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests lookup replacement via the {@link ILookupService#replace} method.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("lookup-replace-delete-appcontext.xml")
 public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
@@ -60,7 +62,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     /**
      * Verifies that an entity that has a node that refers to a lookup by its code can have the lookup code replaced.
      */
-    @Test public void testEntityCodeReplace() {
+    @Test
+    public void testEntityCodeReplace() {
         Party party = (Party) create("party.basic");
         checkCodeReplace(party, "description", "lookup.description", false);
         checkCodeReplace(party, "title", "lookup.title", true);
@@ -69,7 +72,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     /**
      * Verifies that an entity that has a classifications node can have the lookup replaced.
      */
-    @Test public void testEntityClassificationReplace() {
+    @Test
+    public void testEntityClassificationReplace() {
         Party party = (Party) create("party.basic");
         checkClassificationReplace(party, "classifications", "lookup.category");
     }
@@ -77,7 +81,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     /**
      * Verifies that an act that has a node that refers to a lookup by its code can have the lookup code replaced.
      */
-    @Test public void testActCodeReplace() {
+    @Test
+    public void testActCodeReplace() {
         Act act = (Act) create("act.basic");
         checkCodeReplace(act, "status", "lookup.status", false);
         checkCodeReplace(act, "category", "lookup.category", true);
@@ -87,7 +92,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that an act relationship that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testActRelationshipCodeReplace() {
+    @Test
+    public void testActRelationshipCodeReplace() {
         Act act1 = (Act) create("act.basic");
         Act act2 = (Act) create("act.basic");
         ActBean bean = new ActBean(act1);
@@ -102,7 +108,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a contact that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testContactCodeReplace() {
+    @Test
+    public void testContactCodeReplace() {
         Contact contact = (Contact) create("contact.location");
         checkCodeReplace(contact, "description", "lookup.description", false);
 
@@ -116,7 +123,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     /**
      * Verifies that a contact that has a classifications node can have the lookup replaced.
      */
-    @Test public void testContactClassificationReplace() {
+    @Test
+    public void testContactClassificationReplace() {
         Contact contact = (Contact) create("contact.location");
         checkClassificationReplace(contact, "classifications", "lookup.category");
     }
@@ -125,7 +133,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a document that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testDocumentCodeReplace() {
+    @Test
+    public void testDocumentCodeReplace() {
         Document document = (Document) create("document.basic");
         checkCodeReplace(document, "mimeType", "lookup.category", false);
         checkCodeReplace(document, "title", "lookup.title", true);
@@ -135,7 +144,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that an entity identity that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testEntityIdentityCodeReplace() {
+    @Test
+    public void testEntityIdentityCodeReplace() {
         EntityIdentity identity = (EntityIdentity) create("entityIdentity.code");
         checkCodeReplace(identity, "description", "lookup.description", false);
         checkCodeReplace(identity, "status", "lookup.status", true);
@@ -145,7 +155,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that an entity relationship that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testEntityRelationshipCodeReplace() {
+    @Test
+    public void testEntityRelationshipCodeReplace() {
         Party party1 = (Party) create("party.basic");
         Party party2 = (Party) create("party.basic");
         EntityBean bean = new EntityBean(party1);
@@ -157,10 +168,27 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
+     * Verifies that an entity link that has a node that refers to a lookup by its code can have the lookup code
+     * replaced.
+     */
+    @Test
+    public void testEntityLinkCodeReplace() {
+        Party party1 = (Party) create("party.basic");
+        Party party2 = (Party) create("party.basic");
+        EntityBean bean = new EntityBean(party1);
+        IMObjectRelationship relationship = bean.addNodeTarget("links", party2);
+        save(party1, party2);
+
+        checkCodeReplace(relationship, "description", "lookup.description", false);
+        checkCodeReplace(relationship, "category", "lookup.category", true);
+    }
+
+    /**
      * Verifies that a lookup that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testLookupCodeReplace() {
+    @Test
+    public void testLookupCodeReplace() {
         Lookup lookup = createLookup("lookup.staff", "STAFF1");
         checkCodeReplace(lookup, "description", "lookup.description", false);
         checkCodeReplace(lookup, "category", "lookup.category", true);
@@ -170,7 +198,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a lookup relationship that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testLookupRelationshipCodeReplace() {
+    @Test
+    public void testLookupRelationshipCodeReplace() {
         Lookup state = createLookup("lookup.state", "VIC");
         Lookup suburb = createLookup("lookup.suburb", "CAPE_WOOLAMAI");
         LookupRelationship relationship = LookupUtil.addRelationship(getArchetypeService(),
@@ -185,7 +214,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a participation that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testParticipationCodeReplace() {
+    @Test
+    public void testParticipationCodeReplace() {
         Act act = (Act) create("act.basic");
         Party party = (Party) create("party.basic");
         ActBean bean = new ActBean(act);
@@ -199,7 +229,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
      * Verifies that a product price that has a node that refers to a lookup by its code can have the lookup code
      * replaced.
      */
-    @Test public void testProductPriceCodeReplace() {
+    @Test
+    public void testProductPriceCodeReplace() {
         ProductPrice price = (ProductPrice) create("productPrice.basic");
         checkCodeReplace(price, "description", "lookup.description", false);
         checkCodeReplace(price, "category", "lookup.category", true);
@@ -208,7 +239,8 @@ public class ReplaceLookupTestCase extends AbstractArchetypeServiceTest {
     /**
      * Verifies that a product price that has a classifications node can have the lookup replaced.
      */
-    @Test public void testProductPriceClassificationReplace() {
+    @Test
+    public void testProductPriceClassificationReplace() {
         ProductPrice price = (ProductPrice) create("productPrice.basic");
         checkClassificationReplace(price, "classifications", "lookup.category");
     }
