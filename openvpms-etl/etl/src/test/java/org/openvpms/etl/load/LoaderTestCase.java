@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.load;
 
+import org.hibernate.SessionFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -38,9 +39,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -74,17 +73,17 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testObject() throws Exception {
+        String loaderName = "CUSTLOAD";
+        dao.remove(loaderName, "ID1");
+
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
-        Mapping firstNameMap = createMapping("FIRST_NAME",
-                                             "<party.customerperson>firstName");
-        Mapping lastNameMap = createMapping("LAST_NAME",
-                                            "<party.customerperson>lastName");
+        Mapping firstNameMap = createMapping("FIRST_NAME", "<party.customerperson>firstName");
+        Mapping lastNameMap = createMapping("LAST_NAME", "<party.customerperson>lastName");
         mappings.addMapping(firstNameMap);
         mappings.addMapping(lastNameMap);
 
-        String loaderName = "CUSTLOAD";
         Loader loader = createLoader(loaderName, mappings);
         String legacyId = "ID1";
         ETLRow row = createCustomerRow(legacyId, "Foo", "Bar");
@@ -109,24 +108,21 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testCollection() throws Exception {
+        String loaderName = "CUSTLOAD";
+        String legacyId = "ID1";
+        dao.remove(loaderName, legacyId);
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
-        Mapping addressMap = createMapping(
-                "ADDRESS",
-                "<party.customerperson>contacts[0]<contact.location>address");
-        Mapping suburbMap = createMapping(
-                "SUBURB",
-                "<party.customerperson>contacts[0]<contact.location>suburb");
+        Mapping addressMap = createMapping("ADDRESS", "<party.customerperson>contacts[0]<contact.location>address");
+        Mapping suburbMap = createMapping("SUBURB", "<party.customerperson>contacts[0]<contact.location>suburb");
         Mapping phoneMap = createMapping("PHONE",
                                          "<party.customerperson>contacts[1]<contact.phoneNumber>telephoneNumber");
         mappings.addMapping(addressMap);
         mappings.addMapping(suburbMap);
         mappings.addMapping(phoneMap);
 
-        String loaderName = "CUSTLOAD";
         Loader loader = createLoader(loaderName, mappings);
-        String legacyId = "ID1";
         ETLRow row = new ETLRow(legacyId);
         row.add("ADDRESS", "49 Foo St Bar");
         row.add("SUBURB", "Coburg");
@@ -154,25 +150,24 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testCollectionHeirarchy() throws Exception {
+        String loaderName = "CUSTLOAD";
+        dao.remove(loaderName, "ID1");
+
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
         getClassification("lookup.contactPurpose", "MAILING");
 
-        Mapping firstNameMap = createMapping("FIRST_NAME",
-                                             "<party.customerperson>firstName");
-        Mapping lastNameMap = createMapping("LAST_NAME",
-                                            "<party.customerperson>lastName");
-        Mapping suburbMap = createMapping(
-                "ADDRESS",
-                "<party.customerperson>contacts[0]<contact.location>purposes[1]");
+        Mapping firstNameMap = createMapping("FIRST_NAME", "<party.customerperson>firstName");
+        Mapping lastNameMap = createMapping("LAST_NAME", "<party.customerperson>lastName");
+        Mapping suburbMap = createMapping("ADDRESS", "<party.customerperson>contacts[0]<contact.location>purposes[1]");
         String ref = "<lookup.contactPurpose>code=MAILING";
         suburbMap.setValue(ref);
         mappings.addMapping(firstNameMap);
         mappings.addMapping(lastNameMap);
         mappings.addMapping(suburbMap);
 
-        Loader loader = createLoader("CUSTLOAD", mappings);
+        Loader loader = createLoader(loaderName, mappings);
         ETLRow row = createCustomerRow("ID1", "Foo", "Bar");
         row.add("ADDRESS", "49 Foo St Bar");
         List<IMObject> objects = loader.load(row);
@@ -218,8 +213,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
                 = act.getValues("items", ActRelationship.class);
         assertEquals(items.size(), 1);
         assertEquals(rel.getObject(), items.get(0));
-        assertEquals(act.getObject().getObjectReference(),
-                     rel.getValue("source"));
+        assertEquals(act.getObject().getObjectReference(), rel.getValue("source"));
     }
 
     /**
@@ -233,9 +227,8 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("CUSTID");
 
-        Mapping mapping = createMapping(
-                "TELEPHONE",
-                "<party.customerperson>contacts[0]<contact.phoneNumber>telephoneNumber");
+        Mapping mapping = createMapping("TELEPHONE",
+                                        "<party.customerperson>contacts[0]<contact.phoneNumber>telephoneNumber");
         mapping.setExcludeNull(true);
         mappings.addMapping(mapping);
 
@@ -254,6 +247,11 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testReferenceWildcards() {
+        // remove any existing logs
+        String loaderName = "INVLOAD";
+        dao.remove("INVLOAD", "INV1");
+        dao.remove("INVLOAD", "PROD1");
+
         // create a product
         Product product = (Product) service.create("product.medication");
         assertNotNull(product);
@@ -261,22 +259,20 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         service.save(product);
 
         // add a log for the product, so it can be referenced
-        ETLLog productLog = new ETLLog("PRODLOADER", "PROD1",
-                                       "product.medication");
+        ETLLog productLog = new ETLLog(loaderName, "PROD1", "product.medication");
         productLog.setReference(product.getObjectReference());
         dao.save(productLog);
 
         // create a product participation mapping
         Mappings mappings = new Mappings();
         mappings.setIdColumn("INVOICEID");
-        Mapping productMap = createMapping(
-                "PRODUCTID",
-                "<act.customerAccountInvoiceItem>product[0]<participation.product>entity",
-                "<product.*>$value");
+        Mapping productMap = createMapping("PRODUCTID",
+                                           "<act.customerAccountInvoiceItem>product[0]<participation.product>entity",
+                                           "<product.*>$value");
         mappings.addMapping(productMap);
 
         // load a (partial) invoice item
-        Loader loader = createLoader("INVLOAD", mappings);
+        Loader loader = createLoader(loaderName, mappings);
         ETLRow row = new ETLRow("INVOICEID");
         row.add("INVOICEID", "INV1");
         row.add("PRODUCTID", "PROD1");
@@ -291,12 +287,10 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         assertTrue(act.isA("act.customerAccountInvoiceItem"));
         assertTrue(participation.isA("participation.product"));
 
-        List<Participation> participations
-                = act.getValues("product", Participation.class);
+        List<Participation> participations = act.getValues("product", Participation.class);
         assertEquals(1, participations.size());
         assertEquals(participations.get(0), participation.getObject());
-        assertEquals(product.getObjectReference(),
-                     participation.getValue("entity"));
+        assertEquals(product.getObjectReference(), participation.getValue("entity"));
     }
 
     /**
@@ -305,14 +299,21 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testLookups() {
-        // create a patient mapping containg species and breed mapping
+        String loaderName = "PATIENTLOAD";
+        dao.remove(loaderName, "patient1");
+        dao.remove(loaderName, "patient2");
+
+        // create a patient mapping
         Mappings mappings = new Mappings();
         mappings.setIdColumn("PATIENTID");
-        Mapping speciesMap = createMapping(
-                "SPECIES", "<party.patientpet>species");
+        Mapping nameMap = createMapping("NAME", "<party.patientpet>name");
+        Mapping speciesMap = createMapping("SPECIES", "<party.patientpet>species");
         Mapping breedMap = createMapping("BREED", "<party.patientpet>breed");
+        Mapping sexMap = createMapping("SEX", "<party.patientpet>sex");
+        mappings.addMapping(nameMap);
         mappings.addMapping(speciesMap);
         mappings.addMapping(breedMap);
+        mappings.addMapping(sexMap);
 
         String species1 = "S1" + System.currentTimeMillis();
         String species2 = "S2" + System.currentTimeMillis();
@@ -320,14 +321,34 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         String breed2 = "B2" + System.currentTimeMillis();
 
         // load (partial) patients and verify the lookups have been created
-        Loader loader = createLoader("PATIENTLOAD", mappings);
-        ETLRow row1 = createPatientRow("patient1", species1, breed1);
-        loader.load(row1);
+        Loader loader = createLoader(loaderName, mappings);
+        ETLRow row1 = createPatientRow("patient1", "Fido", species1, breed1);
+        List<IMObject> objects1 = loader.load(row1);
+        assertEquals(1, objects1.size());
         checkSpeciesBreedLookups(species1, breed1);
 
-        ETLRow row2 = createPatientRow("patient2", species2, breed2);
-        loader.load(row2);
+        ETLRow row2 = createPatientRow("patient2", "Spot", species2, breed2);
+        List<IMObject> objects2 = loader.load(row2);
+        assertEquals(1, objects2.size());
         checkSpeciesBreedLookups(species2, breed2);
+        loader.close();
+
+        // verify the patients have saved, and contains the expected details
+        IMObject patient1 = service.get(objects1.get(0).getObjectReference());
+        IMObject patient2 = service.get(objects2.get(0).getObjectReference());
+        assertNotNull(patient1);
+        assertNotNull(patient2);
+
+        IMObjectBean bean1 = new IMObjectBean(patient1);
+        IMObjectBean bean2 = new IMObjectBean(patient2);
+        assertEquals("Fido", bean1.getString("name"));
+        assertEquals("Spot", bean2.getString("name"));
+        assertEquals(species1, bean1.getString("species"));
+        assertEquals(species2, bean2.getString("species"));
+        assertEquals(breed1, bean1.getString("breed"));
+        assertEquals(breed2, bean2.getString("breed"));
+        assertEquals("Male " + breed1, bean1.getString("description"));
+        assertEquals("Male " + breed2, bean2.getString("description"));
     }
 
     /**
@@ -355,10 +376,16 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
      * Tests mapping references.
+     * <p/>
      * This adds two prices to an existing product.
      */
     @Test
     public void testMappingReference() {
+        String loaderName = "PRICELOAD";
+        dao.remove(loaderName, "PROD1");
+        dao.remove(loaderName, "ID1");
+        dao.remove(loaderName, "ID2");
+
         // create a product
         Product product = (Product) service.create("product.medication");
         assertNotNull(product);
@@ -366,20 +393,16 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         service.save(product);
 
         // add a log for the product, so it can be referenced
-        ETLLog productLog = new ETLLog("PRODLOADER", "PROD1",
-                                       "product.medication");
+        ETLLog productLog = new ETLLog(loaderName, "PROD1", "product.medication");
         productLog.setReference(product.getObjectReference());
         dao.save(productLog);
 
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
-        Mapping priceMap = createMapping(
-                "PRICE",
-                "$PRODID<product.medication>prices[1]<productPrice.unitPrice>price");
+        Mapping priceMap = createMapping("PRICE", "$PRODID<product.medication>prices[1]<productPrice.unitPrice>price");
         mappings.addMapping(priceMap);
 
-        String loaderName = "PRICELOAD";
         Loader loader = createLoader(loaderName, mappings);
 
         // create two rows for different prices that reference the same product
@@ -422,29 +445,24 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testErrorLogging() {
+        String loaderName = "CUSTLOAD";
+        final String legacyId = "ID1";
+        dao.remove(loaderName, legacyId);
         final String expectedError = "Failed to validate Last Name of Customer: value is required";
-
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
-        Mapping firstNameMap = createMapping("FIRST_NAME",
-                                             "<party.customerperson>firstName");
-        Mapping lastNameMap = createMapping("LAST_NAME",
-                                            "<party.customerperson>lastName");
+        Mapping firstNameMap = createMapping("FIRST_NAME", "<party.customerperson>firstName");
+        Mapping lastNameMap = createMapping("LAST_NAME", "<party.customerperson>lastName");
         mappings.addMapping(firstNameMap);
         mappings.addMapping(lastNameMap);
 
-        String loaderName = "CUSTLOAD";
         Loader loader = new Loader(loaderName, mappings, dao, service,
-                                   new DefaultObjectHandler(loaderName,
-                                                            mappings, dao,
-                                                            service));
-        final String legacyId = "ID1";
+                                   new DefaultObjectHandler(loaderName, mappings, dao, service));
         ETLRow row = createCustomerRow(legacyId, "Foo", null);
 
         // register an error listener
-        Listener listener = new Listener(legacyId, expectedError,
-                                         ValidationException.class);
+        Listener listener = new Listener(legacyId, expectedError, ValidationException.class);
         loader.setErrorListener(listener);
 
         loader.load(row);
@@ -463,7 +481,12 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testPartialFailure() {
+        final String loaderName = "CUSTLOAD";
         final String expectedError = "Failed to validate Last Name of Customer: value is required";
+
+        dao.remove(loaderName, "ID1");
+        dao.remove(loaderName, "ID2");
+        dao.remove(loaderName, "PATIENT1");
 
         // create a patient
         Party patient = (Party) service.create("party.patientpet");
@@ -473,9 +496,8 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         patient.setName("XLoaderTestCasePatient" + System.currentTimeMillis());
         service.save(patient);
 
-        // add a log for the patientt, so it can be referenced
-        ETLLog patientLog = new ETLLog("PATIENTLOADER", "PATIENT1",
-                                       "party.patientpet");
+        // add a log for the patient, so it can be referenced
+        ETLLog patientLog = new ETLLog(loaderName, "PATIENT1", "party.patientpet");
         patientLog.setReference(patient.getObjectReference());
         dao.save(patientLog);
 
@@ -483,26 +505,19 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         mappings.setBatchSize(50);
         mappings.setIdColumn("CUSTOMERID");
 
-        Mapping firstNameMap = createMapping("FIRST_NAME",
-                                             "<party.customerperson>firstName");
-        Mapping lastNameMap = createMapping("LAST_NAME",
-                                            "<party.customerperson>lastName");
-        Mapping sourceMap = createMapping("CUSTOMERID",
-                                          "<entityRelationship.patientOwner>source",
+        Mapping firstNameMap = createMapping("FIRST_NAME", "<party.customerperson>firstName");
+        Mapping lastNameMap = createMapping("LAST_NAME", "<party.customerperson>lastName");
+        Mapping sourceMap = createMapping("CUSTOMERID", "<entityRelationship.patientOwner>source",
                                           "<party.customerperson>$value");
-        Mapping targetMap = createMapping("PATIENTID",
-                                          "<entityRelationship.patientOwner>target",
+        Mapping targetMap = createMapping("PATIENTID", "<entityRelationship.patientOwner>target",
                                           "<party.patientpet>$value");
         mappings.addMapping(firstNameMap);
         mappings.addMapping(lastNameMap);
         mappings.addMapping(sourceMap);
         mappings.addMapping(targetMap);
 
-        String loaderName = "CUSTLOAD";
         Loader loader = new Loader(loaderName, mappings, dao, service,
-                                   new DefaultObjectHandler(loaderName,
-                                                            mappings, dao,
-                                                            service));
+                                   new DefaultObjectHandler(loaderName, mappings, dao, service));
         ETLRow row1 = createCustomerRow("ID1", "Foo", "Bar");
         row1.add("PATIENTID", "PATIENT1");
         ETLRow row2 = createCustomerRow("ID2", "Pippi", null);
@@ -511,8 +526,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         row3.add("PATIENTID", "PATIENT1");
 
         // register an error listener that checks for failure of row ID2
-        Listener listener = new Listener("ID2", expectedError,
-                                         ValidationException.class);
+        Listener listener = new Listener("ID2", expectedError, ValidationException.class);
         loader.setErrorListener(listener);
 
         // load the rows
@@ -537,7 +551,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
     @Before
     public void setUp() {
         service = (IArchetypeService) applicationContext.getBean("archetypeService");
-        dao = new ETLLogDAOTestImpl();
+        dao = new ETLLogDAOImpl(applicationContext.getBean(SessionFactory.class));
     }
 
     /**
@@ -549,8 +563,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      * @param archetype  the expected archetype
      * @param index      the expected index
      */
-    private void checkLog(List<ETLLog> logs, String loaderName,
-                          String legacyId, String archetype, int index) {
+    private void checkLog(List<ETLLog> logs, String loaderName, String legacyId, String archetype, int index) {
         boolean found = false;
         for (ETLLog log : logs) {
             if (log.getLoader().equals(loaderName)
@@ -572,8 +585,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      * @param legacyId   the legacy row identifier
      * @param message    the expected error message. May be <tt>null</tt>
      */
-    private void checkLogError(String loaderName, String legacyId,
-                               String message) {
+    private void checkLogError(String loaderName, String legacyId, String message) {
         checkLogError(loaderName, legacyId, message, 1);
     }
 
@@ -587,8 +599,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      * @param message    the expected error message. May be <tt>null</tt>
      * @param count      the expected no. of logs
      */
-    private void checkLogError(String loaderName, String legacyId,
-                               String message, int count) {
+    private void checkLogError(String loaderName, String legacyId, String message, int count) {
         // verify there is a single log, with the expected error message
         List<ETLLog> logs = dao.get(loaderName, legacyId, null);
         assertEquals(count, logs.size());
@@ -609,8 +620,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      * @param speciesCode the species code
      * @param breedCode   the breed code
      */
-    private void checkSpeciesBreedLookups(String speciesCode,
-                                          String breedCode) {
+    private void checkSpeciesBreedLookups(String speciesCode, String breedCode) {
         ILookupService service = LookupServiceHelper.getLookupService();
         Lookup species = service.getLookup("lookup.species", speciesCode);
         assertNotNull(species);
@@ -618,8 +628,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         assertNotNull(breed);
 
         // make sure the relationship exists
-        Set<LookupRelationship> speciesRelationships
-                = species.getLookupRelationships();
+        Set<LookupRelationship> speciesRelationships = species.getLookupRelationships();
         assertEquals(1, speciesRelationships.size());
         LookupRelationship s = speciesRelationships.iterator().next();
         assertEquals(species.getObjectReference(), s.getSource());
@@ -641,8 +650,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      * @param lastName  the last name
      * @return a new row
      */
-    private ETLRow createCustomerRow(String legacyId, String firstName,
-                                     String lastName) {
+    private ETLRow createCustomerRow(String legacyId, String firstName, String lastName) {
         ETLRow row = new ETLRow(legacyId);
         row.add("CUSTOMERID", legacyId);
         row.add("FIRST_NAME", firstName);
@@ -654,16 +662,18 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      * Helper to create a row containing a patient id, species and breed.
      *
      * @param rowId   the patient id
+     * @param name    the patient name
      * @param species the species
      * @param breed   the breed
      * @return a new row
      */
-    private ETLRow createPatientRow(String rowId, String species,
-                                    String breed) {
+    private ETLRow createPatientRow(String rowId, String name, String species, String breed) {
         ETLRow row = new ETLRow(rowId);
         row.add("PATIENTID", rowId);
+        row.add("NAME", name);
         row.add("SPECIES", species);
         row.add("BREED", breed);
+        row.add("SEX", "MALE");
         return row;
     }
 
@@ -675,8 +685,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
      * @param price     the price
      * @return a new row
      */
-    private ETLRow createPriceRow(String legacyId, String productId,
-                                  BigDecimal price) {
+    private ETLRow createPriceRow(String legacyId, String productId, BigDecimal price) {
         ETLRow row = new ETLRow(legacyId);
         row.add("PRICE", price);
         row.add("PRODID", productId);
@@ -735,7 +744,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
-        QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
+        QueryIterator<Lookup> iter = new IMObjectQueryIterator<>(query);
         if (iter.hasNext()) {
             return iter.next();
         }
@@ -747,37 +756,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
 
     private Loader createLoader(String loaderName, Mappings mappings) {
         return new Loader(loaderName, mappings, dao, service,
-                          new TestObjectHandler(loaderName, mappings, dao,
-                                                service));
-    }
-
-
-    private class TestObjectHandler extends DefaultObjectHandler {
-
-        public TestObjectHandler(String loaderName, Mappings mappings,
-                                 ETLLogDAO dao, IArchetypeService service) {
-            super(loaderName, mappings, dao, service);
-        }
-
-        /**
-         * Saves a set of mapped objects.
-         *
-         * @param objects   the objects to save
-         * @param logs      the logs for each object, keyed on link identifier
-         * @param saveError if <tt>true</tt>, save any error in the supplied
-         *                  logs otherwise just notify if an error occurs
-         * @return <tt>true</tt> if the save was successful, otherwise
-         *         <tt>false</tt>
-         */
-        @Override
-        protected boolean save(Collection<IMObject> objects,
-                               Map<String, List<ETLLog>> logs,
-                               boolean saveError) {
-            for (List<ETLLog> logList : logs.values()) {
-                dao.save(logList);
-            }
-            return true;
-        }
+                          new DefaultObjectHandler(loaderName, mappings, dao, service));
     }
 
     private class Listener implements ErrorListener {
