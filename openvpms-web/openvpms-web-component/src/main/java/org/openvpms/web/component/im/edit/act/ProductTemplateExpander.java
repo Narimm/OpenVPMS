@@ -142,20 +142,22 @@ public class ProductTemplateExpander {
                              Map<TemplateProduct, TemplateProduct> includes, BigDecimal lowQuantity,
                              BigDecimal highQuantity, boolean zeroPrice, Deque<Product> parents, IMObjectCache cache) {
         boolean result = true;
-        if (!parents.contains(template)) {
-            parents.push(template);
-            IMObjectBean bean = new IMObjectBean(template);
-            for (EntityLink relationship : bean.getValues("includes", EntityLink.class)) {
-                if (!include(relationship, root, template, weight, includes, lowQuantity, highQuantity, zeroPrice,
-                             parents, cache)) {
-                    result = false;
-                    break;
+        if (template.isActive()) {
+            if (!parents.contains(template)) {
+                parents.push(template);
+                IMObjectBean bean = new IMObjectBean(template);
+                for (EntityLink relationship : bean.getValues("includes", EntityLink.class)) {
+                    if (!include(relationship, root, template, weight, includes, lowQuantity, highQuantity, zeroPrice,
+                                 parents, cache)) {
+                        result = false;
+                        break;
+                    }
                 }
+                parents.pop();
+            } else {
+                reportRecursionError(root, template, parents);
+                result = false;
             }
-            parents.pop();
-        } else {
-            reportRecursionError(root, template, parents);
-            result = false;
         }
         return result;
     }
@@ -186,7 +188,7 @@ public class ProductTemplateExpander {
             result = false;
         } else if (include.isIncluded(weight)) {
             Product product = include.getProduct(cache);
-            if (product != null) {
+            if (product != null && product.isActive()) {
                 boolean skip = false;
                 if (useLocationProducts) {
                     Party location = checkProductLocation(product);
