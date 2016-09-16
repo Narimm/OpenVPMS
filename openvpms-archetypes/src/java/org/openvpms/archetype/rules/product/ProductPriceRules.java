@@ -744,7 +744,7 @@ public class ProductPriceRules {
             if (result > 0) {
                 Date from = price.getFromDate();
                 Date to = price.getToDate();
-                if (!DateRules.betweenDates(date, from, to)) {
+                if (!DateRules.between(date, from, to)) {
                     result = 0;
                 }
             }

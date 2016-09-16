@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.act;
@@ -77,7 +77,7 @@ public class ActRelationshipTestCase {
         relationship.setActiveEndTime(date3);
         assertFalse(relationship.isActive(date1));
         assertTrue(relationship.isActive(date2));
-        assertTrue(relationship.isActive(date3));
+        assertFalse(relationship.isActive(date3));
         assertFalse(relationship.isActive(date4));
     }
 

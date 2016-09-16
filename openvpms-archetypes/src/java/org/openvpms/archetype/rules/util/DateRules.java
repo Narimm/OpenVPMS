@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -252,6 +252,8 @@ public class DateRules {
 
     /**
      * Determines if a date falls between two dates.
+     * <p/>
+     * The lower bound is inclusive, the upper bound exclusive.
      *
      * @param date       the date to compare
      * @param lowerBound the from date. If {@code null}, indicates that the date is unbounded
@@ -266,6 +268,8 @@ public class DateRules {
      * Determines if a date falls between two dates, inclusive.
      * <p/>
      * Any time component of the specified dates is ignored.
+     * <p/>
+     * The lower bound is inclusive, the upper bound exclusive.
      *
      * @param date the date to compare
      * @param from the lower bound. If {@code null}, indicates there is no lower bound
@@ -277,7 +281,7 @@ public class DateRules {
         from = getDate(from);
         to = getDate(to);
         return (from == null || DateRules.compareTo(from, date) <= 0)
-               && (to == null || DateRules.compareTo(to, date) >= 0);
+               && (to == null || DateRules.compareTo(to, date) > 0);
     }
 
     /**

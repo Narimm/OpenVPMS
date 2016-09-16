@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.util;
@@ -28,10 +28,12 @@ public class DateHelper {
 
     /**
      * Determines if a time is between two dates.
+     * <p/>
+     * The lower bound is inclusive, the upper bound exclusive.
      * <ul>
      * <li>if both {@code from} and {@code to} are non-null, {@code time} is between
-     * if {@code from <= time and to >= time}.</li>
-     * <li>if {@code from} is {@code null}, then {@code time} is between if {@code to >= time}</li>
+     * if {@code from <= time and to > time}.</li>
+     * <li>if {@code from} is {@code null}, then {@code time} is between if {@code to > time}</li>
      * <li>if {@code to} is {@code null}, then {@code time} is between if {@code from <= time}</li>
      * <li>if {@code from} and {@code to} are both {@code null}, this always returns {@code true}</li>
      * </ul>
@@ -44,7 +46,7 @@ public class DateHelper {
      * @return {@code true} if the date falls between {@code from} and {@code to}, otherwise {@code false}
      */
     public static boolean between(Date time, Date from, Date to) {
-        return (from == null || compareTo(from, time) <= 0) && (to == null || compareTo(to, time) >= 0);
+        return (from == null || compareTo(from, time) <= 0) && (to == null || compareTo(to, time) > 0);
     }
 
     /**
