@@ -236,6 +236,35 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that inactive products aren't included.
+     */
+    @Test
+    public void testInactiveInclude() {
+        Product productX = TestHelper.createProduct();
+        Product productY = TestHelper.createProduct();
+        Product productZ = TestHelper.createProduct();
+
+        Product templateA = createTemplate("templateA");
+        Product templateB = createTemplate("templateB");
+        Product templateC = createTemplate("templateC");
+
+        addInclude(templateA, templateB, 1, 2);
+        addInclude(templateA, templateC, 2, 2);
+        addInclude(templateB, productX, 5, 5);
+        addInclude(templateB, productY, 2, 2);
+        addInclude(templateC, productX, 1, 1);
+        addInclude(templateC, productZ, 10, 10);
+
+        templateB.setActive(false);
+        productZ.setActive(false);
+        save(templateB, productZ);
+        Collection<TemplateProduct> includes1 = expand(templateA, Weight.ZERO, BigDecimal.ONE);
+        assertEquals(1, includes1.size());
+
+        checkInclude(includes1, productX, 2, 2, false);
+    }
+
+    /**
      * Expands a template.
      *
      * @param template the template to expand
