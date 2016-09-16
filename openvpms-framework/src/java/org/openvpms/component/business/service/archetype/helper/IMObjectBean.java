@@ -154,6 +154,16 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the archetype descriptor.
+     *
+     * @return the archetype descriptor
+     * @throws IMObjectBeanException if the archetype does not exist
+     */
+    public ArchetypeDescriptor getArchetype() {
+        return properties.getArchetype();
+    }
+
+    /**
      * Returns the display name of a node.
      *
      * @param name the node name
@@ -1762,16 +1772,6 @@ public class IMObjectBean {
             service = ArchetypeServiceHelper.getArchetypeService();
         }
         return service;
-    }
-
-    /**
-     * Returns the archetype descriptor.
-     *
-     * @return the archetype descriptor
-     * @throws IMObjectBeanException if the archetype does not exist
-     */
-    protected ArchetypeDescriptor getArchetype() {
-        return properties.getArchetype();
     }
 
     /**

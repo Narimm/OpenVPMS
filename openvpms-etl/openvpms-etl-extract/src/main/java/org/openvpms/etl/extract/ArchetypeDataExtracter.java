@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -73,6 +74,11 @@ public class ArchetypeDataExtracter {
     private final IArchetypeService service;
 
     /**
+     * If {@code true}, only extract active instances of the specified archetypes. Referenced objects may be inactive.
+     */
+    private final boolean activeOnly;
+
+    /**
      * If true, output related objects.
      */
     private final boolean related;
@@ -110,11 +116,16 @@ public class ArchetypeDataExtracter {
     /**
      * Constructs an {@link ArchetypeDataExtracter}.
      *
-     * @param service the archetype service
-     * @param related if {@code true}, extract related objects
+     * @param service    the archetype service
+     * @param activeOnly if {@code true}, only extract active instances of the specified archetypes. Referenced objects
+     * @param related    if {@code true}, extract related objects
+     * @param out        the output stream
+     * @throws XMLStreamException for an XML error
      */
-    public ArchetypeDataExtracter(IArchetypeService service, boolean related, OutputStream out) throws XMLStreamException {
+    public ArchetypeDataExtracter(IArchetypeService service, boolean activeOnly, boolean related, OutputStream out)
+            throws XMLStreamException {
         this.service = service;
+        this.activeOnly = activeOnly;
         this.related = related;
         writer = new Writer(XMLOutputFactory.newInstance().createXMLStreamWriter(out, "UTF-8"));
         writer.writeStartDocument("UTF-8", "1.0");
@@ -128,58 +139,26 @@ public class ArchetypeDataExtracter {
      * @throws XMLStreamException for any XML error
      */
     public void extract(String[] archetypes) throws XMLStreamException {
-        Set<String> extracted = new HashSet<>();
-        for (String archetype : archetypes) {
-            String[] matches = extract(archetype, -1);
-            extracted.addAll(Arrays.asList(matches));
+        String[] shortNames = DescriptorHelper.getShortNames(archetypes);
+        for (String shortName : shortNames) {
+            extract(shortName, -1, shortNames);
         }
-        dependencies.removeAll(extracted);
+        dependencies.removeAll(Arrays.asList(shortNames));
     }
 
     /**
      * Extracts objects matching the supplied archetype(s).
      *
-     * @param archetype the archetype(s). May  contain wildcards
+     * @param archetype the archetype(s). May contain wildcards
      * @param id        the object identifier, or {@code -1} if retrieving multiple objects
-     * @return the matching archetypes
      * @throws XMLStreamException for any XML error
      */
-    public String[] extract(String archetype, long id) throws XMLStreamException {
-        String[] archetypes = DescriptorHelper.getShortNames(archetype);
-        ArchetypeQuery query = new ArchetypeQuery(archetypes, false, true);
-        if (id > 0) {
-            query.add(Constraints.eq("id", id));
+    public void extract(String archetype, long id) throws XMLStreamException {
+        String[] shortNames = DescriptorHelper.getShortNames(archetype);
+        for (String shortName : shortNames) {
+            extract(shortName, id, shortNames);
         }
-        query.add(Constraints.sort("id"));
-        IMObjectQueryIterator<IMObject> iterator = new IMObjectQueryIterator<>(service, query);
-        while (iterator.hasNext()) {
-            extract(iterator.next());
-        }
-        while (!pending.isEmpty()) {
-            IMObjectReference next = pending.iterator().next();
-            pending.remove(next);
-            if (!processed.contains(next)) {
-                IMObject child = service.get(next);
-                if (child != null) {
-                    extract(child);
-                }
-            }
-        }
-        return archetypes;
-    }
-
-    /**
-     * Extracts an object.
-     *
-     * @param object the object
-     * @throws XMLStreamException for any XML error
-     */
-    public void extract(IMObject object) throws XMLStreamException {
-        IMObjectReference reference = object.getObjectReference();
-        if (processed.add(reference)) {
-            write(object, null);
-            writer.writeCharacters("\n");
-        }
+        dependencies.removeAll(Arrays.asList(shortNames));
     }
 
     /**
@@ -216,6 +195,7 @@ public class ArchetypeDataExtracter {
                 String archetypes[] = config.getStringArray("archetype");
                 long id = config.getLong("id");
                 String file = config.getString("file");
+                boolean inactive = config.getBoolean("inactive");
                 boolean related = config.getBoolean("related");
 
                 ApplicationContext context;
@@ -229,7 +209,7 @@ public class ArchetypeDataExtracter {
 
                 if (archetypes != null && archetypes.length > 0) {
                     IArchetypeService service = (IArchetypeService) context.getBean("archetypeService");
-                    ArchetypeDataExtracter extract = new ArchetypeDataExtracter(service, related, out);
+                    ArchetypeDataExtracter extract = new ArchetypeDataExtracter(service, !inactive, related, out);
                     if (archetypes.length == 1) {
                         extract.extract(archetypes[0], id);
                     } else {
@@ -269,6 +249,10 @@ public class ArchetypeDataExtracter {
         parser.registerParameter(new Switch("related").setShortFlag('r')
                                          .setLongFlag("related")
                                          .setHelp("Extract related objects."));
+        parser.registerParameter(new Switch("inactive")
+                                         .setLongFlag("inactive")
+                                         .setHelp("Include inactive objects of the specified archetypes. "
+                                                  + "Referenced objects may be inactive"));
         return parser;
     }
 
@@ -282,6 +266,53 @@ public class ArchetypeDataExtracter {
         System.err.println();
         System.err.println(parser.getHelp());
         System.exit(1);
+    }
+
+    /**
+     * Extracts objects matching the supplied archetype(s).
+     *
+     * @param archetype the archetype. Should not contain wildcards
+     * @param id        the object identifier, or {@code -1} if retrieving multiple objects
+     * @param include   archetypes to include in the extraction. If related objects aren't being automatically pulled
+     *                  in, these determine if references to inactive objects should be included
+     * @throws XMLStreamException for any XML error
+     */
+    private void extract(String archetype, long id, String[] include) throws XMLStreamException {
+        ArchetypeQuery query = new ArchetypeQuery(archetype, false, activeOnly);
+        if (id > 0) {
+            query.add(Constraints.eq("id", id));
+        }
+        query.add(Constraints.sort("id"));
+        IMObjectQueryIterator<IMObject> iterator = new IMObjectQueryIterator<>(service, query);
+        while (iterator.hasNext()) {
+            extract(iterator.next(), include);
+        }
+        while (!pending.isEmpty()) {
+            IMObjectReference next = pending.iterator().next();
+            pending.remove(next);
+            if (!processed.contains(next)) {
+                IMObject child = service.get(next);
+                if (child != null) {
+                    extract(child, include);
+                }
+            }
+        }
+    }
+
+    /**
+     * Extracts an object.
+     *
+     * @param object  the object
+     * @param include archetypes to include in the extraction. If related objects aren't being automatically pulled
+     *                in, these determine if references to inactive objects should be included
+     * @throws XMLStreamException for any XML error
+     */
+    private void extract(IMObject object, String[] include) throws XMLStreamException {
+        IMObjectReference reference = object.getObjectReference();
+        if (processed.add(reference)) {
+            write(object, null, include);
+            writer.writeCharacters("\n");
+        }
     }
 
     /**
@@ -315,23 +346,28 @@ public class ArchetypeDataExtracter {
      *
      * @param object     the object
      * @param collection the collection node name
+     * @param include    archetypes to include in the extraction. If related objects aren't being automatically pulled
+     *                   in, these determine if references to inactive objects should be included
      * @throws XMLStreamException for any XML error
      */
-    private void writeCollectionReference(IMObject object, String collection) throws XMLStreamException {
+    private void writeCollectionReference(IMObject object, String collection, String[] include)
+            throws XMLStreamException {
         writer.writeEmptyElement("data");
         writer.writeAttribute("collection", collection);
         writer.writeAttribute("archetype", object.getArchetypeId().getShortName());
         writer.writeAttribute("childId", getReference(object.getArchetypeId(), object.getId()));
-        queue(object.getObjectReference());
+        queue(object.getObjectReference(), include);
     }
 
     /**
      * Queues an object for output, if related objects are being output and it hasn't already been processed.
      *
      * @param reference the object reference
+     * @param include   archetypes to include in the extraction. If related objects aren't being automatically pulled
+     *                  in, these determine if references to inactive objects should be included
      */
-    private void queue(IMObjectReference reference) {
-        if (!related) {
+    private void queue(IMObjectReference reference, String[] include) {
+        if (!related && !TypeHelper.isA(reference, include)) {
             dependencies.add(reference.getArchetypeId().getShortName());
         } else if (!processed.contains(reference)) {
             pending.add(reference);
@@ -343,13 +379,15 @@ public class ArchetypeDataExtracter {
      *
      * @param object     the object to write
      * @param collection the collection node name, or {@code null} if it is not part of a collection
+     * @param include    archetypes to include in the extraction. If related objects aren't being automatically pulled
+     *                   in, these determine if references to inactive objects should be included
      * @throws XMLStreamException for any XML error
      */
-    private void write(IMObject object, String collection) throws XMLStreamException {
+    private void write(IMObject object, String collection, String[] include) throws XMLStreamException {
         IMObjectBean bean = new IMObjectBean(object, service);
         List<NodeDescriptor> nodes = new ArrayList<>();
         Map<NodeDescriptor, List<IMObject>> collectionNodes = new LinkedHashMap<>();
-        ArchetypeDescriptor archetype = service.getArchetypeDescriptor(object.getArchetypeId()); // TODO - use bean
+        ArchetypeDescriptor archetype = bean.getArchetype();
         for (NodeDescriptor node : archetype.getAllNodeDescriptors()) {
             if (!node.isDerived()) {
                 if (node.isCollection()) {
@@ -379,7 +417,7 @@ public class ArchetypeDataExtracter {
             if (node.isObjectReference()) {
                 IMObjectReference child = bean.getReference(name);
                 if (child != null) {
-                    queue(child);
+                    queue(child, include);
                     value = getReference(child.getArchetypeId(), child.getId());
                 }
             } else if ("id".equals(name)) {
@@ -406,9 +444,9 @@ public class ArchetypeDataExtracter {
             String name = node.getName();
             for (IMObject child : objects) {
                 if (node.isParentChild()) {
-                    write(child, name);
+                    write(child, name, include);
                 } else {
-                    writeCollectionReference(child, name);
+                    writeCollectionReference(child, name, include);
                 }
             }
         }

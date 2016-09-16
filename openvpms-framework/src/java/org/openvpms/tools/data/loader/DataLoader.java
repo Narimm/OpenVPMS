@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.tools.data.loader;
@@ -27,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.*;
 
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
@@ -42,12 +39,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.ErrorInStartElement;
+import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.InvalidArchetype;
+import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.NoCollectionAttribute;
+import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorCode.NoParentForChild;
+
 
 /**
  * Loads data from an XML stream.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 class DataLoader {
 
@@ -74,8 +76,7 @@ class DataLoader {
     /**
      * Objects to be saved, keyed on their references.
      */
-    private Map<IMObjectReference, LoadState> queue
-            = new LinkedHashMap<IMObjectReference, LoadState>();
+    private Map<IMObjectReference, LoadState> queue = new LinkedHashMap<>();
 
     /**
      * If <tt>true</tt> perform verbose logging.
@@ -96,7 +97,7 @@ class DataLoader {
     /**
      * Object's whose save has been deferred as they aren't complete.
      */
-    private List<LoadState> deferred = new ArrayList<LoadState>();
+    private List<LoadState> deferred = new ArrayList<>();
 
     /**
      * The logger.
@@ -146,7 +147,7 @@ class DataLoader {
     public void load(XMLStreamReader reader, String path)
             throws XMLStreamException {
 
-        Stack<LoadState> stack = new Stack<LoadState>();
+        Stack<LoadState> stack = new Stack<>();
         for (int event = reader.next();
              event != XMLStreamConstants.END_DOCUMENT;
              event = reader.next()) {
@@ -171,7 +172,7 @@ class DataLoader {
 
                     if (verbose) {
                         log.info("[END PROCESSING element="
-                                + reader.getLocalName() + "]");
+                                 + reader.getLocalName() + "]");
                     }
                     break;
 
@@ -206,10 +207,10 @@ class DataLoader {
                             id = "<unset>";
                         }
                         log.error("Cannot save object, archetype="
-                                + state.getArchetypeId().getShortName()
-                                + " from path=" + state.getPath()
-                                + ", line=" + state.getLineNumber()
-                                + ": requires " + unsaved + ", id=" + id);
+                                  + state.getArchetypeId().getShortName()
+                                  + " from path=" + state.getPath()
+                                  + ", line=" + state.getLineNumber()
+                                  + ": requires " + unsaved + ", id=" + id);
                     }
                 }
             }
@@ -217,10 +218,10 @@ class DataLoader {
         for (LoadState state : deferred) {
             for (DeferredUpdater deferred : state.getDeferred()) {
                 log.error("Cannot save object, archetype="
-                        + state.getArchetypeId().getShortName()
-                        + " from path=" + state.getPath()
-                        + ", line=" + state.getLineNumber()
-                        + ": requires id=" + deferred.getId());
+                          + state.getArchetypeId().getShortName()
+                          + " from path=" + state.getPath()
+                          + ", line=" + state.getLineNumber()
+                          + ": requires id=" + deferred.getId());
             }
         }
     }
@@ -259,9 +260,9 @@ class DataLoader {
         Data data = new Data(reader);
         if (verbose) {
             String archetypeId = stack.isEmpty() ? "none"
-                    : stack.peek().getArchetypeId().toString();
+                                                 : stack.peek().getArchetypeId().toString();
             log.info("[START PROCESSING element, parent="
-                    + archetypeId + "]" + data);
+                     + archetypeId + "]" + data);
         }
 
         try {
@@ -274,9 +275,9 @@ class DataLoader {
         } catch (Exception exception) {
             Location location = reader.getLocation();
             log.error("Error in start element, line "
-                    + location.getLineNumber()
-                    + ", column " + location.getColumnNumber() +
-                    "" + data + "", exception);
+                      + location.getLineNumber()
+                      + ", column " + location.getColumnNumber() +
+                      "" + data + "", exception);
         }
     }
 
@@ -392,8 +393,7 @@ class DataLoader {
     }
 
     /**
-     * This method will queue the state and save it only when the size of
-     * the queue reaches the batch size.
+     * This method will queue the state and save it only when the size of the queue reaches the batch size.
      *
      * @param state the object to save
      */
@@ -401,7 +401,14 @@ class DataLoader {
         IMObject object = state.getObject();
         service.deriveValues(object);
         if (validateOnly) {
-            service.validateObject(object);
+            try {
+                service.validateObject(object);
+            } catch (Throwable exception) {
+                log.error("Failed to validate object, archetype="
+                          + state.getArchetypeId().getShortName()
+                          + " from path=" + state.getPath()
+                          + ", line=" + state.getLineNumber(), exception);
+            }
         } else {
             queue.put(object.getObjectReference(), state);
             if (queue.size() >= batchSize) {
@@ -416,16 +423,14 @@ class DataLoader {
      */
     private void save() {
         LoadState[] objects = queue.values().toArray(new LoadState[0]);
-        Map<IMObjectReference, IMObject> batch
-                = new HashMap<IMObjectReference, IMObject>();
+        Map<IMObjectReference, IMObject> batch = new HashMap<>();
 
         // collect all unsaved objects whose dependencies are present
         for (LoadState state : objects) {
             IMObject object = state.getObject();
             IMObjectReference ref = object.getObjectReference();
             if (!batch.containsKey(ref)) {
-                Map<IMObjectReference, IMObject> attempt
-                        = new HashMap<IMObjectReference, IMObject>(batch);
+                Map<IMObjectReference, IMObject> attempt = new HashMap<>(batch);
                 if (getPending(ref, attempt)) {
                     batch = attempt;
                 }
@@ -440,7 +445,7 @@ class DataLoader {
                 for (LoadState state : objects) {
                     IMObject object = state.getObject();
                     IMObjectReference ref = object.getObjectReference();
-                    batch = new HashMap<IMObjectReference, IMObject>();
+                    batch = new HashMap<>();
                     if (getPending(ref, batch)) {
                         try {
                             save(batch);
@@ -448,9 +453,9 @@ class DataLoader {
                             Set<IMObjectReference> unsaved = batch.keySet();
                             queue.keySet().removeAll(unsaved);
                             log.error("Failed to save object, archetype="
-                                    + object.getArchetypeId().getShortName()
-                                    + " from path=" + state.getPath()
-                                    + ", line=" + state.getLineNumber(), e);
+                                      + object.getArchetypeId().getShortName()
+                                      + " from path=" + state.getPath()
+                                      + ", line=" + state.getLineNumber(), e);
                         }
                     }
                 }
