@@ -391,11 +391,11 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
      * @param usePriceTemplate if {@code true} attach an <em>product.priceTemplate</em> to the product
      */
     private void checkProductPrice(Product product, boolean usePriceTemplate) {
-        ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-01-31", false);
-        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-02-01", false);
+        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2009-01-01", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
-        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-11");
         ProductPrice unit2 = createUnitPrice("2008-02-01", null);
 
         assertNull(rules.getProductPrice(product, FIXED_PRICE, new Date(), null));
@@ -445,21 +445,21 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
         Lookup groupB = TestHelper.getLookup(PRICING_GROUP, "B");
 
-        ProductPrice fixed1A = createFixedPrice("2008-01-01", "2008-01-31", false, groupA);
-        ProductPrice fixed1B = createFixedPrice("2008-01-01", "2008-01-31", false, groupB);
-        ProductPrice fixed1C = createFixedPrice("2008-01-01", "2008-01-31", false);
+        ProductPrice fixed1A = createFixedPrice("2008-01-01", "2008-02-01", false, groupA);
+        ProductPrice fixed1B = createFixedPrice("2008-01-01", "2008-02-01", false, groupB);
+        ProductPrice fixed1C = createFixedPrice("2008-01-01", "2008-02-01", false);
 
-        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2008-12-31", false, groupA);
-        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2008-12-31", false, groupB);
-        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2009-01-01", false, groupA);
+        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2009-01-01", false, groupB);
+        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2009-01-01", false);
 
         ProductPrice fixed3A = createFixedPrice("2008-03-01", null, true, groupA);
         ProductPrice fixed3B = createFixedPrice("2008-03-01", null, true, groupB);
         ProductPrice fixed3C = createFixedPrice("2008-03-01", null, true);
 
-        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-10", groupA);
-        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-10", groupB);
-        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-11", groupA);
+        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-11", groupB);
+        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-11");
 
         ProductPrice unit2A = createUnitPrice("2008-02-01", null, groupA);
         ProductPrice unit2B = createUnitPrice("2008-02-01", null, groupB);
@@ -535,14 +535,14 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         BigDecimal three = new BigDecimal("3.0");
 
         ProductPrice fixed1 = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false);
-        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2009-01-01", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
         fixed1.setPrice(one);
         fixed2.setPrice(two);
         fixed3.setPrice(three);
 
-        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-11");
         ProductPrice unit2 = createUnitPrice("2008-02-01", null);
 
         unit1.setPrice(one);
@@ -619,9 +619,9 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         ProductPrice fixed1B = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false,
                                                 groupB);
         ProductPrice fixed1C = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false);
-        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2008-12-31", false, groupA);
-        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2008-12-31", false, groupB);
-        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2009-01-01", false, groupA);
+        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2009-01-01", false, groupB);
+        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2009-01-01", false);
         ProductPrice fixed3A = createFixedPrice("2008-03-01", null, true, groupA);
         ProductPrice fixed3B = createFixedPrice("2008-03-01", null, true, groupB);
         ProductPrice fixed3C = createFixedPrice("2008-03-01", null, true);
@@ -636,9 +636,9 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         fixed3B.setPrice(three);
         fixed3C.setPrice(three);
 
-        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-10", groupA);
-        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-10", groupB);
-        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-11", groupA);
+        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-11", groupB);
+        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-11");
         ProductPrice unit2A = createUnitPrice("2008-02-01", null, groupA);
         ProductPrice unit2B = createUnitPrice("2008-02-01", null, groupB);
         ProductPrice unit2C = createUnitPrice("2008-02-01", null);

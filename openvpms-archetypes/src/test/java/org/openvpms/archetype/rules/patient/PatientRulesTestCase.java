@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -122,7 +122,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
 
         checkOwner(patient, "2006-12-10", customer1); // customer1 closest
         checkOwner(patient, "2007-01-01", customer1); // exact match
-        checkOwner(patient, "2007-01-31", customer1); // exact match
+        checkOwner(patient, "2007-01-31", customer2); // customer1 relationship ended
         checkOwner(patient, "2007-02-01", customer2); // customer2 closest
         checkOwner(patient, "2007-02-02", customer2); // exact match
         checkOwner(patient, "2008-01-01", customer2); // unbounded end time
@@ -191,7 +191,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
 
         checkLocation(patient, "2006-12-10", customer1); // customer1 closest
         checkLocation(patient, "2007-01-01", customer1); // exact match
-        checkLocation(patient, "2007-01-31", customer1); // exact match
+        checkLocation(patient, "2007-01-31", customer2); // customer1 relationship ended
         checkLocation(patient, "2007-02-01", customer2); // customer2 closest
         checkLocation(patient, "2007-02-02", customer2); // exact match
         checkLocation(patient, "2008-01-01", customer2); // unbounded end time

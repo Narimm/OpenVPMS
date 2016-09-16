@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.util;
@@ -53,7 +53,7 @@ public class DateHelperTestCase {
         assertTrue(DateHelper.between(date1, date1, date3));
         assertFalse(DateHelper.between(date1, date3, date1));   // date3 > date1 - TODO
 
-        assertTrue(DateHelper.between(date2, date2, date2));
+        assertFalse(DateHelper.between(date2, date2, date2));   // not < upper bound
         assertFalse(DateHelper.between(date2, date1, date1));
         assertFalse(DateHelper.between(date2, date3, date3));
 
@@ -63,6 +63,8 @@ public class DateHelperTestCase {
 
         assertFalse(DateHelper.between(date2, date3, null));
         assertFalse(DateHelper.between(date2, null, date1));
+
+        assertFalse(DateHelper.between(date3, date1, date3));  // not < upper bound
     }
 
     /**

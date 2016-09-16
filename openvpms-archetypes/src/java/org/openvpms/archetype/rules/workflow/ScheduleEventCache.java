@@ -683,7 +683,7 @@ class ScheduleEventCache {
          */
         public synchronized boolean intersects(Date day) {
             Date startTime = DateRules.getDate(event.getDate(ScheduleEvent.ACT_START_TIME));
-            Date endTime = DateRules.getDate(event.getDate(ScheduleEvent.ACT_END_TIME));
+            Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
             return DateRules.between(day, startTime, endTime);
         }
 
