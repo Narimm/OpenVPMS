@@ -73,6 +73,11 @@ public class PreferenceMonitor {
         public int hashCode() {
             return new HashCodeBuilder().append(group).append(name).toHashCode();
         }
+
+        @Override
+        public String toString() {
+            return group + "/" + name;
+        }
     }
 
     /**

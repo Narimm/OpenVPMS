@@ -43,4 +43,10 @@ public interface PreferenceService {
      */
     Entity getEntity(User user);
 
+    /**
+     * Resets the preferences for a user.
+     *
+     * @param user the user
+     */
+    void reset(User user);
 }

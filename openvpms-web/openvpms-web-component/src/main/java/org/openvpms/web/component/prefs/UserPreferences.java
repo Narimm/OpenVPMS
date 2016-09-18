@@ -254,7 +254,7 @@ public class UserPreferences implements Preferences {
     }
 
     /**
-     * Returns persistent preferences. These dob't include any changes made locally.
+     * Returns persistent preferences. These don't include any changes made locally.
      *
      * @return the persistent preferences
      */
