@@ -35,6 +35,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -76,7 +78,12 @@ public class FollowUpTaskEditor extends TaskActEditor {
         initWorkList();
 
         setStartTime(new Date());
-
+        workListEditor.addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                getTaskTypeEditor().setWorkList(getWorkList());
+            }
+        });
     }
 
     /**

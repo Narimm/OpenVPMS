@@ -146,7 +146,7 @@ public class TaskActEditor extends AbstractScheduleActEditor {
      *
      * @return the task type editor
      */
-    private TaskTypeParticipationEditor getTaskTypeEditor() {
+    protected TaskTypeParticipationEditor getTaskTypeEditor() {
         return (TaskTypeParticipationEditor) getParticipationEditor("taskType", true);
     }
 
