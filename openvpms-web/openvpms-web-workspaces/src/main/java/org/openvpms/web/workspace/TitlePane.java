@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.ImageCache;
@@ -121,13 +122,16 @@ public class TitlePane extends ContentPane {
         Label user = LabelFactory.create(null, "small");
         user.setText(Messages.format("label.user", getUserName()));
 
-        Button preferences = ButtonFactory.create(null, "button.preferences", new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                editPreferences();
-            }
-        });
-        Row locationUserRow = RowFactory.create(Styles.CELL_SPACING, user, preferences);
+        Row locationUserRow = RowFactory.create(Styles.CELL_SPACING, user);
+        if (canEditPreferences()) {
+            Button preferences = ButtonFactory.create(null, "button.preferences", new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    editPreferences();
+                }
+            });
+            locationUserRow.add(preferences);
+        }
 
         List<Party> locations = getLocations();
         if (!locations.isEmpty()) {
@@ -231,6 +235,21 @@ public class TitlePane extends ContentPane {
             }
         }
         return location;
+    }
+
+    /**
+     * Determines if the user can edit preferences.
+     *
+     * @return {@code true} if the user can edit preferences
+     */
+    private boolean canEditPreferences() {
+        boolean result = false;
+        User user = context.getUser();
+        if (user != null) {
+            IMObjectBean bean = new IMObjectBean(user);
+            result = bean.getBoolean("editPreferences");
+        }
+        return result;
     }
 
     /**
