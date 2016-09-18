@@ -82,4 +82,15 @@ public class PreferenceServiceImpl implements PreferenceService {
     public Entity getEntity(User user) {
         return PreferencesImpl.getPreferences(user.getObjectReference(), service, transactionManager);
     }
+
+    /**
+     * Resets the preferences for a user.
+     *
+     * @param user the user
+     */
+    @Override
+    public void reset(User user) {
+        IMObjectReference reference = user.getObjectReference();
+        PreferencesImpl.remove(reference, service, transactionManager);
+    }
 }

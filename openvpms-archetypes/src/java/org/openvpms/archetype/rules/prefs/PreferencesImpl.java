@@ -20,6 +20,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -224,7 +225,7 @@ class PreferencesImpl implements Preferences {
      * @return the preferences
      */
     public static Preferences getPreferences(IMObjectReference user, final IArchetypeService service) {
-        Entity prefs = getEntity(user, service);
+        Entity prefs = getEntity(user, service, true);
         return new PreferencesImpl(user, prefs, service);
     }
 
@@ -243,7 +244,7 @@ class PreferencesImpl implements Preferences {
         prefs = template.execute(new TransactionCallback<Entity>() {
             @Override
             public Entity doInTransaction(TransactionStatus status) {
-                Entity prefs = getEntity(user, service);
+                Entity prefs = getEntity(user, service, true);
                 if (prefs.isNew()) {
                     IMObjectBean bean = new IMObjectBean(prefs, service);
                     bean.addNodeTarget("user", user);
@@ -256,14 +257,47 @@ class PreferencesImpl implements Preferences {
     }
 
     /**
-     * Returns the root preference entity for a user, creating it if it doesn't exist.
+     * Removes preferences for a user.
+     *
+     * @param user               the user
+     * @param service            the archetype service
+     * @param transactionManager the transaction manager
+     */
+    public static void remove(final IMObjectReference user, final IArchetypeService service,
+                              PlatformTransactionManager transactionManager) {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.execute(new TransactionCallback<Entity>() {
+            @Override
+            public Entity doInTransaction(TransactionStatus status) {
+                Entity prefs = getEntity(user, service, false);
+                if (prefs != null) {
+                    EntityBean bean = new EntityBean(prefs, service);
+                    List<IMObject> groups = bean.getNodeTargetObjects("groups");
+                    List<EntityLink> relationships = bean.getValues("groups", EntityLink.class);
+                    for (EntityLink relationship : relationships) {
+                        prefs.removeEntityLink(relationship);
+                    }
+                    bean.save();
+                    for (IMObject group : groups) {
+                        service.remove(group);
+                    }
+                    service.remove(prefs);
+                }
+                return prefs;
+            }
+        });
+    }
+
+    /**
+     * Returns the root preference entity for a user, optionally creating it if it doesn't exist.
      *
      * @param user    the user
      * @param service the archetype service
-     * @return the
+     * @param create  if {@code true}, create the entity if it doesn't exist
+     * @return the entity, or {@code null} if it doesn't exist
      */
-    protected static Entity getEntity(IMObjectReference user, IArchetypeService service) {
-        Entity prefs;
+    protected static Entity getEntity(IMObjectReference user, IArchetypeService service, boolean create) {
+        Entity prefs = null;
         final ArchetypeQuery query = new ArchetypeQuery(PreferenceArchetypes.PREFERENCES);
         query.add(Constraints.join("user").add(Constraints.eq("target", user)));
         query.add(Constraints.sort("id"));
@@ -271,7 +305,8 @@ class PreferencesImpl implements Preferences {
         IMObjectQueryIterator<Entity> iterator = new IMObjectQueryIterator<>(service, query);
         if (iterator.hasNext()) {
             prefs = iterator.next();
-        } else {
+        }
+        if (prefs == null && create) {
             prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
         }
         return prefs;
@@ -291,7 +326,7 @@ class PreferencesImpl implements Preferences {
     /**
      * Returns the available preference relationship types.
      *
-     * @return the releationship types
+     * @return the relationship types
      */
     protected String[] getRelationshipTypes() {
         return DescriptorHelper.getShortNames("entityLink.preferenceGroup*");

@@ -42,7 +42,7 @@
             </assertion>
         </node>
         <node name="time" path="/details/time" type="java.lang.String" minCardinality="1"
-              defaultValue="'AM_PM'">
+              defaultValue="'ALL'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="ALL" value="All"/>

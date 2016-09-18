@@ -21,6 +21,8 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.query.QueryBrowser;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
@@ -40,4 +42,15 @@ public class UserWorkspace extends ResultSetCRUDWorkspace<User> {
                                         DescriptorHelper.getDisplayName(UserArchetypes.USER)));
     }
 
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<User> createCRUDWindow() {
+        QueryBrowser<User> browser = getBrowser();
+        return new UserCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getContext(),
+                                  getHelpContext());
+    }
 }

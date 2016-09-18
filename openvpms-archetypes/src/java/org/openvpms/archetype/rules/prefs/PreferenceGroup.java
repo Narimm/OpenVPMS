@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.prefs;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractNodePropertySet;
@@ -23,6 +24,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.AbstractPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -116,6 +118,22 @@ class PreferenceGroup extends AbstractPropertySet {
          */
         public NodePropertySet(Entity object) {
             super(object);
+        }
+
+        /**
+         * Returns the property names.
+         *
+         * @return the property names
+         */
+        @Override
+        public Set<String> getNames() {
+            Set<String> result = new HashSet<>();
+            for (NodeDescriptor descriptor : getArchetype().getSimpleNodeDescriptors()) {
+                if (!descriptor.isHidden() && !descriptor.isReadOnly() && !descriptor.isDerived()) {
+                    result.add(descriptor.getName());
+                }
+            }
+            return result;
         }
 
         /**
