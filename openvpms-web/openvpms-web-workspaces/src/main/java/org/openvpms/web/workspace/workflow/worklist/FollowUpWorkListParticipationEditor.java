@@ -32,12 +32,15 @@ import org.openvpms.web.component.property.Property;
 import java.util.List;
 
 /**
- * A .
+ * An editor for <em>participation.worklist</em> associated with a follow-up task.
  *
  * @author Tim Anderson
  */
 public class FollowUpWorkListParticipationEditor extends ParticipationEditor<Entity> {
 
+    /**
+     * The work lists for follow-up tasks.
+     */
     private final List<Entity> workLists;
 
     /**
