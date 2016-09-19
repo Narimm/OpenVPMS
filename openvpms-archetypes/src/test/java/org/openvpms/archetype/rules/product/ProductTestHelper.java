@@ -421,6 +421,7 @@ public class ProductTestHelper {
         relBean.setValue("maxWeight", maxWeight);
         relBean.setValue("zeroPrice", zeroPrice);
         relBean.setValue("skipIfMissing", skipIfMissing);
+        relBean.setValue("sequence", bean.getValues("includes").size() - 1);
         bean.save();
     }
 

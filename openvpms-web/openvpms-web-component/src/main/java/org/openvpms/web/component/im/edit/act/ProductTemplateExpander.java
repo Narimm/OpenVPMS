@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.cache.IMObjectCache;
@@ -146,7 +147,9 @@ public class ProductTemplateExpander {
             if (!parents.contains(template)) {
                 parents.push(template);
                 IMObjectBean bean = new IMObjectBean(template);
-                for (EntityLink relationship : bean.getValues("includes", EntityLink.class)) {
+                List<EntityLink> links = bean.getValues("includes", EntityLink.class);
+                Collections.sort(links, SequenceComparator.INSTANCE); // sort relationships on sequence
+                for (EntityLink relationship : links) {
                     if (!include(relationship, root, template, weight, includes, lowQuantity, highQuantity, zeroPrice,
                                  parents, cache)) {
                         result = false;
