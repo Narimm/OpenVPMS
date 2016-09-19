@@ -101,19 +101,22 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal unitPriceIncTax = ONE;
         Product template = ProductTestHelper.createTemplate("templateA");
 
-        // product1 has a dose, which should be selected over the template include quantity
-        Product product1 = createProduct(MEDICATION, fixedPrice, unitPrice);
-        IMObjectBean productBean = new IMObjectBean(product1);
-        productBean.setValue("concentration", ONE);
-        ProductTestHelper.addDose(product1, ProductTestHelper.createDose(null, ZERO, TEN, ONE, ONE));
+        Product product1 = ProductTestHelper.createService(fixedPrice, unitPrice);
 
+        // product2 has a dose, which should be selected over the template include quantity
         Product product2 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        IMObjectBean productBean = new IMObjectBean(product2);
+        productBean.setValue("concentration", ONE);
+        ProductTestHelper.addDose(product2, ProductTestHelper.createDose(null, ZERO, TEN, ONE, ONE));
+
         Product product3 = createProduct(MEDICATION, fixedPrice, unitPrice);
-        addDiscount(product3, discount);
-        addDiscount(customer, discount);                           // give customer a discount for product3
-        ProductTestHelper.addInclude(template, product1, 0, 2, false);
-        ProductTestHelper.addInclude(template, product2, 2, 4, false);
-        ProductTestHelper.addInclude(template, product3, 3, 6, true); // zero price
+        Product product4 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        addDiscount(product4, discount);
+        addDiscount(customer, discount);                           // give customer a discount for product4
+        ProductTestHelper.addInclude(template, product1, 1, 1, false);
+        ProductTestHelper.addInclude(template, product2, 0, 2, false);
+        ProductTestHelper.addInclude(template, product3, 2, 4, false);
+        ProductTestHelper.addInclude(template, product4, 3, 6, true); // zero price
 
         Act estimate = (Act) TestHelper.create(EstimateArchetypes.ESTIMATE);
         EstimateEditor editor = new EstimateEditor(estimate, null, layout);
@@ -131,18 +134,21 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         estimate = get(estimate);
         ActBean bean = new ActBean(estimate);
         List<Act> items = bean.getNodeActs("items");
-        assertEquals(3, items.size());
+        assertEquals(4, items.size());
 
         User author = context.getUser();
+        BigDecimal two = BigDecimal.valueOf(2);
         BigDecimal three = BigDecimal.valueOf(3);
         BigDecimal five = BigDecimal.valueOf(5);
 
-        checkEstimate(estimate, customer, author, new BigDecimal("4.00"), new BigDecimal("10.20"));
-        checkItem(items, patient, product1, author, ZERO, new BigDecimal("4.2"), unitPriceIncTax, unitPriceIncTax,
+        checkEstimate(estimate, customer, author, new BigDecimal("6.00"), new BigDecimal("12.20"));
+        checkItem(items, patient, product1, author, 1, 1, unitPriceIncTax, unitPriceIncTax, fixedPriceIncTax,
+                  ZERO, ZERO, two, two);
+        checkItem(items, patient, product2, author, ZERO, new BigDecimal("4.2"), unitPriceIncTax, unitPriceIncTax,
                   ONE, ZERO, ZERO, ONE, new BigDecimal("5.20"));
-        checkItem(items, patient, product2, author, 2, 4, unitPriceIncTax, unitPriceIncTax, fixedPriceIncTax, ZERO,
+        checkItem(items, patient, product3, author, 2, 4, unitPriceIncTax, unitPriceIncTax, fixedPriceIncTax, ZERO,
                   ZERO, three, five);
-        checkItem(items, patient, product3, author, 3, 6, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
+        checkItem(items, patient, product4, author, 3, 6, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
     }
 
     /**

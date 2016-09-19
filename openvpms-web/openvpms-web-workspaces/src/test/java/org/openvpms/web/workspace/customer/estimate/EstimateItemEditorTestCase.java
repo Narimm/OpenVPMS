@@ -170,7 +170,16 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
                   fixedPriceIncTax, lowDiscount1, highDiscount1, lowTotal1, highTotal1);
 
-        // now remove the discounts
+        // set low quantity to zero, and verify low discount, low zero.
+        // NOTE: the lowTotal goes to 2 as the fixedPrice is still incorporated, for historical reasons. TODO
+        editor.setLowQuantity(BigDecimal.ZERO);
+        checkSave(estimate, editor);
+        item = get(item);
+        checkItem(item, patient, product, author, BigDecimal.ZERO, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, BigDecimal.ZERO, highDiscount1, new BigDecimal(2), highTotal1);
+
+        // set low quantity and remove the discounts
+        editor.setLowQuantity(lowQuantity);
         editor.setLowDiscount(BigDecimal.ZERO);
         editor.setHighDiscount(BigDecimal.ZERO);
         checkSave(estimate, editor);

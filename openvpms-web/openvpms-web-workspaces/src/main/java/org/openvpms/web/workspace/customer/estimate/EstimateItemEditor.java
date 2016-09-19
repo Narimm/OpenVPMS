@@ -605,8 +605,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal unitPrice = getLowUnitPrice();
             BigDecimal quantity = getLowQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
-            // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (disableDiscounts() || amount.compareTo(ZERO) != 0) {
+            // If discount amount calculates to zero don't update any existing value as may have been manually
+            // modified unless discounts are disabled or quantity is zero (in which case amount should be zero).
+            if (disableDiscounts() || !isZero(amount) || isZero(quantity)) {
                 Property discount = getProperty(LOW_DISCOUNT);
                 result = discount.setValue(amount);
             }
@@ -627,8 +628,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal unitPrice = getHighUnitPrice();
             BigDecimal quantity = getHighQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
-            // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (disableDiscounts() || amount.compareTo(ZERO) != 0) {
+            // If discount amount calculates to zero don't update any existing value as may have been manually
+            // modified unless discounts are disabled or quantity is zero (in which case amount should be zero).
+            if (disableDiscounts() || !isZero(amount) || isZero(quantity)) {
                 Property discount = getProperty(HIGH_DISCOUNT);
                 result = discount.setValue(amount);
             }

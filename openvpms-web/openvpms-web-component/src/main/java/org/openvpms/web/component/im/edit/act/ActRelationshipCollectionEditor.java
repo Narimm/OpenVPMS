@@ -579,7 +579,8 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
             IMObject result;
             if (object instanceof Participation) {
                 Participation participant = (Participation) object;
-                if (TypeHelper.isA(participant.getEntity(), TEMPLATE)) {
+                if (TypeHelper.isA(participant, ProductArchetypes.PRODUCT_PARTICIPATION)) {
+                    // don't copy the product participation, as these will be populated when expanding the template.
                     result = null;
                 } else {
                     result = super.getObject(object, service);
