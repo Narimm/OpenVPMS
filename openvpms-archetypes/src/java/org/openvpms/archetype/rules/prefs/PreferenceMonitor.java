@@ -124,7 +124,7 @@ public class PreferenceMonitor {
             if (!ObjectUtils.equals(entry.getValue(), current)) {
                 entry.setValue(current);
                 result = true;
-                break;
+                // need to continue loop to pick up all updated values
             }
         }
         return result;

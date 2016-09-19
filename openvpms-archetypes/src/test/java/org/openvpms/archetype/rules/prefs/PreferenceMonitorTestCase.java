@@ -59,6 +59,9 @@ public class PreferenceMonitorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testMonitorPreference() {
+        preferences.setPreference(PreferenceArchetypes.SUMMARY, "showCustomerAccount", true);
+        preferences.setPreference(PreferenceArchetypes.SUMMARY, "showReferral", "ACTIVE");
+
         PreferenceMonitor monitor = new PreferenceMonitor(preferences);
         monitor.add(PreferenceArchetypes.SUMMARY, "showCustomerAccount");
         assertFalse(monitor.changed());
@@ -76,11 +79,15 @@ public class PreferenceMonitorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testMonitorGroup() {
+        preferences.setPreference(PreferenceArchetypes.SUMMARY, "showCustomerAccount", true);
+        preferences.setPreference(PreferenceArchetypes.SUMMARY, "showReferral", "ACTIVE");
+
         PreferenceMonitor monitor = new PreferenceMonitor(preferences);
         monitor.add(PreferenceArchetypes.SUMMARY);
         assertFalse(monitor.changed());
 
         preferences.setPreference(PreferenceArchetypes.SUMMARY, "showCustomerAccount", false);
+        preferences.setPreference(PreferenceArchetypes.SUMMARY, "showReferral", "ALWAYS");
         assertTrue(monitor.changed());
         assertFalse(monitor.changed());
 
