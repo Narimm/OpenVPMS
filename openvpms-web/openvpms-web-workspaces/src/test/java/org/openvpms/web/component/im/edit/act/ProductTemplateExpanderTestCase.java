@@ -16,7 +16,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
@@ -28,10 +27,11 @@ import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.ProductTestHelper.addInclude;
 import static org.openvpms.archetype.rules.product.ProductTestHelper.addLocationExclusion;
 import static org.openvpms.archetype.rules.product.ProductTestHelper.createTemplate;
@@ -67,15 +67,15 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Collection<TemplateProduct> includes1 = expand(templateA, Weight.ZERO, BigDecimal.ONE);
         assertEquals(3, includes1.size());
 
-        checkInclude(includes1, productX, 7, 12, false);
-        checkInclude(includes1, productY, 2, 4, false);
-        checkInclude(includes1, productZ, 20, 20, false);
+        checkInclude(includes1, productX, 7, 12, false, 0);
+        checkInclude(includes1, productY, 2, 4, false, 1);
+        checkInclude(includes1, productZ, 20, 20, false, 2);
 
         Collection<TemplateProduct> includes2 = expand(templateA, Weight.ZERO, BigDecimal.TEN);
         assertEquals(3, includes2.size());
-        checkInclude(includes2, productX, 70, 120, false);
-        checkInclude(includes2, productY, 20, 40, false);
-        checkInclude(includes2, productZ, 200, 200, false);
+        checkInclude(includes2, productX, 70, 120, false, 0);
+        checkInclude(includes2, productY, 20, 40, false, 1);
+        checkInclude(includes2, productZ, 200, 200, false, 2);
     }
 
     /**
@@ -103,11 +103,11 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
 
         includes = expand(templateA, new Weight(BigDecimal.ONE, WeightUnits.KILOGRAMS), BigDecimal.ONE);
         assertEquals(1, includes.size());
-        checkInclude(includes, productX, 1, 1, false);
+        checkInclude(includes, productX, 1, 1, false, 0);
 
         includes = expand(templateA, new Weight(BigDecimal.valueOf(2), WeightUnits.KILOGRAMS), BigDecimal.ONE);
         assertEquals(1, includes.size());
-        checkInclude(includes, productZ, 2, 4, false);
+        checkInclude(includes, productZ, 2, 4, false, 0);
 
         includes = expand(templateA, new Weight(BigDecimal.valueOf(4), WeightUnits.KILOGRAMS), BigDecimal.ONE);
         assertEquals(0, includes.size()); // nothing in the weight range
@@ -161,10 +161,10 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Collection<TemplateProduct> includes = expand(templateA, Weight.ZERO, BigDecimal.ONE);
         assertEquals(4, includes.size());
 
-        checkInclude(includes, productY, 2, 2, true);  // included by template A and template C
-        checkInclude(includes, productX, 1, 1, false); // included by template B
-        checkInclude(includes, productY, 1, 1, false); // included by template B
-        checkInclude(includes, productZ, 1, 1, true);  // included by template C
+        checkInclude(includes, productX, 1, 1, false, 0); // included by template B
+        checkInclude(includes, productY, 1, 1, false, 1); // included by template B
+        checkInclude(includes, productY, 2, 2, true, 2);  // included by template A and template C
+        checkInclude(includes, productZ, 1, 1, true, 3);  // included by template C
     }
 
     /**
@@ -190,7 +190,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Collection<TemplateProduct> includes1 = expand(templateA, Weight.ZERO, BigDecimal.ONE, locationA,
                                                        stockLocationA);
         assertEquals(1, includes1.size());
-        checkInclude(includes1, product2, 1, 1, false);
+        checkInclude(includes1, product2, 1, 1, false, 0);
 
         // create a template with 2 products with skipIfMissing set to false
         Product product3 = ProductTestHelper.createMerchandise();
@@ -211,8 +211,8 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         // now perform expansion for locationB and stockLocationB. Expansion should succeed
         Collection<TemplateProduct> includes3 = expand(templateB, Weight.ZERO, BigDecimal.ONE, locationB,
                                                        stockLocationB);
-        checkInclude(includes3, product3, 1, 1, false);
-        checkInclude(includes3, product4, 1, 1, false);
+        checkInclude(includes3, product3, 1, 1, false, 0);
+        checkInclude(includes3, product4, 1, 1, false, 1);
 
         // create a template with 3 products, 2 with skipIfMissing set to true.
         Product templateC = createTemplate("templateC");
@@ -224,15 +224,15 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Collection<TemplateProduct> includes4 = expand(templateC, Weight.ZERO, BigDecimal.ONE, locationA,
                                                        stockLocationA);
         assertEquals(1, includes4.size());
-        checkInclude(includes4, product2, 1, 1, false);
+        checkInclude(includes4, product2, 1, 1, false, 0);
 
         // perform expansion against locationB, stockLocationB. All 3 products should be included
         Collection<TemplateProduct> includes5 = expand(templateC, Weight.ZERO, BigDecimal.ONE, locationB,
                                                        stockLocationB);
         assertEquals(3, includes5.size());
-        checkInclude(includes5, product2, 1, 1, false);
-        checkInclude(includes5, product3, 1, 1, false);
-        checkInclude(includes5, product4, 1, 1, false);
+        checkInclude(includes5, product2, 1, 1, false, 0);
+        checkInclude(includes5, product3, 1, 1, false, 1);
+        checkInclude(includes5, product4, 1, 1, false, 2);
     }
 
     /**
@@ -261,7 +261,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Collection<TemplateProduct> includes1 = expand(templateA, Weight.ZERO, BigDecimal.ONE);
         assertEquals(1, includes1.size());
 
-        checkInclude(includes1, productX, 2, 2, false);
+        checkInclude(includes1, productX, 2, 2, false, 0);
     }
 
     /**
@@ -300,17 +300,16 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
      * @param product     the expected product
      * @param lowQuantity the expected quantity
      * @param zeroPrice   the expected zero price indicator
+     * @param index       the expected index
      */
     private void checkInclude(Collection<TemplateProduct> includes, Product product, int lowQuantity,
-                              int highQuantity, boolean zeroPrice) {
-        for (TemplateProduct include : includes) {
-            if (ObjectUtils.equals(product, include.getProduct()) && zeroPrice == include.getZeroPrice()) {
-                checkEquals(BigDecimal.valueOf(lowQuantity), include.getLowQuantity());
-                checkEquals(BigDecimal.valueOf(highQuantity), include.getHighQuantity());
-                return;
-            }
-        }
-        fail("TemplateProduct not found");
+                              int highQuantity, boolean zeroPrice, int index) {
+        assertTrue(index < includes.size());
+        TemplateProduct include = new ArrayList<>(includes).get(index);
+        assertEquals(product, include.getProduct());
+        assertEquals(zeroPrice, include.getZeroPrice());
+        checkEquals(BigDecimal.valueOf(lowQuantity), include.getLowQuantity());
+        checkEquals(BigDecimal.valueOf(highQuantity), include.getHighQuantity());
     }
 
 }
