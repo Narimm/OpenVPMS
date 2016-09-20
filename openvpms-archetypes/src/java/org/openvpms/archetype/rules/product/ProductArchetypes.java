@@ -55,6 +55,11 @@ public class ProductArchetypes {
     public static final String PRODUCT_PARTICIPATION = "participation.product";
 
     /**
+     * Medication participation short name.
+     */
+    public static final String MEDICATION_PARTICIPATION = "participation.medication";
+
+    /**
      * Product unit price short name.
      */
     public static final String UNIT_PRICE = "productPrice.unitPrice";
