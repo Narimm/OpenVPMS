@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -317,47 +317,49 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * Invoked when the 'clear' button is pressed.
      */
     protected void onClear() {
-        try {
-            final FinancialAct act = getObject();
-            ActBean actBean = new ActBean(act);
-            Party till = (Party) actBean.getNodeParticipant("till");
-            Party location = getContext().getLocation();
-            if (till != null && location != null) {
-                boolean uncleared = UNCLEARED.equals(act.getStatus());
-                boolean inProgress = IN_PROGRESS.equals(act.getStatus());
-                HelpContext help = getHelpContext().subtopic("clear");
-                if (uncleared) {
-                    if (rules.isClearInProgress(till)) {
-                        ErrorDialog.show(Messages.get("till.clear.title"),
-                                         Messages.get("till.clear.error.clearInProgress"));
-                    } else {
-                        IMObjectBean bean = new IMObjectBean(till);
-                        BigDecimal lastFloat = bean.getBigDecimal("tillFloat", ZERO);
-                        final ClearTillDialog dialog = new ClearTillDialog(location, true, getContext(), help);
-                        dialog.setCashFloat(lastFloat);
+        final FinancialAct act = IMObjectHelper.reload(getObject());
+        if (act != null) {
+            try {
+                ActBean actBean = new ActBean(act);
+                Party till = (Party) actBean.getNodeParticipant("till");
+                Party location = getContext().getLocation();
+                if (till != null && location != null) {
+                    boolean uncleared = UNCLEARED.equals(act.getStatus());
+                    boolean inProgress = IN_PROGRESS.equals(act.getStatus());
+                    HelpContext help = getHelpContext().subtopic("clear");
+                    if (uncleared) {
+                        if (rules.isClearInProgress(till)) {
+                            ErrorDialog.show(Messages.get("till.clear.title"),
+                                             Messages.get("till.clear.error.clearInProgress"));
+                        } else {
+                            IMObjectBean bean = new IMObjectBean(till);
+                            BigDecimal lastFloat = bean.getBigDecimal("tillFloat", ZERO);
+                            final ClearTillDialog dialog = new ClearTillDialog(location, true, getContext(), help);
+                            dialog.setCashFloat(lastFloat);
+                            dialog.addWindowPaneListener(new PopupDialogListener() {
+                                @Override
+                                public void onOK() {
+                                    rules.clearTill(act, dialog.getCashFloat(), dialog.getAccount());
+                                    onRefresh(act);
+                                }
+                            });
+                            dialog.show();
+                        }
+                    } else if (inProgress) {
+                        final ClearTillDialog dialog = new ClearTillDialog(location, false, getContext(), help);
                         dialog.addWindowPaneListener(new PopupDialogListener() {
                             @Override
                             public void onOK() {
-                                rules.clearTill(act, dialog.getCashFloat(), dialog.getAccount());
+                                rules.clearTill(act, dialog.getAccount());
                                 onRefresh(act);
                             }
                         });
                         dialog.show();
                     }
-                } else if (inProgress) {
-                    final ClearTillDialog dialog = new ClearTillDialog(location, false, getContext(), help);
-                    dialog.addWindowPaneListener(new PopupDialogListener() {
-                        @Override
-                        public void onOK() {
-                            rules.clearTill(act, dialog.getAccount());
-                            onRefresh(act);
-                        }
-                    });
-                    dialog.show();
                 }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
             }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
         }
     }
 
