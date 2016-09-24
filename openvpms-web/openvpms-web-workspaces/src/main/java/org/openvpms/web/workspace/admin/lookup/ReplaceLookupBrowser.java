@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.lookup;
@@ -122,7 +122,7 @@ class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
      */
     @Override
     protected void doLayout() {
-        Column container = ColumnFactory.create(Styles.INSET);
+        Column container = ColumnFactory.create(Styles.LARGE_INSET);
         doLayout(container);
         setComponent(container);
     }
@@ -134,14 +134,19 @@ class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
      */
     @Override
     protected void doLayout(Component container) {
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING);
         gridContainer.removeAll();
         gridContainer.add(createGrid());
-        container.add(gridContainer);
+        column.add(gridContainer);
 
         queryContainer.removeAll();
         queryContainer.add(doQueryLayout());
         GroupBox box = GroupBoxFactory.create("lookup.replace.select", queryContainer);
-        container.add(box);
+        column.add(box);
+        Label label = LabelFactory.create("lookup.replace.message", true);
+        label.setStyleName(Styles.BOLD);
+        column.add(label);
+        container.add(column);
     }
 
     /**
