@@ -211,19 +211,22 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        final FinancialAct act = getObject();
-        String status = act.getStatus();
-        if (TypeHelper.isA(act, CustomerAccountArchetypes.OPENING_BALANCE, CustomerAccountArchetypes.CLOSING_BALANCE)
-            || !FinancialActStatus.POSTED.equals(status)) {
-            showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
-        } else {
-            Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));
-            reverser.reverse(act, new Reverser.Listener() {
-                @Override
-                public void completed() {
-                    onRefresh(act);
-                }
-            });
+        final FinancialAct act = IMObjectHelper.reload(getObject());
+        if (act != null) {
+            String status = act.getStatus();
+            if (TypeHelper.isA(act, CustomerAccountArchetypes.OPENING_BALANCE,
+                               CustomerAccountArchetypes.CLOSING_BALANCE)
+                || !FinancialActStatus.POSTED.equals(status)) {
+                showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
+            } else {
+                Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));
+                reverser.reverse(act, new Reverser.Listener() {
+                    @Override
+                    public void completed() {
+                        onRefresh(act);
+                    }
+                });
+            }
         }
     }
 
