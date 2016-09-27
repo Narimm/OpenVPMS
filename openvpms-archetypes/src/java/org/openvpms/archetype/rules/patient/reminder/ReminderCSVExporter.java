@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -22,11 +22,12 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -58,9 +59,9 @@ public class ReminderCSVExporter implements ReminderExporter {
             "Patient Weight Date", "Practice Location"};
 
     /**
-     * The practice rules.
+     * The practice service.
      */
-    private final PracticeRules practiceRules;
+    private final PracticeService practiceService;
 
     /**
      * The party rules.
@@ -97,16 +98,16 @@ public class ReminderCSVExporter implements ReminderExporter {
     /**
      * Constructs a {@link ReminderCSVExporter}.
      *
-     * @param practiceRules the practice rules
-     * @param partyRules    the party rules
-     * @param patientRules  the patient rules
-     * @param service       the archetype service
-     * @param lookups       the lookup service
-     * @param handlers      the document handlers
+     * @param practiceService the practice service
+     * @param partyRules      the party rules
+     * @param patientRules    the patient rules
+     * @param service         the archetype service
+     * @param lookups         the lookup service
+     * @param handlers        the document handlers
      */
-    public ReminderCSVExporter(PracticeRules practiceRules, PartyRules partyRules, PatientRules patientRules,
+    public ReminderCSVExporter(PracticeService practiceService, PartyRules partyRules, PatientRules patientRules,
                                IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
-        this.practiceRules = practiceRules;
+        this.practiceService = practiceService;
         this.partyRules = partyRules;
         this.patientRules = patientRules;
         this.service = service;
@@ -124,7 +125,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         char separator = getSeparator();
         StringWriter writer = new StringWriter();
         CSVWriter csv = new CSVWriter(writer, separator);
-        csv.writeNext(HEADER);
+        writeHeader(csv);
         for (ReminderEvent event : reminders) {
             if (event.getReminderType() != null && event.getCustomer() != null
                 && TypeHelper.isA(event.getContact(), ContactArchetypes.LOCATION) && event.getPatient() != null) {
@@ -144,12 +145,16 @@ public class ReminderCSVExporter implements ReminderExporter {
      * @return the field separator
      */
     public char getSeparator() {
-        char separator = ',';
-        Party practice = practiceRules.getPractice();
-        if (practice != null) {
-            return practiceRules.getExportFileFieldSeparator(practice);
-        }
-        return separator;
+        return practiceService.getExportFileFieldSeparator();
+    }
+
+    /**
+     * Writes the header.
+     *
+     * @param writer the writer to use
+     */
+    protected void writeHeader(CSVWriter writer) {
+        writer.writeNext(HEADER);
     }
 
     /**
@@ -158,14 +163,31 @@ public class ReminderCSVExporter implements ReminderExporter {
      * @param event  the reminder event to export
      * @param writer the writer to export to
      */
-    private void export(ReminderEvent event, CSVWriter writer) {
+    protected void export(ReminderEvent event, CSVWriter writer) {
         IMObjectBean customer = new IMObjectBean(event.getCustomer(), service);
         IMObjectBean location = new IMObjectBean(event.getContact(), service);
         IMObjectBean patient = new IMObjectBean(event.getPatient(), service);
-        IMObjectBean reminder = new IMObjectBean(event.getReminder(), service);
-        Party practiceLocation = (Party) customer.getNodeTargetObject("practice");
+        ActBean reminder = new ActBean(event.getReminder(), service);
         ReminderType reminderType = event.getReminderType();
 
+        String[] line = getExportData(event, customer, location, patient, reminder, reminderType);
+        writer.writeNext(line);
+    }
+
+    /**
+     * Returns the data to export as an array of strings.
+     *
+     * @param event        the reminder event to export
+     * @param customer     the customer
+     * @param location     the customer location contact
+     * @param patient      the patient
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @return the data to export
+     */
+    protected String[] getExportData(ReminderEvent event, IMObjectBean customer, IMObjectBean location,
+                                     IMObjectBean patient, ActBean reminder, ReminderType reminderType) {
+        Party practiceLocation = (Party) customer.getNodeTargetObject("practice");
         String customerId = Long.toString(customer.getObject().getId());
         String title = getLookup(customer, "title");
         String firstName = customer.getString("firstName");
@@ -203,11 +225,28 @@ public class ReminderCSVExporter implements ReminderExporter {
         }
         String locationName = (practiceLocation != null) ? practiceLocation.getName() : null;
 
-        String[] line = {customerId, title, firstName, initials, lastName, companyName, address, suburb, state,
-                         postCode, phone, sms, email, patientId, patientName, species, breed, sex, colour, dateOfBirth,
-                         reminderTypeId, reminderTypeName, dueDate, reminderCount, lastSentDate, weight, weightUnits,
-                         weightDate, locationName};
-        writer.writeNext(line);
+        return new String[]{customerId, title, firstName, initials, lastName, companyName, address, suburb, state,
+                            postCode, phone, sms, email, patientId, patientName, species, breed, sex, colour,
+                            dateOfBirth, reminderTypeId, reminderTypeName, dueDate, reminderCount, lastSentDate, weight,
+                            weightUnits, weightDate, locationName};
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
+
+    /**
+     * Returns the practice.
+     *
+     * @return the practice, or {@code null} if none has been configured
+     */
+    protected Party getPractice() {
+        return practiceService.getPractice();
     }
 
     /**

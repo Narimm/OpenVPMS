@@ -107,7 +107,8 @@ public class PracticeService {
      *
      * @param service  the archetype service
      * @param rules    the practice rules
-     * @param executor the executor to perform asynchronous update notification
+     * @param executor the executor to perform asynchronous update notification. If {@code null} no update notification
+     *                 will take place
      */
     public PracticeService(IArchetypeService service, PracticeRules rules, ThreadPoolTaskExecutor executor) {
         this.service = service;
@@ -120,7 +121,11 @@ public class PracticeService {
             }
 
         };
-        listeners = new AsyncListeners<>(executor.getThreadPoolExecutor());
+        if (executor != null) {
+            listeners = new AsyncListeners<>(executor.getThreadPoolExecutor());
+        } else {
+            listeners = null;
+        }
         service.addListener(PracticeArchetypes.PRACTICE, listener);
     }
 
@@ -211,12 +216,24 @@ public class PracticeService {
     }
 
     /**
+     * Returns the default field separator to use when exporting files.
+     *
+     * @return the field separator
+     */
+    public char getExportFileFieldSeparator() {
+        Party current = getPractice();
+        return (current != null) ? rules.getExportFileFieldSeparator(current) : ',';
+    }
+
+    /**
      * Disposes of the service.
      */
     @PreDestroy
     public void dispose() {
         service.removeListener(PracticeArchetypes.PRACTICE, listener);
-        listeners.clear();
+        if (listeners != null) {
+            listeners.clear();
+        }
     }
 
     /**
@@ -225,7 +242,9 @@ public class PracticeService {
      * @param listener the listener
      */
     public void addListener(Listener<Update> listener) {
-        listeners.addListener(listener);
+        if (listeners != null) {
+            listeners.addListener(listener);
+        }
     }
 
     /**
@@ -234,7 +253,9 @@ public class PracticeService {
      * @param listener the listener to remove
      */
     public void removeListener(Listener<Update> listener) {
-        listeners.removeListener(listener);
+        if (listeners != null) {
+            listeners.removeListener(listener);
+        }
     }
 
     /**

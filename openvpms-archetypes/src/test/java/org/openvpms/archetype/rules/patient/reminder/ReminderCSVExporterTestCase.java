@@ -24,7 +24,9 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -71,14 +73,14 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     private DocumentHandlers handlers;
 
     /**
-     * The practice rules.
-     */
-    private PracticeRules practiceRules;
-
-    /**
      * The practice location.
      */
     private Party location;
+
+    /**
+     * The practice.
+     */
+    private Party practice;
 
     /**
      * Sets up the test case.
@@ -86,12 +88,20 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         IArchetypeService service = getArchetypeService();
-        practiceRules = new PracticeRules(service, null);
+        practice = (Party) create(PracticeArchetypes.PRACTICE);
+        PracticeRules practiceRules = new PracticeRules(service, null);
+        PracticeService practiceService = new PracticeService(service, practiceRules, null) {
+            @Override
+            public synchronized Party getPractice() {
+                return practice;
+            }
+        };
+
         ILookupService lookups = getLookupService();
         PartyRules partyRules = new PartyRules(service, lookups);
         PatientRules patientRules = new PatientRules(practiceRules, service, lookups);
         handlers = new DocumentHandlers(getArchetypeService());
-        exporter = new ReminderCSVExporter(practiceRules, partyRules, patientRules, service, lookups, handlers);
+        exporter = new ReminderCSVExporter(practiceService, partyRules, patientRules, service, lookups, handlers);
         location = TestHelper.createLocation();
     }
 
@@ -136,10 +146,8 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
      * @throws IOException for  any I/O error
      */
     private void checkExport(Party customer, boolean commaSeparated) throws IOException {
-        Party practice = practiceRules.getPractice();
         IMObjectBean practiceBean = new IMObjectBean(practice);
         practiceBean.setValue("fileExportFormat", commaSeparated ? "COMMA" : "TAB");
-        practiceBean.save();
 
         if (commaSeparated) {
             assertEquals(',', exporter.getSeparator());
