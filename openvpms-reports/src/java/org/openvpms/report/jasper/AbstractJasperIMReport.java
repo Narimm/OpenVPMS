@@ -21,6 +21,7 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
+import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
@@ -200,7 +201,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                 if (expression != null) {
                     try {
                         defaultValue = getEvaluator().evaluate(expression);
-                    } catch (JRException exception) {
+                    } catch (JRException | JRRuntimeException exception) {
                         throw new ReportException(exception, FailedToGetParameters, getName());
                     }
                 }
@@ -294,7 +295,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             executer = initDataSource(properties, fields, report, context);
             JasperPrint print = JasperFillManager.getInstance(context).fill(report, properties);
             document = export(print, properties, mimeType);
-        } catch (JRException exception) {
+        } catch (JRException | JRRuntimeException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         } finally {
             if (executer != null) {
@@ -371,7 +372,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             }
             JasperPrint print = report(objects, parameters, fields);
             document = export(print, parameters, mimeType);
-        } catch (JRException exception) {
+        } catch (JRException | JRRuntimeException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
         return document;
@@ -395,7 +396,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             }
             JasperPrint report = report(objects, parameters, fields);
             export(report, stream, parameters, mimeType);
-        } catch (JRException exception) {
+        } catch (JRException | JRRuntimeException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
     }
@@ -420,7 +421,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             executer = initDataSource(params, fields, report, context);
             JasperPrint print = JasperFillManager.getInstance(context).fill(getReport(), params);
             print(print, properties);
-        } catch (JRException exception) {
+        } catch (JRException | JRRuntimeException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         } finally {
             if (executer != null) {
@@ -458,7 +459,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         try {
             JasperPrint print = report(objects, parameters, fields);
             print(print, properties);
-        } catch (JRException exception) {
+        } catch (JRException | JRRuntimeException exception) {
             throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
     }

@@ -222,6 +222,27 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
     }
 
     /**
+     * Verify that when a report has an unsupported font, an exception is thrown that includes the template name.
+     */
+    @Test
+    public void testInvalidFont() {
+        Document template = loadReport("REPORT", "src/test/reports/invalidfont.jrxml");
+        Functions functions = applicationContext.getBean(Functions.class);
+        TemplatedJasperIMObjectReport report = new TemplatedJasperIMObjectReport(template, getArchetypeService(),
+                                                                                 getLookupService(), getHandlers(),
+                                                                                 functions);
+        Party patient = TestHelper.createPatient(false);
+        try {
+            report.generate(Collections.<IMObject>singletonList(patient));
+            fail("Expected report generation to fail");
+        } catch (ReportException expected) {
+            assertEquals(ReportException.ErrorCode.FailedToGenerateReport, expected.getErrorCode());
+            assertEquals("Failed to generate report invalidfont.jrxml: Font \"BadFont\" is not available to the JVM. " +
+                         "See the Javadoc for more details.", expected.getMessage());
+        }
+    }
+
+    /**
      * Loads a JasperReport.
      *
      * @param type the report type
