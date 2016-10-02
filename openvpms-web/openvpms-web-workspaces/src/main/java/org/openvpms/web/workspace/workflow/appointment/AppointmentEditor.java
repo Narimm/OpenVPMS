@@ -159,6 +159,7 @@ public class AppointmentEditor extends CalendarEventEditor {
         smsPractice = SMSHelper.isSMSEnabled(getLayoutContext().getContext().getPractice());
         scheduleReminders = rules.isRemindersEnabled(schedule);
         noReminder = rules.getNoReminderPeriod();
+        getSeries().setNoReminderPeriod(noReminder);
 
         if (appointmentType == null) {
             // set the appointment type to the default for the schedule
@@ -208,6 +209,16 @@ public class AppointmentEditor extends CalendarEventEditor {
     public IMObjectEditor newInstance() {
         boolean editSeries = getSeriesEditor() != null;
         return new AppointmentEditor(reload(getObject()), getParent(), editSeries, getLayoutContext());
+    }
+
+    /**
+     * Returns the event series.
+     *
+     * @return the series
+     */
+    @Override
+    public AppointmentSeries getSeries() {
+        return (AppointmentSeries) super.getSeries();
     }
 
     /**

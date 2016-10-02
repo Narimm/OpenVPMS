@@ -17,10 +17,15 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.joda.time.Period;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+
+import java.util.Date;
 
 /**
  * Appointment series.
@@ -30,6 +35,12 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 public class AppointmentSeries extends CalendarEventSeries {
 
     /**
+     * The period for new reminders during which reminders should not be scheduled, or {@code null} if
+     * appointment reminders aren't configured.
+     */
+    private Period noReminderPeriod;
+
+    /**
      * Constructs an {@link AppointmentSeries}.
      *
      * @param appointment the appointment
@@ -37,6 +48,15 @@ public class AppointmentSeries extends CalendarEventSeries {
      */
     public AppointmentSeries(Act appointment, IArchetypeService service) {
         super(appointment, service);
+    }
+
+    /**
+     * Sets the period before which there may be no appointment reminders.
+     *
+     * @param noReminderPeriod the no-reminder period, or {@code null} if appointment reminders are disabled
+     */
+    public void setNoReminderPeriod(Period noReminderPeriod) {
+        this.noReminderPeriod = noReminderPeriod;
     }
 
     /**
@@ -73,7 +93,43 @@ public class AppointmentSeries extends CalendarEventSeries {
     }
 
     /**
-     * Populates an event from state.
+     * Updates an event.
+     * <p/>
+     * This sets the sendReminder flag for future appointments.
+     *
+     * @param act   the event
+     * @param times the event times
+     * @param state the state to populate the event from
+     * @return the event
+     */
+    @Override
+    protected ActBean populate(Act act, Times times, State state) {
+        ActBean bean = super.populate(act, times, state);
+        AppointmentState appointment = (AppointmentState) state;
+        if (noReminderPeriod != null) {
+            boolean sendReminder = false;
+            Date now = new Date();
+            Date startTime = act.getActivityStartTime();
+            if (startTime.after(now)) {
+                if (appointment.getSendReminder()) {
+                    if (act.isNew()) {
+                        // for new appointments only send reminders if the start time is after the no reminder period
+                        Date to = DateRules.plus(now, noReminderPeriod);
+                        if (startTime.after(to)) {
+                            sendReminder = true;
+                        }
+                    } else {
+                        sendReminder = true;
+                    }
+                }
+                bean.setValue("sendReminder", sendReminder);
+            }
+        }
+        return bean;
+    }
+
+    /**
+     * Populates an event from state. This is invoked after the event times and schedule have been set.
      *
      * @param bean  the event bean
      * @param state the state
@@ -132,6 +188,11 @@ public class AppointmentSeries extends CalendarEventSeries {
         private String notes;
 
         /**
+         * Determines if reminders should be sent.
+         */
+        private boolean sendReminder;
+
+        /**
          * Initialises the state from an appointment.
          *
          * @param appointment the appointment
@@ -156,6 +217,7 @@ public class AppointmentSeries extends CalendarEventSeries {
             clinician = appointment.getNodeParticipantRef("clinician");
             reason = appointment.getString("reason");
             notes = appointment.getString("description");
+            sendReminder = appointment.getBoolean("sendReminder");
         }
 
         /**
@@ -172,6 +234,7 @@ public class AppointmentSeries extends CalendarEventSeries {
             this.clinician = state.clinician;
             this.reason = state.reason;
             this.notes = state.notes;
+            this.sendReminder = state.sendReminder;
         }
 
         public IMObjectReference getAppointmentType() {
@@ -202,6 +265,10 @@ public class AppointmentSeries extends CalendarEventSeries {
             return notes;
         }
 
+        public boolean getSendReminder() {
+            return sendReminder;
+        }
+
         /**
          * Indicates whether some other object is "equal to" this one.
          *
@@ -221,6 +288,7 @@ public class AppointmentSeries extends CalendarEventSeries {
                         .append(clinician, other.clinician)
                         .append(reason, other.reason)
                         .append(notes, other.notes)
+                        .append(sendReminder, other.sendReminder)
                         .isEquals();
             }
             return result;
