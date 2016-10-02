@@ -54,6 +54,8 @@
     </data>
     <data id="MS1" archetype="entity.mailServer" name="Bigpond" host="mail.bigpond.com" port="587"
           username="opv.demo@bigpond.com" password="sample"/>
+    <data id="MS2" archetype="entity.mailServer" name="iinet" host="mail.iinet.net.au" port="587"
+          username="opv.demo@iinet.com.au" password="sample" security="STARTTLS"/>
     <data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" default="true"/>
     <data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL2"/>
     <data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"

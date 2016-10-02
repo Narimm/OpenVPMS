@@ -73,7 +73,7 @@ public class CalendarBlockSeries extends CalendarEventSeries {
     }
 
     /**
-     * Populates an event from state.
+     * Populates an event from state. This is invoked after the event times and schedule have been set.
      *
      * @param bean  the event bean
      * @param state the state

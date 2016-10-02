@@ -326,14 +326,37 @@ public class CalendarEventSeries {
      */
     protected Act create(Times times, ActBean seriesBean) {
         Act act = (Act) service.create(event.getArchetypeId());
-        ActBean bean = populate(act, times);
+        ActBean bean = populate(act, times, current);
         bean.setNodeParticipant("author", current.getAuthor());
         seriesBean.addNodeRelationship("items", act);
         return act;
     }
 
     /**
-     * Populates an event from state.
+     * Updates an event.
+     * <p/>
+     * If {@link #updateTimesOnly} is {@code false}, then {@link #populate(ActBean, State)} will be invoked to
+     * populate the event with the {@code state}.
+     *
+     * @param act   the event
+     * @param times the event times
+     * @param state the state to populate the event from
+     * @return the event
+     */
+    protected ActBean populate(Act act, Times times, State state) {
+        act.setActivityStartTime(times.getStartTime());
+        act.setActivityEndTime(times.getEndTime());
+
+        ActBean bean = new ActBean(act, service);
+        bean.setNodeParticipant("schedule", state.getSchedule());
+        if (!updateTimesOnly) {
+            populate(bean, state);
+        }
+        return bean;
+    }
+
+    /**
+     * Populates an event from state. This is invoked after the event times and schedule have been set.
      *
      * @param bean  the event bean
      * @param state the state
@@ -447,25 +470,6 @@ public class CalendarEventSeries {
     }
 
     /**
-     * Updates an event.
-     *
-     * @param act   the event
-     * @param times the Event times
-     * @return the event
-     */
-    private ActBean populate(Act act, Times times) {
-        act.setActivityStartTime(times.getStartTime());
-        act.setActivityEndTime(times.getEndTime());
-
-        ActBean bean = new ActBean(act, service);
-        bean.setNodeParticipant("schedule", current.getSchedule());
-        if (!updateTimesOnly) {
-            populate(bean, current);
-        }
-        return bean;
-    }
-
-    /**
      * Updates a series.
      *
      * @return {@code true} if changes were made
@@ -522,7 +526,7 @@ public class CalendarEventSeries {
             if (iterator.hasNext()) {
                 act = iterator.next();
                 iterator.remove();
-                populate(act, timesIterator.next());
+                populate(act, timesIterator.next(), current);
                 if (oldSeries != currentSeries) {
                     oldBean.removeNodeRelationships("items", act);
                     bean.addNodeRelationship("items", act);

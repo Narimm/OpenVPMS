@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -37,8 +38,11 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.daily;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.monthly;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.times;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.weekly;
 
 /**
  * Tests the {@link AppointmentSeries} class.
@@ -170,6 +174,71 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
     }
 
     /**
+     * Verifies that the sendReminder flag can be updated.
+     */
+    @Test
+    public void testSendReminder() {
+        Date startTime = DateRules.getDate(DateRules.getYesterday(), 9, DateUnits.HOURS);
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+        Act appointment1 = createEvent(startTime, endTime);
+
+        // Set the first appointment to send reminders. Note that this is not possible via the appointment editor as it
+        // is within no reminder period
+        setSendReminder(appointment1, true);
+
+        // verify sendReminder is propagated to the series
+        CalendarEventSeries series1 = createSeries(appointment1, weekly(), times(2));
+        List<Act> acts1 = checkSeries(series1, appointment1, 1, DateUnits.WEEKS, 3);
+        checkSendReminder(acts1.get(0), true);
+        checkSendReminder(acts1.get(1), true);
+        checkSendReminder(acts1.get(2), true);
+
+        // now change the second appointment in the series and turn off sendReminder. This should be propagated
+        // to the last appointment, but not the first
+        Act appointment2 = acts1.get(1);
+        CalendarEventSeries series2 = createSeries(appointment2);
+        setSendReminder(appointment2, false);
+        assertTrue(series2.isModified());
+        save(appointment2);
+        series2.save();
+        List<Act> acts2 = checkSeries(series2, appointment1, 1, DateUnits.WEEKS, 3);
+        checkSendReminder(acts2.get(0), true);
+        checkSendReminder(acts2.get(1), false);
+        checkSendReminder(acts2.get(2), false);
+    }
+
+    /**
+     * Verifies that sendReminder=true is not initially propagated to acts within the no reminder period.
+     */
+    @Test
+    public void testSendReminderNotEnabledWithinNoReminderPeriod() {
+        Date startTime = DateRules.getDate(DateRules.getToday(), 9, DateUnits.HOURS);
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+        Act appointment = createEvent(startTime, endTime);
+
+        // Set the first appointment to send reminders. Note that this is not possible via the appointment editor as it
+        // is within no reminder period
+        setSendReminder(appointment, true);
+
+        // verify sendReminder is propagated to the series
+        CalendarEventSeries series = createSeries(appointment, daily(), times(2));
+        List<Act> acts1 = checkSeries(series, appointment, 1, DateUnits.DAYS, 3);
+        checkSendReminder(acts1.get(0), true);  // the original appointment
+        checkSendReminder(acts1.get(1), false); // 1 day after, and within the no reminder period
+        checkSendReminder(acts1.get(2), true);  // 2 days after, and outside the no reminder period
+
+        // now turn off sendReminder, and verify it propagates to each act in the series
+        setSendReminder(appointment, false);
+        assertTrue(series.isModified());
+        save(appointment);
+        series.save();
+        List<Act> acts2 = checkSeries(series, appointment, 1, DateUnits.DAYS, 3);
+        checkSendReminder(acts2.get(0), false);
+        checkSendReminder(acts2.get(1), false);
+        checkSendReminder(acts2.get(2), false);
+    }
+
+    /**
      * Checks a series that was generated using calendar intervals.
      *
      * @param series   the series
@@ -201,7 +270,8 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
                 checkAppointment(act, from, to, schedule, appointmentType, status, customer, patient, clinician,
                                  appointmentAuthor);
             } else {
-                checkAppointment(act, from, to, schedule, appointmentType, status, customer, patient, clinician, author);
+                checkAppointment(act, from, to, schedule, appointmentType, status, customer, patient, clinician,
+                                 author);
             }
             from = DateRules.getDate(from, interval, units);
             to = DateRules.getDate(to, interval, units);
@@ -225,14 +295,18 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
     }
 
     /**
-     * Creates a new {@link CalendarEventSeries}.
+     * Creates a new {@link AppointmentSeries}.
+     * <p/>
+     * This implementation sets the no reminder period to 1 day.
      *
      * @param event the event
      * @return a new series
      */
     @Override
     protected CalendarEventSeries createSeries(Act event) {
-        return new AppointmentSeries(event, getArchetypeService());
+        AppointmentSeries series = new AppointmentSeries(event, getArchetypeService());
+        series.setNoReminderPeriod(Period.days(1));
+        return series;
     }
 
     /**
@@ -261,6 +335,28 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(clinician, bean.getNodeParticipant("clinician"));
         assertEquals(author, bean.getNodeParticipant("author"));
+    }
+
+    /**
+     * Sets the {@code sendReminder} flag of an appointment.
+     *
+     * @param appointment  the appointment
+     * @param sendReminder if {@code true}, indicates to send reminders
+     */
+    protected void setSendReminder(Act appointment, boolean sendReminder) {
+        ActBean bean = new ActBean(appointment);
+        bean.setValue("sendReminder", sendReminder);
+    }
+
+    /**
+     * Verifies an appointment {@code sendReminder} flag matches that expected.
+     *
+     * @param appointment  the appointment
+     * @param sendReminder the expected value of the {@code sendReminder} flag
+     */
+    private void checkSendReminder(Act appointment, boolean sendReminder) {
+        ActBean bean = new ActBean(appointment);
+        assertEquals(sendReminder, bean.getBoolean("sendReminder"));
     }
 
 }
