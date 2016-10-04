@@ -31,8 +31,7 @@
         <node name="clinician" path="/details/clinician"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="0" maxCardinality="1" filter="security.user"/>
-        <node name="highlight" path="/details/highlight" type="java.lang.String" minCardinality="1"
-              defaultValue="'EVENT_TYPE'">
+        <node name="highlight" path="/details/highlight" type="java.lang.String" minCardinality="0">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="EVENT_TYPE" value="Event Type"/>
