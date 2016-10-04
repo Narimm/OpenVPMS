@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.9-beta-1</version>
+        <version>1.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>openvpms-reports</artifactId>
