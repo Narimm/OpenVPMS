@@ -148,6 +148,11 @@ public class ScheduleEvent {
      */
     public static final String CONSULT_START_TIME = "consultStartTime";
 
+    /**
+     * The booking notes.
+     */
+    public static final String BOOKING_NOTES = "bookingNotes";
+
     public static final String ACT_VERSION = "act.version";
     public static final String CUSTOMER_PARTICIPATION_VERSION = "customerParticipation.version";
 
