@@ -198,6 +198,46 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!--                    APPOINTMENT SERVICE                             -->
+    <!-- ================================================================== -->
+
+    <bean id="appointmentService"
+          class="org.openvpms.archetype.rules.workflow.AppointmentService">
+        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="1" ref="lookupService"/>
+        <constructor-arg index="2">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="diskPersistent" value="false"/>
+                <property name="cacheName" value="appointmentCache"/>
+                <property name="maxElementsInMemory" value="30"/>
+                <!-- 30 days of data -->
+                <property name="overflowToDisk" value="false"/>
+                <property name="eternal" value="true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!--                    TASK SERVICE                                    -->
+    <!-- ================================================================== -->
+
+    <bean id="taskService"
+          class="org.openvpms.archetype.rules.workflow.TaskService">
+        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="1" ref="lookupService"/>
+        <constructor-arg index="2">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="diskPersistent" value="false"/>
+                <property name="cacheName" value="appointmentCache"/>
+                <property name="maxElementsInMemory" value="30"/>
+                <!-- 30 days of data -->
+                <property name="overflowToDisk" value="false"/>
+                <property name="eternal" value="true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <!-- ================================================================== -->
     <!-- Business rules                                                     -->
     <!-- ================================================================== -->
 
@@ -263,6 +303,11 @@
         </constructor-arg>
     </bean>
 
+    <bean id="preferenceService" class="org.openvpms.archetype.rules.prefs.PreferenceServiceImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
@@ -308,8 +353,8 @@
         <property name="mask" value="Ctrl-Shift"/>
     </bean>
 
-    <bean id="preferences" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.openvpms.web.component.prefs.UserPreferences"/>
+    <bean id="preferences" class="org.openvpms.web.component.prefs.UserPreferences">
+        <constructor-arg ref="preferenceService"/>
     </bean>
 
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
