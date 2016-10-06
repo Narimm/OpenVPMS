@@ -452,11 +452,11 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      */
     protected void doLayout(Component container) {
         Entity latest = getLatest();
-        if (latest != getObject()) {
-            setObject(latest);
-        } else if (browser == null) {
+        if (browser == null || !ObjectUtils.equals(location, getContext().getLocation())) {
             layoutWorkspace();
             latest = browser.getScheduleView();
+            setObject(latest);
+        } else if (latest != getObject()) {
             setObject(latest);
         } else {
             browser.query();

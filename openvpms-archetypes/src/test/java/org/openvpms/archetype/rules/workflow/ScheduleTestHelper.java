@@ -59,8 +59,36 @@ public class ScheduleTestHelper extends TestHelper {
      * @param view     the schedule view
      */
     public static void addScheduleView(Party location, Entity view) {
+        addScheduleView(location, view, false);
+    }
+
+    /**
+     * Helper to a add schedule view to a practice location.
+     *
+     * @param location    the practice location
+     * @param view        the schedule view
+     * @param defaultView determines if the view is the default for the location
+     */
+    public static void addScheduleView(Party location, Entity view, boolean defaultView) {
         EntityBean bean = new EntityBean(location);
-        bean.addNodeRelationship("scheduleViews", view);
+        EntityRelationship relationship = bean.addNodeRelationship("scheduleViews", view);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("default", defaultView);
+        save(location, view);
+    }
+
+    /**
+     * Helper to a add a work list view to a practice location.
+     *
+     * @param location    the practice location
+     * @param view        the work list view
+     * @param defaultView determines if the view is the default for the location
+     */
+    public static void addWorkListView(Party location, Entity view, boolean defaultView) {
+        EntityBean bean = new EntityBean(location);
+        EntityRelationship relationship = bean.addNodeRelationship("workListViews", view);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("default", defaultView);
         save(location, view);
     }
 

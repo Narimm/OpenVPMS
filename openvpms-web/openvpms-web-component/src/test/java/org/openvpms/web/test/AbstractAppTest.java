@@ -47,7 +47,7 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         PracticeRules rules = new PracticeRules(getArchetypeService(), applicationContext.getBean(Currencies.class));
         LocationRules locationRules = new LocationRules(getArchetypeService());
         UserRules userRules = new UserRules(getArchetypeService());
-        PreferenceService preferences = Mockito.mock(PreferenceService.class);
+        PreferenceService preferences = getPreferenceService();
         ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext(), rules, locationRules,
                                                                         userRules, new UserPreferences(preferences)) {
             /**
@@ -84,6 +84,15 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         app.setApplicationContext(applicationContext);
         ApplicationInstance.setActive(app);
         app.doInit();
+    }
+
+    /**
+     * Returns the preference service.
+     *
+     * @return the preference service
+     */
+    protected PreferenceService getPreferenceService() {
+        return Mockito.mock(PreferenceService.class);
     }
 
 }
