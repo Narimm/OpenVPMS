@@ -58,6 +58,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.INSET;
@@ -307,10 +308,13 @@ public class HelpDialog extends ModalDialog {
         centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
         logo.setLayoutData(centre);
 
-        Label label = LabelFactory.create(null, "small");
-        label.setText(Messages.format("helpdialog.version", Version.VERSION, Version.REVISION));
+        Label version = LabelFactory.create(null, "small");
+        version.setText(Messages.format("helpdialog.version", Version.VERSION, Version.REVISION));
 
-        Row labelRow = RowFactory.create("InsetX", label);
+        Label locale = LabelFactory.create(null, "small");
+        locale.setText(Messages.format("helpdialog.locale", Locale.getDefault().toLanguageTag()));
+
+        Row labelRow = RowFactory.create("InsetX", RowFactory.create(Styles.CELL_SPACING, version, locale));
         RowLayoutData right = new RowLayoutData();
         right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.BOTTOM));
         right.setWidth(new Extent(100, Extent.PERCENT));
