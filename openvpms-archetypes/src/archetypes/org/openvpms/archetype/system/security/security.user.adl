@@ -51,7 +51,7 @@
             <assertion name="propercase"/>
         </node>
         <node name="qualifications" path="/details/qualifications" type="java.lang.String" minCardinality="0"
-              maxLength="30"/>
+              maxLength="60"/>
         <node displayName="User Level" name="userLevel" path="/details/userLevel" type="java.lang.String"
               minCardinality="0">
             <assertion name="lookup.local">
