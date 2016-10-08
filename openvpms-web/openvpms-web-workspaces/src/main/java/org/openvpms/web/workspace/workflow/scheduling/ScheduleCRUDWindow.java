@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -19,9 +19,11 @@ package org.openvpms.web.workspace.workflow.scheduling;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -333,7 +335,8 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
          * @return {@code true} if a flow sheet can be created
          */
         public boolean canCreateFlowSheet(Act act, Party location, FlowSheetServiceFactory factory) {
-            if (act != null && location != null && factory.supportsSmartFlowSheet(location)) {
+            if (location != null && TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT, ScheduleArchetypes.TASK)
+                && factory.supportsSmartFlowSheet(location)) {
                 ActBean bean = new ActBean(act);
                 return bean.getNodeParticipantRef("patient") != null;
             }
