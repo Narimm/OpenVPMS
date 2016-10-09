@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -21,19 +19,19 @@ package org.openvpms.report.openoffice;
 import com.sun.star.frame.XComponentLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToConnect;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToConnect;
+
 
 /**
  * Abstract implementation of the {@link OOConnectionPool} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractOOConnectionPool implements OOConnectionPool {
 
@@ -43,8 +41,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     private final ArrayBlockingQueue<State> connections;
 
     /**
-     * Reentrant lock to avoid allocating and destroying connections
-     * simulatenously.
+     * Reentrant lock to avoid allocating and destroying connections simultaneously.
      */
     private final Lock lock = new ReentrantLock();
 
@@ -60,34 +57,31 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
 
     /**
      * The maximum no. of times a connection may be used before being
-     * closed. A value <tt>&lt;= 0</tt> indicates it should never be closed.
+     * closed. A value {@code &lt;= 0} indicates it should never be closed.
      */
     private int uses = 0;
 
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(
-            AbstractOOConnectionPool.class);
+    private static final Log log = LogFactory.getLog(AbstractOOConnectionPool.class);
 
 
     /**
-     * Constructs a new <tt>AbstractOOConnectionPool</tt>.
+     * Constructs a new {@code AbstractOOConnectionPool}.
      *
      * @param capacity the pool capacity
      */
     public AbstractOOConnectionPool(int capacity) {
-        connections = new ArrayBlockingQueue<State>(capacity);
+        connections = new ArrayBlockingQueue<>(capacity);
         this.capacity = capacity;
     }
 
     /**
-     * Gets a connection, blocking for up to <tt>timeout</tt> milliseconds
-     * until one becomes available.
+     * Gets a connection, blocking for up to {@code timeout} milliseconds  until one becomes available.
      *
      * @param timeout the maximum no. of milliseconds to wait for a connection
-     * @return a connection or <tt>null</tt> if none was available before
-     *         the timeout expired
+     * @return a connection or {@code null} if none was available before the timeout expired
      * @throws OpenOfficeException if a connection error occurs
      */
     public OOConnection getConnection(long timeout) {
@@ -121,16 +115,18 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
             }
             try {
                 // find an active connection
-                State state = connections.take();
-                lock.lock();
-                try {
-                    if (isResponsive(state)) {
-                        result = new OOConnectionHandle(state);
-                    } else {
-                        destroy(state);
+                State state = connections.poll(10, TimeUnit.SECONDS);
+                if (state != null) {
+                    lock.lock();
+                    try {
+                        if (isResponsive(state)) {
+                            result = new OOConnectionHandle(state);
+                        } else {
+                            destroy(state);
+                        }
+                    } finally {
+                        lock.unlock();
                     }
-                } finally {
-                    lock.unlock();
                 }
             } catch (InterruptedException exception) {
                 throw new OpenOfficeException(FailedToConnect, exception);
@@ -151,9 +147,8 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     /**
      * Determines when connections should be closed.
      *
-     * @param uses the number of uses after which connections should be closed.
-     *             A value <tt>&lt;= 0</tt> indicates it should never
-     *             be closed
+     * @param uses the number of uses after which connections should be closed. A value {@code &lt;= 0} indicates it
+     *             should never be closed
      */
     public synchronized void setReuseCount(int uses) {
         this.uses = uses;
@@ -189,13 +184,17 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      */
     private void allocate() {
         while (count < capacity) {
-            State state = new State(create());
-            ++count;
-            if (!connections.offer(state)) {
-                destroy(state);
-                // shouldn't occur
-                throw new IllegalStateException(
-                        "Failed to add a new connection to the pool");
+            try {
+                State state = new State(create());
+                ++count;
+                if (!connections.offer(state)) {
+                    destroy(state);
+                    // shouldn't occur
+                    throw new IllegalStateException("Failed to add a new connection to the pool");
+                }
+            } catch (Throwable exception) {
+                log.error("Failed to allocate connection", exception);
+                throw exception;
             }
         }
     }
@@ -225,8 +224,8 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      * Determines if a connection can be released back into the pool.
      *
      * @param state the connection state
-     * @return <tt>true</tt> if the connection can be released,
-     *         otherwise <tt>false</tt> to indicate it should be destroyed
+     * @return {@code true} if the connection can be released, otherwise {@code false} to indicate it should be
+     * destroyed
      */
     private boolean canRelease(State state) {
         return ((uses <= 0 || state.getUses() < uses) && isResponsive(state));
@@ -236,15 +235,14 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
      * Determines if a connection is responsive.
      *
      * @param state the connection state
-     * @return <tt>true</tt> if the connection is responsive, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the connection is responsive, otherwise {@code false}
      */
     private boolean isResponsive(State state) {
         boolean responsive = false;
         try {
             state.getConnection().getComponentLoader();
             responsive = true;
-        } catch (OpenOfficeException exception) {
+        } catch (Throwable exception) {
             log.debug("Connection not responding", exception);
         }
         return responsive;
@@ -275,7 +273,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     }
 
     protected class OOConnectionHandle implements OOConnection,
-                                                  OOConnectionListener {
+            OOConnectionListener {
 
         /**
          * The connection state.
@@ -299,7 +297,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
 
 
         /**
-         * Constructs a new <tt>OOConnectionHandle</tt>
+         * Constructs a new {@code OOConnectionHandle}
          *
          * @param state the connection state
          */
@@ -335,7 +333,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
         /**
          * Sets the listener for this connection.
          *
-         * @param listener the listener. May be <tt>null</tt>
+         * @param listener the listener. May be {@code null}
          */
         public void setListener(OOConnectionListener listener) {
             this.listener = listener;
@@ -372,14 +370,14 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
          * Called by the garbage collector on an object when garbage collection
          * determines that there are no more references to the object.
          *
-         * @throws Throwable the <tt>Exception</tt> raised by this method
+         * @throws Throwable the {@code Exception} raised by this method
          */
         @Override
         protected void finalize() throws Throwable {
             super.finalize();
             if (state != null) {
                 log.warn("OOConnection allocated by thread=" + thread
-                        + " not closed: releasing", stack);
+                         + " not closed: releasing", stack);
                 release(state);
                 state = null;
             }

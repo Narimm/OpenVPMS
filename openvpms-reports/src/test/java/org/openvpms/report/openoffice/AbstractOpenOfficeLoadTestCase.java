@@ -42,7 +42,7 @@ import static org.junit.Assert.assertFalse;
  *
  * @author Tim Anderson
  */
-@ContextConfiguration(locations = "applicationContextNoOOPool.xml", inheritLocations = false)
+@ContextConfiguration(locations = "/applicationContextNoOOPool.xml", inheritLocations = false)
 public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
@@ -137,7 +137,7 @@ public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeD
             List<IMObject> objects = Collections.singletonList((IMObject) act.getAct());
             Document result = report.generate(objects, DocFormats.ODT_TYPE);
             Map<String, String> fields = getUserFields(result);
-            assertEquals("4/08/2006",
+            assertEquals("04/08/2006",
                          fields.get("startTime"));  // @todo localise
             assertEquals("$100.00", fields.get("lowTotal"));
             assertEquals("J", fields.get("firstName"));

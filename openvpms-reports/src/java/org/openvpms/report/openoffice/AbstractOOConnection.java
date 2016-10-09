@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -30,6 +28,9 @@ import com.sun.star.lang.XComponent;
 import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToConnect;
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetService;
 
@@ -37,26 +38,24 @@ import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.Faile
 /**
  * Manages the connection to a remote OpenOffice service.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class AbstractOOConnection
-        implements OOConnection, com.sun.star.lang.XEventListener {
+public class AbstractOOConnection implements OOConnection, com.sun.star.lang.XEventListener {
 
     /**
      * The connection parameters.
-     * E.g, <code>socket,host=localhost,port=2002</code>
+     * E.g, {@code socket,host=localhost,port=2002}
      */
     private final String connectParams;
 
     /**
-     * The protocol parameters, parsed from the UNO URL. E.g, <code>urp</code>
+     * The protocol parameters, parsed from the UNO URL. E.g, {@code urp}
      */
     private final String protocolParams;
 
     /**
      * The object name, parsed from the UNO URL.
-     * E.g, <code>StarOffice.ServiceManager</code>
+     * E.g, {@code StarOffice.ServiceManager}
      */
     private final String objectName;
 
@@ -80,11 +79,15 @@ public class AbstractOOConnection
      */
     private OOConnectionListener listener;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(AbstractOOConnection.class);
 
     /**
-     * Constructs a new <code>AnstractOOConnection</code>, specifying the
-     * connection paramaters, e.g <code>socket,host=localhost,port=8100</code>
-     * for a socket connection, or <code>pipe,name=oopipe</code> for a named
+     * Constructs an {@link AbstractOOConnection}, specifying the
+     * connection parameters, e.g {@code socket,host=localhost,port=8100}
+     * for a socket connection, or {@code pipe,name=oopipe} for a named
      * pipe connection.
      *
      * @param parameters the connection parameters
@@ -113,8 +116,7 @@ public class AbstractOOConnection
      * @throws OpenOfficeException for any error
      */
     public synchronized XComponentLoader getComponentLoader() {
-        return (XComponentLoader) getService("com.sun.star.frame.Desktop",
-                                             XComponentLoader.class);
+        return (XComponentLoader) getService("com.sun.star.frame.Desktop", XComponentLoader.class);
     }
 
     /**
@@ -128,16 +130,14 @@ public class AbstractOOConnection
         if (componentFactory == null) {
             try {
                 connect();
-            } catch (Exception exception) {
-                throw new OpenOfficeException(exception, FailedToConnect,
-                                              connectParams);
+            } catch (Throwable exception) {
+                throw new OpenOfficeException(exception, FailedToConnect, connectParams);
             }
         }
         Object service;
         try {
-            service = getService(name, type, componentFactory,
-                                 componentContext);
-        } catch (Exception exception) {
+            service = getService(name, type, componentFactory, componentContext);
+        } catch (Throwable exception) {
             throw new OpenOfficeException(exception, FailedToGetService, name);
         }
         if (service == null) {
@@ -149,7 +149,7 @@ public class AbstractOOConnection
     /**
      * Sets the listener for this connection.
      *
-     * @param listener the listener. May be <code>null</code>
+     * @param listener the listener. May be {@code null}
      */
     public synchronized void setListener(OOConnectionListener listener) {
         this.listener = listener;
@@ -157,8 +157,6 @@ public class AbstractOOConnection
 
     /**
      * Closes the connection, releasing any resources.
-     *
-     * @throws OpenOfficeException for any error
      */
     public synchronized void close() {
         if (bridge != null) {
@@ -171,10 +169,24 @@ public class AbstractOOConnection
 
     /**
      * Closes the connection, releasing any resources.
+     * <p/>
+     * No exceptions may be thrown by this method.
      */
     protected void doClose() {
-        bridge.dispose();
-        bridge = null;
+        try {
+            bridge.removeEventListener(this);
+        } catch (Throwable exception) {
+            log.debug("Failed to deregister bridge event listener", exception);
+        }
+        try {
+            bridge.dispose();
+        } catch (Throwable exception) {
+            log.warn("Failed to dispose OpenOffice bridge", exception);
+        } finally {
+            bridge = null;
+            componentFactory = null;
+            componentContext = null;
+        }
     }
 
     /**
@@ -187,9 +199,7 @@ public class AbstractOOConnection
      * @return the service
      * @throws com.sun.star.uno.Exception if the service can't be created
      */
-    private Object getService(String name, Class type,
-                              XMultiComponentFactory factory,
-                              XComponentContext context)
+    private Object getService(String name, Class type, XMultiComponentFactory factory, XComponentContext context)
             throws com.sun.star.uno.Exception {
         Object object = factory.createInstanceWithContext(name, context);
         return getInterface(type, object);
@@ -212,26 +222,21 @@ public class AbstractOOConnection
      * @throws Exception for any error
      */
     private void connect() throws Exception {
-
-        XComponentContext localContext
-                = Bootstrap.createInitialComponentContext(null);
-        XMultiComponentFactory localServiceManager
-                = localContext.getServiceManager();
+        XComponentContext localContext = Bootstrap.createInitialComponentContext(null);
+        XMultiComponentFactory localServiceManager = localContext.getServiceManager();
 
         // create the connector service
-        XConnector connector = (XConnector) getService(
-                "com.sun.star.connection.Connector", XConnector.class,
+        XConnector connector = (XConnector) getService("com.sun.star.connection.Connector", XConnector.class,
                 localServiceManager, localContext);
 
         XConnection connection = connector.connect(connectParams);
 
-        XBridgeFactory bridgeFactory = (XBridgeFactory) getService(
-                "com.sun.star.bridge.BridgeFactory", XBridgeFactory.class,
+        XBridgeFactory bridgeFactory = (XBridgeFactory) getService("com.sun.star.bridge.BridgeFactory",
+                                                                   XBridgeFactory.class,
                 localServiceManager, localContext);
 
         // create a nameless bridge with no instance provider
-        XBridge xbridge = bridgeFactory.createBridge("", protocolParams,
-                                                     connection, null);
+        XBridge xbridge = bridgeFactory.createBridge("", protocolParams, connection, null);
 
         // get the bridge's XComponent interface and add this as an event
         // listener
@@ -241,26 +246,21 @@ public class AbstractOOConnection
         // get the remote instance
         Object object = xbridge.getInstance(objectName);
         if (object == null) {
-            throw new com.sun.star.uno.Exception(
-                    "Server didn't provide an instance for " + objectName,
-                    null);
+            throw new com.sun.star.uno.Exception("Server didn't provide an instance for " + objectName, null);
         }
 
         // query the initial object for its main factory interface
-        componentFactory = (XMultiComponentFactory) getInterface(
-                XMultiComponentFactory.class, object);
+        componentFactory = (XMultiComponentFactory) getInterface(XMultiComponentFactory.class, object);
 
         // retrieve the component context (it's not yet exported from office)
         // Query for the XPropertySet interface.
-        XPropertySet propertySet = (XPropertySet) getInterface(
-                XPropertySet.class, componentFactory);
+        XPropertySet propertySet = (XPropertySet) getInterface(XPropertySet.class, componentFactory);
 
         // qet the default context from the office server
         Object defaultContext = propertySet.getPropertyValue("DefaultContext");
 
         // query for the XComponentContext interface
-        componentContext = (XComponentContext) getInterface(
-                XComponentContext.class, defaultContext);
+        componentContext = (XComponentContext) getInterface(XComponentContext.class, defaultContext);
     }
 
 }
