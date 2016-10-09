@@ -110,23 +110,48 @@ public class NumericPropertyTransformer extends AbstractPropertyTransformer {
                 result = null;
             }
         } else {
-            try {
-                Class type = property.getType();
-                result = CONVERTER.convert(object, type);
-                if (result instanceof BigDecimal) {
-                    result = MathRules.round((BigDecimal) result, scale);
-                }
-            } catch (Throwable exception) {
-                String message = Messages.format("property.error.invalidnumeric", property.getDisplayName());
-                throw new PropertyException(property, message, exception);
-            }
-            if (positive && result instanceof Number && ((Number) result).doubleValue() < 0) {
-                String msg = Messages.format("property.error.positive", property.getDisplayName());
-                throw new PropertyException(property, msg);
-            }
+            result = convert(object, property);
+            validate(result, property);
         }
 
         return result;
+    }
+
+    /**
+     * Converts an object to the required numeric type.
+     *
+     * @param object   the object to convert
+     * @param property the property
+     * @return the converted object
+     * @throws PropertyException if the object cannot be converted
+     */
+    protected Object convert(Object object, Property property) {
+        Object result;
+        try {
+            Class type = property.getType();
+            result = CONVERTER.convert(object, type);
+            if (result instanceof BigDecimal) {
+                result = MathRules.round((BigDecimal) result, scale);
+            }
+        } catch (Throwable exception) {
+            String message = Messages.format("property.error.invalidnumeric", property.getDisplayName());
+            throw new PropertyException(property, message, exception);
+        }
+        return result;
+    }
+
+    /**
+     * Validates an object.
+     *
+     * @param object   the object to validate
+     * @param property the property
+     * @throws PropertyException if the object is invalid
+     */
+    protected void validate(Object object, Property property) {
+        if (positive && object instanceof Number && ((Number) object).doubleValue() < 0) {
+            String msg = Messages.format("property.error.positive", property.getDisplayName());
+            throw new PropertyException(property, msg);
+        }
     }
 
 }
