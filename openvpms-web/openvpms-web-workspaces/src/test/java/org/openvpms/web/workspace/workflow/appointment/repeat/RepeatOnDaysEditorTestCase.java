@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -75,5 +76,19 @@ public class RepeatOnDaysEditorTestCase extends AbstractRepeatExpressionTest {
         Date date1 = checkNext(startTime, cron, "2015-01-15 09:30:00");
         Date date2 = checkNext(date1, cron, "2015-01-22 09:30:00");
         checkNext(date2, cron, "2015-01-29 09:30:00");
+    }
+
+    /**
+     * Tests the {@link RepeatOnDaysEditor#supports(CronRepeatExpression)} method.
+     */
+    @Test
+    public void testSupports() {
+        assertTrue(RepeatOnDaysEditor.supports(parse("0 0 10 ? * * *")));
+        assertTrue(RepeatOnDaysEditor.supports(parse("0 0 10 ? * SUN,MON,TUE,WED,THU,FRI,SAT *")));
+        assertTrue(RepeatOnDaysEditor.supports(parse("0 0 10 ? * SUN-SAT *")));
+
+        assertFalse(RepeatOnDaysEditor.supports(parse("0 30 9 2 1 ? 2015/1")));
+        assertFalse(RepeatOnDaysEditor.supports(parse("0 30 9 8,10 1/2 ? *")));
+        assertFalse(RepeatOnDaysEditor.supports(parse("0 30 9 ? 1 THU#2 2015/1")));
     }
 }
