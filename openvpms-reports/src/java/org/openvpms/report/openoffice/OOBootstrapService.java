@@ -246,8 +246,8 @@ public abstract class OOBootstrapService implements DisposableBean {
                 }
                 try {
                     connection.close();
-                } catch (OpenOfficeException ignore) {
-                    // no-op
+                } catch (Throwable exception) {
+                    log.debug("Failed to close connection while stopping OOBoostrapService", exception);
                 }
                 Thread.sleep(terminateWait);
             } catch (Throwable exception) {

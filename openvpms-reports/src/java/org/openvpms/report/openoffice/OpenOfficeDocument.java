@@ -34,7 +34,6 @@ import com.sun.star.text.XTextDocument;
 import com.sun.star.text.XTextField;
 import com.sun.star.text.XTextFieldsSupplier;
 import com.sun.star.uno.UnoRuntime;
-import com.sun.star.util.CloseVetoException;
 import com.sun.star.util.XCloseable;
 import com.sun.star.util.XRefreshable;
 import org.apache.commons.io.FilenameUtils;
@@ -153,7 +152,7 @@ public class OpenOfficeDocument {
         try {
             component = loader.loadComponentFromURL("private:stream", "_blank",
                                                     0, properties);
-        } catch (Exception exception) {
+        } catch (Throwable exception) {
             throw new OpenOfficeException(exception, FailedToCreateDoc, name);
         }
         if (component == null) {
@@ -383,7 +382,7 @@ public class OpenOfficeDocument {
             XModel model = UnoRuntime.queryInterface(XModel.class, document);
             XCloseable closeable = UnoRuntime.queryInterface(XCloseable.class, model);
             closeable.close(false);
-        } catch (CloseVetoException exception) {
+        } catch (Throwable exception) {
             log.error("Failed to close document", exception);
         }
     }

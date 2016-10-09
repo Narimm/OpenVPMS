@@ -192,9 +192,9 @@
          This is equivalent to running:
             soffice -nologo -nodefault -norestore -nolockcheck -accept=pipe,name=vpms;urp;
     -->
-    <bean id="OOPipeBootstrapService"
+    <!--bean id="OOPipeBootstrapService"
           class="org.openvpms.report.openoffice.OOPipeBootstrapService">
         <constructor-arg value="vpms"/>
-    </bean>
+    </bean-->
 
 </beans>

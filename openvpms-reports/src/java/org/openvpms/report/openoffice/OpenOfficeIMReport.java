@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.ExpressionEvaluatorFactory;
@@ -364,7 +363,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
 
             // refresh the text fields
             doc.refresh();
-        } catch (OpenVPMSException exception) {
+        } catch (Throwable exception) {
             if (doc != null) {
                 doc.close();
             }
