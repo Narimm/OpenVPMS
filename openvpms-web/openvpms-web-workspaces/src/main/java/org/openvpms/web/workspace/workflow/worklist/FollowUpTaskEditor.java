@@ -47,11 +47,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Extension to {@link TaskActEditor} to enable the work list to be selected, for the purposes of follow-up tasks.
+ * A task editor that enables the work list to be selected, for the purposes of follow-up tasks.
  *
  * @author Tim Anderson
  */
-public class FollowUpTaskEditor extends TaskActEditor {
+public class FollowUpTaskEditor extends AbstractTaskActEditor {
 
     /**
      * The work lists.
