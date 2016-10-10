@@ -19,7 +19,7 @@ package org.openvpms.web.component.prefs;
 import org.openvpms.archetype.rules.prefs.PreferenceService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -39,9 +39,14 @@ import org.openvpms.web.system.ServiceHelper;
 public class PreferencesEditor extends AbstractIMObjectEditor {
 
     /**
-     * The user to edit preferences for.
+     * The party to edit preferences for.
      */
-    private final User user;
+    private final Party party;
+
+    /**
+     * If non-null, specifies the source to copy preferences from if the party has none.
+     */
+    private final Party source;
 
     /**
      * The preference group collection editor.
@@ -51,12 +56,14 @@ public class PreferencesEditor extends AbstractIMObjectEditor {
     /**
      * Constructs an {@link PreferencesEditor}.
      *
-     * @param user          the user to edit preferences for
+     * @param party         the party to edit preferences for
+     * @param source        if non-null, specifies the source to copy preferences from if the party has none
      * @param layoutContext the layout context
      */
-    public PreferencesEditor(User user, LayoutContext layoutContext) {
-        super(ServiceHelper.getBean(PreferenceService.class).getEntity(user), null, layoutContext);
-        this.user = user;
+    public PreferencesEditor(Party party, Party source, LayoutContext layoutContext) {
+        super(ServiceHelper.getBean(PreferenceService.class).getEntity(party, source), null, layoutContext);
+        this.party = party;
+        this.source = source;
         groups = new PreferenceGroupCollectionEditor(getCollectionProperty("groups"), (Entity) getObject(),
                                                      getLayoutContext());
         getEditors().add(groups);
@@ -80,7 +87,7 @@ public class PreferencesEditor extends AbstractIMObjectEditor {
      */
     @Override
     public IMObjectEditor newInstance() {
-        return new PreferencesEditor(user, getLayoutContext());
+        return new PreferencesEditor(party, source, getLayoutContext());
     }
 
     /**

@@ -16,7 +16,7 @@
 
 package org.openvpms.web.component.prefs;
 
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpDialog;
 import org.openvpms.web.component.help.HelpTopics;
@@ -38,15 +38,16 @@ public class PreferencesDialog extends AbstractEditDialog {
     /**
      * Constructs a {@link PreferencesDialog}.
      *
-     * @param user    the user to edit preferences for
-     * @param context the context
+     * @param party   the party to edit preferences for
+     * @param source  if non-null, specifies the source to copy preferences from if the party has none
+     * @param context the layout context
      */
-    public PreferencesDialog(User user, Context context) {
+    public PreferencesDialog(Party party, Party source, Context context) {
         super(null, null, OK_CANCEL, true, context, createHelpContext());
         setStyleName("PreferencesDialog");
 
         DefaultLayoutContext layout = new DefaultLayoutContext(context, getHelpContext());
-        IMObjectEditor editor = new PreferencesEditor(user, layout);
+        IMObjectEditor editor = new PreferencesEditor(party, source, layout);
         setEditor(editor);
     }
 

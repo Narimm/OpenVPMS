@@ -51,7 +51,7 @@ public class PreferenceMonitorTestCase extends ArchetypeServiceTest {
     public void setUp() {
         PreferenceService service = new PreferenceServiceImpl(getArchetypeService(), transactionManager);
         User user = TestHelper.createUser();
-        preferences = service.getPreferences(user, true);
+        preferences = service.getPreferences(user, null, true);
     }
 
     /**

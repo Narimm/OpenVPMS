@@ -34,6 +34,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
@@ -50,9 +51,14 @@ import java.util.Set;
 class PreferencesImpl implements Preferences {
 
     /**
-     * The user the preferences belong to.
+     * The party the preferences belong to.
      */
-    private final IMObjectReference user;
+    private final IMObjectReference party;
+
+    /**
+     * The party to use for default preferences. May be {@code null}
+     */
+    private final IMObjectReference source;
 
     /**
      * The preferences.
@@ -77,25 +83,29 @@ class PreferencesImpl implements Preferences {
     /**
      * Constructs a  {@link PreferencesImpl}. Changes aren't persistent.
      *
-     * @param user        the user the preferences belong to
+     * @param party       the party the preferences belong to
+     * @param source      the party to use for default preferences. May be {@code null}
      * @param preferences the preferences entity
      * @param service     the archetype service
      */
-    public PreferencesImpl(IMObjectReference user, Entity preferences, IArchetypeService service) {
-        this(user, preferences, service, null);
+    public PreferencesImpl(IMObjectReference party, IMObjectReference source, Entity preferences,
+                           IArchetypeService service) {
+        this(party, source, preferences, service, null);
     }
 
     /**
      * Constructs a {@link PreferencesImpl}.
      *
-     * @param user               the user the preferences belong to
+     * @param party              the user the preferences belong to
+     * @param source             the party to use for default preferences. May be {@code null}
      * @param preferences        the preferences entity
      * @param service            the archetype service
      * @param transactionManager the transaction manager, or {@code null} if changes aren't persistent
      */
-    public PreferencesImpl(IMObjectReference user, Entity preferences, IArchetypeService service,
-                           PlatformTransactionManager transactionManager) {
-        this.user = user;
+    public PreferencesImpl(IMObjectReference party, IMObjectReference source, Entity preferences,
+                           IArchetypeService service, PlatformTransactionManager transactionManager) {
+        this.party = party;
+        this.source = source;
         bean = new EntityBean(preferences, service);
         this.service = service;
         this.transactionManager = transactionManager;
@@ -218,36 +228,57 @@ class PreferencesImpl implements Preferences {
     }
 
     /**
-     * Returns preferences for a user.
+     * Returns preferences for a party.
+     * <p/>
+     * If the party has no preferences, and a {@code source} party is specified, the
+     * <p/>
+     * Changes will not be made persistent.
      *
-     * @param user    the user
+     * @param party   the party
+     * @param source  the party to use for default preferences. May be {@code null}
      * @param service the archetype service
      * @return the preferences
      */
-    public static Preferences getPreferences(IMObjectReference user, final IArchetypeService service) {
-        Entity prefs = getEntity(user, service, true);
-        return new PreferencesImpl(user, prefs, service);
+    public static Preferences getPreferences(IMObjectReference party, IMObjectReference source,
+                                             final IArchetypeService service) {
+        Entity prefs = getEntity(party, service);
+        if (prefs == null && source != null) {
+            prefs = getEntity(source, service);
+        }
+        if (prefs == null) {
+            prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
+        }
+        return new PreferencesImpl(party, source, prefs, service);
     }
 
     /**
-     * Returns the root preference entity for a user, creating and saving one if none exists.
+     * Returns the root preference entity for a user or practice, creating and saving one if none exists.
      *
-     * @param user               the user
+     * @param party              the party
+     * @param source             if non-null, specifies the source to copy preferences from if the party has none
      * @param service            the archetype service
      * @param transactionManager the transaction manager
      * @return the root preference entity
      */
-    public static Entity getPreferences(final IMObjectReference user, final IArchetypeService service,
+    public static Entity getPreferences(final IMObjectReference party, final IMObjectReference source,
+                                        final IArchetypeService service,
                                         PlatformTransactionManager transactionManager) {
         Entity prefs;
         TransactionTemplate template = new TransactionTemplate(transactionManager);
         prefs = template.execute(new TransactionCallback<Entity>() {
             @Override
             public Entity doInTransaction(TransactionStatus status) {
-                Entity prefs = getEntity(user, service, true);
-                if (prefs.isNew()) {
+                Entity prefs = getEntity(party, service);
+                if (prefs == null && source != null) {
+                    Entity sourcePrefs = getEntity(source, service);
+                    if (sourcePrefs != null) {
+                        prefs = copy(party, sourcePrefs, service);
+                    }
+                }
+                if (prefs == null) {
+                    prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
                     IMObjectBean bean = new IMObjectBean(prefs, service);
-                    bean.addNodeTarget("user", user);
+                    bean.addNodeTarget("user", party);
                     bean.save();
                 }
                 return prefs;
@@ -257,19 +288,22 @@ class PreferencesImpl implements Preferences {
     }
 
     /**
-     * Removes preferences for a user.
+     * Resets the preferences for a party.
+     * <p/>
+     * If a source party is specified, it's preferences will be copied to the party if they exist.
      *
-     * @param user               the user
+     * @param party              the party
+     * @param source             the source party to copy preferences from. May be {@code null}
      * @param service            the archetype service
      * @param transactionManager the transaction manager
      */
-    public static void remove(final IMObjectReference user, final IArchetypeService service,
-                              PlatformTransactionManager transactionManager) {
+    public static void reset(final IMObjectReference party, final IMObjectReference source,
+                             final IArchetypeService service, PlatformTransactionManager transactionManager) {
         TransactionTemplate template = new TransactionTemplate(transactionManager);
-        template.execute(new TransactionCallback<Entity>() {
+        template.execute(new TransactionCallbackWithoutResult() {
             @Override
-            public Entity doInTransaction(TransactionStatus status) {
-                Entity prefs = getEntity(user, service, false);
+            public void doInTransactionWithoutResult(TransactionStatus status) {
+                Entity prefs = getEntity(party, service);
                 if (prefs != null) {
                     EntityBean bean = new EntityBean(prefs, service);
                     List<IMObject> groups = bean.getNodeTargetObjects("groups");
@@ -283,31 +317,46 @@ class PreferencesImpl implements Preferences {
                     }
                     service.remove(prefs);
                 }
-                return prefs;
+                if (source != null && !ObjectUtils.equals(party, source)) {
+                    Entity sourcePrefs = getEntity(source, service);
+                    if (sourcePrefs != null) {
+                        copy(party, sourcePrefs, service);
+                    }
+                }
             }
         });
     }
 
     /**
-     * Returns the root preference entity for a user, optionally creating it if it doesn't exist.
+     * Copies preferences.
      *
-     * @param user    the user
+     * @param party   the party to link the copied preferences to
+     * @param prefs   the preferences to copy
      * @param service the archetype service
-     * @param create  if {@code true}, create the entity if it doesn't exist
+     * @return the copied preferences entiy
+     */
+    protected static Entity copy(IMObjectReference party, Entity prefs, IArchetypeService service) {
+        List<IMObject> objects = PreferencesCopier.copy(prefs, party, service);
+        service.save(objects);
+        return (Entity) objects.get(0);
+    }
+
+    /**
+     * Returns the root preference entity for a party.
+     *
+     * @param party   the party
+     * @param service the archetype service
      * @return the entity, or {@code null} if it doesn't exist
      */
-    protected static Entity getEntity(IMObjectReference user, IArchetypeService service, boolean create) {
+    protected static Entity getEntity(IMObjectReference party, IArchetypeService service) {
         Entity prefs = null;
         final ArchetypeQuery query = new ArchetypeQuery(PreferenceArchetypes.PREFERENCES);
-        query.add(Constraints.join("user").add(Constraints.eq("target", user)));
+        query.add(Constraints.join("user").add(Constraints.eq("target", party)));
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
         IMObjectQueryIterator<Entity> iterator = new IMObjectQueryIterator<>(service, query);
         if (iterator.hasNext()) {
             prefs = iterator.next();
-        }
-        if (prefs == null && create) {
-            prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
         }
         return prefs;
     }
@@ -422,8 +471,9 @@ class PreferencesImpl implements Preferences {
     }
 
     private void reload() {
-        Entity prefs = getPreferences(user, service, transactionManager);
+        Entity prefs = getPreferences(party, source, service, transactionManager);
         bean = new EntityBean(prefs, service);
         groups.clear();
     }
+
 }

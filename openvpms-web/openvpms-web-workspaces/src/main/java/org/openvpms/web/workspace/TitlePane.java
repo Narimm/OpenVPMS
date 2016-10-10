@@ -258,7 +258,7 @@ public class TitlePane extends ContentPane {
     private void editPreferences() {
         User user = IMObjectHelper.reload(context.getUser());
         if (user != null) {
-            PreferencesDialog dialog = new PreferencesDialog(user, new LocalContext(context));
+            PreferencesDialog dialog = new PreferencesDialog(user, context.getPractice(), new LocalContext(context));
             dialog.show();
         }
     }

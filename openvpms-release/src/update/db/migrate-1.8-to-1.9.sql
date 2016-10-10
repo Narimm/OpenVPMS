@@ -1474,7 +1474,7 @@ DROP TABLE product_tax_rates;
 #
 
 #
-# Create preferences for each user.
+# Create default preferences for the practice.
 #
 INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, active)
   SELECT
@@ -1485,7 +1485,7 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, acti
     'Preferences',
     1
   FROM entities u
-  WHERE u.arch_short_name = 'security.user' AND u.active = 1
+  WHERE u.arch_short_name = 'party.organisationPractice' AND u.active = 1
         AND NOT exists(SELECT *
                        FROM entity_links l
                        WHERE l.arch_short_name = 'entityLink.preferencesUser' AND l.target_id = u.entity_id);
@@ -1506,7 +1506,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
     u.entity_id
   FROM entities p
     JOIN entities u
-      ON u.arch_short_name = 'security.user'
+      ON u.arch_short_name = 'party.organisationPractice'
          AND p.arch_short_name = 'entity.preferences'
          AND u.linkId = p.linkId
   WHERE NOT exists(

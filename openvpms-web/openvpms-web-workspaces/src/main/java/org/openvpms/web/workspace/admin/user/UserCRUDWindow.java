@@ -24,6 +24,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.prefs.PreferencesDialog;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -40,6 +41,11 @@ import org.openvpms.web.system.ServiceHelper;
  * @author Tim Anderson
  */
 public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
+
+    /**
+     * Default preferences button id.
+     */
+    private static final String DEFAULT_PREFERENCES_ID = "button.defaultPreferences";
 
     /**
      * Reset preferences button id.
@@ -68,6 +74,12 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
+        buttons.add(DEFAULT_PREFERENCES_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onDefaultPreferences();
+            }
+        });
         buttons.add(RESET_PREFERENCES_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -85,11 +97,21 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
+        buttons.setEnabled(DEFAULT_PREFERENCES_ID, getContext().getPractice() != null);
         buttons.setEnabled(RESET_PREFERENCES_ID, enable);
     }
 
     /**
-     * Resets user preferences.
+     * Edits the default preferences.
+     */
+    private void onDefaultPreferences() {
+        PreferencesDialog dialog = new PreferencesDialog(getContext().getPractice(), null, getContext());
+        dialog.setTitle(Messages.get("admin.user.prefs.title"));
+        dialog.show();
+    }
+
+    /**
+     * Resets user preferences to the practice defaults.
      */
     private void onResetPreferences() {
         final User user = getObject();
@@ -100,7 +122,7 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
                 @Override
                 public void onClose(WindowPaneEvent event) {
                     PreferenceService service = ServiceHelper.getBean(PreferenceService.class);
-                    service.reset(user);
+                    service.reset(user, getContext().getPractice());
                 }
             });
         }

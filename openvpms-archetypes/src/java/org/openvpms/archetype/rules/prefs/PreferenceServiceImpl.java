@@ -18,7 +18,7 @@ package org.openvpms.archetype.rules.prefs;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -51,46 +51,51 @@ public class PreferenceServiceImpl implements PreferenceService {
     }
 
     /**
-     * Returns preferences for a user.
-     * <p/>
-     * Any changes are made persistent.
+     * Returns preferences for a user or practice.
      *
-     * @param user the user
-     * @param save if {@code true}, changes will be made persistent
-     * @return the user preferences
+     * @param party  the party
+     * @param source if non-null, specifies the source to copy preferences from if the party has none
+     * @param save   if {@code true}, changes will be made persistent
+     * @return the preferences
      */
     @Override
-    public Preferences getPreferences(User user, boolean save) {
+    public Preferences getPreferences(Party party, Party source, boolean save) {
         Preferences result;
-        IMObjectReference reference = user.getObjectReference();
+        IMObjectReference reference = party.getObjectReference();
+        IMObjectReference sourceReference = (source != null) ? source.getObjectReference() : null;
         if (save) {
-            Entity entity = PreferencesImpl.getPreferences(reference, service, transactionManager);
-            result = new PreferencesImpl(reference, entity, service, transactionManager);
+            Entity entity = PreferencesImpl.getPreferences(reference, sourceReference, service, transactionManager);
+            result = new PreferencesImpl(reference, sourceReference, entity, service, transactionManager);
         } else {
-            result = PreferencesImpl.getPreferences(reference, service);
+            result = PreferencesImpl.getPreferences(reference, sourceReference, service);
         }
         return result;
     }
 
     /**
-     * Returns the root preference entity for a user, creating them if they don't exist.
+     * Returns the root preference entity for a user or practice, creating it if it doesn't exist.
      *
-     * @param user the user
+     * @param party  the party
+     * @param source if non-null, specifies the party's preferences to copy to the user, if the user has none
      * @return the root preference entity
      */
     @Override
-    public Entity getEntity(User user) {
-        return PreferencesImpl.getPreferences(user.getObjectReference(), service, transactionManager);
+    public Entity getEntity(Party party, Party source) {
+        IMObjectReference reference = party.getObjectReference();
+        IMObjectReference sourceReference = source != null ? source.getObjectReference() : null;
+        return PreferencesImpl.getPreferences(reference, sourceReference, service, transactionManager);
     }
 
     /**
-     * Resets the preferences for a user.
+     * Resets the preferences for a user or practice.
      *
-     * @param user the user
+     * @param party  the party
+     * @param source if non-null, specifies the party's preferences to copy to the user
      */
     @Override
-    public void reset(User user) {
-        IMObjectReference reference = user.getObjectReference();
-        PreferencesImpl.remove(reference, service, transactionManager);
+    public void reset(Party party, Party source) {
+        IMObjectReference reference = party.getObjectReference();
+        IMObjectReference sourceReference = source != null ? source.getObjectReference() : null;
+        PreferencesImpl.reset(reference, sourceReference, service, transactionManager);
     }
 }

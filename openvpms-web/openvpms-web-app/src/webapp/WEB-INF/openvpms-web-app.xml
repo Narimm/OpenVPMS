@@ -91,6 +91,7 @@
 
     <bean id="preferences" class="org.openvpms.web.component.prefs.UserPreferences" scope="session">
         <constructor-arg ref="preferenceService"/>
+        <constructor-arg ref="practiceService"/>
     </bean>
 
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">

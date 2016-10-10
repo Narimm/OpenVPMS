@@ -57,4 +57,19 @@ public class PreferenceArchetypes {
      * Work list preferences archetype short name.
      */
     public static final String WORK_LIST = "entity.preferenceGroupWorkList";
+
+    /**
+     * All preference groups.
+     */
+    public static final String PREFERENCE_GROUPS = "entity.preferenceGroup*";
+
+    /**
+     * All preference group links.
+     */
+    public static final String PREFERENCE_GROUP_LINKS = "entityLink.preferenceGroup*";
+
+    /**
+     * Preferences user larchetype short name.
+     */
+    public static final String USER_LINK = "entityLink.preferencesUser";
 }
