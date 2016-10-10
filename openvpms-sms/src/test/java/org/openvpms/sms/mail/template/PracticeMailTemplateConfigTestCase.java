@@ -89,10 +89,13 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
      */
     @Test
     public void testNoPractice() {
-        remove(practice);
-        PracticeService practiceService = new PracticeService(getArchetypeService(),
-                                                              new PracticeRules(getArchetypeService(), null),
-                                                              createPool());
+        PracticeService practiceService = new PracticeService(
+                getArchetypeService(), new PracticeRules(getArchetypeService(), null), null) {
+            @Override
+            public synchronized Party getPractice() {
+                return null;
+            }
+        };
         config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
         try {
             config.getTemplate();
