@@ -355,6 +355,7 @@
 
     <bean id="preferences" class="org.openvpms.web.component.prefs.UserPreferences">
         <constructor-arg ref="preferenceService"/>
+        <constructor-arg ref="practiceService"/>
     </bean>
 
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">

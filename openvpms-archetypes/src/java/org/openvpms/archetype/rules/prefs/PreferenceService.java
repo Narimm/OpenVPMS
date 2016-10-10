@@ -17,7 +17,7 @@
 package org.openvpms.archetype.rules.prefs;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
  * User preference service.
@@ -27,26 +27,28 @@ import org.openvpms.component.business.domain.im.security.User;
 public interface PreferenceService {
 
     /**
-     * Returns preferences for a user.
+     * Returns preferences for a user or practice.
      *
-     * @param user the user
-     * @param save if {@code true}, changes will be made persistent
-     * @return the user preferences
+     * @param party  the party
+     * @param source if non-null, specifies the source to copy preferences from if the party has none
+     * @param save   if {@code true}, changes will be made persistent  @return the preferences
      */
-    Preferences getPreferences(User user, boolean save);
+    Preferences getPreferences(Party party, Party source, boolean save);
 
     /**
-     * Returns the root preference entity for a user, creating them if they don't exist.
+     * Returns the root preference entity for a user or practice, creating it if it doesn't exist.
      *
-     * @param user the user
+     * @param party  the party
+     * @param source if non-null, specifies the source to copy preferences from if the party has none
      * @return the root preference entity
      */
-    Entity getEntity(User user);
+    Entity getEntity(Party party, Party source);
 
     /**
-     * Resets the preferences for a user.
+     * Resets the preferences for a user or practice.
      *
-     * @param user the user
+     * @param party  the party
+     * @param source if non-null, specifies the source to copy preferences from if the party has none
      */
-    void reset(User user);
+    void reset(Party party, Party source);
 }

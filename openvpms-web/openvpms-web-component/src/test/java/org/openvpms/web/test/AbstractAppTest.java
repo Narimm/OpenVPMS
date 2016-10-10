@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.prefs.PreferenceService;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -48,8 +49,10 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         LocationRules locationRules = new LocationRules(getArchetypeService());
         UserRules userRules = new UserRules(getArchetypeService());
         PreferenceService preferences = getPreferenceService();
+        PracticeService practiceService = new PracticeService(getArchetypeService(), rules, null);
+        UserPreferences userPreferences = new UserPreferences(preferences, practiceService);
         ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext(), rules, locationRules,
-                                                                        userRules, new UserPreferences(preferences)) {
+                                                                        userRules, userPreferences) {
             /**
              * Switches the current workspace to display an object.
              *

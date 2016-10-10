@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.prefs;
 
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.prefs.PreferenceService;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -48,6 +49,11 @@ public class UserPreferences implements Preferences {
     private final PreferenceService service;
 
     /**
+     * The practice service.
+     */
+    private final PracticeService practiceService;
+
+    /**
      * The underlying preferences.
      */
     private Preferences preferences;
@@ -71,10 +77,12 @@ public class UserPreferences implements Preferences {
     /**
      * Constructs an {@link UserPreferences}.
      *
-     * @param service the preference service
+     * @param service         the preference service
+     * @param practiceService the practice service
      */
-    public UserPreferences(PreferenceService service) {
+    public UserPreferences(PreferenceService service, PracticeService practiceService) {
         this.service = service;
+        this.practiceService = practiceService;
     }
 
     /**
@@ -101,7 +109,7 @@ public class UserPreferences implements Preferences {
      */
     public void refresh() {
         if (user != null) {
-            preferences = service.getPreferences(user, false);
+            preferences = service.getPreferences(user, practiceService.getPractice(), false);
             persistent = null; // persistent preferences are loaded on demand
             if (listener != null) {
                 listener.refreshed();
@@ -260,7 +268,7 @@ public class UserPreferences implements Preferences {
      */
     protected Preferences getPersistent() {
         if (persistent == null) {
-            persistent = service.getPreferences(user, true);
+            persistent = service.getPreferences(user, practiceService.getPractice(), true);
         }
         return persistent;
     }

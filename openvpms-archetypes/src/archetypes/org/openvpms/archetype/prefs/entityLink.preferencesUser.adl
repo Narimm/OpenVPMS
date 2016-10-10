@@ -39,6 +39,10 @@
                     <propertyMap name="archetype">
                         <property name="shortName" value="security.user"/>
                     </propertyMap>
+                    <!-- for practice default preferences -->
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="party.organisationPractice"/>
+                    </propertyMap>
                 </propertyList>
             </assertion>
         </node>
