@@ -174,14 +174,14 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<bottomPen lineWidth="0.0" lineColor="#000000"/>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
-					<textElement verticalAlignment="Middle">
+					<textElement verticalAlignment="Top">
 						<font size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{target.template.entity.printedName} == null) ? $F{target.template.entity.name}: $F{target.template.entity.printedName}]]></textFieldExpression>
 				</textField>
 				<textField pattern="" isBlankWhenNull="false">
 					<reportElement key="textField-7" isPrintRepeatedValues="false" x="13" y="0" width="56" height="12" uuid="f9d8a2f9-ca73-4401-8c9a-4b9033609c45"/>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
+					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{target.startTime})]]></textFieldExpression>
@@ -193,7 +193,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<property name="local_mesure_unity" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					</reportElement>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
+					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{templateTotal}]]></textFieldExpression>
@@ -213,7 +213,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<bottomPen lineWidth="0.0" lineColor="#000000"/>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
+					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="9"/>
 					</textElement>
 					<text><![CDATA[1]]></text>
@@ -305,7 +305,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 ($F{target.print} == null?Boolean.TRUE:$F{target.print}):Boolean.TRUE)]]></printWhenExpression>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-7" isPrintRepeatedValues="false" x="13" y="0" width="56" height="12" uuid="81ba3aaf-4bac-41af-b085-8324bd30ea36"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{target.startTime})]]></textFieldExpression>
@@ -318,7 +318,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement verticalAlignment="Middle">
+				<textElement verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{target.product.entity.printedName} == null) ? $F{target.product.entity.name}: $F{target.product.entity.printedName}]]></textFieldExpression>
@@ -331,7 +331,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
@@ -347,7 +347,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{incTax}?$F{target.total}:$F{target.total}.subtract($V{taxR})]]></textFieldExpression>
@@ -370,7 +370,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{units}]]></textFieldExpression>

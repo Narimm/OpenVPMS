@@ -372,7 +372,9 @@
 					<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("customer")]]></dataSourceExpression>
-				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
+("Estimate Items.jrxml"):
+("Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
 	</pageHeader>
@@ -397,7 +399,9 @@
 					<subreportParameterExpression><![CDATA[$F{[count(list:distinct(., "items.target.patient.entity.id"))]}.intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
-				<subreportExpression><![CDATA["Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
+("Estimate Items.jrxml"):
+("Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

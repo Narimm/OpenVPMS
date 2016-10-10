@@ -68,14 +68,14 @@
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<background>
-		<band height="552" splitType="Stretch">
+		<band height="424" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement x="127" y="24" width="127" height="508" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
+				<reportElement x="127" y="21" width="127" height="403" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
 					<printWhenExpression><![CDATA[$F{hide}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Right">
-					<font fontName="SansSerif" size="84" isBold="true"/>
+					<font fontName="SansSerif" size="70" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cancelled]]></text>
 			</staticText>
@@ -359,7 +359,9 @@
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
 				<returnValue subreportVariable="SUM_target.discount" toVariable="TOTAL_DISCOUNT"/>
-				<subreportExpression><![CDATA["Invoice Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
+("Invoice Items.jrxml"):
+("Invoice Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
@@ -433,9 +435,8 @@
 				<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.generalMsg}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" positionType="Float" x="195" y="0" width="116" height="11" isRemoveLineWhenBlank="true" uuid="0f1716b7-3526-4eb8-bdc3-7f262664abd1">
+				<reportElement key="staticText-9" positionType="Float" x="201" y="0" width="115" height="11" isRemoveLineWhenBlank="true" uuid="0f1716b7-3526-4eb8-bdc3-7f262664abd1">
 					<property name="local_mesure_unitx" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$V{isFinalised}]]></printWhenExpression>
@@ -453,9 +454,8 @@
 				<text><![CDATA[Your account balance is]]></text>
 			</staticText>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-8" positionType="Float" x="318" y="0" width="55" height="11" isRemoveLineWhenBlank="true" uuid="647a7731-d63c-462a-885e-c1cc88e5e8c7">
+				<reportElement key="textField-8" positionType="Float" x="321" y="0" width="55" height="11" isRemoveLineWhenBlank="true" uuid="647a7731-d63c-462a-885e-c1cc88e5e8c7">
 					<property name="local_mesure_unitx" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[$V{isFinalised}]]></printWhenExpression>
 				</reportElement>
