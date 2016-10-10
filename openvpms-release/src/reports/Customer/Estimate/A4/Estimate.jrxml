@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-08-01T04:05:49 -->
+<!-- 2016-10-11T05:42:03 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Estimate" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="8c42a3ea-6f37-49f5-803e-e1f46987b877">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -374,7 +374,9 @@
 					<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("customer")]]></dataSourceExpression>
-				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
+("Estimate Items.jrxml"):
+("Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
 	</pageHeader>
@@ -399,7 +401,9 @@
 					<subreportParameterExpression><![CDATA[$F{[count(list:distinct(., "items.target.patient.entity.id"))]}.intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
-				<subreportExpression><![CDATA["Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
+("Estimate Items.jrxml"):
+("Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

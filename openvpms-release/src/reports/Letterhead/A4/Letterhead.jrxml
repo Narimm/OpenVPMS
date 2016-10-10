@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-07-22T08:32:37 -->
+<!-- 2016-10-11T06:49:51 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Letterhead" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="0d884615-14c1-48b1-801d-fc1e1707caca">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="39"/>
@@ -97,7 +97,7 @@
 						<font size="10" isBold="true"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA["E: "+$F{[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]}.length()==0?"":("E: "+$F{[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]})]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement positionType="Float" x="326" y="72" width="213" height="13" uuid="fe74ee1c-ce40-41b2-91ac-0bef3d404bcb">
@@ -107,7 +107,7 @@
 						<font size="10" isBold="true"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA["W: "+$F{[party:getWebsite(party:getLetterheadContacts($OpenVPMS.location))]}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{[party:getWebsite(party:getLetterheadContacts($OpenVPMS.location))]}.length()==0?"":("W: "+$F{[party:getWebsite(party:getLetterheadContacts($OpenVPMS.location))]})]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement positionType="Float" x="326" y="85" width="213" height="13" isRemoveLineWhenBlank="true" uuid="92f62849-0634-46c1-897a-97d32816ef3f">

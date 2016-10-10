@@ -55,14 +55,14 @@
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<background>
-		<band height="552" splitType="Stretch">
+		<band height="424" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement x="127" y="24" width="127" height="508" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
+				<reportElement x="127" y="21" width="127" height="403" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
 					<printWhenExpression><![CDATA[$F{hide}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Right">
-					<font fontName="SansSerif" size="84" isBold="true"/>
+					<font fontName="SansSerif" size="70" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cancelled]]></text>
 			</staticText>

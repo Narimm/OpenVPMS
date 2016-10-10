@@ -406,7 +406,7 @@ where
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="15" splitType="Prevent">
+		<band height="14" splitType="Prevent">
 			<printWhenExpression><![CDATA[(!$P{countsOnly})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement key="textField" isPrintRepeatedValues="false" x="11" y="0" width="145" height="13" uuid="380e6bdb-da5f-4f74-b587-d4a6ac72aad0">

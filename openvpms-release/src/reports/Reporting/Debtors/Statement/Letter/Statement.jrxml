@@ -1209,7 +1209,9 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<subreportParameterExpression><![CDATA[$V{isOTC}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
-				<subreportExpression><![CDATA["Statement Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
+("Statement Items.jrxml"):
+("Statement Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
 			</subreport>
 			<staticText>
 				<reportElement x="548" y="0" width="6" height="12" uuid="625dcaef-339d-462a-8d3b-7b3dd7db1f1a">

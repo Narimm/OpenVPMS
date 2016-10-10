@@ -141,7 +141,7 @@
 					<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement positionType="Float" x="384" y="0" width="158" height="15" isRemoveLineWhenBlank="true" uuid="c7aad775-3284-4501-8a1f-3a5475202c60">
+					<reportElement positionType="Float" x="384" y="0" width="163" height="15" isRemoveLineWhenBlank="true" uuid="c7aad775-3284-4501-8a1f-3a5475202c60">
 						<printWhenExpression><![CDATA[$V{isPaid}&&($F{[party:getAccountBalance(.)]}==BigDecimal.ZERO)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
@@ -150,7 +150,7 @@
 					<text><![CDATA[PAID IN FULL  ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="staticText-8" positionType="Float" x="284" y="16" width="168" height="15" isRemoveLineWhenBlank="true" uuid="a089a886-a11d-4cdb-bc71-a1883caa0cab">
+					<reportElement key="staticText-8" positionType="Float" x="292" y="16" width="168" height="15" isRemoveLineWhenBlank="true" uuid="a089a886-a11d-4cdb-bc71-a1883caa0cab">
 						<property name="local_mesure_unitx" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="local_mesure_unitheight" value="pixel"/>
@@ -170,8 +170,7 @@
 					<text><![CDATA[Amount paid]]></text>
 				</staticText>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-7" positionType="Float" x="462" y="16" width="80" height="15" isRemoveLineWhenBlank="true" uuid="faac969b-5114-4758-8280-5d6dd4821242">
-						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<reportElement key="textField-7" positionType="Float" x="467" y="16" width="80" height="15" isRemoveLineWhenBlank="true" uuid="faac969b-5114-4758-8280-5d6dd4821242">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 						<printWhenExpression><![CDATA[(!$V{isPaid})&&$V{isFinalised}&&($F{allocatedAmount}.compareTo(BigDecimal.ZERO)!=0)]]></printWhenExpression>
 					</reportElement>
@@ -188,7 +187,7 @@
 					<textFieldExpression><![CDATA[$F{allocatedAmount}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement key="staticText-9" positionType="Float" x="284" y="31" width="168" height="15" isRemoveLineWhenBlank="true" uuid="678a7571-d071-453d-a3a7-886a55a0f633">
+					<reportElement key="staticText-9" positionType="Float" x="292" y="31" width="168" height="15" isRemoveLineWhenBlank="true" uuid="678a7571-d071-453d-a3a7-886a55a0f633">
 						<property name="local_mesure_unitx" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -207,9 +206,8 @@
 					<text><![CDATA[Your account balance is]]></text>
 				</staticText>
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-8" positionType="Float" x="462" y="31" width="80" height="15" isRemoveLineWhenBlank="true" uuid="a4f42292-1bd3-4df1-9687-568961a3953d">
+					<reportElement key="textField-8" positionType="Float" x="467" y="31" width="80" height="15" isRemoveLineWhenBlank="true" uuid="a4f42292-1bd3-4df1-9687-568961a3953d">
 						<property name="local_mesure_unitx" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 						<printWhenExpression><![CDATA[$V{isFinalised}&&($F{[party:getAccountBalance(.)]}!=BigDecimal.ZERO)]]></printWhenExpression>
 					</reportElement>
@@ -265,14 +263,14 @@
 		</groupFooter>
 	</group>
 	<background>
-		<band height="734" splitType="Stretch">
+		<band height="565" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement x="184" y="32" width="185" height="676" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
+				<reportElement x="184" y="28" width="185" height="536" forecolor="#FF0000" uuid="a2c23685-f5d2-4035-9d4b-4c64a529509d">
 					<printWhenExpression><![CDATA[$F{hide}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Right">
-					<font fontName="SansSerif" size="112" isBold="true"/>
+					<font fontName="SansSerif" size="94" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cancelled]]></text>
 			</staticText>
@@ -557,7 +555,9 @@
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
 				<returnValue subreportVariable="SUM_target.discount" toVariable="TOTAL_DISCOUNT"/>
-				<subreportExpression><![CDATA["Invoice Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
+("Invoice Items.jrxml"):
+("Invoice Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
