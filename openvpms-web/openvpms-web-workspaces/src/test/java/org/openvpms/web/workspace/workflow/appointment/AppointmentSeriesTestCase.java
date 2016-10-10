@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +35,7 @@ import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSerie
 import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeriesTest;
 import org.openvpms.web.workspace.workflow.appointment.repeat.Repeats;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -209,10 +211,11 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
 
     /**
      * Verifies that sendReminder=true is not initially propagated to acts within the no reminder period.
+     * NOTE: AppointmentSeries determines sendReminder on the current date/time
      */
     @Test
     public void testSendReminderNotEnabledWithinNoReminderPeriod() {
-        Date startTime = DateRules.getDate(DateRules.getToday(), 9, DateUnits.HOURS);
+        Date startTime = DateUtils.truncate(new Date(), Calendar.SECOND); // truncate to seconds as ms not stored
         Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         Act appointment = createEvent(startTime, endTime);
 
