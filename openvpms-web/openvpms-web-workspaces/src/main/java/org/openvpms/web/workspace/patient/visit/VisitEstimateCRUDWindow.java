@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -151,6 +151,6 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
      * @return a new estimate invoicer
      */
     protected EstimateInvoicer createEstimateInvoicer() {
-        return new EstimateInvoicer();
+        return new VisitEstimateInvoicer();
     }
 }
