@@ -174,11 +174,20 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     }
 
     /**
+     * Returns the listener for template product expansion events.
+     *
+     * @return the listener. May be {@code null}
+     */
+    public TemplateProductListener getTemplateProductListener() {
+        return templateProductListener;
+    }
+
+    /**
      * Creates a new editor.
      *
      * @param object  the object to edit
      * @param context the layout context
-     * @return an editor to edit <code>object</code>
+     * @return an editor to edit {@code object}
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
