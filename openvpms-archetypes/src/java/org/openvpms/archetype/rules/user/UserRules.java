@@ -106,15 +106,7 @@ public class UserRules {
      * otherwise {@code false}
      */
     public boolean isClinician(User user) {
-        if (TypeHelper.isA(user, UserArchetypes.USER)) {
-            for (Lookup lookup : user.getClassifications()) {
-                if (TypeHelper.isA(lookup, "lookup.userType")
-                    && "CLINICIAN".equals(lookup.getCode())) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return isA(user, "CLINICIAN");
     }
 
     /**
@@ -125,15 +117,25 @@ public class UserRules {
      * @return {@code true} if the user is an administrator
      */
     public boolean isAdministrator(User user) {
+        boolean result = isA(user, "ADMINISTRATOR");
+        if (!result) {
+            result = TypeHelper.isA(user, UserArchetypes.USER) && "admin".equals(user.getUsername());
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a user has a particular user type.
+     *
+     * @param user     the user
+     * @param userType the user type code
+     * @return {@code true} if the user has the user type
+     */
+    public boolean isA(User user, String userType) {
         if (TypeHelper.isA(user, UserArchetypes.USER)) {
-            if ("admin".equals(user.getUsername())) {
-                return true;
-            } else {
-                for (Lookup lookup : user.getClassifications()) {
-                    if (TypeHelper.isA(lookup, "lookup.userType")
-                        && "ADMINISTRATOR".equals(lookup.getCode())) {
-                        return true;
-                    }
+            for (Lookup lookup : user.getClassifications()) {
+                if (TypeHelper.isA(lookup, "lookup.userType") && userType.equals(lookup.getCode())) {
+                    return true;
                 }
             }
         }

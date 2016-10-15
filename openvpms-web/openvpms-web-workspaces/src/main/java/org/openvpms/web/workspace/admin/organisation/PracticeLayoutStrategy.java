@@ -60,13 +60,22 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      */
     private static final String PRESCRIPTION_EXPIRY_UNITS = "prescriptionExpiryUnits";
 
-    public static final String RECORD_LOCK_PERIOD_UNITS = "recordLockPeriodUnits";
     /**
-     * The archetype nodes. This excludes the prescription expiry units as they are rendered inline with the expiry
-     * period.
+     * Record lock period units.
+     */
+    private static final String RECORD_LOCK_PERIOD_UNITS = "recordLockPeriodUnits";
+
+    /**
+     * Minimum quantities override.
+     */
+    private static final String MINIMUM_QUANTITIES_OVERRIDE = "minimumQuantitiesOverride";
+
+    /**
+     * The archetype nodes. This excludes nodes rendered alongside others.
      */
     private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(PRESCRIPTION_EXPIRY_UNITS,
-                                                                             RECORD_LOCK_PERIOD_UNITS);
+                                                                             RECORD_LOCK_PERIOD_UNITS,
+                                                                             MINIMUM_QUANTITIES_OVERRIDE);
 
     /**
      * Default constructor.
@@ -104,6 +113,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         addAutoLockScreen(object, properties, factory);
         addAutoLogout(object, properties, factory);
         addRecordLockPeriod(object, properties, factory);
+        addMinimumQuantities(object, properties, factory);
         if (subscription == null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             Participation participation = SubscriptionHelper.getSubscriptionParticipation((Party) object, service);
@@ -220,6 +230,27 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         Row row = RowFactory.create(Styles.CELL_SPACING, state.getComponent(),
                                     LabelFactory.create("admin.practice.minutes"));
         addComponent(new ComponentState(row, property));
+    }
+
+    /**
+     * Registers a component to render the minimum quantities and overrides properties.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addMinimumQuantities(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        Property minimumQuantities = properties.get("minimumQuantities");
+        Property minimumQuantitiesOverride = properties.get(MINIMUM_QUANTITIES_OVERRIDE);
+
+        ComponentState quantities = factory.create(minimumQuantities, object);
+        ComponentState override = factory.create(minimumQuantitiesOverride, object);
+        Row row = RowFactory.create(Styles.CELL_SPACING, quantities.getComponent(), override.getLabel(),
+                                    override.getComponent());
+        FocusGroup group = new FocusGroup(minimumQuantities.getName());
+        group.add(quantities.getComponent());
+        group.add(override.getComponent());
+        addComponent(new ComponentState(row, minimumQuantities, group));
     }
 
 }
