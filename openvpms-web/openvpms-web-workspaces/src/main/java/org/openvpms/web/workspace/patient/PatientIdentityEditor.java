@@ -117,6 +117,7 @@ public class PatientIdentityEditor {
                     throw new IllegalStateException("Patient has been removed");
                 }
                 patient.addIdentity(identity);
+                ServiceHelper.getArchetypeService().deriveValues(patient); // update description
                 super.doSave(editor);
             }
         };
