@@ -24,6 +24,7 @@ import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.RemoveConfirmationHandler;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
@@ -52,13 +53,15 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
     public void remove(final IMObject object, final IMObjectCollectionEditor collection) {
         AbstractChargeItemRelationshipCollectionEditor chargeCollection
                 = (AbstractChargeItemRelationshipCollectionEditor) collection;
-        if (chargeCollection.getEditContext().useMinimumQuantities()) {
+        PriceActEditContext editContext = chargeCollection.getEditContext();
+        if (editContext.useMinimumQuantities()) {
             IMObjectEditor chargeEditor = chargeCollection.getEditor(object);
             if (chargeEditor instanceof PriceActItemEditor) {
                 PriceActItemEditor editor = (PriceActItemEditor) chargeEditor;
                 BigDecimal quantity = editor.getMinimumQuantity();
                 if (quantity.compareTo(BigDecimal.ZERO) > 0) {
-                    removeMinimumQuantity(object, collection, editor, quantity);
+                    removeMinimumQuantity(object, collection, editor, quantity,
+                                          editContext.overrideMinimumQuantities());
                 } else {
                     super.remove(object, collection);
                 }
@@ -94,25 +97,35 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
     /**
      * Invoked when an object with a non-zero minimum quantity is being removed.
      * <p/>
-     * This displays a confirmation dialog.
+     * This displays a confirmation dialog if there are no restrictions on removal, or the user can override
+     * minimum quantities.
+     * <p/>
+     * If there are restrictions on removal, and the user can't override them, an error will be displayed.
      *
      * @param object     the object to remove
      * @param collection the collection to remove the object from, if confirmed
      * @param editor     the object editor
      * @param quantity   the minimum quantity
+     * @param override   determines if the user can override minimum quantities
      */
     protected void removeMinimumQuantity(final IMObject object, final IMObjectCollectionEditor collection,
-                                         PriceActItemEditor editor, BigDecimal quantity) {
+                                         PriceActItemEditor editor, BigDecimal quantity,
+                                         boolean override) {
         String name = getDisplayName(editor);
-        ConfirmationDialog.show(
-                Messages.format("customer.charge.minquantity.delete.title", name),
-                Messages.format("customer.charge.minquantity.delete.message", name, quantity),
-                ConfirmationDialog.YES_NO, new PopupDialogListener() {
-                    @Override
-                    public void onYes() {
-                        collection.remove(object);
-                    }
-                });
+        if (override) {
+            ConfirmationDialog.show(
+                    Messages.format("customer.charge.minquantity.delete.title", name),
+                    Messages.format("customer.charge.minquantity.delete.message", name, quantity),
+                    ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                        @Override
+                        public void onYes() {
+                            collection.remove(object);
+                        }
+                    });
+        } else {
+            ErrorDialog.show(Messages.format("customer.charge.minquantity.deleteforbidden.title", name),
+                             Messages.format("customer.charge.minquantity.deleteforbidden.message", name, quantity));
+        }
     }
 
     /**

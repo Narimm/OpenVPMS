@@ -1286,6 +1286,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 dispensing.addModifiableListener(dispensingListener);
             }
         }
+        if (getEditContext().useMinimumQuantities() && getEditContext().overrideMinimumQuantities()) {
+            BigDecimal minimumQuantity = getMinimumQuantity();
+            BigDecimal quantity = getQuantity();
+            if (!MathRules.isZero(minimumQuantity) && quantity.compareTo(minimumQuantity) < 0) {
+                setMinimumQuantity(quantity);
+            }
+        }
         updateOnHandQuantity();
     }
 

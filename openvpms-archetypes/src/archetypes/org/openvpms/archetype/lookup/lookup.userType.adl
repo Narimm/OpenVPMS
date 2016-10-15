@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="lookup.userType.1.0"
@@ -30,5 +30,6 @@
               path="/description" hidden="true" minCardinality="1" derived="true"
               derivedValue="concat(/name, ' User Type')"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()" hidden="true"/>
     </archetype>
 </archetypes>

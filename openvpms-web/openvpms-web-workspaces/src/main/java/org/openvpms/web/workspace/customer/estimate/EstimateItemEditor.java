@@ -166,6 +166,14 @@ public class EstimateItemEditor extends PriceActItemEditor {
         }
 
         lowQuantity = new Quantity(getProperty(LOW_QTY), act, getLayoutContext());
+        if (context.overrideMinimumQuantities()) {
+            lowQuantity.getProperty().addModifiableListener(new ModifiableListener() {
+                @Override
+                public void modified(Modifiable modifiable) {
+                    onLowQuantityChanged();
+                }
+            });
+        }
         highQuantity = new Quantity(getProperty(HIGH_QTY), act, getLayoutContext());
 
         Product product = getProduct();
@@ -548,6 +556,20 @@ public class EstimateItemEditor extends PriceActItemEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
         return new EstimateItemLayoutStrategy(fixedPrice);
+    }
+
+    /**
+     * Invoked when the low quantity changes and the user can override the minimum quantity.
+     * <p/>
+     * This ensures that the minimum quantity is set to the low quantity if it is less, in order for
+     * the estimate to be valid.
+     */
+    private void onLowQuantityChanged() {
+        BigDecimal minQuantity = getMinimumQuantity();
+        BigDecimal lowQuantity = getLowQuantity();
+        if (!MathRules.isZero(minQuantity) && lowQuantity.compareTo(minQuantity) < 0) {
+            setMinimumQuantity(lowQuantity);
+        }
     }
 
     /**

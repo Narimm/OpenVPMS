@@ -554,7 +554,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
                 editor.setStockLocation(editContext.getStockLocation());
             }
 
-            if (editContext.useMinimumQuantities()) {
+            if (editContext.useMinimumQuantities() && !editContext.overrideMinimumQuantities()) {
                 if (!MathRules.isZero(getMinimumQuantity())) {
                     IMObjectReference product = editor.getEntityRef();
                     if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
@@ -577,7 +577,8 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected boolean isProductReadOnly() {
         boolean result = false;
-        if (editContext.useMinimumQuantities() && TypeHelper.isA(getProductRef(), ProductArchetypes.SERVICE)) {
+        if (editContext.useMinimumQuantities() && !editContext.overrideMinimumQuantities()
+            && TypeHelper.isA(getProductRef(), ProductArchetypes.SERVICE)) {
             BigDecimal minQuantity = getMinimumQuantity();
             result = !MathRules.isZero(minQuantity);
         }

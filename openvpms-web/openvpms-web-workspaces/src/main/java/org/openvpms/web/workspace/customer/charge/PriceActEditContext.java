@@ -23,9 +23,11 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.stock.StockRules;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -101,6 +103,11 @@ public class PriceActEditContext {
     private final boolean useMinimumQuantities;
 
     /**
+     * Determines if minimum quantities can be overriden by the user.
+     */
+    private final boolean overrideMinimumQuantity;
+
+    /**
      * The product pricer.
      */
     private final PricingContext pricingContext;
@@ -122,6 +129,13 @@ public class PriceActEditContext {
         useLocationProducts = ProductHelper.useLocationProducts(context.getContext());
         IMObjectBean bean = new IMObjectBean(practice);
         useMinimumQuantities = bean.getBoolean("minimumQuantities", false);
+        if (useMinimumQuantities) {
+            User user = context.getContext().getUser();
+            String userType = bean.getString("minimumQuantitiesOverride");
+            overrideMinimumQuantity = userType != null && ServiceHelper.getBean(UserRules.class).isA(user, userType);
+        } else {
+            overrideMinimumQuantity = false;
+        }
         service = new CachingReadOnlyArchetypeService(context.getCache(), ServiceHelper.getArchetypeService());
         ProductPriceRules priceRules = new ProductPriceRules(service);
         taxRules = new CustomerTaxRules(practice, service);
@@ -276,6 +290,15 @@ public class PriceActEditContext {
      */
     public boolean useMinimumQuantities() {
         return useMinimumQuantities;
+    }
+
+    /**
+     * Determines if the user can override minimum quantities.
+     *
+     * @return {@code true} if the user can override minimum quantities
+     */
+    public boolean overrideMinimumQuantities() {
+        return overrideMinimumQuantity;
     }
 
     /**

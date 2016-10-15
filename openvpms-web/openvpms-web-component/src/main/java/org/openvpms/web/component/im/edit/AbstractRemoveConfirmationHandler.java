@@ -36,7 +36,7 @@ public abstract class AbstractRemoveConfirmationHandler implements RemoveConfirm
      * <p/>
      * If approved, it performs the removal.
      *
-     * @param object     the object to remove
+     *  @param object     the object to remove
      * @param collection the collection to remove the object from, if approved
      */
     @Override

@@ -89,6 +89,14 @@
         </node>
         <node name="minimumQuantities" path="/details/minimumQuantities" minCardinality="0"
               maxCardinality="1" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="minimumQuantitiesOverride" displayName="Override" path="/details/minimumQuantitiesOverride"
+              minCardinality="0" maxCardinality="1" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userType"/>
+                <errorMessage>Invalid user type</errorMessage>
+            </assertion>
+        </node>
         <node name="showPricesTaxInclusive" path="/details/showPricesTaxInclusive" minCardinality="0"
               maxCardinality="1" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="useLocationProducts" path="/details/useLocationProducts" minCardinality="0" maxCardinality="1"
