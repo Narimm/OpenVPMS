@@ -81,7 +81,7 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
         workListEditor.addModifiableListener(new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
-                getTaskTypeEditor().setWorkList(getWorkList());
+                onWorkListChanged();
             }
         });
     }
@@ -135,6 +135,13 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
         strategy.addComponent(new ComponentState(getStartTimeEditor()));
         strategy.addComponent(new ComponentState(getEndTimeEditor()));
         return strategy;
+    }
+
+    /**
+     * Invoked to update the task type when the work list changes.
+     */
+    protected void onWorkListChanged() {
+        getTaskTypeEditor().setWorkList(getWorkList());
     }
 
     /**
