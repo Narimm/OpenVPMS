@@ -77,6 +77,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         practice.addClassification(TestHelper.createTaxType(BigDecimal.TEN));
         IMObjectBean bean = new IMObjectBean(practice);
         bean.setValue("minimumQuantities", true);
+        bean.setValue("minimumQuantitiesOverride", null);
         save(practice);
         super.setUp();
     }

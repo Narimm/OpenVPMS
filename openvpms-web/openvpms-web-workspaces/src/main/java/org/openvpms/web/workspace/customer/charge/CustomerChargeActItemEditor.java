@@ -1286,10 +1286,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 dispensing.addModifiableListener(dispensingListener);
             }
         }
-        if (getEditContext().useMinimumQuantities() && getEditContext().overrideMinimumQuantities()) {
+        if (quantity.getProperty().isValid()
+            && getEditContext().useMinimumQuantities() && getEditContext().overrideMinimumQuantities()) {
+            // when the quantity is valid, and minimum quantities are being used, and the user can override minimum
+            // quantities, adjust the minimum quantity if required.
+            // Setting the quantity to zero disables the minimum
             BigDecimal minimumQuantity = getMinimumQuantity();
             BigDecimal quantity = getQuantity();
-            if (!MathRules.isZero(minimumQuantity) && quantity.compareTo(minimumQuantity) < 0) {
+            if (!MathRules.isZero(minimumQuantity)
+                && (quantity.compareTo(minimumQuantity) < 0 || MathRules.isZero(quantity))) {
                 setMinimumQuantity(quantity);
             }
         }
