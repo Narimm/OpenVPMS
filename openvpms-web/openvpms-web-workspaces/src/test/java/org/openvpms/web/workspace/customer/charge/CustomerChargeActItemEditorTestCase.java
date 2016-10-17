@@ -623,9 +623,113 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertEquals(1, patient.getIdentities().size());
         EntityIdentity identity = patient.getIdentities().iterator().next();
         assertEquals("123456789", identity.getIdentity());
+        assertEquals("  (Microchip: 123456789)", patient.getDescription());
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
+    }
+
+    /**
+     * Verifies that the editor is invalid if a quantity is less than a minimum quantity.
+     * <p/>
+     * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
+     */
+    @Test
+    public void testMinimumQuantities() {
+        BigDecimal two = BigDecimal.valueOf(2);
+        User author = TestHelper.createUser();
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layout.getContext().setUser(author); // to propagate to acts
+
+        Party patient = TestHelper.createPatient();
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        Product product = ProductTestHelper.createService();
+        CustomerChargeEditContext editContext = createEditContext(layout);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
+        editor.setPatient(patient);
+        editor.setProduct(product);
+
+        editor.setMinimumQuantity(two);
+        editor.setQuantity(two);
+        assertTrue(editor.isValid());
+
+        // editor should be invalid when quantity set below minimum
+        editor.setQuantity(BigDecimal.ONE);
+        assertFalse(editor.isValid());
+
+        // now set above
+        editor.setQuantity(two);
+        assertTrue(editor.isValid());
+    }
+
+    /**
+     * Verifies that a user with the appropriate user type can override minimum quantities.
+     * <p/>
+     * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
+     */
+    @Test
+    public void testMinimumQuantitiesOverride() {
+        BigDecimal two = BigDecimal.valueOf(2);
+
+        // set up a user that can override minimum quantities
+        Lookup userType = TestHelper.getLookup("lookup.userType", "MINIMUM_QTY_OVERRIDE");
+        Party practice = getPractice();
+        IMObjectBean bean = new IMObjectBean(practice);
+        bean.setValue("minimumQuantitiesOverride", userType.getCode());
+        bean.save();
+        User author = TestHelper.createUser();
+        author.addClassification(userType);
+
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layout.getContext().setUser(author); // to propagate to acts
+
+        Party patient = TestHelper.createPatient();
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        Product product = ProductTestHelper.createService();
+        CustomerChargeEditContext editContext = createEditContext(layout);
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
+        editor.setPatient(patient);
+        editor.setProduct(product);
+
+        editor.setMinimumQuantity(two);
+        editor.setQuantity(two);
+        assertTrue(editor.isValid());
+
+        // set the quantity above the minimum. The minimum quantity shouldn't change
+        editor.setQuantity(BigDecimal.TEN);
+        checkEquals(two, editor.getMinimumQuantity());
+
+        // now set the quantity below the minimum. As the user has the override type, the minimum quantity should update
+        editor.setQuantity(BigDecimal.ONE);
+        checkEquals(BigDecimal.ONE, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
+
+        // now set a negative quantity. This is supported for charges as hack for invoice level discounts but the
+        // minimum quantity doesn't support negatives, so the item will be invalid.
+        BigDecimal minusOne = BigDecimal.valueOf(-1);
+        editor.setQuantity(minusOne);
+        checkEquals(minusOne, editor.getMinimumQuantity());
+        assertFalse(editor.isValid());
+
+        // set the quantity to zero. This should disable the minimum quantity
+        editor.setQuantity(BigDecimal.ZERO);
+        checkEquals(BigDecimal.ZERO, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
+
+        // verify the minimum is disabled
+        editor.setQuantity(BigDecimal.ONE);
+        checkEquals(BigDecimal.ZERO, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
     }
 
     /**

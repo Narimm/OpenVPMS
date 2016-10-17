@@ -563,12 +563,15 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * <p/>
      * This ensures that the minimum quantity is set to the low quantity if it is less, in order for
      * the estimate to be valid.
+     * <p/>
+     // Setting the low quantity to zero disables the minimum.
      */
     private void onLowQuantityChanged() {
         BigDecimal minQuantity = getMinimumQuantity();
-        BigDecimal lowQuantity = getLowQuantity();
-        if (!MathRules.isZero(minQuantity) && lowQuantity.compareTo(minQuantity) < 0) {
-            setMinimumQuantity(lowQuantity);
+        BigDecimal quantity = getLowQuantity();
+        if (lowQuantity.getProperty().isValid()
+            && (quantity.compareTo(minQuantity) < 0 || MathRules.isZero(quantity))) {
+            setMinimumQuantity(quantity);
         }
     }
 

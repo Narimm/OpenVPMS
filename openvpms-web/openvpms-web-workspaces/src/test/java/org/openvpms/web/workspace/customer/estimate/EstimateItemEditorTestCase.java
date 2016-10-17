@@ -448,6 +448,99 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     }
 
     /**
+     * Verifies that the editor is invalid if a low quantity is less than a minimum quantity.
+     * <p/>
+     * Note that in practice, the minimum quantity is set by expanding a template.
+     */
+    @Test
+    public void testMinimumQuantities() {
+        BigDecimal two = BigDecimal.valueOf(2);
+        Product product = createProduct(ProductArchetypes.MEDICATION);
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        editor.setMinimumQuantity(two);
+        editor.setLowQuantity(two);
+        editor.setHighQuantity(two);
+        assertTrue(editor.isValid());
+
+        // editor should be invalid when low quantity set below minimum
+        editor.setLowQuantity(BigDecimal.ONE);
+        assertFalse(editor.isValid());
+
+        // now set above
+        editor.setLowQuantity(two);
+        assertTrue(editor.isValid());
+    }
+
+    /**
+     * Verifies that a user with the appropriate user type can override minimum quantities.
+     * <p/>
+     * Note that in practice, the minimum quantity is set by expanding a template.
+     */
+    @Test
+    public void testMinimumQuantitiesOverride() {
+        Lookup userType = TestHelper.getLookup("lookup.userType", "MINIMUM_QTY_OVERRIDE");
+        Party practice = getPractice();
+        IMObjectBean bean = new IMObjectBean(practice);
+        bean.setValue("minimumQuantitiesOverride", userType.getCode());
+        bean.save();
+        author.addClassification(userType);
+
+        BigDecimal two = BigDecimal.valueOf(2);
+        Product product = createProduct(ProductArchetypes.MEDICATION);
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        editor.setLowQuantity(two);
+        editor.setHighQuantity(BigDecimal.TEN);
+        editor.setMinimumQuantity(two);
+        assertTrue(editor.isValid());
+
+        // set the low quantity above the minimum. The minimum quantity shouldn't change
+        editor.setLowQuantity(BigDecimal.TEN);
+        checkEquals(two, editor.getMinimumQuantity());
+
+        // now set the low quantity. As the user has the override type, the minimum quantity should update
+        editor.setLowQuantity(BigDecimal.ONE);
+        checkEquals(BigDecimal.ONE, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
+
+        // now set an invalid low quantity and verify the minimum quantity doesn't update
+        editor.setLowQuantity(BigDecimal.valueOf(-1));
+        assertFalse(editor.isValid());
+        checkEquals(BigDecimal.ONE, editor.getMinimumQuantity());
+
+        // set the low quantity to zero. This should disable the minimum quantity
+        editor.setLowQuantity(BigDecimal.ZERO);
+        checkEquals(BigDecimal.ZERO, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
+
+        // verify the minimum is disabled
+        editor.setLowQuantity(BigDecimal.ONE);
+        checkEquals(BigDecimal.ZERO, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
+    }
+
+    /**
      * Saves an estimate and estimate item editor in a single transaction.
      *
      * @param estimate the estimate
