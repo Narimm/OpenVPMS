@@ -230,6 +230,46 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
+     * Verifies that the default price is returned if no price has a matching pricing group.
+     */
+    @Test
+    public void testDefaultProductPriceForPriceGroup() {
+        Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
+
+        Date today = getToday();
+        ProductPrice price1 = createFixedPrice("0.0", "0.0", "0.0", "0.0", today, null, true);
+        ProductPrice price2 = createFixedPrice("1.0", "0.0", "0.0", "0.0", today, null, false);
+        Product product = TestHelper.createProduct();
+        product.addProductPrice(price1);
+        product.addProductPrice(price2);
+        save(product);
+
+        // for no pricing group, the default should be returned
+        ProductPrice price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, null);
+        assertEquals(price, price1);
+
+        // verify that when no price has a pricing group, and a group is specified, the default is returned
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, groupA);
+        assertEquals(price, price1);
+
+        // verify that the default is not returned when another price has a matching group
+        price2.addClassification(groupA);
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, groupA);
+        assertEquals(price, price2);
+
+        // no pricing group, the default should still be returned
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, null);
+        assertEquals(price, price1);
+
+        // now make price2 a default. This should be returned over price1 when groupA is specified. Without the group
+        // which one is returned is non-deterministic
+        IMObjectBean bean = new IMObjectBean(price2);
+        bean.setValue("default", true);
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, groupA);
+        assertEquals(price, price2);
+    }
+
+    /**
      * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} and
      * {@link ProductPriceRules#getTaxIncPrice(BigDecimal, BigDecimal, Currency)} methods.
      * <p/>

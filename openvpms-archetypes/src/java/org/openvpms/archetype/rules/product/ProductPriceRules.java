@@ -607,7 +607,7 @@ public class ProductPriceRules {
                     result = price;
                     break;
                 }
-                if (match > fallbackMatch) {
+                if (match > fallbackMatch || (match == fallbackMatch && useDefault && isDefault(price))) {
                     fallback = price;
                     fallbackMatch = match;
                 }
