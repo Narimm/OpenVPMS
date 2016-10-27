@@ -32,6 +32,7 @@ import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductPriceTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -41,6 +42,7 @@ import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -120,7 +122,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Party location = TestHelper.createLocation();
         context.setLocation(location);
 
-        // set a minimum price for calculated prices. This should only apply to prices calculated using a service ratio
+        // set a minimum price for calculated prices.
         Lookup currency = TestHelper.getLookup(Currencies.LOOKUP, "AUD");
         IMObjectBean bean = new IMObjectBean(currency);
         bean.setValue("minPrice", new BigDecimal("0.20"));
@@ -730,6 +732,49 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         editor.setQuantity(BigDecimal.ONE);
         checkEquals(BigDecimal.ZERO, editor.getMinimumQuantity());
         assertTrue(editor.isValid());
+    }
+
+    /**
+     * Verifies that when a product has two fixed prices, the default is selected.
+     */
+    @Test
+    public void testDefaultFixedPrice() {
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        User author = TestHelper.createUser();
+        layout.getContext().setUser(author); // to propagate to acts
+
+        Party patient = TestHelper.createPatient();
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        Product product = ProductTestHelper.createService();
+        ProductPrice fixed1 = ProductPriceTestHelper.createFixedPrice(
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, (Date) null, null, false);
+        ProductPrice fixed2 = ProductPriceTestHelper.createFixedPrice(
+                new BigDecimal("0.909"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, (Date) null, null, true);
+        product.addProductPrice(fixed1);
+        product.addProductPrice(fixed2);
+        save(product);
+
+        TestCustomerChargeActItemEditor editor1 = createEditor(charge, item, createEditContext(layout), layout);
+        editor1.setPatient(patient);
+        editor1.setProduct(product);
+        editor1.setQuantity(BigDecimal.ONE);
+        assertTrue(editor1.isValid());
+        save(charge, editor1);
+
+        checkEquals(BigDecimal.ONE, editor1.getFixedPrice());
+        checkEquals(BigDecimal.ONE, editor1.getTotal());
+
+        // reload and verify the price doesn't change
+        charge = get(charge);
+        item = get(item);
+        TestCustomerChargeActItemEditor editor2 = createEditor(charge, item, createEditContext(layout), layout);
+        checkEquals(BigDecimal.ONE, editor2.getFixedPrice());
+        checkEquals(BigDecimal.ONE, editor2.getTotal());
     }
 
     /**
