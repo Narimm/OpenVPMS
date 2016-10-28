@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -114,7 +114,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|NW|10231|||||||20140825090200|2001^Blogs^Joe\r" +
+                          "ORC|NW|10231^VPMS|||||||20140825090200|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
@@ -137,7 +137,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|RP|10231|||||||20140825090200|2001^Blogs^Joe\r" +
+                          "ORC|RP|10231^VPMS|||||||20140825090200|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
@@ -159,7 +159,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|CA|10231|||||||20140825090200|2001^Blogs^Joe\r" +
+                          "ORC|CA|10231^VPMS|||||||20140825090200|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();

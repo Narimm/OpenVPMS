@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v25.datatype.CE;
+import ca.uhn.hl7v2.model.v25.datatype.EI;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -35,6 +36,7 @@ import org.openvpms.hl7.patient.PatientContext;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -68,6 +70,11 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     private RDS_O13 rds;
 
     /**
+     * Test invoice item.
+     */
+    private FinancialAct invoiceItem;
+
+    /**
      * Sets up the test case.
      */
     @Override
@@ -76,9 +83,17 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         rules = new PatientRules(null, getArchetypeService(), getLookupService());
         userRules = new UserRules(getArchetypeService());
         product = createProduct();
+        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
+                BigDecimal.TEN, getContext().getCustomer(), getContext().getPatient(), product, ActStatus.IN_PROGRESS);
+        save(invoice);
+        invoiceItem = invoice.get(1);
+
         try {
             rds = createRDS(product);
-            log("RDS", rds);
+            String itemId = Long.toString(invoiceItem.getId());
+            EI placerOrderNumber = rds.getORDER().getORC().getPlacerOrderNumber();
+            placerOrderNumber.getEntityIdentifier().setValue(itemId);
+            placerOrderNumber.getNamespaceID().setValue("VPMS");
         } catch (Exception exception) {
             throw new IllegalStateException(exception);
         }
@@ -171,12 +186,9 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         PatientContext context = getContext();
         Party patient1 = context.getPatient();
         Party patient2 = TestHelper.createPatient();
-        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
-                BigDecimal.TEN, context.getCustomer(), patient2, product, ActStatus.IN_PROGRESS);
-        save(invoice);
-        FinancialAct invoiceItem = invoice.get(1);
-        String itemId = Long.toString(invoiceItem.getId());
-        rds.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().setValue(itemId);
+        ActBean bean = new ActBean(invoiceItem);
+        bean.setNodeParticipant("patient", patient2);
+        bean.save();
         List<Act> acts = processor.process(rds, context.getLocation().getObjectReference());
         assertEquals(2, acts.size());
         ActBean order = new ActBean(acts.get(0));
@@ -195,9 +207,6 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     public void testDifferentSellingUnits() throws HL7Exception {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         PatientContext context = getContext();
-        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
-                BigDecimal.TEN, context.getCustomer(), context.getPatient(), product, ActStatus.IN_PROGRESS);
-        save(invoice);
         CE dispenseUnits = rds.getORDER().getRXD().getActualDispenseUnits();
         dispenseUnits.getIdentifier().setValue("BOTTLE");
         dispenseUnits.getText().setValue("Bottle");
@@ -208,4 +217,101 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
                      order.getString("notes"));
         save(acts);
     }
+
+    /**
+     * Verifies that a note is added if no placer order number is specified.
+     *
+     * @throws HL7Exception for any HL7 exception
+     */
+    @Test
+    public void testNoPlacerOrderNumber() throws HL7Exception {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
+        rds.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().setValue(null);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        assertEquals("No Placer Order Number specified. Order placed outside OpenVPMS", order.getString("notes"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that a note is added if an order originates in Cubex.
+     *
+     * @throws HL7Exception for any HL7 exception
+     */
+    @Test
+    public void testUnknownPlacerOrderNumberCubex() throws HL7Exception {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
+        EI placerOrderNumber = rds.getORDER().getORC().getPlacerOrderNumber();
+        placerOrderNumber.getEntityIdentifier().setValue("OVERRIDE");
+        placerOrderNumber.getNamespaceID().setValue(null);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        assertEquals("Order with Placer Order Number 'OVERRIDE' was placed outside OpenVPMS",
+                     order.getString("notes"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that a note is added if an order originates in Smart Flow Sheet.
+     *
+     * @throws HL7Exception for any HL7 exception
+     */
+    @Test
+    public void testUnknownPlacerOrderNumberSmartFlow() throws HL7Exception {
+        String uuid = UUID.randomUUID().toString();
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
+        EI placerOrderNumber = rds.getORDER().getORC().getPlacerOrderNumber();
+        placerOrderNumber.getEntityIdentifier().setValue(uuid);
+        placerOrderNumber.getNamespaceID().setValue(null);
+        log("RDS", rds);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        assertEquals("Order with Placer Order Number '" + uuid + "' was placed outside OpenVPMS",
+                     order.getString("notes"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that a note is added if an order has a numeric id but no namespace id.
+     *
+     * @throws HL7Exception for any HL7 exception
+     */
+    @Test
+    public void testPlacerOrderNumberNoNamespaceId() throws HL7Exception {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
+        EI placerOrderNumber = rds.getORDER().getORC().getPlacerOrderNumber();
+        placerOrderNumber.getEntityIdentifier().setValue("10231");
+        placerOrderNumber.getNamespaceID().setValue(null);
+        log("RDS", rds);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        assertEquals("Order with Placer Order Number '10231' has no corresponding Customer Invoice Item",
+                     order.getString("notes"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that a note is added if an order has a numeric id  and unrecognised namespace id.
+     *
+     * @throws HL7Exception for any HL7 exception
+     */
+    @Test
+    public void testPlacerOrderNumberUnrecognisedNamespaceId() throws HL7Exception {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
+        EI placerOrderNumber = rds.getORDER().getORC().getPlacerOrderNumber();
+        placerOrderNumber.getEntityIdentifier().setValue("10231");
+        placerOrderNumber.getNamespaceID().setValue("ExternalApp");
+        log("RDS", rds);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        assertEquals("Order with Placer Order Number '10231' submitted by ExternalApp has no corresponding "
+                     + "Customer Invoice Item", order.getString("notes"));
+        save(acts);
+    }
+
 }

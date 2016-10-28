@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -112,6 +112,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
         ORC orc = message.getORDER().getORC();
         orc.getOrderControl().setValue("RE");
         orc.getPlacerOrderNumber().getEntityIdentifier().setValue(Long.toString(10231));
+        orc.getPlacerOrderNumber().getNamespaceID().setValue("VPMS");
         orc.getFillerOrderNumber().getEntityIdentifier().setValue(fillerOrderNumber);
         orc.getDateTimeOfTransaction().getTime().setValue(getDatetime("2014-08-25 09:02:00"));
         PopulateHelper.populateClinician(orc.getEnteredBy(0), getContext());

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -84,7 +84,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, Date, HL7Mapping)} method.
+     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, String, Date, HL7Mapping)} method.
      *
      * @throws Exception for any error
      */
@@ -103,7 +103,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
         config.setPopulatePID3(false);
         config.setIncludeTimeZone(false);
         Date date = getDatetime("2014-08-25 09:02:00.110").getTime();
-        Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
+        Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, "", date, config);
         MSH msh = (MSH) order.get("MSH");
         populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = order.encode();
@@ -111,7 +111,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, Date, HL7Mapping)} method.
+     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, String, Date, HL7Mapping)} method.
      *
      * @throws Exception for any error
      */
@@ -130,7 +130,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
         config.setPopulatePID2(true);
         config.setPopulatePID3(false);
         config.setIncludeTimeZone(false);
-        Message order = messageFactory.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
+        Message order = messageFactory.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, "", date, config);
         MSH msh = (MSH) order.get("MSH");
         populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = order.encode();
@@ -138,7 +138,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, HL7Mapping, Date)} method.
+     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, String, HL7Mapping, Date)} method.
      *
      * @throws Exception for any error
      */
@@ -158,7 +158,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
         config.setPopulatePID3(false);
         config.setIncludeMillis(false);
         config.setIncludeTimeZone(false);
-        Message order = messageFactory.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, config, date);
+        Message order = messageFactory.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, "", config, date);
         MSH msh = (MSH) order.get("MSH");
         populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = order.encode();
@@ -166,8 +166,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#discontinueOrder(PatientContext, Product, BigDecimal, long,
-     * HL7Mapping, Date)} method.
+     * Tests the {@link RDEMessageFactory#discontinueOrder(PatientContext, Product, BigDecimal, long, String, HL7Mapping, Date)} method.
      *
      * @throws Exception for any error
      */
@@ -187,7 +186,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
         config.setPopulatePID3(false);
         config.setIncludeMillis(false);
         config.setIncludeTimeZone(false);
-        Message order = messageFactory.discontinueOrder(getContext(), product, BigDecimal.valueOf(2), 10231, config,
+        Message order = messageFactory.discontinueOrder(getContext(), product, BigDecimal.valueOf(2), 10231, "", config,
                                                         date);
         MSH msh = (MSH) order.get("MSH");
         populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
@@ -221,7 +220,8 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
         config.setPopulatePID3(false);
         config.setIncludeTimeZone(false);
         Date date = getDatetime("2014-08-25 09:02:00.110").getTime();
-        Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
+        Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, "", date,
+                                                   config);
         MSH msh = (MSH) order.get("MSH");
         populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = order.encode();

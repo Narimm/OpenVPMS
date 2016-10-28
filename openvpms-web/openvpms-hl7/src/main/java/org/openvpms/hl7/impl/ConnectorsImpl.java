@@ -60,12 +60,12 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
     /**
      * The connectors, keyed on id.
      */
-    private final Map<Long, State> connectors = new HashMap<Long, State>();
+    private final Map<Long, State> connectors = new HashMap<>();
 
     /**
      * Listeners to notify when a connector changes.
      */
-    private final List<Listener> listeners = new ArrayList<Listener>();
+    private final List<Listener> listeners = new ArrayList<>();
 
     /**
      * Constructs a {@link ConnectorsImpl}.
@@ -84,7 +84,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      */
     @Override
     public List<Connector> getConnectors() {
-        List<Connector> result = new ArrayList<Connector>();
+        List<Connector> result = new ArrayList<>();
         synchronized (connectors) {
             for (State state : connectors.values()) {
                 result.add(state.connector);
