@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -63,8 +63,9 @@ public class RDSProcessor extends OrderMessageProcessor {
     /**
      * Constructs a {@link RDSProcessor}.
      *
-     * @param service the archetype service
-     * @param rules   the patient rules
+     * @param service   the archetype service
+     * @param rules     the patient rules
+     * @param userRules the user rules
      */
     public RDSProcessor(IArchetypeService service, PatientRules rules, UserRules userRules) {
         super(service, rules, userRules);
@@ -91,8 +92,19 @@ public class RDSProcessor extends OrderMessageProcessor {
         return state.getActs();
     }
 
+    /**
+     * Creates state for an order.
+     *
+     * @param patient  the patient. May be {@code null}
+     * @param customer the customer. May be {@code null}
+     * @param note     the note. May be {@code null}
+     * @param location the practice location. May be {@code null}
+     * @param service  the archetype service
+     * @return a new {@link OrderState}
+     */
     @Override
-    protected State createState(Party patient, Party customer, String note, IMObjectReference location, IArchetypeService service) {
+    protected State createState(Party patient, Party customer, String note, IMObjectReference location,
+                                IArchetypeService service) {
         return new State(patient, customer, note, location, service);
     }
 
@@ -246,7 +258,7 @@ public class RDSProcessor extends OrderMessageProcessor {
     private class State extends OrderState {
 
         /**
-         * Constructs a {@link OrderState}.
+         * Constructs a {@link State}.
          *
          * @param patient  the patient. May be {@code null}
          * @param customer the customer. May be {@code null}

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -87,7 +87,8 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.createOrder(context, product, quantity, placerOrderNumber, date, config);
+            Message message = factory.createOrder(context, product, quantity, placerOrderNumber,
+                                                  connector.getSendingApplication(), date, config);
             dispatcher.queue(message, connector, config, user);
             result = true;
         }
@@ -111,7 +112,8 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.updateOrder(context, product, quantity, placerOrderNumber, date, config);
+            Message message = factory.updateOrder(context, product, quantity, placerOrderNumber,
+                                                  connector.getSendingApplication(), date, config);
             dispatcher.queue(message, connector, config, user);
         }
     }
@@ -133,7 +135,8 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.cancelOrder(context, product, quantity, placerOrderNumber, config, date);
+            Message message = factory.cancelOrder(context, product, quantity, placerOrderNumber,
+                                                  connector.getSendingApplication(), config, date);
             dispatcher.queue(message, connector, config, user);
         }
     }
@@ -155,7 +158,8 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.discontinueOrder(context, product, quantity, placerOrderNumber, config, date);
+            Message message = factory.discontinueOrder(context, product, quantity, placerOrderNumber,
+                                                       connector.getSendingApplication(), config, date);
             dispatcher.queue(message, connector, config, user);
         }
     }
