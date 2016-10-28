@@ -26,12 +26,14 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -55,6 +57,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.charge.TemplateChargeItems;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -462,6 +465,8 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             items.add((FinancialAct) act);
         }
         linker.prepare(items, changes);
+
+        addTemplateNotes(linker, changes);
     }
 
     /**
@@ -667,6 +672,49 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
                 }
                 property.setValue(value);
             }
+        }
+    }
+
+    /**
+     * Creates <em>act.patientClinicalNote</em> acts for any notes associated with template products, linking them to
+     * the event.
+     *
+     * @param linker  the event linker
+     * @param changes the patient history changes
+     */
+    protected void addTemplateNotes(ChargeItemEventLinker linker, PatientHistoryChanges changes) {
+        List<TemplateChargeItems> templates = getItems().getTemplates();
+        if (!templates.isEmpty()) {
+            List<Act> items = getItems().getActs();
+            List<Act> notes = new ArrayList<>();
+            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+            for (TemplateChargeItems template : templates) {
+                Act item = template.findFirst(items);
+                if (item != null) {
+                    String visitNote = template.getVisitNote();
+                    if (!StringUtils.isEmpty(visitNote)) {
+                        ActBean bean = new ActBean(item);
+                        Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
+                        if (patient != null) {
+                            Date itemStartTime = bean.getDate("startTime");
+                            Date startTime = getStartTime();
+                            if (DateRules.getDate(itemStartTime).compareTo(DateRules.getDate(startTime)) != 0) {
+                                // use the item start time if its date is different to that of the invoice
+                                startTime = itemStartTime;
+                            }
+                            User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
+                            User author = (User) getObject(bean.getNodeParticipantRef("author"));
+                            Act note = rules.createNote(startTime, patient, visitNote, clinician, author);
+                            notes.add(note);
+                        }
+                    }
+                }
+            }
+            if (!notes.isEmpty()) {
+                ServiceHelper.getArchetypeService().save(notes);
+                linker.prepareNotes(notes, changes);
+            }
+            getItems().clearTemplates();
         }
     }
 

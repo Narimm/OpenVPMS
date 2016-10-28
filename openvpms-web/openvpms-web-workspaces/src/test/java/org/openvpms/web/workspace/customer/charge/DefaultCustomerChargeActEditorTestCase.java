@@ -437,7 +437,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
     /**
      * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes an invoice and its item.
-     * <p>
+     * <p/>
      * If any pharmacy or lab orders have been created, these are cancelled.
      */
     @Test
@@ -1121,6 +1121,53 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         DefaultCustomerChargeActEditor editor = new DefaultCustomerChargeActEditor(charge, null, layoutContext);
         IMObjectEditor newInstance = editor.newInstance();
         assertTrue(newInstance instanceof DefaultCustomerChargeActEditor);
+    }
+
+    /**
+     * Verifies that when a template expands, any visit notes are added to the associated patient's history.
+     */
+    @Test
+    public void testTemplateVisitNotes() {
+        Party patient2 = TestHelper.createPatient(customer);
+        BigDecimal fixedPrice = new BigDecimal("0.91");
+        Product template1 = ProductTestHelper.createTemplate("template1");
+        IMObjectBean template1Bean = new IMObjectBean(template1);
+        template1Bean.setValue("visitNote", "template 1 notes");
+        Product productA = createProduct(MEDICATION, fixedPrice);
+        Product productB = createProduct(MEDICATION, fixedPrice);
+        ProductTestHelper.addInclude(template1, productA, 1, false);
+        ProductTestHelper.addInclude(template1, productB, 1, false);
+
+        Product template2 = ProductTestHelper.createTemplate("template2");
+        IMObjectBean template2Bean = new IMObjectBean(template2);
+        template2Bean.setValue("visitNote", "template 2 notes");
+        ProductTestHelper.addInclude(template2, productA, 1, false);
+        ProductTestHelper.addInclude(template2, productB, 1, false);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        EditorQueue queue = editor.getQueue();
+
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        addItem(editor, patient, template1, null, queue);
+        addItem(editor, patient2, template2, null, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        // verify that there are 4 items in the invoice, but only two notes, one for each template
+        charge = get(charge);
+        ActBean bean = new ActBean(charge);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(4, items.size());
+
+        ActBean item1 = checkItem(items, patient, productA, template1, author, clinician, ONE, ONE, ZERO, ZERO, ZERO,
+                                  ONE, ZERO, new BigDecimal("0.091"), ONE, null, 1);
+        ActBean item2 = checkItem(items, patient2, productA, template2, author, clinician, ONE, ONE, ZERO, ZERO, ZERO,
+                                  ONE, ZERO, new BigDecimal("0.091"), ONE, null, 1);
+        checkChargeEventNote(item1, patient, "template 1 notes");
+        checkChargeEventNote(item2, patient2, "template 2 notes");
     }
 
     /**

@@ -20,15 +20,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,11 +33,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelationshipCollectionEditor {
-
-    /**
-     * The templates.
-     */
-    private List<TemplateChargeItems> templates = new ArrayList<>();
 
     /**
      * Constructs a {@link VisitChargeItemRelationshipCollectionEditor}.
@@ -73,22 +64,6 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     }
 
     /**
-     * Returns the templates that were expanded.
-     *
-     * @return the templates
-     */
-    public List<TemplateChargeItems> getTemplates() {
-        return templates;
-    }
-
-    /**
-     * Clears the templates.
-     */
-    public void clearTemplates() {
-        templates.clear();
-    }
-
-    /**
      * Returns the current patient.
      *
      * @return the current patient. May be {@code null}
@@ -108,24 +83,6 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         return initialiseEditor(new VisitChargeItemEditor((FinancialAct) object, (Act) getObject(), getEditContext(),
                                                           context));
-    }
-
-    /**
-     * Copies an act item for each product referred to in its template.
-     *
-     * @param editor   the editor
-     * @param template the product template
-     * @param quantity the quantity
-     * @return the acts generated from the template
-     */
-    @Override
-    protected List<Act> createTemplateActs(ActItemEditor editor, Product template, BigDecimal quantity) {
-        List<Act> acts = super.createTemplateActs(editor, template, quantity);
-        if (!acts.isEmpty()) {
-            TemplateChargeItems items = new TemplateChargeItems(template, acts);
-            templates.add(items);
-        }
-        return acts;
     }
 
 }

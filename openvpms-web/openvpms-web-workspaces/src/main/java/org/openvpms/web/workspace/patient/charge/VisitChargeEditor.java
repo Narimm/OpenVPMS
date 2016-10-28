@@ -11,22 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -46,12 +41,11 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 /**
  * Visit charge editor.
- * <p>
+ * <p/>
  * This displays the total amount and tax amount for the current patient.
  *
  * @author Tim Anderson
@@ -185,20 +179,6 @@ public class VisitChargeEditor extends CustomerChargeActEditor {
     }
 
     /**
-     * Save any edits.
-     * <p>
-     * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
-     * matching reminders completed.
-     *
-     * @throws OpenVPMSException if the save fails
-     */
-    @Override
-    protected void doSave() {
-        super.doSave();
-        addTemplateNotes();
-    }
-
-    /**
      * Links the charge items to their corresponding clinical events.
      *
      * @param changes the patient history changes
@@ -211,6 +191,7 @@ public class VisitChargeEditor extends CustomerChargeActEditor {
             changes.addEvent(event);
             ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
             linker.prepare(event, items, changes);
+            addTemplateNotes(linker, changes);
         }
     }
 
@@ -237,37 +218,6 @@ public class VisitChargeEditor extends CustomerChargeActEditor {
         visitTax.setValue(tax);
     }
 
-    /**
-     * Creates <em>act.patientClinicalNote</em> acts for any notes associated with template products, linking them to
-     * the event.
-     */
-    private void addTemplateNotes() {
-        List<TemplateChargeItems> templates = getItems().getTemplates();
-        if (event != null && !templates.isEmpty()) {
-            List<Act> items = getItems().getPatientActs();
-            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-            for (TemplateChargeItems template : templates) {
-                Act item = template.findFirst(items);
-                if (item != null) {
-                    String visitNote = template.getVisitNote();
-                    if (!StringUtils.isEmpty(visitNote)) {
-                        ActBean bean = new ActBean(item);
-                        Date itemStartTime = bean.getDate("startTime");
-                        Date startTime = getStartTime();
-                        if (DateRules.getDate(itemStartTime).compareTo(DateRules.getDate(startTime)) != 0) {
-                            // use the item start time if its date is different to that of the invoice
-                            startTime = itemStartTime;
-                        }
-                        User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                        User author = (User) getObject(bean.getNodeParticipantRef("author"));
-                        rules.addNote(event, startTime, visitNote, clinician, author);
-                    }
-                }
-            }
-            getItems().clearTemplates();
-        }
-    }
-
     private class VisitChargeLayoutStrategy extends ActLayoutStrategy {
 
         public VisitChargeLayoutStrategy() {
@@ -276,7 +226,7 @@ public class VisitChargeEditor extends CustomerChargeActEditor {
 
         /**
          * Creates a component for a property.
-         * <p>
+         * <p/>
          * This makes the status node read-only.
          *
          * @param property the property
