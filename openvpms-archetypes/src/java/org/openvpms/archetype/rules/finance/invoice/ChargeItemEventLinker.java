@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -140,6 +140,25 @@ public class ChargeItemEventLinker {
                 startTime = new Date();
             }
             rules.addToEvents(acts, startTime, changes);
+        }
+    }
+
+    /**
+     * Links multiple clinical notes to the associated patient's clinical events.
+     * The modifications are recorded in the supplied {@code changes}.
+     * <p/>
+     * Invoke {@link PatientHistoryChanges#save()} to commit the changes.
+     *
+     * @param notes   the notes
+     * @param changes the patient history changes
+     */
+    public void prepareNotes(List<Act> notes, PatientHistoryChanges changes) {
+        for (Act act : notes) {
+            Date startTime = act.getActivityStartTime();
+            if (startTime == null) {
+                startTime = new Date();
+            }
+            rules.addToEvents(notes, startTime, changes);
         }
     }
 

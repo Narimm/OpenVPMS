@@ -42,9 +42,11 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.StockOnHand;
+import org.openvpms.web.workspace.patient.charge.TemplateChargeItems;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -72,6 +74,11 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * The alert identifier, used to cancel any existing alert.
      */
     private long alertId = -1;
+
+    /**
+     * The templates.
+     */
+    private List<TemplateChargeItems> templates = new ArrayList<>();
 
     /**
      * The start time node name.
@@ -164,30 +171,19 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     }
 
     /**
-     * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
-     * an editor.
+     * Returns the templates that were expanded.
      *
-     * @return the new editor, or {@code null} if one could not be created
+     * @return the templates
      */
-    @Override
-    protected IMObjectEditor onAdd() {
-        IMObjectEditor editor = add();
-        if (editor != null && listener != null) {
-            EditorQueue queue = getEditorQueue();
-            if (!queue.isComplete()) {
-                queue.queue(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (listener != null) {
-                            listener.run();
-                        }
-                    }
-                });
-            } else {
-                listener.run();
-            }
-        }
-        return editor;
+    public List<TemplateChargeItems> getTemplates() {
+        return templates;
+    }
+
+    /**
+     * Clears the templates.
+     */
+    public void clearTemplates() {
+        templates.clear();
     }
 
     /**
@@ -212,6 +208,33 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     @Override
     public CustomerChargeActItemEditor getEditor(IMObject object) {
         return (CustomerChargeActItemEditor) super.getEditor(object);
+    }
+
+    /**
+     * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
+     * an editor.
+     *
+     * @return the new editor, or {@code null} if one could not be created
+     */
+    @Override
+    protected IMObjectEditor onAdd() {
+        IMObjectEditor editor = add();
+        if (editor != null && listener != null) {
+            EditorQueue queue = getEditorQueue();
+            if (!queue.isComplete()) {
+                queue.queue(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (listener != null) {
+                            listener.run();
+                        }
+                    }
+                });
+            } else {
+                listener.run();
+            }
+        }
+        return editor;
     }
 
     /**
@@ -270,6 +293,11 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     @Override
     protected List<Act> createTemplateActs(ActItemEditor editor, Product template, BigDecimal quantity) {
         List<Act> acts = super.createTemplateActs(editor, template, quantity);
+        if (!acts.isEmpty()) {
+            TemplateChargeItems items = new TemplateChargeItems(template, acts);
+            templates.add(items);
+        }
+
         AlertListener alertListener = getAlertListener();
         if (alertListener != null && !acts.isEmpty()) {
             int outOfStock = 0;

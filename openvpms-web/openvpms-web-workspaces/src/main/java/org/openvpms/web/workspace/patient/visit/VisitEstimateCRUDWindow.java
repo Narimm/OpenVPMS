@@ -145,12 +145,4 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
         window.setAutoChargeOrders(autoChargeOrders);
     }
 
-    /**
-     * Creates a new {@link EstimateInvoicer}.
-     *
-     * @return a new estimate invoicer
-     */
-    protected EstimateInvoicer createEstimateInvoicer() {
-        return new VisitEstimateInvoicer();
-    }
 }

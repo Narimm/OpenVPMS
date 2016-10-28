@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -34,6 +35,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -157,7 +159,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
 
     /**
      * Verifies an item's properties match that expected.
-     *  @param items           the items to search
+     *
+     * @param items           the items to search
      * @param patient         the expected patient
      * @param product         the expected product
      * @param template        the expected template. May be {@code null}
@@ -174,13 +177,15 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param total           the expected total
      * @param event           the clinical event. May be {@code null}
      * @param childActs       the expected no. of child acts
+     * @return the item
      */
-    protected void checkItem(List<FinancialAct> items, Party patient, Product product, Product template, User author,
-                             User clinician, BigDecimal minimumQuantity, BigDecimal quantity, BigDecimal unitCost,
-                             BigDecimal unitPrice, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount,
-                             BigDecimal tax, BigDecimal total, Act event, int childActs) {
+    protected ActBean checkItem(List<FinancialAct> items, Party patient, Product product, Product template,
+                                User author, User clinician, BigDecimal minimumQuantity, BigDecimal quantity,
+                                BigDecimal unitCost, BigDecimal unitPrice, BigDecimal fixedCost,
+                                BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total,
+                                Act event, int childActs) {
         int count = 0;
-        FinancialAct item = find(items, product);
+        FinancialAct item = find(items, patient, product);
         checkItem(item, patient, product, template, author, clinician, minimumQuantity, quantity, unitCost, unitPrice,
                   fixedCost, fixedPrice, discount, tax, total);
         ActBean itemBean = new ActBean(item);
@@ -231,6 +236,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
         }
         assertEquals(childActs, count);
+        return itemBean;
     }
 
     /**
@@ -271,20 +277,30 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         }
     }
 
+
     /**
-     * Finds an item in a list of items, by product.
+     * Finds an item in a list of items, by patient and product.
      *
      * @param items   the items
+     * @param patient the patient. May be {@code null}
      * @param product the product
      * @return the corresponding item
      */
-    protected <T extends Act> T find(List<T> items, Product product) {
+    protected <T extends Act> T find(List<T> items, Party patient, Product product) {
         T result = null;
+        IMObjectReference ref = (patient != null) ? patient.getObjectReference() : null;
         for (T item : items) {
-            ActBean current = new ActBean(item);
-            if (ObjectUtils.equals(current.getNodeParticipantRef("product"), product.getObjectReference())) {
-                result = item;
-                break;
+            ActBean bean = new ActBean(item);
+            if (ObjectUtils.equals(bean.getNodeParticipantRef("product"), product.getObjectReference())) {
+                if (bean.hasNode("patient")) {
+                    if (ObjectUtils.equals(bean.getNodeParticipantRef("patient"), ref)) {
+                        result = item;
+                        break;
+                    }
+                } else {
+                    result = item;
+                    break;
+                }
             }
         }
         assertNotNull(result);
@@ -509,6 +525,53 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
         return document;
+    }
+
+    /**
+     * Verifies that an event linked to a charge has one instance of the expected note.
+     *
+     * @param chargeItem the charge item, linked to an event
+     * @param patient    the expected patient
+     * @param note       the expected note
+     */
+    protected void checkChargeEventNote(ActBean chargeItem, Party patient, String note) {
+        Act event = getEvent(chargeItem);
+        checkEventNote(event, patient, note);
+    }
+
+    /**
+     * Verifies that an event has one instance of the expected note.
+     *
+     * @param event   the event
+     * @param patient the expected patient
+     * @param note    the expected note
+     */
+    protected void checkEventNote(Act event, Party patient, String note) {
+        int found = 0;
+        ActBean eventBean = new ActBean(event);
+        assertEquals(patient, eventBean.getNodeParticipant("patient"));
+        for (Act item : eventBean.getNodeActs("items")) {
+            if (TypeHelper.isA(item, PatientArchetypes.CLINICAL_NOTE)) {
+                ActBean bean = new ActBean(item);
+                assertEquals(patient, bean.getNodeParticipant("patient"));
+                if (StringUtils.equals(note, bean.getString("note"))) {
+                    found++;
+                }
+            }
+        }
+        assertEquals(1, found);
+    }
+
+    /**
+     * Returns an event linked to a charge item.
+     *
+     * @param item the charge item
+     * @return the corresponding event
+     */
+    protected Act getEvent(ActBean item) {
+        Act event = (Act) item.getNodeSourceObject("event");
+        assertNotNull(event);
+        return event;
     }
 
     /**

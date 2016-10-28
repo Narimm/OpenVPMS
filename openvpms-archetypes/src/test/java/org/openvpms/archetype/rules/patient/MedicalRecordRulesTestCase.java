@@ -182,19 +182,17 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link MedicalRecordRules#addNote} method.
+     * Tests the {@link MedicalRecordRules#createNote(Date, Party, String, User, User)} method.
      */
     @Test
-    public void testAddNote() {
-        Act event = createEvent();
+    public void testCreateNote() {
         Date startTime = getDate("2012-07-17");
+        Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
         User clinician = TestHelper.createClinician();
         String text = "Test note";
-        Act note = rules.addNote(event, startTime, text, clinician, author);
+        Act note = rules.createNote(startTime, patient, text, clinician, author);
 
-        ActBean eventBean = new ActBean(event);
-        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
         ActBean bean = new ActBean(note);
         assertEquals(startTime, note.getActivityStartTime());
         assertEquals(text, bean.getString("note"));

@@ -30,9 +30,11 @@ import org.openvpms.web.component.im.edit.act.TemplateProductListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
+import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.workspace.patient.charge.TemplateChargeItems;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -237,6 +239,12 @@ public class EstimateInvoicer extends AbstractInvoicer {
          * @param items the map of items to their corresponding template products
          */
         protected void notifyTemplateExpansion(Map<Product, List<Act>> items) {
+            List<TemplateChargeItems> templates = getItems().getTemplates();
+            for (Map.Entry<Product, List<Act>> entry : items.entrySet()) {
+                Product template = entry.getKey();
+                List<Act> acts = entry.getValue();
+                templates.add(new TemplateChargeItems(template, acts));
+            }
             TemplateProductListener listener = getItems().getTemplateProductListener();
             if (listener != null) {
                 for (Map.Entry<Product, List<Act>> entry : items.entrySet()) {
@@ -250,7 +258,7 @@ public class EstimateInvoicer extends AbstractInvoicer {
          *
          * @return the items collection editor
          */
-        protected ActRelationshipCollectionEditor getItems() {
+        protected ChargeItemRelationshipCollectionEditor getItems() {
             return editor.getItems();
         }
 

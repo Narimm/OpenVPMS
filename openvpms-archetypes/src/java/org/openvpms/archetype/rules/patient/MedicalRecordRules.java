@@ -110,33 +110,29 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Adds an <em>act.patientClinicalNote</em> to an <em>act.patientClinicalEvent</em>.
+     * Creates a clinical note for a patient.
+     * <p/>
+     * The note is not saved.
      *
-     * @param event     the event
      * @param startTime the start time for the note
+     * @param patient   the patient
      * @param note      the note
      * @param clinician the clinician. May be {@code null}
      * @param author    the author. May be {@code null}
-     * @return the note act
+     * @return a new note
      */
-    public Act addNote(Act event, Date startTime, String note, User clinician, User author) {
+    public Act createNote(Date startTime, Party patient, String note, User clinician, User author) {
         Act act = (Act) service.create(PatientArchetypes.CLINICAL_NOTE);
         ActBean bean = new ActBean(act, service);
-        ActBean eventBean = new ActBean(event, service);
         bean.setValue("startTime", startTime);
-        IMObjectReference patient = eventBean.getNodeParticipantRef("patient");
-        if (patient != null) {
-            bean.addNodeParticipation("patient", patient);
-        }
+        bean.addNodeParticipation("patient", patient);
+        bean.setValue("note", note);
         if (author != null) {
             bean.addNodeParticipation("author", author);
         }
         if (clinician != null) {
             bean.addNodeParticipation("clinician", clinician);
         }
-        bean.setValue("note", note);
-        eventBean.addNodeRelationship("items", act);
-        service.save(Arrays.asList(event, act));
         return act;
     }
 
