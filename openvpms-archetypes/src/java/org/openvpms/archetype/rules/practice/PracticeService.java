@@ -271,7 +271,7 @@ public class PracticeService {
                 practice = object;
             }
         }
-        if (updated) {
+        if (updated && listeners != null) {
             listeners.onEvent(new Update(object));
         }
     }

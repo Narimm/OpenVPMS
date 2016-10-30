@@ -23,7 +23,7 @@
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="concat(/details/weight, ' ', openvpms:lookup(.,'units'))"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
-              defaultValue="java.util.Date.new()" readOnly="true"/>
+              defaultValue="java.util.Date.new()"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'"
               hidden="true" readOnly="true">
             <assertion name="lookup.local">

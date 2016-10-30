@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -20,16 +20,20 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.text.TextComponent;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.history.PatientHistoryDatingPolicy;
 
 import java.util.List;
 
@@ -55,6 +59,14 @@ public class PatientClinicalNoteLayoutStrategy extends AbstractLayoutStrategy {
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+        if (context.isEdit()) {
+            Property startTime = properties.get("startTime");
+            PatientHistoryDatingPolicy policy = ServiceHelper.getBean(PatientHistoryDatingPolicy.class);
+            if (!startTime.isReadOnly() && !policy.canEditStartTime(((Act) object))) {
+                IMObjectComponentFactory factory = context.getComponentFactory();
+                addComponent(factory.create(createReadOnly(startTime), object));
+            }
+        }
         addComponent(createNote(properties, context, "PatientClinicalNote.note"));
         return super.apply(object, properties, parent, context);
     }
