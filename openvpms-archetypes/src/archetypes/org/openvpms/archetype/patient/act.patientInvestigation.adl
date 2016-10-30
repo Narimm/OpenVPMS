@@ -23,7 +23,7 @@
               minCardinality="1" derived="true"
               derivedValue="'Patient Investigation'"/>
         <node name="startTime" displayName="Date" path="/activityStartTime" type="java.util.Date"
-              minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
+              minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="investigationType" path="/participations" type="java.util.HashSet" minCardinality="1"
               maxCardinality="1"
               filter="participation.investigationType"/>

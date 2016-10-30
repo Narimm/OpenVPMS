@@ -199,6 +199,12 @@
     <!-- =========================================================================================================== -->
     <!-- Medical Record Locking                                                                                      -->
     <!-- =========================================================================================================== -->
+
+    <bean class="org.openvpms.web.workspace.patient.history.DefaultPatientHistoryDatingPolicy">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
+
     <bean class="org.openvpms.web.jobs.recordlocking.MedicalRecordLockingScheduler">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="practiceService"/>

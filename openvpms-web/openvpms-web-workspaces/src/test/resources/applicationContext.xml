@@ -485,4 +485,13 @@
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
     <bean class="org.openvpms.web.workspace.patient.summary.DefaultCustomerPatientSummaryFactory"/>
 
+    <!-- =========================================================================================================== -->
+    <!-- Medical Record Locking                                                                                      -->
+    <!-- =========================================================================================================== -->
+
+    <bean class="org.openvpms.web.workspace.patient.history.DefaultPatientHistoryDatingPolicy">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
+
 </beans>

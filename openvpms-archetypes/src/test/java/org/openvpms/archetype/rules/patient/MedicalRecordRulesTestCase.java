@@ -711,11 +711,12 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that each of the lockable medical records have:
-     * <ul>
-     * <li>a read-only startTime node</li>
-     * <li>a status node. If hidden, these must be read-only</li>
-     * </ul>
+     * Verifies that each of the lockable medical records have a startTime and status node.
+     * If the status is hidden, it must be read-only.
+     * <br/>
+     * Note that in the original version of medical record locking, the startTime node was also read only.
+     * However this prevented the 1.8 behaviour of allowing practices to forward/back-date records when locking is not
+     * enabled.
      */
     @Test
     public void testLockableRecordStartTimeAndStatusNodes() {
@@ -723,7 +724,6 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         for (String shortName : rules.getLockableRecords()) {
             NodeDescriptor startTime = DescriptorHelper.getNode(shortName, "startTime", service);
             assertNotNull(shortName, startTime);
-            assertTrue(shortName, startTime.isReadOnly());
 
             NodeDescriptor status = DescriptorHelper.getNode(shortName, "status", service);
             assertNotNull(shortName, status);

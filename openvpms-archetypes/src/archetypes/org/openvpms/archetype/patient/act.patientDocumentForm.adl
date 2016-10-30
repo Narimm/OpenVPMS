@@ -22,7 +22,7 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Patient Form'"/>
         <node name="startTime" displayName="Date" path="/activityStartTime" type="java.util.Date"
-              minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
+              minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'IN_PROGRESS'">
