@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -312,6 +313,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         calculateTax();
 
         Product product = getProduct();
+        if (product != null) {
+            initStockLocation(product);
+        }
         ArchetypeNodes nodes = getFilterForProduct(product, updatePrint(product));
         setArchetypeNodes(nodes);
 
@@ -1498,6 +1502,24 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private boolean hasDispensingLabel(Product product) {
         IMObjectBean bean = new IMObjectBean(product);
         return bean.getBoolean("label");
+    }
+
+    /**
+     * Initialises the stock location if one isn't present and there is a medication or merchandise product.
+     * <p/>
+     * This is required due to a bug where charge quantities of zero would remove the stock location relationship,
+     * and prevent subsequent quantity changes would not be reflected in the stock.
+     *
+     * @param product the product
+     */
+    private void initStockLocation(Product product) {
+        if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
+            ActBean bean = new ActBean(getObject());
+            Participation participation = bean.getParticipation(STOCK_LOCATION_PARTICIPATION);
+            if (participation == null) {
+                updateStockLocation(product);
+            }
+        }
     }
 
     /**

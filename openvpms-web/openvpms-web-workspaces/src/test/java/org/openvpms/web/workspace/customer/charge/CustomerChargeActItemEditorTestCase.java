@@ -34,6 +34,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
+import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -119,8 +120,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         });
         context = new LocalContext();
         context.setPractice(getPractice());
-        Party location = TestHelper.createLocation();
+        Party location = TestHelper.createLocation(true); // enable stock control
         context.setLocation(location);
+        context.setStockLocation(ProductTestHelper.createStockLocation(location));
 
         // set a minimum price for calculated prices.
         Lookup currency = TestHelper.getLookup(Currencies.LOOKUP, "AUD");
@@ -775,6 +777,59 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         TestCustomerChargeActItemEditor editor2 = createEditor(charge, item, createEditContext(layout), layout);
         checkEquals(BigDecimal.ONE, editor2.getFixedPrice());
         checkEquals(BigDecimal.ONE, editor2.getTotal());
+    }
+
+    /**
+     * Verifies that stock counts update.
+     */
+    @Test
+    public void testUpdateStock() {
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        User author = TestHelper.createUser();
+        layout.getContext().setUser(author); // to propagate to acts
+
+        Party patient = TestHelper.createPatient();
+        Product product = createProduct(ProductArchetypes.MERCHANDISE, BigDecimal.TEN);
+        checkStock(product, BigDecimal.ZERO);
+
+        // create an item with an initial quantity of zero.
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(
+                customer, patient, product, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ZERO,
+                ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        TestCustomerChargeActItemEditor editor1 = createEditor(charge, item, createEditContext(layout), layout);
+        assertTrue(editor1.isValid());
+        save(charge, editor1);
+        checkStock(product, BigDecimal.ZERO);
+
+        charge = get(charge);
+        item = get(item);
+
+        // set to 10, and verify stock goes down to -10
+        TestCustomerChargeActItemEditor editor2 = createEditor(charge, item, createEditContext(layout), layout);
+        editor2.setQuantity(BigDecimal.TEN);
+        save(charge, editor2);
+        checkStock(product, BigDecimal.TEN.negate());
+
+        // set to 0 and verify stock goes back to zero
+        editor2.setQuantity(BigDecimal.ZERO);
+        save(charge, editor2);
+        checkStock(product, BigDecimal.ZERO);
+
+        // set to 1, and verify stock goes down to -1
+        editor2.setQuantity(BigDecimal.ONE);
+        save(charge, editor2);
+        checkStock(product, BigDecimal.ONE.negate());
+    }
+
+    private void checkStock(Product product, BigDecimal expected) {
+        StockRules rules = new StockRules(getArchetypeService());
+        Party stockLocation = context.getStockLocation();
+        assertNotNull(stockLocation);
+        BigDecimal stock = rules.getStock(product.getObjectReference(), stockLocation.getObjectReference());
+        checkEquals(expected, stock);
     }
 
     /**

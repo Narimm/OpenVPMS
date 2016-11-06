@@ -83,6 +83,18 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
 
 
     /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        product = TestHelper.createProduct();
+        customer = TestHelper.createCustomer();
+        patient = TestHelper.createPatient();
+        stockLocation = createStockLocation();
+        txnManager = applicationContext.getBean(PlatformTransactionManager.class);
+    }
+
+    /**
      * Verifies that stock is updated for an invoice.
      */
     @Test
@@ -258,15 +270,35 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
     }
 
     /**
-     * Sets up the test case.
+     * Verifies that if a charge item is saved with zero quantity, a subsequent non-zero quantity updates stock.
      */
-    @Before
-    public void setUp() {
-        product = TestHelper.createProduct();
-        customer = TestHelper.createCustomer();
-        patient = TestHelper.createPatient();
-        stockLocation = createStockLocation();
-        txnManager = applicationContext.getBean(PlatformTransactionManager.class);
+    @Test
+    public void testInitialSaveWithZeroQuantity() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(
+                customer, patient, product, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ZERO,
+                ActStatus.IN_PROGRESS);
+        FinancialAct invoice = acts.get(0);
+        FinancialAct item = acts.get(1);
+        addStockLocation(item);
+
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation, product));
+        save(invoice, item);
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation, product));
+
+        // set to 10 and verify stock goes to -10
+        item.setQuantity(BigDecimal.TEN);
+        save(item);
+        checkEquals(BigDecimal.TEN.negate(), getStock(stockLocation, product));
+
+        // set to zero and verify stock goes to 0
+        item.setQuantity(BigDecimal.ZERO);
+        save(item);
+        checkEquals(BigDecimal.ZERO, getStock(stockLocation, product));
+
+        // set to 1 and verify stock goes to -1
+        item.setQuantity(BigDecimal.ONE);
+        save(item);
+        checkEquals(BigDecimal.ONE.negate(), getStock(stockLocation, product));
     }
 
     /**
