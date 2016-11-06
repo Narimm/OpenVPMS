@@ -253,7 +253,7 @@ public class ChargeStockUpdater {
 
 
         /**
-         * Creates a new {@code StockQty}.
+         * Constructs a {@link StockQty}.
          *
          * @param act the act
          */
@@ -262,7 +262,7 @@ public class ChargeStockUpdater {
         }
 
         /**
-         * Creates a new {@code StockQty}.
+         * Constructs a {@link StockQty}.
          *
          * @param bean the act bean
          */
@@ -313,12 +313,10 @@ public class ChargeStockUpdater {
         /**
          * Determines if the act state is valid.
          *
-         * @return {@code true} if the product and location references are
-         *         non-null, and the quantity is non-zero
+         * @return {@code true} if the product and location references are non-null
          */
         public boolean isValid() {
-            return product != null && location != null
-                   && quantity.compareTo(BigDecimal.ZERO) != 0;
+            return product != null && location != null;
         }
 
         /**

@@ -34,7 +34,6 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
-import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -1318,7 +1317,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      */
     private void checkEditCharge(FinancialAct charge) {
         Party location = TestHelper.createLocation(true);   // enable stock control
-        Party stockLocation = createStockLocation(location);
+        Party stockLocation = ProductTestHelper.createStockLocation(location);
         layoutContext.getContext().setLocation(location);
         layoutContext.getContext().setStockLocation(stockLocation);
 
@@ -1434,7 +1433,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      */
     private void checkChargeStockUpdate(FinancialAct charge) {
         Party location = TestHelper.createLocation(true);   // enable stock control
-        Party stockLocation = createStockLocation(location);
+        Party stockLocation = ProductTestHelper.createStockLocation(location);
         layoutContext.getContext().setLocation(location);
         layoutContext.getContext().setStockLocation(stockLocation);
 
@@ -1501,7 +1500,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      */
     private void checkExpandTemplate(FinancialAct charge) {
         Party location = TestHelper.createLocation(true);   // enable stock control
-        Party stockLocation = createStockLocation(location);
+        Party stockLocation = ProductTestHelper.createStockLocation(location);
         layoutContext.getContext().setLocation(location);
         layoutContext.getContext().setStockLocation(stockLocation);
 
@@ -1726,21 +1725,6 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
     private TestChargeEditor createCustomerChargeActEditor(FinancialAct invoice, LayoutContext context,
                                                            boolean addDefaultItem) {
         return new TestChargeEditor(invoice, context, addDefaultItem);
-    }
-
-    /**
-     * Helper to create a new stock location, linked to a location.
-     *
-     * @param location the location
-     * @return the stock location
-     */
-    private Party createStockLocation(Party location) {
-        Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
-        stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
-        EntityBean locationBean = new EntityBean(location);
-        locationBean.addRelationship("entityRelationship.locationStockLocation", stockLocation);
-        save(location, stockLocation);
-        return stockLocation;
     }
 
 }

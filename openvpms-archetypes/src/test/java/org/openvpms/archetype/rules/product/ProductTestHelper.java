@@ -307,6 +307,20 @@ public class ProductTestHelper {
     }
 
     /**
+     * Creates a stock location linked to a practice location.
+     *
+     * @param location the practice location
+     * @return a new stock location
+     */
+    public static Party createStockLocation(Party location) {
+        Party stockLocation = createStockLocation();
+        EntityBean locationBean = new EntityBean(location);
+        locationBean.addRelationship("entityRelationship.locationStockLocation", stockLocation);
+        save(location, stockLocation);
+        return stockLocation;
+    }
+
+    /**
      * Adds a demographic update to a product, and saves it.
      *
      * @param product    the product
