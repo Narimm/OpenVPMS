@@ -145,6 +145,15 @@ public class CustomerPatientSummary {
     }
 
     /**
+     * Returns the preferences.
+     *
+     * @return the preferences
+     */
+    protected Preferences getPreferences() {
+        return preferences;
+    }
+
+    /**
      * Returns a component displaying customer and patient summary details.
      *
      * @param customer the customer
