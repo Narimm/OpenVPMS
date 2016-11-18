@@ -132,7 +132,7 @@ public class PatientSummary extends PartySummary {
     public PatientSummary(Context context, HelpContext help, Preferences preferences) {
         super(context, help, preferences);
         rules = ServiceHelper.getBean(PatientRules.class);
-        reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(), rules);
+        reminderRules = ServiceHelper.getBean(ReminderRules.class);
     }
 
     /**
@@ -401,7 +401,7 @@ public class PatientSummary extends PartySummary {
     /**
      * Refreshes the microchip display.
      *
-     * @param patient the patient
+     * @param patient   the patient
      * @param container the microchip container
      */
     protected void refreshMicrochip(final Party patient, final Component container) {
@@ -513,29 +513,31 @@ public class PatientSummary extends PartySummary {
     /**
      * Invoked to create a new microchip linked to the patient.
      *
-     * @param patient the patient
+     * @param patient   the patient
      * @param container the container to display the microchip
      */
     protected void onCreateMicrochip(Party patient, final Component container) {
         final PatientIdentityEditor editor = PatientIdentityEditor.create(patient, PatientArchetypes.MICROCHIP,
                                                                           getContext(), getHelpContext());
-        EditDialog dialog = editor.edit(false);
-        dialog.addWindowPaneListener(
-                new PopupDialogListener() {
-                    @Override
-                    public void onOK() {
-                        Party latest = editor.getPatient();
-                        refreshMicrochip(latest, container);
+        if (editor != null) {
+            EditDialog dialog = editor.edit(false);
+            dialog.addWindowPaneListener(
+                    new PopupDialogListener() {
+                        @Override
+                        public void onOK() {
+                            Party latest = editor.getPatient();
+                            refreshMicrochip(latest, container);
 
-                        // if the patient is selected, refresh it
-                        GlobalContext globalContext = ContextApplicationInstance.getInstance().getContext();
-                        if (ObjectUtils.equals(latest, globalContext.getPatient())) {
-                            globalContext.setPatient(latest);
+                            // if the patient is selected, refresh it
+                            GlobalContext globalContext = ContextApplicationInstance.getInstance().getContext();
+                            if (ObjectUtils.equals(latest, globalContext.getPatient())) {
+                                globalContext.setPatient(latest);
+                            }
                         }
                     }
-                }
-        );
-        dialog.show();
+            );
+            dialog.show();
+        }
     }
 
     /**
@@ -557,6 +559,68 @@ public class PatientSummary extends PartySummary {
     }
 
     /**
+     * Returns the highest due state of a patient's reminders.
+     *
+     * @param patient the patient
+     * @return the patient's highest due state. May be {@code null}
+     */
+    protected ReminderRules.DueState getDueState(Party patient) {
+        ActResultSet<Act> reminders = createActResultSet(patient, 20, ReminderArchetypes.REMINDER);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(reminders);
+        ReminderRules.DueState result = null;
+        while (iterator.hasNext()) {
+            ReminderRules.DueState due = getDueState(iterator.next());
+            if (result == null || due.compareTo(result) > 0) {
+                result = due;
+            }
+            if (result == ReminderRules.DueState.OVERDUE) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines the due state of a reminder relative to the current date.
+     *
+     * @param reminder the reminder
+     * @return the due state
+     */
+    protected ReminderRules.DueState getDueState(Act reminder) {
+        return reminderRules.getDueState(reminder);
+    }
+
+    /**
+     * Invoked to show reminders for a patient in a popup.
+     *
+     * @param patient the patient
+     */
+    protected void onShowReminders(Party patient) {
+        PagedIMTable<Act> table = new PagedIMTable<>(new ReminderTableModel(getContext(), getHelpContext()),
+                                                     getReminders(patient));
+        table.getTable().setDefaultRenderer(Object.class, new ReminderTableCellRenderer());
+        new ViewerDialog(Messages.get("patient.summary.reminders"), "PatientSummary.ReminderDialog", table);
+    }
+
+    /**
+     * Returns outstanding reminders for a patient.
+     *
+     * @param patient the patient
+     * @return the set of outstanding reminders for the patient
+     */
+    protected ResultSet<Act> getReminders(Party patient) {
+        String[] shortNames = {ReminderArchetypes.REMINDER};
+        String[] statuses = {ActStatus.IN_PROGRESS};
+        ShortNameConstraint archetypes = new ShortNameConstraint(
+                shortNames, true, true);
+        ParticipantConstraint[] participants = {
+                new ParticipantConstraint("patient", "participation.patient", patient)
+        };
+        SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
+        return new ActResultSet<>(archetypes, participants, null, statuses, false, null, 10, sort);
+    }
+
+    /**
      * Returns outstanding acts for a patient.
      *
      * @param patient  the patient
@@ -568,43 +632,6 @@ public class PatientSummary extends PartySummary {
         ShortNameConstraint archetypes = new ShortNameConstraint(shortNames, true, true);
         ParticipantConstraint[] participants = {new ParticipantConstraint("patient", PATIENT_PARTICIPATION, patient)};
         return new ActResultSet<>(archetypes, participants, null, statuses, false, null, pageSize, null);
-    }
-
-    /**
-     * Returns the highest due state of a patient's reminders.
-     *
-     * @param patient the patient
-     * @return the patient's highest due state
-     */
-    private ReminderRules.DueState getDueState(Party patient) {
-        ActResultSet<Act> reminders = createActResultSet(patient, 20, ReminderArchetypes.REMINDER);
-        ResultSetIterator<Act> iterator = new ResultSetIterator<>(reminders);
-        ReminderRules.DueState result = null;
-        while (iterator.hasNext()) {
-            ReminderRules.DueState due = reminderRules.getDueState(iterator.next());
-            if (due != null) {
-                if (result == null || due.compareTo(result) > 0) {
-                    result = due;
-                }
-                if (result == ReminderRules.DueState.OVERDUE) {
-                    break;
-                }
-            }
-
-        }
-        return result;
-    }
-
-    /**
-     * Invoked to show reminders for a patient in a popup.
-     *
-     * @param patient the patient
-     */
-    private void onShowReminders(Party patient) {
-        PagedIMTable<Act> table = new PagedIMTable<>(new ReminderTableModel(getContext(), getHelpContext()),
-                                                     getReminders(patient));
-        table.getTable().setDefaultRenderer(Object.class, new ReminderTableCellRenderer());
-        new ViewerDialog(Messages.get("patient.summary.reminders"), "PatientSummary.ReminderDialog", table);
     }
 
     /**
@@ -680,24 +707,6 @@ public class PatientSummary extends PartySummary {
     }
 
     /**
-     * Returns outstanding reminders for a patient.
-     *
-     * @param patient the patient
-     * @return the set of outstanding reminders for the patient
-     */
-    private ResultSet<Act> getReminders(Party patient) {
-        String[] shortNames = {ReminderArchetypes.REMINDER};
-        String[] statuses = {ActStatus.IN_PROGRESS};
-        ShortNameConstraint archetypes = new ShortNameConstraint(
-                shortNames, true, true);
-        ParticipantConstraint[] participants = {
-                new ParticipantConstraint("patient", "participation.patient", patient)
-        };
-        SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
-        return new ActResultSet<>(archetypes, participants, null, statuses, false, null, 10, sort);
-    }
-
-    /**
      * Determines if there are any estimates for the patient.
      *
      * @param patient the patient
@@ -729,10 +738,10 @@ public class PatientSummary extends PartySummary {
     /**
      * Displays a table in popup window.
      */
-    private static class ViewerDialog extends PopupDialog {
+    protected static class ViewerDialog extends PopupDialog {
 
         /**
-         * Constructs a {@code ViewerDialog}.
+         * Constructs a {@link ViewerDialog}.
          *
          * @param title the dialog title
          * @param style the window style
@@ -746,7 +755,7 @@ public class PatientSummary extends PartySummary {
         }
     }
 
-    private static class ReminderTableModel extends AbstractActTableModel {
+    protected static class ReminderTableModel extends AbstractActTableModel {
 
         /**
          * Constructs a {@code ReminderTableModel}.
