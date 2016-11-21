@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.9-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>openvpms-release</artifactId>
@@ -72,6 +72,11 @@
             <artifactId>openvpms-etl-plugin</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-db</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -133,134 +138,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <!-- drop and create the openvpms database -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sql-maven-plugin</artifactId>
-                <version>1.1</version>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-
-                <!-- common configuration shared by all executions -->
-                <configuration>
-                    <driver>${build.jdbc.driverClassName}</driver>
-                    <url>${build.jdbc.server}</url>
-                    <username>${jdbc.admin.username}</username>
-                    <password>${jdbc.admin.password}</password>
-                </configuration>
-
-                <executions>
-                    <execution>
-                        <id>drop-db</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <autocommit>true</autocommit>
-                            <sqlCommand>drop database `${build.jdbc.db}`</sqlCommand>
-                            <onError>continue</onError>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>create-db</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <sqlCommand>create database `${build.jdbc.db}`</sqlCommand>
-                            <keepFormat>true</keepFormat>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- generate the database schema -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>hibernate3-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <componentProperties>
-                        <jdk5>true</jdk5>
-                        <configurationfile>target/classes/hibernate.cfg.xml</configurationfile>
-                    </componentProperties>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>hbm2ddl</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <!-- load archetypes -->
-                <groupId>org.openvpms</groupId>
-                <artifactId>openvpms-archetype-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <configuration>
-                    <dir>target/archetypes/org/openvpms</dir>
-                    <assertionTypes>target/archetypes/org/openvpms/archetype/assertionTypes.xml</assertionTypes>
-                    <dialect>${build.hibernate.dialect}</dialect>
-                    <driver>${build.jdbc.driverClassName}</driver>
-                    <url>${build.jdbc.url}</url>
-                    <username>${build.jdbc.username}</username>
-                    <password>${build.jdbc.password}</password>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>load</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.2</version>
-                <configuration>
-                    <tasks>
-                        <echo message="Dumping database"/>
-                        <!-- todo - need alternative dump for other databases -->
-                        <mkdir dir="target/db"/>
-                        <exec executable="mysqldump" output="target/db/db.sql" failOnError="true" logError="true">
-                            <arg line="${build.jdbc.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}"/>
-                        </exec>
-                    </tasks>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <!-- build the release zip -->
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
@@ -308,10 +185,5 @@
             </resource>
         </resources>
     </build>
-
-    <properties>
-        <jdbc.admin.username>root</jdbc.admin.username>
-        <jdbc.admin.password>root</jdbc.admin.password>
-    </properties>
 
 </project>

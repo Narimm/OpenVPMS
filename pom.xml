@@ -24,7 +24,7 @@
     <artifactId>openvpms</artifactId>
     <packaging>pom</packaging>
     <name>OpenVPMS</name>
-    <version>1.9-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <inceptionYear>2005</inceptionYear>
     <url>http://www.openvpms.org</url>
 
@@ -574,6 +574,8 @@
                 <build.jdbc.db>openvpms-1_8</build.jdbc.db>
                 <build.jdbc.server>jdbc:mysql://localhost:3306/</build.jdbc.server>
                 <build.jdbc.url>${build.jdbc.server}${build.jdbc.db}</build.jdbc.url>
+                <jdbc.admin.username>root</jdbc.admin.username>
+                <jdbc.admin.password>root</jdbc.admin.password>
                 <build.jdbc.username>openvpms</build.jdbc.username>
                 <build.jdbc.password>openvpms</build.jdbc.password>
                 <release.hibernate.dialect>${build.hibernate.dialect}</release.hibernate.dialect>
@@ -602,6 +604,7 @@
         <module>openvpms-reports</module>
         <module>openvpms-sms</module>
         <module>openvpms-esci-adapter</module>
+        <module>openvpms-db</module>
         <module>openvpms-web</module>
         <module>openvpms-etl</module>
         <module>openvpms-release</module>
@@ -765,7 +768,7 @@
         <jta.version>1.1</jta.version>
         <jug.version>2.0rc4</jug.version>
         <junit.version>4.11</junit.version>
-        <log4j.version>1.2.15</log4j.version>
+        <log4j.version>1.2.16</log4j.version>
         <oro.version>2.0.8</oro.version>
         <stax.api.version>1.0</stax.api.version>
         <stax.version>1.1.2-dev</stax.version>

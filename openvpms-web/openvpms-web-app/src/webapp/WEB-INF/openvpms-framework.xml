@@ -64,9 +64,19 @@
                   value="${hibernate.connection.password}"/>
     </bean>
 
+    <bean id="databaseService" class="org.openvpms.db.service.impl.DatabaseServiceImpl">
+        <constructor-arg value="${hibernate.connection.driver_class}"/>
+        <constructor-arg value="${hibernate.connection.url}"/>
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+    <bean id="databaseVersionChecker" class="org.openvpms.db.service.DatabaseVersionChecker">
+        <constructor-arg ref="databaseService"/>
+    </bean>
+
     <!--  Hibernate session factory -->
     <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean" depends-on="databaseVersionChecker">
         <property name="dataSource" ref="dataSource"/>
         <property name="hibernateProperties">
             <props>
