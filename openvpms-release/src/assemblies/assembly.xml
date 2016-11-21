@@ -40,6 +40,7 @@
                 <include>org.openvpms:openvpms-framework</include>
                 <include>org.openvpms:openvpms-reports</include>
                 <include>org.openvpms:openvpms-etl-load</include>
+                <include>org.openvpms:openvpms-db</include>
                 <include>org.openvpms:jasperreports-scaler</include>
                 <include>org.apache.commons:commons-dbcp2</include>
                 <include>dom4j:dom4j</include>
@@ -144,17 +145,7 @@
             <lineEnding>crlf</lineEnding>
         </fileSet>
 
-        <!-- database scripts -->
-        <fileSet>
-            <directory>${basedir}/src/db</directory>
-            <outputDirectory>db</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>${basedir}/target/db</directory>
-            <outputDirectory>db</outputDirectory>
-        </fileSet>
-
-        <!-- update scripts -->
+        <!-- legacy update scripts -->
         <fileSet>
             <directory>${basedir}/src/update</directory>
             <outputDirectory>update</outputDirectory>
