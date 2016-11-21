@@ -88,9 +88,9 @@ public class DBTool {
     public void version() {
         String version = service.getVersion();
         if (version == null) {
-            System.out.println("No version information");
+            System.out.println("Database '" + service.getSchemaName() + "' has no version information");
         } else {
-            System.out.println("Version: " + version);
+            System.out.println("Database '" + service.getSchemaName() + "' is at version " + version);
         }
     }
 
@@ -117,17 +117,28 @@ public class DBTool {
      */
     public void update() throws SQLException {
         String version = service.getVersion();
+        String schemaName = service.getSchemaName();
         if (service.needsUpdate()) {
             service.update();
             if (version == null) {
                 // no version information
-                System.out.println("Update database to version " + service.getVersion());
+                System.out.println("Database '" + schemaName + "' updated to version " + service.getVersion());
             } else {
-                System.out.println("Update database from version " + version + " to " + service.getVersion());
+                System.out.println("Database '" + schemaName + "' updated from version " + version + " to "
+                                   + service.getVersion());
             }
         } else {
-            System.out.println("Database is up to date");
+            System.out.println("Database '" + schemaName + "' is up to date");
         }
+    }
+
+    /**
+     * Returns the version that the database needs to be migrated to, if it is out of date.
+     *
+     * @return the version to migrate to, or {@code null} if the database doesn't need migration
+     */
+    public String getMigrationVersion() {
+        return service.getMigrationVersion();
     }
 
     /**
@@ -180,8 +191,8 @@ public class DBTool {
                             }
                             boolean done = false;
                             while (!done) {
-                                console.printf("Has the database been backed up? [Y/n]");
-                                String input = StringUtils.chop(console.readLine());
+                                console.printf("Has the database been backed up? [Y/n] ");
+                                String input = console.readLine();
                                 if ("Y".equals(input)) {
                                     done = true;
                                 } else if ("n".equals(input)) {
