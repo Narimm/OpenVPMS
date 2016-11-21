@@ -18,6 +18,7 @@ package org.openvpms.db.service.impl;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;
 import org.flywaydb.core.api.MigrationVersion;
@@ -153,7 +154,10 @@ public class DatabaseServiceImpl implements DatabaseService {
                 Resource resource = getResource("org/openvpms/db/schema/schema.sql");
                 SqlScript script = new SqlScript(resource.loadAsString("UTF-8"), support);
                 script.execute(support.getJdbcTemplate());
-                baseline();
+                MigrationInfo version = getNewestVersion();
+                if (version != null) {
+                    baseline(version.getVersion(), version.getDescription());
+                }
             } else {
                 throw new SQLException("Cannot create " + schemaName + " as there are tables already present");
             }
@@ -191,8 +195,8 @@ public class DatabaseServiceImpl implements DatabaseService {
      * @return the version to migrate to, or {@code null} if the database doesn't need migration
      */
     public String getMigrationVersion() {
-        MigrationInfo[] info = getInfo().pending();
-        return info.length > 0 ? info[info.length - 1].getVersion().toString() : null;
+        MigrationInfo version = getNewestVersion();
+        return version != null ? version.getVersion().toString() : null;
     }
 
     /**
@@ -275,9 +279,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                     String existing = getExistingVersion(schema);
                     if (existing != null) {
                         // pre-existing schema. Don't want to create it again
-                        flyway.setBaselineVersion(MigrationVersion.fromVersion(existing));
-                        flyway.setBaselineDescription("Initial schema");
-                        flyway.baseline();
+                        baseline(MigrationVersion.fromVersion(existing), "Initial schema");
                     } else {
                         throw new SQLException("This database needs to be manually migrated to OpenVPMS 1.9");
                     }
@@ -287,4 +289,26 @@ public class DatabaseServiceImpl implements DatabaseService {
         return false;
     }
 
+    /**
+     * <p>Baselines an existing database, excluding all migrations up to and including version.</p>
+     *
+     * @param version     the version
+     * @param description the description
+     * @throws FlywayException if the schema baselining failed
+     */
+    private void baseline(MigrationVersion version, String description) {
+        flyway.setBaselineVersion(version);
+        flyway.setBaselineDescription(description);
+        flyway.baseline();
+    }
+
+    /**
+     * Returns the most recent version of the database that needs to be updated to.
+     *
+     * @return the most recent version of the database, or {@code null} if no update is required
+     */
+    private MigrationInfo getNewestVersion() {
+        MigrationInfo[] info = getInfo().pending();
+        return info.length > 0 ? info[info.length - 1] : null;
+    }
 }
