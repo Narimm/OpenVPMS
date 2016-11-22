@@ -214,4 +214,13 @@
           name="Description"
           description="User name format including the description"
           expression="expr:ifempty($description, $name)"/>
+
+    <data archetype="lookup.productDrugSchedule" code="S1" name="S1"/>
+    <data archetype="lookup.productDrugSchedule" code="S2" name="S2"/>
+    <data archetype="lookup.productDrugSchedule" code="S3" name="S3"/>
+    <data archetype="lookup.productDrugSchedule" code="S4" name="S4" restricted="true"/>
+    <data archetype="lookup.productDrugSchedule" code="S5" name="S5"/>
+    <data archetype="lookup.productDrugSchedule" code="S6" name="S6"/>
+    <data archetype="lookup.productDrugSchedule" code="S7" name="S7"/>
+    <data archetype="lookup.productDrugSchedule" code="S8" name="S8"/>
 </archetype>

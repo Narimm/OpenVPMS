@@ -38,6 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.JoinConstraint;
@@ -68,14 +69,20 @@ public class ProductRules {
      */
     private final IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
 
     /**
      * Constructs a {@link ProductRules}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public ProductRules(IArchetypeService service) {
+    public ProductRules(IArchetypeService service, ILookupService lookups) {
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -383,6 +390,24 @@ public class ProductRules {
     public boolean canUseProductAtLocation(Product product, Party location) {
         IMObjectBean bean = new IMObjectBean(product, service);
         return !bean.getNodeTargetObjectRefs("locations").contains(location.getObjectReference());
+    }
+
+    /**
+     * Determines if a drug is classed as restricted.
+     *
+     * @param product the product
+     * @return {@code true} if the product has a drug schedule that is restricted, otherwise {@code false}
+     */
+    public boolean isRestricted(Product product) {
+        boolean result = false;
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            Lookup schedule = lookups.getLookup(product, "drugSchedule");
+            if (schedule != null) {
+                IMObjectBean bean = new IMObjectBean(schedule, service);
+                result = bean.getBoolean("restricted", false);
+            }
+        }
+        return result;
     }
 
     /**

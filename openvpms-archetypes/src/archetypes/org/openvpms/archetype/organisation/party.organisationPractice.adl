@@ -127,6 +127,8 @@
                 <errorMessage>Invalid user name format</errorMessage>
             </assertion>
         </node>
+        <node name="restrictOrdering" minCardinality="0" maxCardinality="1" path="/details/restrictOrdering"
+              type="java.lang.Boolean" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

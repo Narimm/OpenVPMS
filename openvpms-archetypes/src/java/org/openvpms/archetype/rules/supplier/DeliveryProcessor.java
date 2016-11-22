@@ -143,7 +143,7 @@ public class DeliveryProcessor {
     public DeliveryProcessor(Act act, IArchetypeService service, Currencies currencies, ILookupService lookups) {
         this.act = act;
         this.service = service;
-        this.rules = new ProductRules(service);
+        this.rules = new ProductRules(service, lookups);
         ProductPriceRules priceRules = new ProductPriceRules(service);
         PracticeRules practiceRules = new PracticeRules(service, currencies);
         priceUpdater = new ProductPriceUpdater(priceRules, practiceRules, service);

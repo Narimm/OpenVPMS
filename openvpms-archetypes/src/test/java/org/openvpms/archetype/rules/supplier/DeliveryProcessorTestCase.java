@@ -64,7 +64,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
     @Before
     public void setUp() {
         super.setUp();
-        rules = new ProductRules(getArchetypeService());
+        rules = new ProductRules(getArchetypeService(), getLookupService());
         setIgnoreListPriceDecreases(false);
     }
 
@@ -581,7 +581,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * @return the product supplier, or <tt>null</tt> if none is found
      */
     private ProductSupplier getProductSupplier(int packageSize) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
         return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
@@ -593,7 +593,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * @return the new relationship
      */
     private ProductSupplier createProductSupplier() {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

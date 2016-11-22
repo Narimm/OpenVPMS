@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.invoice;
@@ -1316,7 +1316,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     private void addProductSupplierRelationship(Product product, Party supplier, String reorderCode, int packageSize,
                                                 String packageUnits, BigDecimal listPrice) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setReorderCode(reorderCode);
         ps.setPackageSize(packageSize);

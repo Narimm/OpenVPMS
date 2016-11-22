@@ -19,9 +19,12 @@ package org.openvpms.archetype.rules.supplier;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -311,13 +314,37 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Tests the {@link OrderRules#hasRestrictedProducts(Act)}.
+     */
+    @Test
+    public void testHasRestrictedProducts() {
+        Product medication1 = ProductTestHelper.createMedication(false);
+        Product medication2 = ProductTestHelper.createMedication(true);
+        Product medication3 = ProductTestHelper.createMedication(); // no schedule
+        Product merchandise = ProductTestHelper.createMerchandise();
+
+        FinancialAct item1 = createOrderItem(medication1, BigDecimal.TEN, 1, BigDecimal.ONE);
+        FinancialAct item2 = createOrderItem(medication2, BigDecimal.TEN, 1, BigDecimal.ONE);
+        FinancialAct item3 = createOrderItem(medication3, BigDecimal.TEN, 1, BigDecimal.ONE);
+        FinancialAct item4 = createOrderItem(merchandise, BigDecimal.TEN, 1, BigDecimal.ONE);
+        FinancialAct order = createOrder(item1, item2, item3, item4);
+        assertTrue(rules.hasRestrictedProducts(order));
+
+        ActBean bean = new ActBean(order);
+        bean.removeNodeRelationships("items", item2);
+
+        assertFalse(rules.hasRestrictedProducts(order));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Override
     public void setUp() {
         super.setUp();
         TaxRules taxRules = new TaxRules(TestHelper.getPractice(), getArchetypeService());
-        rules = new OrderRules(taxRules, getArchetypeService());
+        ProductRules productRules = new ProductRules(getArchetypeService(), getLookupService());
+        rules = new OrderRules(taxRules, getArchetypeService(), productRules);
     }
 
     /**

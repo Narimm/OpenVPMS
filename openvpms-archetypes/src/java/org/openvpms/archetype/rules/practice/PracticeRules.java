@@ -240,6 +240,17 @@ public class PracticeRules {
     }
 
     /**
+     * Determines if finalisation of orders containing restricted medications is limited to clinicians.
+     *
+     * @param practice the practice
+     * @return {@code true} if only clinicians can finalize and send ESCI orders.
+     */
+    public boolean isOrderingRestricted(Party practice) {
+        IMObjectBean bean = new IMObjectBean(practice, service);
+        return bean.getBoolean("restrictOrdering");
+    }
+
+    /**
      * Determines if an object associated with a reference is active.
      *
      * @param reference the object reference. May be {@code null}

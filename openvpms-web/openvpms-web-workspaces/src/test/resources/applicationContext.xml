@@ -278,6 +278,7 @@
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">

@@ -104,4 +104,9 @@ public class ProductArchetypes {
      * Product dose short name.
      */
     public static final String DOSE = "entity.productDose";
+
+    /**
+     * The drug schedule.
+     */
+    public static final String DRUG_SCHEDULE = "lookup.productDrugSchedule";
 }

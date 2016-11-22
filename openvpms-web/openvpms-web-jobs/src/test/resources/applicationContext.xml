@@ -224,6 +224,7 @@
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">

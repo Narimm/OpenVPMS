@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.supplier;
 
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -42,7 +43,8 @@ public class SupplierHelper {
         }
         IArchetypeService service = ServiceHelper.getArchetypeService();
         TaxRules taxRules = new TaxRules(practice, service);
-        return new OrderRules(taxRules, service);
+        ProductRules productRules = ServiceHelper.getBean(ProductRules.class);
+        return new OrderRules(taxRules, service, productRules);
     }
 }
 
