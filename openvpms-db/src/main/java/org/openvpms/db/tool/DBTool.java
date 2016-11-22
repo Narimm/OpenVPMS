@@ -150,7 +150,7 @@ public class DBTool {
         try {
             JSAP parser = createParser();
             JSAPResult config = parser.parse(args);
-            if (!config.success()) {
+            if (!config.success() || config.getBoolean("help")) {
                 displayUsage(config);
             } else {
                 String path = config.getString("properties");
@@ -255,6 +255,8 @@ public class DBTool {
         parser.registerParameter(new Switch("version").setShortFlag('v')
                                          .setLongFlag("version").setDefault("false").setHelp(
                         "Displays the database version."));
+        parser.registerParameter(new Switch("help").setLongFlag("help").setDefault("false")
+                                         .setHelp("Displays this help."));
         parser.registerParameter(new Switch("backedup").setLongFlag("database-is-backed-up").setDefault("false")
                                          .setHelp("If specified, disables backup prompting when updating the database"));
         parser.registerParameter(new FlaggedOption("properties").setLongFlag("properties")
