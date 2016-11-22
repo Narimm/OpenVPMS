@@ -409,8 +409,7 @@ public class TestHelper {
      * @param save      if {@code true}, save the product
      * @return a new product
      */
-    public static Product createProduct(String shortName, String species,
-                                        boolean save) {
+    public static Product createProduct(String shortName, String species, boolean save) {
         Product product = (Product) create(shortName);
         EntityBean bean = new EntityBean(product);
         String name = "XProduct-" + ((species != null) ? species : "") + nextId();

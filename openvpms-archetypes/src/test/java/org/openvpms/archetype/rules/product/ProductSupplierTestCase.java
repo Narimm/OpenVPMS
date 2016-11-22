@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -32,8 +32,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * Tests the {@link ProductSupplier} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductSupplierTestCase extends ArchetypeServiceTest {
 
@@ -42,7 +41,7 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void test() {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

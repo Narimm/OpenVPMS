@@ -44,7 +44,7 @@ public class ChargeEditContext extends PriceActEditContext {
      */
     public ChargeEditContext(Party customer, Party location, LayoutContext context) {
         super(customer, location, context);
-        ProductRules rules = new ProductRules(getCachingArchetypeService());
+        ProductRules rules = new ProductRules(getCachingArchetypeService(), ServiceHelper.getLookupService());
         setDoseManager(new DoseManager(ServiceHelper.getBean(PatientRules.class), rules));
         editorQueue = new DefaultEditorQueue(context.getContext());
     }

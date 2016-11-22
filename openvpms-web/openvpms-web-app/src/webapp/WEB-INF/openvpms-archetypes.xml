@@ -117,6 +117,7 @@
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">

@@ -52,6 +52,26 @@ public class ProductTestHelper {
     }
 
     /**
+     * Creates a medication product.
+     *
+     * @param restricted if {@code true}, assign the medication a restricted drug schedule, otherwise use an
+     *                   unrestricted one
+     * @return a new medication
+     */
+    public static Product createMedication(boolean restricted) {
+        Product product = createMedication();
+        IMObjectBean bean = new IMObjectBean(product);
+        String code = (restricted) ? "S3" : "S4";
+        Lookup schedule = TestHelper.getLookup(ProductArchetypes.DRUG_SCHEDULE, code, code, restricted);
+        IMObjectBean scheduleBean = new IMObjectBean(schedule);
+        scheduleBean.setValue("restricted", restricted);
+        scheduleBean.save();
+        bean.setValue("drugSchedule", code);
+        bean.save();
+        return product;
+    }
+
+    /**
      * Helper to create a medication product linked to a product type.
      *
      * @param productType the product type

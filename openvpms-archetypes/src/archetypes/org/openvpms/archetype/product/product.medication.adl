@@ -25,17 +25,9 @@
               derivedValue="/name"/>
         <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0"/>
         <node name="drugSchedule" path="/details/drugSchedule" type="java.lang.String" minCardinality="0">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="S1" value="S1"/>
-                    <property name="S2" value="S2"/>
-                    <property name="S3" value="S3"/>
-                    <property name="S4" value="S4"/>
-                    <property name="S5" value="S5"/>
-                    <property name="S6" value="S6"/>
-                    <property name="S7" value="S7"/>
-                    <property name="S8" value="S8"/>
-                </propertyList>
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.productDrugSchedule"/>
             </assertion>
         </node>
         <node name="activeIngredients" path="/details/activeIngredients" type="java.lang.String"

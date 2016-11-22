@@ -413,11 +413,30 @@ public class ProductRulesTestCase extends AbstractProductTest {
     }
 
     /**
+     * Tests the {@link ProductRules#isRestricted(Product)} method.
+     */
+    @Test
+    public void testIsRestricted() {
+        Product medication1 = ProductTestHelper.createMedication(false);
+        Product medication2 = ProductTestHelper.createMedication(true);
+        Product medication3 = ProductTestHelper.createMedication(); // no schedule
+        Product merchandise = ProductTestHelper.createMerchandise();
+        Product service = ProductTestHelper.createService();
+        Product template = ProductTestHelper.createTemplate();
+        assertFalse(rules.isRestricted(medication1));
+        assertTrue(rules.isRestricted(medication2));
+        assertFalse(rules.isRestricted(medication3));
+        assertFalse(rules.isRestricted(merchandise));
+        assertFalse(rules.isRestricted(service));
+        assertFalse(rules.isRestricted(template));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new ProductRules(getArchetypeService());
+        rules = new ProductRules(getArchetypeService(), getLookupService());
     }
 
     /**

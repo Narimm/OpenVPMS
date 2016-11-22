@@ -270,7 +270,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // create a product-supplier relationship.
         int packageSize = 30;
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         ps.setPackageSize(packageSize);
@@ -383,7 +383,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @return the corresponding product supplier, or {@code null} if none is found
      */
     private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
     }
 
@@ -395,7 +395,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @return the new relationship
      */
     private ProductSupplier addProductSupplier(Product product, Party supplier) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         return ps;
