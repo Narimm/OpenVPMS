@@ -215,9 +215,10 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     @Override
     protected void onPrint() {
         final T object = IMObjectHelper.reload(getObject());
+        ActActions<T> actions = getActions();
         if (object == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else if (!ActStatus.POSTED.equals(object.getStatus()) && getActions().warnWhenPrintingUnfinalisedAct()) {
+        } else if (actions.isUnfinalised(object) && actions.warnWhenPrintingUnfinalisedAct()) {
             String displayName = DescriptorHelper.getDisplayName(object);
             String title = Messages.format("print.unfinalised.title", displayName);
             String message = Messages.format("print.unfinalised.message", displayName);
