@@ -19,8 +19,8 @@ package org.openvpms.web.workspace.workflow.checkout;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -54,7 +54,6 @@ import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.EvalTask;
-import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
@@ -77,9 +76,15 @@ import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.openvpms.web.component.workflow.TaskFactory.and;
+import static org.openvpms.web.component.workflow.TaskFactory.eq;
+import static org.openvpms.web.component.workflow.TaskFactory.ne;
+import static org.openvpms.web.component.workflow.TaskFactory.when;
 
 
 /**
@@ -207,17 +212,13 @@ public class CheckOutWorkflow extends WorkflowImpl {
         addTask(createChargeTask(visits));
 
         // on save, determine if the user wants to post the invoice, but only if its not already posted
-        NodeConditionTask<String> notPosted = new NodeConditionTask<>(
-                CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
-        addTask(new ConditionalTask(notPosted, getPostTask()));
+        addTask(when(ne(CustomerAccountArchetypes.INVOICE, "status", ActStatus.POSTED), getPostTask()));
 
-        // if the invoice is posted, prompt to pay the account
-        NodeConditionTask<String> posted = new NodeConditionTask<>(
-                CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
-
+        // if the invoice is posted and the customer has a positive balance, prompt to pay the account
         PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
         payWorkflow.setRequired(false);
-        addTask(new ConditionalTask(posted, payWorkflow));
+        addTask(when(and(eq(CustomerAccountArchetypes.INVOICE, "status", ActStatus.POSTED), new PositiveBalance()),
+                     payWorkflow));
 
         // print acts and documents created since the events or invoice was created
         addTask(new PrintTask(visits, help.subtopic("print")));
@@ -330,7 +331,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         EvalTask<Boolean> confirmPost = getPostCondition();
         EvalTask<Boolean> checkUndispensed = new UndispensedOrderTask(help);
-        ConditionalTask post = new ConditionalTask(confirmPost, new ConditionalTask(checkUndispensed, postTasks));
+        ConditionalTask post = new ConditionalTask(confirmPost, when(checkUndispensed, postTasks));
         post.setRequired(false);
         return post;
     }
@@ -432,6 +433,29 @@ public class CheckOutWorkflow extends WorkflowImpl {
         @Override
         protected ConfirmationDialog createConfirmationDialog(TaskContext context, HelpContext help) {
             return new UndispensedOrderDialog(checker.getUndispensedItems(), help);
+        }
+    }
+
+    private class PositiveBalance extends EvalTask<Boolean> {
+
+        /**
+         * Starts the task.
+         * <p/>
+         * The registered {@link TaskListener} will be notified on completion or failure.
+         *
+         * @param context the task context
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void start(TaskContext context) {
+            Party customer = context.getCustomer();
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
+            BigDecimal balance = rules.getBalance(customer);
+            if (balance.compareTo(BigDecimal.ZERO) > 0) {
+                setValue(true);
+            } else {
+                setValue(false);
+            }
         }
     }
 
