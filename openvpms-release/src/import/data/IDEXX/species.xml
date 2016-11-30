@@ -1,0 +1,37 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetype>
+    <data archetype="lookup.speciesIDEXX" code="AVIAN"/>
+    <data archetype="lookup.speciesIDEXX" code="BOVINE"/>
+    <data archetype="lookup.speciesIDEXX" code="CANINE"/>
+    <data archetype="lookup.speciesIDEXX" code="EQUINE"/>
+    <data archetype="lookup.speciesIDEXX" code="FELINE"/>
+    <data archetype="lookup.speciesIDEXX" code="FERRET"/>
+    <data archetype="lookup.speciesIDEXX" code="GOAT"/>
+    <data archetype="lookup.speciesIDEXX" code="LIZARD"/>
+    <data archetype="lookup.speciesIDEXX" code="LLAMA"/>
+    <data archetype="lookup.speciesIDEXX" code="MONKEY"/>
+    <data archetype="lookup.speciesIDEXX" code="MOUSE"/>
+    <data archetype="lookup.speciesIDEXX" code="OTHER"/>
+    <data archetype="lookup.speciesIDEXX" code="PIG"/>
+    <data archetype="lookup.speciesIDEXX" code="RABBIT"/>
+    <data archetype="lookup.speciesIDEXX" code="RAT"/>
+    <data archetype="lookup.speciesIDEXX" code="SEA_TURTLE"/>
+    <data archetype="lookup.speciesIDEXX" code="SHEEP"/>
+    <data archetype="lookup.speciesIDEXX" code="SNAKE"/>
+    <data archetype="lookup.speciesIDEXX" code="TORTOISE"/>
+</archetype>
