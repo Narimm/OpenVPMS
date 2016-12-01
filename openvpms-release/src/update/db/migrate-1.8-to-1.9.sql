@@ -1427,9 +1427,9 @@ UPDATE product_price_details d
                   JOIN product_price_details markup
                     ON p.product_price_id = markup.product_price_id
                        AND markup.name = 'markup'
-                  JOIN product_price_details maxdiscount
-                    ON p.product_price_id = maxdiscount.product_price_id
-                       AND maxdiscount.name = 'maxDiscount '
+                  JOIN product_price_details maxDiscount
+                    ON p.product_price_id = maxDiscount.product_price_id
+                       AND maxDiscount.name = 'maxDiscount '
                   JOIN product_tax_rates rates
                     ON p.product_id = rates.product_id
                 WHERE cast(markup.value AS DECIMAL(18, 3)) <> 0) markups) calcs
