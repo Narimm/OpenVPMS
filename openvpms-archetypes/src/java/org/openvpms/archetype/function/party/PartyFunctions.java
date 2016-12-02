@@ -403,7 +403,22 @@ public class PartyFunctions {
     }
 
     /**
-     * Retuurns a formatted telephone number for a customer.
+     * Returns a formatted <em>contact.location</em> address with the specified purpose for a party.
+     * <br/>
+     * If it cannot find the specified purpose, it uses the preferred location contact or
+     * any location contact if there is no preferred.
+     *
+     * @param party   the party
+     * @param purpose the contact purpose of the address
+     * @return a formatted address. May be empty if there is no corresponding <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getAddress(Party party, String purpose) {
+        return (party != null) ? partyRules.getAddress(party, purpose) : "";
+    }
+
+    /**
+     * Returns a formatted telephone number for a customer.
      *
      * @param party the customer
      * @return a formatted telephone number. party. May be empty if there is no corresponding
