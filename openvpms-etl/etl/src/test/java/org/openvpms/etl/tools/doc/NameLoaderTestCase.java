@@ -21,27 +21,17 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -71,7 +61,6 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         DocumentAct act6 = createPatientDocAct("file6-" + System.nanoTime() + ".txt");
         DocumentAct act7 = createPatientDocAct("file7-" + System.nanoTime() + ".doc");
         DocumentAct act8 = createPatientDocAct("file8-" + System.nanoTime() + ".odt");
-        List<DocumentAct> expected = Arrays.asList(act1, act2, act3, act4, act5, act6, act7, act8);
 
         File act1File = createFile(source, act1.getFileName(), null);
         File act2File = createFile(source, act2.getFileName(), null);
@@ -82,27 +71,22 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         File act7File = createFile(source, act7.getFileName(), null);
         File act8File = createFile(source, act8.getFileName(), null);
 
-        LoaderListener listener = load(source, target, false);
-
-        // verify there a no acts left to load documents for.
-        ArchetypeQuery query = createQuery();
-        Iterator<DocumentAct> iter = new IMObjectQueryIterator<>(query);
-        while (iter.hasNext()) {
-            ActBean bean = new ActBean(iter.next());
-            String fileName = bean.getString("fileName");
-            assertNull(fileName);
-        }
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, false, false, listener);
 
         checkFiles(target, act1File, act2File, act3File, act4File, act5File, act6File, act7File, act8File);
 
-        assertEquals(expected.size(), listener.getLoaded());
-        assertEquals(expected.size(), listener.getProcessed());
+        assertEquals(8, listener.getLoaded());
+        assertEquals(8, listener.getProcessed());
         assertEquals(0, listener.getErrors());
-        for (DocumentAct e : expected) {
-            e = get(e);
-            assertNotNull(e);
-            checkMimeType(e);
-        }
+        checkAct(act1);
+        checkAct(act2);
+        checkAct(act3);
+        checkAct(act4);
+        checkAct(act5);
+        checkAct(act6);
+        checkAct(act7);
+        checkAct(act8);
     }
 
     /**
@@ -119,7 +103,8 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         File file = new File(source, System.nanoTime() + ".gif");
         FileUtils.touch(file);
 
-        LoaderListener listener = load(source, target, false);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, false, false, listener);
 
         assertEquals(0, listener.getLoaded());
         assertEquals(1, listener.getErrors());
@@ -153,7 +138,8 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         preLoaded.setFileName(doc.getName());
         save(doc, preLoaded);
 
-        LoaderListener listener = load(source, target, false);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, false, false, listener);
         assertEquals(0, listener.getLoaded());
         assertEquals(1, listener.getErrors());
         assertEquals(1, listener.getProcessed());
@@ -175,11 +161,14 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
     public void testLoadDocumentTemplate() throws Exception {
         File source = folder.newFolder("sdocs");
         File target = folder.newFolder("tdocs");
+        LoaderListener listener = new FileLoaderListener(new DefaultLoaderListener());
+        LoadContext context = new DefaultLoadContext(new FileStrategy(target, null, false), listener);
 
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         try {
             new NameLoader(source, new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE_ACT}, getArchetypeService(),
-                           new DefaultDocumentFactory(getArchetypeService()), transactionManager, false, false);
+                           new DefaultDocumentFactory(getArchetypeService()), transactionManager, false, false,
+                           context);
             fail("Expected exception to be thrown");
         } catch (Throwable exception) {
             assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "
@@ -199,7 +188,7 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         bean.addNodeParticipation("template", template);
         save(act, template);
 
-        LoaderListener listener = load(source, target, true);
+        load(source, target, null, true, false, listener);
         assertEquals(0, listener.getLoaded());
         assertEquals(0, listener.getAlreadyLoaded());
         assertEquals(1, listener.getMissingAct());
@@ -221,7 +210,8 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         DocumentAct act = createPatientDocAct(first.getName());
 
         // create a file and load it
-        LoaderListener listener1 = load(source, target, true);
+        LoaderListener listener1 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener1);
         assertEquals(1, listener1.getLoaded());
         assertEquals(0, listener1.getErrors());
         assertEquals(1, listener1.getProcessed());
@@ -235,8 +225,9 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         Document firstDoc = checkAct(act, first.getName());
 
         // create a file that duplicates the first in name and content
+        LoaderListener listenerDup = new LoggingLoaderListener(DocumentLoader.log);
         createFile(source, first.getName(), "A");
-        LoaderListener listenerDup = load(source, target, true);
+        load(source, target, null, true, false, listenerDup);
         assertEquals(0, listenerDup.getLoaded());
         assertEquals(1, listenerDup.getErrors());
         assertEquals(1, listenerDup.getProcessed());
@@ -244,7 +235,8 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         assertEquals(1, listenerDup.getAlreadyLoaded());
 
         File second = createFile(source, first.getName(), "B");
-        LoaderListener listener2 = load(source, target, true);
+        LoaderListener listener2 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener2);
         assertEquals(1, listener2.getLoaded());
         assertEquals(0, listener2.getErrors());
         assertEquals(1, listener2.getProcessed());
@@ -259,7 +251,8 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
         // as it has the same name.
         File third = createFile(source, first.getName(), "A");
         assertTrue(third.setLastModified(second.lastModified() + 1000));
-        LoaderListener listener3 = load(source, target, true);
+        LoaderListener listener3 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener3);
         assertEquals(0, listener3.getLoaded());
         assertEquals(1, listener3.getErrors());
         assertEquals(1, listener3.getProcessed());
@@ -275,6 +268,23 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
     }
 
     /**
+     * Creates a file for a document act in the specified directory according to the loader naming conventions,
+     * and updates the act if required.
+     *
+     * @param act the act
+     * @param dir the directory
+     * @return the new file
+     * @throws IOException for any I/O error
+     */
+    @Override
+    protected File createSourceFile(DocumentAct act, File dir) throws IOException {
+        File file = createFile(dir, "file1-" + System.nanoTime() + ".gif", "");
+        act.setFileName(file.getName());
+        save(act);
+        return file;
+    }
+
+    /**
      * Creates a loader.
      *
      * @param source             the source directory to load from
@@ -283,24 +293,14 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
      * @param factory            the document factory
      * @param transactionManager the transaction manager
      * @param overwrite          if {@code true} overwrite existing documents
+     * @param context            the load context
      * @return a new loader
      */
     @Override
     protected Loader createLoader(File source, String[] shortNames, IArchetypeService service, DocumentFactory factory,
-                                  PlatformTransactionManager transactionManager, boolean overwrite) {
-        return new NameLoader(source, shortNames, service, factory, transactionManager, false, overwrite);
-    }
-
-    /**
-     * Creates a query for <em>act.patientDocumentAttachment</em> acts with no document.
-     *
-     * @return a new query.
-     */
-    private ArchetypeQuery createQuery() {
-        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.DOCUMENT_ATTACHMENT, false, true);
-        query.add(new NodeConstraint("document", RelationalOp.IS_NULL));
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        return query;
+                                  PlatformTransactionManager transactionManager, boolean overwrite,
+                                  LoadContext context) {
+        return new NameLoader(source, shortNames, service, factory, transactionManager, false, overwrite, context);
     }
 
 }

@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -68,7 +69,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         File act4File = createFile(act4, source, "P", "-123456", null, ".png");
         File act5File = createFile(act5, source, "P", "-123457", null, ".htm");
 
-        LoaderListener listener = load(source, target, false);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, false, false, listener);
         assertEquals(5, listener.getLoaded());
         assertEquals(0, listener.getErrors());
         assertEquals(5, listener.getProcessed());
@@ -108,7 +110,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         File noAct3 = new File(source, "0000-12345.gif");
         FileUtils.touch(noAct3);
 
-        LoaderListener listener = load(source, target, false);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, false, false, listener);
 
         int expectedErrors = 3;
         assertEquals(0, listener.getLoaded());
@@ -139,7 +142,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         preLoaded.setFileName(doc.getName());
         save(doc, preLoaded);
 
-        LoaderListener listener = load(source, target, false);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, false, false, listener);
         assertEquals(0, listener.getLoaded());
         assertEquals(1, listener.getErrors());
         assertEquals(1, listener.getProcessed());
@@ -173,7 +177,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         assertTrue(third.setLastModified(second.lastModified() + 1000));
 
         // for the first load, set overwrite = false. Only first should be loaded.
-        LoaderListener listener1 = load(source, target, false);
+        LoaderListener listener1 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, false, false, listener1);
 
         assertEquals(1, listener1.getLoaded());
         assertEquals(2, listener1.getErrors()); // errors as overwrite = false
@@ -186,7 +191,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         checkFiles(source, second, third); // not moved as overwrite = false
 
         // now re-run with overwrite = true. The second and third file should now be loaded
-        LoaderListener listener2 = load(source, target, true);
+        LoaderListener listener2 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener2);
 
         assertEquals(2, listener2.getLoaded());
         assertEquals(0, listener2.getErrors());
@@ -234,7 +240,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
 
         // create a file and load it
         File first = createFile(act, source, null, "-Z", "A");
-        LoaderListener listener1 = load(source, target, true);
+        LoaderListener listener1 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener1);
         assertEquals(1, listener1.getLoaded());
         assertEquals(0, listener1.getErrors());
         assertEquals(1, listener1.getProcessed());
@@ -247,7 +254,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         // create a file that duplicates the first in name and content
         File duplicateFirst = createFile(source, first.getName(), "A");
         alreadyLoaded++;
-        LoaderListener listenerDup = load(source, target, true);
+        LoaderListener listenerDup = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listenerDup);
         assertEquals(0, listenerDup.getLoaded());
         assertEquals(1, listenerDup.getErrors());
         assertEquals(1, listenerDup.getProcessed());
@@ -255,7 +263,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         assertEquals(alreadyLoaded, listenerDup.getAlreadyLoaded());
 
         File second = createFile(act, source, null, "-A", "B");
-        LoaderListener listener2 = load(source, target, true);
+        LoaderListener listener2 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener2);
         assertEquals(1, listener2.getLoaded());
         assertEquals(1, listener2.getErrors());
         assertEquals(2, listener2.getProcessed());
@@ -274,7 +283,8 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         // create a third file that duplicates the content of the first. This should be loaded
         File third = createFile(act, source, null, "-X", "A");
         assertTrue(third.setLastModified(second.lastModified() + 1000));
-        LoaderListener listener3 = load(source, target, true);
+        LoaderListener listener3 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener3);
         assertEquals(1, listener3.getLoaded());
         assertEquals(0, listener3.getErrors());
         assertEquals(1, listener3.getProcessed());
@@ -311,8 +321,9 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         File act4File = createFile(act4, source, null, null, ".png");
         File act5File = createFile(act5, source, null, null, ".gif");
 
-        // load files that have corresponding document attachment acts. The document image acts should not be uppdated
-        LoaderListener listener = load(source, PatientArchetypes.DOCUMENT_ATTACHMENT, target, false);
+        // load files that have corresponding document attachment acts. The document image acts should not be updated
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, PatientArchetypes.DOCUMENT_ATTACHMENT, target, null, false, false, listener);
         assertEquals(3, listener.getLoaded());
         assertEquals(2, listener.getErrors());
         assertEquals(5, listener.getProcessed());
@@ -344,8 +355,10 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         String[] shortNames = {DocumentArchetypes.DOCUMENT_TEMPLATE_ACT};
         try {
+            LoadContext context = new DefaultLoadContext(new FileStrategy(target, null, false),
+                                                         new LoggingLoaderListener(DocumentLoader.log));
             new IdLoader(source, shortNames, getArchetypeService(), new DefaultDocumentFactory(getArchetypeService()),
-                         transactionManager, true, true);
+                         transactionManager, true, true, context);
             fail("Expected exception to be thrown");
         } catch (Throwable exception) {
             assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "
@@ -363,9 +376,24 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         save(act, template);
 
         createFile(act, source, null, "-Z", "A");
-        LoaderListener listener = load(source, target, true);
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener);
         assertEquals(1, listener.getMissingAct());
         assertEquals(1, listener.getErrors());
+    }
+
+    /**
+     * Creates a file for a document act in the specified directory according to the loader naming conventions,
+     * and updates the act if required.
+     *
+     * @param act the act
+     * @param dir the directory
+     * @return the new file
+     * @throws IOException for any I/O error
+     */
+    @Override
+    protected File createSourceFile(DocumentAct act, File dir) throws IOException {
+        return createFile(act, dir, null, null, ".gif");
     }
 
     /**
@@ -377,12 +405,14 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
      * @param factory            the document factory
      * @param transactionManager the transaction manager
      * @param overwrite          if {@code true} overwrite existing documents
+     * @param context            the load context
      * @return a new loader
      */
     @Override
     protected Loader createLoader(File source, String[] shortNames, IArchetypeService service, DocumentFactory factory,
-                                  PlatformTransactionManager transactionManager, boolean overwrite) {
-        return new IdLoader(source, shortNames, service, factory, transactionManager, true, overwrite);
+                                  PlatformTransactionManager transactionManager, boolean overwrite,
+                                  LoadContext context) {
+        return new IdLoader(source, shortNames, service, factory, transactionManager, true, overwrite, context);
     }
 
     /**

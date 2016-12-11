@@ -31,13 +31,17 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
@@ -53,7 +57,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-abstract class AbstractLoader implements Loader {
+public abstract class AbstractLoader implements Loader {
 
     /**
      * The document act short names.
@@ -84,11 +88,6 @@ abstract class AbstractLoader implements Loader {
      * The transaction manager.
      */
     private final PlatformTransactionManager transactionManager;
-
-    /**
-     * The loader listener. May be {@code null}
-     */
-    private LoaderListener listener;
 
     /**
      * The document rules.
@@ -158,24 +157,6 @@ abstract class AbstractLoader implements Loader {
     }
 
     /**
-     * Registers a listener.
-     *
-     * @param listener the listener
-     */
-    public void setListener(LoaderListener listener) {
-        this.listener = listener;
-    }
-
-    /**
-     * Returns the listener.
-     *
-     * @return the listener. May be {@code null}
-     */
-    public LoaderListener getListener() {
-        return listener;
-    }
-
-    /**
      * Returns the document act archetypes that may be loaded to.
      *
      * @return the document act archetype short names
@@ -196,17 +177,18 @@ abstract class AbstractLoader implements Loader {
     /**
      * Loads a document.
      *
-     * @param act  the act to attach the document to
-     * @param file the document
+     * @param act       the act to attach the document to
+     * @param file      the document
      * @param overwrite if {@code true} overwrite existing documents
+     * @param context   the load context
      * @return {@code true} if the document was loaded
      */
-    protected boolean load(DocumentAct act, File file, boolean overwrite) {
+    protected boolean load(DocumentAct act, File file, boolean overwrite, LoadContext context) {
         boolean result = false;
         if (act.getDocument() == null || overwrite) {
-            result = loadWithDuplicateCheck(act, file);
+            result = loadWithDuplicateCheck(act, file, context);
         } else {
-            notifyAlreadyLoaded(file, act.getId());
+            context.alreadyLoaded(file, act.getId());
         }
         return result;
     }
@@ -231,116 +213,164 @@ abstract class AbstractLoader implements Loader {
     }
 
     /**
+     * Returns the transaction manager.
+     */
+    protected PlatformTransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    /**
      * Creates a document from a file, associating it with the supplied act.
+     * <p/>
+     * On successful load, {@link FileStrategy#loaded(File)} is invoked. <br/>
+     * If this fails to move the file, {@link FileStrategy#error(File)} is invoked. <br/>
+     * If the load fails, {@link FileStrategy#error(File)} is invoked.<br/>
+     * If the load is successful, but the file cannot be moved, changes are NOT rolled back. <br/>
+     * This is to avoid situations where the database changes roll back after the file has moved. <br/>
+     * As a result, the loader needs to perform duplicate checks to avoid the same file being loaded multiple times.
      *
-     * @param act  the document act
-     * @param file the file
+     * @param act     the document act
+     * @param file    the file
+     * @param context the load context
      * @return {@code true} if the file was loaded
      */
-    private boolean loadWithDuplicateCheck(DocumentAct act, File file) {
+    protected boolean loadWithDuplicateCheck(DocumentAct act, File file, LoadContext context) {
         boolean result = false;
         try {
             Document doc = createDocument(file);
             DocumentAct duplicate = getDuplicate(act, doc);
             if (duplicate != null && file.getName().equals(duplicate.getFileName())) {
                 // identical content and file name
-                notifyAlreadyLoaded(file, act.getId());
+                context.alreadyLoaded(file, act.getId());
             } else {
                 if (TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
                     act.setStatus2(InvestigationActStatus.RECEIVED);
-                } else if (!ActStatus.POSTED.equals(act.getStatus())){
+                } else if (!ActStatus.POSTED.equals(act.getStatus())) {
                     act.setStatus(ActStatus.COMPLETED);
                 }
                 boolean version = (duplicate != act);
                 addDocument(act, doc, version);
-                notifyLoaded(file, act.getId());
+                context.loaded(file, act.getId());
                 result = true;
             }
         } catch (Exception exception) {
-            notifyError(file, exception);
+            context.error(file, exception);
         }
         return result;
     }
 
     /**
      * Adds a document to a document act, and saves it.
+     * <p/>
+     * This invokes {@link #addDocument(DocumentAct, Document, boolean, IArchetypeService)} within a transaction.
      *
      * @param act      the act
      * @param document the document to add
      * @param version  if {@code true} version any old document if the act supports it
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException for any archetype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     protected void addDocument(final DocumentAct act, final Document document, final boolean version) {
         TransactionTemplate template = new TransactionTemplate(transactionManager);
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 IArchetypeService service = getService();
-                removeDuplicate(act, document);
-                List<IMObject> objects = rules.addDocument(act, document, version);
-                service.save(objects);
-                return null;
+                AbstractLoader.this.addDocument(act, document, version, service);
             }
         });
     }
 
     /**
-     * Notifies any registered listener that a file has been loaded.
+     * Adds a document to a document act, and saves it.
+     * <p/>
+     * If the new document is an duplicates an existing version of the document, that version will be removed.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
+     * @param act      the act
+     * @param document the document to add
+     * @param version  if {@code true} version any old document if the act supports it
+     * @param service  the archetype service
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    protected void notifyLoaded(File file, long id) {
-        if (listener != null) {
-            listener.loaded(file, id);
-        }
+    protected void addDocument(DocumentAct act, Document document, boolean version, IArchetypeService service) {
+        removeDuplicate(act, document);
+        List<IMObject> objects = rules.addDocument(act, document, version);
+        service.save(objects);
     }
 
     /**
-     * Notifies any registered listener that a file can't be loaded as it
-     * has already been processed.
+     * Returns the act for the specified id, and archetype short name.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
+     * @param id        the identifier
+     * @param shortName the short name
+     * @return the corresponding act, or {@code null} if none is found
      */
-    protected void notifyAlreadyLoaded(File file, long id) {
-        if (listener != null) {
-            listener.alreadyLoaded(file, id);
-        }
+    protected DocumentAct getAct(long id, String shortName) {
+        return getAct(id, new String[]{shortName});
     }
 
     /**
-     * Notifies any registered listener that a file can't be loaded as a corresponding act cannot be found.
+     * Returns the act for the specified id.
      *
-     * @param file the file
+     * @param id         the identifier
+     * @param shortNames the supported short names
+     * @return the corresponding act, or {@code null} if none is found
      */
-    protected void notifyMissingAct(File file) {
-        if (listener != null) {
-            listener.missingAct(file);
+    protected DocumentAct getAct(long id, String[] shortNames) {
+        DocumentAct result = null;
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+        query.add(new NodeConstraint("id", id));
+        IPage<IMObject> page = service.get(query);
+        List<IMObject> results = page.getResults();
+        if (!results.isEmpty()) {
+            result = (DocumentAct) results.get(0);
         }
+        return result;
     }
 
     /**
-     * Notifies any registered listener that a file can't be loaded as a corresponding act cannot be found.
+     * Returns the act that already contains the specified document.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
+     * @param act      the root act
+     * @param document the document
+     * @return {@code act}, if it has the same content as {@code document}, or the first version of {@code act} that
+     * has the same content, or {@code null} if the act nor its versions have the same content
      */
-    protected void notifyMissingAct(File file, long id) {
-        if (listener != null) {
-            listener.missingAct(file, id);
+    protected DocumentAct getDuplicate(DocumentAct act, Document document) {
+        DocumentAct result = null;
+        if (rules.isDuplicate(act, document)) {
+            result = act;
+        } else {
+            for (DocumentAct version : rules.getVersions(act)) {
+                if (rules.isDuplicate(version, document)) {
+                    result = version;
+                    break;
+                }
+            }
         }
+        return result;
     }
 
     /**
-     * Notifies any registered listener that a file can't be loaded due to an
-     * error.
+     * Removes any document act and document that duplicates that supplied.
      *
-     * @param file  the file
-     * @param error the error
+     * @param act      the act
+     * @param document the new document
      */
-    protected void notifyError(File file, Throwable error) {
-        if (listener != null) {
-            listener.error(file, error);
+    protected void removeDuplicate(DocumentAct act, Document document) {
+        ActBean bean = new ActBean(act, service);
+        for (DocumentAct version : rules.getVersions(act)) {
+            if (rules.isDuplicate(version, document)) {
+                ActRelationship r = bean.getRelationship(version);
+                version.removeActRelationship(r);
+                bean.removeRelationship(r);
+                service.save(act);
+                service.remove(version);
+                Document dupDoc = (Document) service.get(version.getDocument());
+                if (dupDoc != null) {
+                    service.remove(dupDoc);
+                }
+                break;
+            }
         }
     }
 
@@ -369,55 +399,7 @@ abstract class AbstractLoader implements Loader {
         }
         // can't load to document template acts.
         result.remove(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
-
         return result.toArray(new String[result.size()]);
-    }
-
-    /**
-     * Returns the act that already contains the specified document.
-     *
-     * @param act      the root act
-     * @param document the document
-     * @return {@code act}, if it has the same content as {@code document}, or the first version of {@code act} that
-     * has the same content, or {@code null} if the act nor its versions have the same content
-     */
-    private DocumentAct getDuplicate(DocumentAct act, Document document) {
-        DocumentAct result = null;
-        if (rules.isDuplicate(act, document)) {
-            result = act;
-        } else {
-            for (DocumentAct version : rules.getVersions(act)) {
-                if (rules.isDuplicate(version, document)) {
-                    result = version;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Removes any document act and document that duplicates that supplied.
-     *
-     * @param act      the act
-     * @param document the new document
-     */
-    private void removeDuplicate(DocumentAct act, Document document) {
-        ActBean bean = new ActBean(act, service);
-        for (DocumentAct version : rules.getVersions(act)) {
-            if (rules.isDuplicate(version, document)) {
-                ActRelationship r = bean.getRelationship(version);
-                version.removeActRelationship(r);
-                bean.removeRelationship(r);
-                service.save(act);
-                service.remove(version);
-                Document dupDoc = (Document) service.get(version.getDocument());
-                if (dupDoc != null) {
-                    service.remove(dupDoc);
-                }
-                break;
-            }
-        }
     }
 
     /**
@@ -428,7 +410,7 @@ abstract class AbstractLoader implements Loader {
      * @return a list of files
      */
     @SuppressWarnings("unchecked")
-    private static List<File> getFiles(File dir, boolean recurse) {
+    protected List<File> getFiles(File dir, boolean recurse) {
         List<File> files = new ArrayList<>(FileUtils.listFiles(dir, null, recurse));
 
         // sort the files on increasing last modified timestamp and name

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -37,6 +37,11 @@ import java.io.File;
 class NameLoader extends AbstractLoader {
 
     /**
+     * The load context.
+     */
+    private final LoadContext context;
+
+    /**
      * Constructs a {@link NameLoader}.
      *
      * @param dir                the source directory
@@ -47,10 +52,13 @@ class NameLoader extends AbstractLoader {
      * @param transactionManager the transaction manager
      * @param recurse            if {@code true} recursively scan the source dir
      * @param overwrite          if {@code true} overwrite existing documents
+     * @param context            the load context
      */
     public NameLoader(File dir, String[] shortNames, IArchetypeService service, DocumentFactory factory,
-                      PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite) {
+                      PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite,
+                      LoadContext context) {
         super(dir, shortNames, service, factory, transactionManager, recurse, overwrite);
+        this.context = context;
     }
 
     /**
@@ -65,9 +73,9 @@ class NameLoader extends AbstractLoader {
         boolean result = false;
         DocumentAct act = getAct(file, overwrite);
         if (act != null) {
-            result = load(act, file, overwrite);
+            result = load(act, file, overwrite, context);
         } else {
-            notifyMissingAct(file);
+            context.missingAct(file);
         }
         return result;
     }
