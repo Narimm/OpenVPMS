@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.docload;
@@ -24,8 +24,12 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.etl.tools.doc.DefaultLoadContext;
 import org.openvpms.etl.tools.doc.DefaultLoaderListener;
+import org.openvpms.etl.tools.doc.FileLoaderListener;
+import org.openvpms.etl.tools.doc.FileStrategy;
 import org.openvpms.etl.tools.doc.IdLoader;
+import org.openvpms.etl.tools.doc.LoadContext;
 import org.openvpms.etl.tools.doc.LoaderListener;
 import org.openvpms.etl.tools.doc.LoggingLoaderListener;
 import org.openvpms.web.jobs.JobCompletionNotifier;
@@ -41,7 +45,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -106,7 +109,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
      */
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        Listener listener = null;
+        FileLoaderListener listener = null;
         try {
             IMObjectBean bean = new IMObjectBean(configuration, service);
             File source = getDir(bean.getString("sourceDir"));
@@ -128,13 +131,12 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
             types = StringUtils.trimArrayElements(types);
             boolean logLoad = bean.getBoolean("log");
             boolean stopOnError = bean.getBoolean("stopOnError");
-
+            FileStrategy fileStrategy = new FileStrategy(target, error, true);
+            LoaderListener delegate = logLoad ? new LoggingLoaderListener(log) : new DefaultLoaderListener();
+            listener = new FileLoaderListener(delegate);
+            LoadContext loadContext = new DefaultLoadContext(fileStrategy, listener);
             IdLoader loader = new IdLoader(source, types, service, transactionManager, recurse, overwrite,
-                                           Pattern.compile(idPattern));
-            LoaderListener delegate = logLoad ? new LoggingLoaderListener(log, target, error, true)
-                                              : new DefaultLoaderListener(target, error, true);
-            listener = new Listener(delegate);
-            loader.setListener(listener);
+                                           Pattern.compile(idPattern), loadContext);
 
             while (!stop && loader.hasNext()) {
                 if (!loader.loadNext() && stopOnError) {
@@ -166,7 +168,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
      * @param listener  the loader listener. May be {@code null}
      * @param exception the exception, if the job failed, otherwise {@code null}
      */
-    private void complete(Listener listener, Throwable exception) {
+    private void complete(FileLoaderListener listener, Throwable exception) {
         if ((listener != null && (listener.getErrors() != 0 || listener.getLoaded() != 0)) || exception != null) {
             Set<User> users = notifier.getUsers(configuration);
             if (!users.isEmpty()) {
@@ -182,7 +184,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
      * @param exception the exception, if the job failed, otherwise {@code null}
      * @param users     the users to notify
      */
-    private void notifyUsers(Listener listener, Throwable exception, Set<User> users) {
+    private void notifyUsers(FileLoaderListener listener, Throwable exception, Set<User> users) {
         String subject;
         String reason;
         StringBuilder text = new StringBuilder();
@@ -202,10 +204,10 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
             }
         }
         if (listener != null) {
-            append(text, listener.errors, "docload.error", "docload.error.item");
-            append(text, listener.missingAct, "docload.missingAct", "docload.missingAct.item");
-            append(text, listener.alreadyLoaded, "docload.alreadyLoaded", "docload.alreadyLoaded.item");
-            append(text, listener.loaded, "docload.loaded", "docload.loaded.item");
+            append(text, listener.getErrorFiles(), "docload.error", "docload.error.item");
+            append(text, listener.getMissingActFiles(), "docload.missingAct", "docload.missingAct.item");
+            append(text, listener.getAlreadyLoadedFiles(), "docload.alreadyLoaded", "docload.alreadyLoaded.item");
+            append(text, listener.getLoadedFiles(), "docload.loaded", "docload.loaded.item");
         }
         notifier.send(users, subject, reason, text.toString());
     }
@@ -240,93 +242,6 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
                 text.append("\n");
             }
         }
-    }
-
-    private class Listener extends DelegatingLoaderListener {
-
-        private LinkedHashMap<File, Long> loaded = new LinkedHashMap<>();
-
-        private LinkedHashMap<File, Long> alreadyLoaded = new LinkedHashMap<>();
-
-        private LinkedHashMap<File, Long> missingAct = new LinkedHashMap<>();
-
-        private LinkedHashMap<File, String> errors = new LinkedHashMap<>();
-
-
-        /**
-         * Constructs a {@link Listener}.
-         *
-         * @param listener the listener to delegate to
-         */
-        public Listener(org.openvpms.etl.tools.doc.LoaderListener listener) {
-            super(listener);
-        }
-
-        /**
-         * Notifies when a file is loaded.
-         *
-         * @param file the file
-         * @param id   the corresponding act identifier
-         * @return the new location of the file. May be {@code null}
-         */
-        @Override
-        public File loaded(File file, long id) {
-            File target = super.loaded(file, id);
-            if (target != null) {
-                file = target;
-            }
-            loaded.put(file, id);
-            return target;
-        }
-
-        /**
-         * Notifies that a file couldn't be loaded as it or another file had already been processed.
-         *
-         * @param file the file
-         * @param id   the corresponding act identifier
-         */
-        @Override
-        public File alreadyLoaded(File file, long id) {
-            File target = super.alreadyLoaded(file, id);
-            if (target != null) {
-                file = target;
-            }
-            alreadyLoaded.put(file, id);
-            return target;
-        }
-
-        /**
-         * Notifies that a file couldn't be loaded as there was no corresponding act.
-         *
-         * @param file the file
-         * @param id   the corresponding act identifier
-         */
-        @Override
-        public File missingAct(File file, long id) {
-            File target = super.missingAct(file, id);
-            if (target != null) {
-                file = target;
-            }
-            missingAct.put(file, id);
-            return target;
-        }
-
-        /**
-         * Notifies that a file couldn't be loaded due to error.
-         *
-         * @param file      the file
-         * @param exception the error
-         */
-        @Override
-        public File error(File file, Throwable exception) {
-            File target = super.error(file, exception);
-            if (target != null) {
-                file = target;
-            }
-            errors.put(file, exception.getMessage());
-            return target;
-        }
-
     }
 
 }

@@ -357,7 +357,7 @@ public class PatientTestHelper {
      * @param investigationType the investigation type
      * @return a new investigation
      */
-    public static Act createInvestigation(Party patient, Entity investigationType) {
+    public static DocumentAct createInvestigation(Party patient, Entity investigationType) {
         return createInvestigation(patient, null, investigationType);
     }
 
@@ -369,7 +369,7 @@ public class PatientTestHelper {
      * @param investigationType the investigation type
      * @return a new investigation
      */
-    public static Act createInvestigation(Party patient, User clinician, Entity investigationType) {
+    public static DocumentAct createInvestigation(Party patient, User clinician, Entity investigationType) {
         return createInvestigation(patient, clinician, null, investigationType);
     }
 
@@ -382,7 +382,8 @@ public class PatientTestHelper {
      * @param investigationType the investigation type
      * @return a new investigation
      */
-    public static Act createInvestigation(Party patient, User clinician, Party location, Entity investigationType) {
+    public static DocumentAct createInvestigation(Party patient, User clinician, Party location,
+                                                  Entity investigationType) {
         return createInvestigation(new Date(), patient, clinician, location, investigationType);
     }
 
@@ -396,9 +397,10 @@ public class PatientTestHelper {
      * @param investigationType the investigation type
      * @return a new investigation
      */
-    public static Act createInvestigation(Date startTime, Party patient, User clinician, Party location,
+    public static DocumentAct createInvestigation(Date startTime, Party patient, User clinician, Party location,
                                           Entity investigationType) {
-        Act act = createAct(InvestigationArchetypes.PATIENT_INVESTIGATION, startTime, patient, clinician);
+        DocumentAct act = (DocumentAct) createAct(InvestigationArchetypes.PATIENT_INVESTIGATION, startTime, patient,
+                                                  clinician);
         ActBean bean = new ActBean(act);
         if (location != null) {
             bean.addNodeParticipation("location", location);

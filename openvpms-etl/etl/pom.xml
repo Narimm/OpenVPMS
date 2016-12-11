@@ -32,6 +32,11 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-web-workspaces</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
         </dependency>
         <dependency>
@@ -135,6 +140,23 @@
                 <configuration>
                     <workingDirectory>${project.build.directory}</workingDirectory>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>applicationContext.xml</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <resources>
