@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -215,19 +215,6 @@ public abstract class AbstractLoaderTest extends ArchetypeServiceTest {
         actBean.addParticipation("participation.patient", patient);
         actBean.save();
         return act;
-    }
-
-    /**
-     * Loads documents.
-     *
-     * @param loader   the loader
-     * @param listener the load listener to notify
-     */
-    protected void load(Loader loader, LoaderListener listener) {
-        loader.setListener(listener);
-        DocumentLoader docLoader = new DocumentLoader(loader);
-        docLoader.setFailOnError(false);
-        docLoader.load();
     }
 
     /**

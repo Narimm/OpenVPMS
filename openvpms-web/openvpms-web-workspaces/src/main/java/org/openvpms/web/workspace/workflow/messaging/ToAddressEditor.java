@@ -41,6 +41,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +116,7 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
      * @return the selected users
      */
     public Set<User> getTo() {
-        return MessageHelper.getUsers(selector.getObjects());
+        return MessageHelper.getUsers(selector.getObjects(), ServiceHelper.getArchetypeService());
     }
 
     /**

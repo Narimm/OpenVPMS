@@ -34,7 +34,7 @@ import java.util.Collection;
  *
  * @author Tim Anderson
  */
-class DefaultDocumentFactory implements DocumentFactory {
+public class DefaultDocumentFactory implements DocumentFactory {
 
     /**
      * The document handlers.

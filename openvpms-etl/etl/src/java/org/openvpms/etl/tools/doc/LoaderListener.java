@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -29,11 +29,11 @@ public interface LoaderListener {
     /**
      * Notifies when a file is loaded.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param id     the corresponding act identifier
+     * @param target the new location of the file
      */
-    File loaded(File file, long id);
+    void loaded(File file, long id, File target);
 
     /**
      * Returns the no. of files loaded.
@@ -43,14 +43,13 @@ public interface LoaderListener {
     int getLoaded();
 
     /**
-     * Notifies that a file couldn't be loaded as it or another file had
-     * already been processed.
+     * Notifies that a file couldn't be loaded as it or another file had already been processed.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param id     the corresponding act identifier
+     * @param target the new location of the file
      */
-    File alreadyLoaded(File file, long id);
+    void alreadyLoaded(File file, long id, File target);
 
     /**
      * Returns the no. of files that weren't loaded as the corresponding act
@@ -63,19 +62,19 @@ public interface LoaderListener {
     /**
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
-     * @param file the file
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param target the new location of the file
      */
-    File missingAct(File file);
+    void missingAct(File file, File target);
 
     /**
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param id     the corresponding act identifier
+     * @param target the new location of the file
      */
-    File missingAct(File file, long id);
+    void missingAct(File file, long id, File target);
 
     /**
      * Returns the no. of files that don't have a corresponding act.
@@ -87,11 +86,20 @@ public interface LoaderListener {
     /**
      * Notifies that a file couldn't be loaded due to error.
      *
-     * @param file      the file
+     * @param file      the original location of the file
      * @param exception the error
-     * @return the new location of the file. May be {@code null}
+     * @param target    the new location of the file
      */
-    File error(File file, Throwable exception);
+    void error(File file, Throwable exception, File target);
+
+    /**
+     * Notifies that a file couldn't be loaded due to error.
+     *
+     * @param file    the original location of the file
+     * @param message the error message
+     * @param target  the new location of the file
+     */
+    void error(File file, String message, File target);
 
     /**
      * Returns the no. of files that failed load due to error.

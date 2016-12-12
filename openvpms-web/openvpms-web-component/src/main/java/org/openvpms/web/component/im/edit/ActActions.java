@@ -224,6 +224,16 @@ public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<
     }
 
     /**
+     * Determines if an act is unfinalised, for the purposes of printing.
+     *
+     * @param act the act
+     * @return {@code true} if the act is unfinalised, otherwise {@code false}
+     */
+    public boolean isUnfinalised(Act act) {
+        return !ActStatus.POSTED.equals(act.getStatus());
+    }
+
+    /**
      * Determines if a confirmation should be displayed before printing an unfinalised act.
      *
      * @return {@code false}

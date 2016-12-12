@@ -22,6 +22,7 @@ import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
@@ -591,6 +592,29 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         checkAppointments(customer1, "party:getAppointments(., 1, 'YEARS')", act1b, act1c);
         checkAppointments(patient1, "party:getAppointments(., 3, 'YEARS')", act1b, act1d);
         checkAppointments(customer2, "party:getAppointments(., 1, 'YEARS')", act2c);
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getAddress(Party, String)} method.
+     */
+    @Test
+    public void testGetAddress() {
+        Party customer = (Party) create(CustomerArchetypes.PERSON);
+        Lookup billing = TestHelper.getLookup("lookup.contactPurpose", "BILLING");
+        Lookup shipping = TestHelper.getLookup("lookup.contactPurpose", "SHIPPING");
+        Contact home = TestHelper.createLocationContact("123 Main Rd", "KONGWAK", "VIC", "3058");
+        home.addClassification(billing);
+        Contact work = TestHelper.createLocationContact("456 Smith St", "WONTHAGGI", "VIC", "3058");
+        work.addClassification(shipping);
+        IMObjectBean bean = new IMObjectBean(work);
+        bean.setValue("preferred", false);
+        customer.addContact(home);
+        customer.addContact(work);
+
+        JXPathContext context = createContext(customer);
+        assertEquals("123 Main Rd\nKongwak Vic 3058", context.getValue("party:getAddress(., 'BILLING')"));
+        assertEquals("456 Smith St\nWonthaggi Vic 3058", context.getValue("party:getAddress(., 'SHIPPING')"));
+        assertEquals("123 Main Rd\nKongwak Vic 3058", context.getValue("party:getAddress(., 'NO_SUCH_PURPOSE')"));
     }
 
     /**

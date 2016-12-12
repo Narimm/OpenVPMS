@@ -151,12 +151,11 @@ public class AppointmentRules {
      * Returns the default appointment type associated with a schedule.
      *
      * @param schedule the schedule
-     * @return the default appointment type, or the the first appointment type
-     * if there is no default, or {@code null} if none is found
+     * @return the default appointment type, or {@code null} if there is no default
      * @throws OpenVPMSException for any error
      */
     public Entity getDefaultAppointmentType(Entity schedule) {
-        return EntityRelationshipHelper.getDefaultTarget(schedule, "appointmentTypes", service);
+        return EntityRelationshipHelper.getDefaultTarget(schedule, "appointmentTypes", false, service);
     }
 
     /**

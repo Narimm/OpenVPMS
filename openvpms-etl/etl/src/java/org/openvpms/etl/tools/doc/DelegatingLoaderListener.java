@@ -11,12 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.jobs.docload;
-
-import org.openvpms.etl.tools.doc.LoaderListener;
+package org.openvpms.etl.tools.doc;
 
 import java.io.File;
 
@@ -25,7 +23,7 @@ import java.io.File;
  *
  * @author Tim Anderson
  */
-class DelegatingLoaderListener implements LoaderListener {
+public class DelegatingLoaderListener implements LoaderListener {
 
     /**
      * The listener to delegate to.
@@ -44,13 +42,13 @@ class DelegatingLoaderListener implements LoaderListener {
     /**
      * Notifies when a file is loaded.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param id     the corresponding act identifier
+     * @param target the new location of the file
      */
     @Override
-    public File loaded(File file, long id) {
-        return listener.loaded(file, id);
+    public void loaded(File file, long id, File target) {
+        listener.loaded(file, id, target);
     }
 
     /**
@@ -63,18 +61,16 @@ class DelegatingLoaderListener implements LoaderListener {
         return listener.getLoaded();
     }
 
-
     /**
-     * Notifies that a file couldn't be loaded as it or another file had
-     * already been processed.
+     * Notifies that a file couldn't be loaded as it or another file had already been processed.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param id     the corresponding act identifier
+     * @param target the new location of the file
      */
     @Override
-    public File alreadyLoaded(File file, long id) {
-        return listener.alreadyLoaded(file, id);
+    public void alreadyLoaded(File file, long id, File target) {
+        listener.alreadyLoaded(file, id, target);
     }
 
     /**
@@ -90,24 +86,24 @@ class DelegatingLoaderListener implements LoaderListener {
     /**
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
-     * @param file the file
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param target the new location of the file
      */
     @Override
-    public File missingAct(File file) {
-        return listener.missingAct(file);
+    public void missingAct(File file, File target) {
+        listener.missingAct(file, target);
     }
 
     /**
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
-     * @param file the file
-     * @param id   the corresponding act identifier
-     * @return the new location of the file. May be {@code null}
+     * @param file   the original location of the file
+     * @param id     the corresponding act identifier
+     * @param target the new location of the file
      */
     @Override
-    public File missingAct(File file, long id) {
-        return listener.missingAct(file, id);
+    public void missingAct(File file, long id, File target) {
+        listener.missingAct(file, id, target);
     }
 
     /**
@@ -123,13 +119,25 @@ class DelegatingLoaderListener implements LoaderListener {
     /**
      * Notifies that a file couldn't be loaded due to error.
      *
-     * @param file      the file
+     * @param file      the original location of the file
      * @param exception the error
-     * @return the new location of the file. May be {@code null}
+     * @param target    the new location of the file
      */
     @Override
-    public File error(File file, Throwable exception) {
-        return listener.error(file, exception);
+    public void error(File file, Throwable exception, File target) {
+        listener.error(file, exception, target);
+    }
+
+    /**
+     * Notifies that a file couldn't be loaded due to error.
+     *
+     * @param file    the original location of the file
+     * @param message the error message
+     * @param target  the new location of the file
+     */
+    @Override
+    public void error(File file, String message, File target) {
+        listener.error(file, message, target);
     }
 
     /**

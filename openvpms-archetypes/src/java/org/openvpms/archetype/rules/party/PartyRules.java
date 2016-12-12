@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -187,7 +187,7 @@ public class PartyRules {
 
     /**
      * Returns a formatted string of preferred contacts for a party.
-     * <p>
+     * <p/>
      * If there are multiple preferred contacts, these are sorted on identifier.
      *
      * @param party the party
@@ -330,13 +330,14 @@ public class PartyRules {
     }
 
     /**
-     * Returns a formatted <em>contact.location</em> address with the
-     * specified purpose, for a party if one exists.
+     * Returns a formatted <em>contact.location</em> address with the specified purpose for a party.
+     * <br/>
+     * If it cannot find the specified purpose, it uses the preferred location contact or
+     * any location contact if there is no preferred.
      *
      * @param party   the party
      * @param purpose the contact purpose of the address
-     * @return a formatted address. May be empty if there is no corresponding
-     * <em>contact.location</em> contact
+     * @return a formatted address. May be empty if there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getAddress(Party party, String purpose) {

@@ -77,7 +77,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentRules#getDefaultAppointmentType} * method.
+     * Tests the {@link AppointmentRules#getDefaultAppointmentType} method.
      */
     @Test
     public void testGetDefaultAppointmentType() {
@@ -88,8 +88,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
 
         ScheduleTestHelper.addAppointmentType(schedule, appointmentType1, 2, false);
 
-        // no default appointment type, so should pick the first available
-        assertEquals(rules.getDefaultAppointmentType(schedule), appointmentType1);
+        // no default appointment type
+        assertNull(rules.getDefaultAppointmentType(schedule));
 
         ScheduleTestHelper.addAppointmentType(schedule, appointmentType2, 2, true);
         assertEquals(rules.getDefaultAppointmentType(schedule), appointmentType2);
