@@ -86,4 +86,15 @@ public class EstimateActions extends ActActions<Act> {
         String status = act.getStatus();
         return !CANCELLED.equals(status) && !INVOICED.equals(status);
     }
+
+    /**
+     * Determines if an act is unfinalised, for the purposes of printing.
+     *
+     * @param act the act
+     * @return {@code true} if the act is unfinalised, otherwise {@code false}
+     */
+    @Override
+    public boolean isUnfinalised(Act act) {
+        return !INVOICED.equals(act.getStatus()) || !super.isUnfinalised(act);
+    }
 }

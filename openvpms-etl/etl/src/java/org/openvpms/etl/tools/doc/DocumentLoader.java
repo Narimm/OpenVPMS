@@ -72,6 +72,11 @@ public class DocumentLoader {
     private ApplicationContext context;
 
     /**
+     * The listener.
+     */
+    private LoaderListener listener;
+
+    /**
      * The logger.
      */
     static final Log log = LogFactory.getLog(DocumentLoader.class);
@@ -85,10 +90,12 @@ public class DocumentLoader {
     /**
      * Constructs a {@link DocumentLoader}.
      *
-     * @param loader the loader to use
+     * @param loader   the loader to use
+     * @param listener the listener collecting statistics
      */
-    public DocumentLoader(Loader loader) {
+    public DocumentLoader(Loader loader, LoaderListener listener) {
         this.loader = loader;
+        this.listener = listener;
     }
 
     /**
@@ -156,9 +163,7 @@ public class DocumentLoader {
                 service = (IArchetypeService) getContext().getBean("archetypeService");
             }
             DocumentFactory factory = new DefaultDocumentFactory(service);
-            LoaderListener listener = (config.getBoolean("verbose"))
-                                      ? new LoggingLoaderListener(log, target, error, rename)
-                                      : new DefaultLoaderListener(target, error, rename);
+            listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log) : new DefaultLoaderListener();
 
             String type[] = config.getStringArray("type");
             boolean recurse = config.getBoolean("recurse");
@@ -167,15 +172,18 @@ public class DocumentLoader {
             if (transactionManager == null) {
                 transactionManager = getContext().getBean(PlatformTransactionManager.class);
             }
+            FileStrategy fileStrategy = new FileStrategy(target, error, rename);
+            LoadContext context = new DefaultLoadContext(fileStrategy, listener);
 
             if (byId) {
                 String regexp = config.getString("regexp");
                 Pattern pattern = Pattern.compile(regexp);
-                loader = new IdLoader(source, type, service, factory, transactionManager, recurse, overwrite, pattern);
+                loader = new IdLoader(source, type, service, factory, transactionManager, recurse, overwrite, pattern,
+                                      context);
             } else {
-                loader = new NameLoader(source, type, service, factory, transactionManager, recurse, overwrite);
+                loader = new NameLoader(source, type, service, factory, transactionManager, recurse, overwrite,
+                                        context);
             }
-            loader.setListener(listener);
             setFailOnError(config.getBoolean("failOnError"));
         }
     }
@@ -308,7 +316,6 @@ public class DocumentLoader {
         log.info("Ending load at: " + end);
 
         double elapsed = (end.getTime() - start.getTime()) / 1000;
-        LoaderListener listener = loader.getListener();
         int total = listener.getProcessed();
         double rate = (elapsed != 0) ? total / elapsed : 0;
         log.info("Loaded: " + listener.getLoaded());

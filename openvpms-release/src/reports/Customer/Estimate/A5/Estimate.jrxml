@@ -39,7 +39,7 @@
 	<field name="notes" class="java.lang.String"/>
 	<field name="[party:getBillingAddress(.)]" class="java.lang.String"/>
 	<field name="[party:getPartyFullName(.)]" class="java.lang.String"/>
-	<field name="status" class="java.lang.String"/>
+	<field name="status.code" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.lastPageFooter" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.estimateMsg" class="java.lang.String">
@@ -67,7 +67,7 @@
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<variable name="isFinalised" class="java.lang.Boolean">
-		<variableExpression><![CDATA[$F{status}=="POSTED"]]></variableExpression>
+		<variableExpression><![CDATA["POSTED".equals($F{status.code}) || "INVOICED".equals($F{status.code})]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<variable name="RefName" class="java.lang.String">
@@ -307,7 +307,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
 					<font size="15" isBold="true" isItalic="false" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{status}.startsWith("Final")?"":"DRAFT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{isFinalised} ? "":"DRAFT"]]></textFieldExpression>
 			</textField>
 			<subreport isUsingCache="false">
 				<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="381" height="18" isPrintWhenDetailOverflows="true" uuid="318bf233-bde6-4f3c-92a1-fdae9eb43e32">

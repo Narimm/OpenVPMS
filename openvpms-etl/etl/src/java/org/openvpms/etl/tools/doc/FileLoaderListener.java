@@ -16,42 +16,84 @@
 
 package org.openvpms.etl.tools.doc;
 
-import org.apache.commons.logging.Log;
-
 import java.io.File;
-
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Implementation of {@link LoaderListener} that logs events to a {@code Log}.
+ * A {@link LoaderListener} that tracks files.
  *
  * @author Tim Anderson
  */
-public class LoggingLoaderListener extends DelegatingLoaderListener {
+public class FileLoaderListener extends DelegatingLoaderListener {
 
     /**
-     * The log.
+     * Map of loaded files, to their corresponding act identifiers.
      */
-    private final Log log;
+    private final Map<File, Long> loaded = new LinkedHashMap<>();
+
+    /**
+     * Map of already loaded files, to their corresponding act identifiers.
+     */
+    private final Map<File, Long> alreadyLoaded = new LinkedHashMap<>();
+
+    /**
+     * Map of files missing acts, to their corresponding act identifiers.
+     */
+    private final Map<File, Long> missingAct = new LinkedHashMap<>();
+
+    /**
+     * Map of files in error, to their error messages.
+     */
+    private final Map<File, String> errors = new LinkedHashMap<>();
 
 
     /**
-     * Constructs a {@link LoggingLoaderListener} that delegates to a {@link DefaultLoaderListener}.
+     * Constructs a {@link FileLoaderListener}.
      *
-     * @param log the log
+     * @param listener the listener to delegate to
      */
-    public LoggingLoaderListener(Log log) {
-        this(log, new DefaultLoaderListener());
+    public FileLoaderListener(LoaderListener listener) {
+        super(listener);
     }
 
     /**
-     * Constructs a {@link LoggingLoaderListener}.
+     * Returns the loaded files and their corresponding act identifiers, in the order that they were loaded.
      *
-     * @param log      the log
-     * @param listener the listener to delegate to
+     * @return the files
      */
-    public LoggingLoaderListener(Log log, LoaderListener listener) {
-        super(listener);
-        this.log = log;
+    public Map<File, Long> getLoadedFiles() {
+        return loaded;
+    }
+
+    /**
+     * Returns the already loaded files and their corresponding act identifiers, in the order that they were
+     * processed.
+     *
+     * @return the files
+     */
+    public Map<File, Long> getAlreadyLoadedFiles() {
+        return alreadyLoaded;
+    }
+
+    /**
+     * Returns the files that have no corresponding acts, and their act identifiers, in the order that they were
+     * processed.
+     *
+     * @return the files
+     */
+    public Map<File, Long> getMissingActFiles() {
+        return missingAct;
+    }
+
+    /**
+     * Returns the files that are in error, and their corresponding error messages in the order that they were
+     * processed.
+     *
+     * @return the files
+     */
+    public Map<File, String> getErrorFiles() {
+        return errors;
     }
 
     /**
@@ -64,7 +106,7 @@ public class LoggingLoaderListener extends DelegatingLoaderListener {
     @Override
     public void loaded(File file, long id, File target) {
         super.loaded(file, id, target);
-        log.info("Loaded " + target.getPath() + ", identifier=" + id);
+        loaded.put(target, id);
     }
 
     /**
@@ -77,7 +119,7 @@ public class LoggingLoaderListener extends DelegatingLoaderListener {
     @Override
     public void alreadyLoaded(File file, long id, File target) {
         super.alreadyLoaded(file, id, target);
-        log.info("Skipping " + target.getPath() + ", identifier=" + id);
+        alreadyLoaded.put(target, id);
     }
 
     /**
@@ -90,19 +132,7 @@ public class LoggingLoaderListener extends DelegatingLoaderListener {
     @Override
     public void missingAct(File file, long id, File target) {
         super.missingAct(file, id, target);
-        log.info("Missing act for " + target.getPath() + ", identifier=" + id);
-    }
-
-    /**
-     * Notifies that a file couldn't be loaded as there was no corresponding act.
-     *
-     * @param file   the original location of the file
-     * @param target the new location of the file
-     */
-    @Override
-    public void missingAct(File file, File target) {
-        super.missingAct(file, target);
-        log.info("Missing act for " + target.getPath());
+        missingAct.put(target, id);
     }
 
     /**
@@ -115,7 +145,7 @@ public class LoggingLoaderListener extends DelegatingLoaderListener {
     @Override
     public void error(File file, Throwable exception, File target) {
         super.error(file, exception, target);
-        log.info("Error " + target.getPath(), exception);
+        errors.put(target, exception.getMessage());
     }
 
     /**
@@ -128,6 +158,6 @@ public class LoggingLoaderListener extends DelegatingLoaderListener {
     @Override
     public void error(File file, String message, File target) {
         super.error(file, message, target);
-        log.info("Error " + target.getPath() + ": " + message);
+        errors.put(target, message);
     }
 }

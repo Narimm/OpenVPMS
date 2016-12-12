@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -19,8 +19,10 @@ package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -36,6 +38,7 @@ import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerActCRUDWindow;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
 
@@ -158,19 +161,25 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         context.addObject(act);
         String shortName = act.getArchetypeId().getShortName();
         BigDecimal total = act.getTotal();
-        if (TypeHelper.isA(act, INVOICE, COUNTER)) {
-            PaymentWorkflow payment = new PaymentWorkflow(total, getContext(), help);
-            payment.setRequired(false);
-            tasks.addTask(payment);
-            // need to reload the act as it may be changed via the payment
-            // workflow as part of the CustomerAccountRules
-            tasks.addTask(new ReloadTask(shortName));
-            tasks.addTaskListener(new DefaultTaskListener() {
-                public void taskEvent(TaskEvent event) {
-                    // force a refresh so the summary updates
-                    onRefresh(act);
-                }
-            });
+        Party customer = context.getCustomer();
+        if (customer != null && TypeHelper.isA(act, INVOICE, COUNTER)) {
+            // start a payment workflow if the customer has a positive balance
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
+            BigDecimal balance = rules.getBalance(customer);
+            if (balance.compareTo(BigDecimal.ZERO) > 0) {
+                PaymentWorkflow payment = new PaymentWorkflow(total, getContext(), help);
+                payment.setRequired(false);
+                tasks.addTask(payment);
+                // need to reload the act as it may be changed via the payment
+                // workflow as part of the CustomerAccountRules
+                tasks.addTask(new ReloadTask(shortName));
+                tasks.addTaskListener(new DefaultTaskListener() {
+                    public void taskEvent(TaskEvent event) {
+                        // force a refresh so the summary updates
+                        onRefresh(act);
+                    }
+                });
+            }
         }
         PrintActTask print = new PrintActTask(shortName, getMailContext());
         print.setRequired(false);
