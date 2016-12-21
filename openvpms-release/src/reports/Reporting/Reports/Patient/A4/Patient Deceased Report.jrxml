@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T13:54:56 -->
+<!-- 2016-12-21T06:40:49 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient Deceased Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="1ee93449-4ab3-47f4-8a33-a0c2027ff4c7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -24,40 +25,55 @@
 		<parameterDescription><![CDATA[To Date]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="incActive" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Only Active Patients]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="incMicrochip" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Only if has Microchip]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[select
-  c.name as customer,
+  c.name as customer, c.entity_id as cid, c.active as cActive,
   c.description as description,
   p.name as patient,
   cast(d1.value as date) as dateOfBirth,
   cast(d2.value as date )as deceasedDate,
-  d3.value as deceased
+  d3.value as deceased,
+  p.active as pActive,
+  ei.name as microchip
 from entities p
   join entity_relationships r on r.target_id=p.entity_id
   join entities c on r.source_id = c.entity_id
   join entity_details d1 on d1.entity_id = p.entity_id and d1.name = "dateOfBirth"
   join entity_details d2 on d2.entity_id = p.entity_id and d2.name = "deceasedDate"
   join entity_details d3 on d3.entity_id = p.entity_id and d3.name = "deceased"
+  left join entity_identities ei on ei.entity_id = p.entity_id and ei.arch_short_name = 'entityIdentity.microchip'
 where
-  p.arch_short_name like "party.patientpet%" and
-  p.active = 1 and
-  c.arch_short_name like "party.customer%" and
+  p.arch_short_name = 'party.patientpet' and
+  ((p.active = 1 and c.active=1 and $P{incActive}) or (p.active = 0 and (not $P{incActive}))) and
+  ((not  $P{incMicrochip}) or  ( $P{incMicrochip} and (not isnull(ei.name))) ) and 
+  c.arch_short_name = 'party.customerperson' and
   d3.value = "true" and
-  d2.value between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
-order by c.name]]>
+  d2.value between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND) 
+  and  isnull(r.active_end_time)
+order by d2.value, c.name,c.entity_id,p.name]]>
 	</queryString>
 	<field name="customer" class="java.lang.String"/>
-	<field name="description" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="cid" class="java.lang.Long"/>
+	<field name="cActive" class="java.lang.Boolean"/>
+	<field name="description" class="java.lang.String"/>
 	<field name="patient" class="java.lang.String"/>
 	<field name="dateOfBirth" class="java.sql.Date"/>
 	<field name="deceasedDate" class="java.sql.Date"/>
 	<field name="deceased" class="java.lang.String"/>
+	<field name="pActive" class="java.lang.Boolean"/>
+	<field name="microchip" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -65,9 +81,9 @@ order by c.name]]>
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="59" splitType="Stretch">
+		<band height="70" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-1" x="120" y="0" width="294" height="24" uuid="758b735d-ed84-4ef9-837f-dc3ee1162486"/>
+				<reportElement key="staticText-1" x="128" y="0" width="279" height="24" uuid="758b735d-ed84-4ef9-837f-dc3ee1162486"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -81,7 +97,7 @@ order by c.name]]>
 				<text><![CDATA[Deceased Patient Report]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="66" y="36" width="100" height="17" uuid="0b2c291f-fb9e-48cc-9be0-c51194a59709">
+				<reportElement key="textField" x="61" y="36" width="100" height="17" uuid="0b2c291f-fb9e-48cc-9be0-c51194a59709">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="local_mesure_unity" value="pixel"/>
@@ -112,7 +128,7 @@ order by c.name]]>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="5" y="36" width="61" height="17" uuid="19e6ee24-feaa-4ab1-a462-bc07fba144e6"/>
+				<reportElement key="staticText-9" x="0" y="36" width="61" height="17" uuid="19e6ee24-feaa-4ab1-a462-bc07fba144e6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -171,12 +187,26 @@ order by c.name]]>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="98" y="53" width="332" height="17" isRemoveLineWhenBlank="true" uuid="2ac08caf-1959-4777-b5bb-c3dd90af2a84"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[($P{incActive}?"Include only Active Patients":"")+"       "+($P{incMicrochip}?"Include only if had Microchip":"")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
 		<band height="25" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-11" x="455" y="3" width="63" height="17" uuid="69b79457-e4e5-4cd4-94e5-c5e429388187"/>
+				<reportElement key="staticText-11" x="370" y="2" width="60" height="17" uuid="69b79457-e4e5-4cd4-94e5-c5e429388187">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -190,10 +220,15 @@ order by c.name]]>
 				<text><![CDATA[Deceased]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-1" x="5" y="23" width="514" height="1" uuid="7163df24-f986-4623-a726-050ecd24286c"/>
+				<reportElement key="line-1" x="0" y="23" width="535" height="1" uuid="7163df24-f986-4623-a726-050ecd24286c">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 			</line>
 			<staticText>
-				<reportElement key="staticText-15" x="14" y="3" width="179" height="17" uuid="347a7e6a-04ec-40f8-a8ab-4532f0172274"/>
+				<reportElement key="staticText-15" x="2" y="2" width="170" height="17" uuid="347a7e6a-04ec-40f8-a8ab-4532f0172274">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -204,10 +239,10 @@ order by c.name]]>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Customer]]></text>
+				<text><![CDATA[Customer (ID)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-27" x="197" y="2" width="179" height="17" uuid="0edce621-a71a-4283-9499-3bbd52ad783c"/>
+				<reportElement key="staticText-27" x="179" y="2" width="131" height="17" uuid="0edce621-a71a-4283-9499-3bbd52ad783c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -221,7 +256,7 @@ order by c.name]]>
 				<text><![CDATA[Patient]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-28" x="385" y="2" width="63" height="17" uuid="fc608f4a-d965-4cdc-bdd3-3908aa88a2ce"/>
+				<reportElement key="staticText-28" x="310" y="2" width="60" height="17" uuid="fc608f4a-d965-4cdc-bdd3-3908aa88a2ce"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -234,12 +269,32 @@ order by c.name]]>
 				</textElement>
 				<text><![CDATA[DOB]]></text>
 			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="430" y="2" width="70" height="17" uuid="6993f414-b127-4e75-b07f-f846d628d9c2">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Microchip]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="31" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="455" y="2" width="75" height="13" uuid="a2969bfe-c3c6-487b-9f87-fd622a21eb5f"/>
+				<reportElement key="textField" x="370" y="1" width="60" height="13" uuid="a2969bfe-c3c6-487b-9f87-fd622a21eb5f">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -252,7 +307,7 @@ order by c.name]]>
 				<textFieldExpression><![CDATA[($F{deceasedDate}==null)?"--None--":DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{deceasedDate})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField" x="14" y="2" width="179" height="13" uuid="929b86c9-8bb4-41f4-8b1e-bd092eb32d97"/>
+				<reportElement key="textField" x="2" y="2" width="170" height="13" uuid="929b86c9-8bb4-41f4-8b1e-bd092eb32d97"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -262,10 +317,10 @@ order by c.name]]>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{customer}+" ("+$F{cid}.toString()+")"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-14" x="197" y="1" width="183" height="13" uuid="d0107c96-c585-4682-8e83-40d07e179b0f"/>
+				<reportElement key="textField-14" x="179" y="1" width="131" height="13" uuid="d0107c96-c585-4682-8e83-40d07e179b0f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -278,7 +333,7 @@ order by c.name]]>
 				<textFieldExpression><![CDATA[$F{patient}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-15" x="50" y="17" width="330" height="13" uuid="5e083bb2-7c9b-4a4c-9205-0b8d5c4b7341"/>
+				<reportElement key="textField-15" x="30" y="16" width="490" height="13" uuid="5e083bb2-7c9b-4a4c-9205-0b8d5c4b7341"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -291,7 +346,10 @@ order by c.name]]>
 				<textFieldExpression><![CDATA[$F{description}.replaceAll("\n"," ")]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-16" x="385" y="1" width="63" height="13" uuid="02025849-7239-4bab-bb3e-a2914a0bdd10"/>
+				<reportElement key="textField-16" x="310" y="1" width="60" height="13" uuid="02025849-7239-4bab-bb3e-a2914a0bdd10">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -303,18 +361,37 @@ order by c.name]]>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{dateOfBirth}==null)?"--None--":DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{dateOfBirth})]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="520" y="1" width="15" height="13" uuid="4766c0d3-06dc-40c8-8496-ca48b3971e66"/>
+				<textFieldExpression><![CDATA[$F{pActive}?($F{cActive}?"!!":"!"):""]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="430" y="1" width="70" height="13" uuid="38d340e1-a42e-42f2-91b7-6d6f106dfa02">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{microchip}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<summary>
-		<band height="80" splitType="Stretch">
+		<band height="170" splitType="Stretch">
 			<line>
-				<reportElement key="line-3" x="6" y="5" width="514" height="1" uuid="23cb2dc7-3204-455f-a2be-a168b184e131"/>
+				<reportElement key="line-3" x="0" y="5" width="535" height="1" uuid="23cb2dc7-3204-455f-a2be-a168b184e131"/>
 			</line>
 			<staticText>
-				<reportElement key="staticText-29" x="11" y="7" width="140" height="20" uuid="29d8f1fd-8e48-4aef-af18-ab616a32505c"/>
+				<reportElement key="staticText-29" x="40" y="7" width="111" height="20" uuid="29d8f1fd-8e48-4aef-af18-ab616a32505c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -352,13 +429,17 @@ order by c.name]]>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="2" y="53" width="533" height="27" isRemoveLineWhenBlank="true" uuid="35e0ce1a-a673-4c82-a7b9-8989a050efad">
+				<reportElement x="2" y="52" width="533" height="118" isRemoveLineWhenBlank="true" uuid="35e0ce1a-a673-4c82-a7b9-8989a050efad">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
-				<textElement verticalAlignment="Top">
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[This report shows the patients who became deceased between 00:00:00 on the specified From date and 23:59:59 on the specified To date. ]]></text>
+				<text><![CDATA[This report shows the patients who became deceased between 00:00:00 on the specified From date and 23:59:59 on the specified To date. 
+If the patient status is Active then the last column will show !! if the customer status is also Active or ! if the custome status is Inactive.
+Checking the 'Include Only Active patients' option will restrict the listing to just Active Deceased patients (an illogical situation).
+Checking the 'Include Only if has Microchip' option will include only those patients who have microchips. This is for jurisdictions where it is required to report the death of patients with microchips.
+The output is ordered by date deceased, then customer name then patient name.]]></text>
 			</staticText>
 		</band>
 	</summary>
