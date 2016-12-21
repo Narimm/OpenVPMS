@@ -29,7 +29,7 @@
     <import value="net.sf.jasperreports.engine.*"/>
     <import value="java.util.*"/>
     <import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<field name="product.entity" class="java.lang.Object"/>
     <field name="quantity" class="java.math.BigDecimal"/>
     <field name="product.entity.name" class="java.lang.String"/>
