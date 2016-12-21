@@ -10,7 +10,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="location" class="java.lang.String">
 		<parameterDescription><![CDATA[Customer Location]]></parameterDescription>
 	</parameter>
@@ -920,7 +920,7 @@ order by custLocn,acType,name;]]>
 				<text><![CDATA[Count]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-25" x="260" y="4" width="188" height="15" uuid="432bab65-24bd-4550-981b-cd37f555e5b1"/>
+				<reportElement key="staticText-25" x="240" y="4" width="208" height="15" uuid="432bab65-24bd-4550-981b-cd37f555e5b1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -959,7 +959,7 @@ order by custLocn,acType,name;]]>
 				<text><![CDATA[Customer Location]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-28" x="494" y="6" width="51" height="27" uuid="2f74ece5-83ec-4f22-a62a-3b2a91ca5ffd">
+				<reportElement key="staticText-28" x="494" y="6" width="58" height="27" uuid="2f74ece5-83ec-4f22-a62a-3b2a91ca5ffd">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -977,7 +977,7 @@ order by custLocn,acType,name;]]>
 				<text><![CDATA[Projected Amount]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-28" x="545" y="19" width="94" height="14" uuid="6569d4b4-581a-4101-b0ec-239186095237">
+				<reportElement key="staticText-28" x="552" y="19" width="87" height="14" uuid="6569d4b4-581a-4101-b0ec-239186095237">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>

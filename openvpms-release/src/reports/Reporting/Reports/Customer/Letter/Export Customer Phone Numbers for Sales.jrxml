@@ -9,7 +9,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="Species" class="java.lang.String">
 		<parameterDescription><![CDATA[Species selection]]></parameterDescription>
 	</parameter>
@@ -699,7 +699,7 @@ order by c.name, c.entity_id,rank desc, cp.contact_id desc]]>
 					<textElement>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<text><![CDATA[SMS]]></text>
+					<text><![CDATA[SMS Only]]></text>
 				</staticText>
 				<textField pattern="dd/MM/yyyy h.mm a">
 					<reportElement x="527" y="43" width="94" height="15" uuid="4a2d826b-e381-4636-b050-93de6d4ead2d">

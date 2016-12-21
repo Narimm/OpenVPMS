@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-13T06:31:00 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T06:04:26 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Receipt Items" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="7ced4111-cebe-479f-a85d-74408b083b33">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -12,7 +12,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<field name="target.name" class="java.lang.String">
 		<fieldDescription><![CDATA[Payment Type Name]]></fieldDescription>
 	</field>
