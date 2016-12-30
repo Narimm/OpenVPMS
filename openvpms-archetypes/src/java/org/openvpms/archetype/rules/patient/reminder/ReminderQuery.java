@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -40,6 +40,7 @@ import java.util.List;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.gte;
 import static org.openvpms.component.system.common.query.Constraints.idEq;
+import static org.openvpms.component.system.common.query.Constraints.isNull;
 import static org.openvpms.component.system.common.query.Constraints.join;
 import static org.openvpms.component.system.common.query.Constraints.notExists;
 import static org.openvpms.component.system.common.query.Constraints.shortName;
@@ -218,6 +219,7 @@ public class ReminderQuery {
         query.add(sort("customer", "name"));
         query.add(sort("patient", "name"));
         query.add(sort("act", "endTime"));
+        query.add(isNull("owner.activeEndTime")); // only use owner relationships that are open-ended
 
         ShortNameConstraint reminder = shortName("reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
         if (reminderType != null) {
