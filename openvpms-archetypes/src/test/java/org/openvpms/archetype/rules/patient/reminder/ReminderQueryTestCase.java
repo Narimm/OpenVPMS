@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -25,9 +25,11 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -44,6 +46,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
@@ -178,6 +181,42 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that inactive patient owner relationships are excluded.
+     */
+    @Test
+    public void testExcludeInactivePatients() {
+        Party customer = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient(customer);
+        Party patient2 = TestHelper.createPatient(customer);
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        // create a reminder for each patient, and verify they are returned by the query
+        Act reminder1 = ReminderTestHelper.createReminderWithDueDate(patient1, reminderType, DateRules.getTomorrow());
+        Act reminder2 = ReminderTestHelper.createReminderWithDueDate(patient2, reminderType, DateRules.getTomorrow());
+
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
+        query.setCustomer(customer);
+        List<Act> reminders1 = getReminders(query);
+        assertEquals(2, reminders1.size());
+        assertTrue(reminders1.contains(reminder1));
+        assertTrue(reminders1.contains(reminder2));
+
+
+        // now deactivate the patient1 relationship. Only the reminder for patient2 should be returned
+        IMObjectBean bean = new IMObjectBean(customer);
+        List<EntityRelationship> owner = bean.getValues("patients", RefEquals.getTargetEquals(patient1),
+                                                        EntityRelationship.class);
+        assertEquals(1, owner.size());
+        owner.get(0).setActiveEndTime(new Date());
+        save(customer, patient1);
+
+        List<Act> reminders2 = getReminders(query);
+        assertEquals(1, reminders2.size());
+        assertFalse(reminders2.contains(reminder1));
+        assertTrue(reminders2.contains(reminder2));
+    }
+
+    /**
      * Verifies that reminders can be queried by customer location.
      */
     @Test
@@ -244,7 +283,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private List<Act> getReminders(ReminderQuery query) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         for (Act set : query.query()) {
             result.add(set);
         }
