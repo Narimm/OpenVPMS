@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.reminder;
@@ -31,9 +31,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.jxpath.AbstractObjectFunctions;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -133,11 +135,27 @@ public class ReminderFunctions extends AbstractObjectFunctions {
      * @return the reminders for the customer's patients
      */
     public Iterable<Act> getReminders(Party customer, int dueInterval, String dueUnits, boolean includeOverdue) {
+        List<Act> result;
         if (customer != null) {
+            result = new ArrayList<>();
             DateUnits units = DateUnits.valueOf(dueUnits);
-            return customerRules.getReminders(customer, dueInterval, units, includeOverdue);
+            List<Act> reminders = customerRules.getReminders(customer, dueInterval, units, includeOverdue);
+            for (Act reminder : reminders) {
+                ActBean bean = new ActBean(reminder, service);
+                Party patient = (Party) bean.getNodeParticipant("patient");
+
+                // exclude reminders with inactive or deceased patients
+                if (patient != null && patient.isActive()) {
+                    IMObjectBean patientBean = new IMObjectBean(patient, service);
+                    if (!patientBean.getBoolean("deceased")) {
+                        result.add(reminder);
+                    }
+                }
+            }
+        } else {
+            result = Collections.emptyList();
         }
-        return Collections.emptyList();
+        return result;
     }
 
     /**
