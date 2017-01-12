@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -35,6 +35,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -66,10 +67,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         Entity reminderType = ReminderTestHelper.createReminderType();
         ReminderTestHelper.createReminders(10, reminderType); // create some reminders
 
-        int initialCount = countReminders(null, null, false);
         ReminderQuery query = new ReminderQuery(getArchetypeService());
         List<Act> reminders = getReminders(query);
-        assertEquals(initialCount, reminders.size());
         for (Act act : reminders) {
             assertTrue(TypeHelper.isA(act, ReminderArchetypes.REMINDER));
             assertEquals(ActStatus.IN_PROGRESS, act.getStatus());
@@ -255,8 +254,6 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         Entity reminderType = ReminderTestHelper.createReminderType();
         Party location = TestHelper.createLocation();
 
-        int initialCount = countReminders(null, null, true);
-
         Party customer1 = createCustomer(location);
         Party customer2 = TestHelper.createCustomer();
 
@@ -272,7 +269,9 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         query.setLocation(Location.NONE);
 
         List<Act> reminders = getReminders(query);
-        assertEquals(initialCount + 2, reminders.size());
+        assertFalse(reminders.contains(act1));
+        assertTrue(reminders.contains(act2));
+        assertTrue(reminders.contains(act3));
     }
 
     /**
@@ -307,6 +306,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             query.add(new NodeConstraint("endTime", RelationalOp.BTW, DateRules.getDate(dueFrom),
                                          DateRules.getDate(dueTo)));
         }
+        query.add(Constraints.join("reminderType").add(Constraints.join("entity").add(Constraints.eq("active", true))));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         IPage<IMObject> page = getArchetypeService().get(query);
         for (IMObject object : page.getResults()) {
