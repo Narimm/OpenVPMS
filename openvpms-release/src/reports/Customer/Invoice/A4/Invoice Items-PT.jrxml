@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-10-03T11:54:47 -->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T05:58:39 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Items-VP" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" resourceBundle="localisation.reports" uuid="686e7611-94db-45b0-b0e3-4aa94b5c752b">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -13,7 +29,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -223,7 +239,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<text><![CDATA[*]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="78" y="0" width="125" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5f4d8ecd-02f3-432e-8f43-d369f5378efe">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="81" y="0" width="125" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5f4d8ecd-02f3-432e-8f43-d369f5378efe">
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					</reportElement>
 					<textElement verticalAlignment="Top"/>
@@ -302,7 +318,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<text><![CDATA[*]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="RelativeToBandHeight" x="78" y="0" width="125" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="219a8ca3-fe52-4a6f-9adb-b2c2a165064c">
+					<reportElement stretchType="RelativeToBandHeight" x="81" y="0" width="125" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="219a8ca3-fe52-4a6f-9adb-b2c2a165064c">
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
@@ -335,7 +351,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				</reportElement>
 			</line>
 			<staticText>
-				<reportElement key="staticText-7" x="78" y="2" width="125" height="16" uuid="d065c68e-906f-4171-a466-bae533bc2d46"/>
+				<reportElement key="staticText-7" x="81" y="2" width="125" height="16" uuid="d065c68e-906f-4171-a466-bae533bc2d46"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -348,7 +364,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				<text><![CDATA[Product Type]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-8" x="468" y="2" width="61" height="16" uuid="4c8aebc1-bc35-434f-9c2d-d0722ccd514f">
+				<reportElement key="staticText-8" x="468" y="2" width="64" height="16" uuid="4c8aebc1-bc35-434f-9c2d-d0722ccd514f">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<box>
@@ -363,7 +379,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				<text><![CDATA[Amount]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="410" y="2" width="44" height="16" uuid="301dc52e-c3bd-4498-993d-71972fc2490b">
+				<reportElement key="staticText-9" x="410" y="2" width="58" height="16" uuid="301dc52e-c3bd-4498-993d-71972fc2490b">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<box>
@@ -378,7 +394,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				<text><![CDATA[Quantity]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-10" x="6" y="2" width="66" height="16" uuid="f593ac44-4092-4f0d-bd60-46c490adc393"/>
+				<reportElement key="staticText-10" x="3" y="2" width="72" height="16" uuid="f593ac44-4092-4f0d-bd60-46c490adc393"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -458,7 +474,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				<text><![CDATA[*]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="78" y="0" width="125" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="03291b6b-523d-4364-9c6c-ccc9fb49e8f4">
+				<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="81" y="0" width="125" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="03291b6b-523d-4364-9c6c-ccc9fb49e8f4">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -533,7 +549,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10" isBold="true"/>
+					<font size="10" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[TOTAL]]></text>
@@ -547,7 +563,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10" isBold="true"/>
+					<font size="10" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
@@ -605,7 +621,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				<textFieldExpression><![CDATA[$V{SUM_taxR}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-11" positionType="Float" x="10" y="29" width="175" height="16" uuid="f31000da-eee9-46da-9212-00c390cd70a1">
+				<reportElement key="staticText-11" positionType="Float" x="0" y="29" width="185" height="16" uuid="f31000da-eee9-46da-9212-00c390cd70a1">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -656,7 +672,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10" isBold="true"/>
+					<font size="10" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Total includes "+$R{text.taxName}]]></textFieldExpression>

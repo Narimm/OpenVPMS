@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Customer List Report" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="550" leftMargin="31" rightMargin="31" topMargin="19" bottomMargin="19" uuid="f402c6a6-4eb6-42f3-8d38-84883e7ac956">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -9,7 +25,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
@@ -237,7 +253,7 @@ where
 			<textField pattern="">
 				<reportElement x="447" y="0" width="103" height="10" uuid="d8d4df95-edc1-46b6-b025-c5130b7746ed"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
@@ -334,7 +350,7 @@ where
 	<columnHeader>
 		<band height="41" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-12" x="473" y="19" width="76" height="16" isRemoveLineWhenBlank="true" uuid="e94edaa3-2ec3-46f4-bbc1-9f14195fb97b">
+				<reportElement key="staticText-12" x="463" y="19" width="86" height="16" isRemoveLineWhenBlank="true" uuid="e94edaa3-2ec3-46f4-bbc1-9f14195fb97b">
 					<printWhenExpression><![CDATA[!$P{countsOnly}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -374,7 +390,7 @@ where
 				<text><![CDATA[Customer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-16" x="165" y="19" width="308" height="16" isRemoveLineWhenBlank="true" uuid="9efde03a-a9ed-4e38-b81f-f413c4be1456">
+				<reportElement key="staticText-16" x="165" y="19" width="278" height="16" isRemoveLineWhenBlank="true" uuid="9efde03a-a9ed-4e38-b81f-f413c4be1456">
 					<printWhenExpression><![CDATA[!$P{countsOnly}]]></printWhenExpression>
 				</reportElement>
 				<box>

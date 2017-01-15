@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-20T09:01:40 -->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T08:36:50 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Delivery Items A5" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="030febe6-298b-4b24-ae87-8169d4f07cf2">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,7 +24,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<field name="target.patient.entity.name" class="java.lang.String"/>
 	<field name="target.product.entity" class="java.lang.Object"/>
 	<field name="target.quantity" class="java.math.BigDecimal"/>
@@ -66,7 +82,7 @@
 (inc-Tax)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="355" y="1" width="47" height="20" uuid="0a449dc9-c86b-4ca3-96b7-e7c6ebdfa258"/>
+				<reportElement key="staticText-9" x="352" y="1" width="55" height="20" uuid="0a449dc9-c86b-4ca3-96b7-e7c6ebdfa258"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -93,7 +109,7 @@
 (ex-Tax)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-13" x="296" y="0" width="52" height="20" uuid="94d6d451-72f5-4c0e-b689-b93d6258a7ee"/>
+				<reportElement key="staticText-13" x="293" y="0" width="52" height="20" uuid="94d6d451-72f5-4c0e-b689-b93d6258a7ee"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -178,7 +194,7 @@
 				<textFieldExpression><![CDATA[$F{target.unitPrice}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField" x="296" y="0" width="52" height="20" uuid="357065c2-f241-4c60-b9a8-d34956dfdc47"/>
+				<reportElement key="textField" x="293" y="0" width="52" height="20" uuid="357065c2-f241-4c60-b9a8-d34956dfdc47"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -211,7 +227,7 @@
 				<textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-11" x="355" y="5" width="105" height="18" uuid="e32383f1-da28-455b-8304-e1e468df021c"/>
+				<reportElement key="staticText-11" x="345" y="5" width="115" height="18" uuid="e32383f1-da28-455b-8304-e1e468df021c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

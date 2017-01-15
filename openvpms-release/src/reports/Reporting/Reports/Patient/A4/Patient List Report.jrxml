@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 6.1.0  -->
-<!-- 2015-11-02T22:42:06 -->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T13:49:54 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient List Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="4837b96f-4df2-4a7c-8735-8c6f3d952b7b">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -11,7 +27,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
@@ -96,7 +112,7 @@ order by c.name]]>
 				<text><![CDATA[Patient List Report]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="70" y="36" width="100" height="17" uuid="328de762-fae4-4213-8229-37ddda075f33">
+				<reportElement key="textField" x="85" y="36" width="100" height="17" uuid="328de762-fae4-4213-8229-37ddda075f33">
 					<property name="local_mesure_unitx" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
@@ -112,7 +128,7 @@ order by c.name]]>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{startDate})]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="228" y="36" width="100" height="17" uuid="bb530c6e-5377-4a98-8462-25dab6d5018d">
+				<reportElement key="textField" x="243" y="36" width="100" height="17" uuid="bb530c6e-5377-4a98-8462-25dab6d5018d">
 					<property name="local_mesure_unitx" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
@@ -128,7 +144,7 @@ order by c.name]]>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="5" y="36" width="63" height="17" uuid="127de34e-b0a9-4984-8520-cc6b4bac79df"/>
+				<reportElement key="staticText-9" x="10" y="36" width="70" height="17" uuid="127de34e-b0a9-4984-8520-cc6b4bac79df"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -141,7 +157,7 @@ order by c.name]]>
 				<text><![CDATA[From Date:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-10" x="172" y="36" width="56" height="17" uuid="1e1b87f7-e86c-4a75-b2d9-f50d408fa1e4"/>
+				<reportElement key="staticText-10" x="187" y="36" width="56" height="17" uuid="1e1b87f7-e86c-4a75-b2d9-f50d408fa1e4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -180,7 +196,7 @@ order by c.name]]>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-29" x="5" y="53" width="63" height="17" uuid="3946847a-6915-4b8d-8d81-96340430d2da">
+				<reportElement key="staticText-29" x="10" y="53" width="70" height="17" uuid="3946847a-6915-4b8d-8d81-96340430d2da">
 					<property name="local_mesure_unity" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -196,7 +212,7 @@ order by c.name]]>
 				<text><![CDATA[Species :]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-17" x="70" y="53" width="100" height="17" uuid="6fee5184-bfd4-48f4-baa0-ccff5b6a56f5">
+				<reportElement key="textField-17" x="85" y="53" width="100" height="17" uuid="6fee5184-bfd4-48f4-baa0-ccff5b6a56f5">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<box>
@@ -211,7 +227,7 @@ order by c.name]]>
 				<textFieldExpression><![CDATA[($P{species}==null)?"%":$P{species}+"%"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-30" x="172" y="53" width="56" height="17" uuid="8400edf5-1031-4392-9fe5-28ce672d3a95">
+				<reportElement key="staticText-30" x="187" y="53" width="56" height="17" uuid="8400edf5-1031-4392-9fe5-28ce672d3a95">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<box>
@@ -226,7 +242,7 @@ order by c.name]]>
 				<text><![CDATA[Breed :]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-18" x="228" y="53" width="100" height="17" uuid="c3c3cca2-4259-49c6-a325-e102bfdda0d0">
+				<reportElement key="textField-18" x="243" y="53" width="100" height="17" uuid="c3c3cca2-4259-49c6-a325-e102bfdda0d0">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<box>
@@ -243,13 +259,13 @@ order by c.name]]>
 			<textField pattern="">
 				<reportElement x="435" y="0" width="100" height="11" uuid="856c2632-88e1-4127-8aed-fadc15c879ac"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="5" y="70" width="63" height="17" uuid="a856524b-d126-42e1-8f3f-ca15e44f575b"/>
+				<reportElement key="staticText-9" x="10" y="70" width="70" height="17" uuid="a856524b-d126-42e1-8f3f-ca15e44f575b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -262,7 +278,7 @@ order by c.name]]>
 				<text><![CDATA[Incl Inactive: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="70" y="70" width="99" height="17" uuid="ba552b14-e03e-40d3-bfb5-d193753202b1">
+				<reportElement key="textField" x="85" y="70" width="99" height="17" uuid="ba552b14-e03e-40d3-bfb5-d193753202b1">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="local_mesure_unitx" value="pixel"/>
@@ -284,7 +300,7 @@ order by c.name]]>
 	<columnHeader>
 		<band height="26" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-11" x="345" y="3" width="69" height="17" uuid="a5b03cfb-4caf-417a-a2ad-3ae7338f5031"/>
+				<reportElement key="staticText-11" x="330" y="3" width="84" height="17" uuid="a5b03cfb-4caf-417a-a2ad-3ae7338f5031"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -315,7 +331,7 @@ order by c.name]]>
 				<text><![CDATA[Customer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-27" x="184" y="2" width="161" height="17" uuid="2b20b14e-2bd5-4941-ae2f-495c99fd68c4"/>
+				<reportElement key="staticText-27" x="184" y="2" width="146" height="17" uuid="2b20b14e-2bd5-4941-ae2f-495c99fd68c4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -329,7 +345,7 @@ order by c.name]]>
 				<text><![CDATA[Patient]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-31" x="414" y="3" width="79" height="17" uuid="f274ced7-26a9-4cd9-b2c9-7541538ce871"/>
+				<reportElement key="staticText-31" x="414" y="3" width="106" height="17" uuid="f274ced7-26a9-4cd9-b2c9-7541538ce871"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

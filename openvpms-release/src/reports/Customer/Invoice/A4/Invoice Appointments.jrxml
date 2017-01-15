@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-12T16:49:17 -->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T05:59:13 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Appointments" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="73d919ae-324c-40b9-9464-15331ebe71c4">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -20,7 +36,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="MaxLines" class="java.lang.Integer" isForPrompting="false">
 		<parameterDescription><![CDATA[Max number of reminders to show]]></parameterDescription>
 		<defaultValueExpression><![CDATA[100]]></defaultValueExpression>
@@ -72,7 +88,7 @@
 				<text><![CDATA[Appointments]]></text>
 			</staticText>
 			<textField evaluationTime="Report">
-				<reportElement key="staticText-7" x="80" y="8" width="90" height="13" uuid="eedb0b8e-726b-48b6-b792-17784ddcab86">
+				<reportElement key="staticText-7" x="84" y="8" width="90" height="13" uuid="eedb0b8e-726b-48b6-b792-17784ddcab86">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<box>
@@ -108,7 +124,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font fontName="SansSerif" size="10"/>
+					<font size="10"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getTimeInstance(DateFormat.SHORT,  $P{REPORT_LOCALE}).format($F{startTime})
@@ -121,7 +137,7 @@ DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT,  $P{REPORT_LOC
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SansSerif" size="10"/>
+					<font size="10"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{patient.entity.name}==null)?"(no patient)":$F{patient.entity.name}]]></textFieldExpression>
@@ -133,7 +149,7 @@ DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT,  $P{REPORT_LOC
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SansSerif" size="10"/>
+					<font size="10"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{appointmentType.entity.name}+($F{reason}==null?"":(" ["+$F{reason}+"]"))]]></textFieldExpression>
@@ -145,7 +161,7 @@ DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT,  $P{REPORT_LOC
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10"/>
+					<font size="10"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{startTime})]]></textFieldExpression>

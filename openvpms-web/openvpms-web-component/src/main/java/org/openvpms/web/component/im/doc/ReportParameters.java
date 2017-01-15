@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.util.Variables;
@@ -185,7 +186,7 @@ public class ReportParameters {
         for (ParameterType type : parameters) {
             if (!type.isSystem()) {
                 SimpleProperty property = new SimpleProperty(type.getName(), type.getType());
-                if (type.getDescription() != null) {
+                if (!StringUtils.isEmpty(type.getDescription())) {
                     property.setDisplayName(type.getDescription());
                 }
                 if (property.isBoolean() || property.isString() || property.isNumeric() || property.isDate()) {

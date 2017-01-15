@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Stock Adjustment Items" pageWidth="421" pageHeight="595" columnWidth="421" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="b0c5b7ba-fcab-4116-90ca-82a097a206af">
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Stock Adjustment Items" pageWidth="421" pageHeight="595" columnWidth="421" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4dc8a59d-d4bb-4bdd-ae06-cedf94e5f457">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -9,7 +25,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="7"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
 	<field name="target.product.entity" class="java.lang.Object"/>
 	<field name="target.quantity" class="java.math.BigDecimal"/>
 	<field name="target.product.entity.name" class="java.lang.String"/>
@@ -35,13 +51,13 @@
 	<columnHeader>
 		<band height="22" splitType="Stretch">
 			<line>
-				<reportElement key="line-1" x="31" y="1" width="333" height="1" uuid="029ffb8d-19d9-442b-b8e1-b1a622f7bac3"/>
+				<reportElement key="line-1" x="31" y="1" width="333" height="1" uuid="4d3d9a58-6a0b-4ad7-94e9-bff1d3b181a9"/>
 			</line>
 			<line>
-				<reportElement key="line-2" x="32" y="16" width="332" height="1" uuid="8cd3fde1-c053-41fa-8028-da2e1bb01d76"/>
+				<reportElement key="line-2" x="32" y="16" width="332" height="1" uuid="f18cd99d-46ab-4032-9ea3-a0259764937a"/>
 			</line>
 			<staticText>
-				<reportElement key="staticText-7" x="42" y="1" width="89" height="14" uuid="3ee02bd3-a674-40be-97f2-51f540334295"/>
+				<reportElement key="staticText-7" x="42" y="1" width="89" height="14" uuid="099472ae-dadb-4dc8-92f9-6bb6624bfa31"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -54,7 +70,7 @@
 				<text><![CDATA[Product]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="296" y="1" width="47" height="14" uuid="fe8687ef-caa3-4910-b13c-c67ca5a7487b"/>
+				<reportElement key="staticText-9" x="296" y="1" width="47" height="14" uuid="983db4af-28cd-4e3f-9b2d-49e55e8c2dbc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -71,7 +87,7 @@
 	<detail>
 		<band height="15" splitType="Stretch">
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="296" y="1" width="47" height="13" uuid="f079f285-6eaf-4ce4-8a23-a0dae2e60f82"/>
+				<reportElement key="textField-3" x="296" y="1" width="47" height="13" uuid="4dab629c-7df0-4572-ae39-2a4f43323592"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -84,7 +100,7 @@
 				<textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
-				<reportElement key="textField-4" x="42" y="0" width="211" height="13" uuid="5d089012-fd3f-4259-981b-6cc8a5e268bd"/>
+				<reportElement key="textField-4" x="42" y="0" width="211" height="13" uuid="f0992a12-73ed-450e-aa71-85770bcbb3ce"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -101,10 +117,10 @@
 	<columnFooter>
 		<band height="22" splitType="Stretch">
 			<line>
-				<reportElement key="line-3" x="32" y="1" width="332" height="1" uuid="09eec70b-8cba-4287-996d-2bc72273a56b"/>
+				<reportElement key="line-3" x="32" y="1" width="332" height="1" uuid="858fc79d-5fab-44af-84f8-2839cf3d6cab"/>
 			</line>
 			<staticText>
-				<reportElement key="staticText-11" x="208" y="2" width="83" height="13" uuid="3b3d1519-7243-443a-9854-b3f0a9c6d12b"/>
+				<reportElement key="staticText-11" x="208" y="2" width="83" height="13" uuid="f05764aa-2e0b-42d0-836f-a79185b43978"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -117,17 +133,17 @@
 				<text><![CDATA[Total quantity of items]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="294" y="2" width="48" height="13" uuid="1c842a7a-2256-422f-be4d-18ffa35d36c2"/>
+				<reportElement x="294" y="2" width="48" height="13" uuid="89eee239-56dc-4eb7-9400-46ef8bf765c1"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$V{SUM_target.quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="109" y="2" width="37" height="13" uuid="55dae4c4-a36b-497e-8bc1-c3e17651114a"/>
+				<reportElement x="111" y="2" width="38" height="13" uuid="7d94dc2f-b8d9-412e-9dec-bcc1e7413201"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$V{COUNT_items}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-11" x="31" y="2" width="76" height="13" uuid="5f70f922-153c-472a-ab0b-82ec8497fc65"/>
+				<reportElement key="staticText-11" x="31" y="2" width="76" height="13" uuid="88cb4359-bf68-4131-a841-83b9a2a91691"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

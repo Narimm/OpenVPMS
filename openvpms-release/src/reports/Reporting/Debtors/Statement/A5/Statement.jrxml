@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Statement" pageWidth="421" pageHeight="595" columnWidth="381" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="a2d428cb-08c8-47c1-9845-f814d41bf117">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,7 +35,7 @@
 	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="7"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<parameter name="statementDate" class="java.util.Date" isForPrompting="false"/>
 	<parameter name="overdueBalance" class="java.math.BigDecimal" isForPrompting="false"/>
@@ -34,7 +50,7 @@
 	<field name="tax" class="java.math.BigDecimal"/>
 	<field name="displayName" class="java.lang.String"/>
 	<field name="credit" class="java.lang.Boolean"/>
-	<field name="status" class="java.lang.String"/>
+	<field name="status.code" class="java.lang.String"/>
 	<field name="shortName" class="java.lang.String"/>
 	<field name="printed" class="java.lang.Boolean"/>
 	<field name="customer.entity.companyName" class="java.lang.String"/>
@@ -498,7 +514,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 							<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						</reportElement>
 						<textElement textAlignment="Left">
-							<font fontName="SansSerif" size="6" isBold="false"/>
+							<font size="6" isBold="false"/>
 							<paragraph lineSpacing="Single"/>
 						</textElement>
 						<textFieldExpression><![CDATA[(($F{[party:getFaxNumber(party:getLetterheadContacts($OpenVPMS.location))]}.length()>0)?
@@ -512,7 +528,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						</reportElement>
 						<textElement>
-							<font fontName="SansSerif" size="6" isBold="false"/>
+							<font size="6" isBold="false"/>
 							<paragraph lineSpacing="Single"/>
 						</textElement>
 						<textFieldExpression><![CDATA["Mail to: "+$F{[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]}]]></textFieldExpression>
@@ -1002,7 +1018,9 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 		<band height="43" splitType="Stretch">
 			<printWhenExpression><![CDATA[$V{PAGE_NUMBER}>1]]></printWhenExpression>
 			<textField>
-				<reportElement key="staticText-1" positionType="Float" x="113" y="18" width="154" height="20" uuid="3c38df70-f168-4f83-86e8-46113f5ebb52"/>
+				<reportElement key="staticText-1" positionType="Float" x="88" y="18" width="204" height="20" uuid="3c38df70-f168-4f83-86e8-46113f5ebb52">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1018,7 +1036,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 			<textField evaluationTime="Report">
 				<reportElement positionType="Float" x="350" y="18" width="31" height="9" uuid="d269baf8-ab13-46dd-9d53-1491d0a04abd"/>
 				<textElement textAlignment="Left">
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
@@ -1027,7 +1045,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>

@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_CountVisitsLocation" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="bb55dd52-4d73-4273-b097-d555ce83282f">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<queryString language="SQL">
@@ -114,7 +130,7 @@ group by location order by location]]>
 				<text><![CDATA[Visit Count]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="0" width="222" height="18" uuid="c5df7d46-5fd0-40d6-9280-8f658c4ec5cd"/>
+				<reportElement x="0" y="0" width="292" height="18" uuid="c5df7d46-5fd0-40d6-9280-8f658c4ec5cd"/>
 				<textElement>
 					<font size="11" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -163,7 +179,7 @@ group by location order by location]]>
 		</band>
 	</detail>
 	<summary>
-		<band height="151">
+		<band height="162">
 			<textField>
 				<reportElement x="278" y="3" width="77" height="14" uuid="a50fbae2-3544-4396-b335-7148ecdb8560"/>
 				<textElement textAlignment="Right">
@@ -200,7 +216,7 @@ group by location order by location]]>
 				<textFieldExpression><![CDATA[$F{totalPatientCount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="77" width="550" height="73" uuid="3fde0f89-4281-41ab-9107-9b90986ef5e9"/>
+				<reportElement x="0" y="77" width="550" height="83" uuid="3fde0f89-4281-41ab-9107-9b90986ef5e9"/>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
@@ -263,7 +279,7 @@ A patient is taken to be active at a given date if they have a Date Created prio
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="13" isBold="true"/>
+					<font size="11" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
@@ -276,7 +292,8 @@ A patient is taken to be active at a given date if they have a Date Created prio
 				<textFieldExpression><![CDATA[($F{activePatientsEnd}.doubleValue()-$F{activePatientsStart}.doubleValue())/$F{activePatientsStart}.doubleValue()]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement positionType="Float" x="0" y="150" width="550" height="1" uuid="6afc9d8b-c34f-4c9d-904d-97e47272c977"/>
+				<reportElement positionType="Float" x="0" y="161" width="550" height="1"
+							   uuid="6afc9d8b-c34f-4c9d-904d-97e47272c977"/>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>

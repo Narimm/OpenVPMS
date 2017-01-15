@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -40,6 +40,7 @@ import java.util.List;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.gte;
 import static org.openvpms.component.system.common.query.Constraints.idEq;
+import static org.openvpms.component.system.common.query.Constraints.isNull;
 import static org.openvpms.component.system.common.query.Constraints.join;
 import static org.openvpms.component.system.common.query.Constraints.notExists;
 import static org.openvpms.component.system.common.query.Constraints.shortName;
@@ -49,7 +50,8 @@ import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 /**
  * Queries <em>act.patientReminder</em> acts.
- * The acts are sorted on customer name, patient name and endTime.
+ * <p/>
+ * The acts are sorted on customer name, patient name and startTime.
  *
  * @author Tim Anderson
  */
@@ -163,7 +165,7 @@ public class ReminderQuery {
     public Iterable<Act> query() {
         return new Iterable<Act>() {
             public Iterator<Act> iterator() {
-                return new IMObjectQueryIterator<Act>(service, createQuery());
+                return new IMObjectQueryIterator<>(service, createQuery());
             }
         };
     }
@@ -174,7 +176,7 @@ public class ReminderQuery {
      * @return a list of the reminder acts matching the query criteria
      */
     public List<Act> execute() {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         for (Act act : query()) {
             result.add(act);
         }
@@ -217,7 +219,8 @@ public class ReminderQuery {
         query.add(new IdConstraint("customer", "owner.source"));
         query.add(sort("customer", "name"));
         query.add(sort("patient", "name"));
-        query.add(sort("act", "endTime"));
+        query.add(sort("act", "startTime"));
+        query.add(isNull("owner.activeEndTime")); // only use owner relationships that are open-ended
 
         ShortNameConstraint reminder = shortName("reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
         if (reminderType != null) {
@@ -227,13 +230,13 @@ public class ReminderQuery {
             query.add(new IdConstraint("reminderType.act", "act"));
         }
         if (from != null) {
-            query.add(gte("endTime", DateRules.getDate(from)));
+            query.add(gte("startTime", DateRules.getDate(from)));
         }
         if (to != null) {
             // remove any time component and add 1 day
             Date tempTo = DateRules.getDate(to);
             tempTo = DateRules.getDate(tempTo, 1, DateUnits.DAYS);
-            query.add(Constraints.lt("endTime", tempTo));
+            query.add(Constraints.lt("startTime", tempTo));
         }
         return query;
     }

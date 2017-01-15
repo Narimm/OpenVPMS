@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Delivery" pageWidth="612" pageHeight="792" columnWidth="554" leftMargin="29" rightMargin="29" topMargin="26" bottomMargin="26" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="8c42a3ea-6f37-49f5-803e-e1f46987b877">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -10,7 +26,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
@@ -29,14 +45,14 @@
 	<field name="[party:getBillingAddress(openvpms:get(.,&apos;supplier.entity&apos;))]" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="status" class="java.lang.String"/>
+	<field name="status.code" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.lastPageFooter" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.supplierMsg" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<variable name="isFinalised" class="java.lang.Boolean" calculation="First">
-		<variableExpression><![CDATA[$F{status}.startsWith("Final")]]></variableExpression>
+		<variableExpression><![CDATA["POSTED".equals($F{status.code})]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<background>
@@ -109,7 +125,7 @@
 				<textFieldExpression><![CDATA["Page 1 of "+$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-1" positionType="Float" x="388" y="24" width="166" height="27" uuid="d00bbc69-0c90-405b-bd0d-7ec58f9e9717">
+				<reportElement key="staticText-1" positionType="Float" x="381" y="24" width="173" height="27" uuid="d00bbc69-0c90-405b-bd0d-7ec58f9e9717">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box>
@@ -118,11 +134,12 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Right">
 					<font size="16" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{text.supplierDeliveryTitle}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[Delivery Docket
+$R{text.supplierDeliveryTitle}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-2" positionType="Float" x="399" y="101" width="72" height="13" uuid="04baf646-eb2b-4f7a-96c5-5bbc6b9ff01a">
@@ -174,7 +191,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
 					<font size="20" isBold="true" isItalic="false" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{status}.startsWith("Final")?"":"DRAFT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{isFinalised} ? "":"DRAFT"]]></textFieldExpression>
 			</textField>
 			<subreport>
 				<reportElement positionType="Float" x="0" y="24" width="381" height="103" uuid="34366eba-ed5d-4462-a8b6-103ac7a4ebcf">
@@ -271,7 +288,7 @@
 			<textField evaluationTime="Report">
 				<reportElement positionType="Float" x="508" y="24" width="46" height="12" uuid="bcca621a-0dfe-4713-acd6-6679ade72444"/>
 				<textElement textAlignment="Left">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
@@ -280,7 +297,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>

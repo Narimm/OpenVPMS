@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-08-01T03:51:24 -->
+<!-- 2016-12-14T13:52:54 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient History Search" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="4802b0d8-72e3-448b-8bc6-4e28cfbd05eb">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -12,7 +28,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="startDate" class="java.util.Date">
 		<parameterDescription><![CDATA[Date from]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new Date("01/01/2015")]]></defaultValueExpression>
@@ -149,7 +165,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-29" x="5" y="30" width="56" height="20" uuid="32686626-0489-4831-98a1-e4f1309b4aed"/>
+				<reportElement key="staticText-29" x="0" y="30" width="61" height="20" uuid="32686626-0489-4831-98a1-e4f1309b4aed"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -163,7 +179,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<text><![CDATA[Species: ]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-17" x="61" y="30" width="70" height="20" uuid="5dfbca7f-bdbc-44de-ad83-174dddef7eaa"/>
+				<reportElement key="textField-17" x="66" y="30" width="70" height="20" uuid="5dfbca7f-bdbc-44de-ad83-174dddef7eaa"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -206,7 +222,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<reportElement x="0" y="90" width="533" height="1" uuid="ded4b7c7-f025-44d7-8117-d62dbe393a4f"/>
 			</line>
 			<staticText>
-				<reportElement x="5" y="50" width="56" height="20" uuid="f21a3c91-f280-488f-8147-aa6cf7c3f12d"/>
+				<reportElement x="0" y="50" width="61" height="20" uuid="f21a3c91-f280-488f-8147-aa6cf7c3f12d"/>
 				<textElement>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -214,7 +230,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<text><![CDATA[Date from:]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy">
-				<reportElement x="61" y="50" width="70" height="20" uuid="bf780034-4b02-4141-8ec2-dab676455d66"/>
+				<reportElement x="66" y="50" width="70" height="20" uuid="bf780034-4b02-4141-8ec2-dab676455d66"/>
 				<textElement>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -222,7 +238,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{startDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="131" y="50" width="23" height="20" uuid="8548126f-8dfa-4bc8-a902-a0c8c1cd7b09"/>
+				<reportElement x="136" y="50" width="23" height="20" uuid="8548126f-8dfa-4bc8-a902-a0c8c1cd7b09"/>
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -230,7 +246,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<text><![CDATA[to:]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy">
-				<reportElement x="154" y="50" width="100" height="20" uuid="2eeeac3d-95eb-4d07-9e4f-140242eb86e4"/>
+				<reportElement x="159" y="50" width="100" height="20" uuid="2eeeac3d-95eb-4d07-9e4f-140242eb86e4"/>
 				<textElement>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -238,7 +254,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{finishDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="5" y="70" width="56" height="20" uuid="7b565c77-16bb-4dce-93c0-bf72cadfbab6"/>
+				<reportElement x="0" y="70" width="61" height="20" uuid="7b565c77-16bb-4dce-93c0-bf72cadfbab6"/>
 				<textElement>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -246,7 +262,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<text><![CDATA[With text:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="61" y="70" width="423" height="20" uuid="144cac73-d81b-40b0-81e5-ce92766ff7df"/>
+				<reportElement x="66" y="70" width="423" height="20" uuid="144cac73-d81b-40b0-81e5-ce92766ff7df"/>
 				<textElement>
 					<font isItalic="false"/>
 					<paragraph lineSpacing="Single"/>
@@ -291,7 +307,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="131" splitType="Stretch">
+		<band height="86" splitType="Stretch">
 			<textField pattern="###0.0" isBlankWhenNull="false">
 				<reportElement key="textField" x="497" y="0" width="33" height="20" uuid="bac480b9-67ca-40bc-b6b0-4a81981196b9"/>
 				<box>
@@ -345,9 +361,9 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{breed}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="100" y="20" width="435" height="108" uuid="024926f1-ab06-4214-a669-a910e2615c4c"/>
-				<textElement>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="100" y="20" width="435" height="60" uuid="024926f1-ab06-4214-a669-a910e2615c4c"/>
+				<textElement verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
@@ -390,7 +406,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<text><![CDATA[Notes:]]></text>
 			</staticText>
 			<line>
-				<reportElement x="0" y="128" width="533" height="1" uuid="fe5f30c9-cc1c-43cd-93b1-608513878644"/>
+				<reportElement positionType="Float" x="0" y="85" width="533" height="1" uuid="fe5f30c9-cc1c-43cd-93b1-608513878644"/>
 				<graphicElement>
 					<pen lineStyle="Dotted"/>
 				</graphicElement>
@@ -408,12 +424,12 @@ order by a.activity_start_time desc limit $P{limit};]]>
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<summary>
-		<band height="240" splitType="Stretch">
+		<band height="220" splitType="Stretch">
 			<staticText>
-				<reportElement x="2" y="52" width="532" height="177" uuid="011d68ae-6aba-4999-bb79-59bcc54731bb">
+				<reportElement x="2" y="52" width="532" height="168" uuid="011d68ae-6aba-4999-bb79-59bcc54731bb">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
-				<textElement>
+				<textElement verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[This report shows the text (first 9 lines) of notes containing the specified text and matching the other criteria.
@@ -438,7 +454,7 @@ Patients are shown as name owner-name (ID) so Mrs Smith's Fido is shown as Fido 
 				<reportElement key="line-3" x="0" y="5" width="533" height="1" uuid="8c14e662-0ed3-48e2-87e8-cbc7a851cfb3"/>
 			</line>
 			<staticText>
-				<reportElement key="staticText-28" x="20" y="7" width="111" height="20" uuid="dd5298c6-5c6b-42b5-a780-0de222731909"/>
+				<reportElement key="staticText-28" x="2" y="7" width="129" height="20" uuid="dd5298c6-5c6b-42b5-a780-0de222731909"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

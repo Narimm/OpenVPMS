@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Clinician Sales Report" pageWidth="792" pageHeight="612" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="736" leftMargin="28" rightMargin="28" topMargin="21" bottomMargin="21" isSummaryWithPageHeaderAndFooter="true" uuid="46644c4a-20c9-4189-be85-1f28bbd121c3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -10,7 +26,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
@@ -567,7 +583,8 @@ order by   clinicianName,locationName]]>
 	<pageHeader>
 		<band height="60" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-1" x="199" y="0" width="337" height="25" uuid="5bb69de7-7e39-4c39-b3dc-40eb2901c7e6"/>
+				<reportElement key="staticText-1" x="154" y="0" width="428" height="25"
+							   uuid="5bb69de7-7e39-4c39-b3dc-40eb2901c7e6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -581,7 +598,8 @@ order by   clinicianName,locationName]]>
 				<text><![CDATA[Practice Clinician Sales Analysis Report]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="55" y="37" width="75" height="18" uuid="cf785e99-f516-471f-81da-89e78ae2d9ae">
+				<reportElement key="textField" x="62" y="37" width="75" height="18"
+							   uuid="cf785e99-f516-471f-81da-89e78ae2d9ae">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -613,7 +631,8 @@ order by   clinicianName,locationName]]>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="37" width="53" height="18" uuid="0b0f0e5a-07f9-469e-8a3d-b1c1d0feb40c"/>
+				<reportElement key="staticText-9" x="0" y="37" width="60" height="18"
+							   uuid="0b0f0e5a-07f9-469e-8a3d-b1c1d0feb40c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -667,7 +686,7 @@ order by   clinicianName,locationName]]>
 			<textField pattern="">
 				<reportElement x="640" y="0" width="94" height="11" uuid="5e276244-23ee-4153-a5b0-c10789d6aa2b"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
@@ -802,7 +821,7 @@ order by   clinicianName,locationName]]>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Amount//Cust.]]></text>
+				<text><![CDATA[Amount/Cust.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-31" x="617" y="2" width="64" height="18" uuid="3a8a6a92-90b1-46a0-8b39-189dc1ea6b97"/>
@@ -833,7 +852,8 @@ order by   clinicianName,locationName]]>
 				<text><![CDATA[Clinician/Location]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-14" x="206" y="2" width="40" height="18" uuid="7d3c86f1-4631-4ba0-914a-a65451575ab8"/>
+				<reportElement key="staticText-14" x="200" y="2" width="46" height="18"
+							   uuid="7d3c86f1-4631-4ba0-914a-a65451575ab8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1166,7 +1186,7 @@ order by   clinicianName,locationName]]>
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<summary>
-		<band height="299" splitType="Stretch">
+		<band height="288" splitType="Stretch">
 			<line>
 				<reportElement key="line-3" x="0" y="5" width="736" height="1" uuid="21108f26-cdc6-43dd-8402-e9a0f887c191"/>
 			</line>
@@ -1181,7 +1201,8 @@ order by   clinicianName,locationName]]>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="2" y="79" width="722" height="219" isRemoveLineWhenBlank="true" uuid="958bc9fb-62a0-44f9-9371-56ff60252ae1">
+				<reportElement x="2" y="79" width="722" height="209" isRemoveLineWhenBlank="true"
+							   uuid="958bc9fb-62a0-44f9-9371-56ff60252ae1">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
 				<textElement>

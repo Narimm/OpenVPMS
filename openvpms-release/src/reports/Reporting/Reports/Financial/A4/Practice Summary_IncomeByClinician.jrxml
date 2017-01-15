@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-08-01T05:35:23 -->
+<!-- 2016-12-14T13:36:56 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_IncomeByClinician" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="20115224-1f46-4eb2-b204-51977b35672c">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -8,7 +24,7 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<parameter name="ShowTax" class="java.lang.Boolean">
@@ -510,7 +526,7 @@ group by pv.entity_id order by ev.name
 		</band>
 	</detail>
 	<summary>
-		<band height="271" splitType="Prevent">
+		<band height="302" splitType="Prevent">
 			<textField isStretchWithOverflow="true" pattern="¤#,##0">
 				<reportElement x="167" y="20" width="75" height="14" uuid="842c48d7-c679-4efa-abb1-05524d1ec28c"/>
 				<textElement textAlignment="Right">
@@ -695,7 +711,7 @@ group by pv.entity_id order by ev.name
 				<textFieldExpression><![CDATA[$V{SumCounterAmount}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="197" width="535" height="69" uuid="576b1775-f10c-49af-af6e-b5f60bf6f6e6"/>
+				<reportElement x="0" y="197" width="535" height="103" uuid="576b1775-f10c-49af-af6e-b5f60bf6f6e6"/>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
@@ -718,7 +734,7 @@ The Total Customers seen Percentage is the ratio of the seen count to the active
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Active Customers at start   ]]></text>
+				<text><![CDATA[Active Cust's at start   ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="2" y="162" width="129" height="14" uuid="66d81844-275f-464f-a99a-ebbd108d4387"/>
@@ -732,7 +748,7 @@ The Total Customers seen Percentage is the ratio of the seen count to the active
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Active Customers at end   ]]></text>
+				<text><![CDATA[Active Cust's at end   ]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="131" y="148" width="36" height="14" uuid="ab2a007c-5469-465e-a834-a2f3cf68b822"/>
@@ -767,13 +783,14 @@ The Total Customers seen Percentage is the ratio of the seen count to the active
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true"/>
+					<font size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<line>
-				<reportElement positionType="Float" x="0" y="265" width="535" height="1" uuid="3231e404-cf5d-4dad-8e9d-7d46cb4348f2"/>
+				<reportElement positionType="Float" x="0" y="301" width="535" height="1"
+							   uuid="3231e404-cf5d-4dad-8e9d-7d46cb4348f2"/>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>

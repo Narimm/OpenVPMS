@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Batch Use Report" language="groovy" pageWidth="792" pageHeight="612" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="754" leftMargin="19" rightMargin="19" topMargin="21" bottomMargin="21" uuid="ab7e30b2-1928-49fe-9bc6-2783dd3c7e0b">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="Product Name" class="java.lang.String">
 		<parameterDescription><![CDATA[Product Name]]></parameterDescription>
 	</parameter>
@@ -254,7 +270,8 @@ where e.arch_short_name = "entity.productBatch"
 				<text><![CDATA[Batch Use Report]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-35" x="2" y="38" width="78" height="18" uuid="94c6f6e7-0c20-41f2-98ed-82a092a86bbc"/>
+				<reportElement key="staticText-35" x="-1" y="38" width="85" height="18"
+							   uuid="94c6f6e7-0c20-41f2-98ed-82a092a86bbc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -268,7 +285,8 @@ where e.arch_short_name = "entity.productBatch"
 				<text><![CDATA[Product Name: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="80" y="38" width="94" height="18" uuid="31e35ace-18b2-46aa-8845-55933bd816f9"/>
+				<reportElement key="textField" x="84" y="38" width="94" height="18"
+							   uuid="31e35ace-18b2-46aa-8845-55933bd816f9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -281,7 +299,8 @@ where e.arch_short_name = "entity.productBatch"
 				<textFieldExpression><![CDATA[($P{Product Name}==null)?"%":$P{Product Name}+"%"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-35" x="374" y="38" width="78" height="18" uuid="03a8d3e3-2c11-4062-af38-2408d5c13ba4"/>
+				<reportElement key="staticText-35" x="357" y="38" width="95" height="18"
+							   uuid="03a8d3e3-2c11-4062-af38-2408d5c13ba4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -310,13 +329,14 @@ where e.arch_short_name = "entity.productBatch"
 			<textField pattern="">
 				<reportElement x="668" y="0" width="84" height="11" uuid="b328f525-d367-4fbd-b1ad-5582dd2297f9"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-35" x="185" y="38" width="78" height="18" uuid="9886832b-d49e-4b90-8288-558c5e1b75e0"/>
+				<reportElement key="staticText-35" x="178" y="38" width="85" height="18"
+							   uuid="9886832b-d49e-4b90-8288-558c5e1b75e0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
