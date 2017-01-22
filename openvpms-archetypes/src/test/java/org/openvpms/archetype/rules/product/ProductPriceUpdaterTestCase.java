@@ -234,11 +234,11 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         save(product, supplier);
 
         // verify that the expected prices have updated
-        BigDecimal newCost = new BigDecimal("0.67");
-        BigDecimal newPrice = new BigDecimal("1.34");
+        BigDecimal newCost1 = new BigDecimal("0.67");
+        BigDecimal newPrice1 = new BigDecimal("1.34");
         checkPrice(unit1, cost, price);              // inactive, so shouldn't update
-        checkPrice(unit2, newCost, newPrice);
-        checkPrice(unit3, newCost, newPrice);
+        checkPrice(unit2, newCost1, newPrice1);
+        checkPrice(unit3, newCost1, newPrice1);
         checkPrice(unit4, cost, price);              // inactive, so shouldn't update
 
         // now update the product supplier relationship, this time setting the list price to null.
@@ -247,8 +247,20 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // prices should be the same
         checkPrice(unit1, cost, price);
-        checkPrice(unit2, newCost, newPrice);
-        checkPrice(unit3, newCost, newPrice);
+        checkPrice(unit2, newCost1, newPrice1);
+        checkPrice(unit3, newCost1, newPrice1);
+        checkPrice(unit4, cost, price);
+
+        // now update the list price to a valid value
+        ps.setListPrice(new BigDecimal("22.00"));
+        save(product);
+
+        // unit2 and unit3 should have updated
+        BigDecimal newCost2 = new BigDecimal("0.73");
+        BigDecimal newPrice2 = new BigDecimal("1.46");
+        checkPrice(unit1, cost, price);
+        checkPrice(unit2, newCost2, newPrice2);
+        checkPrice(unit3, newCost2, newPrice2);
         checkPrice(unit4, cost, price);
     }
 
