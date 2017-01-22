@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -48,8 +48,6 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -80,30 +78,6 @@ public class AppointmentRules {
      */
     public AppointmentRules(IArchetypeService service) {
         this.service = service;
-    }
-
-    /**
-     * Returns the <em>party.organisationSchedule</em>s associated with a
-     * <em>entity.organisationScheduleView</em>, in order of their relationship
-     * sequence.
-     *
-     * @param scheduleView the schedule view
-     * @return the schedules associated with the view
-     */
-    public List<Party> getSchedules(Entity scheduleView) {
-        List<Party> result = new ArrayList<>();
-        EntityBean bean = new EntityBean(scheduleView, service);
-        List<EntityRelationship> relationships = bean.getValues("schedules", EntityRelationship.class);
-        Collections.sort(relationships, SequenceComparator.INSTANCE);
-        for (EntityRelationship relationship : relationships) {
-            if (relationship.getTarget() != null) {
-                Party schedule = (Party) service.get(relationship.getTarget());
-                if (schedule != null) {
-                    result.add(schedule);
-                }
-            }
-        }
-        return result;
     }
 
     /**

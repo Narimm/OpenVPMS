@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.functor.SequenceCompara
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractSchedules;
 
 import java.util.Collections;
@@ -40,13 +41,24 @@ import java.util.List;
 public class TaskSchedules extends AbstractSchedules {
 
     /**
-     * Constructs an {@link TaskSchedules}.
+     * Constructs a {@link TaskSchedules}.
      *
      * @param location the location. May be {@code null}
      * @param prefs    the user preferences
      */
     public TaskSchedules(Party location, Preferences prefs) {
-        super(location, ScheduleArchetypes.WORK_LIST_VIEW, prefs);
+        this(location, prefs, ServiceHelper.getBean(LocationRules.class));
+    }
+
+    /**
+     * Constructs a {@link TaskSchedules}.
+     *
+     * @param location the location. May be {@code null}
+     * @param prefs    the user preferences
+     * @param rules    the location rules
+     */
+    public TaskSchedules(Party location, Preferences prefs, LocationRules rules) {
+        super(location, ScheduleArchetypes.WORK_LIST_VIEW, prefs, rules);
     }
 
     /**
@@ -100,7 +112,7 @@ public class TaskSchedules extends AbstractSchedules {
     }
 
     /**
-     * Returns the schedules for the specified schedule view.
+     * Returns the active schedules for the specified schedule view.
      *
      * @param view the schedule view
      * @return the corresponding schedules
