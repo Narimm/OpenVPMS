@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -200,6 +200,59 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
+     * Verifies that a product-supplier relationship can be saved with a null list price, and prices don't update.
+     */
+    @Test
+    public void testSaveProductSupplierWithNullListPrice() {
+        BigDecimal cost = BigDecimal.ONE;
+        BigDecimal markup = BigDecimal.valueOf(100);
+        BigDecimal price = BigDecimal.valueOf(2);
+        BigDecimal maxDiscount = BigDecimal.valueOf(100);
+
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+        Party supplier = TestHelper.createSupplier();
+
+        // add some prices
+        ProductPrice unit1 = createUnitPrice(price, cost, markup, maxDiscount, null, getYesterday()); // inactive
+        ProductPrice unit2 = createUnitPrice(price, cost, markup, maxDiscount, getToday(), null);     // active
+        ProductPrice unit3 = createUnitPrice(price, cost, markup, maxDiscount, (Date) null, null);    // active
+        ProductPrice unit4 = createUnitPrice(price, cost, markup, maxDiscount, getTomorrow(), null);  // inactive
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+        product.addProductPrice(unit3);
+        product.addProductPrice(unit4);
+
+        // create a product-supplier relationship.
+        int packageSize = 30;
+        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductSupplier ps = rules.createProductSupplier(product, supplier);
+        ps.setPackageUnits(PACKAGE_UNITS);
+        ps.setPackageSize(packageSize);
+        ps.setAutoPriceUpdate(true);
+        ps.setNettPrice(new BigDecimal("10.00"));
+        ps.setListPrice(new BigDecimal("20.00"));
+        save(product, supplier);
+
+        // verify that the expected prices have updated
+        BigDecimal newCost = new BigDecimal("0.67");
+        BigDecimal newPrice = new BigDecimal("1.34");
+        checkPrice(unit1, cost, price);              // inactive, so shouldn't update
+        checkPrice(unit2, newCost, newPrice);
+        checkPrice(unit3, newCost, newPrice);
+        checkPrice(unit4, cost, price);              // inactive, so shouldn't update
+
+        // now update the product supplier relationship, this time setting the list price to null.
+        ps.setListPrice(null);
+        save(product);
+
+        // prices should be the same
+        checkPrice(unit1, cost, price);
+        checkPrice(unit2, newCost, newPrice);
+        checkPrice(unit3, newCost, newPrice);
+        checkPrice(unit4, cost, price);
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -244,8 +297,8 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     /**
      * Verifies that prices are updated correctly when relationships are created between products and suppliers.
      *
-     * @param newProduct  if {@code true} the product is not saved prior to adding the relationship
-     * @param newSupplier if {@code true} the supplier is not saved prior to adding the relationship
+     * @param newProduct       if {@code true} the product is not saved prior to adding the relationship
+     * @param newSupplier      if {@code true} the supplier is not saved prior to adding the relationship
      * @param saveProductFirst if {@code true} the product is saved first in the transaction, otherwise the supplier is.
      *                         This affects the order in which rules are fired
      */
