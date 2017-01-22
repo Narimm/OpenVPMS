@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -50,7 +50,7 @@ public interface Schedules {
     Entity getDefaultScheduleView(List<Entity> views);
 
     /**
-     * Returns the schedules for the specified schedule view.
+     * Returns the active schedules for the specified schedule view.
      *
      * @param view the schedule view
      * @return the corresponding schedules

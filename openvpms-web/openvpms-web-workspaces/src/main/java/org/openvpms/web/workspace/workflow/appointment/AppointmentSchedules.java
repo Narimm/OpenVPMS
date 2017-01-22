@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -19,17 +19,17 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractSchedules;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,19 +41,24 @@ import java.util.List;
 public class AppointmentSchedules extends AbstractSchedules {
 
     /**
-     * Appointment rules.
-     */
-    private final AppointmentRules rules;
-
-    /**
      * Constructs an {@link AppointmentSchedules}.
      *
      * @param location the location. May be {@code null}
      * @param prefs    the user preferences
      */
     public AppointmentSchedules(Party location, Preferences prefs) {
-        super(location, ScheduleArchetypes.SCHEDULE_VIEW, prefs);
-        rules = ServiceHelper.getBean(AppointmentRules.class);
+        this(location, prefs, ServiceHelper.getBean(LocationRules.class));
+    }
+
+    /**
+     * Constructs an {@link AppointmentSchedules}.
+     *
+     * @param location the location. May be {@code null}
+     * @param prefs    the user preferences
+     * @param rules    the location rules
+     */
+    public AppointmentSchedules(Party location, Preferences prefs, LocationRules rules) {
+        super(location, ScheduleArchetypes.SCHEDULE_VIEW, prefs, rules);
     }
 
     /**
@@ -111,15 +116,15 @@ public class AppointmentSchedules extends AbstractSchedules {
     }
 
     /**
-     * Returns the schedules for the specified schedule view.
+     * Returns the active schedules for the specified schedule view.
      *
      * @param view the schedule view
      * @return the corresponding schedules
      */
     @Override
     public List<Entity> getSchedules(Entity view) {
-        List<Party> schedules = rules.getSchedules(view);
-        return new ArrayList<Entity>(schedules);
+        EntityBean bean = new EntityBean(view);
+        return bean.getNodeTargetEntities("schedules", SequenceComparator.INSTANCE);
     }
 
     /**
