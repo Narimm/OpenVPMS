@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.wip;
@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -90,11 +91,18 @@ public class IncompleteChargesQueryTestCase extends AbstractAppTest {
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
         Party location3 = TestHelper.createLocation();
-        User user = TestHelper.createUser();
-        EntityBean bean = new EntityBean(user);
+        Party practice = (Party) create(PracticeArchetypes.PRACTICE);
+        IMObjectBean bean = new IMObjectBean(practice);
+        bean.addNodeTarget("locations", location1);
+        bean.addNodeTarget("locations", location2);
+        bean.addNodeTarget("locations", location3);
 
-        bean.addNodeRelationship("locations", location1);
+        User user = TestHelper.createUser();
+        IMObjectBean userBean = new IMObjectBean(user);
+
+        userBean.addNodeTarget("locations", location1);
         context.setUser(user);
+        context.setPractice(practice);
 
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         IncompleteChargesQuery query = new IncompleteChargesQuery(layout);
@@ -120,12 +128,19 @@ public class IncompleteChargesQueryTestCase extends AbstractAppTest {
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
         Party location3 = TestHelper.createLocation();
-        User user = TestHelper.createUser();
-        EntityBean bean = new EntityBean(user);
+        Party practice = (Party) create(PracticeArchetypes.PRACTICE);
+        IMObjectBean bean = new IMObjectBean(practice);
+        bean.addNodeTarget("locations", location1);
+        bean.addNodeTarget("locations", location2);
+        bean.addNodeTarget("locations", location3);
 
-        bean.addNodeRelationship("locations", location1);
-        bean.addNodeRelationship("locations", location2);
+        User user = TestHelper.createUser();
+        IMObjectBean userBean = new EntityBean(user);
+
+        userBean.addNodeTarget("locations", location1);
+        userBean.addNodeTarget("locations", location2);
         context.setUser(user);
+        context.setPractice(practice);
 
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         IncompleteChargesQuery query = new IncompleteChargesQuery(layout);
@@ -232,7 +247,7 @@ public class IncompleteChargesQueryTestCase extends AbstractAppTest {
      */
     private void checkNoLocationInvoices(IncompleteChargesQuery query, String... shortNames) {
         ResultSet<Act> set = query.query();
-        ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(set);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
         while (iterator.hasNext()) {
             Act act = iterator.next();
             ActBean bean = new ActBean(act);
