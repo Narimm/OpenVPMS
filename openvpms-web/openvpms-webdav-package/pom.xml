@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -28,15 +28,6 @@
     <artifactId>openvpms-webdav-package</artifactId>
     <packaging>pom</packaging>
 
-    <properties>
-        <keystore.path>${basedir}/../../src/test/resources/openvpms-certs.keystore</keystore.path>
-        <keystore.type>JKS</keystore.type>
-        <keystore.alias>openvpms-test</keystore.alias>
-        <keystore.password>openvpms</keystore.password>
-        <keystore.store.password>${keystore.password}</keystore.store.password>
-        <keystore.key.password>${keystore.password}</keystore.key.password>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
@@ -46,9 +37,15 @@
     </dependencies>
 
     <profiles>
-        <!-- only sign the package when the release profile is active -->
         <profile>
             <id>release</id>
+            <properties>
+                <keystore.path>keystore.path must be specified on command line</keystore.path>
+                <keystore.type>JKS</keystore.type>
+                <keystore.alias>keystore.alias must be specified on command line</keystore.alias>
+                <keystore.store.password/>
+                <keystore.key.password/>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -118,6 +115,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>
