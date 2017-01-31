@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -495,7 +495,16 @@
     <data id="RTILLB" archetype="security.archetypeAuthority" name="Till Balance Remove"
           description="Authority to Remove Till Balance"
           serviceName="archetypeService" method="remove" archetypeShortName="act.tillBalance"/>
-
+    <!-- Till Balance Adjustment Authorities -->
+    <data id="CTILLBA" archetype="security.archetypeAuthority" name="Till Balance Adjustment Create"
+          description="Authority to Create Till Balance Adjustment"
+          serviceName="archetypeService" method="create" archetypeShortName="act.tillBalanceAdjustment"/>
+    <data id="STILLBA" archetype="security.archetypeAuthority" name="Till Balance Adjustment Save"
+          description="Authority to Save Till Balance Adjustment"
+          serviceName="archetypeService" method="save" archetypeShortName="act.tillBalanceAdjustment"/>
+    <data id="RTILLBA" archetype="security.archetypeAuthority" name="Till Balance Adjustment Remove"
+          description="Authority to Remove Till Balance Adjustment"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.tillBalanceAdjustment"/>
     <!-- Bank Deposit Authorities -->
     <data id="CBANKD" archetype="security.archetypeAuthority" name="Bank Deposit Create"
           description="Authority to Create Bank Deposit"
@@ -666,6 +675,8 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKMSG"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CTILLB"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:STILLB"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CTILLBA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:STILLBA"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CBANKD"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SBANKD"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SORGALL"/>
