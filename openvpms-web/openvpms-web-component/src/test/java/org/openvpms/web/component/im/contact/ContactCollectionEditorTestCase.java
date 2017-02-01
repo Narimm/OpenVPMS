@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -35,6 +35,8 @@ import org.openvpms.web.test.AbstractAppTest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -109,6 +111,48 @@ public class ContactCollectionEditorTestCase extends AbstractAppTest {
         assertFalse(customer.getContacts().contains(phone2));
         assertFalse(customer.getContacts().contains(location));
         assertFalse(customer.getContacts().contains(email));
+    }
+
+    /**
+     * Verifies that a new contact is created after an new one is created, modified and the collection saved.
+     * This tests the fix for OVPMS-1846.
+     */
+    @Test
+    public void testExcludeUnmodifiedContactsWithSave() {
+        Party customer = (Party) create(CustomerArchetypes.PERSON);
+        IMObjectBean bean = new IMObjectBean(customer);
+        bean.setValue("firstName", "Foo");
+        bean.setValue("lastName", "Bar");
+
+        PropertySet set = new PropertySet(customer);
+        CollectionProperty property = (CollectionProperty) set.get("contacts");
+        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        ContactCollectionEditor editor = new ContactCollectionEditor(property, customer, context);
+        editor.setExcludeUnmodifiedContacts(true);
+        editor.getComponent();
+
+        IMObjectEditor contactEditor1 = editor.add(ContactArchetypes.LOCATION);
+        assertNotNull(contactEditor1);
+
+        // verify contact not added until it changes
+        Contact location1 = (Contact) contactEditor1.getObject();
+        assertFalse(customer.getContacts().contains(location1));
+
+        // verifies that the same location is returned, as location1 hasn't been modified
+        IMObjectEditor contactEditor2 = editor.add(ContactArchetypes.LOCATION);
+        assertNotNull(contactEditor2);
+        assertSame(contactEditor1, contactEditor2);
+
+        // now change the contact, and verify it is added to the collection
+        contactEditor1.getProperty("address").setValue("Test");
+        assertTrue(editor.isValid());
+        editor.save();
+        assertTrue(customer.getContacts().contains(location1));
+
+        // verifies a new location is returned
+        IMObjectEditor contactEditor3 = editor.add(ContactArchetypes.LOCATION);
+        assertNotNull(contactEditor3);
+        assertNotSame(contactEditor1, contactEditor3);
     }
 
     /**
