@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.reminder;
@@ -27,15 +27,18 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
@@ -69,6 +72,86 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     public void testGetRemindersByCustomer() {
         Party customer = TestHelper.createCustomer();
         checkGetReminders(customer, customer);
+    }
+
+    /**
+     * Verifies that when a customer has an inactive patient owner relationship to a patient, the reminders for that
+     * patient are excluded.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetRemindersByCustomerForInactivePatientRelationship() {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient(customer);
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        Act reminder = ReminderTestHelper.createReminderWithDueDate(patient, reminderType, DateRules.getTomorrow());
+        JXPathContext ctx = createContext(customer);
+
+        // get reminders excluding any reminders prior to the current date
+        List<Act> reminders1 = (List<Act>) ctx.getValue("reminder:getReminders(., 1, 'YEARS')");
+        assertEquals(1, reminders1.size());
+        assertEquals(reminder, reminders1.get(0));
+
+        IMObjectBean bean = new IMObjectBean(customer);
+        List<EntityRelationship> owner = bean.getValues("patients", EntityRelationship.class);
+        assertEquals(1, owner.size());
+        owner.get(0).setActiveEndTime(new Date());
+        save(customer, patient);
+
+        List<Act> reminders2 = (List<Act>) ctx.getValue("reminder:getReminders(., 1, 'YEARS')");
+        assertEquals(0, reminders2.size());
+    }
+
+    /**
+     * Verifies that if a customer has an inactive patient, their reminders are excluded.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetRemindersByCustomerExcludesInactivePatient() {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient(customer);
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        Act reminder = ReminderTestHelper.createReminderWithDueDate(patient, reminderType, DateRules.getTomorrow());
+        JXPathContext ctx = createContext(customer);
+
+        // get reminders excluding any reminders prior to the current date
+        List<Act> reminders1 = (List<Act>) ctx.getValue("reminder:getReminders(., 1, 'YEARS')");
+        assertEquals(1, reminders1.size());
+        assertEquals(reminder, reminders1.get(0));
+
+        patient.setActive(false);
+        save(patient);
+
+        List<Act> reminders2 = (List<Act>) ctx.getValue("reminder:getReminders(., 1, 'YEARS')");
+        assertEquals(0, reminders2.size());
+    }
+
+    /**
+     * Verifies that if a customer has a deceased patient, their reminders are excluded.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetRemindersByCustomerExcludesDeceasedPatient() {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient(customer);
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        Act reminder = ReminderTestHelper.createReminderWithDueDate(patient, reminderType, DateRules.getTomorrow());
+        JXPathContext ctx = createContext(customer);
+
+        // get reminders excluding any reminders prior to the current date
+        List<Act> reminders1 = (List<Act>) ctx.getValue("reminder:getReminders(., 1, 'YEARS')");
+        assertEquals(1, reminders1.size());
+        assertEquals(reminder, reminders1.get(0));
+
+        IMObjectBean bean = new IMObjectBean(patient);
+        bean.setValue("deceased", true);
+        bean.save();
+
+        List<Act> reminders2 = (List<Act>) ctx.getValue("reminder:getReminders(., 1, 'YEARS')");
+        assertEquals(0, reminders2.size());
     }
 
     /**

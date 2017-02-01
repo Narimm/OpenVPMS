@@ -19,7 +19,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="7"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -156,7 +156,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle">
-						<font fontName="SansSerif" size="5" isBold="false"/>
+						<font size="5" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{target.patient.entity.name}==null)?"-patient not specified-":$F{target.patient.entity.name}+"  (ID:"+$F{target.patient.entity.id}.toString()+")"]]></textFieldExpression>
 				</textField>
@@ -178,7 +178,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font fontName="SansSerif" size="5" isBold="false"/>
+						<font size="5" isBold="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<text><![CDATA[Patient Total]]></text>
@@ -210,7 +210,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="5" isBold="false"/>
+						<font size="5" isBold="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{patientTotalCredit}]]></textFieldExpression>
@@ -245,7 +245,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<printWhenExpression><![CDATA[$P{incTax}?Boolean.FALSE:$V{templateTax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Center">
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<text><![CDATA[*]]></text>
 				</staticText>
@@ -254,7 +254,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					</reportElement>
 					<textElement>
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{target.template.entity.type.target.name}==null)?"**Product has no Type**":$F{target.template.entity.type.target.name}]]></textFieldExpression>
 				</textField>
@@ -272,7 +272,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{tmplPrint Name}]]></textFieldExpression>
 				</textField>
@@ -282,7 +282,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
 				</textField>
@@ -304,7 +304,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<text><![CDATA[1]]></text>
 				</staticText>
@@ -332,7 +332,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<printWhenExpression><![CDATA[!$V{templateTotalCredit}.equals(BigDecimal.ZERO)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{templateTotalCredit}]]></textFieldExpression>
 				</textField>
@@ -350,7 +350,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<printWhenExpression><![CDATA[$P{incTax}?Boolean.FALSE:$V{prodTypeTax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Center">
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<text><![CDATA[*]]></text>
 				</staticText>
@@ -360,7 +360,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
 					<textElement>
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{target.product.entity.type.target.name}==null)?"**Product has no Type**":$F{target.product.entity.type.target.name}]]></textFieldExpression>
 				</textField>
@@ -369,7 +369,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
 				</textField>
@@ -397,7 +397,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<printWhenExpression><![CDATA[!$V{templateTotalCredit}.equals(BigDecimal.ZERO)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="5"/>
+						<font size="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{prodTypeTotalCredit}]]></textFieldExpression>
 				</textField>
@@ -425,7 +425,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<printWhenExpression><![CDATA[$P{incTax}?Boolean.FALSE:$F{target.tax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<text><![CDATA[*]]></text>
 			</staticText>
@@ -435,7 +435,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{target.product.entity.type.target.name}==null)?"**Product has no Type**":$F{target.product.entity.type.target.name}]]></textFieldExpression>
 			</textField>
@@ -452,7 +452,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{prodPrint Name}]]></textFieldExpression>
 			</textField>
@@ -461,7 +461,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
 			</textField>

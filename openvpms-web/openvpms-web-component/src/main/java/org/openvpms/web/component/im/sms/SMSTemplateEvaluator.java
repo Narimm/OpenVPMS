@@ -78,6 +78,18 @@ public class SMSTemplateEvaluator {
      */
     public String evaluate(Entity template, Object object, Context context) {
         MacroVariables variables = new MacroVariables(context, service, lookups);
+        return evaluate(template, object, variables);
+    }
+
+    /**
+     * Evaluates an SMS template.
+     *
+     * @param template  the template. An entity.documentTemplateSMS*
+     * @param object    the object to evaluate against. May be {@code null}
+     * @param variables the variables available to the expression
+     * @return the SMS text. May be {@code null} or exceed the maximum SMS text length
+     */
+    public String evaluate(Entity template, Object object, MacroVariables variables) {
         IMObjectBean templateBean = new IMObjectBean(template, service);
         String type = templateBean.getString("contentType");
         String content = templateBean.getString("content");

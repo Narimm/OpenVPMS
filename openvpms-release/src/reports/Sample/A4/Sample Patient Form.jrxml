@@ -30,7 +30,7 @@
     <import value="java.util.*"/>
     <import value="org.openvpms.archetype.function.party.PartyFunctions"/>
     <import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource"
                isForPrompting="false"/>
     <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">

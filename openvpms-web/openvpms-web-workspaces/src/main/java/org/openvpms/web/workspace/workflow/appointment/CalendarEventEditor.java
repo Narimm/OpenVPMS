@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -32,6 +32,8 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
@@ -127,7 +129,17 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
         }
 
         series = createSeries();
-        seriesEditor = (editSeries) ? createSeriesEditor(series) : null;
+        if (editSeries) {
+            seriesEditor = createSeriesEditor(series);
+            seriesEditor.addModifiableListener(new ModifiableListener() {
+                @Override
+                public void modified(Modifiable modifiable) {
+                    resetValid(false);
+                }
+            });
+        } else {
+            seriesEditor = null;
+        }
         updateRelativeDate();
         updateDuration();
     }
@@ -159,7 +171,7 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
      * @return the series
      */
     public CalendarEventSeries getSeries() {
-        return series;
+        return (seriesEditor != null) ? seriesEditor.getSeries() : series;
     }
 
     /**
@@ -192,6 +204,17 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
     @Override
     public boolean isModified() {
         return super.isModified() || (seriesEditor != null && seriesEditor.isModified());
+    }
+
+    /**
+     * Clears the modified status of the object.
+     */
+    @Override
+    public void clearModified() {
+        super.clearModified();
+        if (seriesEditor != null) {
+            seriesEditor.clearModified();
+        }
     }
 
     /**

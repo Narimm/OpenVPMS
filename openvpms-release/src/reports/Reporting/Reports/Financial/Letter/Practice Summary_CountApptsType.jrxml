@@ -6,7 +6,7 @@
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<queryString language="SQL">
@@ -93,14 +93,14 @@ group by et.entity_id order by et.name]]>
 Patients]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="278" y="30" width="70" height="13" uuid="717d5174-e107-41be-9867-d05c86ba66a9">
+				<reportElement x="278" y="18" width="60" height="25" uuid="717d5174-e107-41be-9867-d05c86ba66a9">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Center">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Appointments]]></text>
+				<text><![CDATA[Appoint- ments]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="0" width="237" height="18" uuid="74ed863c-335a-4be2-ac16-834e1c226fb0"/>
@@ -126,7 +126,7 @@ Customers]]></text>
 				<text><![CDATA[Appointment Type]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="348" y="19" width="46" height="24" uuid="5ac2c0cf-0918-4502-a5ba-0bde80adb86b">
+				<reportElement x="338" y="19" width="56" height="24" uuid="5ac2c0cf-0918-4502-a5ba-0bde80adb86b">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -137,9 +137,8 @@ Customers]]></text>
 Complete]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="399" y="19" width="46" height="24" uuid="138f484d-89d4-4324-8fb4-e362f4a1c518">
+				<reportElement x="394" y="19" width="54" height="24" uuid="138f484d-89d4-4324-8fb4-e362f4a1c518">
 					<property name="local_mesure_unitwidth" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
@@ -322,14 +321,14 @@ In Prog.]]></text>
 				</textElement>
 				<text><![CDATA[The percentages in the Customers and Patients columns show the ratio of the Type's count to the total number of customers and patients respectively.
 Those in the Appointment Count column show the ratio of the Type's count to the total number of appointments.
-The Status columns show the percentage of appointments with the indicated status. 'In Prog.' included In Progress, Checked In and Billed.]]></text>
+The Status columns show the percentage of appointments with the indicated status. 'In Prog.' includes In Progress, Checked In and Billed.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="32" y="38" width="258" height="18" uuid="7db8c494-5288-4638-babd-667828e0fd83">
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="13" isBold="true"/>
+					<font size="11" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>

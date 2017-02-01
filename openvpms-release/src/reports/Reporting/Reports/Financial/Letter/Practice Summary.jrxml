@@ -10,7 +10,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
@@ -502,7 +502,7 @@
 	<summary>
 		<band height="21" splitType="Stretch">
 			<staticText>
-				<reportElement x="164" y="0" width="258" height="19" uuid="957bc59f-f2dd-4c89-9172-bb59774f4c0c">
+				<reportElement x="116" y="0" width="321" height="19" uuid="957bc59f-f2dd-4c89-9172-bb59774f4c0c">
 					<printWhenExpression><![CDATA[!($P{ShowDebtors} ||$P{ShowProduct} ||$P{ShowVisits} ||$P{ShowAppointments} ||$P{ShowPayment} ||$P{ShowIncome})]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">

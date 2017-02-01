@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.1.1.final using JasperReports Library version 6.1.1  -->
-<!-- 2015-11-06T07:55:45 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T10:07:12 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Historical Debtors" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="dc11c4df-40ff-490d-8112-b6f926ac1e32">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -12,7 +12,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="location" class="java.lang.String">
 		<parameterDescription><![CDATA[Customer Location]]></parameterDescription>
 	</parameter>
@@ -768,7 +768,7 @@ ORDER BY custLocn , acType , name;]]>
 				<textFieldExpression><![CDATA[$P{TotalsOnly}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="10" y="73" width="60" height="17" uuid="1953494d-5bc5-47a2-9ac3-37e32f6d9cbe"/>
+				<reportElement key="staticText-9" x="2" y="73" width="68" height="17" uuid="1953494d-5bc5-47a2-9ac3-37e32f6d9cbe"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -781,7 +781,7 @@ ORDER BY custLocn , acType , name;]]>
 				<text><![CDATA[Totals Only: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="215" y="73" width="108" height="17" uuid="c09da5e6-eb68-4f0d-908c-5b664dbf2844"/>
+				<reportElement key="staticText-9" x="209" y="73" width="118" height="17" uuid="c09da5e6-eb68-4f0d-908c-5b664dbf2844"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -794,7 +794,7 @@ ORDER BY custLocn , acType , name;]]>
 				<text><![CDATA[Show credit balances: ]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="324" y="73" width="40" height="17" uuid="b6e44fa8-3768-46a2-b2ca-04e3a4382639">
+				<reportElement x="327" y="73" width="40" height="17" uuid="b6e44fa8-3768-46a2-b2ca-04e3a4382639">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="local_mesure_unitwidth" value="pixel"/>
@@ -806,7 +806,7 @@ ORDER BY custLocn , acType , name;]]>
 				<textFieldExpression><![CDATA[$P{ShowCredits}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="371" y="73" width="106" height="17" uuid="676b5ace-92c8-4145-876e-ad4b8fe412ab"/>
+				<reportElement key="staticText-9" x="371" y="73" width="115" height="17" uuid="676b5ace-92c8-4145-876e-ad4b8fe412ab"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -819,7 +819,7 @@ ORDER BY custLocn , acType , name;]]>
 				<text><![CDATA[Include inactive cust.: ]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="478" y="73" width="40" height="17" uuid="3a54f402-b651-442c-a163-9b9bc5c59d1b">
+				<reportElement x="487" y="73" width="40" height="17" uuid="3a54f402-b651-442c-a163-9b9bc5c59d1b">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -1212,12 +1212,11 @@ ORDER BY custLocn , acType , name;]]>
 		</band>
 	</detail>
 	<summary>
-		<band height="310" splitType="Stretch">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+		<band height="340" splitType="Stretch">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<printWhenExpression><![CDATA[$P{Explain}||(new Boolean($V{REPORT_COUNT}.intValue()==0))]]></printWhenExpression>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="0" y="22" width="534" height="288" isRemoveLineWhenBlank="true" uuid="bb40befe-8b8c-469b-9896-336b41d1f483">
+				<reportElement isPrintRepeatedValues="false" x="0" y="22" width="534" height="318" isRemoveLineWhenBlank="true" uuid="bb40befe-8b8c-469b-9896-336b41d1f483">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
 				<textElement>

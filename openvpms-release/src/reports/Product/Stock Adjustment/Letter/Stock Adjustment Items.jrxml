@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Stock Adjustment Items" pageWidth="612" pageHeight="792" columnWidth="612" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="9c44f998-f1ff-40e8-8ed6-7961be918ae5">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Stock Adjustment Items" pageWidth="612" pageHeight="792" columnWidth="612" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4dc8a59d-d4bb-4bdd-ae06-cedf94e5f457">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -9,7 +9,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<field name="target.product.entity" class="java.lang.Object"/>
 	<field name="target.quantity" class="java.math.BigDecimal"/>
 	<field name="target.product.entity.name" class="java.lang.String"/>
@@ -35,13 +35,13 @@
 	<columnHeader>
 		<band height="29" splitType="Stretch">
 			<line>
-				<reportElement key="line-1" x="45" y="1" width="485" height="1" uuid="1841c482-81b1-4122-b6a9-677d9b879519"/>
+				<reportElement key="line-1" x="45" y="1" width="485" height="1" uuid="4d3d9a58-6a0b-4ad7-94e9-bff1d3b181a9"/>
 			</line>
 			<line>
-				<reportElement key="line-2" x="46" y="21" width="484" height="1" uuid="2eb2ac91-e89f-41ab-9f16-6b2ebe2bb8c1"/>
+				<reportElement key="line-2" x="46" y="21" width="484" height="1" uuid="f18cd99d-46ab-4032-9ea3-a0259764937a"/>
 			</line>
 			<staticText>
-				<reportElement key="staticText-7" x="62" y="1" width="128" height="19" uuid="8fbda195-fa3f-45eb-a5c5-f06b5a0d17dc"/>
+				<reportElement key="staticText-7" x="62" y="1" width="128" height="19" uuid="099472ae-dadb-4dc8-92f9-6bb6624bfa31"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -54,7 +54,7 @@
 				<text><![CDATA[Product]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="430" y="1" width="69" height="19" uuid="98dd08b6-ed76-4173-8499-a7732f22fb2e"/>
+				<reportElement key="staticText-9" x="430" y="1" width="69" height="19" uuid="983db4af-28cd-4e3f-9b2d-49e55e8c2dbc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -71,7 +71,7 @@
 	<detail>
 		<band height="20" splitType="Stretch">
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="430" y="1" width="69" height="18" uuid="1744f068-daba-4af0-af33-1024cfd73b9a"/>
+				<reportElement key="textField-3" x="430" y="1" width="69" height="18" uuid="4dab629c-7df0-4572-ae39-2a4f43323592"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -84,7 +84,7 @@
 				<textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
-				<reportElement key="textField-4" x="62" y="0" width="306" height="18" uuid="2b44c354-6016-450e-b307-2f0fc414d8bf"/>
+				<reportElement key="textField-4" x="62" y="0" width="306" height="18" uuid="f0992a12-73ed-450e-aa71-85770bcbb3ce"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -101,10 +101,10 @@
 	<columnFooter>
 		<band height="29" splitType="Stretch">
 			<line>
-				<reportElement key="line-3" x="46" y="1" width="484" height="1" uuid="870edb02-79d0-41bb-82d7-d63e72504803"/>
+				<reportElement key="line-3" x="46" y="1" width="484" height="1" uuid="858fc79d-5fab-44af-84f8-2839cf3d6cab"/>
 			</line>
 			<staticText>
-				<reportElement key="staticText-11" x="302" y="3" width="121" height="17" uuid="5238e32d-f42d-4cf2-9fd1-7dc3fe4446e3"/>
+				<reportElement key="staticText-11" x="302" y="3" width="121" height="17" uuid="f05764aa-2e0b-42d0-836f-a79185b43978"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -117,17 +117,17 @@
 				<text><![CDATA[Total quantity of items]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="428" y="3" width="69" height="17" uuid="fd042e3a-63be-4f16-9b40-db69deda7dde"/>
+				<reportElement x="428" y="3" width="69" height="17" uuid="89eee239-56dc-4eb7-9400-46ef8bf765c1"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$V{SUM_target.quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="158" y="3" width="55" height="17" uuid="b2738204-4873-4f07-b4bf-d227bae557bf"/>
+				<reportElement x="161" y="3" width="55" height="17" uuid="7d94dc2f-b8d9-412e-9dec-bcc1e7413201"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$V{COUNT_items}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-11" x="45" y="3" width="110" height="17" uuid="e268d024-35b2-4481-84af-f1e0108513b6"/>
+				<reportElement key="staticText-11" x="45" y="3" width="110" height="17" uuid="88cb4359-bf68-4131-a841-83b9a2a91691"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

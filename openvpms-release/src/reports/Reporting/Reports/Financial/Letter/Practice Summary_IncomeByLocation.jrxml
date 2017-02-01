@@ -6,7 +6,7 @@
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<parameter name="ShowTax" class="java.lang.Boolean">
@@ -228,7 +228,7 @@ group by location order by location;]]>
 				<text><![CDATA[Credits]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="0" width="494" height="18" uuid="62ec9458-2756-4c5e-8dba-09b0b22f19f0"/>
+				<reportElement x="0" y="0" width="555" height="18" uuid="62ec9458-2756-4c5e-8dba-09b0b22f19f0"/>
 				<textElement>
 					<font size="11" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -569,7 +569,7 @@ group by location order by location;]]>
 		</band>
 	</detail>
 	<summary>
-		<band height="252" splitType="Prevent">
+		<band height="277" splitType="Prevent">
 			<textField isStretchWithOverflow="true" pattern="¤#,##0">
 				<reportElement x="172" y="19" width="77" height="13" uuid="7ca3b191-212b-4eed-87bb-6b25632f20a0"/>
 				<textElement textAlignment="Right">
@@ -754,7 +754,7 @@ group by location order by location;]]>
 				<textFieldExpression><![CDATA[$V{SumCounterAmount}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="185" width="550" height="58" uuid="0585ebde-93fd-4f74-963b-6933cfee4489"/>
+				<reportElement x="0" y="185" width="550" height="91" uuid="0585ebde-93fd-4f74-963b-6933cfee4489"/>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
@@ -776,7 +776,7 @@ In the Overall Amounts line they show the ratio of the column's transaction type
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Active Customers at start   ]]></text>
+				<text><![CDATA[Active Cust's at start   ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="2" y="152" width="133" height="14" uuid="3bb0c429-8618-496f-bccb-f51bc84f9045"/>
@@ -790,7 +790,7 @@ In the Overall Amounts line they show the ratio of the column's transaction type
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Active Customers at end   ]]></text>
+				<text><![CDATA[Active Cust's at end   ]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="135" y="139" width="37" height="13" uuid="60901aa1-d74d-430c-b9a9-859b76f576cc"/>
@@ -825,13 +825,13 @@ In the Overall Amounts line they show the ratio of the column's transaction type
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="13" isBold="true"/>
+					<font size="11" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<line>
-				<reportElement positionType="Float" x="0" y="247" width="550" height="1" uuid="e9a92751-36ba-457f-96a0-6baaffddc645"/>
+				<reportElement positionType="Float" x="0" y="276" width="550" height="1" uuid="e9a92751-36ba-457f-96a0-6baaffddc645"/>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -24,7 +24,6 @@ import com.sun.star.container.XNameAccess;
 import com.sun.star.frame.XComponentLoader;
 import com.sun.star.frame.XModel;
 import com.sun.star.frame.XStorable;
-import com.sun.star.io.IOException;
 import com.sun.star.io.XInputStream;
 import com.sun.star.lang.XComponent;
 import com.sun.star.lang.XServiceInfo;
@@ -115,18 +114,14 @@ public class OpenOfficeDocument {
     public OpenOfficeDocument(Document document, OOConnection connection, DocumentHandlers handlers) {
         XComponentLoader loader = connection.getComponentLoader();
 
-        InputStream input;
         byte[] content;
         String name = document.getName();
-        try {
-            DocumentHandler handler = handlers.get(document);
-            input = handler.getContent(document);
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
+        DocumentHandler handler = handlers.get(document);
+        try (InputStream input = handler.getContent(document);
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             IOUtils.copy(input, output);
-            IOUtils.closeQuietly(input);
             content = output.toByteArray();
-            IOUtils.closeQuietly(output);
-        } catch (DocumentException | java.io.IOException exception) {
+        } catch (Exception exception) {
             throw new OpenOfficeException(exception, FailedToCreateDoc, name);
         }
         XInputStream xstream = new ByteArrayToXInputStreamAdapter(content);
@@ -152,7 +147,7 @@ public class OpenOfficeDocument {
         try {
             component = loader.loadComponentFromURL("private:stream", "_blank",
                                                     0, properties);
-        } catch (Throwable exception) {
+        } catch (Exception exception) {
             throw new OpenOfficeException(exception, FailedToCreateDoc, name);
         }
         if (component == null) {
@@ -333,9 +328,8 @@ public class OpenOfficeDocument {
         try {
             storable.storeToURL("private:stream", properties);
             stream.closeOutput();
-        } catch (IOException exception) {
-            throw new OpenOfficeException(exception, FailedToExportDoc,
-                                          exception.getMessage());
+        } catch (Exception exception) {
+            throw new OpenOfficeException(exception, FailedToExportDoc, exception.getMessage());
         }
         return stream.getBuffer();
     }
@@ -382,7 +376,7 @@ public class OpenOfficeDocument {
             XModel model = UnoRuntime.queryInterface(XModel.class, document);
             XCloseable closeable = UnoRuntime.queryInterface(XCloseable.class, model);
             closeable.close(false);
-        } catch (Throwable exception) {
+        } catch (Exception exception) {
             log.error("Failed to close document", exception);
         }
     }

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map.invoice;
 
@@ -32,10 +30,9 @@ import java.util.List;
 
 
 /**
- * Wrapper for the UBL <tt>AllowanceChargeType</tt>.
+ * Wrapper for the UBL {@code AllowanceChargeType}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UBLAllowanceCharge extends UBLFinancialType {
 
@@ -51,7 +48,7 @@ public class UBLAllowanceCharge extends UBLFinancialType {
 
 
     /**
-     * Constructs an <tt>UBLAllowanceCharge</tt>.
+     * Constructs an {@link UBLAllowanceCharge}.
      *
      * @param allowanceCharge the allowance/charge
      * @param invoice         the parent invoice
@@ -77,7 +74,7 @@ public class UBLAllowanceCharge extends UBLFinancialType {
     /**
      * Returns the type identifier.
      *
-     * @return the type identifier, or <tt>null</tt> if it is not set
+     * @return the type identifier, or {@code null} if it is not set
      */
     public String getID() {
         return getId(allowanceCharge.getID());
@@ -88,10 +85,10 @@ public class UBLAllowanceCharge extends UBLFinancialType {
      * <p/>
      * This corresponds to <em>AllowanceCharge/ChargeIndicator</em>.
      *
-     * @return <tt>true</tt> if it is a charge, <tt>false</tt> if it is an allowance
+     * @return {@code true} if it is a charge, {@code false} if it is an allowance
      */
     public boolean isCharge() {
-        return allowanceCharge.getChargeIndicator().isValue();
+        return getRequired(allowanceCharge.getChargeIndicator(), "ChargeIndicator").isValue();
     }
 
     /**
@@ -111,7 +108,7 @@ public class UBLAllowanceCharge extends UBLFinancialType {
      * <p/>
      * This corresponds to <em>AllowanceCharge/TaxTotal/TaxAmount</em>
      *
-     * @return the total tax, or <tt>BigDecimal.ZERO</tt> if it wasn't specified
+     * @return the total tax, or {@code BigDecimal.ZERO} if it wasn't specified
      * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     public BigDecimal getTaxAmount() {
@@ -131,16 +128,16 @@ public class UBLAllowanceCharge extends UBLFinancialType {
      */
     public String getAllowanceChargeReason() {
         AllowanceChargeReasonType reason = getRequired(allowanceCharge.getAllowanceChargeReason(),
-                                                       "AllowanceCharge/AllowanceChargeReason");
+                                                       "AllowanceChargeReason");
         String result = StringUtils.trimToNull(reason.getValue());
-        checkRequired(result, "AllowanceCharge/AllowanceChargeReason");
+        checkRequired(result, "AllowanceChargeReason");
         return result;
     }
 
     /**
      * Returns the tax category.
      *
-     * @return the tax category, or <tt>null</tt> if none is provided
+     * @return the tax category, or {@code null} if none is provided
      * @throws ESCIAdapterException if the tax category is incorrectly specified
      */
     public UBLTaxCategory getTaxCategory() {
@@ -152,6 +149,10 @@ public class UBLAllowanceCharge extends UBLFinancialType {
                         "AllowanceCharge/TaxCategory", "Invoice", invoice.getID(), "1", categories.size()));
             }
             result = new UBLTaxCategory(categories.get(0), this, getCurrency(), getArchetypeService());
+        } else if (allowanceCharge.getTaxTotal() != null) {
+            // TaxCategory is required when TaxTotal specified
+            throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
+                    "AllowanceCharge/TaxCategory", "Invoice", invoice.getID(), "1", categories.size()));
         }
         return result;
     }

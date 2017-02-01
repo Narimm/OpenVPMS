@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -19,12 +19,9 @@ package org.openvpms.web.workspace.patient.mr;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.workspace.DocumentActActions;
 import org.openvpms.web.component.workspace.DocumentCRUDWindow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -64,24 +61,6 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
                             "patient.record.create.investigation.message", "newInvestigation");
         } else {
             super.onCreated(object);
-        }
-    }
-
-    /**
-     * Creates a new {@link IMObjectViewer} for an object.
-     *
-     * @param object the object to view
-     * @return a new viewer
-     */
-    protected IMObjectViewer createViewer(IMObject object) {
-        if (TypeHelper.isA(object, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-            // disable printing from the viewer, as it is enabled by the CRUD window
-            PatientInvestigationActLayoutStrategy print = new PatientInvestigationActLayoutStrategy();
-            print.setEnableButton(false);
-            LayoutContext context = createViewLayoutContext();
-            return new IMObjectViewer(object, null, print, context);
-        } else {
-            return super.createViewer(object);
         }
     }
 

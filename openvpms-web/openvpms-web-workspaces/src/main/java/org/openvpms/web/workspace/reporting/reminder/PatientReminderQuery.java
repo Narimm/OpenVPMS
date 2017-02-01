@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.Constraints;
@@ -62,6 +63,11 @@ import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
 
     /**
+     * The practice.
+     */
+    private final Party practice;
+
+    /**
      * Reminder type filter.
      */
     private SelectField reminderType;
@@ -80,10 +86,12 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
     /**
      * Constructs a {@link PatientReminderQuery}.
      *
+     * @param practice the practice
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public PatientReminderQuery() {
+    public PatientReminderQuery(Party practice) {
         super(new String[]{ReminderArchetypes.REMINDER}, Act.class);
+        this.practice = practice;
         QueryFactory.initialise(this);
     }
 
@@ -139,7 +147,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
         calendarTo.add(Calendar.DAY_OF_MONTH, -1);
         dateRange.setTo(calendarTo.getTime());
 
-        locationSelector = new LocationSelectField();
+        locationSelector = new LocationSelectField(practice);
         Row locationRow = RowFactory.create(CELL_SPACING, LabelFactory.create("reporting.customer.location"),
                                             locationSelector);
         container.add(locationRow);
