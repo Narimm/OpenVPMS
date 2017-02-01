@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -107,7 +107,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      */
     @Override
     protected void doLayout(Component container, FocusGroup group) {
-        query = new CustomerBalanceQuery();
+        query = new CustomerBalanceQuery(getContext().getPractice());
         query.getComponent();
         query.setDate(getYesterday()); // default statement date to yesterday
         browser = new CustomerBalanceBrowser(query, new DefaultLayoutContext(getContext(), getHelpContext()));

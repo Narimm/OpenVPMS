@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -59,12 +58,13 @@ public abstract class AbstractSchedules implements Schedules {
      * @param location      the location. May be {@code null}
      * @param viewShortName the schedule view archetype short name
      * @param prefs         the user preferences
+     * @param rules         the location rules
      */
-    public AbstractSchedules(Party location, String viewShortName, Preferences prefs) {
+    public AbstractSchedules(Party location, String viewShortName, Preferences prefs, LocationRules rules) {
         this.location = location;
         this.viewShortName = viewShortName;
         this.prefs = prefs;
-        rules = ServiceHelper.getBean(LocationRules.class);
+        this.rules = rules;
     }
 
     /**

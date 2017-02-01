@@ -11,7 +11,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="Species" class="java.lang.String">
 		<parameterDescription><![CDATA[Species selection]]></parameterDescription>
 	</parameter>
@@ -196,7 +196,7 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="8"/>
+						<font  size="8"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>

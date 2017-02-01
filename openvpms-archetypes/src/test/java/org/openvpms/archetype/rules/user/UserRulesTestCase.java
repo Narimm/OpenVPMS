@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.user;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -26,6 +27,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.List;
 
@@ -134,6 +136,30 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
         assertEquals(2, locations.size());
         assertTrue(locations.contains(location1));
         assertTrue(locations.contains(location2));
+    }
+
+    /**
+     * Tests the {@link UserRules#getLocations(User, Party)} method.
+     */
+    @Test
+    public void testGetLocationsByUserAndPractice() {
+        User user = TestHelper.createUser();
+        Party practice = (Party) create(PracticeArchetypes.PRACTICE);
+        IMObjectBean practiceBean = new IMObjectBean(practice);
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+        Party location3 = TestHelper.createLocation();
+        practiceBean.addNodeTarget("locations", location1);
+        practiceBean.addNodeTarget("locations", location2);
+
+        EntityBean bean = new EntityBean(user);
+        bean.addNodeTarget("locations", location1);
+        bean.addNodeTarget("locations", location3);  // not linked to the practice
+        List<Party> locations = rules.getLocations(user, practice);
+        assertEquals(1, locations.size());
+        assertTrue(locations.contains(location1));
+        assertFalse(locations.contains(location2));
+        assertFalse(locations.contains(location3));
     }
 
     /**

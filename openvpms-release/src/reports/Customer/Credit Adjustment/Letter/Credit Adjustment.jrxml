@@ -18,7 +18,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
@@ -40,7 +40,7 @@
 	<field name="[party:getBillingAddress(.)]" class="java.lang.String"/>
 	<field name="[party:getAccountBalance(.)]" class="java.math.BigDecimal"/>
 	<field name="[party:getPartyFullName(.)]" class="java.lang.String"/>
-	<field name="status" class="java.lang.String"/>
+	<field name="status.code" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.lastPageFooter" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.generalMsg" class="java.lang.String"/>
@@ -51,7 +51,7 @@
 		<variableExpression><![CDATA[(($F{customer.entity.title} == null) ? "": $F{customer.entity.title}) + " " + (($F{customer.entity.firstName} == null) ? "": $F{customer.entity.firstName}) + " " + $F{customer.entity.lastName}]]></variableExpression>
 	</variable>
 	<variable name="isFinalised" class="java.lang.Boolean">
-		<variableExpression><![CDATA[$F{status}=="POSTED"]]></variableExpression>
+		<variableExpression><![CDATA["POSTED".equals($F{status.code})]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<background>
@@ -62,7 +62,7 @@
 					<printWhenExpression><![CDATA[$F{hide}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Right">
-					<font fontName="SansSerif" size="94" isBold="true"/>
+					<font size="94" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cancelled]]></text>
 			</staticText>
@@ -239,7 +239,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
 					<font size="20" isBold="true" isItalic="false" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{status}.startsWith("Final")?"":"DRAFT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{isFinalised} ? "":"DRAFT"]]></textFieldExpression>
 			</textField>
 			<subreport>
 				<reportElement positionType="Float" x="0" y="24" width="381" height="103" uuid="7ba782cf-e124-4a4a-a2fe-9a904628226a">
@@ -300,14 +300,14 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement positionType="Float" x="508" y="24" width="46" height="12" uuid="640d120e-5007-4b3a-9dce-3ba8f1a3e3cc"/>
 				<textElement textAlignment="Left">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
@@ -393,7 +393,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="11" isBold="true"/>
+					<font size="11" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[ADJUSTMENT]]></text>
@@ -407,7 +407,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="11" isBold="false"/>
+					<font size="11" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>

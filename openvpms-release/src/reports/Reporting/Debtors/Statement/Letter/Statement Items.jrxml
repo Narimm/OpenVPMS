@@ -19,7 +19,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -116,7 +116,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle">
-						<font fontName="SansSerif" size="7" isBold="false"/>
+						<font size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{target.patient.entity.name}==null)?"-patient not specified-":$F{target.patient.entity.name}+"  (ID:"+$F{target.patient.entity.id}.toString()+")"]]></textFieldExpression>
 				</textField>
@@ -138,7 +138,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font fontName="SansSerif" size="7" isBold="false"/>
+						<font size="7" isBold="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<text><![CDATA[Patient Total]]></text>
@@ -154,7 +154,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="7" isBold="false"/>
+						<font size="7" isBold="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{patientTotalCredit}]]></textFieldExpression>
@@ -209,14 +209,14 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Middle">
-						<font fontName="SansSerif" size="7"/>
+						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{target.template.entity.printedName} == null) ? $F{target.template.entity.name}: $F{target.template.entity.printedName}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM/dd" isBlankWhenNull="false">
 					<reportElement key="textField-7" isPrintRepeatedValues="false" x="21" y="0" width="32" height="10" uuid="f9d8a2f9-ca73-4401-8c9a-4b9033609c45"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="7"/>
+						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
 				</textField>
@@ -229,7 +229,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<printWhenExpression><![CDATA[!$V{templateTotalCredit}.equals(BigDecimal.ZERO)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="7"/>
+						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{templateTotalCredit}]]></textFieldExpression>
 				</textField>
@@ -238,7 +238,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<printWhenExpression><![CDATA[$P{incTax}?Boolean.FALSE:$V{templateTax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Center">
-						<font fontName="SansSerif" size="7"/>
+						<font size="7"/>
 					</textElement>
 					<text><![CDATA[*]]></text>
 				</staticText>
@@ -253,7 +253,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="SansSerif" size="7"/>
+						<font size="7"/>
 					</textElement>
 					<text><![CDATA[1]]></text>
 				</staticText>
@@ -303,7 +303,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
 			</textField>
@@ -318,7 +318,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{target.product.entity.printedName} == null) ? $F{target.product.entity.name}: $F{target.product.entity.printedName}]]></textFieldExpression>
 			</textField>
@@ -328,7 +328,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<printWhenExpression><![CDATA[$P{incTax}?Boolean.FALSE:$F{target.tax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 				</textElement>
 				<text><![CDATA[*]]></text>
 			</staticText>

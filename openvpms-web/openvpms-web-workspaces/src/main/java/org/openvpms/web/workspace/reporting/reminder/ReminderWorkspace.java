@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -89,7 +89,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      * @param group     the focus group
      */
     protected void doLayout(Component container, FocusGroup group) {
-        query = new PatientReminderQuery();
+        query = new PatientReminderQuery(getContext().getPractice());
 
         // create a layout context, with hyperlinks enabled
         LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());

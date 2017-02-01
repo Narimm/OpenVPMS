@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.1.1.final using JasperReports Library version 6.1.1  -->
-<!-- 2015-11-04T03:50:19 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T05:08:08 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Key Performance Indicators" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="e1dde246-07e1-4c02-9c46-879b11400d3f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,6 +19,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -839,14 +840,16 @@ FROM
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd/MM/yyyy">
-				<reportElement x="69" y="25" width="65" height="18" uuid="ed45abfc-446d-43e3-bb06-4c6e3dfb0751"/>
+				<reportElement x="75" y="25" width="65" height="18" uuid="ed45abfc-446d-43e3-bb06-4c6e3dfb0751"/>
 				<textElement verticalAlignment="Middle">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{DateFrom})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="25" width="69" height="18" uuid="db98d770-9c9f-42b5-a6e5-78d15c404d47"/>
+				<reportElement key="staticText-9" x="0" y="25" width="75" height="18" uuid="db98d770-9c9f-42b5-a6e5-78d15c404d47">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -953,7 +956,7 @@ FROM
 				<textFieldExpression><![CDATA[($P{location}==null)?"%":$P{location}+"%"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="43" width="69" height="18" uuid="45ccbf40-b8e2-4e1e-bdbf-bd743ef39937"/>
+				<reportElement key="staticText-9" x="0" y="43" width="75" height="18" uuid="45ccbf40-b8e2-4e1e-bdbf-bd743ef39937"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -966,7 +969,7 @@ FROM
 				<text><![CDATA[Prior Periods:  ]]></text>
 			</staticText>
 			<textField pattern="">
-				<reportElement x="70" y="43" width="19" height="18" uuid="87a65953-fb3f-47a5-942c-7ac34ecdb31a">
+				<reportElement x="76" y="43" width="19" height="18" uuid="87a65953-fb3f-47a5-942c-7ac34ecdb31a">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -1293,7 +1296,7 @@ FROM
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Pat. % change per annum: ]]></text>
+				<text><![CDATA[Pat.% change per annum: ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="0" y="276" width="134" height="15" uuid="fd4c123e-a04f-48ad-a2da-42fd672789a9">
@@ -4412,7 +4415,7 @@ FROM
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Pat. % change per annum: ]]></text>
+				<text><![CDATA[Pat.% change per annum: ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="0" y="210" width="134" height="15" uuid="5782321d-1e04-4a96-9a3b-1505ae50f332">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-23T04:56:48 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T09:42:34 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Export Customer Phone Numbers for Sales" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="ca8d8887-bdd7-456c-a56e-f8d80f29fe77">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,10 +8,11 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="Species" class="java.lang.String">
 		<parameterDescription><![CDATA[Species selection]]></parameterDescription>
 	</parameter>
@@ -51,16 +52,11 @@
   c.description as description,
   cp.name as phoneName,
   cpd1.value as phone, cpd2.value as preferred, cpd3.value as sms,
-  max(pa.activity_start_time) as lastsale,
   if((cpd2.value = 'true'), if((cpd3.value = 'true'), 30, 10), if((cpd3.value = 'true'), 20, 0)) as rank
-from
-  acts pa
-  join act_relationships ar on pa.act_id = ar.source_id
-  join acts ca on ar.target_id = ca.act_id and ca.arch_short_name like 'act.customerAccount%Item'
-  join participations pap on ca.act_id = pap.act_id and pap.arch_short_name = 'participation.patient'
-  join entities p on p.entity_id = pap.entity_id
-  join participations cpa on pa.act_id = cpa.act_id and cpa.arch_short_name = 'participation.customer'
-  join entities c on c.entity_id = cpa.entity_id
+from entities p
+  join entity_relationships r on r.target_id=p.entity_id and r.arch_short_name = 'entityRelationship.patientOwner'
+    and isnull(r.active_end_time)
+  join entities c on r.source_id = c.entity_id
   left join entity_details c1 on c1.entity_id = c.entity_id and c1.name = 'lastName'
   left join entity_details c2 on c2.entity_id = c.entity_id and c2.name = 'firstName'
   left join entity_details c3 on c3.entity_id = c.entity_id and c3.name = 'title'
@@ -86,7 +82,7 @@ from
   left join entity_links el on el.source_id = c.entity_id and el.arch_short_name = 'entityLink.customerLocation'
   left join entities loc on loc.entity_id = el.target_id
 where
-  pa.arch_short_name like 'act.customerAccountCharges%' and
+  c.arch_short_name = 'party.customerPerson' and
   p.active = 1 and
   c.active = 1 and
   ifnull(l.name,"-") like concat(ifnull($P{Classification},""),"%") and
@@ -102,14 +98,11 @@ order by c.name, c.entity_id,rank desc, cp.contact_id desc]]>
 	<field name="lastname" class="java.lang.String"/>
 	<field name="firstname" class="java.lang.String"/>
 	<field name="title" class="java.lang.String"/>
-	<field name="description" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="description" class="java.lang.String"/>
 	<field name="phoneName" class="java.lang.String"/>
 	<field name="phone" class="java.lang.String"/>
 	<field name="preferred" class="java.lang.String"/>
 	<field name="sms" class="java.lang.String"/>
-	<field name="lastsale" class="java.sql.Timestamp"/>
 	<field name="rank" class="java.lang.Integer"/>
 	<group name="id-group" minHeightToStartNewPage="18">
 		<groupExpression><![CDATA[$F{id}]]></groupExpression>
@@ -606,7 +599,7 @@ Note that prior to using in mail-merge or other programs, you must remove the in
 					<textElement>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<text><![CDATA[SMS]]></text>
+					<text><![CDATA[SMS Only]]></text>
 				</staticText>
 				<textField pattern="dd/MM/yyyy h.mm a">
 					<reportElement x="560" y="42" width="100" height="14" uuid="09e86fc8-a93e-4d32-ab6f-0fa45dd3eb39">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-08-01T03:48:45 -->
+<!-- 2016-12-14T13:44:21 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_CountApptClinician" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="240eeea9-e4f8-4f35-b5b2-e9ae876df35f">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -8,7 +8,7 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<queryString language="SQL">
@@ -100,14 +100,14 @@ group by pv.entity_id order by ev.name]]>
 Patients]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="270" y="32" width="68" height="14" uuid="eb239128-a71c-46af-8662-ce8715b17706">
+				<reportElement x="270" y="20" width="59" height="26" uuid="eb239128-a71c-46af-8662-ce8715b17706">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Center">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Appointments]]></text>
+				<text><![CDATA[Appoint-ments]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="0" width="230" height="19" uuid="292ea664-a7a5-4c2c-a021-73c7a1a8e5ce"/>
@@ -133,7 +133,7 @@ Customers]]></text>
 				<text><![CDATA[Clinician]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="338" y="20" width="45" height="26" uuid="64b4c13a-fd38-4e5c-813a-627fcd59315d">
+				<reportElement x="329" y="20" width="54" height="26" uuid="64b4c13a-fd38-4e5c-813a-627fcd59315d">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -144,9 +144,9 @@ Customers]]></text>
 Complete]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="388" y="20" width="45" height="26" uuid="6575a971-0c6d-46fb-b36d-673bafc0966b">
+				<reportElement x="383" y="20" width="53" height="26" uuid="6575a971-0c6d-46fb-b36d-673bafc0966b">
 					<property name="local_mesure_unitwidth" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
@@ -284,7 +284,7 @@ In Prog.]]></text>
 		</band>
 	</detail>
 	<summary>
-		<band height="147">
+		<band height="153">
 			<textField>
 				<reportElement x="270" y="3" width="35" height="15" uuid="92e1d555-a7c0-4233-af54-3e637cbba80e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -323,13 +323,13 @@ In Prog.]]></text>
 				<textFieldExpression><![CDATA[$F{totalPatientCount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="60" width="535" height="80" uuid="cbda8622-f557-4318-bd86-ab258af1fff8"/>
+				<reportElement x="0" y="60" width="535" height="90" uuid="cbda8622-f557-4318-bd86-ab258af1fff8"/>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[The percentages in the Customers and Patients columns show the ratio of the clinician's count to the total number of customers and patients respectively.
 Those in the Appointment Count column show the ratio of the clinician's count to the total number of appointments.
-The Status columns show the percentage of appointments with the indicated status. 'In Prog.' included In Progress, Checked In and Billed.
+The Status columns show the percentage of appointments with the indicated status. 'In Prog.' includes In Progress, Checked In and Billed.
 Appointments with Types like 'block%' are omitted (so as not to count Block Out appointments).]]></text>
 			</staticText>
 			<staticText>
@@ -337,13 +337,15 @@ Appointments with Types like 'block%' are omitted (so as not to count Block Out 
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true"/>
+					<font size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<line>
-				<reportElement positionType="Float" x="-3" y="144" width="535" height="1" uuid="111b1a41-f406-4b76-bec3-16605cf996a3"/>
+				<reportElement positionType="Float" x="0" y="152" width="535" height="1" uuid="111b1a41-f406-4b76-bec3-16605cf996a3">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>

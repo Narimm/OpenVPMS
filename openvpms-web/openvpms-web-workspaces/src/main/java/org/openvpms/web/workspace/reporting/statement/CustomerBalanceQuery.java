@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -30,6 +30,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -74,6 +75,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
+
+    /**
+     * The practice.
+     */
+    private final Party practice;
 
     /**
      * The account type selector.
@@ -154,10 +160,12 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     /**
      * Constructs a {@link CustomerBalanceQuery}.
      *
+     * @param practice the practice
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public CustomerBalanceQuery() {
+    public CustomerBalanceQuery(Party practice) {
         super(new String[]{"party.customer*"}, ObjectSet.class);
+        this.practice = practice;
         balanceTypeItems = new String[]{
                 Messages.get("reporting.statements.balancetype.all"),
                 Messages.get("reporting.statements.balancetype.overdue"),
@@ -181,7 +189,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * are being queried.
      *
      * @return {@code true} if customers with both overdue and non-overdue
-     *         balances are being queried.
+     * balances are being queried.
      */
     public boolean queryAllBalances() {
         return balanceType.getSelectedIndex() == ALL_BALANCE_INDEX;
@@ -191,8 +199,8 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * Determines if customers with overdue balances are being queried.
      *
      * @return {@code true} if customers with overdue balances are being
-     *         queried, {@code false} if customers with outstanding balances are being
-     *         queried
+     * queried, {@code false} if customers with outstanding balances are being
+     * queried
      */
     public boolean queryOverduebalances() {
         return balanceType.getSelectedIndex() == OVERDUE_INDEX;
@@ -290,7 +298,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
         grid.add(customerToLabel);
         grid.add(customerTo);
         grid.add(LabelFactory.create("reporting.customer.location"));
-        locationSelector = new LocationSelectField();
+        locationSelector = new LocationSelectField(practice);
         grid.add(locationSelector);
 
         container.add(grid);

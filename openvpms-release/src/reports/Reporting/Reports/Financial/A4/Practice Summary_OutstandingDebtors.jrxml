@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-20T05:44:31 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T12:22:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_OutstandingDebtors" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="a2a6c86b-d4c1-416e-b9bd-d29e94f81067">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -13,7 +13,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<parameter name="ShowDetail" class="java.lang.Boolean">
@@ -557,9 +557,9 @@ order by acType,name;]]>
 		</band>
 	</detail>
 	<summary>
-		<band height="103" splitType="Stretch">
+		<band height="118" splitType="Stretch">
 			<line>
-				<reportElement positionType="Float" x="0" y="100" width="535" height="1" uuid="e420437c-f22d-482b-b3db-b621a8865b2d"/>
+				<reportElement positionType="Float" x="0" y="117" width="535" height="1" uuid="e420437c-f22d-482b-b3db-b621a8865b2d"/>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>
@@ -645,8 +645,8 @@ order by acType,name;]]>
 				<textFieldExpression><![CDATA[$V{tot60days}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="1" y="62" width="535" height="37" uuid="642eb0c0-3796-4b46-a5de-15cdcfa91a77"/>
-				<textElement>
+				<reportElement x="1" y="62" width="535" height="55" uuid="642eb0c0-3796-4b46-a5de-15cdcfa91a77"/>
+				<textElement verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[This shows the Outstanding Debtors position as at the To Date. Customers with credit balances are excluded.
@@ -667,7 +667,7 @@ If the 'Show Details' option has been selected then all customers with outstandi
 				<textFieldExpression><![CDATA[$V{totCount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="110" y="41" width="350" height="20" uuid="ad907ebe-c986-46e9-bb24-46a53efdb9b3">
+				<reportElement x="69" y="41" width="400" height="20" uuid="ad907ebe-c986-46e9-bb24-46a53efdb9b3">
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">

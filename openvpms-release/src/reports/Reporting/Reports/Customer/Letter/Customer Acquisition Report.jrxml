@@ -9,7 +9,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
@@ -180,7 +180,7 @@ where
 	<pageHeader>
 		<band height="93" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-1" x="127" y="0" width="296" height="23" uuid="dab3cf9e-5418-4359-acce-64fa0eb6224f"/>
+				<reportElement key="staticText-1" x="84" y="0" width="382" height="23" uuid="dab3cf9e-5418-4359-acce-64fa0eb6224f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -194,7 +194,7 @@ where
 				<text><![CDATA[Customer Acquisition Report]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="53" width="99" height="16" uuid="9faa5f1f-5345-4c2b-94f4-849b4fdb43b2"/>
+				<reportElement key="staticText-9" x="0" y="53" width="113" height="16" uuid="9faa5f1f-5345-4c2b-94f4-849b4fdb43b2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -207,7 +207,7 @@ where
 				<text><![CDATA[Account Type: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="411" y="34" width="82" height="17" uuid="41b28974-ac07-4cf1-b8c1-3bb5c010125e"/>
+				<reportElement key="textField-1" x="411" y="23" width="82" height="17" uuid="41b28974-ac07-4cf1-b8c1-3bb5c010125e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -220,7 +220,7 @@ where
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="false">
-				<reportElement key="textField-2" x="494" y="34" width="55" height="17" uuid="e4edf7e8-95f1-4bb3-bb4e-b8c122956e5e"/>
+				<reportElement key="textField-2" x="494" y="23" width="55" height="17" uuid="e4edf7e8-95f1-4bb3-bb4e-b8c122956e5e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -233,7 +233,7 @@ where
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="99" y="53" width="103" height="16" uuid="d358065f-80a9-42df-ad85-1a7914bbf1a9">
+				<reportElement key="textField" x="113" y="53" width="103" height="16" uuid="d358065f-80a9-42df-ad85-1a7914bbf1a9">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -251,13 +251,13 @@ where
 			<textField pattern="">
 				<reportElement x="447" y="0" width="103" height="10" uuid="d2511190-eb97-4a36-954a-e9bcb5505d66"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="7"/>
+					<font size="7"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="202" y="53" width="96" height="16" uuid="fec453ce-d3dc-4f43-86b4-0b3b7def242d"/>
+				<reportElement key="staticText-9" x="216" y="53" width="97" height="16" uuid="fec453ce-d3dc-4f43-86b4-0b3b7def242d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -270,7 +270,7 @@ where
 				<text><![CDATA[Practice Locn: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="298" y="53" width="103" height="16" uuid="20792b1c-1e19-40dc-a86f-628f3c61651c">
+				<reportElement key="textField" x="313" y="53" width="103" height="16" uuid="20792b1c-1e19-40dc-a86f-628f3c61651c">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -286,7 +286,7 @@ where
 				<textFieldExpression><![CDATA[($P{PracticeLocation}==null)?"%":$P{PracticeLocation}+"%"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="202" y="70" width="96" height="16" uuid="31bc15e8-c386-4e9c-90f7-72ca47b8d15f"/>
+				<reportElement key="staticText-9" x="216" y="70" width="97" height="16" uuid="31bc15e8-c386-4e9c-90f7-72ca47b8d15f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -299,7 +299,7 @@ where
 				<text><![CDATA[Inc.Inact.Patients: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="298" y="70" width="103" height="16" uuid="81e6c054-40de-4645-bc29-efd29230191d">
+				<reportElement key="textField" x="313" y="70" width="103" height="16" uuid="81e6c054-40de-4645-bc29-efd29230191d">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -315,7 +315,7 @@ where
 				<textFieldExpression><![CDATA[$P{inactivePatients}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="37" width="99" height="16" uuid="03abee1b-5545-41ce-996c-eb8711062986"/>
+				<reportElement key="staticText-9" x="0" y="37" width="113" height="16" uuid="03abee1b-5545-41ce-996c-eb8711062986"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -328,7 +328,7 @@ where
 				<text><![CDATA[From Date: ]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField" x="99" y="37" width="103" height="16" uuid="d82e9ea6-732b-426d-a2aa-488f4e99a868"/>
+				<reportElement key="textField" x="113" y="37" width="103" height="16" uuid="d82e9ea6-732b-426d-a2aa-488f4e99a868"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -341,7 +341,7 @@ where
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{startDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-18" x="202" y="37" width="96" height="16" uuid="585a2dcb-55e1-4aea-bf26-3c52773f0443"/>
+				<reportElement key="staticText-18" x="216" y="37" width="97" height="16" uuid="585a2dcb-55e1-4aea-bf26-3c52773f0443"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -354,7 +354,7 @@ where
 				<text><![CDATA[To Date: ]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="298" y="37" width="103" height="16" uuid="c0620484-4126-4838-9823-b4c71b0b08b2"/>
+				<reportElement key="textField-3" x="313" y="37" width="103" height="16" uuid="c0620484-4126-4838-9823-b4c71b0b08b2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -367,7 +367,7 @@ where
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="70" width="99" height="16" uuid="34ee32b3-4e8e-43c6-a243-d79602dc117e"/>
+				<reportElement key="staticText-9" x="0" y="70" width="113" height="16" uuid="34ee32b3-4e8e-43c6-a243-d79602dc117e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -380,7 +380,7 @@ where
 				<text><![CDATA[Inc.Inact.Customers: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="99" y="70" width="103" height="16" uuid="1e97747e-efd2-4435-ad6b-29ccfeabb459">
+				<reportElement key="textField" x="113" y="70" width="103" height="16" uuid="1e97747e-efd2-4435-ad6b-29ccfeabb459">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>

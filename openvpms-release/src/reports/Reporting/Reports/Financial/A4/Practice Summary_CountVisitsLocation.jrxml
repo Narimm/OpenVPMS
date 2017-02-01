@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-06-20T05:44:27 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T13:38:39 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_CountVisitsLocation" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="bb55dd52-4d73-4273-b097-d555ce83282f">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<queryString language="SQL">
@@ -116,7 +116,7 @@ group by location order by location]]>
 				<text><![CDATA[Visit Count]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="0" width="216" height="19" uuid="c5df7d46-5fd0-40d6-9280-8f658c4ec5cd"/>
+				<reportElement x="0" y="0" width="284" height="19" uuid="c5df7d46-5fd0-40d6-9280-8f658c4ec5cd"/>
 				<textElement>
 					<font size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -165,7 +165,7 @@ group by location order by location]]>
 		</band>
 	</detail>
 	<summary>
-		<band height="160">
+		<band height="172">
 			<textField>
 				<reportElement x="270" y="3" width="75" height="15" uuid="a50fbae2-3544-4396-b335-7148ecdb8560"/>
 				<textElement textAlignment="Right">
@@ -202,7 +202,7 @@ group by location order by location]]>
 				<textFieldExpression><![CDATA[$F{totalPatientCount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="82" width="535" height="77" uuid="3fde0f89-4281-41ab-9107-9b90986ef5e9"/>
+				<reportElement x="0" y="82" width="535" height="88" uuid="3fde0f89-4281-41ab-9107-9b90986ef5e9"/>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
@@ -265,7 +265,7 @@ A patient is taken to be active at a given date if they have a Date Created prio
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true"/>
+					<font size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
@@ -278,7 +278,7 @@ A patient is taken to be active at a given date if they have a Date Created prio
 				<textFieldExpression><![CDATA[($F{activePatientsEnd}.doubleValue()-$F{activePatientsStart}.doubleValue())/$F{activePatientsStart}.doubleValue()]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement positionType="Float" x="0" y="159" width="535" height="1" uuid="6afc9d8b-c34f-4c9d-904d-97e47272c977"/>
+				<reportElement positionType="Float" x="0" y="171" width="535" height="1" uuid="6afc9d8b-c34f-4c9d-904d-97e47272c977"/>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>

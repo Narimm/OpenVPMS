@@ -18,7 +18,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontSize="7"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
@@ -34,7 +34,7 @@
 	<field name="[party:getBillingAddress(openvpms:get(.,&apos;supplier.entity&apos;))]" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="status" class="java.lang.String"/>
+	<field name="status.code" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.lastPageFooter" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.supplierMsg" class="java.lang.String"/>
@@ -47,7 +47,7 @@
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<variable name="isFinalised" class="java.lang.Boolean" calculation="First">
-		<variableExpression><![CDATA[$F{status}.startsWith("Final")]]></variableExpression>
+		<variableExpression><![CDATA["POSTED".equals($F{status.code})]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<background>
@@ -203,7 +203,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
 					<font size="15" isBold="true" isItalic="false" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{status}.startsWith("Final")?"":"DRAFT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{isFinalised} ? "":"DRAFT"]]></textFieldExpression>
 			</textField>
 			<subreport>
 				<reportElement positionType="Float" x="0" y="18" width="262" height="77" uuid="15b5a54d-bec7-41fb-a539-a3d0d18b516d">
@@ -261,7 +261,7 @@
 			<textField evaluationTime="Report">
 				<reportElement positionType="Float" x="350" y="18" width="31" height="9" uuid="bcca621a-0dfe-4713-acd6-6679ade72444"/>
 				<textElement textAlignment="Left">
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
@@ -270,7 +270,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="5"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>

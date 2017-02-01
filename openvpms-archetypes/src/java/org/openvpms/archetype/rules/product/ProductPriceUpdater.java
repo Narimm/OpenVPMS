@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -260,7 +260,7 @@ public class ProductPriceUpdater {
         for (Map.Entry<IMObjectReference, ProductSupplier> entry : newMap.entrySet()) {
             ProductSupplier supplier = entry.getValue();
             ProductSupplier old = oldMap.get(entry.getKey());
-            if (old == null || supplier.getListPrice().compareTo(old.getListPrice()) != 0
+            if (old == null || !MathRules.equals(supplier.getListPrice(), old.getListPrice())
                 || supplier.getPackageSize() != old.getPackageSize()) {
                 return false;
             }
@@ -300,7 +300,7 @@ public class ProductPriceUpdater {
         BigDecimal listPrice = productSupplier.getListPrice();
         int packageSize = productSupplier.getPackageSize();
         return productSupplier.isAutoPriceUpdate()
-               && !MathRules.equals(listPrice, BigDecimal.ZERO)
+               && (listPrice != null && !MathRules.equals(listPrice, BigDecimal.ZERO))
                && packageSize != 0
                && isActive(productSupplier.getSupplierRef());
     }
