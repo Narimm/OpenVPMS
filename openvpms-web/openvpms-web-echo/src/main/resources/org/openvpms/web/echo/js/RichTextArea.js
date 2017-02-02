@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /**
@@ -1242,6 +1242,7 @@ EPRTA.prototype.eventHandler = function (echoEvent) {
         return;
     }
     if (echoEvent.type == "keypress" || echoEvent.type == "keydown" || echoEvent.type == "keyup") {
+        EchoAsyncMonitor.active(); // flag the session as active. See OVPMS-1847
         this.onkey(echoEvent);
         EPSP.hideSpellingBox(this);
         // cannot hide the colour chooser in a blur event as it prevents the chooser's click event
