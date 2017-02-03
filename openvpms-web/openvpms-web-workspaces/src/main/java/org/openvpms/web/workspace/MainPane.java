@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -66,6 +66,7 @@ import org.openvpms.web.echo.factory.ContentPaneFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.pane.ContentPane;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.util.ApplicationInstanceRunnable;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.history.CustomerPatient;
@@ -156,9 +157,20 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     private Button messages;
 
     /**
+     * User preferences.
+     */
+    private final UserPreferences preferences;
+
+    /**
      * Monitors summary preferences changes.
      */
     private final PreferenceMonitor preferenceMonitor;
+
+    /**
+     * Listener for preference changes. This needs to be an {@link ApplicationInstanceRunnable},
+     * as preferences can be updated via other ApplicationInstances in the session.
+     */
+    private final ApplicationInstanceRunnable preferenceListener;
 
     /**
      * The style name.
@@ -199,6 +211,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         setStyleName(STYLE);
         this.monitor = monitor;
         this.context = context;
+        this.preferences = preferences;
         preferenceMonitor = new PreferenceMonitor(preferences);
         preferenceMonitor.add(PreferenceArchetypes.SUMMARY);
         listener = new MessageMonitor.MessageListener() {
@@ -221,6 +234,12 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
         leftMenu = ColumnFactory.create(Styles.WIDE_CELL_SPACING, subMenu);
         currentWorkspaces = ContentPaneFactory.create(WORKSPACE_STYLE);
+        preferenceListener = new ApplicationInstanceRunnable(new Runnable() {
+            @Override
+            public void run() {
+                onPreferencesChanged();
+            }
+        });
 
         Button button = addWorkspaces(factory.createCustomerWorkspaces(context, preferences));
         addWorkspaces(factory.createPatientWorkspaces(context, preferences));
@@ -274,18 +293,12 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         if (!found) {
             button.doAction();
         }
-        preferences.setListener(new UserPreferences.Listener() {
-            @Override
-            public void refreshed() {
-                onPreferencesChanged();
-            }
-        });
     }
 
     /**
      * Life-cycle method invoked when the {@code Component} is added to a registered hierarchy.
      * <p/>
-     * This implementation registers a listener for message notification.
+     * This implementation registers a listener for message notification and preference updates.
      */
     @Override
     public void init() {
@@ -293,6 +306,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         if (user != null) {
             monitor.addListener(user, listener);
         }
+        preferences.addListener(preferenceListener);
     }
 
     /**
@@ -304,6 +318,8 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         if (user != null) {
             monitor.removeListener(user, listener);
         }
+        preferences.removeListener(preferenceListener);
+        preferenceListener.dispose();
     }
 
     /**

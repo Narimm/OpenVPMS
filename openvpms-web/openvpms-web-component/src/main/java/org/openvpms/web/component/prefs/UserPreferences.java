@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.prefs;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.prefs.PreferenceService;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.web.echo.util.WeakReferenceCallbacks;
 
 import java.util.Collections;
 import java.util.Set;
@@ -31,17 +32,6 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class UserPreferences implements Preferences {
-
-    /**
-     * Preference refresh listener.
-     */
-    public interface Listener {
-
-        /**
-         * Invoked when the preferences are refreshed.
-         */
-        void refreshed();
-    }
 
     /**
      * The preference service.
@@ -69,9 +59,9 @@ public class UserPreferences implements Preferences {
     private User user;
 
     /**
-     * Preference refresh listener.
+     * Used to notify updates.
      */
-    private Listener listener;
+    private final WeakReferenceCallbacks listeners = new WeakReferenceCallbacks();
 
 
     /**
@@ -97,11 +87,22 @@ public class UserPreferences implements Preferences {
 
     /**
      * Registers a listener to be notified when the preferences are refreshed.
+     * <p/>
+     * The caller must hold a strong reference to the listener, to prevent it being garbage collected.
      *
-     * @param listener the listener. May be {@code null}
+     * @param listener the listener
      */
-    public void setListener(Listener listener) {
-        this.listener = listener;
+    public void addListener(Runnable listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeListener(Runnable listener) {
+        listeners.remove(listener);
     }
 
     /**
@@ -111,9 +112,7 @@ public class UserPreferences implements Preferences {
         if (user != null) {
             preferences = service.getPreferences(user, practiceService.getPractice(), false);
             persistent = null; // persistent preferences are loaded on demand
-            if (listener != null) {
-                listener.refreshed();
-            }
+            listeners.call();
         }
     }
 
