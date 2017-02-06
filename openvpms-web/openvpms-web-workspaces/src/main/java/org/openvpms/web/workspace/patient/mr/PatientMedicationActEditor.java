@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -441,7 +441,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      *
      * @return the product editor, or {@code null} if none exists
      */
-    private ProductParticipationEditor getProductEditor() {
+    protected ProductParticipationEditor getProductEditor() {
         ParticipationEditor<Product> editor = getParticipationEditor(PRODUCT, false);
         return (ProductParticipationEditor) editor;
     }
