@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T12:22:28 -->
+<!-- 2017-01-26T06:39:47 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_OutstandingDebtors" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="a2a6c86b-d4c1-416e-b9bd-d29e94f81067">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,7 +24,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -21,95 +37,156 @@
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
-		<![CDATA[select acType,cid,name,current,30days,60days,90days,120days, balance
-from
-(select
-acType,
-cid,
-name,
-sum(if(days < 30,owing,0.00)) as current,
-sum(if(days >=30 and days < 60, owing, 0.00)) as 30days,
-sum(if(days >=60 and days < 90, owing, 0.00)) as 60days,
-sum(if(days >=90 and days < 120, owing, 0.00)) as 90days,
-sum(if(days >=120,owing,0.00)) as 120days,
-sum(owing) as balance,
-active,
-lastTxnDate
-from
-(select e.entity_id as cid, e.name as name,
- ifnull(la.name,'--None--') as acType, 
-if(isnull(ar.source_id),
-   if(f.credit,-(f.total-f.allocated_amount),(f.total-f.allocated_amount)),
-       /* ar.source_id not null */
-      IF(Isnull(Max(ap.activity_start_time)),
-       IF(f.credit, -( f.total ), ( f.total )),
-       IF(f.credit, -( f.total - Sum(Cast(IF(Isnull(ap.act_id), '0.00', ard.value) AS DECIMAL(18, 3))) ),
-        ( f.total - Sum(Cast(IF(Isnull(ap.act_id), '0.00', ard.value) AS DECIMAL(18, 3))) ))
-     )
-) as owing,
-datediff($P{DateTo}, a.activity_start_time) as days,
-a.arch_short_name, a.activity_start_time, f.total, f.allocated_amount,
-sum(cast(if(isnull(ap.act_id),'0.00',ard.value) as decimal(18,3))) as allocated,ar.source_id,
-max(ap.activity_start_time) as lastPayDate,
-e.active as active,
-date(ifnull(ltd.lastTxnDate,'1970-01-01')) as lastTxnDate
-from entities e
-join participations p on p.entity_id = e.entity_id and p.arch_short_name = 'participation.customer'
-join acts a on a.act_id = p.act_id
-left join entity_classifications cl on cl.entity_id = e.entity_id
-left join lookups la on la.lookup_id = cl.lookup_id and la.arch_short_name = 'lookup.customerAccountType'
-join financial_acts f on f.financial_act_id = a.act_id
-left join act_relationships ar on ar.source_id = a.act_id
-         and ar.arch_short_name = 'actRelationship.customerAccountAllocation'
-left join act_relationship_details ard on ard.act_relationship_id = ar.act_relationship_id
-    and ard.name = 'allocatedAmount'
-left join acts ap on ap.act_id = ar.target_id
-      and ap.activity_start_time <= DATE_ADD( $P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
-left join (select max(a.activity_start_time) as lastTxnDate, p.entity_id as cid
-		from acts a
-		join participations p on p.act_id = a.act_id
-		    and p.arch_short_name = 'participation.customer'
-		where ((a.arch_short_name <> 'act.customerAccountOpeningBalance') and  (a.arch_short_name <> 'act.customerAccountClosingBalance') )
-		group by p.entity_id
-		) as ltd on ltd.cid = e.entity_id
-where e.arch_short_name = 'party.customerperson'
-  and p.activity_start_time <= DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
-  and p.activity_start_time > ifnull( (
-  				select pc.activity_start_time as obDate
-			from participations pc 
-			join financial_acts fa on fa.financial_act_id = pc.act_id
-			where pc.entity_id = e.entity_id
-              and pc.arch_short_name = 'participation.customer'
-			  and pc.act_arch_short_name ='act.customerAccountOpeningBalance'
-  			  and fa.total = 0
-			  and pc.activity_start_time < $P{DateTo}
-			order by pc.activity_start_time desc
-			limit 1
-		),'1970-01-01') 
-  and ((a.arch_short_name <> 'act.customerAccountOpeningBalance') and  (a.arch_short_name <> 'act.customerAccountClosingBalance') )
-  and a.status = 'POSTED'
-  and ((isnull(cl.lookup_id) and isnull(la.lookup_id)) or ((not isnull(cl.lookup_id)) and (not isnull(la.lookup_id))))
-  group by a.act_id
-) as accountbalances
-group by cid
-) acb
-where
-  balance <>0
- and ((active) or
-  	  ((!active) and lastTxnDate >= DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND) ) )
+		<![CDATA[# this is cloned from the Debtors Historical report
+SELECT 
+    custLocn,
+    acType,
+    cid,
+    name,
+    current,
+    30days,
+    60days,
+    90days,
+    120days,
+    balance, 
+    active,
+	laterTxns
+FROM
+    (SELECT 
+        acType,
+            custLocn,
+            cid,
+            name,
+            SUM(IF(days < 30, (amount-DBallocated+CRallocated), 0.00)) AS current,
+            SUM(IF(days >= 30 AND days < 60, (amount-DBallocated+CRallocated), 0.00)) AS 30days,
+            SUM(IF(days >= 60 AND days < 90, (amount-DBallocated+CRallocated), 0.00)) AS 60days,
+            SUM(IF(days >= 90 AND days < 120, (amount-DBallocated+CRallocated), 0.00)) AS 90days,
+            SUM(IF(days >= 120, (amount-DBallocated+CRallocated), 0.00)) AS 120days,
+            sum(amount) as balance,
+            active,
+			laterTxns
+    FROM
+        (SELECT 
+        e.entity_id AS cid,
+            e.name AS name,
+            IFNULL(la.name, '--None--') AS acType,
+            IFNULL(loc.name, '--None--') AS custLocn,
+            DATEDIFF($P{DateTo}, a.activity_start_time) AS days,
+            # a.arch_short_name,
+            # a.activity_start_time,
+            IF(f.credit, -(f.total), (f.total)) as amount,
+            # f.allocated_amount,
+            SUM(CAST(IF(ISNULL(aDB.act_id), '0.00', arDBd.value) AS DECIMAL (18 , 3 ))) AS DBallocated,
+            SUM(CAST(IF(ISNULL(aCR.act_id), '0.00', arCRd.value) AS DECIMAL (18 , 3 ))) AS CRallocated,
+            
+            obzc.obDate as obDate,
+            e.active AS active,
+			EXISTS( SELECT 1
+					FROM
+						participations pc
+							JOIN
+						financial_acts fa ON fa.financial_act_id = pc.act_id
+					WHERE
+						pc.arch_short_name = 'participation.customer'
+							AND pc.activity_start_time > DATE_ADD($P{DateTo}, INTERVAL '23:59:59' HOUR_SECOND)
+							AND ((pc.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+							AND (pc.act_arch_short_name <> 'act.customerAccountClosingBalance'))
+							AND pc.entity_id = e.entity_id) as laterTxns
+			
+    FROM
+        entities e
+    JOIN participations p ON p.entity_id = e.entity_id
+        AND p.arch_short_name = 'participation.customer'
+        AND ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+        AND (p.act_arch_short_name <> 'act.customerAccountClosingBalance'))
+    JOIN acts a ON a.act_id = p.act_id
+    LEFT JOIN entity_classifications cl ON cl.entity_id = e.entity_id
+    LEFT JOIN lookups la ON la.lookup_id = cl.lookup_id
+        AND la.arch_short_name = 'lookup.customerAccountType'
+    LEFT JOIN entity_links el ON el.source_id = e.entity_id
+        AND el.arch_short_name = 'entityLink.customerLocation'
+    LEFT JOIN entities loc ON loc.entity_id = el.target_id
+    JOIN financial_acts f ON f.financial_act_id = a.act_id
+	# join debit allocations
+    LEFT JOIN act_relationships arDB ON arDB.source_id = a.act_id
+        AND arDB.arch_short_name = 'actRelationship.customerAccountAllocation'
+    LEFT JOIN act_relationship_details arDBd ON arDBd.act_relationship_id = arDB.act_relationship_id
+        AND arDBd.name = 'allocatedAmount'
+    LEFT JOIN acts aDB ON aDB.act_id = arDB.target_id
+        AND aDB.activity_start_time <= DATE_ADD($P{DateTo}, INTERVAL '23:59:59' HOUR_SECOND)
+	# join credit allocations
+		LEFT JOIN act_relationships arCR ON arCR.target_id = a.act_id
+        AND arCR.arch_short_name = 'actRelationship.customerAccountAllocation'
+    LEFT JOIN act_relationship_details arCRd ON arCRd.act_relationship_id = arCR.act_relationship_id
+        AND arCRd.name = 'allocatedAmount'
+    LEFT JOIN acts aCR ON aCR.act_id = arCR.source_id
+        AND aCR.activity_start_time <= DATE_ADD($P{DateTo}, INTERVAL '23:59:59' HOUR_SECOND)
+
+	# get date of opening balance txn prior to asat date when balance was 0
+    JOIN (SELECT 
+        MAX(obz.obDate) AS obDate, obz.cid
+    FROM
+        (SELECT 
+        MAX(pc.activity_start_time) AS obDate, pc.entity_id AS cid
+    FROM
+        participations pc
+    JOIN financial_acts fa ON fa.financial_act_id = pc.act_id
+    WHERE
+        pc.arch_short_name = 'participation.customer'
+            AND pc.act_arch_short_name = 'act.customerAccountOpeningBalance'
+            AND fa.total = 0
+            AND pc.activity_start_time < DATE_ADD($P{DateTo}, INTERVAL '23:59:59' HOUR_SECOND)
+    GROUP BY pc.entity_id UNION ALL SELECT 
+        '1970-01-01' obDate, e.entity_id AS cid
+    FROM
+        entities e
+    WHERE
+        e.arch_short_name = 'party.customerperson') AS obz
+    GROUP BY obz.cid) AS obzc ON obzc.cid = e.entity_id
+    
+    WHERE
+        e.arch_short_name = 'party.customerperson'
+            AND p.activity_start_time <= DATE_ADD($P{DateTo}, INTERVAL '23:59:59' HOUR_SECOND)
+            AND p.activity_start_time > obzc.obDate
+            AND a.status = 'POSTED'
+            AND (((cl.lookup_id IS NULL) AND (la.lookup_id IS NULL))
+				OR ((cl.lookup_id IS NOT NULL) AND (la.lookup_id IS NOT NULL)))
+            AND ((e.active)
+            OR ((! e.active)
+				# this returns true if there are transactions after the asat date, ie the customer was active at the asat date
+				AND EXISTS( SELECT 1
+					FROM
+						participations pc
+							JOIN
+						financial_acts fa ON fa.financial_act_id = pc.act_id
+					WHERE
+						pc.arch_short_name = 'participation.customer'
+							AND pc.activity_start_time > DATE_ADD($P{DateTo}, INTERVAL '23:59:59' HOUR_SECOND)
+							AND ((pc.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+							AND (pc.act_arch_short_name <> 'act.customerAccountClosingBalance'))
+							AND pc.entity_id = e.entity_id))
+				        )
+ 
+ GROUP BY a.act_id) AS accountbalances
+    GROUP BY cid) AS acb
+WHERE
+    balance > 0
+  and ((active) or
+  	  ((!active) and laterTxns ) )
 order by acType,name;]]>
 	</queryString>
+	<field name="custLocn" class="java.lang.String"/>
 	<field name="acType" class="java.lang.String"/>
 	<field name="cid" class="java.lang.Long"/>
-	<field name="name" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="name" class="java.lang.String"/>
 	<field name="current" class="java.math.BigDecimal"/>
 	<field name="30days" class="java.math.BigDecimal"/>
 	<field name="60days" class="java.math.BigDecimal"/>
 	<field name="90days" class="java.math.BigDecimal"/>
-	<field name="balance" class="java.math.BigDecimal"/>
 	<field name="120days" class="java.math.BigDecimal"/>
+	<field name="balance" class="java.math.BigDecimal"/>
+	<field name="active" class="java.lang.Boolean"/>
+	<field name="laterTxns" class="java.lang.Integer"/>
 	<variable name="actCount" class="java.lang.Long" resetType="Group" resetGroup="AcType" calculation="Count">
 		<variableExpression><![CDATA[$F{cid}]]></variableExpression>
 	</variable>
@@ -431,7 +508,7 @@ order by acType,name;]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="18" splitType="Stretch">
+		<band height="15" splitType="Stretch">
 			<printWhenExpression><![CDATA[($F{60days}.add($F{90days}.add($F{120days})).floatValue()>0)||$P{ShowDetail}]]></printWhenExpression>
 			<textField pattern="¤#,##0" isBlankWhenNull="false">
 				<reportElement key="textField" x="203" y="1" width="56" height="14" uuid="df83248e-96ce-4061-86e9-ce4afbbdbc91"/>
@@ -554,12 +631,22 @@ order by acType,name;]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{60days}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="0" y="1" width="12" height="14" uuid="bf4eb9bf-ab2a-4e37-a55d-be15e5c3cdfd">
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{active}?" ":($F{laterTxns}>0)?"#":"!"]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<summary>
-		<band height="118" splitType="Stretch">
+		<band height="142" splitType="Stretch">
 			<line>
-				<reportElement positionType="Float" x="0" y="117" width="535" height="1" uuid="e420437c-f22d-482b-b3db-b621a8865b2d"/>
+				<reportElement positionType="Float" x="0" y="141" width="535" height="1" uuid="e420437c-f22d-482b-b3db-b621a8865b2d"/>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>
@@ -645,11 +732,11 @@ order by acType,name;]]>
 				<textFieldExpression><![CDATA[$V{tot60days}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="1" y="62" width="535" height="55" uuid="642eb0c0-3796-4b46-a5de-15cdcfa91a77"/>
+				<reportElement x="1" y="62" width="535" height="78" uuid="642eb0c0-3796-4b46-a5de-15cdcfa91a77"/>
 				<textElement verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[This shows the Outstanding Debtors position as at the To Date. Customers with credit balances are excluded.
+				<text><![CDATA[This shows the Outstanding Debtors position as at the To Date. Customers with credit balances are excluded. Customers who were not active at the To Date are excluded. A customer is deemed to be not active if their Active flag is not set AND they have no transactions after the To Date. The first column will be # if the customer is currently inactive but was active at the To Date.
 Customers with amounts outstanding for 60 or more days are always shown.
 If the 'Show Details' option has been selected then all customers with outstanding balances are shown.]]></text>
 			</staticText>

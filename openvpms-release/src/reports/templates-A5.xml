@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <templates>
@@ -52,6 +52,8 @@
               path="Customer/Receipt/A5/Receipt Items.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Refund" archetype="act.customerAccountRefund" reportType="CUSTOMER" description="Refund (A5)"
               path="Customer/Refund/A5/Refund.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Refund Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Refund Items (A5)"
+              path="Customer/Refund/A5/Refund Items.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Desexing Certificate" archetype="act.patientDocumentForm" reportType="PATIENT"
               description="Desexing Certificate (A5)" path="Patient/Documents/A5/Desexing Certificate.odt"
               mimeType="application/vnd.oasis.opendocument.text" docType="document.other"/>
@@ -140,12 +142,27 @@
     <template name="Customer Referral Report" archetype="REPORT" reportType="CUSTOMER"
               description="Customer Referral Report" path="Reporting/Reports/Customer/A4/Customer Referral Report.jrxml"
               mimeType="text/xml" docType="document.other"/>
+    <template name="Customer Retention Report" archetype="REPORT" reportType="CUSTOMER"
+              description="Customer Retention Report" path="Reporting/Reports/Customer/A4/Customer Retention Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
     <template name="Customer Running Balance Report" archetype="REPORT" reportType="FINANCIAL"
               description="Customer Running Balance Report"
               path="Reporting/Reports/Customer/A4/Customer Running Balance Report.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Customer Sales Report" archetype="REPORT" reportType="FINANCIAL" description="Customer Sales Report"
               path="Reporting/Reports/Customer/A4/Customer Sales Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Duplicate Customers/Patients Report" archetype="REPORT" reportType="CUSTOMER" description="Finds Duplicate Customers &#038; Patients"
+              path="Reporting/Reports/Customer/A4/Duplicate Customers-Patients.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Duplicate Customers/Patients subreport" archetype="SUBREPORT" reportType="CUSTOMER" description="Subreport - Duplicate Customers &#038; Patients"
+              path="Reporting/Reports/Customer/A4/Duplicate Customers-Patients subreport.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Estimates Report" archetype="REPORT" reportType="CUSTOMER" description="Lists estimates in specified period"
+              path="Reporting/Reports/Customer/A4/Estimates Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Estimates Report subreport" archetype="SUBREPORT" reportType="CUSTOMER" description="Subreport for Estimates Report"
+              path="Reporting/Reports/Customer/A4/Estimates Report subreport.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Export Customer Addresses for Sales" archetype="REPORT" reportType="CUSTOMER"
               description="Export Customer Addresses for Sales"
@@ -170,6 +187,14 @@
     <template name="Export Customer Phone Numbers" archetype="REPORT" reportType="CUSTOMER"
               description="Export Customer Phone Numbers"
               path="Reporting/Reports/Customer/A4/Export Customer Phone Numbers.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Task Time Statistics" archetype="REPORT" reportType="CUSTOMER"
+              description="Displays statistics for worklist task times"
+              path="Reporting/Reports/Customer/A4/Task Time Statistics.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Wait Time Statistics" archetype="REPORT" reportType="CUSTOMER"
+              description="Displays statistics for appointment wait times"
+              path="Reporting/Reports/Customer/A4/Wait Time Statistics.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
               description="Clinician Sales Report" path="Reporting/Reports/Financial/A4/Clinician Sales Report.jrxml"
@@ -209,8 +234,8 @@
               description="Practice Sum. Count Visits by Clinician"
               path="Reporting/Reports/Financial/A4/Practice Summary_CountVisitsClinician.jrxml" mimeType="text/xml"
               docType="document.other"/>
-    <template name="Practice Sum. Count vVisits by Location" archetype="SUBREPORT" reportType="FINANCIAL"
-              description="Practice Sum. Count vVisits by Location"
+    <template name="Practice Sum. Count Visits by Location" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Count Visits by Location"
               path="Reporting/Reports/Financial/A4/Practice Summary_CountVisitsLocation.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Practice Sum. Income by Clinician" archetype="SUBREPORT" reportType="FINANCIAL"
