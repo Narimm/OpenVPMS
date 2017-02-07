@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T13:36:56 -->
+<!-- 2017-02-03T03:19:05 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_IncomeByClinician" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="20115224-1f46-4eb2-b204-51977b35672c">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -77,15 +93,15 @@ sum(if(ai.arch_short_name = 'act.customerAccountCreditItem',if(f.credit,-(f.tota
 sum(if(ai.arch_short_name = 'act.customerAccountCreditItem',if(f.credit,-(f.total),(f.total)),0))as creditItemTotalInc,
 sum(if(ai.arch_short_name = 'act.customerAccountCreditItem',if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as creditItemTotalTax,
 cast(sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
-	and (ec.name like '%Counter Sales'),1,0)) as signed) as counterItemCount,
+	and (ec.arch_short_name = 'party.organisationOTC'),1,0)) as signed) as counterItemCount,
 sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
-	and (ec.name like '%Counter Sales'),
+	and (ec.arch_short_name = 'party.organisationOTC'),
 	if(f.credit,-(f.total - f.tax_amount),(f.total - f.tax_amount)),0))as counterItemTotalEx,
 sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
-	and (ec.name like '%Counter Sales'),
+	and (ec.arch_short_name = 'party.organisationOTC'),
 	if(f.credit,-(f.total),(f.total)),0))as counterItemTotalInc,
 sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
-	and (ec.name like '%Counter Sales'),
+	and (ec.arch_short_name = 'party.organisationOTC'),
 	if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as counterItemTotalTax,
 cast(sum(if((ai.arch_short_name = 'act.customerAccountInvoiceItem') or
 	((ai.arch_short_name = 'act.customerAccountCounterItem') and (ec.name not like '%Counter Sales'))
@@ -204,14 +220,14 @@ group by pv.entity_id order by ev.name
 				<text><![CDATA[Clinician]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="117" y="20" width="50" height="14" uuid="3c0f5e4b-ad4c-448a-b6b1-7bc137658956"/>
+				<reportElement x="117" y="20" width="63" height="14" uuid="3c0f5e4b-ad4c-448a-b6b1-7bc137658956"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Customers]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="167" y="20" width="75" height="14" uuid="10fc30bc-acf3-40bb-90d7-670c11e7f9af"/>
+				<reportElement x="180" y="20" width="62" height="14" uuid="10fc30bc-acf3-40bb-90d7-670c11e7f9af"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
@@ -510,7 +526,7 @@ group by pv.entity_id order by ev.name
 		</band>
 	</detail>
 	<summary>
-		<band height="302" splitType="Prevent">
+		<band height="320" splitType="Prevent">
 			<textField isStretchWithOverflow="true" pattern="¤#,##0">
 				<reportElement x="167" y="20" width="75" height="14" uuid="842c48d7-c679-4efa-abb1-05524d1ec28c"/>
 				<textElement textAlignment="Right">
@@ -610,7 +626,7 @@ group by pv.entity_id order by ev.name
 				<textFieldExpression><![CDATA[$V{SumCreditCount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="5" width="128" height="14" uuid="f4bc8394-2ce1-4f7e-9471-095aa293eb07"/>
+				<reportElement x="0" y="5" width="90" height="14" uuid="f4bc8394-2ce1-4f7e-9471-095aa293eb07"/>
 				<textElement>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -695,7 +711,7 @@ group by pv.entity_id order by ev.name
 				<textFieldExpression><![CDATA[$V{SumCounterAmount}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="197" width="535" height="103" uuid="576b1775-f10c-49af-af6e-b5f60bf6f6e6"/>
+				<reportElement x="0" y="197" width="535" height="123" uuid="576b1775-f10c-49af-af6e-b5f60bf6f6e6"/>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
@@ -773,7 +789,7 @@ The Total Customers seen Percentage is the ratio of the seen count to the active
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<line>
-				<reportElement positionType="Float" x="0" y="301" width="535" height="1" uuid="3231e404-cf5d-4dad-8e9d-7d46cb4348f2"/>
+				<reportElement positionType="Float" x="0" y="319" width="535" height="1" uuid="3231e404-cf5d-4dad-8e9d-7d46cb4348f2"/>
 				<graphicElement>
 					<pen lineStyle="Double"/>
 				</graphicElement>
@@ -914,6 +930,41 @@ The Total Customers seen Percentage is the ratio of the seen count to the active
 				</textElement>
 				<textFieldExpression><![CDATA[$V{SumCreditTax}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="117" y="5" width="63" height="14" uuid="3369299d-f2c5-42e6-8f54-7d1604ecbdd4"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Customers]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="5" width="62" height="14" uuid="dbd76662-d987-44ea-b6ed-3eca84b92ec7"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="275" y="5" width="75" height="14" uuid="52b8f22e-edc2-485f-a755-6efc8d7ef680"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Invoices]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="379" y="5" width="46" height="14" uuid="90fda69c-beb4-4468-830e-d7aca3fa29c6"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[OTC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="454" y="5" width="51" height="14" uuid="fb8f1d0f-2ed6-4f9e-9077-f1c793a0ded1"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Credits]]></text>
+			</staticText>
 		</band>
 	</summary>
 </jasperReport>

@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient Image" pageWidth="421" pageHeight="595" columnWidth="379" leftMargin="21" rightMargin="21" topMargin="14" bottomMargin="14" uuid="1199c1ac-2f12-4c7a-af65-6c75e67363ad">
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient Image" pageWidth="421" pageHeight="595" columnWidth="379" leftMargin="21" rightMargin="21" topMargin="14" bottomMargin="14" uuid="e3a246bb-3154-4ebf-986a-fc3152a6761c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -26,7 +42,7 @@
 	<detail>
 		<band height="142" splitType="Stretch">
 			<image>
-				<reportElement key="image-1" x="118" y="4" width="147" height="132" uuid="d52cfa40-a23c-42c2-a4ba-0234c74b7370"/>
+				<reportElement key="image-1" x="118" y="4" width="147" height="132" uuid="a9e112d2-c08c-495d-8be0-baf829632b32"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

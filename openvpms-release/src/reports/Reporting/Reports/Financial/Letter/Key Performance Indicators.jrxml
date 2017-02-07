@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Key Performance Indicators" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="550" leftMargin="31" rightMargin="31" topMargin="19" bottomMargin="19" uuid="e1dde246-07e1-4c02-9c46-879b11400d3f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -14,6 +30,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -181,8 +198,8 @@
 		</box>
 	</style>
 	<subDataset name="DS-General" uuid="a9097a2d-1fc7-40c0-8f12-acdd32db6d1b">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
 		<parameter name="Set" class="java.lang.Integer">
 			<parameterDescription><![CDATA[Set]]></parameterDescription>
 			<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
@@ -202,9 +219,9 @@
 		</parameter>
 		<queryString>
 			<![CDATA[select
-(1+datediff($P{DateTo}, $P{DateFrom})) as days,
 cast(date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) as DATE) as fromDate,
 cast(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) as DATE) as toDate,
+(1+datediff(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH))) as days,
 
 (select count(*)
 from entities e
@@ -213,14 +230,14 @@ from entities e
    left join entities loc on loc.entity_id = el.target_id         
          
 where e.arch_short_name = 'party.customerperson'
-    and cast(d.value as Date) <= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH)
+    and cast(d.value as Date) < date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH)
     and (e.active=1
 		or exists ( select * 
                       from  participations p
                       join financial_acts fa on fa.financial_act_id = p.act_id
                       where p.entity_id = e.entity_id
                           and p.arch_short_name = 'participation.customer'
-                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
+                          and p.activity_start_time > date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH)
 						  and ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
 							and (p.act_arch_short_name <> 'act.customerAccountClosingBalance')))
 		 )
@@ -267,6 +284,7 @@ and (cast(d.value as DATE) <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* 
 	left join entities el on el.entity_id = pl.entity_id
 where (a.arch_short_name ='act.customerAccountChargesInvoice'
 					or a.arch_short_name = 'act.customerAccountChargesCounter')
+and ec.arch_short_name = "party.customerperson"					
 and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
       and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
 and ifnull(el.name,"--NONE--") like concat(ifnull($P{Location},""),"%")
@@ -289,12 +307,10 @@ where e.arch_short_name = 'party.patientpet'
     and (e.active=1
 		or exists ( select * 
                       from  participations p
-                      join financial_acts fa on fa.financial_act_id = p.act_id
                       where p.entity_id = e.entity_id
-                          and p.arch_short_name = 'participation.customer'
-                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
-						  and ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
-							and (p.act_arch_short_name <> 'act.customerAccountClosingBalance')))
+                          and p.arch_short_name = 'participation.patient'
+                          and p.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH)
+						  and p.act_arch_short_name = 'act.patientClinicalEvent')
 		 )
 		and ifnull(loc.name,"--NONE--") like  concat(ifnull( $P{Location} ,""),"%")
 ) as patientCountStart,
@@ -315,12 +331,10 @@ where e.arch_short_name = 'party.patientpet'
     and (e.active=1
 		or exists ( select * 
                       from  participations p
-                      join financial_acts fa on fa.financial_act_id = p.act_id
                       where p.entity_id = e.entity_id
-                          and p.arch_short_name = 'participation.customer'
-                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
-						  and ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
-							and (p.act_arch_short_name <> 'act.customerAccountClosingBalance')))
+                          and p.arch_short_name = 'participation.patient'
+                          and p.activity_start_time >= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
+						  and p.act_arch_short_name = 'act.patientClinicalEvent')
 		 )
 		and ifnull(loc.name,"--NONE--") like  concat(ifnull( $P{Location} ,""),"%")
 ) as patientCountEnd,
@@ -376,9 +390,9 @@ and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{Mont
 and ifnull(el.name,"--NONE--")  like concat(ifnull($P{Location},""),"%")
 ) as visitCount;]]>
 		</queryString>
-		<field name="days" class="java.lang.Long"/>
 		<field name="fromDate" class="java.sql.Date"/>
 		<field name="toDate" class="java.sql.Date"/>
+		<field name="days" class="java.lang.Long"/>
 		<field name="custCountStart" class="java.lang.Long"/>
 		<field name="custCountEnd" class="java.lang.Long"/>
 		<field name="custNew" class="java.lang.Long"/>
@@ -461,8 +475,8 @@ join (
 		<field name="paid30to60Total" class="java.math.BigDecimal"/>
 		<field name="paid61plusTotal" class="java.math.BigDecimal"/>
 	</subDataset>
-	<subDataset name="DS-Money" uuid="1f0d4e4d-e644-467c-a2f2-5a1fe8212063">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<subDataset name="DS-Money1" uuid="1f0d4e4d-e644-467c-a2f2-5a1fe8212063">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="Set" class="java.lang.Integer">
 			<parameterDescription><![CDATA[Set]]></parameterDescription>
@@ -484,52 +498,21 @@ join (
 		<queryString>
 			<![CDATA[select
     (1+datediff($P{DateTo}, $P{DateFrom})) as days,
-	sum(if(a.arch_short_name = 'act.customerAccountPayment',if(fa.credit,fa.total,-fa.total),0)) as paymentTot,
-	sum(if(a.arch_short_name = 'act.customerAccountRefund',if(fa.credit,-fa.total,fa.total),0)) as refundTot,
-	sum(if(a.arch_short_name in('act.customerAccountPaymentDiscount','act.customerAccountRefundDiscount'),if(fa.credit,fa.total,-fa.total),0)) as paymentDiscountTot,
-   	sum(if(a.arch_short_name = 'act.customerAccountChargesInvoice',if(fa.credit,-(fa.total-fa.tax_amount),(fa.total-fa.tax_amount)),0)) as invoiceTot,
-   	sum(if(a.arch_short_name = 'act.customerAccountChargesInvoice',1,0)) as invoiceCount,
+   	sum(if(((a.arch_short_name in('act.customerAccountChargesInvoice','act.customerAccountChargesCounter')) and (cu.arch_short_name='party.customerperson')),if(fa.credit,-(fa.total-fa.tax_amount),(fa.total-fa.tax_amount)),0)) as invoiceTot,
+   	sum(if(((a.arch_short_name in('act.customerAccountChargesInvoice','act.customerAccountChargesCounter')) and 
+	(cu.arch_short_name='party.customerperson')),1,0)) as invoiceCount,
    	sum(if(a.arch_short_name = 'act.customerAccountChargesCredit',if(fa.credit,(fa.total-fa.tax_amount),-(fa.total-fa.tax_amount)),0)) as creditTot,
-   	sum(if(a.arch_short_name = 'act.customerAccountChargesCounter',if(fa.credit,-(fa.total-fa.tax_amount),(fa.total-fa.tax_amount)),0)) as OtcTot,
-	sum(if(a.arch_short_name in('act.customerAccountBadDebt','act.customerAccountCreditAdjust',
-			'act.customerAccountDebitAdjust'),if(fa.credit,(fa.total-fa.tax_amount),-(fa.total-fa.tax_amount)),0)) as adjustmentTot,
-	(select sum((fai.tax_amount-fai.total)) as total
-		from acts a
-		join act_relationships ar on ar.source_id = a.act_id and 
-		  (ar.arch_short_name = 'actRelationship.customerAccountInvoiceItem' or ar.arch_short_name = 'actRelationship.customerAccountCounterItem')
-		join acts ai on ai.act_id = ar.target_id
-		join financial_acts fai on fai.financial_act_id = ai.act_id
-		left join participations pl on pl.act_id = a.act_id and pl.arch_short_name  = 'participation.location'
-		left join entities loc on loc.entity_id = pl.entity_id
-		where (a.arch_short_name = 'act.customerAccountChargesInvoice' or a.arch_short_name = 'act.customerAccountChargesInvoice')
-		and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
-      and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
-		and a.status='POSTED' 
-		and (fai.fixed_amount+fai.unit_amount) < 0
-        and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")
-	) as  discountProdTot,
-    (select sum(cast(aid.value as decimal(18,3))) as total
-		from acts a
-		join act_relationships ar on ar.source_id = a.act_id and 
-		  (ar.arch_short_name = 'actRelationship.customerAccountInvoiceItem' or ar.arch_short_name = 'actRelationship.customerAccountCounterItem')
-		join acts ai on ai.act_id = ar.target_id
-		join act_details aid on aid.act_id = ai.act_id and aid.name='discount'
-		left join participations pl on pl.act_id = a.act_id and pl.arch_short_name  = 'participation.location'
-		left join entities loc on loc.entity_id = pl.entity_id
-		where (a.arch_short_name ='act.customerAccountChargesInvoice'
-					or a.arch_short_name = 'act.customerAccountChargesCounter')
-		and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
-      and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
-        and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")
-    ) as itemDiscountTot
+   	sum(if(((a.arch_short_name = 'act.customerAccountChargesCounter') and (cu.arch_short_name='party.organisationOTC')),if(fa.credit,-(fa.total-fa.tax_amount),(fa.total-fa.tax_amount)),0)) as OtcTot
 from acts a
 join financial_acts fa on fa.financial_act_id = a.act_id
 left join participations pl on pl.act_id = a.act_id and pl.arch_short_name  = 'participation.location'
 left join entities loc on loc.entity_id = pl.entity_id
+left join participations pc on pc.act_id = a.act_id and pc.arch_short_name  = 'participation.customer'
+left join entities cu on cu.entity_id = pc.entity_id
 where a.arch_short_name in('act.customerAccountPayment','act.customerAccountRefund',
 						'act.customerAccountPaymentDiscount','act.customerAccountRefundDiscount',
                         'act.customerAccountChargesInvoice','act.customerAccountChargesCredit','act.customerAccountChargesCounter',
-                        'act.customerAccountBadDebt','act.customerAccountCreditAdjust')
+                        'act.customerAccountBadDebt','act.customerAccountCreditAdjust','act.customerAccountDebitAdjust')
 and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
       and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
 and a.status='POSTED' 
@@ -537,16 +520,10 @@ and fa.total != 0
 and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")]]>
 		</queryString>
 		<field name="days" class="java.lang.Long"/>
-		<field name="paymentTot" class="java.math.BigDecimal"/>
-		<field name="refundTot" class="java.math.BigDecimal"/>
-		<field name="paymentDiscountTot" class="java.math.BigDecimal"/>
 		<field name="invoiceTot" class="java.math.BigDecimal"/>
 		<field name="invoiceCount" class="java.math.BigDecimal"/>
 		<field name="creditTot" class="java.math.BigDecimal"/>
 		<field name="OtcTot" class="java.math.BigDecimal"/>
-		<field name="adjustmentTot" class="java.math.BigDecimal"/>
-		<field name="discountProdTot" class="java.math.BigDecimal"/>
-		<field name="itemDiscountTot" class="java.math.BigDecimal"/>
 		<variable name="invoiceTot" class="java.math.BigDecimal">
 			<variableExpression><![CDATA[$F{invoiceTot}]]></variableExpression>
 		</variable>
@@ -559,20 +536,8 @@ and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")]]>
 		<variable name="OtcTot" class="java.math.BigDecimal">
 			<variableExpression><![CDATA[$F{OtcTot}]]></variableExpression>
 		</variable>
-		<variable name="adjustmentTot" class="java.math.BigDecimal">
-			<variableExpression><![CDATA[$F{adjustmentTot}]]></variableExpression>
-		</variable>
-		<variable name="paymentTot" class="java.math.BigDecimal">
-			<variableExpression><![CDATA[$F{paymentTot}]]></variableExpression>
-		</variable>
-		<variable name="refundTot" class="java.math.BigDecimal">
-			<variableExpression><![CDATA[$F{refundTot}]]></variableExpression>
-		</variable>
 		<variable name="billingTot" class="java.math.BigDecimal">
-			<variableExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot})]]></variableExpression>
-		</variable>
-		<variable name="incomeTot" class="java.math.BigDecimal">
-			<variableExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot})]]></variableExpression>
+			<variableExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot})]]></variableExpression>
 		</variable>
 	</subDataset>
 	<subDataset name="DS-Outstanding" uuid="21a5f180-0cbf-4c52-890d-588eaddc4899">
@@ -636,7 +601,7 @@ FROM
         pc.arch_short_name = 'participation.customer'
             AND pc.act_arch_short_name = 'act.customerAccountOpeningBalance'
             AND fa.total = 0
-            AND pc.activity_start_time < DATE_SUB($P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH)
+            AND pc.activity_start_time <= DATE_ADD(DATE_SUB($P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL '23:59:59' HOUR_SECOND)
     GROUP BY pc.entity_id UNION ALL SELECT 
         '1970-01-01' obDate, e.entity_id AS cid
     FROM
@@ -659,9 +624,7 @@ FROM
 						financial_acts fa ON fa.financial_act_id = pc.act_id
 					WHERE
 						pc.arch_short_name = 'participation.customer'
-							AND pc.activity_start_time > DATE_ADD(DATE_SUB('2015-05-01',
-								INTERVAL (0 * 12) MONTH),
-							INTERVAL '23:59:59' HOUR_SECOND)
+							AND pc.activity_start_time > DATE_ADD(DATE_SUB($P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL '23:59:59' HOUR_SECOND)
 							AND ((pc.act_arch_short_name <> 'act.customerAccountOpeningBalance')
 							AND (pc.act_arch_short_name <> 'act.customerAccountClosingBalance'))
 							AND pc.entity_id = e.entity_id)))
@@ -680,6 +643,120 @@ FROM
 		</variable>
 		<variable name="avgOutstBal" class="java.lang.Double">
 			<variableExpression><![CDATA[$F{outstBalTot}.doubleValue()/$F{outstBalCount}.doubleValue()]]></variableExpression>
+		</variable>
+	</subDataset>
+	<subDataset name="DS-Money2" uuid="2d086b42-d92f-4e44-8dcc-742fa13192fb">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="Set" class="java.lang.Integer">
+			<parameterDescription><![CDATA[Set]]></parameterDescription>
+			<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+		</parameter>
+		<parameter name="DateTo" class="java.util.Date">
+			<parameterDescription><![CDATA[Date To]]></parameterDescription>
+		</parameter>
+		<parameter name="DateFrom" class="java.util.Date">
+			<parameterDescription><![CDATA[Date From]]></parameterDescription>
+		</parameter>
+		<parameter name="MonthsPrior" class="java.lang.Integer">
+			<parameterDescription><![CDATA[Compare to months prior]]></parameterDescription>
+			<defaultValueExpression><![CDATA[12]]></defaultValueExpression>
+		</parameter>
+		<parameter name="Location" class="java.lang.String">
+			<parameterDescription><![CDATA[Practice Location]]></parameterDescription>
+		</parameter>
+		<queryString>
+			<![CDATA[select
+    (1+datediff($P{DateTo}, $P{DateFrom})) as days,
+   	sum(if(((a.arch_short_name in('act.customerAccountChargesInvoice','act.customerAccountChargesCounter')) and (cu.arch_short_name='party.customerperson')),if(fa.credit,-(fa.total-fa.tax_amount),(fa.total-fa.tax_amount)),0)) as invoiceTot,
+	sum(if(a.arch_short_name = 'act.customerAccountPayment',if(fa.credit,fa.total,-fa.total),0)) as paymentTot,
+	sum(if(a.arch_short_name = 'act.customerAccountRefund',if(fa.credit,-fa.total,fa.total),0)) as refundTot,
+	sum(if(a.arch_short_name in('act.customerAccountBadDebt','act.customerAccountCreditAdjust',
+			'act.customerAccountDebitAdjust'),if(fa.credit,(fa.total-fa.tax_amount),-(fa.total-fa.tax_amount)),0)) as adjustmentTot,
+
+	(select coalesce((select sum(if(fai.credit,fai.total,-fai.total)) as total
+		from acts a
+		join act_relationships ar on ar.source_id = a.act_id and 
+		  (ar.arch_short_name = 'actRelationship.customerAccountPaymentItem' or ar.arch_short_name = 'actRelationship.customerAccountRefundItem')
+		join acts ai on ai.act_id = ar.target_id
+		join financial_acts fai on fai.financial_act_id = ai.act_id
+		left join participations pl on pl.act_id = a.act_id and pl.arch_short_name  = 'participation.location'
+		left join entities loc on loc.entity_id = pl.entity_id
+		where (a.arch_short_name = 'act.customerAccountPayment' or a.arch_short_name = 'act.customerAccountRefund')
+        and (ai.arch_short_name = 'act.customerAccountPaymentDiscount' or ai.arch_short_name = 'act.customerAccountRefundDiscount')
+		and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
+        and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+		and a.status='POSTED' 
+        and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")
+	),0)) as paymentDiscountTot,
+
+	(select sum((fai.tax_amount-fai.total)) as total
+		from acts a
+		join act_relationships ar on ar.source_id = a.act_id and 
+		  (ar.arch_short_name = 'actRelationship.customerAccountInvoiceItem' or ar.arch_short_name = 'actRelationship.customerAccountCounterItem')
+		join acts ai on ai.act_id = ar.target_id
+		join financial_acts fai on fai.financial_act_id = ai.act_id
+		left join participations pl on pl.act_id = a.act_id and pl.arch_short_name  = 'participation.location'
+		left join entities loc on loc.entity_id = pl.entity_id
+		where (a.arch_short_name = 'act.customerAccountChargesInvoice' or a.arch_short_name = 'act.customerAccountChargesCounter')
+		and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
+      and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+		and a.status='POSTED' 
+		and (fai.fixed_amount+fai.unit_amount) < 0
+        and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")
+	) as  discountProdTot,
+	
+    (select sum(cast(aid.value as decimal(18,3))) as total
+		from acts a
+		join act_relationships ar on ar.source_id = a.act_id and 
+		  (ar.arch_short_name = 'actRelationship.customerAccountInvoiceItem' or ar.arch_short_name = 'actRelationship.customerAccountCounterItem')
+		join acts ai on ai.act_id = ar.target_id
+		join act_details aid on aid.act_id = ai.act_id and aid.name='discount'
+		left join participations pl on pl.act_id = a.act_id and pl.arch_short_name  = 'participation.location'
+		left join entities loc on loc.entity_id = pl.entity_id
+		where (a.arch_short_name ='act.customerAccountChargesInvoice'
+					or a.arch_short_name = 'act.customerAccountChargesCounter')
+		and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
+      and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+        and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")
+    ) as itemDiscountTot
+from acts a
+join financial_acts fa on fa.financial_act_id = a.act_id
+left join participations pl on pl.act_id = a.act_id and pl.arch_short_name  = 'participation.location'
+left join entities loc on loc.entity_id = pl.entity_id
+left join participations pc on pc.act_id = a.act_id and pc.arch_short_name  = 'participation.customer'
+left join entities cu on cu.entity_id = pc.entity_id
+where a.arch_short_name in('act.customerAccountPayment','act.customerAccountRefund',
+                        'act.customerAccountChargesInvoice','act.customerAccountChargesCredit','act.customerAccountChargesCounter',
+                        'act.customerAccountBadDebt','act.customerAccountCreditAdjust','act.customerAccountDebitAdjust')
+and (a.activity_start_time >= date_sub( $P{DateFrom}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH) 
+      and a.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+and a.status='POSTED' 
+and fa.total != 0
+and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")]]>
+		</queryString>
+		<field name="days" class="java.lang.Long"/>
+		<field name="invoiceTot" class="java.math.BigDecimal"/>
+		<field name="paymentTot" class="java.math.BigDecimal"/>
+		<field name="refundTot" class="java.math.BigDecimal"/>
+		<field name="adjustmentTot" class="java.math.BigDecimal"/>
+		<field name="paymentDiscountTot" class="java.math.BigDecimal"/>
+		<field name="discountProdTot" class="java.math.BigDecimal"/>
+		<field name="itemDiscountTot" class="java.math.BigDecimal"/>
+		<variable name="invoiceTot" class="java.math.BigDecimal">
+			<variableExpression><![CDATA[$F{invoiceTot}]]></variableExpression>
+		</variable>
+		<variable name="adjustmentTot" class="java.math.BigDecimal">
+			<variableExpression><![CDATA[$F{adjustmentTot}]]></variableExpression>
+		</variable>
+		<variable name="paymentTot" class="java.math.BigDecimal">
+			<variableExpression><![CDATA[$F{paymentTot}]]></variableExpression>
+		</variable>
+		<variable name="refundTot" class="java.math.BigDecimal">
+			<variableExpression><![CDATA[$F{refundTot}]]></variableExpression>
+		</variable>
+		<variable name="incomeTot" class="java.math.BigDecimal">
+			<variableExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot})]]></variableExpression>
 		</variable>
 	</subDataset>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
@@ -1009,7 +1086,7 @@ FROM
 						<returnValue fromVariable="seenRatio" toVariable="seenRatio-0"/>
 						<returnValue fromVariable="custDistinct" toVariable="custDistinct-0"/>
 					</datasetRun>
-					<jr:column width="91" uuid="cbe37bbc-2bee-41ca-8d75-aa800b2dfe2b">
+					<jr:column width="77" uuid="cbe37bbc-2bee-41ca-8d75-aa800b2dfe2b">
 						<jr:columnHeader height="42">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<box>
@@ -1187,6 +1264,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Period From: ]]></text>
@@ -1202,6 +1280,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[To: ]]></text>
@@ -1217,6 +1296,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Initial Customers: ]]></text>
@@ -1232,6 +1312,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Final Customers: ]]></text>
@@ -1247,6 +1328,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Cust. % change per annum: ]]></text>
@@ -1262,6 +1344,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Final Patients: ]]></text>
@@ -1277,6 +1360,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[New Patients: ]]></text>
@@ -1292,6 +1376,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Pat.% change per annum: ]]></text>
@@ -1308,6 +1393,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Invoices: ]]></text>
@@ -1323,6 +1409,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Visits/Patient per annum: ]]></text>
@@ -1338,6 +1425,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Distinct Patients Seen: ]]></text>
@@ -1353,6 +1441,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Visits: ]]></text>
@@ -1368,6 +1457,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Visits/Customer per annum: ]]></text>
@@ -1383,6 +1473,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[New Customers: ]]></text>
@@ -1398,6 +1489,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Initial Patients: ]]></text>
@@ -1413,6 +1505,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Days: ]]></text>
@@ -1443,7 +1536,8 @@ FROM
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
-					<jr:column width="82" uuid="d951a7a2-7c36-48d2-9312-e3314afbf9fa">
+					<jr:column width="77" uuid="d951a7a2-7c36-48d2-9312-e3314afbf9fa">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<jr:detailCell style="Table 3_TD" height="71">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -1515,19 +1609,6 @@ FROM
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:columnGroup width="0" uuid="af94e63e-38d6-4d8f-82c6-b3088c942677">
-						<jr:column width="0" uuid="c63bd85c-258b-4617-835d-a82cc6d9894d">
-							<jr:detailCell style="Table 3_TD" height="75">
-								<property name="com.jaspersoft.studio.unit.width" value="px"/>
-								<box>
-									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								</box>
-							</jr:detailCell>
-						</jr:column>
-					</jr:columnGroup>
 				</jr:table>
 			</componentElement>
 			<staticText>
@@ -1541,6 +1622,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Deceased Patients: ]]></text>
@@ -1557,6 +1639,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoice Count: ]]></text>
@@ -1572,6 +1655,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Average Invoice: ]]></text>
@@ -1587,6 +1671,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Credits: ]]></text>
@@ -1603,18 +1688,18 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total OTC: ]]></text>
 			</staticText>
 			<componentElement>
-				<reportElement x="138" y="260" width="77" height="225" uuid="254fb8a4-7a3f-41d8-99c1-4deccd908196">
+				<reportElement x="138" y="260" width="77" height="98" uuid="254fb8a4-7a3f-41d8-99c1-4deccd908196">
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-0"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="DS-Money" uuid="0f70a8c2-da11-4509-b2bd-b1fbf85b1982">
+					<datasetRun subDataset="DS-Money1" uuid="0f70a8c2-da11-4509-b2bd-b1fbf85b1982">
 						<datasetParameter name="DateFrom">
 							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -1635,14 +1720,11 @@ FROM
 						<returnValue fromVariable="invoiceCount" toVariable="invoiceCount-0"/>
 						<returnValue fromVariable="creditTot" toVariable="creditTot-0"/>
 						<returnValue fromVariable="OtcTot" toVariable="OtcTot-0"/>
-						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-0"/>
-						<returnValue fromVariable="paymentTot" toVariable="paymentTot-0"/>
-						<returnValue fromVariable="refundTot" toVariable="refundTot-0"/>
 						<returnValue fromVariable="billingTot" toVariable="billingTot-0"/>
-						<returnValue fromVariable="incomeTot" toVariable="incomeTot-0"/>
 					</datasetRun>
-					<jr:column width="82" uuid="8c714d08-4e34-4f4f-be32-a4d21065719b">
+					<jr:column width="77" uuid="8c714d08-4e34-4f4f-be32-a4d21065719b">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableFooter height="0">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -1650,41 +1732,29 @@ FROM
 						<jr:columnFooter height="0">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 						</jr:columnFooter>
-						<jr:detailCell height="234">
+						<jr:detailCell height="98">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="155" width="77" height="14" uuid="a3e52539-3919-4914-a9c7-59880514bbaf">
-									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="169" width="77" height="14" uuid="9768b3b2-bf08-41c0-a7be-4c9d46c1b82f">
+								<reportElement x="0" y="0" width="77" height="14" uuid="88e4b00c-1524-45e9-887a-6f416d14d197">
 									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 								</reportElement>
 								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0">
+								<reportElement x="0" y="14" width="77" height="14" uuid="be04db9d-a43f-4977-a71a-c8520491c977"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="183" width="77" height="15" uuid="8a8674bf-afd6-49a4-b049-7f1fa9c8664b"/>
+								<reportElement x="0" y="28" width="77" height="14" uuid="dd37b3e0-c6ad-4518-8fb7-17b813a69513"/>
 								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="127" width="77" height="14" uuid="56f72b95-fbb7-4aeb-8ee4-f33cab82b83f"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="141" width="77" height="14" uuid="6e6f3214-ee60-4d19-9b56-e21575f7dd98"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="70" width="77" height="15" uuid="1761ed86-0b88-4539-9b83-315a751b8544"/>
+								<reportElement x="0" y="42" width="77" height="14" uuid="cfe64efc-b769-4884-9697-646b76541564"/>
 								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
 								<reportElement x="0" y="56" width="77" height="15" uuid="8bd286fe-4073-4410-985b-7db39732af30">
@@ -1694,53 +1764,21 @@ FROM
 								<textFieldExpression><![CDATA[$F{OtcTot}]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="42" width="77" height="14" uuid="cfe64efc-b769-4884-9697-646b76541564"/>
+								<reportElement x="0" y="70" width="77" height="15" uuid="9f9139b6-84d2-4851-a7e4-811b197dbd8c"/>
 								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0">
-								<reportElement x="0" y="14" width="77" height="14" uuid="be04db9d-a43f-4977-a71a-c8520491c977"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot})]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="0" width="77" height="14" uuid="88e4b00c-1524-45e9-887a-6f416d14d197">
-									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-								</reportElement>
+								<reportElement x="0" y="84" width="77" height="14" uuid="eb43c274-829f-461c-a23c-dfc97d788f8f"/>
 								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="28" width="77" height="14" uuid="dd37b3e0-c6ad-4518-8fb7-17b813a69513"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="84" width="77" height="15" uuid="9f9139b6-84d2-4851-a7e4-811b197dbd8c"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="98" width="77" height="15" uuid="eb43c274-829f-461c-a23c-dfc97d788f8f"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="197" width="77" height="15" uuid="9a6ffd7f-fc3f-424c-b3fe-b44b3fc256c3"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="211" width="77" height="14" uuid="a159c927-965a-48ff-b2f4-1e453cf08e7b"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
 				</jr:table>
 			</componentElement>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="415" width="138" height="14" uuid="11086db5-923a-492e-9908-fbd908319987">
+				<reportElement key="staticText-9" x="0" y="401" width="138" height="14" uuid="11086db5-923a-492e-9908-fbd908319987">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -1750,6 +1788,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Payments: ]]></text>
@@ -1765,6 +1804,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total outstanding bal at end: ]]></text>
@@ -1781,6 +1821,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices prepaid: ]]></text>
@@ -1796,6 +1837,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Est. Income per annum: ]]></text>
@@ -1811,12 +1853,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Income: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="429" width="138" height="14" uuid="128d622e-22c4-473a-8190-ed0fa780fdb6">
+				<reportElement key="staticText-9" x="0" y="415" width="138" height="14" uuid="128d622e-22c4-473a-8190-ed0fa780fdb6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -1827,6 +1870,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Refunds: ]]></text>
@@ -1842,12 +1886,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid 1-30 days: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="387" width="138" height="14" uuid="8207093c-c0a3-47e0-9514-e1dcc97860de">
+				<reportElement key="staticText-9" x="0" y="372" width="138" height="15" uuid="8207093c-c0a3-47e0-9514-e1dcc97860de">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -1857,6 +1902,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Item Discount rate: ]]></text>
@@ -1872,6 +1918,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid 31-60 days: ]]></text>
@@ -1887,12 +1934,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid > 60 days: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="330" width="138" height="14" uuid="c2eed49c-ff1e-4a7c-94be-3b98b1f683f7">
+				<reportElement key="staticText-9" x="0" y="429" width="138" height="14" uuid="c2eed49c-ff1e-4a7c-94be-3b98b1f683f7">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -1902,12 +1950,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Adjustments: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="358" width="138" height="14" uuid="3afe74ec-7bce-42fa-b4e0-8bb1d671487a">
+				<reportElement key="staticText-9" x="0" y="344" width="138" height="14" uuid="3afe74ec-7bce-42fa-b4e0-8bb1d671487a">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -1917,12 +1966,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Estimated Billed per annum: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="344" width="138" height="14" uuid="4aa84f18-740a-4522-bf71-1a9e1079503d">
+				<reportElement key="staticText-9" x="0" y="330" width="138" height="14" uuid="4aa84f18-740a-4522-bf71-1a9e1079503d">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -1932,6 +1982,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Billed: ]]></text>
@@ -1947,6 +1998,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Payment Discount rate: ]]></text>
@@ -1963,12 +2015,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid immediately: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="401" width="138" height="14" uuid="1ba28bfd-a7ae-4597-ae71-3a9678030ed2">
+				<reportElement key="staticText-9" x="0" y="387" width="138" height="14" uuid="1ba28bfd-a7ae-4597-ae71-3a9678030ed2">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -1978,6 +2031,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Discount Product rate: ]]></text>
@@ -2009,7 +2063,7 @@ FROM
 						<returnValue fromVariable="outstBalCount" toVariable="outstBalCount-0"/>
 						<returnValue fromVariable="avgOutstBal" toVariable="avgOutstBal-0"/>
 					</datasetRun>
-					<jr:column width="82" uuid="a533cc22-7ebd-49c8-b85a-9a1e25e4e9e6">
+					<jr:column width="77" uuid="a533cc22-7ebd-49c8-b85a-9a1e25e4e9e6">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableHeader height="0">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -2044,14 +2098,14 @@ FROM
 								<textFieldExpression><![CDATA[$F{outstBalTot}.doubleValue()/$F{outstBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="41" width="77" height="14" uuid="6a0f2c65-7806-4020-952a-397090c59579">
+								<reportElement x="0" y="42" width="77" height="14" uuid="6a0f2c65-7806-4020-952a-397090c59579">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 								</reportElement>
 								<textElement textAlignment="Right" verticalAlignment="Top"/>
 								<textFieldExpression><![CDATA[$F{credBalTot}.doubleValue()/$F{credBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="27" width="77" height="14" uuid="914a30e8-bfa7-4ddb-9d08-ba537b58ad96">
+								<reportElement x="0" y="28" width="77" height="14" uuid="914a30e8-bfa7-4ddb-9d08-ba537b58ad96">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2075,6 +2129,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Avg outstanding bal at end: ]]></text>
@@ -2090,6 +2145,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Avg credit bal at end: ]]></text>
@@ -2105,6 +2161,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total credit bal at end: ]]></text>
@@ -2214,138 +2271,6 @@ FROM
 				<textFieldExpression><![CDATA[($V{seenDistinctPatients-2}.floatValue()-$V{seenDistinctPatients-3}.floatValue())/$V{seenDistinctPatients-3}.floatValue()]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="250" y="260" width="77" height="225" uuid="6c4455ad-b685-44d8-83ab-86762c9e1791">
-					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-0"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
-				</reportElement>
-				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="DS-Money" uuid="dd4b38fa-857d-4b4a-8896-a097b8415d57">
-						<datasetParameter name="DateFrom">
-							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="DateTo">
-							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="Location">
-							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="MonthsPrior">
-							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="Set">
-							<datasetParameterExpression><![CDATA[1]]></datasetParameterExpression>
-						</datasetParameter>
-						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-						<returnValue fromVariable="invoiceTot" toVariable="invoiceTot-1"/>
-						<returnValue fromVariable="invoiceCount" toVariable="invoiceCount-1"/>
-						<returnValue fromVariable="creditTot" toVariable="creditTot-1"/>
-						<returnValue fromVariable="OtcTot" toVariable="OtcTot-1"/>
-						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-1"/>
-						<returnValue fromVariable="paymentTot" toVariable="paymentTot-1"/>
-						<returnValue fromVariable="refundTot" toVariable="refundTot-1"/>
-						<returnValue fromVariable="billingTot" toVariable="billingTot-1"/>
-						<returnValue fromVariable="incomeTot" toVariable="incomeTot-1"/>
-					</datasetRun>
-					<jr:column width="82" uuid="95b2f490-269d-46dd-b77e-fc6fce80f959">
-						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<jr:tableFooter height="0">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						</jr:tableFooter>
-						<jr:columnFooter height="0">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						</jr:columnFooter>
-						<jr:detailCell height="234">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="155" width="77" height="14" uuid="59515e79-bf41-466e-ae21-06987f870c11">
-									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="169" width="77" height="14" uuid="42adcb87-19bb-4ef7-b523-fc065879ac4d">
-									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="183" width="77" height="15" uuid="1419e66b-ffd5-4a5c-8e01-de221a77b51b"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="127" width="77" height="14" uuid="272a9d89-ca64-49af-a5f5-564126c9945c"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="141" width="77" height="14" uuid="637d930f-c36f-4386-9605-b842314c7872"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="70" width="77" height="15" uuid="02860ef7-0946-4677-b277-0cbebb00fac7"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="56" width="77" height="15" uuid="b59fc671-4e56-4d87-82f8-de09900b675b">
-									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{OtcTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="42" width="77" height="14" uuid="0142b876-e7d0-4212-9f6b-162cb56602fa"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0">
-								<reportElement x="0" y="14" width="77" height="14" uuid="2ee80975-ee81-41b3-9767-a906d0170bb9"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="0" width="77" height="14" uuid="fd99f5d9-06f0-47e1-88ab-fce5aaa52571">
-									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="28" width="77" height="14" uuid="fa095f62-9e04-4707-923d-d01a959d5fcd"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="84" width="77" height="15" uuid="a89a1d7e-e54a-452f-8eb1-52411f96e724"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="98" width="77" height="15" uuid="0bba200a-bec7-481f-990f-50ae25bb49c1"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="197" width="77" height="15" uuid="adec6a32-c1a5-4386-b222-024be96f068f"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="211" width="77" height="14" uuid="4a6a7d16-3ca9-48f2-8ea2-1890efb42544"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
-				</jr:table>
-			</componentElement>
-			<componentElement>
 				<reportElement x="250" y="485" width="77" height="71" uuid="c831e3c0-4a87-4859-b726-e668f252228c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="PayDelay-0"/>
@@ -2372,7 +2297,8 @@ FROM
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
-					<jr:column width="82" uuid="24b0bb8c-c49b-450c-baa9-1f9d9ddd11c0">
+					<jr:column width="77" uuid="24b0bb8c-c49b-450c-baa9-1f9d9ddd11c0">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<jr:detailCell style="Table 3_TD" height="71">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -2444,19 +2370,6 @@ FROM
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:columnGroup width="0" uuid="687d5ff0-84ac-4cd0-a90e-60491936493d">
-						<jr:column width="0" uuid="cc74755f-639d-44fb-8bb3-96ca0ae27d80">
-							<jr:detailCell style="Table 3_TD" height="75">
-								<property name="com.jaspersoft.studio.unit.width" value="px"/>
-								<box>
-									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								</box>
-							</jr:detailCell>
-						</jr:column>
-					</jr:columnGroup>
 				</jr:table>
 			</componentElement>
 			<componentElement>
@@ -2487,7 +2400,7 @@ FROM
 						<returnValue fromVariable="outstBalCount" toVariable="outstBalCount-1"/>
 						<returnValue fromVariable="avgOutstBal" toVariable="avgOutstBal-1"/>
 					</datasetRun>
-					<jr:column width="82" uuid="c5185e77-b9b9-444f-a52d-0ee7bf6f6800">
+					<jr:column width="77" uuid="c5185e77-b9b9-444f-a52d-0ee7bf6f6800">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableHeader height="0">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -2522,14 +2435,14 @@ FROM
 								<textFieldExpression><![CDATA[$F{outstBalTot}.doubleValue()/$F{outstBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="41" width="77" height="14" uuid="e4b3eeb3-1198-4a63-bc31-f98bb6a901da">
+								<reportElement x="0" y="42" width="77" height="14" uuid="e4b3eeb3-1198-4a63-bc31-f98bb6a901da">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 								</reportElement>
 								<textElement textAlignment="Right" verticalAlignment="Top"/>
 								<textFieldExpression><![CDATA[$F{credBalTot}.doubleValue()/$F{credBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="27" width="77" height="14" uuid="cedd3cc3-9682-4ee3-a9bc-2fa52c38fb67">
+								<reportElement x="0" y="28" width="77" height="14" uuid="cedd3cc3-9682-4ee3-a9bc-2fa52c38fb67">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2537,138 +2450,6 @@ FROM
 								</reportElement>
 								<textElement textAlignment="Right" verticalAlignment="Top"/>
 								<textFieldExpression><![CDATA[$F{credBalTot}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
-				</jr:table>
-			</componentElement>
-			<componentElement>
-				<reportElement x="362" y="260" width="77" height="225" uuid="da2b98ad-12f7-440e-857c-8a3295a8a5a7">
-					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-0"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
-				</reportElement>
-				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="DS-Money" uuid="6598226f-ea4d-47da-993c-28a4bbae8b7b">
-						<datasetParameter name="DateFrom">
-							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="DateTo">
-							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="Location">
-							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="MonthsPrior">
-							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="Set">
-							<datasetParameterExpression><![CDATA[2]]></datasetParameterExpression>
-						</datasetParameter>
-						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-						<returnValue fromVariable="invoiceTot" toVariable="invoiceTot-2"/>
-						<returnValue fromVariable="invoiceCount" toVariable="invoiceCount-2"/>
-						<returnValue fromVariable="creditTot" toVariable="creditTot-2"/>
-						<returnValue fromVariable="OtcTot" toVariable="OtcTot-2"/>
-						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-2"/>
-						<returnValue fromVariable="paymentTot" toVariable="paymentTot-2"/>
-						<returnValue fromVariable="refundTot" toVariable="refundTot-2"/>
-						<returnValue fromVariable="billingTot" toVariable="billingTot-2"/>
-						<returnValue fromVariable="incomeTot" toVariable="incomeTot-2"/>
-					</datasetRun>
-					<jr:column width="82" uuid="1abbd177-a62f-49a7-b720-a16bad0e4169">
-						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<jr:tableFooter height="0">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						</jr:tableFooter>
-						<jr:columnFooter height="0">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						</jr:columnFooter>
-						<jr:detailCell height="234">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="155" width="77" height="14" uuid="5b0d8d49-3425-427b-878d-7c7da92fdfbf">
-									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="169" width="77" height="14" uuid="003bf1b0-2ba1-410f-955b-fbdb677db700">
-									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="183" width="77" height="15" uuid="b96815a5-513f-4ef5-832d-5cdc4d5b68a7"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="127" width="77" height="14" uuid="4ba6c008-521f-45e1-9222-34d4980194a4"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="141" width="77" height="14" uuid="59549c30-361a-44bc-a6f2-04dca00d3df3"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="70" width="77" height="15" uuid="3e0bea87-fccb-41a0-ba7f-9fdb7fb90857"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="56" width="77" height="15" uuid="3b2639cd-2f20-480a-a716-14e496d483cd">
-									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{OtcTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="42" width="77" height="14" uuid="48fc23d3-4c84-431a-9868-4a7a11edecce"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0">
-								<reportElement x="0" y="14" width="77" height="14" uuid="ff47ead1-b9d3-41ca-b0db-38e1705ad5b8"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="0" width="77" height="14" uuid="f4a66598-f3a9-4d5f-88ac-dc5687eccbe9">
-									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="28" width="77" height="14" uuid="d46aa06c-4048-4232-bad4-ca43aed4009a"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="84" width="77" height="15" uuid="21aec2ae-5e2f-400d-a5f7-8b68e86d94a2"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="98" width="77" height="15" uuid="ed8fdcb4-7cd5-4425-868b-5bbf7abba586"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="197" width="77" height="15" uuid="331393f8-126b-4604-8108-044bbcd13d1b"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="211" width="77" height="14" uuid="cb9eb1a6-663a-49f6-887e-26fe5e7baaec"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -2701,7 +2482,8 @@ FROM
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
-					<jr:column width="82" uuid="2f954a2d-f6de-4d81-90c0-d284814186ab">
+					<jr:column width="77" uuid="2f954a2d-f6de-4d81-90c0-d284814186ab">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<jr:detailCell style="Table 3_TD" height="71">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -2773,19 +2555,6 @@ FROM
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:columnGroup width="0" uuid="38dbbc7f-7d9a-4bdf-bad7-a0f2e6aa1e51">
-						<jr:column width="0" uuid="82fc601c-4cec-4fcd-bfc2-6e27010cf245">
-							<jr:detailCell style="Table 3_TD" height="75">
-								<property name="com.jaspersoft.studio.unit.width" value="px"/>
-								<box>
-									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								</box>
-							</jr:detailCell>
-						</jr:column>
-					</jr:columnGroup>
 				</jr:table>
 			</componentElement>
 			<componentElement>
@@ -2816,7 +2585,7 @@ FROM
 						<returnValue fromVariable="outstBalCount" toVariable="outstBalCount-2"/>
 						<returnValue fromVariable="avgOutstBal" toVariable="avgOutstBal-2"/>
 					</datasetRun>
-					<jr:column width="82" uuid="81f7ea89-facc-4bc1-9cca-1e2153b12c85">
+					<jr:column width="77" uuid="81f7ea89-facc-4bc1-9cca-1e2153b12c85">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableHeader height="0">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -2851,14 +2620,14 @@ FROM
 								<textFieldExpression><![CDATA[$F{outstBalTot}.doubleValue()/$F{outstBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="41" width="77" height="14" uuid="0749c22a-5572-44f4-ae5a-d267a3cff8e4">
+								<reportElement x="0" y="42" width="77" height="14" uuid="0749c22a-5572-44f4-ae5a-d267a3cff8e4">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 								</reportElement>
 								<textElement textAlignment="Right" verticalAlignment="Top"/>
 								<textFieldExpression><![CDATA[$F{credBalTot}.doubleValue()/$F{credBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="27" width="77" height="14" uuid="3882680b-ca20-452d-80ca-7935452dc802">
+								<reportElement x="0" y="28" width="77" height="14" uuid="3882680b-ca20-452d-80ca-7935452dc802">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -2872,139 +2641,7 @@ FROM
 				</jr:table>
 			</componentElement>
 			<componentElement>
-				<reportElement x="473" y="260" width="77" height="225" uuid="24347ab4-07fa-4ebf-8a4b-3cc4a4e87318">
-					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-0"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
-				</reportElement>
-				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="DS-Money" uuid="8cf5bff2-1dad-48e0-9794-529e44ba24b5">
-						<datasetParameter name="DateFrom">
-							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="DateTo">
-							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="Location">
-							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="MonthsPrior">
-							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="Set">
-							<datasetParameterExpression><![CDATA[3]]></datasetParameterExpression>
-						</datasetParameter>
-						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-						<returnValue fromVariable="invoiceTot" toVariable="invoiceTot-3"/>
-						<returnValue fromVariable="invoiceCount" toVariable="invoiceCount-3"/>
-						<returnValue fromVariable="creditTot" toVariable="creditTot-3"/>
-						<returnValue fromVariable="OtcTot" toVariable="OtcTot-3"/>
-						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-3"/>
-						<returnValue fromVariable="paymentTot" toVariable="paymentTot-3"/>
-						<returnValue fromVariable="refundTot" toVariable="refundTot-3"/>
-						<returnValue fromVariable="billingTot" toVariable="billingTot-3"/>
-						<returnValue fromVariable="incomeTot" toVariable="incomeTot-3"/>
-					</datasetRun>
-					<jr:column width="82" uuid="04d40dce-3d7d-40fb-b070-ac7763325c03">
-						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<jr:tableFooter height="0">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						</jr:tableFooter>
-						<jr:columnFooter height="0">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						</jr:columnFooter>
-						<jr:detailCell height="234">
-							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="155" width="77" height="14" uuid="bc70a5b3-bb00-43b2-8200-7b7c067d2c34">
-									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="169" width="77" height="14" uuid="3e6b28c0-1879-4273-8a4f-1ed706c01fd9">
-									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="183" width="77" height="15" uuid="afed40aa-8019-489a-862a-fa420ef790cb"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="127" width="77" height="14" uuid="a952e5c2-1735-4ec6-a1b3-1df202fb59d7"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="141" width="77" height="14" uuid="1cee7bd9-b074-427a-bc9f-09dc1b94b223"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="70" width="77" height="15" uuid="d952d892-2e15-4284-963b-60c0cc4949b4"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="56" width="77" height="15" uuid="97ef6e19-3ec6-47d6-8480-1819914d9afb">
-									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{OtcTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="42" width="77" height="14" uuid="a4ca1bbe-f5c0-4781-9af1-5cb466a74b75"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0">
-								<reportElement x="0" y="14" width="77" height="14" uuid="07538130-31a2-44a2-9b7d-8c7376dbc091"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="0" width="77" height="14" uuid="12e1a59d-168e-46d1-b0f0-9397f8fae676">
-									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-								</reportElement>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="28" width="77" height="14" uuid="c4e44b9c-07b5-4f5d-b6b8-b02171208dd2"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="84" width="77" height="15" uuid="1fe8c5d3-0f7c-474d-9cd7-ac8e450b6d2a"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot})]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="98" width="77" height="15" uuid="f082c4ff-2a93-4b5e-8251-e749d264aade"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="¤#,##0">
-								<reportElement x="0" y="197" width="77" height="15" uuid="da182237-641e-415e-8538-19666177b6cb"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
-							</textField>
-							<textField pattern="#,##0.0%">
-								<reportElement x="0" y="211" width="77" height="14" uuid="c5d01797-d476-4bc2-9eb8-f5c41908d3e5"/>
-								<textElement textAlignment="Right"/>
-								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
-				</jr:table>
-			</componentElement>
-			<componentElement>
-				<reportElement x="473" y="485" width="77" height="71" uuid="23c6eb03-636b-4c89-a834-0fec88bd0430">
+				<reportElement x="474" y="485" width="77" height="71" uuid="23c6eb03-636b-4c89-a834-0fec88bd0430">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="PayDelay-0"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -3030,7 +2667,8 @@ FROM
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
-					<jr:column width="82" uuid="5663826e-b659-484e-9d1b-3284949a3bd9">
+					<jr:column width="77" uuid="5663826e-b659-484e-9d1b-3284949a3bd9">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<jr:detailCell style="Table 3_TD" height="71">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -3102,23 +2740,10 @@ FROM
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:columnGroup width="0" uuid="dd880577-caf6-48c2-97e4-aac9f6a34406">
-						<jr:column width="0" uuid="9a640663-4fb5-4d6b-9fe9-a9540f359d18">
-							<jr:detailCell style="Table 3_TD" height="75">
-								<property name="com.jaspersoft.studio.unit.width" value="px"/>
-								<box>
-									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								</box>
-							</jr:detailCell>
-						</jr:column>
-					</jr:columnGroup>
 				</jr:table>
 			</componentElement>
 			<componentElement>
-				<reportElement x="473" y="556" width="77" height="56" uuid="450bce4a-0cba-440d-94e0-94ca383f9faf">
+				<reportElement x="474" y="556" width="77" height="56" uuid="450bce4a-0cba-440d-94e0-94ca383f9faf">
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Outstanding-0"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
@@ -3145,7 +2770,7 @@ FROM
 						<returnValue fromVariable="outstBalCount" toVariable="outstBalCount-3"/>
 						<returnValue fromVariable="avgOutstBal" toVariable="avgOutstBal-3"/>
 					</datasetRun>
-					<jr:column width="82" uuid="818a20e9-cfd8-4456-ac8e-8b2a393d2730">
+					<jr:column width="77" uuid="818a20e9-cfd8-4456-ac8e-8b2a393d2730">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableHeader height="0">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -3180,14 +2805,14 @@ FROM
 								<textFieldExpression><![CDATA[$F{outstBalTot}.doubleValue()/$F{outstBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="41" width="77" height="14" uuid="c72a23c6-3acc-4325-a6d3-6cf68ceafe5d">
+								<reportElement x="0" y="42" width="77" height="14" uuid="c72a23c6-3acc-4325-a6d3-6cf68ceafe5d">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 								</reportElement>
 								<textElement textAlignment="Right" verticalAlignment="Top"/>
 								<textFieldExpression><![CDATA[$F{credBalTot}.doubleValue()/$F{credBalCount}.doubleValue()]]></textFieldExpression>
 							</textField>
 							<textField pattern="¤#,##0">
-								<reportElement x="0" y="27" width="77" height="14" uuid="fbdf27dc-74f9-415a-b537-aadf69147a82">
+								<reportElement x="0" y="28" width="77" height="14" uuid="fbdf27dc-74f9-415a-b537-aadf69147a82">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -3235,7 +2860,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{invoiceCount-1}.floatValue()-$V{invoiceCount-2}.floatValue())/$V{invoiceCount-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="440" y="260" width="34" height="14" uuid="68abb371-a4e1-449a-9992-5b22dfe5fe4c">
+				<reportElement x="439" y="260" width="34" height="14" uuid="68abb371-a4e1-449a-9992-5b22dfe5fe4c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3243,7 +2868,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{invoiceTot-2}.floatValue()-$V{invoiceTot-3}.floatValue())/$V{invoiceTot-3}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="440" y="274" width="34" height="14" uuid="98c1524a-c56b-429b-bc76-02ca1fc083be">
+				<reportElement x="439" y="274" width="34" height="14" uuid="98c1524a-c56b-429b-bc76-02ca1fc083be">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3268,7 +2893,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{OtcTot-1}.floatValue()-$V{OtcTot-2}.floatValue())/$V{OtcTot-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="440" y="316" width="34" height="14" uuid="ecc0bc79-0619-44f7-8cf8-022b897e38f4">
+				<reportElement x="439" y="316" width="34" height="14" uuid="ecc0bc79-0619-44f7-8cf8-022b897e38f4">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3276,7 +2901,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{OtcTot-2}.floatValue()-$V{OtcTot-3}.floatValue())/$V{OtcTot-3}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="215" y="344" width="34" height="14" uuid="34a15630-6c78-43d9-b470-cf99251d012c">
+				<reportElement x="215" y="330" width="34" height="14" uuid="34a15630-6c78-43d9-b470-cf99251d012c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
@@ -3285,7 +2910,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{billingTot-0}.floatValue()-$V{billingTot-1}.floatValue())/$V{billingTot-1}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="327" y="344" width="34" height="14" uuid="9d943a48-291c-4738-b7b3-97177cfa3f04">
+				<reportElement x="327" y="330" width="34" height="14" uuid="9d943a48-291c-4738-b7b3-97177cfa3f04">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
@@ -3294,7 +2919,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{billingTot-1}.floatValue()-$V{billingTot-2}.floatValue())/$V{billingTot-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="440" y="344" width="34" height="14" uuid="f33314c3-5804-4f73-b309-0b794917071e">
+				<reportElement x="439" y="330" width="34" height="14" uuid="f33314c3-5804-4f73-b309-0b794917071e">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3302,7 +2927,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{billingTot-2}.floatValue()-$V{billingTot-3}.floatValue())/$V{billingTot-3}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="215" y="415" width="34" height="14" uuid="bbd763d7-07d7-4617-b43a-741ac34344b6">
+				<reportElement x="215" y="401" width="34" height="14" uuid="bbd763d7-07d7-4617-b43a-741ac34344b6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
@@ -3311,7 +2936,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{paymentTot-0}.floatValue()-$V{paymentTot-1}.floatValue())/$V{paymentTot-1}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="327" y="415" width="34" height="14" uuid="8c1c7b89-4ede-4e24-8217-24049235f2c9">
+				<reportElement x="327" y="401" width="34" height="14" uuid="8c1c7b89-4ede-4e24-8217-24049235f2c9">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
 				</reportElement>
@@ -3319,7 +2944,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{paymentTot-1}.floatValue()-$V{paymentTot-2}.floatValue())/$V{paymentTot-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="438" y="415" width="34" height="14" uuid="7fd0eebd-1a03-494e-8e6b-20449565e52b">
+				<reportElement x="439" y="401" width="34" height="14" uuid="7fd0eebd-1a03-494e-8e6b-20449565e52b">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3344,7 +2969,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{incomeTot-1}.floatValue()-$V{incomeTot-2}.floatValue())/$V{incomeTot-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="438" y="443" width="34" height="14" uuid="9be398a0-dd3f-4d94-857c-67d661683409">
+				<reportElement x="439" y="443" width="34" height="14" uuid="9be398a0-dd3f-4d94-857c-67d661683409">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3369,7 +2994,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{outstBalTot-1}.floatValue()-$V{outstBalTot-2}.floatValue())/$V{outstBalTot-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="439" y="556" width="31" height="14" uuid="8e455f34-fb0a-4251-9c0e-b5e7dc3a005a">
+				<reportElement x="439" y="556" width="34" height="14" uuid="8e455f34-fb0a-4251-9c0e-b5e7dc3a005a">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3394,7 +3019,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{avgOutstBal-1}.floatValue()-$V{avgOutstBal-2}.floatValue())/$V{avgOutstBal-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="439" y="570" width="31" height="14" uuid="02081810-0e86-437f-8617-495f7c7aedc8">
+				<reportElement x="439" y="570" width="34" height="14" uuid="02081810-0e86-437f-8617-495f7c7aedc8">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
@@ -3412,6 +3037,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[% of Customers Seen: ]]></text>
@@ -3427,12 +3053,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Distinct Customers Seen: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="372" width="138" height="15" uuid="e0b968eb-9065-4a5b-bbe3-0d28a0811f19">
+				<reportElement key="staticText-9" x="0" y="358" width="138" height="14" uuid="e0b968eb-9065-4a5b-bbe3-0d28a0811f19">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -3442,6 +3069,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Avg. Billed/Customer Seen: ]]></text>
@@ -3477,7 +3105,7 @@ FROM
 						<returnValue fromVariable="seenRatio" toVariable="seenRatio-1"/>
 						<returnValue fromVariable="custDistinct" toVariable="custDistinct-1"/>
 					</datasetRun>
-					<jr:column width="91" uuid="f61a1707-0164-4c5e-b8e9-937a3d449b78">
+					<jr:column width="77" uuid="f61a1707-0164-4c5e-b8e9-937a3d449b78">
 						<jr:columnHeader height="42">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<box>
@@ -3675,7 +3303,7 @@ FROM
 						<returnValue fromVariable="seenRatio" toVariable="seenRatio-2"/>
 						<returnValue fromVariable="custDistinct" toVariable="custDistinct-2"/>
 					</datasetRun>
-					<jr:column width="91" uuid="82d58f8b-5fce-4a7d-982e-a14222686810">
+					<jr:column width="77" uuid="82d58f8b-5fce-4a7d-982e-a14222686810">
 						<jr:columnHeader height="42">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<box>
@@ -3873,7 +3501,7 @@ FROM
 						<returnValue fromVariable="seenRatio" toVariable="seenRatio-3"/>
 						<returnValue fromVariable="custDistinct" toVariable="custDistinct-3"/>
 					</datasetRun>
-					<jr:column width="91" uuid="53eeeafd-6d72-498b-8686-a93b6e779788">
+					<jr:column width="77" uuid="53eeeafd-6d72-498b-8686-a93b6e779788">
 						<jr:columnHeader height="42">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<box>
@@ -4040,34 +3668,6 @@ FROM
 					</jr:column>
 				</jr:table>
 			</componentElement>
-			<textField evaluationTime="Auto" pattern="¤#,##0">
-				<reportElement x="138" y="372" width="77" height="15" uuid="cd5e9f14-801e-43c8-8222-15bee1c3c795"/>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$V{incomeTot-0}.doubleValue()/$V{custDistinct-0}.doubleValue()]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Auto" pattern="¤#,##0">
-				<reportElement x="250" y="372" width="77" height="15" uuid="7dfeb5dc-05fd-44f4-ab04-d38febedb7f0">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$V{incomeTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue()]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Auto" pattern="¤#,##0">
-				<reportElement x="362" y="372" width="77" height="15" uuid="f967bda4-e1c6-4e19-b567-e0f6c5db98cb">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$V{incomeTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue()]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Auto" pattern="¤#,##0">
-				<reportElement x="473" y="372" width="77" height="15" uuid="5dd43fd2-732e-4cc8-bf67-9bc940e1b074">
-					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$V{incomeTot-3}.doubleValue()/$V{custDistinct-3}.doubleValue()]]></textFieldExpression>
-			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
 				<reportElement x="215" y="104" width="34" height="15" uuid="d42c2388-dccf-4649-af33-694004d4d865">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -4079,7 +3679,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{custDistinct-0}.floatValue()-$V{custDistinct-1}.floatValue())/$V{custDistinct-1}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="329" y="104" width="34" height="15" uuid="9ceb7a91-e5ae-4994-8cda-cab62a5f5586">
+				<reportElement x="327" y="104" width="34" height="15" uuid="9ceb7a91-e5ae-4994-8cda-cab62a5f5586">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -4089,7 +3689,7 @@ FROM
 				<textFieldExpression><![CDATA[($V{custDistinct-1}.floatValue()-$V{custDistinct-2}.floatValue())/$V{custDistinct-2}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="440" y="104" width="34" height="15" uuid="c4e2bd7e-bd76-41bb-b875-17c2927f7f9a">
+				<reportElement x="439" y="104" width="34" height="15" uuid="c4e2bd7e-bd76-41bb-b875-17c2927f7f9a">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -4099,34 +3699,674 @@ FROM
 				<textFieldExpression><![CDATA[($V{custDistinct-2}.floatValue()-$V{custDistinct-3}.floatValue())/$V{custDistinct-3}.floatValue()]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="215" y="372" width="34" height="15" uuid="57eb161f-644d-4bcf-a704-cb9834b0d4d7">
+				<reportElement x="215" y="358" width="34" height="14" uuid="57eb161f-644d-4bcf-a704-cb9834b0d4d7">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[(($V{incomeTot-0}.doubleValue()/$V{custDistinct-0}.doubleValue())-($V{incomeTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue()))/($V{incomeTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($V{billingTot-0}.doubleValue()/$V{custDistinct-0}.doubleValue())-($V{billingTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue()))/($V{billingTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue())]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="327" y="372" width="34" height="15" uuid="28191ec4-2a6b-40da-97b1-3213f077db20">
+				<reportElement x="327" y="358" width="34" height="14" uuid="28191ec4-2a6b-40da-97b1-3213f077db20">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[(($V{incomeTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue())-($V{incomeTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue()))/($V{incomeTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($V{billingTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue())-($V{billingTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue()))/($V{billingTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue())]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="+###0%;-###0%">
-				<reportElement x="438" y="372" width="34" height="15" uuid="438be4d0-94d3-43ff-93ed-09da326495f1">
+				<reportElement x="439" y="358" width="34" height="14" uuid="438be4d0-94d3-43ff-93ed-09da326495f1">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[(($V{incomeTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue())-($V{incomeTot-3}.doubleValue()/$V{custDistinct-3}.doubleValue()))/($V{incomeTot-3}.doubleValue()/$V{custDistinct-3}.doubleValue())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($V{billingTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue())-($V{billingTot-3}.doubleValue()/$V{custDistinct-3}.doubleValue()))/($V{billingTot-3}.doubleValue()/$V{custDistinct-3}.doubleValue())]]></textFieldExpression>
 			</textField>
+			<textField evaluationTime="Auto" pattern="¤#,##0">
+				<reportElement x="138" y="358" width="77" height="14" uuid="cd5e9f14-801e-43c8-8222-15bee1c3c795"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{billingTot-0}.doubleValue()/$V{custDistinct-0}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="¤#,##0">
+				<reportElement x="250" y="358" width="77" height="14" uuid="7dfeb5dc-05fd-44f4-ab04-d38febedb7f0">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{billingTot-1}.doubleValue()/$V{custDistinct-1}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="¤#,##0">
+				<reportElement x="362" y="358" width="77" height="14" uuid="f967bda4-e1c6-4e19-b567-e0f6c5db98cb">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{billingTot-2}.doubleValue()/$V{custDistinct-2}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="¤#,##0">
+				<reportElement x="474" y="358" width="77" height="14" uuid="5dd43fd2-732e-4cc8-bf67-9bc940e1b074">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{billingTot-3}.doubleValue()/$V{custDistinct-3}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="250" y="260" width="77" height="98" uuid="87404793-002b-48cc-b246-49299de1bb91">
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-0"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DS-Money1" uuid="cee9c956-453a-45b6-b4dd-3a5107052c4e">
+						<datasetParameter name="DateFrom">
+							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DateTo">
+							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Location">
+							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="MonthsPrior">
+							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Set">
+							<datasetParameterExpression><![CDATA[1]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="invoiceTot" toVariable="invoiceTot-1"/>
+						<returnValue fromVariable="invoiceCount" toVariable="invoiceCount-1"/>
+						<returnValue fromVariable="creditTot" toVariable="creditTot-1"/>
+						<returnValue fromVariable="OtcTot" toVariable="OtcTot-1"/>
+						<returnValue fromVariable="billingTot" toVariable="billingTot-1"/>
+					</datasetRun>
+					<jr:column width="77" uuid="320dc4f2-a70e-47e8-8f6c-228f59def949">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<jr:tableFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:tableFooter>
+						<jr:columnFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:columnFooter>
+						<jr:detailCell height="98">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="0" width="77" height="14" uuid="a903cc34-eb2e-407d-8160-f8a67cf20239">
+									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0">
+								<reportElement x="0" y="14" width="77" height="14" uuid="deabba0b-1fca-4440-9d52-e549b561e9e3"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="28" width="77" height="14" uuid="50914c8c-0c00-427d-acf7-fd2e8364da11"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="42" width="77" height="14" uuid="02aa1fee-f05f-4eb6-bdaf-94a5e57af0c6"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="56" width="77" height="15" uuid="1ea64d30-8ffd-4a6b-b7f4-538a7c80160f">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{OtcTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="70" width="77" height="15" uuid="062c9f6b-13b1-443f-bec3-56b6bfca69b9"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot})]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="84" width="77" height="14" uuid="24883100-eb0a-41f9-bad6-47d2e6d114ba"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="362" y="260" width="77" height="98" uuid="9be9adba-6f92-4cd6-b773-9cf4846b7167">
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-0"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DS-Money1" uuid="a7d766bf-8e5b-46a0-b6c2-0e6f9dbe611e">
+						<datasetParameter name="DateFrom">
+							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DateTo">
+							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Location">
+							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="MonthsPrior">
+							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Set">
+							<datasetParameterExpression><![CDATA[2]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="invoiceTot" toVariable="invoiceTot-2"/>
+						<returnValue fromVariable="invoiceCount" toVariable="invoiceCount-2"/>
+						<returnValue fromVariable="creditTot" toVariable="creditTot-2"/>
+						<returnValue fromVariable="OtcTot" toVariable="OtcTot-2"/>
+						<returnValue fromVariable="billingTot" toVariable="billingTot-2"/>
+					</datasetRun>
+					<jr:column width="77" uuid="96675d20-b68c-4361-be10-855b77381bc1">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<jr:tableFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:tableFooter>
+						<jr:columnFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:columnFooter>
+						<jr:detailCell height="98">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="0" width="77" height="14" uuid="bfc0facc-9d3f-4323-a966-668d051a1740">
+									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0">
+								<reportElement x="0" y="14" width="77" height="14" uuid="0f2fe7a3-222e-4dfc-831f-c13c72a75bcb"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="28" width="77" height="14" uuid="4c8da5fa-7019-4f69-ae57-25957f342b10"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="42" width="77" height="14" uuid="7bb5acb4-0fd3-44f8-984b-01083e988f5b"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="56" width="77" height="15" uuid="c61c7d85-d04b-42b3-a668-8208a93e730e">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{OtcTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="70" width="77" height="15" uuid="43e49400-8bd4-4849-9220-dc8139e367ff"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot})]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="84" width="77" height="14" uuid="2bdba618-7409-4446-8501-e7764f21fc44"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="474" y="260" width="77" height="98" uuid="9d155855-d76a-4c73-a9cf-dd47c3a06ca3">
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-0"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DS-Money1" uuid="98732fc7-292f-46bc-8933-bfe189efc4c7">
+						<datasetParameter name="DateFrom">
+							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DateTo">
+							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Location">
+							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="MonthsPrior">
+							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Set">
+							<datasetParameterExpression><![CDATA[3]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="invoiceTot" toVariable="invoiceTot-3"/>
+						<returnValue fromVariable="invoiceCount" toVariable="invoiceCount-3"/>
+						<returnValue fromVariable="creditTot" toVariable="creditTot-3"/>
+						<returnValue fromVariable="OtcTot" toVariable="OtcTot-3"/>
+						<returnValue fromVariable="billingTot" toVariable="billingTot-3"/>
+					</datasetRun>
+					<jr:column width="77" uuid="5a27199a-be44-4ae5-a5f2-4a93ff56bf5d">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<jr:tableFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:tableFooter>
+						<jr:columnFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:columnFooter>
+						<jr:detailCell height="98">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="0" width="77" height="14" uuid="d97a49da-9264-4f06-9d7e-d79c847ff17e">
+									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0">
+								<reportElement x="0" y="14" width="77" height="14" uuid="23366608-949a-49f9-bce7-ca5fd5e8c3ef"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceCount}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="28" width="77" height="14" uuid="1ab6b98d-d777-41d9-87c4-9f793085322d"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.floatValue()/$F{invoiceCount}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="42" width="77" height="14" uuid="66b46346-2738-432d-bf9d-8e2f1e376018"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{creditTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="56" width="77" height="15" uuid="9e8b11f9-2442-412b-adf0-7615c59ad88f">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{OtcTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="70" width="77" height="15" uuid="a1dacbfd-5c89-49f8-97d1-383ea66c4014"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot})]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="84" width="77" height="14" uuid="a16c6042-c663-432a-ad03-6b7c477856e5"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{invoiceTot}.subtract($F{creditTot}).add($F{OtcTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="138" y="372" width="77" height="113" uuid="8af3fd02-ad1e-44a1-877b-ce48c6ddb63a">
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-1"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DS-Money2" uuid="1dacc18b-6f89-42bf-9b2d-b99ae132b2f3">
+						<datasetParameter name="DateFrom">
+							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DateTo">
+							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Location">
+							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="MonthsPrior">
+							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Set">
+							<datasetParameterExpression><![CDATA[0]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-0"/>
+						<returnValue fromVariable="paymentTot" toVariable="paymentTot-0"/>
+						<returnValue fromVariable="refundTot" toVariable="refundTot-0"/>
+						<returnValue fromVariable="incomeTot" toVariable="incomeTot-0"/>
+					</datasetRun>
+					<jr:column width="77" uuid="5d5cf809-5fe0-4f56-b42b-70ad51fe563e">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<jr:tableFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:tableFooter>
+						<jr:columnFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:columnFooter>
+						<jr:detailCell height="113">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="0" width="77" height="14" uuid="f36dc518-1bbe-4b29-b9fa-bb2ce29f53f6">
+									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="14" width="77" height="14" uuid="088d0ac3-bfc5-4697-9cc7-04940844d16c"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="28" width="77" height="14" uuid="dc7af7ca-998d-4bf5-90b5-7736304ab954"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="42" width="77" height="14" uuid="4aa21859-2a1b-4e28-98de-655dc2e11dcb"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="57" width="77" height="14" uuid="57e06cbe-983a-4f05-b414-cc2ae786b1c0">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="71" width="77" height="14" uuid="932df06f-69cb-43c4-9df8-4d74dec93c06"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot})]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="85" width="77" height="14" uuid="26e5f5bd-7b70-4896-b397-8b7dc4d2fc92"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="99" width="77" height="14" uuid="e478f94f-7b7a-4243-8320-90c3527d96a7"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="250" y="372" width="77" height="113" uuid="2c622418-329e-4246-8c07-a5f63c6bb0d3">
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-1"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>0]]></printWhenExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DS-Money2" uuid="eaff6392-3040-4eff-8ff4-4723bc906f2b">
+						<datasetParameter name="DateFrom">
+							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DateTo">
+							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Location">
+							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="MonthsPrior">
+							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Set">
+							<datasetParameterExpression><![CDATA[1]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-1"/>
+						<returnValue fromVariable="paymentTot" toVariable="paymentTot-1"/>
+						<returnValue fromVariable="refundTot" toVariable="refundTot-1"/>
+						<returnValue fromVariable="incomeTot" toVariable="incomeTot-1"/>
+					</datasetRun>
+					<jr:column width="77" uuid="9444bcd2-415b-4e3b-b22d-2f479709bca5">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<jr:tableFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:tableFooter>
+						<jr:columnFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:columnFooter>
+						<jr:detailCell height="113">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="0" width="77" height="14" uuid="88a78083-0477-4802-a999-8fec63ccdac1">
+									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="14" width="77" height="14" uuid="e20922a3-9152-4ef8-af58-0a7fc1fcb6da"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="28" width="77" height="14" uuid="6cff30f6-5077-4036-8db8-66e5b8e46de2"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="42" width="77" height="14" uuid="a618ce23-c034-4569-bc37-ce48e5099625"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="57" width="77" height="14" uuid="f7d54d3f-fc41-475a-899d-32c7f70a13a2">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="71" width="77" height="14" uuid="0b559da2-b9e8-41f3-a77a-129812785467"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot})]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="85" width="77" height="14" uuid="bcee6d2f-d8a1-4da3-9ca2-5108678a4e70"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="99" width="77" height="14" uuid="9de9b508-8e48-4eb5-b8a4-3afcd4594f4e"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="362" y="372" width="77" height="113" uuid="5b03a803-bd60-47da-b923-2367537a50bf">
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-1"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>1]]></printWhenExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DS-Money2" uuid="39d2d6b5-2638-49ff-b525-3f4fa74b54a7">
+						<datasetParameter name="DateFrom">
+							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DateTo">
+							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Location">
+							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="MonthsPrior">
+							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Set">
+							<datasetParameterExpression><![CDATA[2]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-2"/>
+						<returnValue fromVariable="paymentTot" toVariable="paymentTot-2"/>
+						<returnValue fromVariable="refundTot" toVariable="refundTot-2"/>
+						<returnValue fromVariable="incomeTot" toVariable="incomeTot-2"/>
+					</datasetRun>
+					<jr:column width="77" uuid="3a2c8eaa-2859-4c40-a059-da1b041ccfc9">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<jr:tableFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:tableFooter>
+						<jr:columnFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:columnFooter>
+						<jr:detailCell height="113">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="0" width="77" height="14" uuid="5a8a4058-0634-4305-aa14-9665d2b2a53c">
+									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="14" width="77" height="14" uuid="14d57e1c-9c2f-43f4-83ab-95e892bb7716"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="28" width="77" height="14" uuid="1e983096-8aa5-4a24-a138-477468d498e7"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="42" width="77" height="14" uuid="329a5944-40c0-4d13-8505-4c94149eb2f7"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="57" width="77" height="14" uuid="30ad0466-3d89-4857-973e-4f3ad0ce200a">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="71" width="77" height="14" uuid="a6803771-2c77-4ba7-bf1b-d9cbaafdf5e5"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot})]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="85" width="77" height="14" uuid="269494b4-98dd-4765-8962-dd010f994195"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="99" width="77" height="14" uuid="9103c0ea-d4b8-445f-bc30-f0b9aa190aa7"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="474" y="372" width="77" height="113" uuid="a966c0d2-4dd4-4a9a-97eb-440958342fa2">
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="Money-1"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{priorPeriods}>2]]></printWhenExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DS-Money2" uuid="9228f16b-3b77-4796-bd14-77de81214d72">
+						<datasetParameter name="DateFrom">
+							<datasetParameterExpression><![CDATA[$P{DateFrom}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DateTo">
+							<datasetParameterExpression><![CDATA[$P{DateTo}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Location">
+							<datasetParameterExpression><![CDATA[$P{location}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="MonthsPrior">
+							<datasetParameterExpression><![CDATA[$P{MonthsPrior}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Set">
+							<datasetParameterExpression><![CDATA[3]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="adjustmentTot" toVariable="adjustmentTot-3"/>
+						<returnValue fromVariable="paymentTot" toVariable="paymentTot-3"/>
+						<returnValue fromVariable="refundTot" toVariable="refundTot-3"/>
+						<returnValue fromVariable="incomeTot" toVariable="incomeTot-3"/>
+					</datasetRun>
+					<jr:column width="77" uuid="f89c71c1-8956-41a6-902d-fafd21f04a1a">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<jr:tableFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:tableFooter>
+						<jr:columnFooter height="0">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</jr:columnFooter>
+						<jr:detailCell height="113">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="0" width="77" height="14" uuid="d09984ed-60db-4d6e-b5c7-5da7f442d7fa">
+									<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{itemDiscountTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="14" width="77" height="14" uuid="67d16dfa-c9f9-4a85-97bb-580c581e1385"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{discountProdTot}.floatValue()/$F{invoiceTot}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="28" width="77" height="14" uuid="00a3e5a3-4211-4a3f-969a-f9aed6185a68"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="42" width="77" height="14" uuid="187f5011-e040-4ec8-ba46-5c6bca724d49"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{refundTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="57" width="77" height="14" uuid="0ac20b22-4d6f-4934-a0c9-3d82077e053c">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{adjustmentTot}]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="71" width="77" height="14" uuid="1ccb9480-1fd7-4be6-9575-d0a3cdeb1bc8"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot})]]></textFieldExpression>
+							</textField>
+							<textField pattern="¤#,##0">
+								<reportElement x="0" y="85" width="77" height="14" uuid="098a011e-951b-4ae0-9c0d-0dbe7d885f71"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentTot}.subtract($F{refundTot}).add($F{adjustmentTot}).floatValue()*365./$F{days}.floatValue()]]></textFieldExpression>
+							</textField>
+							<textField pattern="#,##0.0%">
+								<reportElement x="0" y="99" width="77" height="14" uuid="224c8c12-8471-4bcd-a2a5-a831abd40a0e"/>
+								<textElement textAlignment="Right"/>
+								<textFieldExpression><![CDATA[$F{paymentDiscountTot}.floatValue()/$F{paymentTot}.floatValue()]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
 		</band>
-		<band height="584" splitType="Prevent">
+		<band height="579" splitType="Prevent">
 			<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 			<staticText>
 				<reportElement key="staticText-9" x="138" y="212" width="411" height="14" uuid="030c84d4-a997-41c9-b799-8d7d984eed06">
@@ -4139,6 +4379,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[(Visits/Final_Customers)*(365/Days_in_period)]]></text>
@@ -4154,6 +4395,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[(Visits/Final_Patients)*(365/Days_in_period)]]></text>
@@ -4169,6 +4411,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Number of distinct patients seen]]></text>
@@ -4184,6 +4427,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of visits within the period]]></text>
@@ -4199,6 +4443,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[(Final - Initial)*365/(Initial*Days_in_period) as a percentage]]></text>
@@ -4214,12 +4459,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of patients with Date Created in the period]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="112" width="411" height="14" uuid="047297f7-0e94-463b-87d5-6041c48a1350">
+				<reportElement key="staticText-9" x="138" y="113" width="411" height="14" uuid="047297f7-0e94-463b-87d5-6041c48a1350">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4229,6 +4475,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of active patients at end of period (see Note 1)]]></text>
@@ -4244,6 +4491,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Distinct_Customers_Seen/Final_Customers as a percentage]]></text>
@@ -4259,6 +4507,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[(Final - Initial)*365/(Initial*Days_in_period) as a percentage]]></text>
@@ -4274,6 +4523,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of customers with Date Created in the period]]></text>
@@ -4289,6 +4539,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of active customers at end of period (see Note 1)]]></text>
@@ -4304,6 +4555,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of active customers at start of period (see Note 1)]]></text>
@@ -4351,6 +4603,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[New Patients: ]]></text>
@@ -4366,6 +4619,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Final Customers: ]]></text>
@@ -4381,6 +4635,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[New Customers: ]]></text>
@@ -4396,6 +4651,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Visits/Customer per annum: ]]></text>
@@ -4411,6 +4667,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Pat.% change per annum: ]]></text>
@@ -4426,6 +4683,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Visits/Patient per annum: ]]></text>
@@ -4441,6 +4699,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[% of Customers Seen: ]]></text>
@@ -4456,6 +4715,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Visits: ]]></text>
@@ -4471,6 +4731,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Cust. % change per annum: ]]></text>
@@ -4486,6 +4747,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Distinct Patients Seen: ]]></text>
@@ -4501,6 +4763,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Final Patients: ]]></text>
@@ -4516,6 +4779,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Initial Customers: ]]></text>
@@ -4531,6 +4795,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Deceased Patients: ]]></text>
@@ -4546,6 +4811,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of patients with Date Deceased in the period]]></text>
@@ -4562,12 +4828,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Invoices: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="353" width="138" height="14" uuid="f51f7f49-c555-4fad-be84-6fb580706e4c">
+				<reportElement key="staticText-9" x="0" y="339" width="138" height="14" uuid="f51f7f49-c555-4fad-be84-6fb580706e4c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4577,12 +4844,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Item Discount rate: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="381" width="138" height="14" uuid="edf12264-244f-4b8f-af7b-66f96b6cbc99">
+				<reportElement key="staticText-9" x="0" y="367" width="138" height="14" uuid="edf12264-244f-4b8f-af7b-66f96b6cbc99">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4592,6 +4860,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Payments: ]]></text>
@@ -4608,6 +4877,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoice Count: ]]></text>
@@ -4623,12 +4893,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Payment Discount rate: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="325" width="138" height="14" uuid="2b063c0a-9541-487b-ac5b-a9357494beb0">
+				<reportElement key="staticText-9" x="0" y="310" width="138" height="15" uuid="2b063c0a-9541-487b-ac5b-a9357494beb0">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4638,12 +4909,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Estimated Billed per annum: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="310" width="138" height="15" uuid="27c3b19a-99db-4e8a-8459-5cd2397c34cd">
+				<reportElement key="staticText-9" x="0" y="296" width="138" height="14" uuid="27c3b19a-99db-4e8a-8459-5cd2397c34cd">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4653,6 +4925,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Billed: ]]></text>
@@ -4668,6 +4941,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid 31-60 days: ]]></text>
@@ -4684,6 +4958,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices prepaid: ]]></text>
@@ -4699,6 +4974,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Average Invoice: ]]></text>
@@ -4714,12 +4990,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Est. Income per annum: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="395" width="138" height="14" uuid="c2074fcb-f6b5-47c4-990e-c4593b98ae11">
+				<reportElement key="staticText-9" x="0" y="381" width="138" height="14" uuid="c2074fcb-f6b5-47c4-990e-c4593b98ae11">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -4730,6 +5007,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Refunds: ]]></text>
@@ -4746,6 +5024,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid immediately: ]]></text>
@@ -4761,6 +5040,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Income: ]]></text>
@@ -4776,12 +5056,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid > 60 days: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="296" width="138" height="14" uuid="ff2a01a3-84e1-4492-8d03-39819e85411f">
+				<reportElement key="staticText-9" x="0" y="353" width="138" height="14" uuid="ce814645-5fa3-4bf0-ad22-a3eded1f2868">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4791,21 +5072,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Total Adjustments: ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-9" x="0" y="367" width="138" height="14" uuid="ce814645-5fa3-4bf0-ad22-a3eded1f2868">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Discount Product rate: ]]></text>
@@ -4822,12 +5089,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total OTC: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="479" width="138" height="14" uuid="8b03a390-3f96-4f77-b1eb-aed09fe3e4ba">
+				<reportElement key="staticText-9" x="0" y="480" width="138" height="14" uuid="8b03a390-3f96-4f77-b1eb-aed09fe3e4ba">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4837,6 +5105,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Invoices paid 1-30 days: ]]></text>
@@ -4852,12 +5121,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total Credits: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="381" width="411" height="14" uuid="43ca26da-0a4f-47ee-a8c6-682fd6fbe263">
+				<reportElement key="staticText-9" x="138" y="367" width="411" height="14" uuid="43ca26da-0a4f-47ee-a8c6-682fd6fbe263">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4867,6 +5137,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Sum of all payments received within the period]]></text>
@@ -4882,6 +5153,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Above total *(365/Days_in_period)]]></text>
@@ -4897,12 +5169,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Sum of the ex-tax amounts of all finalised Invoices dated within the period]]></text>
+				<text><![CDATA[Sum of the ex-tax amounts of all finalised Invoices dated within the period (see Note 3)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="310" width="411" height="15" uuid="6b4f64fe-867a-49b3-97a7-85dd31e57f63">
+				<reportElement key="staticText-9" x="138" y="296" width="411" height="14" uuid="6b4f64fe-867a-49b3-97a7-85dd31e57f63">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4912,9 +5185,10 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Total of invoices, plus OTC, less Credits, plus Adjustments]]></text>
+				<text><![CDATA[Total of invoices, plus OTC, less Credits]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="138" y="268" width="411" height="14" uuid="a0d4cdab-9a3c-47b2-a7a7-37818ddb537b">
@@ -4927,12 +5201,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Sum of the ex-tax amounts of all finalised Credits dated within the period]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="281" width="411" height="14" uuid="c0ad7aa5-6393-4472-a0ef-e0da0db77999">
+				<reportElement key="staticText-9" x="138" y="282" width="411" height="14" uuid="c0ad7aa5-6393-4472-a0ef-e0da0db77999">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4942,12 +5217,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Sum of the ex-tax amounts of all finalised Counter Sales Invoices dated within the period]]></text>
+				<text><![CDATA[Sum of the ex-tax amounts of all finalised OTC Invoices dated within the period (Note 3)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="395" width="411" height="14" uuid="ad5b29ba-f949-4fcc-a6ac-b5605ad8f8bc">
+				<reportElement key="staticText-9" x="138" y="381" width="411" height="14" uuid="ad5b29ba-f949-4fcc-a6ac-b5605ad8f8bc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4957,6 +5233,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Sum of all payment refunds dated within the period]]></text>
@@ -4972,12 +5249,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[(Sum of payment discounts)/(Total Payments) as a percentage]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="295" width="411" height="14" uuid="9a750932-6636-4691-8050-75387461a870">
+				<reportElement key="staticText-9" x="138" y="353" width="411" height="14" uuid="bb297fe7-83e0-4057-85a9-e29333eeff77">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -4987,21 +5265,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Sum of the adjustments (Credit & Debit Adjustments & Bad Debts)  (see Note 2)]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-9" x="138" y="367" width="411" height="14" uuid="bb297fe7-83e0-4057-85a9-e29333eeff77">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[(Sum of negative amount invoice items [ie discounts])/(Total Invoices) as a percentage]]></text>
@@ -5017,9 +5281,10 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Payments less Refunds]]></text>
+				<text><![CDATA[Payments less Refunds plus Adjustments]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="138" y="240" width="411" height="14" uuid="d4897255-00d6-439f-a735-6c3c28d31c6d">
@@ -5032,12 +5297,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of the finalised invoices dated within the period (omitting $0 invoices)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="353" width="411" height="14" uuid="f8f364fb-699f-44ca-a232-58621ebf5191">
+				<reportElement key="staticText-9" x="138" y="339" width="411" height="14" uuid="f8f364fb-699f-44ca-a232-58621ebf5191">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5047,6 +5313,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[(Sum of line item discounts)/(Total Invoices) as a percentage]]></text>
@@ -5062,12 +5329,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Average ex-tax amount of invoices within the period]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="325" width="411" height="14" uuid="dfa10320-68ef-4758-a351-adc04a65fe46">
+				<reportElement key="staticText-9" x="138" y="310" width="411" height="15" uuid="dfa10320-68ef-4758-a351-adc04a65fe46">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5077,6 +5345,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Above total *(365/Days_in_period)]]></text>
@@ -5092,6 +5361,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Percentage of invoices issued in period that were prepaid]]></text>
@@ -5107,6 +5377,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Percentage of invoices issued in period that were paid on date of issue]]></text>
@@ -5122,6 +5393,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Percentage of invoices issued in period that were paid in 1-30 days]]></text>
@@ -5137,6 +5409,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Percentage of invoices issued in period that were paid in 31-60 days]]></text>
@@ -5152,6 +5425,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Percentage of invoices issued in period that were paid in > 60 days]]></text>
@@ -5167,9 +5441,10 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Total of active customer's outstanding balances at end of period (see Note 1)]]></text>
+				<text><![CDATA[Total of active customer's outstanding inc-tax debit balances at end of period (Note 1)]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="138" y="536" width="411" height="14" uuid="f7a9e627-622b-4982-97f3-a171c1c0decc">
@@ -5182,12 +5457,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Average of customer's outstanding balances at end of period (total/count of cust who owe)]]></text>
+				<text><![CDATA[Avg. of customer's outstanding balances at end of period (total/count of cust who owe)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="565" width="411" height="14" uuid="ebeb5a8b-61bd-4729-bf70-d0c38cfa1e3b">
+				<reportElement key="staticText-9" x="138" y="564" width="411" height="14" uuid="ebeb5a8b-61bd-4729-bf70-d0c38cfa1e3b">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5197,12 +5473,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Average of customer's credit balances at end of period (total/count of cust in credit)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="551" width="411" height="14" uuid="59e5f255-238f-457f-a0ef-285c38843a21">
+				<reportElement key="staticText-9" x="138" y="550" width="411" height="14" uuid="59e5f255-238f-457f-a0ef-285c38843a21">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5212,9 +5489,10 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Total of active customer's credit balances at end of period (see Note 1)]]></text>
+				<text><![CDATA[Total of active customer's inc-tax credit balances at end of period (see Note 1)]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="0" y="522" width="138" height="14" uuid="29e14341-5fa9-4c66-b2b4-975f41f51482">
@@ -5227,6 +5505,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total outstanding bal at end: ]]></text>
@@ -5242,6 +5521,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Avg outstanding bal at end: ]]></text>
@@ -5257,6 +5537,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total credit bal at end: ]]></text>
@@ -5272,6 +5553,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Avg credit bal at end: ]]></text>
@@ -5287,6 +5569,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Distinct Customers Seen: ]]></text>
@@ -5302,6 +5585,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Number of distinct customers invoiced (incl OTC sales) in the period]]></text>
@@ -5317,6 +5601,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Initial Patients: ]]></text>
@@ -5332,12 +5617,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Count of active patients at start of period (see Note 1)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="339" width="138" height="14" uuid="f45ffa77-c7a6-4441-8d7e-ffce51520218">
+				<reportElement key="staticText-9" x="0" y="325" width="138" height="14" uuid="f45ffa77-c7a6-4441-8d7e-ffce51520218">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5347,12 +5633,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Avg. Billed/Customer Seen: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="138" y="339" width="411" height="14" uuid="d1135b0e-076d-45d2-85fb-4e8643f3d2f1">
+				<reportElement key="staticText-9" x="138" y="325" width="411" height="14" uuid="d1135b0e-076d-45d2-85fb-4e8643f3d2f1">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5362,12 +5649,45 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Total_Billed/Distinct_Customers_Seen]]></text>
 			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="395" width="138" height="14" uuid="ff2a01a3-84e1-4492-8d03-39819e85411f">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total Adjustments: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="138" y="395" width="411" height="14" uuid="9a750932-6636-4691-8050-75387461a870">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Sum of the adjustments (Credit & Debit Adjustments & Bad Debts)  (see Note 2)]]></text>
+			</staticText>
 		</band>
-		<band height="246">
+		<band height="245">
 			<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 			<staticText>
 				<reportElement key="staticText-9" x="0" y="3" width="138" height="14" uuid="1a6c38ab-88bb-476e-9d62-19873ab5283e">
@@ -5380,6 +5700,7 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Period to Period changes: ]]></text>
@@ -5395,29 +5716,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[The percentages shown in the columns between the period statistics show the change in the statistic between periods as 100*(later-earlier)/earlier.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="28" width="138" height="14" uuid="e08bbede-e096-4ffd-816f-5f2940dcea6f">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Location selection: ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-9" x="138" y="28" width="411" height="122" uuid="f0340461-e0bf-4288-ac42-e465c31575cf">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
+				<reportElement key="staticText-9" x="138" y="139" width="411" height="20" uuid="5d078264-950d-40f0-b979-32cab5c889ac"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -5425,61 +5730,13 @@ FROM
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[If a Location is specified then the customer counts are of those whose Practice Location matches the specified location. The patient counts are of those who have owners (in the specified period) whose Practice Location matches the specified location. 
-The Visit, Billing and Income data is for that where the recorded Practice Location matches the specified location.
-The Invoice Payment and Outstanding Balance data is that for customers whose Practice Location matches the specified location.
-The specified location has % added so that leaving it blank will find all locations, and entering say 'c' will include only locations starting 'c', and entering '%branch' will give the data for all locations containing 'branch'. The selection is case-insensitive. 
-Specifying '-' as the location will find the cases where no location is recorded.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-9" x="0" y="179" width="138" height="28" uuid="717c63ad-b52e-4252-bba9-8b1bf1d258b2">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Notes: ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-9" x="138" y="179" width="411" height="67" uuid="a30b184b-47b4-4614-bb9f-5dcb9fe526a3"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top">
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[1) A customer or patient is taken to be active at a given date if they have a Date Created prior to or equal to the given date and either have their Active flag set, or have activities after the given date.
-2) Prior to release 1.8, no location was set for adjustment transactions. Hence if you select a location, the adjustment totals will be zero in historical periods prior to the use of 1.8]]></text>
-			</staticText>
-			<break>
-				<reportElement x="0" y="27" width="550" height="1" uuid="0faed26a-f98e-4c0d-a381-7f27ef3365da"/>
-			</break>
-			<staticText>
-				<reportElement key="staticText-9" x="138" y="149" width="411" height="28" uuid="5d078264-950d-40f0-b979-32cab5c889ac"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[The From and To dates are inclusive, ie the period is from 00:00:00 on the From date to 23:59:59 on the To date.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="149" width="138" height="28" uuid="067a1d92-3a52-468d-b3ae-3950be93e58e">
+				<reportElement key="staticText-9" x="0" y="139" width="138" height="19" uuid="067a1d92-3a52-468d-b3ae-3950be93e58e">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5489,10 +5746,85 @@ Specifying '-' as the location will find the cases where no location is recorded
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Dates: ]]></text>
 			</staticText>
+			<frame>
+				<reportElement x="0" y="27" width="549" height="112" uuid="4178b79b-e94e-4c82-ae12-99f8778a735c"/>
+				<staticText>
+					<reportElement key="staticText-9" x="0" y="0" width="138" height="14" uuid="e08bbede-e096-4ffd-816f-5f2940dcea6f">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Location selection: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-9" x="138" y="0" width="411" height="112" uuid="f0340461-e0bf-4288-ac42-e465c31575cf">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[If a Location is specified then the customer counts are of those whose Practice Location matches the specified location. The patient counts are of those who have owners (in the specified period) whose Practice Location matches the specified location. 
+The Visit, Billing and Income data is for that where the recorded Practice Location matches the specified location.
+The Invoice Payment and Outstanding Balance data is that for customers whose Practice Location matches the specified location.
+The specified location has % added so that leaving it blank will find all locations, and entering say 'c' will include only locations starting 'c', and entering '%branch' will give the data for all locations containing 'branch'. The selection is case-insensitive. 
+Specifying '-' as the location will find the cases where no location is recorded.]]></text>
+				</staticText>
+			</frame>
+			<frame>
+				<reportElement x="0" y="159" width="549" height="86" uuid="76dd3442-54f8-493b-a688-cd2c12ef2f05"/>
+				<staticText>
+					<reportElement key="staticText-9" x="0" y="0" width="138" height="19" uuid="717c63ad-b52e-4252-bba9-8b1bf1d258b2">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Notes: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-9" x="138" y="0" width="411" height="86" uuid="a30b184b-47b4-4614-bb9f-5dcb9fe526a3"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[1) A customer or patient is taken to be active at a given date if they have a Date Created prior to or equal to the given date and either have their Active flag set, or have activities after the given date.
+2) Prior to release 1.8, no location was set for adjustment transactions. Hence if you select a location, the adjustment totals will be zero in historical periods prior to the use of 1.8
+3) Invoices include Counter Sales to known customers, OTC includes only sales to anonymous customers.]]></text>
+				</staticText>
+			</frame>
 		</band>
 	</detail>
 	<summary>
