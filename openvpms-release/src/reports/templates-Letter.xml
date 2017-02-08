@@ -293,6 +293,10 @@
               description="Product Price List Report"
               path="Reporting/Reports/Product/Letter/Product Price List Report.jrxml" mimeType="text/xml"
               docType="document.other"/>
+    <template name="Products Missing Prices for Pricing Group Report" archetype="REPORT" reportType="PRODUCT"
+              description="Lists Products Missing Prices for Pricing Groups"
+              path="Reporting/Reports/Product/A4/Products Missing Prices for Pricing Group Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
     <template name="Stock Movement Report" archetype="REPORT" reportType="PRODUCT" description="Stock Movement Report"
               path="Reporting/Reports/Product/Letter/Stock Movement Report.jrxml" mimeType="text/xml"
               docType="document.other"/>
@@ -304,6 +308,9 @@
               docType="document.other"/>
     <template name="Stocktake Export Report" archetype="REPORT" reportType="PRODUCT"
               description="Stocktake Export Report" path="Reporting/Reports/Product/Letter/Stocktake Export Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Stocktake List Report" archetype="REPORT" reportType="PRODUCT"
+              description="Generates Stocktake Sheet" path="Reporting/Reports/Product/Letter/Stocktake List Report.jrxml"
               mimeType="text/xml" docType="document.other"/>
     <template name="Stock Valuation Report" archetype="REPORT" reportType="PRODUCT" description="Stock Valuation Report"
               path="Reporting/Reports/Product/Letter/Stock Valuation Report.jrxml" mimeType="text/xml"
@@ -365,6 +372,9 @@
               path="Workflow/Message/Letter/System Message.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Task" archetype="act.customerTask" reportType="WORKFLOW" description="Task"
               path="Workflow/Task/Letter/Task.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="HL7 Messages Report" archetype="REPORT" reportType="WORKFLOW" description="HL7 Messages Report"
+              path="Reporting/Reports/HL7/A4/HL7 Messages Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
     <template name="Letterhead" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead (Letter)"
               path="Letterhead/Letter/Letterhead.jrxml" mimeType="text/xml" docType="document.other"/>
 	<template name="Letterhead AddressBlock" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead AddressBlock (Letter)"
