@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T13:58:45 -->
+<!-- 2017-02-10T13:00:31 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Stocktake List" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="3dc32a1a-ffd9-4a3e-9f9c-8af9dba561de">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -172,7 +156,7 @@ order by sl.name, e.name]]>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="93" y="53" width="100" height="17" uuid="57c8466e-5399-4e1e-846c-799a681f8738">
+				<reportElement key="textField" x="96" y="53" width="100" height="17" uuid="57c8466e-5399-4e1e-846c-799a681f8738">
 					<property name="local_mesure_unity" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -221,7 +205,7 @@ order by sl.name, e.name]]>
 				<text><![CDATA[Stock Location: ]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-4" x="280" y="53" width="100" height="17" uuid="e41c5ece-f81b-4c1e-9e3a-ab39759f03b6">
+				<reportElement key="textField-4" x="285" y="53" width="100" height="17" uuid="e41c5ece-f81b-4c1e-9e3a-ab39759f03b6">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -237,7 +221,7 @@ order by sl.name, e.name]]>
 				<textFieldExpression><![CDATA[($P{Classification}==null)?"%":$P{Classification}+"%"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="93" y="36" width="100" height="17" uuid="6e16fa30-00f4-45ca-9a27-168898823853">
+				<reportElement key="textField-10" x="96" y="36" width="100" height="17" uuid="6e16fa30-00f4-45ca-9a27-168898823853">
 					<property name="local_mesure_unity" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -253,7 +237,7 @@ order by sl.name, e.name]]>
 				<textFieldExpression><![CDATA[($P{Stock Location}==null)?"%":$P{Stock Location}+"%"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-9" x="280" y="36" width="100" height="17" uuid="59b19af8-5a67-4647-8f6c-62dfe9dd93c8">
+				<reportElement key="textField-9" x="285" y="36" width="100" height="17" uuid="59b19af8-5a67-4647-8f6c-62dfe9dd93c8">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<box>
@@ -298,7 +282,7 @@ order by sl.name, e.name]]>
 				<text><![CDATA[Product Name: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-32" x="197" y="53" width="83" height="17" uuid="5c841f28-1628-48cd-9201-139c1a5e09f7">
+				<reportElement key="staticText-32" x="200" y="53" width="83" height="17" uuid="5c841f28-1628-48cd-9201-139c1a5e09f7">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="local_mesure_unity" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
@@ -320,7 +304,7 @@ order by sl.name, e.name]]>
 				<text><![CDATA[Classification: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-36" x="197" y="36" width="83" height="17" uuid="288d7fd9-86ee-453c-b3d7-6909065e0c7e">
+				<reportElement key="staticText-36" x="200" y="36" width="83" height="17" uuid="288d7fd9-86ee-453c-b3d7-6909065e0c7e">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<box>
