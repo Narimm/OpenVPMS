@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
 
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductTableModel;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
@@ -54,6 +55,8 @@ public class PricingGroupProductBrowser extends IMObjectTableBrowser<Product> {
      */
     @Override
     protected ResultSet<Product> doQuery() {
+        ProductTableModel model = (ProductTableModel) getTableModel();
+        model.setShowActive(getQuery().getActive() == BaseArchetypeConstraint.State.BOTH);
         return super.doQuery();
     }
 }
