@@ -11,15 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.template;
 
 import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -97,10 +95,8 @@ public class SMSReminderTemplateSampler extends SMSTemplateSampler {
             ActBean bean = new ActBean(reminder);
             bean.setNodeParticipant("patient", patient);
             bean.setNodeParticipant("reminderType", type);
-            ReminderType reminderType = new ReminderType(type, ServiceHelper.getArchetypeService());
-            ReminderEvent event = new ReminderEvent(ReminderEvent.Action.SMS, reminder, reminderType, patient,
-                                                    customer);
-            result = evaluator.evaluate(template, event, context.getLocation(), context.getPractice());
+            result = evaluator.evaluate(template, reminder, customer, patient, context.getLocation(),
+                                        context.getPractice());
         }
         return result;
     }

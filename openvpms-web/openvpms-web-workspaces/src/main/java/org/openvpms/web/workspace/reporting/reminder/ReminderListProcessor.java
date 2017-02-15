@@ -11,15 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -29,6 +36,7 @@ import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,12 +44,13 @@ import java.util.List;
 
 
 /**
- * Processor for {@link ReminderEvent.Action#PHONE} and {@link ReminderEvent.Action#LIST} events.
+ * Processor for <em>act.patientReminderItemList</em> reminders.
+ * <p/>
  * Prints all of the reminders to a report.
  *
  * @author Tim Anderson
  */
-public class ReminderListProcessor extends AbstractReminderBatchProcessor {
+public class ReminderListProcessor extends PatientReminderProcessor {
 
     /**
      * The context.
@@ -54,105 +63,143 @@ public class ReminderListProcessor extends AbstractReminderBatchProcessor {
     private final HelpContext help;
 
     /**
-     * The communication logger. May be {@code null}
+     * The printer listener.
      */
-    private final ReminderCommunicationLogger logger;
+    private PrinterListener listener;
+
 
     /**
-     * Constructs an {@code ReminderListProcessor}.
+     * Constructs a {@link ReminderListProcessor}.
      *
-     * @param reminders  the reminders
-     * @param statistics the reminder statistics
-     * @param context    the context
-     * @param help       the help context
-     * @param logger     if specified, logs listed reminders
+     * @param reminderTypes the reminder types
+     * @param rules         the reminder rules
+     * @param practice      the practice
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param logger        the communication logger. May be {@code null}
+     * @param context       the context
+     * @param help          the help context
      */
-    public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics, Context context,
-                                 HelpContext help, ReminderCommunicationLogger logger) {
-        super(reminders, statistics);
+    public ReminderListProcessor(ReminderTypeCache reminderTypes, ReminderRules rules, Party practice,
+                                 IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger,
+                                 Context context, HelpContext help) {
+        super(reminderTypes, rules, practice, service, config, logger);
         this.context = context;
         this.help = help;
-        this.logger = logger;
     }
 
     /**
-     * The processor title.
+     * Registers a listener for printer events.
+     * <p/>
+     * This must be registered prior to processing any reminders.
      *
-     * @return the processor title
+     * @param listener the listener
      */
-    public String getTitle() {
-        return Messages.get("reporting.reminder.run.list");
+    public void setListener(PrinterListener listener) {
+        this.listener = listener;
     }
 
     /**
-     * Processes the batch.
-     */
-    public void process() {
-        setStatus(Messages.get("reporting.reminder.list.status.begin"));
-        final List<ReminderEvent> reminders = getReminders();
-        if (!reminders.isEmpty()) {
-            try {
-                List<Act> acts = new ArrayList<>();
-                for (ReminderEvent event : reminders) {
-                    acts.add(event.getReminder());
-                }
-                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER,
-                                                                                     context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
-                final InteractivePrinter iPrinter = createPrinter(printer);
-
-                iPrinter.setListener(new PrinterListener() {
-                    public void printed(String printer) {
-                        try {
-                            updateReminders();
-                            notifyCompleted();
-                        } catch (Throwable error) {
-                            notifyError(error);
-                        }
-                    }
-
-                    public void cancelled() {
-                        notifyCompleted();
-                    }
-
-                    public void skipped() {
-                        notifyCompleted();
-                    }
-
-                    public void failed(Throwable cause) {
-                        notifyError(cause);
-                    }
-                });
-                iPrinter.print();
-            } catch (OpenVPMSException exception) {
-                notifyError(exception);
-            }
-        } else {
-            notifyCompleted();
-        }
-    }
-
-    /**
-     * Restarts processing.
-     */
-    public void restart() {
-        // no-op
-    }
-
-    /**
-     * Updates a reminder.
+     * Processes reminders.
      *
-     * @param reminder the reminder to update
-     * @param date     the last-sent date
-     * @return {@code true} if the reminder was updated
+     * @param state the reminder state
      */
     @Override
-    protected boolean updateReminder(ReminderEvent reminder, Date date) {
-        boolean updated = super.updateReminder(reminder, date);
-        if (updated && logger != null) {
-            logger.logList(reminder, getContext().getLocation());
+    public void process(State state) {
+        List<Act> acts = new ArrayList<>();
+        for (ObjectSet reminder : state.getReminders()) {
+            acts.add(getReminder(reminder));
         }
-        return updated;
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER, context);
+        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
+        InteractivePrinter iPrinter = createPrinter(printer);
+        iPrinter.setListener(listener);
+        iPrinter.print();
+    }
+
+    /**
+     * Completes processing.
+     *
+     * @param state the reminder state
+     */
+    @Override
+    public void complete(State state) {
+        List<ObjectSet> reminders = state.getReminders();
+        for (ObjectSet reminder : reminders) {
+            complete(reminder, state);
+        }
+        save(state);
+        CommunicationLogger logger = getLogger();
+        if (logger != null && !reminders.isEmpty()) {
+            log(state, logger);
+        }
+    }
+
+    /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
+        return false;
+    }
+
+    /**
+     * Returns the date from which a reminder item should be cancelled.
+     *
+     * @param startTime the item start time
+     * @param config    the reminder configuration
+     * @return the date when the item should be cancelled
+     */
+    @Override
+    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
+        return config.getListCancelDate(startTime);
+    }
+
+    /**
+     * Prepares reminders for processing.
+     * <p/>
+     * This:
+     * <ul>
+     * <li>filters out any reminders that can't be processed due to missing data</li>
+     * <li>adds meta-data for subsequent calls to {@link #process}</li>
+     * </ul>
+     *
+     * @param reminders the reminders
+     * @param updated   acts that need to be saved on completion
+     * @param errors    reminders that can't be processed due to error
+     * @return the reminders to process
+     */
+    @Override
+    protected List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors) {
+        ContactMatcher matcher = createContactMatcher(ContactArchetypes.PHONE);
+        for (ObjectSet reminder : reminders) {
+            Contact contact = getContact(reminder, matcher);
+            reminder.set("contact", contact);
+        }
+        return reminders;
+    }
+
+    /**
+     * Logs reminder communications.
+     *
+     * @param state  the reminder state
+     * @param logger the communication logger
+     */
+    protected void log(State state, CommunicationLogger logger) {
+        String subject = Messages.get("reminder.log.list.subject");
+        Party location = context.getLocation();
+        for (ObjectSet reminder : state.getReminders()) {
+            Party customer = getCustomer(reminder);
+            if (customer != null) {
+                Party patient = getPatient(reminder);
+                String notes = getNote(reminder);
+                Contact contact = (Contact) reminder.get("contact");
+                String description = contact != null ? contact.getDescription() : "";
+                logger.logPhone(customer, patient, description, subject, COMMUNICATION_REASON, null, notes, location);
+            }
+        }
     }
 
     /**
@@ -179,34 +226,4 @@ public class ReminderListProcessor extends AbstractReminderBatchProcessor {
         return new InteractiveIMPrinter<>(title, printer, true, context, help);
     }
 
-    /**
-     * Notifies the listener (if any) of processing completion.
-     */
-    @Override
-    protected void notifyCompleted() {
-        setStatus(Messages.get("reporting.reminder.list.status.end"));
-        super.notifyCompleted();
-    }
-
-    /**
-     * Invoked if an error occurs processing the batch.
-     * <p/>
-     * Sets the error message on each reminder, and notifies any listener.
-     *
-     * @param exception the cause
-     */
-    @Override
-    protected void notifyError(Throwable exception) {
-        setStatus(Messages.get("reporting.reminder.list.status.failed"));
-        super.notifyError(exception);
-    }
-
-    /**
-     * Returns the context.
-     *
-     * @return the context
-     */
-    protected Context getContext() {
-        return context;
-    }
 }

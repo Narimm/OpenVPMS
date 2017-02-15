@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -20,13 +20,15 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +44,12 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * The reminders.
      */
-    private final List<ReminderEvent> reminders = new ArrayList<>();
+    private final List<ObjectSet> reminders;
+
+    /**
+     * The reminder types.
+     */
+    private final ReminderTypeCache reminderTypes;
 
     /**
      * The statistics.
@@ -67,15 +74,14 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * Constructs an {@link AbstractReminderBatchProcessor}.
      *
-     * @param reminders  the reminders
-     * @param statistics the statistics
+     * @param query         the query
+     * @param reminderTypes the reminder types
+     * @param statistics    the statistics
      */
-    public AbstractReminderBatchProcessor(List<List<ReminderEvent>> reminders, Statistics statistics) {
-        for (List<ReminderEvent> list : reminders) {
-            for (ReminderEvent reminder : list) {
-                this.reminders.add(reminder);
-            }
-        }
+    public AbstractReminderBatchProcessor(ReminderItemSource query, ReminderTypeCache reminderTypes,
+                                          Statistics statistics) {
+        reminders = query.all();
+        this.reminderTypes = reminderTypes;
         this.statistics = statistics;
         row = RowFactory.create();
     }
@@ -105,7 +111,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      *
      * @return the reminders
      */
-    public List<ReminderEvent> getReminders() {
+    public List<ObjectSet> getReminders() {
         return reminders;
     }
 
@@ -127,31 +133,37 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     protected void updateReminders() {
         setProcessed(reminders.size());
         Date date = new Date();
-        for (ReminderEvent reminder : reminders) {
-            IMObjectReference ref = reminder.getReminder().getObjectReference();
+        for (ObjectSet set : reminders) {
+            Act item = (Act) set.get("item");
+            Act reminder = (Act) set.get("reminder");
+            ActBean bean = new ActBean(reminder);
+            ReminderType reminderType = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
+            IMObjectReference ref = item.getObjectReference();
             if (update && !completed.contains(ref)) {
-                if (updateReminder(reminder, date)) {
-                    statistics.increment(reminder);
+                if (updateReminder(reminder, item, date)) {
+                    if (reminderType != null) {
+                        statistics.increment(set);
+                    }
                     completed.add(ref);
                 } else {
                     statistics.incErrors();
                 }
             } else {
-                statistics.increment(reminder);
+                statistics.increment(set);
             }
         }
     }
 
     /**
-     * Updates a reminder.
+     * Updates a reminder and reminder item.
      *
-     * @param reminder the reminder to update
+     * @param reminder the reminder
+     * @param item     the reminder item
      * @param date     the last-sent date
      * @return {@code true} if the reminder was updated
      */
-    protected boolean updateReminder(ReminderEvent reminder, Date date) {
-        Act act = reminder.getReminder();
-        return ReminderHelper.update(act, date);
+    protected boolean updateReminder(Act reminder, Act item, Date date) {
+        return ReminderHelper.update(reminder, date);
     }
 
     /**
@@ -162,9 +174,10 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     @Override
     protected void notifyError(Throwable exception) {
-        for (ReminderEvent event : reminders) {
+        for (ObjectSet set : reminders) {
             if (update) {
-                ReminderHelper.setError(event.getReminder(), exception);
+                Act reminder = (Act) set.get("item");
+                ReminderHelper.setError(reminder, exception);
             }
             statistics.incErrors();
         }

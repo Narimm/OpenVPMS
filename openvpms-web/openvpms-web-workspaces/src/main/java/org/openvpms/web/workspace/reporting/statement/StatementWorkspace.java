@@ -79,7 +79,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * @param mailContext the mail context
      */
     public StatementWorkspace(Context context, MailContext mailContext) {
-        super("reporting.statement", "reporting", "statement", Act.class, context, mailContext);
+        super("reporting.statement", Act.class, context, mailContext);
     }
 
     /**

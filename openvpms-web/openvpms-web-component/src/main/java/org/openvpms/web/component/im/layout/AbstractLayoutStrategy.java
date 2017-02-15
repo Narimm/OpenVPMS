@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -627,6 +627,28 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected Property createReadOnly(Property property) {
         return new ReadOnlyProperty(property);
+    }
+
+    /**
+     * Creates a pair of components associated with properties, wrapped in a row.
+     *
+     * @param name1      the first property name
+     * @param name2      the second property name
+     * @param object     the parent object
+     * @param properties the object's properties
+     * @param context    the layout context
+     * @return a new component
+     */
+    protected ComponentState createComponentPair(String name1, String name2, IMObject object, PropertySet properties,
+                                                 LayoutContext context) {
+        Property property = properties.get(name1);
+        ComponentState state1 = createComponent(property, object, context);
+        ComponentState state2 = createComponent(properties.get(name2), object, context);
+        FocusGroup group = new FocusGroup(name1);
+        group.add(state1.getComponent());
+        group.add(state2.getComponent());
+        return new ComponentState(RowFactory.create(Styles.CELL_SPACING, state1.getComponent(),
+                                                    state2.getComponent()), state1.getProperty(), group);
     }
 
     /**

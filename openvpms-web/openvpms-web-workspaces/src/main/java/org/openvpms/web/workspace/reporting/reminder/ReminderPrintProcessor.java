@@ -11,27 +11,36 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -40,7 +49,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class ReminderPrintProcessor extends AbstractReminderProcessor {
+public class ReminderPrintProcessor extends GroupedReminderProcessor {
 
     /**
      * Determines if a print dialog is being displayed.
@@ -63,6 +72,11 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
     private PrinterListener listener;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The mail context, used when printing interactively. May be {@code null}
      */
     private final MailContext mailContext;
@@ -73,25 +87,27 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
     private final HelpContext help;
 
     /**
-     * The communication logger. May be {@code null}
-     */
-    private final ReminderCommunicationLogger logger;
-
-    /**
-     * Constructs a {@link ReminderPrintProcessor}.
+     * Constructs a {@link GroupedReminderProcessor}.
      *
-     * @param groupTemplate the grouped reminder document template
+     * @param groupTemplate the grouped reminder template
      * @param context       the context
      * @param mailContext   the mail context, used when printing interactively. May be {@code null}
      * @param help          the help context
-     * @param logger        if specified, logs printed reminders
+     * @param reminderTypes the reminder types
+     * @param rules         the reminder rules
+     * @param practice      the practice
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param logger        the communication logger. May be {@code null}
      */
     public ReminderPrintProcessor(DocumentTemplate groupTemplate, Context context, MailContext mailContext,
-                                  HelpContext help, ReminderCommunicationLogger logger) {
-        super(groupTemplate, context);
+                                  HelpContext help, ReminderTypeCache reminderTypes, ReminderRules rules,
+                                  Party practice, IArchetypeService service, ReminderConfiguration config,
+                                  CommunicationLogger logger) {
+        super(groupTemplate, reminderTypes, rules, practice, service, config, logger);
+        this.context = context;
         this.mailContext = mailContext;
         this.help = help;
-        this.logger = logger;
     }
 
     /**
@@ -105,13 +121,14 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
         this.listener = listener;
     }
 
+
     /**
-     * Determines if reminders are being printed interactively, or in the background.
+     * Determines if reminder processing is performed asynchronously.
      *
-     * @return {@code true} if reminders are being printed interactively, or {@code false} if they are being
-     * printed in the background
+     * @return {@code true} if reminder processing is performed asynchronously
      */
-    public boolean isInteractive() {
+    @Override
+    public boolean isAsynchronous() {
         return alwaysInteractive || interactive;
     }
 
@@ -126,39 +143,75 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
     }
 
     /**
+     * Returns the date from which a reminder item should be cancelled.
+     *
+     * @param startTime the item start time
+     * @param config    the reminder configuration
+     * @return the date when the item should be cancelled
+     */
+    @Override
+    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
+        return config.getPrintCancelDate(startTime);
+    }
+
+    /**
+     * Returns the contact archetype.
+     *
+     * @return the contact archetype
+     */
+    @Override
+    protected String getContactArchetype() {
+        return ContactArchetypes.LOCATION;
+    }
+
+    /**
      * Processes a list of reminder events.
      *
-     * @param events    the events
-     * @param shortName the report archetype short name, used to select the document template if none specified
-     * @param template  the document template to use. May be {@code null}
+     * @param contact   the contact to send to
+     * @param reminders the events
+     * @param template  the document template to use
      */
-    protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate template) {
-        Context context = getContext();
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, shortName, context);
-        if (events.size() > 1) {
-            List<ObjectSet> sets = createObjectSets(events);
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator, context);
-            print(printer, events);
+    @Override
+    protected void process(Contact contact, List<ObjectSet> reminders, DocumentTemplate template) {
+        DocumentTemplateLocator locator = new StaticDocumentTemplateLocator(template);
+        if (reminders.size() > 1) {
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(reminders, locator, context);
+            print(printer);
         } else {
             List<Act> acts = new ArrayList<>();
-            for (ReminderEvent event : events) {
-                acts.add(event.getReminder());
+            for (ObjectSet reminder : reminders) {
+                acts.add(getReminder(reminder));
             }
             IMPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
-            print(printer, events);
+            print(printer);
+        }
+    }
+
+    /**
+     * Logs reminder communications.
+     *
+     * @param state  the reminder state
+     * @param logger the communication logger
+     */
+    @Override
+    protected void log(State state, CommunicationLogger logger) {
+        String subject = Messages.get("reminder.log.mail.subject");
+        for (ObjectSet reminder : state.getReminders()) {
+            String notes = getNote(reminder);
+            Party customer = getCustomer(reminder);
+            Party patient = getPatient(reminder);
+            Contact contact = getContact(reminder);
+            logger.logMail(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, null, notes,
+                           context.getLocation());
         }
     }
 
     /**
      * Invoked when reminders are printed.
      *
-     * @param printer   the printer
-     * @param reminders the printed reminders
+     * @param printer the printer
      */
-    protected void onPrinted(String printer, List<ReminderEvent> reminders) {
-        if (logger != null) {
-            logger.logMail(reminders, getContext().getLocation());
-        }
+    protected void onPrinted(String printer) {
         if (fallbackPrinter == null) {
             fallbackPrinter = printer;
         }
@@ -169,10 +222,8 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
 
     /**
      * Invoked when printing is cancelled.
-     *
-     * @param reminders the cancelled reminders
      */
-    protected void onPrintCancelled(List<ReminderEvent> reminders) {
+    protected void onPrintCancelled() {
         if (listener != null) {
             listener.cancelled();
         }
@@ -180,10 +231,8 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
 
     /**
      * Invoked when printing is skipped.
-     *
-     * @param reminders the skipped reminders
      */
-    protected void onPrintSkipped(List<ReminderEvent> reminders) {
+    protected void onPrintSkipped() {
         if (listener != null) {
             listener.skipped();
         }
@@ -191,10 +240,8 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
 
     /**
      * Invoked when printing fails.
-     *
-     * @param reminders the reminders that failed to print
      */
-    protected void onPrintFailed(List<ReminderEvent> reminders, Throwable cause) {
+    protected void onPrintFailed(Throwable cause) {
         if (listener != null) {
             listener.failed(cause);
         }
@@ -206,10 +253,9 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
      * If a printer is configured, the print will occur in the background, otherwise a print dialog will be popped up.
      *
      * @param printer the printer
-     * @param events  the reminder events
      */
-    private <T> void print(IMPrinter<T> printer, final List<ReminderEvent> events) {
-        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<>(printer, getContext(), help);
+    private <T> void print(IMPrinter<T> printer) {
+        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
         String printerName = printer.getDefaultPrinter();
         if (printerName == null) {
             printerName = fallbackPrinter;
@@ -221,22 +267,22 @@ public class ReminderPrintProcessor extends AbstractReminderProcessor {
         iPrinter.setListener(new PrinterListener() {
             @Override
             public void printed(String printer) {
-                onPrinted(printer, events);
+                onPrinted(printer);
             }
 
             @Override
             public void cancelled() {
-                onPrintCancelled(events);
+                onPrintCancelled();
             }
 
             @Override
             public void skipped() {
-                onPrintSkipped(events);
+                onPrintSkipped();
             }
 
             @Override
             public void failed(Throwable cause) {
-                onPrintFailed(events, cause);
+                onPrintFailed(cause);
             }
         });
         iPrinter.print(printerName);

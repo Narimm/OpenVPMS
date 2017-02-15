@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,45 +35,52 @@ public class Statistics {
     /**
      * Tracks statistics by reminder type.
      */
-    private final Map<Entity, Map<ReminderEvent.Action, Integer>> statistics = new HashMap<>();
+    private final Map<Entity, Map<String, Integer>> statistics = new HashMap<>();
 
     /**
      * The no. of errors encountered.
      */
     private int errors;
 
+    /**
+     * The no. of cancelled reminders.
+     */
+    private int cancelled;
+
 
     /**
      * Increments the count for a reminder.
      *
-     * @param reminder the reminder event
+     * @param reminder the reminder
      */
-    public void increment(ReminderEvent reminder) {
-        Entity reminderType = reminder.getReminderType().getEntity();
-        ReminderEvent.Action action = reminder.getAction();
-        Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
+    public void increment(ObjectSet reminder) {
+        Entity reminderType = (Entity) reminder.get("reminderType");
+        Act item = (Act) reminder.get("item");
+        Map<String, Integer> stats = statistics.get(reminderType);
         if (stats == null) {
             stats = new HashMap<>();
             statistics.put(reminderType, stats);
         }
-        Integer count = stats.get(action);
+        String shortName = item.getArchetypeId().getShortName();
+        Integer count = stats.get(shortName);
         if (count == null) {
-            stats.put(action, 1);
+            stats.put(shortName, 1);
         } else {
-            stats.put(action, count + 1);
+            stats.put(shortName, count + 1);
         }
     }
 
+
     /**
-     * Returns the count for a processing type.
+     * Returns the count for a reminder item.
      *
-     * @param type the processing type
-     * @return the count for the processing type
+     * @param shortName the reminder item archetype short name
+     * @return the count for the reminder item
      */
-    public int getCount(ReminderEvent.Action type) {
+    public int getCount(String shortName) {
         int result = 0;
-        for (Map<ReminderEvent.Action, Integer> stats : statistics.values()) {
-            Integer count = stats.get(type);
+        for (Map<String, Integer> stats : statistics.values()) {
+            Integer count = stats.get(shortName);
             if (count != null) {
                 result += count;
             }
@@ -91,18 +98,18 @@ public class Statistics {
     }
 
     /**
-     * Returns the count for a reminder type and set of action.
+     * Returns the count for a reminder type and set of reminder items.
      *
      * @param reminderType the reminder type
-     * @param actions      the actions
+     * @param shortNames   the reminder item short names
      * @return the count
      */
-    public int getCount(Entity reminderType, EnumSet<ReminderEvent.Action> actions) {
+    public int getCount(Entity reminderType, String... shortNames) {
         int result = 0;
-        Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
+        Map<String, Integer> stats = statistics.get(reminderType);
         if (stats != null) {
-            for (ReminderEvent.Action action : actions) {
-                Integer value = stats.get(action);
+            for (String shortName : shortNames) {
+                Integer value = stats.get(shortName);
                 if (value != null) {
                     result += value;
                 }
@@ -135,4 +142,7 @@ public class Statistics {
         errors = 0;
     }
 
+    public int getCancelled() {
+        return cancelled;
+    }
 }

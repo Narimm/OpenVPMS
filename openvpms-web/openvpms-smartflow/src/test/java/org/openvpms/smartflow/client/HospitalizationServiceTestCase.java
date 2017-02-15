@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
@@ -109,7 +109,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
     public void setUp() {
         dateOfBirth = TestHelper.getDate("2014-06-21");
         startTime = TestHelper.getDatetime("2015-08-25 12:51:01");
-        Party customer = TestHelper.createCustomer("J", "Bloggs", true);
+        Party customer = TestHelper.createCustomer("J", "Bloggs", false, true);
         customer.addContact(TestHelper.createPhoneContact("", "123456789"));
         Party patient = PatientTestHelper.createPatient("Fido", "CANINE", "KELPIE", dateOfBirth, customer);
         Party location = TestHelper.createLocation();

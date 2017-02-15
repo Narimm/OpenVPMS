@@ -11,16 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.functors.NotPredicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.archetype.rules.party.PurposeMatcher;
-import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -35,6 +36,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -176,49 +178,31 @@ public class ReminderRules {
     }
 
     /**
-     * Calculate the due date for a reminder using the reminder's start date
-     * plus the default interval and units from the associated reminder type.
-     *
-     * @param act the act
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void calculateReminderDueDate(Act act) {
-        ActBean bean = new ActBean(act, service);
-        Date startTime = act.getActivityStartTime();
-        ReminderType reminderType = getReminderType(bean);
-        Date endTime = null;
-        if (startTime != null && reminderType != null) {
-            endTime = reminderType.getDueDate(startTime);
-        }
-        act.setActivityEndTime(endTime);
-    }
-
-    /**
      * Calculates the due date for a reminder.
      *
-     * @param startTime    the start time
+     * @param date         the date to calculate the due date from
      * @param reminderType the reminder type
      * @return the end time for a reminder
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date calculateReminderDueDate(Date startTime, Entity reminderType) {
+    public Date calculateReminderDueDate(Date date, Entity reminderType) {
         ReminderType type = new ReminderType(reminderType, service);
-        return type.getDueDate(startTime);
+        return type.getDueDate(date);
     }
 
     /**
      * Calculates the due date for a product reminder.
      *
-     * @param startTime    the start time
+     * @param date         the date to calculate the due date from
      * @param relationship the product reminder relationship
      * @return the due date for the reminder
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date calculateProductReminderDueDate(Date startTime, EntityRelationship relationship) {
+    public Date calculateProductReminderDueDate(Date date, EntityRelationship relationship) {
         IMObjectBean bean = new IMObjectBean(relationship, service);
         int period = bean.getInt("period");
         String uom = bean.getString("periodUom", "YEARS");
-        return DateRules.getDate(startTime, period, DateUnits.valueOf(uom));
+        return DateRules.getDate(date, period, DateUnits.valueOf(uom));
     }
 
     /**
@@ -251,29 +235,13 @@ public class ReminderRules {
     }
 
     /**
-     * Determines if a reminder is due in the specified date range.
-     *
-     * @param reminder the reminder
-     * @param from     the 'from' date. May be {@code null}
-     * @param to       the 'to' date. Nay be {@code null}
-     * @return {@code true} if the reminder is due
-     */
-    public boolean isDue(Act reminder, Date from, Date to) {
-        ActBean bean = new ActBean(reminder, service);
-        ReminderType reminderType = getReminderType(bean);
-        if (reminderType != null) {
-            int reminderCount = bean.getInt("reminderCount");
-            return reminderType.isDue(reminder.getActivityEndTime(),
-                                      reminderCount, from, to);
-        }
-        return false;
-    }
-
-    /**
      * Determines if a reminder needs to be cancelled, based on its due
      * date and the specified date. Reminders should be cancelled if:
      * <p/>
-     * {@code dueDate + (reminderType.cancelInterval * reminderType.cancelUnits) &lt;= date}
+     * <ul>
+     * <li>{@code dueDate + (reminderType.cancelInterval * reminderType.cancelUnits) &lt;= date}</li>
+     * <li>the patient is deceased or inactive</li>
+     * </ul>
      *
      * @param reminder the reminder
      * @param date     the date
@@ -282,38 +250,22 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean shouldCancel(Act reminder, Date date) {
+        boolean result = true;
         ActBean bean = new ActBean(reminder, service);
-        // First check if Patient deceased and if so set to Cancel
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        EntityBean patientBean = new EntityBean(patient, service);
-        if (patientBean.getBoolean("deceased", false)) {
-            return true;
-        }
-        // Otherwise get reminderType and check cancel period
         ReminderType reminderType = getReminderType(bean);
         if (reminderType != null) {
-            Date due = reminder.getActivityEndTime();
-            return reminderType.shouldCancel(due, date);
+            Date due = reminder.getActivityStartTime();
+            result = reminderType.shouldCancel(due, date);
         }
-        return false;
-    }
-
-    /**
-     * Cancels a reminder.
-     *
-     * @param reminder the reminder
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void cancelReminder(Act reminder) {
-        ActBean bean = new ActBean(reminder, service);
-        bean.setStatus(ReminderStatus.CANCELLED);
-        bean.save();
+        if (!result) {
+            Party patient = (Party) bean.getNodeParticipant("patient");
+            result = patient == null || rules.isDeceased(patient);
+        }
+        return result;
     }
 
     /**
      * Updates a reminder that has been successfully sent.
-     * <p/>
-     * This clears the <em>error</em> node.
      *
      * @param reminder the reminder
      * @param lastSent the date when the reminder was sent
@@ -327,8 +279,6 @@ public class ReminderRules {
 
     /**
      * Updates a reminder that has been successfully sent.
-     * <p/>
-     * This clears the <em>error</em> node.
      *
      * @param reminder      the reminder
      * @param reminderCount the reminder count
@@ -339,89 +289,57 @@ public class ReminderRules {
         ActBean bean = new ActBean(reminder, service);
         bean.setValue("reminderCount", reminderCount);
         bean.setValue("lastSent", lastSent);
-        bean.setValue("error", null);
         bean.save();
     }
 
     /**
-     * Returns a reminder type template, given the no. of times a reminder
-     * has already been sent, and the reminder type.
-     *
-     * @param reminderCount the no. of times a reminder has been sent
-     * @param reminderType  the reminder type
-     * @return the corresponding reminder type template, or {@code null}
-     * if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public EntityRelationship getReminderTypeTemplate(int reminderCount,
-                                                      Entity reminderType) {
-        ReminderType type = new ReminderType(reminderType, service);
-        return type.getTemplateRelationship(reminderCount);
-    }
-
-    /**
-     * Calculates the next due date for a reminder.
+     * Updates a reminder if it has no PENDING or ERROR items besides that supplied.
+     * <p/>
+     * This increments the reminder count.
+     * <p/>
+     * The caller is responsible for saving the reminder.
      *
      * @param reminder the reminder
-     * @return the next due date for the reminder, or {@code null}
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param item     the reminder item
+     * @return {@code true} if the reminder was updated
      */
-    public Date getNextDueDate(Act reminder) {
+    public boolean updateReminder(Act reminder, Act item) {
+        boolean result = false;
         ActBean bean = new ActBean(reminder, service);
-        int count = bean.getInt("reminderCount");
-        ReminderType reminderType = getReminderType(bean);
-        if (reminderType != null) {
-            return reminderType.getNextDueDate(reminder.getActivityEndTime(),
-                                               count);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the contact for a reminder.
-     *
-     * @param reminder the reminder
-     * @return the contact, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Contact getContact(Act reminder) {
-        Contact contact = null;
-        ActBean bean = new ActBean(reminder, service);
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        if (patient != null) {
-            Party owner = rules.getOwner(patient);
-            if (owner != null) {
-                contact = getContact(owner, reminder);
+        if (!hasOutstandingItems(bean, item)) {
+            ActBean itemBean = new ActBean(item, service);
+            int count = itemBean.getInt("count");
+            if (count == bean.getInt("reminderCount")) {
+                bean.setValue("reminderCount", count + 1);
+                result = true;
+                ReminderType reminderType = getReminderType(bean);
+                if (reminderType != null) {
+                    Date dueDate = reminderType.getNextDueDate(reminder.getActivityStartTime(), count);
+                    if (dueDate != null) {
+                        reminder.setActivityStartTime(dueDate);
+                    }
+                }
             }
         }
-        return contact;
+        return result;
     }
 
     /**
-     * Returns the contact for a patient owner and reminder.
+     * Determines if a reminder has any PENDING or ERROR items outstanding, besides that supplied.
      *
-     * @param owner    the patient owner
      * @param reminder the reminder
-     * @return the contact, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param item     the item
+     * @return {@code true} if the reminder has outstanding items
      */
-    public Contact getContact(Party owner, Act reminder) {
-        Contact contact;
-        ActBean bean = new ActBean(reminder, service);
-        ReminderType reminderType = getReminderType(bean);
-        EntityRelationship template = null;
-        if (reminderType != null) {
-            int reminderCount = bean.getInt("reminderCount");
-            template = reminderType.getTemplateRelationship(reminderCount);
+    private boolean hasOutstandingItems(ActBean reminder, Act item) {
+        Predicate targetEquals = RefEquals.getTargetEquals(item.getObjectReference());
+        for (Act act : reminder.getNodeTargetObjects("items", NotPredicate.getInstance(targetEquals), Act.class)) {
+            String status = act.getStatus();
+            if (ReminderItemStatus.PENDING.equals(status) || ReminderItemStatus.ERROR.equals(status)) {
+                return true;
+            }
         }
-        if (template != null && template.getTarget() != null) {
-            contact = getContact(owner.getContacts());
-        } else {
-            // no document reminderTypeTemplate, so can't send email or print.
-            // Use the customer's phone contact.
-            contact = getPhoneContact(owner.getContacts());
-        }
-        return contact;
+        return false;
     }
 
     /**
@@ -442,43 +360,6 @@ public class ReminderRules {
      */
     public Contact getContact(Set<Contact> contacts) {
         return getContact(contacts, true, ContactArchetypes.LOCATION);
-    }
-
-    /**
-     * Returns the first phone contact with classification 'REMINDER' or
-     * the preferred phone contact if no contact has this classification.
-     *
-     * @param contacts the contacts
-     * @return a contact, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Contact getPhoneContact(Set<Contact> contacts) {
-        return getContact(contacts, false, ContactArchetypes.PHONE);
-    }
-
-    /**
-     * Returns the first SMS phone contact with classification 'REMINDER' or the preferred phone contact if no contact
-     * has this classification.
-     *
-     * @param contacts the contacts
-     * @return a contact, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Contact getSMSContact(Set<Contact> contacts) {
-        List<Contact> list = Contacts.sort(contacts); // sort to make it deterministic
-        return Contacts.find(list, new SMSMatcher(REMINDER, false, service));
-    }
-
-    /**
-     * Returns the first email contact with classification 'REMINDER' or the
-     * preferred email contact if no contact has this classification.
-     *
-     * @param contacts the contacts
-     * @return a contact, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Contact getEmailContact(Set<Contact> contacts) {
-        return getContact(contacts, false, ContactArchetypes.EMAIL);
     }
 
     /**
@@ -579,8 +460,8 @@ public class ReminderRules {
      * @return all reminders for the patient in the date range
      */
     public Iterable<Act> getReminders(Party patient, Date from, Date to) {
-        ArchetypeQuery query = createQuery(patient, from, to);
-        return new IterableIMObjectQuery<>(service, query);
+        ArchetypeQuery query = createQuery(patient);
+        return getReminders(query, from, to);
     }
 
     /**
@@ -593,24 +474,32 @@ public class ReminderRules {
      * @return all reminders for the patient in the date range
      */
     public Iterable<Act> getReminders(Party patient, String productType, Date from, Date to) {
-        ArchetypeQuery query = createQuery(patient, from, to);
+        ArchetypeQuery query = createQuery(patient);
         query.add(join("product").add(join("entity").add(join("type").add(join("target").add(
                 eq("name", productType))))));
-        return new IterableIMObjectQuery<>(service, query);
+        return getReminders(query, from, to);
+    }
+
+    protected List<Act> getReminders(ArchetypeQuery query, Date from, Date to) {
+        List<Act> result = new ArrayList<>();
+        for (Act act : new IterableIMObjectQuery<Act>(service, query)) {
+            ActBean bean = new ActBean(act, service);
+            Date date = bean.getDate("createdTime");
+            if (date != null && DateRules.between(date, from, to)) {
+                result.add(act);
+            }
+        }
+        return result;
     }
 
     /**
-     * Creates a query for all reminders for a patient starting in the specified date range.
+     * Creates a query for all reminders for a patient.
      *
      * @param patient the patient
-     * @param from    the start of the date range, inclusive
-     * @param to      the end of the date range, exclusive
      * @return a new query
      */
-    private ArchetypeQuery createQuery(Party patient, Date from, Date to) {
+    private ArchetypeQuery createQuery(Party patient) {
         ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER);
-        query.add(Constraints.gte("startTime", from));
-        query.add(Constraints.lt("startTime", to));
         query.add(join("patient").add(eq("entity", patient)));
         return query;
     }
@@ -725,10 +614,9 @@ public class ReminderRules {
     protected ReminderType getReminderType(ActBean bean) {
         ReminderType reminderType = null;
         if (reminderTypes != null) {
-            reminderType = reminderTypes.get(
-                    bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION));
+            reminderType = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
         } else {
-            Entity entity = bean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
+            Entity entity = bean.getNodeParticipant("reminderType");
             if (entity != null) {
                 reminderType = new ReminderType(entity, service);
             }
@@ -854,22 +742,23 @@ public class ReminderRules {
      * Creates a reminder.
      *
      * @param reminderType the reminder type
-     * @param startTime    the reminder start time
+     * @param date         the reminder created time
      * @param dueDate      the reminder due date
      * @param patient      the patient
      * @param product      the product. May be {@code null}
      * @return a new reminder
      * @throws ArchetypeServiceException for any error
      */
-    private Act createReminder(Entity reminderType, Date startTime, Date dueDate, Party patient, Product product) {
+    private Act createReminder(Entity reminderType, Date date, Date dueDate, Party patient, Product product) {
         Act result = (Act) service.create("act.patientReminder");
         ActBean bean = new ActBean(result, service);
+        bean.setValue("createdTime", date);
         bean.addNodeParticipation("reminderType", reminderType);
         bean.addNodeParticipation("patient", patient);
         if (product != null) {
             bean.addNodeParticipation("product", product);
         }
-        result.setActivityStartTime(startTime);
+        result.setActivityStartTime(dueDate);
         result.setActivityEndTime(dueDate);
         return result;
     }

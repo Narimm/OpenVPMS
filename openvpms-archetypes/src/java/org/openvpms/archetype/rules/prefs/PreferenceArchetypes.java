@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.prefs;
@@ -69,7 +69,7 @@ public class PreferenceArchetypes {
     public static final String PREFERENCE_GROUP_LINKS = "entityLink.preferenceGroup*";
 
     /**
-     * Preferences user larchetype short name.
+     * Preferences user archetype short name.
      */
     public static final String USER_LINK = "entityLink.preferencesUser";
 }

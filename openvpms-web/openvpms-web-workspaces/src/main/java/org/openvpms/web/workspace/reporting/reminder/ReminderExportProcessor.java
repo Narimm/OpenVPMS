@@ -11,129 +11,167 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderExporter;
+import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 
 /**
- * Processor that exports reminders to CSV.
+ * Processor that exports reminders using the {@link ReminderExporter}.
  *
  * @author Tim Anderson
  */
-public class ReminderExportProcessor extends AbstractReminderBatchProcessor {
+public class ReminderExportProcessor extends PatientReminderProcessor {
 
     /**
-     * The context.
+     * The practice location.
      */
-    private final Context context;
-
-    /**
-     * The logger.
-     */
-    private final ReminderCommunicationLogger logger;
-
+    private final Party location;
 
     /**
      * Constructs a {@link ReminderExportProcessor}.
      *
-     * @param reminders  the reminders
-     * @param statistics the reminder statistics
-     * @param context    the context
-     * @param logger     if specified, log exported reminders
+     * @param reminderTypes the reminder types
+     * @param rules         the reminder rules
+     * @param location      the current practice location
+     * @param practice      the practice
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderExportProcessor(List<List<ReminderEvent>> reminders, Statistics statistics, Context context,
-                                   ReminderCommunicationLogger logger) {
-        super(reminders, statistics);
-        this.context = context;
-        this.logger = logger;
+    public ReminderExportProcessor(ReminderTypeCache reminderTypes, ReminderRules rules, Party location, Party practice,
+                                   IArchetypeService service, ReminderConfiguration config,
+                                   CommunicationLogger logger) {
+        super(reminderTypes, rules, practice, service, config, logger);
+        this.location = location;
     }
 
     /**
-     * The processor title.
+     * Determines if reminder processing is performed asynchronously.
      *
-     * @return the processor title
-     */
-    public String getTitle() {
-        return Messages.get("reporting.reminder.run.export");
-    }
-
-    /**
-     * Processes the batch.
-     */
-    public void process() {
-        List<ReminderEvent> reminders = getReminders();
-        if (!reminders.isEmpty()) {
-            try {
-                ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
-                Document document = exporter.export(reminders);
-                DownloadServlet.startDownload(document);
-                updateReminders();
-                notifyCompleted();
-            } catch (OpenVPMSException exception) {
-                notifyError(exception);
-            }
-        } else {
-            notifyCompleted();
-        }
-    }
-
-    /**
-     * Restarts processing.
-     */
-    public void restart() {
-        // no-op
-    }
-
-    /**
-     * Updates a reminder.
-     *
-     * @param reminder the reminder to update
-     * @param date     the last-sent date
-     * @return {@code true} if the reminder was updated
+     * @return {@code true} if reminder processing is performed asynchronously
      */
     @Override
-    protected boolean updateReminder(ReminderEvent reminder, Date date) {
-        boolean updated = super.updateReminder(reminder, date);
-        if (updated && logger != null) {
-            logger.logExport(reminder, context.getLocation());
-        }
-        return updated;
+    public boolean isAsynchronous() {
+        return false;
     }
 
     /**
-     * Notifies the listener (if any) of processing completion.
+     * Processes reminders.
+     *
+     * @param state the reminder state
      */
     @Override
-    protected void notifyCompleted() {
-        setStatus(Messages.get("reporting.reminder.export.status.end"));
-        super.notifyCompleted();
+    public void process(State state) {
+        List<ObjectSet> reminders = state.getReminders();
+        List<ReminderEvent> events = new ArrayList<>();
+        for (ObjectSet reminder : reminders) {
+            events.add(createEvent(reminder));
+        }
+        ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
+        Document document = exporter.export(events);
+        DownloadServlet.startDownload(document);
     }
 
     /**
-     * Invoked if an error occurs processing the batch.
+     * Prepares reminders for processing.
      * <p/>
-     * Sets the error message on each reminder, and notifies any listener.
+     * This:
+     * <ul>
+     * <li>filters out any reminders that can't be processed due to missing data</li>
+     * <li>adds meta-data for subsequent calls to {@link #process}</li>
+     * </ul>
      *
-     * @param exception the cause
+     * @param reminders the reminders
+     * @param updated   acts that need to be saved on completion
+     * @param errors    reminders that can't be processed due to error
+     * @return the reminders to process
      */
     @Override
-    protected void notifyError(Throwable exception) {
-        setStatus(Messages.get("reporting.reminder.export.status.failed"));
-        super.notifyError(exception);
+    protected List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors) {
+        List<ObjectSet> toProcess = new ArrayList<>();
+        ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
+        for (ObjectSet reminder : reminders) {
+            Contact contact = getContact(reminder, matcher);
+            if (contact != null) {
+                reminder.set("contact", contact);
+                toProcess.add(reminder);
+            } else {
+                String message = Messages.format("reporting.reminder.nocontact", DescriptorHelper.getDisplayName(
+                        ContactArchetypes.LOCATION, getService()));
+                Act item = updateItem(reminder, ReminderItemStatus.ERROR, message);
+                updated.add(item);
+                errors.add(reminder);
+            }
+        }
+        return toProcess;
+    }
+
+    /**
+     * Returns the date from which a reminder item should be cancelled.
+     *
+     * @param startTime the item start time
+     * @param config    the reminder configuration
+     * @return the date when the item should be cancelled
+     */
+    @Override
+    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
+        return config.getEmailCancelDate(startTime);
+    }
+
+    /**
+     * Completes processing.
+     *
+     * @param state the reminder state
+     */
+    @Override
+    public void complete(State state) {
+        List<ObjectSet> reminders = state.getReminders();
+        for (ObjectSet reminder : reminders) {
+            complete(reminder, state);
+        }
+        save(state);
+        CommunicationLogger logger = getLogger();
+        if (logger != null && !reminders.isEmpty()) {
+            String subject = Messages.get("reminder.log.export.subject");
+            for (ObjectSet reminder : reminders) {
+                Contact contact = (Contact) reminder.get("contact");
+                String notes = getNote(reminder);
+                logger.logMail(getCustomer(reminder), getPatient(reminder), contact.getDescription(),
+                               subject, COMMUNICATION_REASON, null, notes, location);
+            }
+        }
+    }
+
+    private ReminderEvent createEvent(ObjectSet reminder) {
+        return new ReminderEvent(ReminderEvent.Action.EXPORT, getReminder(reminder),
+                                 getReminderType(reminder), getPatient(reminder),
+                                 getCustomer(reminder), (Contact) reminder.get("contact"), null);
     }
 
 }

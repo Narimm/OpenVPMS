@@ -11,17 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -36,8 +37,13 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ReminderEvent>>
+abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ObjectSet>>
         implements ReminderBatchProcessor {
+
+    /**
+     * The processor to use.
+     */
+    private final PatientReminderProcessor processor;
 
     /**
      * The reminder rules.
@@ -57,18 +63,34 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     /**
      * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
      */
-    private Map<Act, State> states = new HashMap<>();
+    private Map<Long, LastSentCount> lastSentCountMap = new HashMap<>();
+
+    /**
+     * The current reminders being processed.
+     */
+    private List<ObjectSet> currentReminders;
+
+    /**
+     * The current reminder state.
+     */
+    private PatientReminderProcessor.State currentState;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ReminderProgressBarProcessor.class);
 
 
     /**
      * Constructs a {@link ReminderProgressBarProcessor}.
      *
-     * @param items      the reminder items
+     * @param processor  the processor
      * @param statistics the statistics
      * @param title      the progress bar title for display purposes
      */
-    public ReminderProgressBarProcessor(List<List<ReminderEvent>> items, Statistics statistics, String title) {
-        super(items, count(items), title);
+    public ReminderProgressBarProcessor(PatientReminderProcessor processor, Statistics statistics, String title) {
+        super(title);
+        this.processor = processor;
         this.statistics = statistics;
         rules = ServiceHelper.getBean(ReminderRules.class);
     }
@@ -85,54 +107,68 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     }
 
     /**
-     * Processes a set of reminder events.
+     * Processes a set of reminders.
      *
-     * @param events the events to process
+     * @param reminders the reminders to process
      * @throws OpenVPMSException if the events cannot be processed
      */
-    protected void process(List<ReminderEvent> events) {
+    protected void process(List<ObjectSet> reminders) {
+        this.currentReminders = reminders;
+        this.currentState = null;
         if (update) {
             // need to cache the reminderCount and lastSent nodes to allow reprocessing with the original values
-            for (ReminderEvent event : events) {
-                Act reminder = event.getReminder();
-                State state = states.get(reminder);
-                if (state != null) {
+            for (ObjectSet event : reminders) {
+                Act reminder = (Act) event.get("reminder");
+                long id = reminder.getId();
+                LastSentCount lastSentCount = lastSentCountMap.get(id);
+                if (lastSentCount != null) {
                     // reprocessing a reminder - reset the reminderCount and lastSent nodes
-                    if (state.isComplete()) {
-                        state.reset(reminder);
+                    if (lastSentCount.isComplete()) {
+                        lastSentCount.reset(reminder);
                     }
                 } else {
-                    state = new State(reminder);
-                    states.put(reminder, state);
+                    lastSentCount = new LastSentCount(reminder);
+                    lastSentCountMap.put(id, lastSentCount);
                 }
             }
         }
-    }
 
-    /**
-     * Increments the count of processed reminders.
-     *
-     * @param events the reminder events
-     */
-    @Override
-    protected void incProcessed(List<ReminderEvent> events) {
-        super.incProcessed(events.size());
-    }
-
-    /**
-     * Invoked when processing of reminder events is complete.
-     * <p/>
-     * This updates the reminders and statistics.
-     *
-     * @param events the reminder events
-     */
-    @Override
-    protected void processCompleted(List<ReminderEvent> events) {
-        if (update) {
-            updateReminders(events);
+        try {
+            currentState = processor.prepare(reminders, new Date());
+            processor.process(currentState);
+            if (processor.isAsynchronous()) {
+                // need to process these reminders asynchronously, so suspend
+                setSuspend(true);
+            } else {
+                processCompleted();
+            }
+        } catch (Throwable exception) {
+            processError(exception);
         }
-        updateStatistics(events);
-        super.processCompleted(events);
+    }
+
+    protected void initIterator(String shortName, final ReminderItemSource query) {
+        String[] shortNames = query.getShortNames();
+        if (shortNames.length != 1 || !TypeHelper.matches(shortNames[0], shortName)) {
+            throw new IllegalStateException("This may only query " + shortName);
+        }
+
+        int count = query.count();
+        setItems(query.query(), count);
+    }
+
+    /**
+     * Invoked when processing a batch of reminders is completed.
+     */
+    protected void processCompleted() {
+        if (currentState != null) {
+            if (update) {
+                processor.complete(currentState);
+            }
+            updateStatistics(currentState.getReminders());
+        } else {
+            log.error("ReminderProgressBarProcess.processCompleted() invoked with no current reminders");
+        }
     }
 
     /**
@@ -147,28 +183,43 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
      * </ul>
      *
      * @param exception the cause
-     * @param events    the events being processed
      */
-    protected void processError(Throwable exception, List<ReminderEvent> events) {
-        for (ReminderEvent event : events) {
-            if (update) {
-                ReminderHelper.setError(event.getReminder(), exception);
+    protected void processError(Throwable exception) {
+        if (currentReminders != null) {
+            for (ObjectSet set : currentReminders) {
+                if (update) {
+                    ReminderHelper.setError((Act) set.get("item"), exception);
+                }
+                statistics.incErrors();
             }
-            statistics.incErrors();
+            notifyError(exception);
+            super.processCompleted(currentReminders);
+        } else {
+            log.error("ReminderProgressBarProcess.processError() invoked with no current reminders", exception);
         }
-        notifyError(exception);
-        super.processCompleted(events);
+    }
+
+    /**
+     * Increments the count of processed reminders.
+     *
+     * @param reminders the reminders
+     */
+    @Override
+    protected void incProcessed(List<ObjectSet> reminders) {
+        super.incProcessed(reminders.size());
     }
 
     /**
      * Skips a set of reminders.
      * <p/>
      * This doesn't update the reminders and their statistics.
-     *
-     * @param events the reminder events
      */
-    protected void skip(List<ReminderEvent> events) {
-        super.processCompleted(events);
+    protected void skip() {
+        if (currentReminders != null) {
+            processCompleted(currentReminders);
+        } else {
+            log.error("ReminderProgressBarProcess.skip() invoked with no current reminders");
+        }
     }
 
     /**
@@ -181,56 +232,17 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     }
 
     /**
-     * Updates each reminder that isn't cancelled.
-     * <p/>
-     * This sets the <em>lastSent</em> node to the current time, and increments the <em>reminderCount</em>.
-     *
-     * @param events the reminder event
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private void updateReminders(List<ReminderEvent> events) {
-        Date date = new Date();
-        for (ReminderEvent event : events) {
-            Act reminder = event.getReminder();
-            if (!ActStatus.CANCELLED.equals(reminder.getStatus())) {
-                State state = states.get(reminder);
-                if (state != null && !state.isComplete()) {
-                    if (ReminderHelper.update(reminder, date)) {
-                        state.setCompleted(true);
-                    } else {
-                        statistics.incErrors();
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Updates statistics for a set of reminders.
      *
-     * @param events the reminder events
+     * @param reminders the reminders
      */
-    private void updateStatistics(List<ReminderEvent> events) {
-        for (ReminderEvent event : events) {
-            statistics.increment(event);
+    private void updateStatistics(List<ObjectSet> reminders) {
+        for (ObjectSet set : reminders) {
+            statistics.increment(set);
         }
     }
 
-    /**
-     * Counts reminders.
-     *
-     * @param events the reminder events
-     * @return the reminder count
-     */
-    private static int count(List<List<ReminderEvent>> events) {
-        int result = 0;
-        for (List<ReminderEvent> list : events) {
-            result += list.size();
-        }
-        return result;
-    }
-
-    private static class State {
+    private static class LastSentCount {
 
         private boolean completed;
 
@@ -238,7 +250,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
 
         private Date lastSent;
 
-        public State(Act reminder) {
+        public LastSentCount(Act reminder) {
             IMObjectBean bean = new IMObjectBean(reminder);
             reminderCount = bean.getInt("reminderCount");
             lastSent = bean.getDate("lastSent");

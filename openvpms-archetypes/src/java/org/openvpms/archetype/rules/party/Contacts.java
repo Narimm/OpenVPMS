@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -77,6 +77,23 @@ public class Contacts {
             }
         }
         return matcher.getMatch();
+    }
+
+    /**
+     * Finds all contacts that match the criteria.
+     *
+     * @param contacts the contacts
+     * @param matcher  the contact matcher
+     * @return the matching contacts
+     */
+    public static List<Contact> findAll(Collection<Contact> contacts, ContactMatcher matcher) {
+        List<Contact> result = new ArrayList<>();
+        for (Contact contact : contacts) {
+            if (matcher.matches(contact)) {
+                result.add(contact);
+            }
+        }
+        return result;
     }
 
 }
