@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
 <!-- 2016-10-11T05:42:06 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Credit" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="8c42a3ea-6f37-49f5-803e-e1f46987b877">
@@ -36,8 +20,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle"
-		   fontName="DejaVu Sans" fontSize="10"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
@@ -94,7 +77,7 @@
 					<printWhenExpression><![CDATA[$F{hide}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Right">
-					<font size="100" isBold="true"/>
+					<font  size="100" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cancelled]]></text>
 			</staticText>
@@ -266,7 +249,7 @@
 					<rightPen lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
-					<font size="22" isBold="true" isItalic="false" isUnderline="false"/>
+					<font size="20" isBold="true" isItalic="false" isUnderline="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{isFinalised} ? "":"DRAFT"]]></textFieldExpression>
 			</textField>
@@ -326,14 +309,14 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="8"/>
+					<font  size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement positionType="Float" x="494" y="25" width="45" height="13" uuid="7a11ede4-26cb-4a00-9efd-c69c4b84887d"/>
 				<textElement textAlignment="Left">
-					<font size="8"/>
+					<font  size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>

@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.user;
 
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -34,6 +35,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -159,6 +161,8 @@ public class UserRules {
      * Returns the locations applicable to a user.
      * <p/>
      * These are the locations linked to the user, or if none, those linked to the practice.
+     * <p/>
+     * Any locations linked to the user but not the practice will be excluded.
      *
      * @param user     the user
      * @param practice the practice
@@ -166,9 +170,17 @@ public class UserRules {
      */
     public List<Party> getLocations(User user, Party practice) {
         List<Party> locations = getLocations(user);
+        IMObjectBean bean = new IMObjectBean(practice, service);
         if (locations.isEmpty()) {
-            IMObjectBean bean = new IMObjectBean(practice, service);
             locations = bean.getNodeTargetObjects("locations", Party.class);
+        } else {
+            // exclude any locations not linked to the practice
+            List<IMObjectReference> references = bean.getNodeTargetObjectRefs("locations");
+            for (Party location : new ArrayList<>(locations)) {
+                if (!references.contains(location.getObjectReference())) {
+                    locations.remove(location);
+                }
+            }
         }
         return locations;
     }

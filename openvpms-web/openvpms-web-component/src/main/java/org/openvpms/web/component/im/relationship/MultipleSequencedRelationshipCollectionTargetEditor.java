@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -87,8 +87,6 @@ public class MultipleSequencedRelationshipCollectionTargetEditor extends Multipl
                     r1.setSequence(value2);
                     r2.setSequence(value1);
 
-                    swapped(object1, object2);
-
                     populateTable();
                     getTable().getTable().setSelected(object1);
                     enableNavigation(true);
@@ -118,20 +116,8 @@ public class MultipleSequencedRelationshipCollectionTargetEditor extends Multipl
     }
 
     /**
-     * Invoked when two objects are swapped.
-     * <p/>
-     * This implementation is a no-op.
-     *
-     * @param object1 the first object
-     * @param object2 the second object
-     */
-    protected void swapped(IMObject object1, IMObject object2) {
-
-    }
-
-    /**
      * Enable/disables the buttons.
-     * <p/>
+     * <p>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them

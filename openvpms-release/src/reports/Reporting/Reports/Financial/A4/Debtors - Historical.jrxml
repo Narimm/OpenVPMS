@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T10:07:12 -->
+<!-- 2017-01-24T17:23:18 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Historical Debtors" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="dc11c4df-40ff-490d-8112-b6f926ac1e32">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -25,6 +9,7 @@
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -50,6 +35,10 @@
 	<parameter name="ShowCredits" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Show Credit Balances]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IncludeCredits" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Credit Balances]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.TRUE]]></defaultValueExpression>
 	</parameter>
 	<parameter name="IncludeInactive" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Include Inactive Customers]]></parameterDescription>
@@ -194,25 +183,22 @@ FROM
  GROUP BY a.act_id) AS accountbalances
     GROUP BY cid) AS acb
 WHERE
-    balance <> 0
+    balance > 0
+    or (balance < 0 and  $P{IncludeCredits} )
  
 ORDER BY custLocn , acType , name;]]>
 	</queryString>
 	<field name="custLocn" class="java.lang.String"/>
 	<field name="acType" class="java.lang.String"/>
 	<field name="cid" class="java.lang.Long"/>
-	<field name="name" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="name" class="java.lang.String"/>
 	<field name="current" class="java.math.BigDecimal"/>
 	<field name="30days" class="java.math.BigDecimal"/>
 	<field name="60days" class="java.math.BigDecimal"/>
 	<field name="90days" class="java.math.BigDecimal"/>
 	<field name="120days" class="java.math.BigDecimal"/>
 	<field name="balance" class="java.math.BigDecimal"/>
-	<field name="active" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="active" class="java.lang.Boolean"/>
 	<field name="laterTxns" class="java.lang.Integer"/>
 	<variable name="actCount" class="java.lang.Long" resetType="Group" resetGroup="AcType" calculation="Count">
 		<variableExpression><![CDATA[$F{cid}]]></variableExpression>
@@ -784,8 +770,7 @@ ORDER BY custLocn , acType , name;]]>
 				<textFieldExpression><![CDATA[$P{TotalsOnly}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="2" y="73" width="68" height="17"
-							   uuid="1953494d-5bc5-47a2-9ac3-37e32f6d9cbe"/>
+				<reportElement key="staticText-9" x="2" y="73" width="68" height="17" uuid="1953494d-5bc5-47a2-9ac3-37e32f6d9cbe"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -798,8 +783,7 @@ ORDER BY custLocn , acType , name;]]>
 				<text><![CDATA[Totals Only: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="209" y="73" width="118" height="17"
-							   uuid="c09da5e6-eb68-4f0d-908c-5b664dbf2844"/>
+				<reportElement key="staticText-9" x="209" y="73" width="118" height="17" uuid="c09da5e6-eb68-4f0d-908c-5b664dbf2844"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -824,8 +808,7 @@ ORDER BY custLocn , acType , name;]]>
 				<textFieldExpression><![CDATA[$P{ShowCredits}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="371" y="73" width="115" height="17"
-							   uuid="676b5ace-92c8-4145-876e-ad4b8fe412ab"/>
+				<reportElement key="staticText-9" x="371" y="73" width="115" height="17" uuid="676b5ace-92c8-4145-876e-ad4b8fe412ab"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1231,12 +1214,11 @@ ORDER BY custLocn , acType , name;]]>
 		</band>
 	</detail>
 	<summary>
-		<band height="340" splitType="Stretch">
+		<band height="370" splitType="Stretch">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<printWhenExpression><![CDATA[$P{Explain}||(new Boolean($V{REPORT_COUNT}.intValue()==0))]]></printWhenExpression>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="0" y="22" width="534" height="318"
-							   isRemoveLineWhenBlank="true" uuid="bb40befe-8b8c-469b-9896-336b41d1f483">
+				<reportElement isPrintRepeatedValues="false" x="0" y="22" width="534" height="348" isRemoveLineWhenBlank="true" uuid="bb40befe-8b8c-469b-9896-336b41d1f483">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -1247,9 +1229,10 @@ The customer location and account type selection fields entered have % added so 
 If there is no Customer Location selection then customers with no Practice Location set will be included. Using the selection '-' will select just those with no Practice Location set. The same applies for the Account Type selection.
 If the 'Totals Only' option has been selected then only the totals are shown; otherwise details will be displayed if:
 a) the 'Show 60+ Only' option has been selected and there are with amounts outstanding for 60 and over days (whether credit or debit); OR
-b) the 'Show Credit Balances' option has be selected and the customer has a credit balance; OR
+b) the 'Include Credit Balances' and 'Show Credit Balances' options have be selected and the customer has a credit balance; OR
 c) the 'Show 60+ Only' option has not been selected
 Customers with zero balances are never shown.  Credit amounts are shown as (123.45)
+If the 'Include Credit Balances' option is not set then customers with credit balances will be ignored and not included in the totals.
 If the 'Include Inactive Customers' option is set then customers who were not active at the As At date are included. A customer is deemed to be not active if their Active flag is not set AND they have no transactions after the As At date.
 If the customer's Active flag is not set, then the first column will be ! if the customers has no transactions after the As At date, or # otherwise. Thus # indicates currently inactive but was active at the As At date, and ! indicates was inactive at the As At date.
 Note that the Totals include all customers selected even if they have not been displayed. The Totals do not include "not active" customers unless the Include Inactive Customers box is checked  The Total amounts are in whole dollars to allow large amounts to be displayed.]]></text>

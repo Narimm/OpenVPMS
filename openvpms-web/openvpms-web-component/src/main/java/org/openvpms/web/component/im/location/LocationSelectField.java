@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.location;
@@ -19,17 +19,13 @@ package org.openvpms.web.component.im.location;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.archetype.rules.practice.Location;
-import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
-import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.system.ServiceHelper;
@@ -48,10 +44,12 @@ public class LocationSelectField extends SelectField {
     /**
      * Constructs a {@link LocationSelectField}.
      * <p/>
-     * This displays all locations.
+     * This displays all active locations linked to the practice
+     *
+     * @param practice the practice
      */
-    public LocationSelectField() {
-        super(createModel());
+    public LocationSelectField(Party practice) {
+        super(createModel(practice));
         initialise();
     }
 
@@ -145,13 +143,12 @@ public class LocationSelectField extends SelectField {
     /**
      * Constructs a new list model for all active locations.
      *
+     * @param practice the practice
      * @return a new list model
      */
-    private static ListModel createModel() {
-        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.LOCATION, true)
-                .add(Constraints.sort("name"))
-                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        return new IMObjectListModel(QueryHelper.query(query), true, true);
+    private static ListModel createModel(Party practice) {
+        List<Party> locations = getLocations(practice);
+        return new IMObjectListModel(locations, true, true);
     }
 
     /**
@@ -165,17 +162,42 @@ public class LocationSelectField extends SelectField {
      */
     private static ListModel createModel(User user, Party practice, boolean all, boolean none) {
         List<Party> locations = Collections.emptyList();
-        if (user != null) {
+        if (user != null && practice != null) {
             UserRules rules = ServiceHelper.getBean(UserRules.class);
-            locations = rules.getLocations(user);
-            if (locations.isEmpty()) {
-                if (practice != null) {
-                    locations = ServiceHelper.getBean(PracticeRules.class).getLocations(practice);
-                }
+            locations = rules.getLocations(user, practice);
+            if (!locations.isEmpty()) {
+                sort(locations);
             }
-            IMObjectSorter.sort(locations, "name");
+        } else if (practice != null) {
+            locations = getLocations(practice);
         }
         return new IMObjectListModel(locations, all, none);
+    }
+
+    /**
+     * Returns the active locations associated with the practice, sorted on name.
+     *
+     * @param practice the practice
+     * @return the locations
+     */
+    private static List<Party> getLocations(Party practice) {
+        List<Party> locations;
+        if (practice != null) {
+            locations = ServiceHelper.getBean(PracticeRules.class).getLocations(practice);
+            sort(locations);
+        } else {
+            locations = new ArrayList<>();
+        }
+        return locations;
+    }
+
+    /**
+     * Sorts locations on name.
+     *
+     * @param locations the locations
+     */
+    private static void sort(List<Party> locations) {
+        IMObjectSorter.sort(locations, "name");
     }
 
 }

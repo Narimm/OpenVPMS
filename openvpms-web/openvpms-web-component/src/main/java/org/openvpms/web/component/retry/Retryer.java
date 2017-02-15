@@ -1,17 +1,19 @@
 /*
- * Version: 1.0
+ *  Version: 1.0
  *
- * The contents of this file are subject to the OpenVPMS License Version
- * 1.0 (the 'License'); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.openvpms.org/license/
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
  *
- * Software distributed under the License is distributed on an 'AS IS' basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
  */
 package org.openvpms.web.component.retry;
 
@@ -23,7 +25,8 @@ import org.openvpms.web.component.util.ErrorHelper;
 /**
  * Helper to retry an action if the action fails.
  *
- * @author Tim Anderson
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class Retryer {
 
@@ -65,7 +68,7 @@ public class Retryer {
     /**
      * The no. of attempts to make, before giving up.
      */
-    private final int attempts;
+    private int attempts = DEFAULT_ATTEMPTS;
 
     /**
      * The logger.
@@ -73,90 +76,45 @@ public class Retryer {
     private Log log = LogFactory.getLog(Retryer.class);
 
     /**
-     * Constructs a {@link Retryer}.
+     * Constructs a <tt>Retryer</tt>.
      *
      * @param action the action to run
      */
     public Retryer(Retryable action) {
-        this(action, DEFAULT_ATTEMPTS);
+        this(action, null);
     }
 
     /**
-     * Constructs a {@link Retryer}.
-     *
-     * @param action   the action to run
-     * @param attempts the number of attempts, before giving up
-     */
-    public Retryer(Retryable action, int attempts) {
-        this(action, null, attempts);
-    }
-
-    /**
-     * Constructs a {@link Retryer}.
+     * Constructs a <tt>Retryer</tt>.
      *
      * @param action     the action
      * @param thenAction the action to invoke when the action successfully completes. May be {@code null}
      */
     public Retryer(Retryable action, Runnable thenAction) {
-        this(action, thenAction, DEFAULT_ATTEMPTS);
+        this(action, thenAction, null);
     }
 
     /**
-     * Constructs a {@link Retryer}.
-     *
-     * @param action     the action
-     * @param thenAction the action to invoke when the action successfully completes. May be {@code null}
-     * @param attempts   the number of attempts, before giving up
-     */
-    public Retryer(Retryable action, Runnable thenAction, int attempts) {
-        this(action, thenAction, null, attempts);
-    }
-
-    /**
-     * Constructs a {@link Retryer}.
+     * Constructs a <tt>Retryer</tt>.
      *
      * @param action     the action
      * @param thenAction the action to invoke when the action successfully completes. May be {@code null}
      * @param elseAction the action to invoke when the action fails to complete. May be {@code null}
      */
     public Retryer(Retryable action, Runnable thenAction, Runnable elseAction) {
-        this(action, thenAction, elseAction, DEFAULT_ATTEMPTS);
-    }
-
-    /**
-     * Constructs a {@link Retryer}.
-     *
-     * @param action     the action
-     * @param thenAction the action to invoke when the action successfully completes. May be {@code null}
-     * @param elseAction the action to invoke when the action fails to complete. May be {@code null}
-     * @param attempts   the number of attempts, before giving up
-     */
-    public Retryer(Retryable action, Runnable thenAction, Runnable elseAction, int attempts) {
         this.action = action;
         this.thenAction = thenAction;
         this.elseAction = elseAction;
-        this.attempts = attempts;
     }
 
     /**
-     * Runs an action, retrying it up to {@link #DEFAULT_ATTEMPTS} times if it fails.
+     * Runs an action, retrying it if it fails.
      *
      * @param action the action to run
      * @return {@code true} if the action ran successfully
      */
     public static boolean run(Retryable action) {
-        return run(action, DEFAULT_ATTEMPTS);
-    }
-
-    /**
-     * Runs an action, retrying if it fails.
-     *
-     * @param action   the action to run
-     * @param attempts the number of attempts, before giving up
-     * @return {@code true} if the action ran successfully
-     */
-    public static boolean run(Retryable action, int attempts) {
-        Retryer retryer = new Retryer(action, attempts);
+        Retryer retryer = new Retryer(action);
         return retryer.start();
     }
 

@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_IncomeByLocation" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="6f41022e-27f1-4b69-948f-3819166af35e">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -92,12 +76,12 @@ count(distinct pc.entity_id) as customerCount, count(*) as transactionCount,
 		sum(if(a.arch_short_name = 'act.customerAccountChargesCredit',if(f.credit,-(f.total),(f.total)),0))as creditTotalInc,
 		sum(if(a.arch_short_name = 'act.customerAccountChargesCredit',if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as creditTotalTax,
 		cast(sum(if((a.arch_short_name = 'act.customerAccountChargesCounter')
-			and (ec.name like '%Counter Sales'),1,0)) as signed) as counterCount,
-		sum(if((a.arch_short_name = 'act.customerAccountChargesCounter') and (ec.name like '%Counter Sales'),
+			and (ec.arch_short_name = 'party.organisationOTC'),1,0)) as signed) as counterCount,
+		sum(if((a.arch_short_name = 'act.customerAccountChargesCounter') and (ec.arch_short_name = 'party.organisationOTC'),
 			if(f.credit,-(f.total - f.tax_amount),(f.total - f.tax_amount)),0))as counterTotalEx,
-		sum(if((a.arch_short_name = 'act.customerAccountChargesCounter') and (ec.name like '%Counter Sales'),
+		sum(if((a.arch_short_name = 'act.customerAccountChargesCounter') and (ec.arch_short_name = 'party.organisationOTC'),
 			if(f.credit,-(f.total),(f.total)),0))as counterTotalInc,
-		sum(if((a.arch_short_name = 'act.customerAccountChargesCounter') and (ec.name like '%Counter Sales'),
+		sum(if((a.arch_short_name = 'act.customerAccountChargesCounter') and (ec.arch_short_name = 'party.organisationOTC'),
 			if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as counterTotalTax,
 		cast(sum(if((a.arch_short_name = 'act.customerAccountChargesInvoice') or
 			((a.arch_short_name = 'act.customerAccountChargesCounter') and (ec.name not like '%Counter Sales'))
@@ -209,14 +193,14 @@ group by location order by location;]]>
 				<text><![CDATA[Practice Location]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="120" y="19" width="52" height="13" uuid="5c2374a6-fd26-4d61-ae82-1eb8dd9c0daf"/>
+				<reportElement x="120" y="19" width="65" height="13" uuid="5c2374a6-fd26-4d61-ae82-1eb8dd9c0daf"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Customers]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="172" y="19" width="77" height="13" uuid="c93eba57-f733-4482-babe-4c3cd7548ec1"/>
+				<reportElement x="185" y="19" width="64" height="13" uuid="c93eba57-f733-4482-babe-4c3cd7548ec1"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
@@ -685,7 +669,7 @@ group by location order by location;]]>
 				<textFieldExpression><![CDATA[$V{SumCreditCount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="5" width="132" height="13" uuid="3b99c528-10b7-4fa4-bc98-ed58203f54e0"/>
+				<reportElement x="0" y="5" width="103" height="13" uuid="3b99c528-10b7-4fa4-bc98-ed58203f54e0"/>
 				<textElement>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -988,6 +972,43 @@ In the Overall Amounts line they show the ratio of the column's transaction type
 				</textElement>
 				<textFieldExpression><![CDATA[$V{SumCreditTax}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="120" y="5" width="65" height="13" uuid="7f4ee3d3-6076-40d9-a9b4-12ab90d043a4">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Customers]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="185" y="5" width="64" height="13" uuid="1e528ed5-6552-4fa1-9ad9-5183d72af234"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="283" y="5" width="77" height="13" uuid="304442bd-cb73-4092-a5a5-04ecaa13d0c9"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Invoices]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="390" y="5" width="47" height="13" uuid="35d367cf-2adf-4e0f-a052-86ad3c502e86"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[OTC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="467" y="5" width="52" height="13" uuid="5f514438-302e-46f2-8c42-44dcc0940541"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Credits]]></text>
+			</staticText>
 		</band>
 	</summary>
 </jasperReport>

@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Customer Sales Report" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="550" leftMargin="31" rightMargin="31" topMargin="19" bottomMargin="19" uuid="771053d0-e036-4ce0-8572-c2ecc92218b3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -40,11 +24,11 @@
 	</parameter>
 	<parameter name="printDetail" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Show details]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[SELECT
@@ -117,8 +101,7 @@ new BigDecimal("0.00")]]></variableExpression>
 	<pageHeader>
 		<band height="55" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-1" x="130" y="0" width="290" height="23"
-							   uuid="f74da5ce-96f3-4624-b1f2-034d491f6e64"/>
+				<reportElement key="staticText-1" x="130" y="0" width="290" height="23" uuid="f74da5ce-96f3-4624-b1f2-034d491f6e64"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -132,8 +115,7 @@ new BigDecimal("0.00")]]></variableExpression>
 				<text><![CDATA[Customer Sales Report]]></text>
 			</staticText>
 			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField" x="68" y="34" width="103" height="16"
-							   uuid="557abbad-fa1e-4647-ac42-b3479b26b259">
+				<reportElement key="textField" x="68" y="34" width="103" height="16" uuid="557abbad-fa1e-4647-ac42-b3479b26b259">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -162,8 +144,7 @@ new BigDecimal("0.00")]]></variableExpression>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="5" y="34" width="65" height="16"
-							   uuid="969705a0-e874-4ec9-ac1a-b329b4d33dae"/>
+				<reportElement key="staticText-9" x="5" y="34" width="65" height="16" uuid="969705a0-e874-4ec9-ac1a-b329b4d33dae"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -466,8 +447,7 @@ new BigDecimal("0.00")]]></variableExpression>
 				<text><![CDATA[Total Debit Adjustments :]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-19" x="21" y="170" width="129" height="16"
-							   uuid="43519bc8-7792-4684-a6ee-b359a5683d21"/>
+				<reportElement key="staticText-19" x="21" y="170" width="129" height="16" uuid="43519bc8-7792-4684-a6ee-b359a5683d21"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -519,8 +499,7 @@ new BigDecimal("0.00")]]></variableExpression>
 				<text><![CDATA[Total Nett Sales :]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-23" x="53" y="8" width="443" height="22"
-							   uuid="83164086-52d8-44ce-8e7e-8681c9f2884b"/>
+				<reportElement key="staticText-23" x="53" y="8" width="443" height="22" uuid="83164086-52d8-44ce-8e7e-8681c9f2884b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

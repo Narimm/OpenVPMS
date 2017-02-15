@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
 <!-- 2016-08-09T08:18:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Clinician Sales Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="11f784eb-fc6f-4f37-a9da-d50da3705e7d">
@@ -67,11 +51,11 @@
 	</parameter>
 	<parameter name="showDetails" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Show Details]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[SELECT
@@ -171,7 +155,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="14" isBold="true" isItalic="false"/>
+						<font  size="14" isBold="true" isItalic="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{TOTAL-CLINICIAN}]]></textFieldExpression>
@@ -188,7 +172,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="14" isBold="true" isItalic="false"/>
+						<font  size="14" isBold="true" isItalic="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[100.*$V{TOTAL-CLINICIAN}.floatValue()/$V{TOTAL_SALES}.floatValue()]]></textFieldExpression>
@@ -221,7 +205,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="12" isBold="true"/>
+						<font  size="12" isBold="true"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{TOTAL-LOCN}]]></textFieldExpression>
@@ -238,7 +222,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="12" isBold="true"/>
+						<font  size="12" isBold="true"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[100.*$V{TOTAL-LOCN}.floatValue()/$V{TOTAL_SALES}.floatValue()]]></textFieldExpression>
@@ -271,7 +255,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true"/>
+						<font  size="10" isBold="true"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{TOTAL-PRODTYPE}]]></textFieldExpression>
@@ -288,7 +272,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true"/>
+						<font  size="10" isBold="true"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[100.*$V{TOTAL-PRODTYPE}.floatValue()/$V{TOTAL_SALES}.floatValue()]]></textFieldExpression>
@@ -468,7 +452,7 @@ ORDER BY
 			<textField pattern="">
 				<reportElement x="445" y="0" width="90" height="11" uuid="d0e4a2b5-e9f9-4755-99fc-6a71602f8906"/>
 				<textElement textAlignment="Right">
-					<font size="8"/>
+					<font  size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
@@ -603,7 +587,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="12" isBold="true"/>
+					<font  size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Amount]]></text>
@@ -625,7 +609,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="12" isBold="true"/>
+					<font  size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Clinician/Locn/Prod.Type/Product]]></text>
@@ -642,7 +626,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="12" isBold="true"/>
+					<font  size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[%]]></text>
@@ -659,7 +643,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true"/>
+					<font  size="10" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Date]]></text>
@@ -676,7 +660,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true"/>
+					<font  size="10" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Customer]]></text>
@@ -690,7 +674,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="12" isBold="true"/>
+					<font  size="12" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Qty]]></text>

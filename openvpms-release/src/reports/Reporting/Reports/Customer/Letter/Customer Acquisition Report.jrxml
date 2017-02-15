@@ -1,27 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Customer Acquisition Report" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="550" leftMargin="31" rightMargin="31" topMargin="19" bottomMargin="19" uuid="781095a0-f625-434a-b923-f45e5757b522">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -46,12 +31,12 @@
 		<parameterDescription><![CDATA[Account Type]]></parameterDescription>
 	</parameter>
 	<parameter name="IncInactive" class="java.lang.Boolean">
-		<parameterDescription><![CDATA[Include Inactive Customers]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<parameterDescription><![CDATA[Include Inactive]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
-	<parameter name="inactivePatients" class="java.lang.Boolean">
-		<parameterDescription><![CDATA[Include Inactive Patients]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+	<parameter name="hasPatients" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Has Patients]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.TRUE]]></defaultValueExpression>
 	</parameter>
 	<parameter name="countsOnly" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Show only counts]]></parameterDescription>
@@ -59,7 +44,7 @@
 	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[select  distinct  e.entity_id as cid,e.name as customerName, e.description as contact, e.active as active,
@@ -73,8 +58,8 @@ left join (entity_classifications ec2, lookups l2) on (ec2.entity_id = e.entity_
   and ec2.lookup_id = l2.lookup_id and l2.arch_short_name = 'lookup.customerType')
  left join entity_links el on el.source_id = e.entity_id and el.arch_short_name = 'entityLink.customerLocation'
 left join entities loc on loc.entity_id = el.target_id
-join entity_relationships r on r.source_id = e.entity_id and r.arch_short_name = "entityRelationship.patientOwner"
-join entities p on p.entity_id = r.target_id
+left join entity_relationships r on r.source_id = e.entity_id and r.arch_short_name = "entityRelationship.patientOwner"
+left join entities p on p.entity_id = r.target_id
 where
   e.arch_short_name = 'party.customerperson'
   and ((substring($P{acType},1,1)="!" and ifnull(l.name,"--NONE--")  not like concat(substring($P{acType},2),"%") ) or
@@ -83,22 +68,24 @@ where
   and ((substring($P{PracticeLocation},1,1)="!" and ifnull(loc.name,"--NONE--")  not like concat(substring($P{PracticeLocation},2),"%") ) or
     	   ( ifnull(loc.name,"--NONE--") like  concat(ifnull($P{PracticeLocation},""),"%") )
     	  )
-   and ((e.active=true) or ($P{IncInactive}=true) )
-   and (r.active_end_time is null or r.active_end_time >= $P{endDate} )
-   and ($P{inactivePatients} = true or p.active = 1) 
-   and d.value between $P{startDate} and $P{endDate}   
+   and ((e.active=true) or $P{IncInactive} )
+   and d.value between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)  
+   and (($P{hasPatients} and (not isnull(p.entity_id))
+       and (r.active_end_time is null or r.active_end_time >= date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND) )
+          and ($P{hasPatients}  or p.active = 1)  )
+       or (not $P{hasPatients})
+       )
+    group by e.entity_id
    order by location,accountType,e.name, e.entity_id]]>
 	</queryString>
+	<field name="cid" class="java.lang.Long"/>
 	<field name="customerName" class="java.lang.String"/>
 	<field name="contact" class="java.lang.String"/>
-	<field name="cid" class="java.lang.Long"/>
-	<field name="active" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="active" class="java.lang.Boolean"/>
+	<field name="createdDate" class="java.sql.Date"/>
 	<field name="location" class="java.lang.String"/>
 	<field name="accountType" class="java.lang.String"/>
 	<field name="customerType" class="java.lang.String"/>
-	<field name="createdDate" class="java.sql.Date"/>
 	<variable name="location1" class="java.lang.Integer" resetType="Group" resetGroup="Location" calculation="Count">
 		<variableExpression><![CDATA[$F{location}]]></variableExpression>
 	</variable>
@@ -249,7 +236,7 @@ where
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="113" y="53" width="103" height="16" uuid="d358065f-80a9-42df-ad85-1a7914bbf1a9">
+				<reportElement key="textField" x="115" y="53" width="103" height="16" uuid="d358065f-80a9-42df-ad85-1a7914bbf1a9">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -273,7 +260,7 @@ where
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="216" y="53" width="97" height="16" uuid="fec453ce-d3dc-4f43-86b4-0b3b7def242d"/>
+				<reportElement key="staticText-9" x="224" y="53" width="97" height="16" uuid="fec453ce-d3dc-4f43-86b4-0b3b7def242d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -286,7 +273,7 @@ where
 				<text><![CDATA[Practice Locn: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="313" y="53" width="103" height="16" uuid="20792b1c-1e19-40dc-a86f-628f3c61651c">
+				<reportElement key="textField" x="323" y="53" width="103" height="16" uuid="20792b1c-1e19-40dc-a86f-628f3c61651c">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -302,7 +289,7 @@ where
 				<textFieldExpression><![CDATA[($P{PracticeLocation}==null)?"%":$P{PracticeLocation}+"%"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="216" y="70" width="97" height="16" uuid="31bc15e8-c386-4e9c-90f7-72ca47b8d15f"/>
+				<reportElement key="staticText-9" x="224" y="69" width="97" height="16" uuid="31bc15e8-c386-4e9c-90f7-72ca47b8d15f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -312,10 +299,10 @@ where
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Inc.Inact.Patients: ]]></text>
+				<text><![CDATA[Has Patients: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="313" y="70" width="103" height="16" uuid="81e6c054-40de-4645-bc29-efd29230191d">
+				<reportElement key="textField" x="323" y="69" width="103" height="16" uuid="81e6c054-40de-4645-bc29-efd29230191d">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -328,7 +315,7 @@ where
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{inactivePatients}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{hasPatients}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-9" x="0" y="37" width="113" height="16" uuid="03abee1b-5545-41ce-996c-eb8711062986"/>
@@ -344,7 +331,7 @@ where
 				<text><![CDATA[From Date: ]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField" x="113" y="37" width="103" height="16" uuid="d82e9ea6-732b-426d-a2aa-488f4e99a868"/>
+				<reportElement key="textField" x="115" y="37" width="103" height="16" uuid="d82e9ea6-732b-426d-a2aa-488f4e99a868"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -357,7 +344,7 @@ where
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{startDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-18" x="216" y="37" width="97" height="16" uuid="585a2dcb-55e1-4aea-bf26-3c52773f0443"/>
+				<reportElement key="staticText-18" x="224" y="37" width="97" height="16" uuid="585a2dcb-55e1-4aea-bf26-3c52773f0443"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -370,7 +357,7 @@ where
 				<text><![CDATA[To Date: ]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="313" y="37" width="103" height="16" uuid="c0620484-4126-4838-9823-b4c71b0b08b2"/>
+				<reportElement key="textField-3" x="323" y="37" width="103" height="16" uuid="c0620484-4126-4838-9823-b4c71b0b08b2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -383,7 +370,7 @@ where
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="70" width="113" height="16" uuid="34ee32b3-4e8e-43c6-a243-d79602dc117e"/>
+				<reportElement key="staticText-9" x="0" y="69" width="113" height="16" uuid="34ee32b3-4e8e-43c6-a243-d79602dc117e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -393,10 +380,10 @@ where
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Inc.Inact.Customers: ]]></text>
+				<text><![CDATA[Include Inactive: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="113" y="70" width="103" height="16" uuid="1e97747e-efd2-4435-ad6b-29ccfeabb459">
+				<reportElement key="textField" x="115" y="69" width="103" height="16" uuid="1e97747e-efd2-4435-ad6b-29ccfeabb459">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -620,10 +607,10 @@ The selection fields entered have % added so that leaving them blank will find a
 Null practice locations and account types will be shown as '--NONE--' and using the selection '-' will find these; ie setting the account type selection to '-' will find customers with no account type. 
 You can also use a selection string starting ! to use a 'not like' selection - so account type '!c' will find customers with account types not starting with c, and  setting the customer type to '!-' will find all customers with a non-null customer type.
 The counts shown in the Location/Account Type header lines are number of customers with the location and account type respectively.
-Inactive customers will only be included if 'Include Inactive Customers is checked.
-A hash (#) in column1 indicates that this customer is inactive.
-Customers will only be included if they own a patient as at the To Date, and will be omitted if  none of their patients is active - unless Include Inactive Patients is checked.
-Unchecking the 'Show only counts' option displays the customer information, leaving this checked shows just the totals.]]></text>
+Inactive customers will only be counted if 'Include Inactive' is checked.
+Customers will only be counted if they have a Created date in the specified range and, if 'Has Patients' is checked, if they own a patient as at the To Date, and will be omitted if  none of their patients is active - unless 'Include Inactive' is checked.
+Unchecking the 'Show only counts' option displays the customer information (with a hash (#) in column1 indicating that this customer is inactive) and leaving this checked shows just the totals.
+]]></text>
 			</staticText>
 		</band>
 	</summary>

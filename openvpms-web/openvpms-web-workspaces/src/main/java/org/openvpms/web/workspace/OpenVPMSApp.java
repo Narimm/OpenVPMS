@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -319,12 +319,18 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     @Override
     public synchronized void unlock() {
         if (lockDialog != null) {
-            enqueueTask(getLockTaskQueue(1), new Runnable() {
-                @Override
-                public void run() {
-                    unlockScreen();
-                }
-            });
+            if (lockDialog.getParent() != null) {
+                enqueueTask(getLockTaskQueue(1), new Runnable() {
+                    @Override
+                    public void run() {
+                        unlockScreen();
+                    }
+                });
+            } else {
+                // the dialog hasn't been shown yet, so just destroy it.
+                lockDialog.dispose();
+                lockDialog = null;
+            }
         }
     }
 
@@ -388,6 +394,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     private void lockScreen() {
         PopupDialog dialog = getLockDialog();
         if (dialog != null) {
+            monitor.locked();
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -413,7 +420,6 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     private void unlockScreen() {
         try {
-
             PopupDialog dialog = getLockDialog();
             if (dialog != null) {
                 setLockDialog(null);

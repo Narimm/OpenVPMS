@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
@@ -241,7 +242,12 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
             return excludeUnmodified;
         }
 
-
+        /**
+         * Returns the first unmodified object with the specified short name.
+         *
+         * @param shortName the contact archetype short name
+         * @return the the first unmodified object, or {@code null} if none is found
+         */
         public IMObject getUnmodified(String shortName) {
             return shortName != null ? IMObjectHelper.getObject(shortName, pending) : null;
         }
@@ -314,7 +320,7 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
          */
         @Override
         protected boolean doValidation(Validator validator) {
-            // commit any pending objects to that have been modified
+            // commit any pending objects that have been modified
             for (IMObject object : pending.toArray(new IMObject[pending.size()])) {
                 IMObjectEditor editor = getEditor(object);
                 if (editor != null && editor.isModified()) {
@@ -330,5 +336,21 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
             return result;
         }
 
+        /**
+         * Saves the collection.
+         *
+         * @throws OpenVPMSException if the save fails
+         */
+        @Override
+        protected void doSave() {
+            super.doSave();
+            if (!pending.isEmpty()) {
+                for (IMObject object : new ArrayList<>(pending)) {
+                    if (!object.isNew()) {
+                        pending.remove(object);
+                    }
+                }
+            }
+        }
     }
 }

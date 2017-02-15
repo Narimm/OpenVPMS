@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -33,7 +33,9 @@ import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.event.ActionListener;
@@ -116,6 +118,15 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
      */
     private final FocusGroup untilGroup = new FocusGroup(RepeatUntilEditor.class.getSimpleName());
 
+    /**
+     * The listeners.
+     */
+    private final ModifiableListeners listeners = new ModifiableListeners();
+
+    /**
+     * Listener for changes to the expression and condition editors.
+     */
+    private final ModifiableListener listener;
 
     /**
      * Constructs an {@link CalendarEventSeriesEditor}.
@@ -124,6 +135,13 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
      */
     public CalendarEventSeriesEditor(CalendarEventSeries series) {
         this.series = series;
+        listener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                resetValid(false);
+                listeners.notifyListeners(modifiable);
+            }
+        };
         setExpression(series.getExpression());
         setCondition(series.getCondition());
     }
@@ -175,6 +193,16 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
             editor = new RepeatNTimesEditor((RepeatNTimesCondition) condition);
         }
         setUntilEditor(editor);
+    }
+
+    /**
+     * Returns the current series.
+     *
+     * @return the series
+     */
+    public CalendarEventSeries getSeries() {
+        updateSeries();
+        return series;
     }
 
     /**
@@ -274,7 +302,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
      */
     @Override
     public void addModifiableListener(ModifiableListener listener) {
-        // no-op
+        listeners.addListener(listener);
     }
 
     /**
@@ -285,7 +313,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
      */
     @Override
     public void addModifiableListener(ModifiableListener listener, int index) {
-        // no-op
+        listeners.addListener(listener, index);
     }
 
     /**
@@ -295,7 +323,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
      */
     @Override
     public void removeModifiableListener(ModifiableListener listener) {
-        // no-op
+        listeners.removeListener(listener);
     }
 
     /**
@@ -334,21 +362,33 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
     @Override
     protected boolean doValidation(Validator validator) {
         boolean valid = false;
-        if (repeatEditor == null) {
-            series.setExpression(null);
-            series.setCondition(null);
+        updateSeries();
+        if (repeatEditor != null) {
+            if (untilEditor != null) {
+                valid = repeatEditor.validate(validator) && untilEditor.validate(validator) && noOverlaps(validator);
+            }
         } else {
-            series.refresh();
-            repeatEditor.setStartTime(series.getStartTime());
-            series.setExpression(repeatEditor.getExpression());
-            series.setCondition(untilEditor.getCondition());
-        }
-        if (repeatEditor == null) {
             valid = true;
-        } else if (untilEditor != null) {
-            valid = repeatEditor.validate(validator) && untilEditor.validate(validator) && noOverlaps(validator);
         }
         return valid;
+    }
+
+    /**
+     * Updates the underlying series.
+     */
+    protected void updateSeries() {
+        series.refresh();
+        if (repeatEditor != null) {
+            repeatEditor.setStartTime(series.getStartTime());
+            series.setExpression(repeatEditor.getExpression());
+        } else {
+            series.setExpression(null);
+        }
+        if (untilEditor != null) {
+            series.setCondition(untilEditor.getCondition());
+        } else {
+            series.setCondition(null);
+        }
     }
 
     private boolean noOverlaps(Validator validator) {
@@ -389,6 +429,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
         setRepeatEditor(editor);
         refreshRepeat();
         // need to refresh the drop-down otherwise the editor appears both selected and in the drop-down
+        listeners.notifyListeners(this);
     }
 
     /**
@@ -398,17 +439,17 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
      */
     private void setRepeatEditor(RepeatExpressionEditor editor) {
         if (repeatEditor != null) {
+            repeatEditor.removeModifiableListener(listener);
             repeatGroup.remove(repeatEditor.getFocusGroup());
         }
         this.repeatEditor = editor;
         if (repeatContainer != null) {
             repeatContainer.removeAll();
-            if (editor != null) {
-                RepeatExpression expression = editor.getExpression();
-                repeatContainer.add(editor.getComponent());
-                repeatGroup.add(editor.getFocusGroup());
-                series.setExpression(expression);
+            if (repeatEditor != null) {
+                repeatContainer.add(repeatEditor.getComponent());
+                repeatGroup.add(repeatEditor.getFocusGroup());
                 repeatContainer.add(repeatSelector);
+                repeatEditor.addModifiableListener(listener);
 
                 if (untilEditor == null) {
                     setUntilEditor(new RepeatNTimesEditor());
@@ -419,6 +460,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
             }
             repeatContainer.add(repeatSelector);
         }
+        resetValid();
     }
 
     private void onSelected(RepeatUntilEditor editor) {
@@ -426,6 +468,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
         setUntilEditor(editor);
         refreshUntil();
         // need to refresh the drop-down otherwise the editor appears both selected and in the drop-down
+        listeners.notifyListeners(this);
     }
 
     /**
@@ -435,17 +478,20 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
      */
     private void setUntilEditor(RepeatUntilEditor editor) {
         if (untilEditor != null) {
+            untilEditor.removeModifiableListener(listener);
             untilGroup.remove(untilEditor.getFocusGroup());
         }
         untilEditor = editor;
         if (untilContainer != null) {
             untilContainer.removeAll();
             if (untilEditor != null) {
-                untilContainer.add(editor.getComponent());
-                untilGroup.add(editor.getFocusGroup());
+                untilEditor.addModifiableListener(listener);
+                untilContainer.add(untilEditor.getComponent());
+                untilGroup.add(untilEditor.getFocusGroup());
                 untilContainer.add(getUntilSelector());
             }
         }
+        resetValid();
     }
 
     private void refreshRepeat() {

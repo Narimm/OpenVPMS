@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -317,6 +317,7 @@ EchoTextComponent = Core.extend(
                         EchoDomUtil.preventEventDefault(e);
                         return;
                     }
+                    EchoAsyncMonitor.active(); // flag the session as active. See OVPMS-1847
                     if (e.keyCode == 13) {
                         if (!this.multipleLines) {
                             EchoDomUtil.preventEventDefault(e);

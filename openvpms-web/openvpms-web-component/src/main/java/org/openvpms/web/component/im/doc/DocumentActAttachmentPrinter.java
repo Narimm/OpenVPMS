@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -33,10 +34,9 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 /**
  * A printer for attachments associated with {@link DocumentAct}s.
- * If a document template (<em>entity.documentTemplate</em>) is associated with
- * the act, then this will be used to generate the document to print.
- * Otherwise, any {@link Document} associated with the act will be printed
- * directly.
+ * <p/>
+ * If the document has no attachments, but does have a document template (<em>entity.documentTemplate</em>),
+ * then this will be used to generate the document to print.
  *
  * @author Tim Anderson
  */
@@ -57,6 +57,24 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
     }
 
     /**
+     * Returns a display name for the objects being printed.
+     * <p/>
+     * This implementation returns the document file name, if one is present.
+     * If not, it delegates to the parent implementation.
+     *
+     * @return a display name for the objects being printed
+     */
+    @Override
+    public String getDisplayName() {
+        DocumentAct act = (DocumentAct) getObject();
+        String result = (act.getDocument() != null) ? act.getFileName() : null;
+        if (StringUtils.isEmpty(result)) {
+            result = super.getDisplayName();
+        }
+        return result;
+    }
+
+    /**
      * Prints the object.
      *
      * @param printer the printer name. May be {@code null}
@@ -73,15 +91,21 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
         if (printer == null) {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
-        print(getDocument(), printer);
+        DocumentAct act = (DocumentAct) getObject();
+        Document document = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
+        if (document != null) {
+            print(document, printer);
+        } else {
+            super.print(printer);
+        }
     }
 
     /**
      * Returns a document corresponding to that which would be printed.
-     * If a document template is associated with the {@link DocumentAct}
+     * <p/>
+     * If a {@link Document} is associated with the {@link DocumentAct}, this will be returned.<br/>
+     * If not, and a document template is associated with the {@link DocumentAct}
      * archetype, then this will be used to generate the document.
-     * Otherwise, any {@link Document} associated with the {@link DocumentAct}
-     * will be used.
      *
      * @return a document
      * @throws OpenVPMSException for any error
@@ -94,6 +118,10 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
     /**
      * Returns a document corresponding to that which would be printed.
      * <p/>
+     * If a {@link Document} is associated with the {@link DocumentAct}, this will be returned.<br/>
+     * If not, and a document template is associated with the {@link DocumentAct}
+     * archetype, then this will be used to generate the document.
+     * <p/>
      * If the document cannot be converted to the specified mime-type, it will be returned unchanged.
      *
      * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
@@ -104,15 +132,11 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
      */
     @Override
     public Document getDocument(String mimeType, boolean email) {
-        Document template = getReporter().getTemplateDocument();
-        Document result = null;
-        if (template == null) {
-            DocumentAct act = (DocumentAct) getObject();
-            result = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
-            if (result != null && mimeType != null && !mimeType.equals(result.getMimeType()) &&
-                Converter.canConvert(result, mimeType)) {
-                result = DocumentHelper.convert(result, mimeType);
-            }
+        DocumentAct act = (DocumentAct) getObject();
+        Document result = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
+        if (result != null && mimeType != null && !mimeType.equals(result.getMimeType())
+            && Converter.canConvert(result, mimeType)) {
+            result = DocumentHelper.convert(result, mimeType);
         }
         if (result == null) {
             result = super.getDocument(mimeType, email);

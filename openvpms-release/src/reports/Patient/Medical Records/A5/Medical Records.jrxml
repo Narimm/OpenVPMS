@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
-
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Medical Records" pageWidth="421" pageHeight="595" columnWidth="381" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="localisation.reports" uuid="fe7895c1-122c-4fcb-934c-8b7ab03d9d16">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -88,8 +72,7 @@
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-19" positionType="Float" x="297" y="22" width="28" height="8"
-							   uuid="c3742040-0228-4d47-8d06-58abde988eca"/>
+				<reportElement key="staticText-19" positionType="Float" x="297" y="22" width="28" height="8" uuid="c3742040-0228-4d47-8d06-58abde988eca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -169,8 +152,7 @@
 				<textFieldExpression><![CDATA[$F{patient.entity.name}+" (Id: "+$F{patient.entity.id}+")"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-16" positionType="Float" x="1" y="45" width="35" height="9"
-							   uuid="0c2b000d-8ea3-426f-bc6f-dd7e1b1800f3">
+				<reportElement key="staticText-16" positionType="Float" x="1" y="45" width="35" height="9" uuid="0c2b000d-8ea3-426f-bc6f-dd7e1b1800f3">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -216,8 +198,7 @@
 				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'description')]}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-16" positionType="Float" x="1" y="71" width="35" height="9"
-							   uuid="f905712e-f784-4a52-87e5-c2b78ac125b2">
+				<reportElement key="staticText-16" positionType="Float" x="1" y="71" width="35" height="9" uuid="f905712e-f784-4a52-87e5-c2b78ac125b2">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -337,8 +318,7 @@
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-23" stretchType="RelativeToBandHeight" x="47" y="0" width="39" height="8" isPrintWhenDetailOverflows="true" uuid="9881375d-7168-46c5-958f-3ab14c3d3c9b">
-					<printWhenExpression>
-						<![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "COMPLETED".equals($F{status.code}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "COMPLETED".equals($F{status.code}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -353,8 +333,7 @@
 			</textField>
 			<staticText>
 				<reportElement key="staticText-13" x="40" y="0" width="6" height="8" uuid="68fe7f06-c4e9-49d1-b2ca-b0af7a7d4f1c">
-					<printWhenExpression>
-						<![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "COMPLETED".equals($F{status.code}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalEvent") && "COMPLETED".equals($F{status.code}) && !$F{startTime}.equals($F{endTime}))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

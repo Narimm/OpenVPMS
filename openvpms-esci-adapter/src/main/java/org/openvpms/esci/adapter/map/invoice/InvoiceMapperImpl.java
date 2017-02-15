@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map.invoice;
 
@@ -62,8 +60,7 @@ import java.util.List;
 /**
  * Maps UBL invoices to <em>act.supplierDelivery</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMapper {
 
@@ -310,12 +307,11 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     protected void checkDuplicateInvoice(Party supplier, String invoiceId, Date issueDatetime) {
         ArchetypeQuery query = new ArchetypeQuery(SupplierArchetypes.DELIVERY);
         query.add(Constraints.join("supplier")
-                .add(Constraints.eq("entity", supplier.getObjectReference())));
+                          .add(Constraints.eq("entity", supplier.getObjectReference())));
         Date from = DateRules.getDate(issueDatetime);
         Date to = DateRules.getDate(DateRules.getDate(from, 1, DateUnits.DAYS));
         query.add(Constraints.between("startTime", from, to));
-        IMObjectQueryIterator<FinancialAct> iter = new IMObjectQueryIterator<FinancialAct>(getArchetypeService(),
-                                                                                           query);
+        IMObjectQueryIterator<FinancialAct> iter = new IMObjectQueryIterator<>(getArchetypeService(), query);
         while (iter.hasNext()) {
             FinancialAct delivery = iter.next();
             ActBean bean = factory.createActBean(delivery);
@@ -343,8 +339,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
-     * Verfies that a tax subtotal matches that expected, and has a valid rate.
-     *
+     * Verifies that a tax subtotal matches that expected, and has a valid rate.
      *
      * @param subtotal          the subtotal
      * @param expectedTaxAmount the expected tax amount
@@ -676,14 +671,18 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         BigDecimal unitPrice = charge.getAmount();
         ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
         BigDecimal tax = charge.getTaxAmount();
-        BigDecimal rate = checkTaxCategory(charge.getTaxCategory(), rates);
-        BigDecimal divisor = BigDecimal.valueOf(100);
-        if (tax.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal expectedTax = MathRules.divide(unitPrice.multiply(rate), divisor, 2);
-            if (expectedTax.compareTo(tax) != 0) {
-                ErrorContext context = new ErrorContext(charge, "TaxTotal/TaxAmount");
-                throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
-                        context.getPath(), context.getType(), context.getID(), expectedTax.toString(), tax.toString()));
+        UBLTaxCategory taxCategory = charge.getTaxCategory();
+        if (taxCategory != null) {
+            BigDecimal rate = checkTaxCategory(taxCategory, rates);
+            BigDecimal divisor = BigDecimal.valueOf(100);
+            if (tax.compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal expectedTax = MathRules.divide(unitPrice.multiply(rate), divisor, 2);
+                if (expectedTax.compareTo(tax) != 0) {
+                    ErrorContext context = new ErrorContext(charge, "TaxTotal/TaxAmount");
+                    throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                            context.getPath(), context.getType(), context.getID(), expectedTax.toString(),
+                            tax.toString()));
+                }
             }
         }
         deliveryItem.setValue("startTime", startTime);
