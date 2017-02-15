@@ -27,8 +27,8 @@
 		<parameterDescription><![CDATA[Include Only Active Patients]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
-	<parameter name="incMicrochip" class="java.lang.Boolean">
-		<parameterDescription><![CDATA[Include Only if has Microchip]]></parameterDescription>
+	<parameter name="incChipTag" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Only if has chip/tag]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
@@ -44,22 +44,31 @@
   cast(d2.value as date )as deceasedDate,
   d3.value as deceased,
   p.active as pActive,
-  ei.name as microchip
+  group_concat(
+  (case ei.arch_short_name
+  	when 'entityIdentity.microchip' then  ei.name
+  	when 'entityIdentity.petTag' then concat(ei.name,'(P)')
+  	when 'entityIdentity.rabiesTag' then concat(ei.name,'(R)')
+  	else concat(ei.name,'(?)') end)
+  	order by ei.arch_short_name asc, ei.name asc
+  	separator '\n') as chipTag
 from entities p
   join entity_relationships r on r.target_id=p.entity_id
   join entities c on r.source_id = c.entity_id
   join entity_details d1 on d1.entity_id = p.entity_id and d1.name = "dateOfBirth"
   join entity_details d2 on d2.entity_id = p.entity_id and d2.name = "deceasedDate"
   join entity_details d3 on d3.entity_id = p.entity_id and d3.name = "deceased"
-  left join entity_identities ei on ei.entity_id = p.entity_id and ei.arch_short_name = 'entityIdentity.microchip'
+  left join entity_identities ei on ei.entity_id = p.entity_id 
+       and ei.arch_short_name in( 'entityIdentity.microchip','entityIdentity.petTag','entityIdentity.rabiesTag')
 where
   p.arch_short_name = 'party.patientpet' and
   ((p.active = 1 and c.active=1 and $P{incActive}) or (p.active = 0 and (not $P{incActive}))) and
-  ((not  $P{incMicrochip}) or  ( $P{incMicrochip} and (not isnull(ei.name))) ) and 
+  ((not  $P{incChipTag}) or  ( $P{incChipTag} and (not isnull(ei.name))) ) and 
   c.arch_short_name = 'party.customerperson' and
   d3.value = "true" and
   d2.value between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND) 
   and  isnull(r.active_end_time)
+  group by c.entity_id, p.entity_id
 order by d2.value, c.name,c.entity_id,p.name]]>
 	</queryString>
 	<field name="customer" class="java.lang.String"/>
@@ -71,7 +80,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 	<field name="deceasedDate" class="java.sql.Date"/>
 	<field name="deceased" class="java.lang.String"/>
 	<field name="pActive" class="java.lang.Boolean"/>
-	<field name="microchip" class="java.lang.String"/>
+	<field name="chipTag" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -193,14 +202,14 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textFieldExpression><![CDATA[($P{incActive}?"Include only Active Patients":"")+"       "+($P{incMicrochip}?"Include only if had Microchip":"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($P{incActive}?"Include only Active Patients":"")+"       "+($P{incChipTag}?"Include only if had Microchip":"")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
 		<band height="24" splitType="Stretch">
 			<staticText>
-				<reportElement key="staticText-11" x="381" y="2" width="61" height="16" uuid="69b79457-e4e5-4cd4-94e5-c5e429388187">
+				<reportElement key="staticText-11" x="339" y="2" width="62" height="16" uuid="69b79457-e4e5-4cd4-94e5-c5e429388187">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -240,7 +249,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<text><![CDATA[Customer (ID)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-27" x="184" y="2" width="135" height="16" uuid="0edce621-a71a-4283-9499-3bbd52ad783c"/>
+				<reportElement key="staticText-27" x="184" y="2" width="94" height="16" uuid="0edce621-a71a-4283-9499-3bbd52ad783c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -254,7 +263,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<text><![CDATA[Patient]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-28" x="319" y="2" width="62" height="16" uuid="fc608f4a-d965-4cdc-bdd3-3908aa88a2ce"/>
+				<reportElement key="staticText-28" x="278" y="2" width="61" height="16" uuid="fc608f4a-d965-4cdc-bdd3-3908aa88a2ce"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -268,7 +277,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<text><![CDATA[DOB]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-11" x="442" y="2" width="72" height="16" uuid="6993f414-b127-4e75-b07f-f846d628d9c2">
+				<reportElement key="staticText-11" x="401" y="2" width="124" height="16" uuid="6993f414-b127-4e75-b07f-f846d628d9c2">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -283,14 +292,14 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Microchip]]></text>
+				<text><![CDATA[Microchip,Tag]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="30" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="381" y="1" width="61" height="12" uuid="a2969bfe-c3c6-487b-9f87-fd622a21eb5f">
+				<reportElement key="textField" x="339" y="1" width="62" height="12" uuid="a2969bfe-c3c6-487b-9f87-fd622a21eb5f">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<box>
@@ -318,7 +327,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<textFieldExpression><![CDATA[$F{customer}+" ("+$F{cid}.toString()+")"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-14" x="184" y="1" width="135" height="12" uuid="d0107c96-c585-4682-8e83-40d07e179b0f"/>
+				<reportElement key="textField-14" x="184" y="1" width="94" height="12" uuid="d0107c96-c585-4682-8e83-40d07e179b0f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -331,7 +340,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<textFieldExpression><![CDATA[$F{patient}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-15" x="31" y="15" width="504" height="12" uuid="5e083bb2-7c9b-4a4c-9205-0b8d5c4b7341"/>
+				<reportElement key="textField-15" positionType="Float" x="31" y="15" width="504" height="12" uuid="5e083bb2-7c9b-4a4c-9205-0b8d5c4b7341"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -344,7 +353,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<textFieldExpression><![CDATA[$F{description}.replaceAll("\n"," ")]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-16" x="319" y="1" width="62" height="12" uuid="02025849-7239-4bab-bb3e-a2914a0bdd10">
+				<reportElement key="textField-16" x="278" y="1" width="61" height="12" uuid="02025849-7239-4bab-bb3e-a2914a0bdd10">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
@@ -363,8 +372,8 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<reportElement x="535" y="1" width="15" height="12" uuid="4766c0d3-06dc-40c8-8496-ca48b3971e66"/>
 				<textFieldExpression><![CDATA[$F{pActive}?($F{cActive}?"!!":"!"):""]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField" x="442" y="1" width="72" height="12" uuid="38d340e1-a42e-42f2-91b7-6d6f106dfa02">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="401" y="1" width="124" height="12" uuid="38d340e1-a42e-42f2-91b7-6d6f106dfa02">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<box>
@@ -376,7 +385,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{microchip}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{chipTag}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -384,7 +393,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<summary>
-		<band height="160" splitType="Stretch">
+		<band height="189" splitType="Stretch">
 			<line>
 				<reportElement key="line-3" x="0" y="5" width="550" height="1" uuid="23cb2dc7-3204-455f-a2be-a168b184e131"/>
 			</line>
@@ -427,7 +436,7 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="2" y="49" width="548" height="111" isRemoveLineWhenBlank="true" uuid="35e0ce1a-a673-4c82-a7b9-8989a050efad">
+				<reportElement x="2" y="49" width="548" height="139" isRemoveLineWhenBlank="true" uuid="35e0ce1a-a673-4c82-a7b9-8989a050efad">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Top">
@@ -436,8 +445,9 @@ order by d2.value, c.name,c.entity_id,p.name]]>
 				<text><![CDATA[This report shows the patients who became deceased between 00:00:00 on the specified From date and 23:59:59 on the specified To date. 
 If the patient status is Active then the last column will show !! if the customer status is also Active or ! if the custome status is Inactive.
 Checking the 'Include Only Active patients' option will restrict the listing to just Active Deceased patients (an illogical situation).
-Checking the 'Include Only if has Microchip' option will include only those patients who have microchips. This is for jurisdictions where it is required to report the death of patients with microchips.
-The output is ordered by date deceased, then customer name then patient name.]]></text>
+Checking the 'Include Only if has chip/tag' option will include only those patients who have microchips, pet tags or rabies tags. This is for jurisdictions where it is required to report the death of patients with microchips or tags.
+The output is ordered by date deceased, then customer name then patient name.
+The 'Microchip,Tag' column will have multiple lines if the patient has more than one microchip and/or tags. Pet Tags will have '(P)' appended, Rabies Tags '(R)'.]]></text>
 			</staticText>
 		</band>
 	</summary>

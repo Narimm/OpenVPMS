@@ -162,7 +162,7 @@
 				<textElement verticalAlignment="Top"/>
 				<text><![CDATA[These instructions are never printed.
 There are three areas: 
-A) the title bank which contains the generated letterhead fields; 
+A) the title block which contains the generated letterhead fields; 
 B) the column header which contains a blank static field which represents the area occupied by the letterhead area on pre-printed stationary;
 C) the column footer which contains a 5px high blank static field that is always printed and is used a spacer to space down the other items on the document title.
  . 

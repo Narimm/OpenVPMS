@@ -307,7 +307,7 @@
 					<rightPen lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
-					<font size="22" isBold="true" isItalic="false" isUnderline="false"/>
+					<font size="20" isBold="true" isItalic="false" isUnderline="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{isFinalised} ? "":"DRAFT"]]></textFieldExpression>
 			</textField>

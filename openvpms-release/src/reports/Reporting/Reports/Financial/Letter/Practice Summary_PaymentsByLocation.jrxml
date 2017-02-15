@@ -463,21 +463,21 @@ group by location order by location;]]>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Amounts   ]]></text>
+				<text><![CDATA[Amounts  ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="32" width="135" height="13" uuid="32bb5d54-2440-42b3-97c4-f765e1053b4c"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Counts   ]]></text>
+				<text><![CDATA[Counts  ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="45" width="135" height="13" uuid="88afb191-1153-432e-b72a-c579a927fc9d"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Average Amount   ]]></text>
+				<text><![CDATA[Average Amount  ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="72" width="135" height="14" uuid="351717b3-03a6-4c5d-aa86-afdd70715717"/>
@@ -491,7 +491,7 @@ group by location order by location;]]>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Total Customers seen   ]]></text>
+				<text><![CDATA[Total Customers seen  ]]></text>
 			</staticText>
 			<textField pattern="###0.0">
 				<reportElement x="467" y="71" width="52" height="14" uuid="faac38b2-2922-4521-a912-0c6612faca1e"/>
@@ -584,21 +584,21 @@ Note that these are the actual amounts - there is no tax component - and hence n
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Active Customers at start  ]]></text>
+				<text><![CDATA[Active Cust's at start  ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="115" width="135" height="13" uuid="5e0a61df-4450-4980-ad04-01953c7f989a"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Increase/Decrease:]]></text>
+				<text><![CDATA[Increase/Decrease  ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="101" width="135" height="13" uuid="5eebd265-9a4d-42e4-b076-fe39caef6b12"/>
 				<textElement textAlignment="Right">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Active Customers at end  ]]></text>
+				<text><![CDATA[Active Cust's at end  ]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="135" y="101" width="37" height="13" uuid="4bb7c97d-b97b-4c86-8308-819b06518ef6"/>
@@ -629,7 +629,7 @@ Note that these are the actual amounts - there is no tax component - and hence n
 				<textFieldExpression><![CDATA[($F{activeCustomersEnd}.doubleValue()-$F{activeCustomersStart}.doubleValue())/$F{activeCustomersStart}.doubleValue()]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="292" y="96" width="258" height="19" uuid="d414b941-3021-42f5-af7d-61012dc47651">
+				<reportElement x="239" y="96" width="311" height="19" uuid="d414b941-3021-42f5-af7d-61012dc47651">
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">

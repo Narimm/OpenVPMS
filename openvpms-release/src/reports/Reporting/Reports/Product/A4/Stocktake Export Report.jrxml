@@ -45,7 +45,7 @@
 	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation ?]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[select sl.entity_id as stockLocationId, d3.value as section, sl.name as stockLocation, e.entity_id as pid, e.name as product, l.name as uom,  cast(if(d2.value,d2.value,"0.00") as DECIMAL(18,3)) as currentStock, lpg.name as prodGroup

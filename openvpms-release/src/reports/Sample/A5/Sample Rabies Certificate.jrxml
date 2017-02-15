@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Rabies Certificate" pageWidth="421" pageHeight="595" columnWidth="381" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="8c42a3ea-6f37-49f5-803e-e1f46987b877">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="org.openvpms.archetype.function.party.PartyFunctions"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
+	<parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource" isForPrompting="false"/>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
+	<field name="[openvpms:get(party:getPatientOwner(.),&apos;id&apos;)]" class="java.lang.Long"/>
+	<field name="[party:getPartyFullName(party:getPatientOwner(.))]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="[party:getBillingAddress(party:getPatientOwner(.))]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="patient.entity.id" class="java.lang.Long"/>
+	<field name="patient.entity.name" class="java.lang.String"/>
+	<field name="patient.entity.species" class="java.lang.String"/>
+	<field name="patient.entity.breed" class="java.lang.String"/>
+	<field name="[party:getPatientMicrochip(.)]" class="java.lang.String"/>
+	<field name="patient.entity.colour" class="java.lang.String"/>
+	<field name="[party:getPatientDesexStatus(.)]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="patient.entity.dateOfBirth" class="java.util.Date"/>
+	<field name="[party:getPatientWeight(.)]" class="java.lang.String"/>
+	<field name="[party:getPatientRabiesTag(.)]" class="java.lang.String"/>
+	<field name="[openvpms:get(., &quot;invoiceItem.source.batch.entity.name&quot;)]" class="java.lang.String"/>
+	<field name="[openvpms:get(., &quot;invoiceItem.source.batch.entity.manufacturer.target.name&quot;)]" class="java.lang.String"/>
+	<field name="[openvpms:get(., &quot;invoiceItem.source.batch.entity.product.activeEndTime&quot;)]" class="java.sql.Timestamp"/>
+	<field name="product.entity.name" class="java.lang.String"/>
+	<field name="product.entity.printedName" class="java.lang.String"/>
+	<field name="startTime" class="java.util.Date"/>
+	<field name="[openvpms:get(reminder:getDocumentFormReminder(.), &quot;endTime&quot;)]" class="java.sql.Timestamp"/>
+	<field name="[user:format(openvpms:get(., &apos;clinician.entity.id&apos;), &apos;long&apos;)]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="[reminder:getDocumentFormReminder(.)]" class="java.lang.Object">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<title>
+		<band height="52" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<subreport isUsingCache="false">
+				<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="0" y="0" width="381" height="18" isPrintWhenDetailOverflows="true" uuid="62fc99ec-6763-4a1f-b319-672c9840f88e">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<subreportParameter name="IsEmail">
+					<subreportParameterExpression><![CDATA[$P{IsEmail}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pageNo">
+					<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("patient")]]></dataSourceExpression>
+				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement positionType="Float" x="110" y="25" width="162" height="21" uuid="79f95f85-0d5e-4860-b0e3-9fe166392e01"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Rabies Certificate]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="7" splitType="Stretch">
+			<printWhenExpression><![CDATA[$V{PAGE_NUMBER}>1]]></printWhenExpression>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="280" splitType="Stretch">
+			<property name="local_mesure_unitheight" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="4" width="63" height="9" uuid="d696cb36-fbf6-41e3-b6b4-58e719288339">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Client ID]]></text>
+			</staticText>
+			<frame>
+				<reportElement x="18" y="13" width="354" height="10" uuid="07022948-5470-443e-af77-97a705594f3e"/>
+				<staticText>
+					<reportElement positionType="Float" x="0" y="0" width="64" height="10" uuid="688f00e0-0856-4578-aed3-df951d24f961">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font fontName="DejaVu Sans" size="7"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Client Name]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="68" y="0" width="286" height="10" uuid="144718a7-de58-4a57-a6cd-736277e2d7d2"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="DejaVu Sans" size="7"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{[party:getPartyFullName(party:getPatientOwner(.))]}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="18" y="23" width="354" height="10" uuid="165a1e97-1fb2-4e78-9f88-d90c3dbfdd0e"/>
+				<staticText>
+					<reportElement positionType="Float" x="0" y="0" width="64" height="10" uuid="0c0119f2-5274-463c-958b-b14f6eedec35">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font fontName="DejaVu Sans" size="7"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Client Address]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="68" y="0" width="286" height="10" uuid="154b3f0a-cc24-490e-9fb5-d90594ada7e7"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="DejaVu Sans" size="7"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{[party:getBillingAddress(party:getPatientOwner(.))]}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="43" width="63" height="10" uuid="4745d289-67cc-4864-9fb4-2b1e8f33c85f">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Patient ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="53" width="63" height="10" uuid="330c683d-1d27-4eab-9888-68f9ba747131">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Patient Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="63" width="63" height="10" uuid="d35bd4f2-0ab7-40ff-a5f5-4301ca33079b">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Species]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="73" width="63" height="10" uuid="7d2e1f64-31d1-4116-943c-1b1c9838315f">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Breed]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="83" width="63" height="10" uuid="7311e3cf-6e50-41fc-896c-3cb69f3bf218">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Microchip #]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="18" y="112" width="354" height="22" uuid="cf90c9e3-5c74-40ea-bbd0-325acf94d4d9"/>
+				<textElement>
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["This is to certify that "+$F{patient.entity.name}+"  has been vaccinated as below:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="86" y="4" width="286" height="9" uuid="18cd2634-00a1-4009-8c5b-29b6648ae57d"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(.),'id')]}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="86" y="43" width="112" height="10" uuid="9d1e3c7b-4d6f-4949-b7d1-e5923797f0db"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient.entity.id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="86" y="53" width="112" height="10" uuid="1e457e4b-e99c-4184-aef7-878ea2cea277"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient.entity.name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="86" y="63" width="112" height="10" uuid="278c3c56-2def-476d-a923-fbb8b30b4f86"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient.entity.species}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="86" y="73" width="112" height="10" uuid="b4b8d8e6-8c9c-42ec-a5b7-cfb509706b39"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient.entity.breed}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="86" y="83" width="112" height="10" uuid="d2c66c1e-709c-4d6c-a3bb-fbad12841509"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[party:getPatientMicrochip(.)]}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="208" y="43" width="40" height="10" uuid="4850a807-3574-48b6-a135-8e7b7f980227">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Color]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="208" y="53" width="40" height="10" uuid="dcf8aa4e-2233-4a6c-ab2b-802ce9354b4f">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Desexed]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="208" y="63" width="40" height="10" uuid="f203bf29-1dc3-4fb8-bc36-a665e2593917">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Birthday]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="208" y="73" width="40" height="10" uuid="9c1a36b2-3f62-4db8-b51f-536b3dfa7c3b">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Weight]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="253" y="43" width="112" height="10" uuid="010c099f-2f62-4736-ba34-b8f1c9ce9dd5"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient.entity.colour}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="253" y="53" width="112" height="10" uuid="9c8cd8e8-8b07-4440-b228-64e887c7e569"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[party:getPatientDesexStatus(.)]}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="253" y="63" width="112" height="10" uuid="27e4a9b5-135b-4c51-9d8c-1a81fddff25b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{patient.entity.dateOfBirth})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="253" y="73" width="112" height="10" uuid="b2745afb-ebb9-4e3e-9098-06ffa8beef0a"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[party:getPatientWeight(.)]}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="146" width="102" height="9" uuid="a35dee4a-ad76-4d0f-8467-40539402c520">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Tag Number:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="155" width="102" height="10" uuid="241f8c9c-5c8e-4855-939c-b921a9c0aacd">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Lot Number:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="165" width="102" height="10" uuid="d2141aec-fe4f-437b-9258-6716b0bd855c">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Manufacturer:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="175" width="102" height="10" uuid="4c294671-34a8-42dc-8ae9-042c0f063ed9">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Product Expiration Date:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="125" y="146" width="247" height="9" uuid="c4d353eb-7283-461f-b2b8-dc54910a9e9b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[party:getPatientRabiesTag(.)]}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="125" y="155" width="247" height="10" uuid="31dd0773-22cc-4c76-abe3-3761009006bb"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[openvpms:get(., "invoiceItem.source.batch.entity.name")]}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="125" y="165" width="247" height="10" uuid="ae4c69ad-5d8f-4ccc-b46e-0647fb43fbf9"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[openvpms:get(., "invoiceItem.source.batch.entity.manufacturer.target.name")]}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="125" y="175" width="247" height="10" uuid="8d363c02-1920-4df2-afcd-d6ecfa6dd582"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{[openvpms:get(., "invoiceItem.source.batch.entity.product.activeEndTime")]})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="125" y="205" width="247" height="10" uuid="5ea2f2a0-4bee-49d4-b5fc-41abb70ca0bd"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{startTime})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="205" width="102" height="10" uuid="b43446fd-e688-45e2-a0d8-5d48982cf40c">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Vaccination Date:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="215" width="102" height="10" uuid="a146dbc4-bcee-443c-92b9-d35a4489f2ad">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Vaccine Next Due:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="125" y="215" width="247" height="10" uuid="c879bb00-faa6-41ae-a8fb-d6e554ea4963">
+					<printWhenExpression><![CDATA[$F{[reminder:getDocumentFormReminder(.)]}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{[openvpms:get(reminder:getDocumentFormReminder(.), "endTime")]})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="240" width="102" height="10" uuid="36dac8b2-4a33-447e-aaa5-192f2e7d217d">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Clinician:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="18" y="250" width="102" height="26" uuid="ec2fa367-ddfe-45c9-8f52-38df93127586">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Signature:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="125" y="240" width="247" height="10" uuid="2b18017e-6455-469f-b623-c68d0f8d0014"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{[user:format(openvpms:get(., 'clinician.entity.id'), 'long')]}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="127" y="250" width="245" height="26" uuid="adaa67fb-9dda-4c9f-8482-1922d3334b14">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="DejaVu Sans" size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<frame>
+				<reportElement positionType="Float" x="18" y="185" width="354" height="10" uuid="8436a420-0a1b-4862-ad36-e35d382a88b1"/>
+				<staticText>
+					<reportElement positionType="Float" x="0" y="0" width="102" height="10" uuid="caf8bfac-8a73-43f5-bd25-28d8cc73168b">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font fontName="DejaVu Sans" size="7"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Vaccine:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="107" y="0" width="247" height="10" uuid="f7d5d817-66f7-4f29-b324-20d30540e702"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="DejaVu Sans" size="7"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{product.entity.printedName}==null?$F{product.entity.name}:$F{product.entity.printedName}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>

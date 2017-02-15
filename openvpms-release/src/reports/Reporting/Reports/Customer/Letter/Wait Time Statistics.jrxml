@@ -1,0 +1,2198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Wait Time Statistics Report" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="550" leftMargin="31" rightMargin="31" topMargin="19" bottomMargin="19" uuid="781095a0-f625-434a-b923-f45e5757b522">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="startDate" class="java.util.Date">
+		<parameterDescription><![CDATA[From Date]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.util.Date">
+		<parameterDescription><![CDATA[To Date]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="apptStartGE" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Appt.Starts >= hour]]></parameterDescription>
+		<defaultValueExpression><![CDATA[8]]></defaultValueExpression>
+	</parameter>
+	<parameter name="apptStartLT" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Appt.Starts < hour]]></parameterDescription>
+		<defaultValueExpression><![CDATA[17]]></defaultValueExpression>
+	</parameter>
+	<parameter name="apptType" class="java.lang.String">
+		<parameterDescription><![CDATA[Appt. Type]]></parameterDescription>
+	</parameter>
+	<parameter name="worklist" class="java.lang.String">
+		<parameterDescription><![CDATA[Worklist]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schedule" class="java.lang.String">
+		<parameterDescription><![CDATA[Schedule]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="incAllAppts" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Incl. All Appointments]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="outlierMins" class="java.lang.Long">
+		<parameterDescription><![CDATA[Outliers > mins]]></parameterDescription>
+		<defaultValueExpression><![CDATA[120L]]></defaultValueExpression>
+	</parameter>
+	<parameter name="outliersOnly" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Outliers]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showClinicians" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Clinicians]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showScheduleStats" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Sched.Stats]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showWorklistStats" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Worklist Stats]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="countsOnly" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show only counts]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Explain" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select  a.activity_start_time as apptStartTime,
+ TIMESTAMP(d1.value) as arrivalTime,
+ at.activity_start_time as taskStartTime, TIMESTAMP(d2.value) as consultStartTime,
+if(isnull(d1.value),-99999,TIMESTAMPDIFF(MINUTE, a.activity_start_time, TIMESTAMP(d1.value))) as lateMins,
+TIMESTAMPDIFF(MINUTE, a.activity_start_time, a.activity_end_time) as apptDuration,
+if((isnull(d1.value) or isnull(d2.value)),-99999,TIMESTAMPDIFF(MINUTE, TIMESTAMP(d1.value), TIMESTAMP(d2.value))) as waitMins,
+if((isnull(d2.value) or isnull(at.activity_end_time)),-99999,TIMESTAMPDIFF(MINUTE, TIMESTAMP(d2.value), at.activity_end_time)) as consultMins,
+if((isnull(d2.value) or isnull(a.activity_start_time)),-99999,TIMESTAMPDIFF(MINUTE,  a.activity_start_time, TIMESTAMP(d2.value))) as delayMins,
+ a.activity_end_time as apptEndTime, et.name as apptType, a.reason as apptReason,
+ ev.entity_id as aClinicianID,
+ es.name as schedule,
+case a.status 
+	when 'CANCELLED' then 'CA' 
+	when 'IN_PROGRESS' then 'IP' 
+	when 'CHECKED_IN' then 'CK' 
+	when 'PENDING' then 'PE' 
+	when 'BILLED' then 'BI' 
+	when 'COMPLETED' then 'CP' 
+	when 'ADMITTED' then 'AD' 
+	else a.status end as apptStatus,
+ec.name as customer, ifnull(ep.name,'--') as patient,
+ew.name as worklist, 
+case at.status 
+	when 'CANCELLED' then 'CA' 
+	when 'IN_PROGRESS' then 'IP' 
+	when 'PENDING' then 'PE' 
+	when 'BILLED' then 'BI' 
+	when 'COMPLETED' then 'CP' 
+	else at.status end  as taskStatus, 
+ett.name as taskType, 
+at.activity_end_time as taskEndTime, 
+ etv.entity_id as tClinicianID
+from acts a
+left join participations pt on a.act_id = pt.act_id and pt.arch_short_name='participation.appointmentType'
+left join entities et on et.entity_id = pt.entity_id
+left join entity_details etd on etd.entity_id = et.entity_id and etd.name = 'statsGroup'
+left join participations ps on a.act_id = ps.act_id and ps.arch_short_name='participation.schedule'
+left join entities es on es.entity_id = ps.entity_id
+left join participations pp on a.act_id = pp.act_id and pp.arch_short_name='participation.patient'
+left join entities ep on ep.entity_id = pp.entity_id
+left join participations pc on a.act_id = pc.act_id and pc.arch_short_name='participation.customer'
+left join entities ec on ec.entity_id = pc.entity_id
+left join participations pv on a.act_id = pv.act_id and pv.arch_short_name='participation.clinician'
+left join entities ev on ev.entity_id = pv.entity_id
+left join act_details d1 on d1.act_id = a.act_id and d1.name='arrivalTime'
+left join act_relationships ert on ert.source_id = a.act_id
+                    and ert.arch_short_name = 'actRelationship.customerAppointmentTask'
+left join acts at on at.act_id = ert.target_id
+
+left join participations ptt on at.act_id = ptt.act_id and ptt.arch_short_name='participation.taskType'
+left join entities ett on ett.entity_id = ptt.entity_id
+left join participations pw on at.act_id = pw.act_id and pw.arch_short_name='participation.worklist'
+left join entities ew on ew.entity_id = pw.entity_id
+left join act_details d2 on d2.act_id = at.act_id and d2.name='consultStartTime'
+left join participations ptv on at.act_id = ptv.act_id and ptv.arch_short_name='participation.clinician'
+left join entities etv on etv.entity_id = ptv.entity_id
+
+where a.arch_short_name = 'act.customerAppointment'
+  and a.activity_start_time between $P{startDate} and date_add($P{endDate}, INTERVAL '23:59:59' HOUR_SECOND)
+  and ((not isnull(at.status)) or $P{incAllAppts})
+   and ((($P{apptStartGE} < $P{apptStartLT}) and 
+   	(hour(a.activity_start_time) >= $P{apptStartGE}) and (hour(a.activity_start_time) < $P{apptStartLT}))
+	or (($P{apptStartGE} > $P{apptStartLT}) and
+    	(hour(a.activity_start_time) >= $P{apptStartGE}) or (hour(a.activity_start_time) < $P{apptStartLT}))
+  )
+ 	and et.name not like  "%block%"
+ 	and et.name rlike ifnull($P{apptType},"\\\\*")
+  and ((substring($P{worklist},1,1)="!" and ifnull(ew.name,"--NONE--")  not like concat(substring($P{worklist},2),"%") ) or
+    	   ( ifnull(ew.name,"--NONE--") like  concat(ifnull($P{worklist},""),"%") )
+    	  )
+  and ((substring($P{schedule},1,1)="!" and ifnull(es.name,"--NONE--")  not like concat(substring($P{schedule},2),"%") ) or
+    	   ( ifnull(es.name,"--NONE--") like  concat(ifnull($P{schedule},""),"%") )
+    	  )
+ and (($P{outliersOnly} and ((ABS(TIMESTAMPDIFF(MINUTE, TIMESTAMP(d1.value), TIMESTAMP(d2.value))) >=  $P{outlierMins})
+ 				or (ABS(TIMESTAMPDIFF(MINUTE,  a.activity_start_time, TIMESTAMP(d2.value))) >= $P{outlierMins} )))
+		or ((not $P{outliersOnly} )	and ((ABS(TIMESTAMPDIFF(MINUTE, TIMESTAMP(d1.value), TIMESTAMP(d2.value))) <  $P{outlierMins})
+ 				or (ABS(TIMESTAMPDIFF(MINUTE,  a.activity_start_time, TIMESTAMP(d2.value))) < $P{outlierMins} ))))
+ 				
+order by apptType,worklist,schedule,a.activity_start_time;]]>
+	</queryString>
+	<field name="apptStartTime" class="java.sql.Timestamp"/>
+	<field name="rmask" class="java.lang.String"/>
+	<field name="arrivalTime" class="java.sql.Timestamp"/>
+	<field name="taskStartTime" class="java.sql.Timestamp"/>
+	<field name="consultStartTime" class="java.sql.Timestamp"/>
+	<field name="lateMins" class="java.lang.Long"/>
+	<field name="apptDuration" class="java.lang.Long"/>
+	<field name="waitMins" class="java.lang.Long"/>
+	<field name="consultMins" class="java.lang.Long"/>
+	<field name="delayMins" class="java.lang.Long"/>
+	<field name="apptEndTime" class="java.sql.Timestamp"/>
+	<field name="apptType" class="java.lang.String"/>
+	<field name="apptReason" class="java.lang.String"/>
+	<field name="aClinicianID" class="java.lang.Long"/>
+	<field name="schedule" class="java.lang.String"/>
+	<field name="apptStatus" class="java.lang.String"/>
+	<field name="customer" class="java.lang.String"/>
+	<field name="patient" class="java.lang.String"/>
+	<field name="worklist" class="java.lang.String"/>
+	<field name="taskStatus" class="java.lang.String"/>
+	<field name="taskType" class="java.lang.String"/>
+	<field name="taskEndTime" class="java.sql.Timestamp"/>
+	<field name="tClinicianID" class="java.lang.Long"/>
+	<variable name="apptType1" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Count">
+		<variableExpression><![CDATA[$F{apptType}]]></variableExpression>
+	</variable>
+	<variable name="worklist1" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Count">
+		<variableExpression><![CDATA[$F{worklist}]]></variableExpression>
+	</variable>
+	<variable name="schedule1" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Count">
+		<variableExpression><![CDATA[$F{schedule}]]></variableExpression>
+	</variable>
+	<variable name="earlyCount_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateCount_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlySum_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?Math.abs($F{lateMins}):0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateSum_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?$F{lateMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlyAvg_ApptType" class="java.lang.Float" resetType="Group" resetGroup="apptType">
+		<variableExpression><![CDATA[$V{earlySum_ApptType}.floatValue()/$V{earlyCount_ApptType}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateAvg_ApptType" class="java.lang.Float" resetType="Group" resetGroup="apptType">
+		<variableExpression><![CDATA[$V{lateSum_ApptType}.floatValue()/$V{lateCount_ApptType}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitCount_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consCount_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consSum_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?$F{consultMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitSum_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:$F{waitMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitAvg_ApptType" class="java.lang.Float" resetType="Group" resetGroup="apptType">
+		<variableExpression><![CDATA[$V{waitSum_ApptType}.floatValue()/$V{waitCount_ApptType}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consAvg_ApptType" class="java.lang.Float" resetType="Group" resetGroup="apptType">
+		<variableExpression><![CDATA[$V{consSum_ApptType}.floatValue()/$V{consCount_ApptType}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlyCount_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateCount_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlySum_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?Math.abs($F{lateMins}):0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateSum_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?$F{lateMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlyAvg_Total" class="java.lang.Float">
+		<variableExpression><![CDATA[$V{earlySum_Total}.floatValue()/$V{earlyCount_Total}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateAvg_Total" class="java.lang.Float">
+		<variableExpression><![CDATA[$V{lateSum_Total}.floatValue()/$V{lateCount_Total}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitCount_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consCount_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitSum_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:$F{waitMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitAvg_Total" class="java.lang.Float">
+		<variableExpression><![CDATA[$V{waitSum_Total}.floatValue()/$V{waitCount_Total}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consSum_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?$F{consultMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consAvg_Total" class="java.lang.Float">
+		<variableExpression><![CDATA[$V{consSum_Total}.floatValue()/$V{consCount_Total}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlyCount_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateCount_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlySum_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?Math.abs($F{lateMins}):0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateSum_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?$F{lateMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlyAvg_Schedule" class="java.lang.Float" resetType="Group" resetGroup="Schedule">
+		<variableExpression><![CDATA[$V{earlySum_Schedule}.floatValue()/$V{earlyCount_Schedule}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateAvg_Schedule" class="java.lang.Float" resetType="Group" resetGroup="Schedule">
+		<variableExpression><![CDATA[$V{lateSum_Schedule}.floatValue()/$V{lateCount_Schedule}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitCount_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consCount_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitSum_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:$F{waitMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consSum_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?$F{consultMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitAvg_Schedule" class="java.lang.Float" resetType="Group" resetGroup="Schedule">
+		<variableExpression><![CDATA[$V{waitSum_Schedule}.floatValue()/$V{waitCount_Schedule}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consAvg_Schedule" class="java.lang.Float" resetType="Group" resetGroup="Schedule">
+		<variableExpression><![CDATA[$V{consSum_Schedule}.floatValue()/$V{consCount_Schedule}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlyCount_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateCount_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlySum_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}<0L?Math.abs($F{lateMins}):0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateSum_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?0:($F{lateMins}>=0?$F{lateMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="earlyAvg_Worklist" class="java.lang.Float" resetType="Group" resetGroup="WorkList">
+		<variableExpression><![CDATA[$V{earlySum_Worklist}.floatValue()/$V{earlyCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="lateAvg_Worklist" class="java.lang.Float" resetType="Group" resetGroup="WorkList">
+		<variableExpression><![CDATA[$V{lateSum_Worklist}.floatValue()/$V{lateCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitCount_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consCount_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitSum_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:$F{waitMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consSum_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?0:($F{consultMins}>=0?$F{consultMins}:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitAvg_Worklist" class="java.lang.Float" resetType="Group" resetGroup="WorkList">
+		<variableExpression><![CDATA[$V{waitSum_Worklist}.floatValue()/$V{waitCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="consAvg_Worklist" class="java.lang.Float" resetType="Group" resetGroup="WorkList">
+		<variableExpression><![CDATA[$V{consSum_Worklist}.floatValue()/$V{consCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayCount_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delaySum_Worklist" class="java.lang.Integer" resetType="Group" resetGroup="WorkList" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:$F{delayMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayAvg_Worklist" class="java.lang.Float" resetType="Group" resetGroup="WorkList">
+		<variableExpression><![CDATA[$V{delaySum_Worklist}.floatValue()/$V{delayCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayCount_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delaySum_Total" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:$F{delayMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayAvg_Total" class="java.lang.Float">
+		<variableExpression><![CDATA[$V{delaySum_Worklist}.floatValue()/$V{delayCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayCount_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delaySum_Schedule" class="java.lang.Integer" resetType="Group" resetGroup="Schedule" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:$F{delayMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayAvg_Schedule" class="java.lang.Float" resetType="Group" resetGroup="Schedule">
+		<variableExpression><![CDATA[$V{delaySum_Worklist}.floatValue()/$V{delayCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayCount_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delaySum_ApptType" class="java.lang.Integer" resetType="Group" resetGroup="apptType" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:$F{delayMins}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayAvg_ApptType" class="java.lang.Float" resetType="Group" resetGroup="apptType">
+		<variableExpression><![CDATA[$V{delaySum_Worklist}.floatValue()/$V{delayCount_Worklist}.floatValue()]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitLT5" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:($F{waitMins}<5?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitLT10" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:($F{waitMins}<10?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitLT15" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:($F{waitMins}<15?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitLT20" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:($F{waitMins}<20?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitLT30" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:($F{waitMins}<30?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitLT45" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:($F{waitMins}<45?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="waitLT60" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?0:($F{waitMins}<60?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayLT5" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:($F{delayMins}<5?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayLT10" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:($F{delayMins}<10?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayLT15" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:($F{delayMins}<15?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayLT20" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:($F{delayMins}<20?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayLT30" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:($F{delayMins}<30?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayLT45" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:($F{delayMins}<45?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="delayLT60" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?0:($F{delayMins}<60?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<group name="Dummy">
+		<groupFooter>
+			<band height="76">
+				<textField evaluationTime="Report" pattern="#,##0">
+					<reportElement x="369" y="0" width="35" height="11" uuid="1d7e332b-95d1-4691-9d9f-3584fc8ea5b0">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{earlyCount_Total}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyAvg_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#,##0">
+					<reportElement x="404" y="0" width="35" height="11" uuid="5814e428-7932-499b-a0c6-1afadda587e3">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{lateCount_Total}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateAvg_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#,##0">
+					<reportElement x="474" y="0" width="35" height="11" uuid="3b6da5e5-d926-458d-8741-d150461d84dd">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_Total}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayAvg_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#,##0">
+					<reportElement x="509" y="0" width="41" height="11" uuid="f096a4ca-0375-46e6-a7fd-d28d36c91c79">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{consCount_Total}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consAvg_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="">
+					<reportElement x="369" y="11" width="35" height="12" uuid="afaf4804-bdcd-45e9-9bfd-98861eef3572">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="">
+					<reportElement x="404" y="11" width="35" height="12" uuid="36828c2c-1a2a-489f-9ce3-35308c45f6a4"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateCount_Total}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="0" width="53" height="11" uuid="8326d23b-6c94-43f8-8d18-cbcf83cbfa96">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Averages]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="11" width="53" height="12" uuid="9276127b-1d30-49e8-a553-496ee57ec3f5">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Counts]]></text>
+				</staticText>
+				<textField evaluationTime="Report" pattern="">
+					<reportElement x="474" y="11" width="35" height="12" uuid="4998f08d-cb35-4ff5-b472-d0e3e3460f5e">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="">
+					<reportElement x="509" y="11" width="41" height="12" uuid="6368e97f-6565-4196-a5ed-2c7ab715970e"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consCount_Total}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="339" height="16" uuid="c2216852-915a-4ed9-83a0-97ea03b1d3ee"/>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Overall Stats:]]></text>
+				</staticText>
+				<textField evaluationTime="Report" pattern="">
+					<reportElement x="439" y="11" width="35" height="12" uuid="fe6c3458-72a2-4dea-b876-61a13aeeb764">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#,##0">
+					<reportElement x="439" y="0" width="35" height="11" uuid="ed1be5eb-286d-44e5-aa21-82c2b4c1c4ec">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_Total}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitAvg_Total}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="369" y="24" width="35" height="11" uuid="6706c6fc-4267-4285-b761-d413b1622c3e">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Early]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="404" y="24" width="35" height="11" uuid="34568ac2-6e48-4f54-a902-abe16782c563">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Late]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="439" y="24" width="35" height="11" uuid="d4e62f76-48c5-4ca0-94c1-4a6ff5150e1b">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Wait]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="474" y="24" width="35" height="11" uuid="75a5b513-3596-4a23-93ff-7eb806a21b42">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Delay]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="509" y="24" width="41" height="11" uuid="d3a2ef57-9408-4753-85f9-a1aea97306c7"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Task]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="51" y="40" width="85" height="11" uuid="b108f06c-40ed-4136-82b9-0846442d5cb6">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Group]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="136" y="40" width="35" height="11" uuid="43247b24-478b-4ef1-9d35-1f95102bd814">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[<5]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="171" y="40" width="35" height="11" uuid="03c70082-fc94-43dd-b3a3-046944092920">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[<10]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="206" y="40" width="35" height="11" uuid="13201ad8-47f0-496d-a72e-454016cb43ac">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[<15]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="241" y="40" width="35" height="11" uuid="be7e26ad-f89e-47b7-b69a-5e59e7c96ec3">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[<20]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="276" y="40" width="35" height="11" uuid="068c0542-74b4-453b-9301-e2e80b718e03">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[<30]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="311" y="40" width="35" height="11" uuid="a6af5049-ef0d-4de6-8de1-619ae1d1f81d">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[<45]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="346" y="40" width="35" height="11" uuid="2c432160-88ce-4223-9a0d-427050921424">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[<60]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="381" y="40" width="35" height="11" uuid="0f2b53f2-232c-416b-8a5c-f8394868b745"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[>=60]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="51" width="136" height="11" uuid="32be0c92-c7ff-442b-ab92-b0ba0232bb1b">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Wait times - % of count]]></text>
+				</staticText>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="136" y="51" width="35" height="11" uuid="beb11145-8608-46c8-81cc-f25d7ffd4e81">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":$V{waitLT5}*100/$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="171" y="51" width="35" height="11" uuid="c758a3d9-e9a7-40b3-aebd-059365026291">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":$V{waitLT10}*100/$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="206" y="51" width="35" height="11" uuid="a6c66aac-7972-49f5-b128-a9b20c834193">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":$V{waitLT15}*100/$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="241" y="51" width="35" height="11" uuid="fe8dddfb-fad7-4762-8c1d-e141bc3b4cb1">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":$V{waitLT20}*100/$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="276" y="51" width="35" height="11" uuid="67ffbf55-05da-4b18-ac6f-9d0b91105e38">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":$V{waitLT30}*100/$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="311" y="51" width="35" height="11" uuid="53b4671f-a873-4bce-81c0-2e4655439dde">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":$V{waitLT45}*100/$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="346" y="51" width="35" height="11" uuid="cdd15898-76c6-4c66-a948-defea7bd87d7">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":$V{waitLT60}*100/$V{waitCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="381" y="51" width="35" height="11" uuid="729cec0a-e5ab-43e0-887b-48bb2a5724c2">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Total}==0?"-":(100-($V{waitLT60}*100/$V{waitCount_Total}))]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="62" width="136" height="11" uuid="9ccc2929-4f86-4ad7-b56f-a203927fa0a9">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<text><![CDATA[Delay times - % of count]]></text>
+				</staticText>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="136" y="62" width="35" height="11" uuid="a5590719-837c-42af-8e78-1b7dc1200cfa">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":$V{delayLT5}*100/$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="171" y="62" width="35" height="11" uuid="ca99bd2f-d6ad-448d-ac33-48041e9ac3dc">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":$V{delayLT10}*100/$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="206" y="62" width="35" height="11" uuid="c249c540-e303-46c7-a3dd-72fe8f4787fc">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":$V{delayLT15}*100/$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="241" y="62" width="35" height="11" uuid="f04b5a55-e5d0-4fa0-b646-b253496d988f">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":$V{delayLT20}*100/$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="276" y="62" width="35" height="11" uuid="933db928-b630-480d-af72-a62cd444e28e">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":$V{delayLT30}*100/$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="311" y="62" width="35" height="11" uuid="cb5f01f9-bd95-4394-88e4-11d7fb7e9028">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":$V{delayLT45}*100/$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="346" y="62" width="35" height="11" uuid="a2c682df-51e2-4acc-b538-fa0331ad4997">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":$V{delayLT60}*100/$V{delayCount_Total}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#0">
+					<reportElement x="381" y="62" width="35" height="11" uuid="7ccabfeb-f1f2-4a9d-a077-768b50a5b090">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Total}==0?"-":(100-($V{delayLT60}*100/$V{delayCount_Total}))]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="apptType" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{apptType}]]></groupExpression>
+		<groupFooter>
+			<band height="28">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="#,##0">
+					<reportElement x="369" y="0" width="35" height="11" uuid="d7934dee-f817-4857-aab2-27b22673a863">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{earlyCount_ApptType}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyAvg_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="#,##0">
+					<reportElement x="404" y="0" width="35" height="11" uuid="00be0142-5468-409e-b862-1de41947f7e7">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{lateCount_ApptType}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateAvg_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="#,##0">
+					<reportElement x="474" y="0" width="35" height="11" uuid="1227824f-a588-47c1-9fd0-51aa5786667f">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_ApptType}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayAvg_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="#,##0">
+					<reportElement x="509" y="0" width="41" height="11" uuid="c4f73a93-d45b-4fe6-965b-4fdc3040bf48">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{consCount_ApptType}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consAvg_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="">
+					<reportElement x="369" y="11" width="35" height="12" uuid="5a8ac27f-447e-4012-9be2-54b1a5ee36ea">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyCount_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="">
+					<reportElement x="404" y="11" width="35" height="12" uuid="8a18ba5a-4baa-4135-85cd-2d61e2d441b7"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateCount_ApptType}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="0" width="53" height="11" uuid="512a9832-00d2-453d-aaa9-7f4d18d11f35">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Averages]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="11" width="53" height="12" uuid="691e4d65-60b9-4a15-aefd-74df40bcba02">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Counts]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="">
+					<reportElement x="474" y="11" width="35" height="12" uuid="b8f9e99c-ec36-41ef-920d-ac5e9551a770">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="">
+					<reportElement x="509" y="11" width="41" height="12" uuid="1e9a1eb8-fa91-4c48-9fcd-47f0a867eef8"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consCount_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="0" width="309" height="16" uuid="70d01cec-169c-47eb-9328-7da09dac2640">
+						<property name="local_mesure_unitheight" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Appt.Type Stats: "+$F{apptType}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement key="line-3" x="0" y="24" width="550" height="1" uuid="6506d4a6-bf94-444d-b3e6-427db5e36b41">
+						<property name="local_mesure_unitx" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						<property name="local_mesure_unitwidth" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+				</line>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="#,##0">
+					<reportElement x="439" y="0" width="35" height="11" uuid="5b7c2717-1d5b-4a86-9970-fedb79bf8a83">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_ApptType}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitAvg_ApptType}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="apptType" pattern="">
+					<reportElement x="439" y="11" width="35" height="12" uuid="3c4ed6fa-a481-4e1d-8b4e-9e59d70b6ae6">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_ApptType}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="WorkList">
+		<groupExpression><![CDATA[$F{worklist}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="28">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<printWhenExpression><![CDATA[$P{showWorklistStats}]]></printWhenExpression>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="#,##0">
+					<reportElement x="369" y="0" width="35" height="11" uuid="afc4481f-6b8d-453d-9f11-12dd95d4004d">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{earlyCount_Worklist}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyAvg_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="#,##0">
+					<reportElement x="404" y="0" width="35" height="11" uuid="484af4c8-4539-45b7-9da7-207c7d4c9c23">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{lateCount_Worklist}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateAvg_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="#,##0">
+					<reportElement x="474" y="0" width="35" height="11" uuid="6aa76ba5-b574-4ef7-b38d-75b8f8bfd011">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_Worklist}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayAvg_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="#,##0">
+					<reportElement x="509" y="0" width="41" height="11" uuid="29863233-389d-43fc-ae11-1effd771ddac">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{consCount_Worklist}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consAvg_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="">
+					<reportElement x="369" y="11" width="35" height="12" uuid="b56c5ca7-b89f-41a6-965d-3dcadf8d19fe">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyCount_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="">
+					<reportElement x="404" y="11" width="35" height="12" uuid="6d784522-69c3-461b-9148-edb9b4f92490"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateCount_Worklist}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="0" width="53" height="11" uuid="b7f713ef-5720-48fa-a6ee-a33718447448">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Averages]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="11" width="53" height="12" uuid="9f0b98f9-b77c-43bc-9e94-273bb441f21b">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Counts]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="">
+					<reportElement x="474" y="11" width="35" height="12" uuid="671a5c84-1288-4e81-a6f4-2c45100cc2c4">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="">
+					<reportElement x="509" y="11" width="41" height="12" uuid="7529d391-4f61-4844-9a51-4b9215cebfa1"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consCount_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="0" width="309" height="16" uuid="99300d2f-22bc-497a-9a72-e304799056b7">
+						<property name="local_mesure_unitheight" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Worklist Stats: "+$F{apptType}+"/"+$F{worklist}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement key="line-3" x="0" y="24" width="550" height="1" uuid="f1edd42c-b6e5-4813-831d-143d6b26571c">
+						<property name="local_mesure_unitx" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						<property name="local_mesure_unitwidth" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+				</line>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="#,##0">
+					<reportElement x="439" y="2" width="35" height="11" uuid="26ddd614-852b-423f-bbc9-3981d9227f46">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_Worklist}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitAvg_Worklist}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="WorkList" pattern="">
+					<reportElement x="439" y="13" width="35" height="11" uuid="2bc55740-19c3-4737-b572-e61e6d90b50a">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Worklist}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Schedule">
+		<groupExpression><![CDATA[$F{schedule}]]></groupExpression>
+		<groupHeader>
+			<band height="16">
+				<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="0" y="0" width="525" height="16" uuid="0301c675-ce4f-4513-9cf8-54b96eb7e6ec">
+						<property name="local_mesure_unitheight" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{apptType}+"/"+$F{worklist}+"/"+$F{schedule}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="28">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<printWhenExpression><![CDATA[$P{showScheduleStats}]]></printWhenExpression>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="#,##0">
+					<reportElement x="369" y="0" width="35" height="11" uuid="959b679f-782b-421e-bc0a-0a3fa294af5d">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{earlyCount_Schedule}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyAvg_Schedule}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="#,##0">
+					<reportElement x="404" y="0" width="35" height="11" uuid="d3c7f74a-f295-433c-a155-433cb334ee83">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{lateCount_Schedule}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateAvg_Schedule}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="#,##0">
+					<reportElement x="474" y="0" width="35" height="11" uuid="0bb38c7b-69cd-4a45-a28e-c835bef5fdc1">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_Schedule}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayAvg_Schedule}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="#,##0">
+					<reportElement x="509" y="0" width="41" height="11" uuid="93d00b05-35c3-41f2-8c11-d5f260a64931">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{consCount_Schedule}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consAvg_Schedule}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="">
+					<reportElement x="369" y="11" width="35" height="12" uuid="4037124f-7836-4e02-8f22-4d7d7b132b63">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{earlyCount_Schedule}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="">
+					<reportElement x="404" y="11" width="35" height="12" uuid="fc2051c9-8424-4b80-9577-253d237965a2"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{lateCount_Schedule}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="0" width="53" height="11" uuid="24922e34-41a8-4634-8c98-d1148b1bc535">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Averages]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-9" x="309" y="11" width="53" height="12" uuid="558a2d26-1a42-48cb-b645-39d81a8040b7">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Counts]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="">
+					<reportElement x="474" y="11" width="35" height="12" uuid="92536839-2204-466a-84fc-78bb257ea01f">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{delayCount_Schedule}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="">
+					<reportElement x="509" y="11" width="41" height="12" uuid="2bc46f86-2626-45b8-8cad-9ba5a2ca10c2"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{consCount_Schedule}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement key="line-3" x="0" y="24" width="550" height="1" uuid="44de9040-9468-4bea-bd58-667f9d9cafb2">
+						<property name="local_mesure_unitx" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						<property name="local_mesure_unitwidth" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+				</line>
+				<textField>
+					<reportElement x="14" y="11" width="295" height="12" uuid="c7fdba57-5126-4f44-8477-f91397d2be96">
+						<property name="local_mesure_unitheight" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{apptType}+"/"+$F{worklist}+"/"+$F{schedule}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="278" height="11" uuid="3707bbee-2e5d-4a0f-b40f-ead163a6f6bd"/>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Schedule Stats:]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="#,##0">
+					<reportElement x="439" y="0" width="35" height="11" uuid="4b8e414a-9bb8-4d5b-9556-130eaf9d4e4f">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{waitCount_Schedule}>0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitAvg_Schedule}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Schedule" pattern="">
+					<reportElement x="439" y="11" width="35" height="12" uuid="0c012a8a-3774-48ab-b7a5-d707ac6ff32d">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{waitCount_Schedule}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="128" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<staticText>
+				<reportElement key="staticText-1" x="108" y="0" width="334" height="23" uuid="b3176b1c-e7ae-4367-ba2f-856847e07ca0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true" isUnderline="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Wait Time Statistics]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="73" width="113" height="16" uuid="7ca70175-623c-454f-a1f2-16d496ed5d0c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Worklist: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="113" y="73" width="103" height="16" uuid="7f0dfda9-2009-4a72-9c7d-41b1de8ef1f4">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{worklist}==null)?"%":$P{worklist}+"%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="447" y="0" width="103" height="10" uuid="276665f4-24fd-4b40-b333-d3516fcd9eed"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="216" y="73" width="112" height="16" uuid="058ebfd8-95d0-4ecd-8312-44785e6f4e1b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Schedule: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="328" y="73" width="91" height="16" uuid="d4eca7d7-581e-41e4-86a2-309c36619af2">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{schedule}==null)?"%":$P{schedule}+"%"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="25" width="113" height="16" uuid="44e86396-c230-47c6-8914-7274bfb1b41a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[From Date: ]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="113" y="25" width="103" height="16" uuid="31a486ec-26e2-4e4f-a026-33ae35ea999c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{startDate})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-18" x="216" y="25" width="112" height="16" uuid="73998edc-bb93-4267-a29f-9766a118b33b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[To Date: ]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="328" y="25" width="103" height="16" uuid="be6324e2-83c4-40ca-b319-dbb0425ba6c2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="89" width="113" height="16" uuid="33590d6c-4b2b-45f9-820f-182c29e5856c">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Outliers >= mins: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="113" y="89" width="103" height="16" uuid="962eec04-b2be-4fbc-9394-9f550426be6a">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{outlierMins}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="41" width="113" height="16" uuid="884af69e-3d77-487e-8546-b8ce580b409d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appt.Start >= hour: ]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="113" y="41" width="103" height="16" uuid="6e71a60a-0682-42c9-b6d2-d40c4866b808"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{apptStartGE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-18" x="216" y="41" width="112" height="16" uuid="59737c83-0f0f-4f91-ad0c-c490e728471c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appt.Start < hour: ]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="328" y="41" width="103" height="16" uuid="149b72e5-f838-40e8-98d7-160548393da4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{apptStartLT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="57" width="113" height="16" uuid="2399f62d-7afb-4f56-bf87-3bd7fafdef07"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appointment Type: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="113" y="57" width="318" height="16" uuid="44d3199d-b559-436b-bfb0-8bffbb992e2a">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{apptType}==null)?"--all--":$P{apptType}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="216" y="89" width="111" height="16" uuid="a647c773-eb88-466e-a20b-2456ae879a1d">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Show Outliers:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="328" y="89" width="53" height="16" uuid="9956a5ec-2128-4dcf-9278-1bde67ac1b05">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{outliersOnly}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="216" y="105" width="111" height="16" uuid="e7a30bd5-e0b8-423e-a14f-12944c037fb3">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Show Sched.Stats: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="113" y="105" width="103" height="16" uuid="dae508fe-8394-4679-b49f-7b265874aff8">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{incAllAppts}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="328" y="105" width="53" height="16" uuid="a4415790-5763-4dd1-a23e-dcb955961a90">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{incAllAppts}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="105" width="113" height="16" uuid="89236ec7-cb2e-4bbd-8fcc-a6a4f64b3185">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Include All Appts: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="381" y="105" width="117" height="16" uuid="07527b39-1dbb-40a0-9075-525f46366c62">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Show Worklist Stats: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="499" y="105" width="50" height="16" uuid="1b905bba-92c9-4a1e-9452-55f8bf967b3a">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{showWorklistStats}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="439" y="24" width="70" height="17" uuid="a69de44d-b6b9-44d5-9204-818abe92c056"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="509" y="24" width="40" height="17" uuid="326191b0-49e4-458a-bd44-7a01a8f4f3ba"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="381" y="89" width="117" height="16" uuid="eed6f041-1ef6-41de-8828-c0743dd61603">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Show Clinicians: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="499" y="89" width="50" height="16" uuid="8f1de27e-d2c5-4991-b59f-fe9c0c3537dd">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{showWorklistStats}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="17" splitType="Stretch">
+			<printWhenExpression><![CDATA[$V{PAGE_NUMBER}>1]]></printWhenExpression>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="411" y="0" width="82" height="17" isRemoveLineWhenBlank="true" uuid="41b28974-ac07-4cf1-b8c1-3bb5c010125e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="494" y="0" width="55" height="17" isRemoveLineWhenBlank="true" uuid="e4edf7e8-95f1-4bb3-bb4e-b8c122956e5e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="42" splitType="Stretch">
+			<line>
+				<reportElement key="line-1" positionType="Float" x="0" y="40" width="550" height="1" uuid="157ef7de-4c4d-4e23-9c74-ea18473a9d58">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="local_mesure_unitx" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+			</line>
+			<staticText>
+				<reportElement key="staticText-15" x="0" y="3" width="309" height="16" uuid="580a4e8d-8bdc-4c71-9b18-91540c7ab5c0">
+					<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appt.Type/Worklist/Schedule]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="19" width="77" height="9" isRemoveLineWhenBlank="true" uuid="408e84e9-c42d-4447-9c85-4b66156bba29">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Appt.Start]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="77" y="19" width="40" height="9" isRemoveLineWhenBlank="true" uuid="98ec9c00-74d5-447d-ad75-2496e350fac2">
+					<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Duration]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="246" y="19" width="32" height="9" isRemoveLineWhenBlank="true" uuid="c754d4c1-028d-4581-bafd-f06ef7593139">
+					<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="117" y="19" width="69" height="9" isRemoveLineWhenBlank="true" uuid="52247607-8ca8-4c3c-b16e-2047689b99b9">
+					<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Customer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="186" y="19" width="60" height="9" isRemoveLineWhenBlank="true" uuid="9e458852-bcc5-4787-8e0e-6e64413a04ad">
+					<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Patient]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="404" y="17" width="35" height="11" isRemoveLineWhenBlank="true" uuid="e1c79fe6-529b-46e1-a840-2f22c9242f70">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[Late]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="474" y="17" width="35" height="11" isRemoveLineWhenBlank="true" uuid="742367cf-1466-4061-859f-4e8e318127fb">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[Delay]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="509" y="17" width="41" height="11" isRemoveLineWhenBlank="true" uuid="4e6656a1-d6a0-4726-905e-4353a08f6f82"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[Task]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="278" y="19" width="56" height="9" isRemoveLineWhenBlank="true" uuid="bc766198-d18f-493b-9a30-2d02d87e6247">
+					<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Task Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="375" y="17" width="29" height="11" isRemoveLineWhenBlank="true" uuid="99c25971-61be-4961-9a60-f6f984fc0f05">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[Early]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="439" y="17" width="35" height="11" isRemoveLineWhenBlank="true" uuid="b1490df5-faec-4760-bfa9-d7e2339947e1">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[Wait]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="120" y="29" width="129" height="10" isRemoveLineWhenBlank="true" uuid="bbf38fe5-5b5b-4850-ae1e-d3b0abdad98c">
+					<printWhenExpression><![CDATA[((!$P{countsOnly})||$P{outliersOnly})&&($P{showClinicians})]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Appt. Clinician]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="249" y="29" width="119" height="10" isRemoveLineWhenBlank="true" uuid="f877402f-81da-48b3-a327-2c9dca19935a">
+					<printWhenExpression><![CDATA[((!$P{countsOnly})||$P{outliersOnly})&&($P{showClinicians})]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<text><![CDATA[Task Clinician]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="19" splitType="Prevent">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[(!$P{countsOnly})||$P{outliersOnly}]]></printWhenExpression>
+			<textField pattern="dd/MM/yyyy HH:mm:ss">
+				<reportElement x="0" y="0" width="51" height="9" uuid="c6456e19-a2fd-413b-bcf6-956fd399be7c"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT,  $P{REPORT_LOCALE}).format($F{apptStartTime})]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="77" y="0" width="40" height="9" uuid="124ac45a-6357-4642-9719-bb40bc676771"/>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{apptDuration}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="246" y="0" width="32" height="9" uuid="52f77687-18c5-4ebb-82a7-5468cf637e26"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{apptStatus}+'/'+($F{taskStatus}==null?'-':$F{taskStatus})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="117" y="0" width="69" height="9" uuid="fe08b122-e97b-48f6-8d4e-a3973c2e6968"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="186" y="0" width="60" height="9" uuid="9e7cf196-7cd3-454f-9dc2-c1b3fae29291"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="404" y="0" width="35" height="9" uuid="4e240751-66df-4f80-b713-9d6d33eec9e6"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?"":($F{lateMins}>=0?$F{lateMins}.toString():"")]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="474" y="0" width="35" height="9" uuid="a2c11aa7-6cd0-469d-a71d-c51476cd48c9">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{delayMins}.compareTo( -99999L)==0?"":$F{delayMins}.toString()]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="509" y="0" width="41" height="9" uuid="4cc85f28-8c78-4b67-a0b6-04734b00eaf1">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{consultMins}.compareTo( -99999L)==0?"":$F{consultMins}.toString()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="278" y="0" width="56" height="9" uuid="593c44bd-40be-4aed-9d38-8ec75893e7aa"/>
+				<textElement textAlignment="Left">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taskType}]]></textFieldExpression>
+			</textField>
+			<textField pattern="HH:mm">
+				<reportElement x="51" y="0" width="26" height="9" uuid="9c596d9f-5da3-427f-ad20-0d6c16ae8ab8">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{apptStartTime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="375" y="0" width="29" height="9" uuid="793e89be-95f8-490c-8eb8-df6c77119aa8"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lateMins}.compareTo( -99999L)==0?"":($F{lateMins}<0L?Math.abs($F{lateMins}):"")]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="439" y="0" width="35" height="9" uuid="f82db5d4-b932-446d-b816-db3ddc9b0f5f"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{waitMins}.compareTo( -99999L)==0?"":$F{waitMins}.toString()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="9" width="129" height="10" isRemoveLineWhenBlank="true" uuid="b913c4a1-3cf5-495f-9fb8-d24adcdc140f">
+					<printWhenExpression><![CDATA[$P{showClinicians}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{aClinicianID}==null?"--None--":EVALUATE("user:format($F.aClinicianID, 'short')")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="249" y="9" width="119" height="10" isRemoveLineWhenBlank="true" uuid="b9ad6fb4-2a2c-43dc-b6c4-1165b3b235d2">
+					<printWhenExpression><![CDATA[$P{showClinicians}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tClinicianID}==null?"--None--":EVALUATE("user:format($F.tClinicianID, 'short')")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<lastPageFooter>
+		<band height="19">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="144" y="0" width="103" height="19" uuid="f2883f20-97a9-4586-a601-86e23b41d736"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-17" x="0" y="0" width="144" height="19" uuid="46aa4c77-1f72-4792-a88c-29e479b8fd41"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total Appointments :]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="292" splitType="Stretch">
+			<line>
+				<reportElement key="line-3" x="0" y="5" width="550" height="1" uuid="2a11f93e-5d69-476d-ab99-b112f518f5f0">
+					<property name="local_mesure_unitx" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+			</line>
+			<staticText>
+				<reportElement x="104" y="7" width="336" height="18" isRemoveLineWhenBlank="true" uuid="04067c98-5e27-4b03-9716-3077870198d2">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="13" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="-1" y="26" width="550" height="266" isRemoveLineWhenBlank="true" uuid="df172902-9061-461d-bc37-d247d8dc3be1">
+					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[This report shows timing statistics for appointments grouped by Appointment Type/Worklist/Schedule.
+The selection fields entered have % added so that leaving them blank will find all, and entering say schedule 'd' will include all appointments is schedules starting 'd', and entering worklist '%room' will find all worklists containing 'room'. The selection is case-insensitive.
+You can also use a selection string starting ! to use a 'not like' selection - so schedule '!dr' will find schedules not starting with 'dr'.
+The Appointment Type selection uses REGEXP matching. Leaving it blank will find all types; entering 'surg' will find all types containing 'surg'; and you can find multiple types with the | character, ie 'cons|recheck|surg' will find types containing 'cons', 'recheck', or 'surg'. Note that it is possible to crash the report by using invalid REGEX expressions.
+Note: 'arrival'=Check In pressed; 'consult start'=Consult pressed for 1st time; 'consult end'=Check Out pressed.
+The Early and Late columns show the number of minutes early or late for the appointment. 
+The Wait column shows the time in minutes from arrival to consult start.
+The Delay column shows the time in minutes from the appointment start to the consult start.
+The Task column shows the duration of the task (ie consult start to end) in minutes.
+The statistics do not include cases where data is missing (eg no Consult End time means that no Consult duration can be calculated).
+Appointments without Tasks will only be included if 'Include All Appointments is checked.
+Unchecking the 'Show only counts' option displays the appointment information, leaving this checked shows just the totals.
+The status codes used are: PE=Pending, CA=Cancelled, IP=In Progress, CK=Checked In, AD=Admitted, BI=Billed,CP=Completed 
+Checking the 'Show Clinicians' option will display the clinician set for each appointment and task.
+The 'Show Worklist Stats' and 'Show Schedule Stats' options control whether summary statistics are displayed for each worklist and schedule.
+The 'Outlier' facility allows you to omit appointments where the Wait or Delay time is greater than or equal to the Outlier time (default 120 mins) so that the averages are not distorted by extreme values. If you want to see these, check the 'Show Outliers' option.]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>
