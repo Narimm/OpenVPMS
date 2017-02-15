@@ -320,12 +320,12 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     public synchronized void unlock() {
         if (lockDialog != null) {
             if (lockDialog.getParent() != null) {
-                enqueueTask(getLockTaskQueue(1), new Runnable() {
-                    @Override
-                    public void run() {
-                        unlockScreen();
-                    }
-                });
+            enqueueTask(getLockTaskQueue(1), new Runnable() {
+                @Override
+                public void run() {
+                    unlockScreen();
+                }
+            });
             } else {
                 // the dialog hasn't been shown yet, so just destroy it.
                 lockDialog.dispose();

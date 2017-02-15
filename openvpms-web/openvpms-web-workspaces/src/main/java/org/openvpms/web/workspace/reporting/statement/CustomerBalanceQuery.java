@@ -189,7 +189,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * are being queried.
      *
      * @return {@code true} if customers with both overdue and non-overdue
-     * balances are being queried.
+     *         balances are being queried.
      */
     public boolean queryAllBalances() {
         return balanceType.getSelectedIndex() == ALL_BALANCE_INDEX;
@@ -199,8 +199,8 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * Determines if customers with overdue balances are being queried.
      *
      * @return {@code true} if customers with overdue balances are being
-     * queried, {@code false} if customers with outstanding balances are being
-     * queried
+     *         queried, {@code false} if customers with outstanding balances are being
+     *         queried
      */
     public boolean queryOverduebalances() {
         return balanceType.getSelectedIndex() == OVERDUE_INDEX;

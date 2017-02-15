@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -32,9 +32,9 @@ import java.util.TreeMap;
 public abstract class ContactMatcher {
 
     /**
-     * The contact archetype short name.
+     * The contact archetype short names.
      */
-    private final String shortName;
+    private final String[] shortNames;
 
     /**
      * The archetype service.
@@ -45,15 +45,26 @@ public abstract class ContactMatcher {
      * The contacts matching some or all of the criteria, keyed on
      * priority, where the 0 is the highest priority.
      */
-    private SortedMap<Integer, Contact> contacts = new TreeMap<Integer, Contact>();
+    private SortedMap<Integer, Contact> contacts = new TreeMap<>();
 
     /**
-     * Constructs a new {@code ContactMatcher}.
+     * Constructs a {@link ContactMatcher}.
      *
      * @param shortName the contact archetype short name
+     * @param service   the archetype service
      */
     public ContactMatcher(String shortName, IArchetypeService service) {
-        this.shortName = shortName;
+        this(new String[]{shortName}, service);
+    }
+
+    /**
+     * Constructs a {@link ContactMatcher}.
+     *
+     * @param shortNames the contact archetype short names
+     * @param service    the archetype service
+     */
+    public ContactMatcher(String[] shortNames, IArchetypeService service) {
+        this.shortNames = shortNames;
         this.service = service;
     }
 
@@ -99,7 +110,7 @@ public abstract class ContactMatcher {
      * @return {@code true} if the contact matches; otherwise {@code false}
      */
     protected boolean matchesShortName(Contact contact) {
-        return TypeHelper.isA(contact, shortName);
+        return TypeHelper.isA(contact, shortNames);
     }
 
     /**

@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -28,9 +29,11 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Date;
 
 /**
  * An editor for {@link Act}s which have an archetype of <em>act.patientReminder</em>.
@@ -58,11 +61,33 @@ public class ReminderEditor extends PatientActEditor {
      */
     public ReminderEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        addStartEndTimeListeners();
         if (!TypeHelper.isA(act, ReminderArchetypes.REMINDER)) {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
         rules = ServiceHelper.getBean(ReminderRules.class);
+    }
+
+    /**
+     * Sets the created time.
+     * <p/>
+     * Due dates are calculated relative to this.
+     * TODO - this won't work when createdTime is populated by the persistence layer. A separate date will be required
+     *
+     * @param created the created time
+     */
+    public void setCreatedTime(Date created) {
+        getProperty("createdTime").setValue(created);
+    }
+
+    /**
+     * Returns the created time.
+     *
+     * @return the created time. May be {@code null}
+     */
+    public Date getCreatedTime() {
+        return getProperty("createdTime").getDate();
     }
 
     /**
@@ -102,6 +127,15 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
+     * Returns the reminder count.
+     *
+     * @return the reminder count
+     */
+    public int getReminderCount() {
+        return getProperty("reminderCount").getInt();
+    }
+
+    /**
      * Determines if matching reminders should be marked completed, if the reminder is new and IN_PROGRESS when it is
      * saved.
      * <p/>
@@ -132,6 +166,57 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
+     * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that the start time is less than the end time, if non-null.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        Date nextDueDate = getStartTime();
+        Date firstDueDate = getEndTime();
+        if (firstDueDate != null && nextDueDate != null) {
+            if (DateRules.compareTo(firstDueDate, nextDueDate) > 0) {
+
+            }
+        }
+        return super.doValidation(validator);
+    }
+
+    /**
+     * Invoked when the start time changes.
+     * <p/>
+     * For reminders, the start time represents the next due date. It must be the same as or greater than the original
+     * due date (endTime).
+     */
+    @Override
+    protected void onStartTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (start.compareTo(end) < 0) {
+                setStartTime(end, true);
+            }
+        }
+    }
+
+    /**
+     * Invoked when the end time changes. For reminders, the end represents the original due date.
+     * <p/>
+     * This populates the start time if with the same value, if it is unset.
+     */
+    @Override
+    protected void onEndTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (end != null || getReminderCount() == 0) {
+            setStartTime(end, true);
+        }
+    }
+
+    /**
      * Save any edits.
      *
      * @throws OpenVPMSException if the save fails
@@ -150,9 +235,13 @@ public class ReminderEditor extends PatientActEditor {
      */
     private void onReminderTypeChanged() {
         try {
-            rules.calculateReminderDueDate(getObject());
-            Property property = getProperty("endTime");
-            property.refresh();
+            Date created = getCreatedTime();
+            Entity reminderType = getReminderType();
+            if (created != null && reminderType != null) {
+                Date dueDate = rules.calculateReminderDueDate(created, reminderType);
+                setStartTime(dueDate);
+                setEndTime(dueDate);
+            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -119,7 +119,7 @@ public class TestHelper {
     }
 
     /**
-     * Creates a new customer.
+     * Creates a new customer with default contacts.
      *
      * @param firstName the customer's first name
      * @param lastName  the customer's surname
@@ -127,10 +127,25 @@ public class TestHelper {
      * @return a new customer
      */
     public static Party createCustomer(String firstName, String lastName, boolean save) {
+        return createCustomer(firstName, lastName, true, save);
+    }
+
+    /**
+     * Creates a new customer.
+     *
+     * @param firstName       the customer's first name
+     * @param lastName        the customer's surname
+     * @param defaultContacts if {@code true}, add default contacts
+     * @param save            if {@code true} make the customer persistent
+     * @return a new customer
+     */
+    public static Party createCustomer(String firstName, String lastName, boolean defaultContacts, boolean save) {
         Party customer = (Party) create(CustomerArchetypes.PERSON);
-        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
-                                          LookupServiceHelper.getLookupService());
-        customer.setContacts(rules.getDefaultContacts());
+        if (defaultContacts) {
+            PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
+                                              LookupServiceHelper.getLookupService());
+            customer.setContacts(rules.getDefaultContacts());
+        }
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", firstName);
         bean.setValue("lastName", lastName);
@@ -147,6 +162,21 @@ public class TestHelper {
      */
     public static Party createCustomer() {
         return createCustomer(true);
+    }
+
+    /**
+     * Creates and saves a new customer, with the specified contacts.
+     *
+     * @param contacts the contacts
+     * @return a new customer
+     */
+    public static Party createCustomer(Contact... contacts) {
+        Party customer = createCustomer("J", "Zoo-" + nextId(), false, false);
+        for (Contact contact : contacts) {
+            customer.addContact(contact);
+        }
+        save(customer);
+        return customer;
     }
 
     /**
@@ -207,11 +237,24 @@ public class TestHelper {
      * @return a new phone contact
      */
     public static Contact createPhoneContact(String areaCode, String number) {
+        return createPhoneContact(areaCode, number, false);
+    }
+
+    /**
+     * Creates a new <em>contact.phoneNumber</em>
+     *
+     * @param areaCode the area code
+     * @param number   the phone number
+     * @param sms      if {@code true}, allow SMS
+     * @return a new phone contact
+     */
+    public static Contact createPhoneContact(String areaCode, String number, boolean sms) {
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("areaCode", areaCode);
         bean.setValue("telephoneNumber", number);
         bean.setValue("preferred", true);
+        bean.setValue("sms", sms);
         return contact;
     }
 
@@ -308,7 +351,7 @@ public class TestHelper {
         PatientRules rules = new PatientRules(null, ArchetypeServiceHelper.getArchetypeService(), null, null);
         rules.addPatientOwnerRelationship(owner, patient);
         if (save) {
-            save(patient);
+            save(owner, patient);
         }
         return patient;
     }

@@ -11,27 +11,33 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.party.SMSMatcher;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.sms.SMSHelper;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
@@ -46,7 +52,7 @@ import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.
  *
  * @author Tim Anderson
  */
-public class ReminderSMSProcessor extends AbstractReminderProcessor {
+public class ReminderSMSProcessor extends GroupedReminderProcessor {
 
     /**
      * The SMS connection factory.
@@ -54,64 +60,153 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
     private final ConnectionFactory factory;
 
     /**
-     * The communication logger. May be {@code null}
-     */
-    private final ReminderCommunicationLogger logger;
-
-    /**
      * The template evaluator.
      */
     private final ReminderSMSEvaluator evaluator;
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(ReminderSMSProcessor.class);
-
-    /**
      * Constructs a {@link ReminderSMSProcessor}.
      *
      * @param factory       the SMS connection factory
-     * @param groupTemplate the template for grouped reminders
-     * @param context       the context
-     * @param logger        if specified, logs SMS reminders
-     * @param evaluator     the template evaluator
+     * @param evaluator     the SMS template evaluator
+     * @param groupTemplate the grouped reminder template
+     * @param reminderTypes the reminder types
+     * @param rules         the reminder rules
+     * @param practice      the practice
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderSMSProcessor(ConnectionFactory factory, DocumentTemplate groupTemplate, Context context,
-                                ReminderCommunicationLogger logger, ReminderSMSEvaluator evaluator) {
-        super(groupTemplate, context);
+    public ReminderSMSProcessor(ConnectionFactory factory, ReminderSMSEvaluator evaluator,
+                                DocumentTemplate groupTemplate, ReminderTypeCache reminderTypes, ReminderRules rules,
+                                Party practice, IArchetypeService service, ReminderConfiguration config,
+                                CommunicationLogger logger) {
+        super(groupTemplate, reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
-        this.logger = logger;
         this.evaluator = evaluator;
+    }
+
+    /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
+        return false;
+    }
+
+    /**
+     * Logs reminder communications.
+     *
+     * @param state  the reminder state
+     * @param logger the communication logger
+     */
+    @Override
+    protected void log(State state, CommunicationLogger logger) {
+        String subject = Messages.get("reminder.log.sms.subject");
+        for (ObjectSet set : state.getReminders()) {
+            String notes = getNote(set);
+            Party customer = getCustomer(set);
+            Party patient = getPatient(set);
+            Contact contact = (Contact) set.get("contact");
+            Party location = (Party) set.get("location");
+            String text = set.getString("text");
+            logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
+                          notes, location);
+        }
+    }
+
+    /**
+     * Prepares reminders for processing.
+     * <p/>
+     * This:
+     * <ul>
+     * <li>filters out any reminders that can't be processed due to missing data</li>
+     * <li>adds meta-data for subsequent calls to {@link #process}</li>
+     * </ul>
+     *
+     * @param reminders the reminders
+     * @param updated   acts that need to be saved on completion
+     * @param errors    reminders that can't be processed due to error
+     * @return the reminders to process
+     */
+    @Override
+    protected List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors) {
+        reminders = super.prepare(reminders, updated, errors);
+        if (!reminders.isEmpty()) {
+            ObjectSet reminder = reminders.get(0);
+            Party customer = getCustomer(reminder);
+            Party location = getCustomerLocation(customer);
+            for (ObjectSet set : reminders) {
+                set.set("location", location);
+            }
+        }
+        return reminders;
+    }
+
+    /**
+     * Returns the contact archetype.
+     *
+     * @return the contact archetype
+     */
+    @Override
+    protected String getContactArchetype() {
+        return ContactArchetypes.PHONE;
+    }
+
+    /**
+     * Returns the date from which a reminder item should be cancelled.
+     *
+     * @param startTime the item start time
+     * @param config    the reminder configuration
+     * @return the date when the item should be cancelled
+     */
+    @Override
+    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
+        return config.getSMSCancelDate(startTime);
+    }
+
+    /**
+     * Creates a contact matcher to locate the contact to send to.
+     *
+     * @return a new contact matcher
+     */
+    @Override
+    protected ContactMatcher createContactMatcher() {
+        return new SMSMatcher(CONTACT_PURPOSE, false, getService());
     }
 
     /**
      * Processes a list of reminder events.
      *
-     * @param events           the events
-     * @param shortName        the report archetype short name, used to select the document template if none specified
-     * @param documentTemplate the document template to use. May be {@code null}
+     * @param contact   the contact to send to
+     * @param reminders the events
+     * @param template  the document template to use. May be {@code null}
      */
-    protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
-        ReminderEvent event = events.get(0);
-        Contact contact = event.getContact();
-        Context context = getContext();
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName, context);
-        documentTemplate = locator.getTemplate();
-        if (documentTemplate == null) {
+    @Override
+    protected void process(Contact contact, List<ObjectSet> reminders, DocumentTemplate template) {
+        if (template == null) {
             throw new ReportingException(ReminderMissingDocTemplate);
         }
-        Entity smsTemplate = documentTemplate.getSMSTemplate();
+        Entity smsTemplate = template.getSMSTemplate();
         if (smsTemplate == null) {
-            throw new ReportingException(TemplateMissingSMSText, documentTemplate.getName());
+            throw new ReportingException(TemplateMissingSMSText, template.getName());
         }
         String phoneNumber = SMSHelper.getPhone(contact);
+
+        ObjectSet first = reminders.get(0);
+        Party customer = getCustomer(first);
+        Party location = (Party) first.get("location");
+
         if (StringUtils.isEmpty(phoneNumber)) {
-            Party customer = event.getCustomer();
-            log.error("Contact has no phone number for customer=" + customer.getName() + " (" + customer.getId() + ")");
+            throw new ReportingException(FailedToProcessReminder, "Contact has no phone number for customer=" +
+                                                                  customer.getName() + " (" + customer.getId() + ")");
         } else {
             try {
-                String text = evaluator.evaluate(smsTemplate, event, context.getLocation(), context.getPractice());
+                Act reminder = getReminder(first);
+                Party patient = getPatient(first);
+                String text = evaluator.evaluate(smsTemplate, reminder, customer, patient, location, getPractice());
                 if (StringUtils.isEmpty(text)) {
                     throw new ReportingException(SMSMessageEmpty, smsTemplate.getName());
                 } else if (text.length() > 160) {
@@ -122,9 +217,6 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
                     connection.send(phoneNumber, text);
                 } finally {
                     connection.close();
-                }
-                if (logger != null) {
-                    logger.logSMS(text, events, context.getLocation());
                 }
             } catch (ReportingException exception) {
                 throw exception;

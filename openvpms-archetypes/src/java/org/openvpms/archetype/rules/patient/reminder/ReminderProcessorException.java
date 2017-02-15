@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -23,8 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 /**
  * Exception class for reminder processors.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderProcessorException extends OpenVPMSException {
 
@@ -33,7 +32,10 @@ public class ReminderProcessorException extends OpenVPMSException {
      */
     public enum ErrorCode {
         NoReminderType,
-        NoPatient
+        NoReminderCount,
+        NoPatient,
+        Late,
+        NoContactsForRules
     }
 
     /**

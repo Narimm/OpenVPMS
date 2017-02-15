@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.patientReminder.1.0" latest="true"
@@ -20,13 +20,15 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Reminder'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="concat('Due Date : ', date:formatDate(/activityEndTime), ' Reminders Sent : ', /details/reminderCount)"/>
-        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
-              defaultValue="java.util.Date.new()"/>
+              derivedValue="concat('Due Date : ', date:formatDate(/activityStartTime), ' Reminders Sent : ', /details/reminderCount)"/>
+        <node name="createdTime" path="/details/createdTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()" hidden="true"/>
         <node name="reminderType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.reminderType"/>
-        <node displayName="Due Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1"
-              defaultValue="java.util.Date.new()"/>
+        <node displayName="First Due Date" name="endTime" path="/activityEndTime" type="java.util.Date"
+              minCardinality="1"/>
+        <node displayName="Next Due Date" name="startTime" path="/activityStartTime" type="java.util.Date"
+              minCardinality="1"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
@@ -34,7 +36,6 @@
                     <property name="COMPLETED" value="Completed"/>
                     <property name="CANCELLED" value="Cancelled"/>
                 </propertyList>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="reminderCount" displayName="Reminders Sent" path="/details/reminderCount" type="java.lang.Integer"
@@ -43,7 +44,6 @@
               minCardinality="0"/>
         <node displayName="Completed" name="completedDate" path="/details/completedDate" type="java.util.Date"
               minCardinality="0"/>
-        <node name="error" path="/details/error" type="java.lang.String" minCardinality="0" readOnly="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
         <node name="product" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
@@ -52,5 +52,8 @@
               filter="participation.author" hidden="true"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
+        <node name="items" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.patientReminderItem"/>
     </archetype>
 </archetypes>

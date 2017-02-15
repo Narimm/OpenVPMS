@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -896,7 +896,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             editor.setStartTime(parent.getActivityStartTime());
         }
         for (ReminderEditor editor : getReminderEditors()) {
-            editor.setStartTime(parent.getActivityStartTime());
+            // the reminder due date is mapped to the startTime node, for performance reasons.
+            // The due date is calculated relative to the createdTime node (TODO)
+            editor.setCreatedTime(parent.getActivityStartTime());
         }
         if (dispensing != null) {
             dispensing.refresh();
@@ -1084,7 +1086,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                         if (editor instanceof ReminderEditor) {
                             ReminderEditor reminder = (ReminderEditor) editor;
                             Date startTime = getStartTime();
-                            reminder.setStartTime(startTime);
+                            reminder.setCreatedTime(startTime);
                             reminder.setReminderType(reminderType);
                             reminder.setPatient(getPatient());
                             reminder.setProduct(product);

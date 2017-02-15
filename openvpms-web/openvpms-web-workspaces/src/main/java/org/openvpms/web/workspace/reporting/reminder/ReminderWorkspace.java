@@ -16,42 +16,25 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.component.processor.BatchProcessorListener;
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
-import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.report.DocumentTemplateLocator;
-import org.openvpms.web.component.im.sms.SMSHelper;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.TabbedBrowser;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.print.InteractivePrinter;
-import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.CustomerMailContext;
-import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -59,18 +42,7 @@ import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
  *
  * @author Tim Anderson
  */
-public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
-
-    /**
-     * The query.
-     */
-    private PatientReminderQuery query;
-
-    /**
-     * The browser.
-     */
-    private Browser<Act> browser;
-
+public class ReminderWorkspace extends BrowserCRUDWorkspace<Act, Act> {
 
     /**
      * Constructs a {@link ReminderWorkspace}.
@@ -79,176 +51,96 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      * @param mailContext the mail context
      */
     public ReminderWorkspace(Context context, MailContext mailContext) {
-        super("reporting.reminder", "reporting", "reminder", Act.class, context, mailContext);
+        super("reporting.reminder", context, false);
+        setArchetypes(Archetypes.create(ReminderArchetypes.REMINDER_ITEMS, Act.class));
+        setChildArchetypes(getArchetypes());
+        setMailContext(mailContext);
     }
 
     /**
-     * Lays out the components.
+     * Determines if the parent object is optional (i.e may be {@code null},
+     * when laying out the workspace.
      *
-     * @param container the container
-     * @param group     the focus group
+     * @return {@code true}
      */
-    protected void doLayout(Component container, FocusGroup group) {
-        query = new PatientReminderQuery(getContext().getPractice());
+    @Override
+    protected boolean isParentOptional() {
+        return true;
+    }
 
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<Act> createCRUDWindow() {
+        return ((ReminderTabbedBrowser) getBrowser()).getSelectedWindow();
+    }
+
+    /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Act> createQuery() {
+        return new ReminderItemQuery();
+    }
+
+    /**
+     * Creates a new browser.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    @Override
+    protected Browser<Act> createBrowser(Query<Act> query) {
         // create a layout context, with hyperlinks enabled
         LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
-
-        PatientReminderTableModel model = new PatientReminderTableModel(context);
-        browser = new DefaultIMObjectTableBrowser<>(query, model, context);
-
-        container.add(browser.getComponent());
-        group.add(browser.getFocusGroup());
-    }
-
-    /**
-     * Lays out the buttons.
-     *
-     * @param buttons the button set
-     */
-    protected void layoutButtons(ButtonSet buttons) {
-        buttons.add("print", new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onPrint();
-            }
-        });
-        buttons.add("sendAll", new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onSendAll();
-            }
-        });
-        buttons.add("report", new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onReport();
-            }
-        });
-    }
-
-    /**
-     * Creates an interactive printer to print the reminder report.
-     *
-     * @param title   the dialog title
-     * @param printer the printer to delegate to
-     * @param context the context
-     * @param help    the help context
-     * @return a new interactive printer
-     */
-    protected InteractivePrinter createPrinter(String title, IMPrinter<Act> printer, Context context,
-                                               HelpContext help) {
-        return new InteractivePrinter(title, printer, context, help);
-    }
-
-    /**
-     * Invoked when the 'Print' button is pressed. Prints the selected reminder.
-     */
-    private void onPrint() {
-        try {
-            Act reminder = browser.getSelected();
-            if (reminder != null) {
-                boolean disableSMS = !SMSHelper.isSMSEnabled(getContext().getPractice());
-                ReminderProcessor processor = new ReminderProcessor(
-                        reminder.getActivityStartTime(), reminder.getActivityEndTime(),
-                        reminder.getActivityStartTime(), disableSMS, ServiceHelper.getArchetypeService(),
-                        ServiceHelper.getBean(PatientRules.class));
-                IMObjectBean bean = new IMObjectBean(reminder);
-                int reminderCount = bean.getInt("reminderCount");
-                ReminderEvent event = processor.process(reminder, reminderCount);
-                if (event.getDocumentTemplate() != null) {
-                    Context context = getContext();
-                    HelpContext help = getHelpContext().subtopic("print");
-                    MailContext mailContext = CustomerMailContext.create(event.getCustomer(), event.getPatient(),
-                                                                         context, help);
-                    if (mailContext != null) {
-
-                        DocumentTemplate template = new DocumentTemplate(event.getDocumentTemplate(),
-                                                                         ServiceHelper.getArchetypeService());
-                        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
-                                                                                             context);
-                        InteractivePrinter printer = new InteractivePrinter(
-                                new IMObjectReportPrinter<>(reminder, locator, context), context, help);
-                        printer.setMailContext(mailContext);
-                        printer.print();
-                    }
-                } else {
-                    ErrorHelper.show(Messages.format("reporting.reminder.print.notemplate",
-                                                     event.getReminderType().getName(), reminderCount));
-                }
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Invoked when the 'Send All' button is pressed. Runs the reminder generator for all reminders.
-     */
-    private void onSendAll() {
-        String title = Messages.get("reporting.reminder.run.title");
-        String message = Messages.get("reporting.reminder.run.message");
-        HelpContext help = getHelpContext().subtopic("confirmsend");
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
+        ReminderItemQuery errorQuery = new ReminderItemQuery(new ReminderItemObjectSetQuery(true));
+        ReminderTabbedBrowser browser = new ReminderTabbedBrowser((ReminderItemQuery) query, errorQuery, context);
+        browser.setListener(new TabbedBrowserListener() {
             @Override
-            public void onOK() {
-                generateReminders();
-            }
-
-        });
-        dialog.show();
-    }
-
-    /**
-     * Invoked when the 'Report' button is pressed.
-     */
-    private void onReport() {
-        Iterable<Act> objects = query.createReminderQuery().query();
-        IMPrinter<Act> printer = new IMObjectReportPrinter<>(objects, ReminderArchetypes.REMINDER, getContext());
-        String title = Messages.get("reporting.reminder.print.title");
-        try {
-            HelpContext help = getHelpContext().subtopic("report");
-            InteractivePrinter iPrinter = createPrinter(title, printer, getContext(), help);
-            iPrinter.setMailContext(getMailContext());
-            iPrinter.print();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Generate the reminders.
-     */
-    private void generateReminders() {
-        try {
-            HelpContext help = getHelpContext().subtopic("send");
-            ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
-            ReminderGenerator generator = factory.create(query.createReminderQuery(), getContext(), getMailContext(),
-                                                         help);
-            generateReminders(generator);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Generates reminders using the specified generator.
-     * Updates the browser on completion.
-     *
-     * @param generator the generator
-     */
-    private void generateReminders(ReminderGenerator generator) {
-        generator.setListener(new BatchProcessorListener() {
-            public void completed() {
-                browser.query();
-            }
-
-            public void error(Throwable exception) {
-                ErrorHelper.show(exception);
+            public void onBrowserChanged() {
+                changeCRUDWindow();
             }
         });
-        generator.process();
+        return browser;
+    }
+
+    /**
+     * Changes the CRUD window depending on the current browser view.
+     */
+    private void changeCRUDWindow() {
+        ReminderTabbedBrowser browser = (ReminderTabbedBrowser) getBrowser();
+        setCRUDWindow(browser.getSelectedWindow());
+        setWorkspace(createWorkspace());
+    }
+
+
+    private static class ReminderTabbedBrowser extends TabbedBrowser<Act> {
+
+        private Map<Integer, CRUDWindow<Act>> windows = new HashMap<>();
+
+        public ReminderTabbedBrowser(ReminderItemQuery query, ReminderItemQuery errorQuery, LayoutContext context) {
+            addBrowser("reporting.reminder.send", new ReminderItemBrowser(query, context), context);
+            addBrowser("reporting.reminder.errors", new ReminderItemBrowser(errorQuery, context), context);
+        }
+
+        public CRUDWindow<Act> getSelectedWindow() {
+            return windows.get(getSelectedBrowserIndex());
+        }
+
+        private void addBrowser(String key, ReminderItemBrowser browser, LayoutContext context) {
+            int index = addBrowser(Messages.get(key), browser);
+            ReminderItemCRUDWindow window = new ReminderItemCRUDWindow(browser, context.getContext(),
+                                                                       context.getHelpContext());
+            windows.put(index, window);
+        }
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -2020,7 +2020,7 @@ public class IMObjectBean {
             ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
             if (descriptor != null) {
                 NodeDescriptor node = descriptor.getNodeDescriptor(targetName);
-                if (node != null && TypeHelper.isA(archetypeId, node.getArchetypeRange())) {
+                if (node != null && isA(node, archetypeId)) {
                     if (result != null) {
                         throw new IMObjectBeanException(IMObjectBeanException.ErrorCode.MultipleRelationshipsForTarget,
                                                         archetypeId.getShortName(), name);
@@ -2165,6 +2165,19 @@ public class IMObjectBean {
      */
     protected NodeDescriptor getNode(String name) {
         return properties.getNode(name);
+    }
+
+    /**
+     * Determines if a node is a particular archetype.
+     *
+     * @param node        the node
+     * @param archetypeId the archetype identifier
+     * @return {@code true} if the node is the archetype, otherwise {@code false}
+     */
+    private boolean isA(NodeDescriptor node, ArchetypeId archetypeId) {
+        String[] shortNames = node.getArchetypeRange();
+        return (shortNames.length != 0) ? TypeHelper.isA(archetypeId, shortNames)
+                                        : TypeHelper.isA(archetypeId, node.getFilter());
     }
 
     /**

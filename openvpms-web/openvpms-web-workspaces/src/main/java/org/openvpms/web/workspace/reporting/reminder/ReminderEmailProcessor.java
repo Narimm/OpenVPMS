@@ -11,28 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.report.ObjectSetReporter;
 import org.openvpms.web.component.im.report.ReportContextFactory;
@@ -43,15 +44,16 @@ import org.openvpms.web.component.mail.Mailer;
 import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
+import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
 import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
-import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
 
 
@@ -60,7 +62,7 @@ import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.
  *
  * @author Tim Anderson
  */
-public class ReminderEmailProcessor extends AbstractReminderProcessor {
+public class ReminderEmailProcessor extends GroupedReminderProcessor {
 
     /**
      * The mailer factory.
@@ -78,62 +80,127 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     private final EmailTemplateEvaluator evaluator;
 
     /**
-     * The communication logger. May be {@code null}
+     * The context.
      */
-    private final ReminderCommunicationLogger logger;
+    private final Context context;
 
     /**
      * Constructs a {@link ReminderEmailProcessor}.
      *
      * @param factory       the mailer factory
+     * @param groupTemplate the grouped reminder template
+     * @param reminderTypes the reminder types
+     * @param rules         the reminder rules
      * @param practice      the practice
-     * @param groupTemplate the template for grouped reminders
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param logger        the communication logger. May be {@code null}
      * @param context       the context
-     * @param logger        if specified, logs email reminders
      */
-    public ReminderEmailProcessor(MailerFactory factory, Party practice, DocumentTemplate groupTemplate,
-                                  Context context, ReminderCommunicationLogger logger) {
-        super(groupTemplate, context);
+    public ReminderEmailProcessor(MailerFactory factory, DocumentTemplate groupTemplate,
+                                  ReminderTypeCache reminderTypes, ReminderRules rules, Party practice,
+                                  IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger,
+                                  Context context) {
+        super(groupTemplate, reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
-        this.logger = logger;
+        this.context = context;
         addresses = new PracticeEmailAddresses(practice, "REMINDER");
         evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
     }
 
     /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
+        return false;
+    }
+
+    /**
+     * Returns the contact archetype.
+     *
+     * @return the contact archetype
+     */
+    @Override
+    protected String getContactArchetype() {
+        return ContactArchetypes.EMAIL;
+    }
+
+    /**
+     * Returns the date from which a reminder item should be cancelled.
+     *
+     * @param startTime the item start time
+     * @param config    the reminder configuration
+     * @return the date when the item should be cancelled
+     */
+    @Override
+    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
+        return config.getEmailCancelDate(startTime);
+    }
+
+    /**
      * Processes a list of reminder events.
      *
-     * @param events           the events
-     * @param shortName        the report archetype short name, used to select the document template if none specified
-     * @param documentTemplate the document template to use. May be {@code null}
+     * @param contact   the contact to send to
+     * @param reminders the reminders
+     * @param template  the document template to use
      */
-    protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName, getContext());
-        documentTemplate = locator.getTemplate();
-        if (documentTemplate == null) {
-            throw new ReportingException(ReminderMissingDocTemplate);
-        }
-        Entity emailTemplate = documentTemplate.getEmailTemplate();
+    protected void process(Contact contact, List<ObjectSet> reminders, DocumentTemplate template) {
+        Entity emailTemplate = template.getEmailTemplate();
         if (emailTemplate == null) {
-            throw new ReportingException(TemplateMissingEmailText, documentTemplate.getName());
+            throw new ReportingException(TemplateMissingEmailText, template.getName());
         }
-        ReminderEvent event = events.get(0);
-        Party patient = event.getPatient();
-        Party customer = event.getCustomer();
-        Context context = new LocalContext(getContext());
-        context.setPatient(patient);
-        context.setCustomer(customer);
+        ObjectSet event = reminders.get(0);
+        Context context = createContext(event);
+        Party customer = getCustomer(event);
         Mailer mailer = factory.create(new CustomerMailContext(context));
 
         try {
-            send(customer, event.getContact(), events, documentTemplate, emailTemplate, mailer, context);
+            send(customer, contact, reminders, template, emailTemplate, mailer, context);
         } catch (ArchetypeServiceException | ReportingException | ReminderProcessorException exception) {
             throw exception;
         } catch (Throwable exception) {
             throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
         }
-        if (logger != null) {
-            logger.logEmail(events, getContext().getLocation(), mailer);
+        if (getLogger() != null) {
+            String[] to = mailer.getTo();
+            String[] cc = mailer.getCc();
+            String[] bcc = mailer.getBcc();
+            String subject = mailer.getSubject();
+            String body = mailer.getBody();
+            String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
+            for (ObjectSet reminder : reminders) {
+                reminder.set("to", to);
+                reminder.set("cc", cc);
+                reminder.set("bcc", bcc);
+                reminder.set("subject", subject);
+                reminder.set("body", body);
+                reminder.set("attachments", attachments);
+            }
+        }
+    }
+
+    /**
+     * Logs reminder communications.
+     *
+     * @param state  the reminder state
+     * @param logger the communication logger
+     */
+    @Override
+    protected void log(State state, CommunicationLogger logger) {
+        for (ObjectSet set : state.getReminders()) {
+            String notes = getNote(set);
+            String[] to = (String[]) set.get("to");
+            String[] cc = (String[]) set.get("cc");
+            String[] bcc = (String[]) set.get("bcc");
+            String subject = set.getString("subject");
+            String body = set.getString("body");
+            String attachments = set.getString("attachments");
+
+            logger.logEmail(getCustomer(set), getPatient(set), to, cc, bcc, subject, COMMUNICATION_REASON, body,
+                            notes, attachments, context.getLocation());
         }
     }
 
@@ -148,17 +215,14 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      * @param mailer           the mailer the mailer to user
      * @param context          the reporting context
      */
-    protected void send(Party customer, Contact contact, List<ReminderEvent> events, DocumentTemplate reminderTemplate,
+    protected void send(Party customer, Contact contact, List<ObjectSet> events, DocumentTemplate reminderTemplate,
                         Entity emailTemplate, Mailer mailer, Context context) {
         String body = null;
-        List<ObjectSet> sets = (events.size() > 1) ? createObjectSets(events) : Collections.<ObjectSet>emptyList();
-        if (!sets.isEmpty()) {
-            Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, sets, context);
-            if (reporter != null) {
-                body = evaluator.getMessage(reporter);
-                if (StringUtils.isEmpty(body)) {
-                    throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
-                }
+        Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, events, context);
+        if (reporter != null) {
+            body = evaluator.getMessage(reporter);
+            if (StringUtils.isEmpty(body)) {
+                throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
             }
         }
         if (body == null) {
@@ -181,8 +245,11 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         mailer.setSubject(subject);
         mailer.setBody(body);
 
-        Document document = createReport(events, sets, reminderTemplate, context);
-        mailer.addAttachment(document);
+        ReminderConfiguration config = getConfig();
+        if (config.getEmailAttachments()) {
+            Document document = createReport(events, reminderTemplate, context);
+            mailer.addAttachment(document);
+        }
 
         mailer.send();
     }
@@ -190,21 +257,19 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     /**
      * Creates a new report.
      *
-     * @param events           the reminder events
      * @param sets             the reminder sets, used for grouped reminders. Empty otherwise
      * @param documentTemplate the document template
      * @param context          the reporting context
      * @return a new report
      */
-    private Document createReport(List<ReminderEvent> events, List<ObjectSet> sets, DocumentTemplate documentTemplate,
-                                  Context context) {
+    private Document createReport(List<ObjectSet> sets, DocumentTemplate documentTemplate, Context context) {
         Document result;
         if (!sets.isEmpty()) {
             result = getDocument(new ObjectSetReporter(sets, documentTemplate), context);
         } else {
             List<Act> acts = new ArrayList<>();
-            for (ReminderEvent event : events) {
-                acts.add(event.getReminder());
+            for (ObjectSet set : sets) {
+                acts.add((Act) set.get("reminder"));
             }
             result = getDocument(new IMObjectReporter<>(acts, documentTemplate), context);
         }

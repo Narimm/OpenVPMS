@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -23,6 +23,8 @@ import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
+
+import java.util.List;
 
 
 /**
@@ -49,6 +51,15 @@ public class IMObjectRelationshipCollectionViewer extends IMObjectTableCollectio
     public IMObjectRelationshipCollectionViewer(CollectionProperty property, IMObject parent, LayoutContext layout) {
         super(property, parent, layout);
         sequenced = SequencedRelationshipCollectionHelper.hasSequenceNode(property.getArchetypeRange());
+    }
+
+    /**
+     * Determines if the collection should be sorted on sequence.
+     *
+     * @return {@code true} if the collection should be sorted on sequence
+     */
+    protected boolean isSequenced() {
+        return sequenced;
     }
 
     /**
@@ -82,11 +93,20 @@ public class IMObjectRelationshipCollectionViewer extends IMObjectTableCollectio
     @Override
     protected ResultSet<IMObject> createResultSet() {
         ResultSet<IMObject> result;
-        if (!sequenced) {
-            result = super.createResultSet();
+        if (isSequenced()) {
+            result = new IMObjectListResultSet<>(getSorted(), ROWS);
         } else {
-            result = new IMObjectListResultSet<>(SequencedRelationshipCollectionHelper.sort(getObjects()), ROWS);
+            result = super.createResultSet();
         }
         return result;
+    }
+
+    /**
+     * Returns the objects sorted on sequence.
+     *
+     * @return the objects sorted on sequence
+     */
+    protected List<IMObject> getSorted() {
+        return SequencedRelationshipCollectionHelper.sort(getObjects());
     }
 }

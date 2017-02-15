@@ -11,12 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
@@ -46,23 +46,26 @@ public class ReminderSMSEvaluator {
     }
 
     /**
-     * Evaluates a template against a reminder event.
+     * Evaluates a template against a patient reminder.
      *
      * @param template the template
-     * @param event    the reminder event
+     * @param reminder the reminder
+     * @param customer the customer
+     * @param patient  the patient
      * @param location the practice location
      * @param practice the practice
      * @return the result of the expression. May be {@code null}, or too long for an SMS
      */
-    public String evaluate(Entity template, ReminderEvent event, Party location, Party practice) {
+    public String evaluate(Entity template, Act reminder, Party customer, Party patient, Party location,
+                           Party practice) {
         String result;
         Context local = new LocalContext();
-        local.setCustomer(event.getCustomer());
-        local.setPatient(event.getPatient());
+        local.setCustomer(customer);
+        local.setPatient(patient);
         local.setLocation(location);
         local.setPractice(practice);
         try {
-            result = evaluator.evaluate(template, event.getReminder(), local);
+            result = evaluator.evaluate(template, reminder, local);
         } catch (Throwable exception) {
             throw new ReportingException(ReportingException.ErrorCode.SMSEvaluationFailed, exception,
                                          template.getName());

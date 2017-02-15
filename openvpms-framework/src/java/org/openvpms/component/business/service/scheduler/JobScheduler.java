@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
@@ -138,6 +138,46 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
         } catch (Throwable exception) {
             throw new SchedulerException(exception);
         }
+    }
+
+    /**
+     * Runs a job now.
+     *
+     * @param configuration the job configuration
+     * @throws SchedulerException for any error
+     */
+    public void run(IMObject configuration) {
+        if (log.isInfoEnabled()) {
+            log.info("Running " + configuration.getName() + " (" + configuration.getId() + ")");
+        }
+        IMObjectBean bean = new IMObjectBean(configuration, service);
+        String name = bean.getString("name");
+
+        try {
+            scheduler.triggerJob(name, Scheduler.DEFAULT_GROUP);
+        } catch (Throwable exception) {
+            throw new SchedulerException(exception);
+        }
+    }
+
+    /**
+     * Returns the time when a job is next scheduled to run.
+     *
+     * @param configuration the job configuration
+     * @return the next scheduled time, or {@code null} if it is not schedule to run
+     * @throws SchedulerException for any error
+     */
+    public Date getNextRunTime(IMObject configuration) {
+        Date result = null;
+        try {
+            Trigger trigger = scheduler.getTrigger(configuration.getName(), Scheduler.DEFAULT_GROUP);
+            if (trigger != null) {
+                result = trigger.getNextFireTime();
+            }
+        } catch (Throwable exception) {
+            throw new SchedulerException(exception);
+        }
+        return result;
     }
 
     /**

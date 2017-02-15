@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -26,8 +26,6 @@ import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-
-import java.util.EnumSet;
 
 
 /**
@@ -38,33 +36,30 @@ import java.util.EnumSet;
 class SummaryDialog extends PopupDialog {
 
     /**
-     * Constructs a new <tt>SummaryDialog</tt>.
+     * Constructs a {@link SummaryDialog}.
      *
      * @param stats the statistics to display
      */
     public SummaryDialog(Statistics stats) {
         super(Messages.get("reporting.reminder.summary.title"), OK);
         setModal(true);
-        EnumSet<ReminderEvent.Action> actions = EnumSet.range(
-                ReminderEvent.Action.EMAIL, ReminderEvent.Action.PRINT);
 
         Grid grid = GridFactory.create(2);
-        add(grid, ReminderEvent.Action.CANCEL, stats);
+        add(grid, Messages.get("reporting.reminder.summary.cancel"), stats.getCancelled());
 
+        String[] shortNames = {ReminderArchetypes.EMAIL_REMINDER, ReminderArchetypes.SMS_REMINDER,
+                               ReminderArchetypes.PRINT_REMINDER, ReminderArchetypes.LIST_REMINDER,
+                               ReminderArchetypes.EXPORT_REMINDER};
         for (Entity reminderType : stats.getReminderTypes()) {
             String text = reminderType.getName();
-            add(grid, text, stats.getCount(reminderType, actions));
+            add(grid, text, stats.getCount(reminderType, shortNames));
         }
 
-        add(grid, ReminderEvent.Action.EMAIL, stats);
-        add(grid, ReminderEvent.Action.PRINT, stats);
-        add(grid, ReminderEvent.Action.SMS, stats);
-
-        // phone and list actions are merged
-        int phone = stats.getCount(ReminderEvent.Action.PHONE);
-        int list = stats.getCount(ReminderEvent.Action.LIST);
-        add(grid, ReminderEvent.Action.LIST, phone + list);
-        add(grid, ReminderEvent.Action.EXPORT, stats);
+        add(grid, ReminderArchetypes.EMAIL_REMINDER, "email", stats);
+        add(grid, ReminderArchetypes.PRINT_REMINDER, "print", stats);
+        add(grid, ReminderArchetypes.SMS_REMINDER, "sms", stats);
+        add(grid, ReminderArchetypes.LIST_REMINDER, "list", stats);
+        add(grid, ReminderArchetypes.EXPORT_REMINDER, "export", stats);
 
         String errors = Messages.get("reporting.reminder.summary.errors");
         add(grid, errors, stats.getErrors());
@@ -75,24 +70,14 @@ class SummaryDialog extends PopupDialog {
     /**
      * Adds a summary line item to a grid.
      *
-     * @param grid   the grid
-     * @param action the reminder action
-     * @param stats  the reminder statistics
+     * @param grid      the grid
+     * @param shortName the reminder item short name
+     * @param key       the localisation key suffix
+     * @param stats     the reminder statistics
      */
-    private void add(Grid grid, ReminderEvent.Action action, Statistics stats) {
-        add(grid, action, stats.getCount(action));
-    }
-
-    /**
-     * Adds a summary line item to a grid.
-     *
-     * @param grid   the grid
-     * @param action the reminder action
-     * @param count  the count
-     */
-    private void add(Grid grid, ReminderEvent.Action action, int count) {
-        String text = Messages.get("reporting.reminder.summary." + action.name());
-        add(grid, text, count);
+    private void add(Grid grid, String shortName, String key, Statistics stats) {
+        String text = Messages.get("reporting.reminder.summary." + key);
+        add(grid, text, stats.getCount(shortName));
     }
 
     /**

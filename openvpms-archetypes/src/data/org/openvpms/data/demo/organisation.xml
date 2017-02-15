@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -20,8 +20,13 @@
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
+        <data collection="contacts" archetype="contact.email" name="Practice Reminders"
+              emailAddress="reminder.opv.demo@gmail.com" preferred="false">
+            <data collection="purposes" archetype="lookup.contactPurpose" childId="id:REMINDER"/>
+        </data>
         <data collection="serviceUser" archetype="entityLink.practiceServiceUser" source="id:OP1" target="id:ADMIN"/>
         <data collection="mailServer" archetype="entityLink.organisationMailServer" source="id:OP1" target="id:MS1"/>
+        <data archetype="entityLink.practiceReminderConfiguration" source="id:OP1" target="id:REMINDER_CONFIG"/>
     </data>
     <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
@@ -126,4 +131,6 @@ Our records indicate that your pet(s) named above are due for some in-clinic tre
           description="&lt;patient&gt; is due for a vaccination at &lt;location&gt;. Call us on &lt;phone&gt; to make an appointment"
           contentType="XPATH"
           content="concat($patient.name, ' is due for a vaccination at ', $location.name, '.', $nl, 'Please contact us on ',  party:getTelephone($location), ' to make an appointment')"/>
+    <data id="REMINDER_CONFIG" archetype="entity.reminderConfigurationType"/>
+
 </archetype>

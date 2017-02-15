@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -272,43 +272,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderRules#isDue(Act, Date, Date)} method.
-     */
-    @Test
-    public void testIsDue() {
-        Lookup group = ReminderTestHelper.createReminderGroup();
-        Party patient = TestHelper.createPatient();
-        Entity reminderType = ReminderTestHelper.createReminderType(
-                1, DateUnits.MONTHS, group);
-        Date start = java.sql.Date.valueOf("2007-01-01");
-        Date due = rules.calculateReminderDueDate(start, reminderType);
-        Act reminder = createReminderWithDueDate(patient, reminderType,
-                                                 due);
-
-        checkDue(reminder, null, null, true);
-        checkDue(reminder, null, "2007-01-01", false);
-        checkDue(reminder, "2007-01-01", null, true);
-        checkDue(reminder, "2007-01-01", "2007-01-31", false);
-        checkDue(reminder, "2007-01-01", "2007-02-01", true);
-
-        // Now add a template to the reminderType, due 2 weeks after the current
-        // due date.
-        EntityRelationship reminderTypeTemplate = (EntityRelationship) create(
-                ReminderArchetypes.REMINDER_TYPE_TEMPLATE);
-        Entity template = (Entity) create("entity.documentTemplate");
-        template.setName("XTestTemplate_" + System.currentTimeMillis());
-        IMObjectBean bean = new IMObjectBean(reminderTypeTemplate);
-        bean.setValue("reminderCount", 0);
-        bean.setValue("interval", 2);
-        bean.setValue("units", DateUnits.WEEKS);
-        bean.setValue("source", reminderType.getObjectReference());
-        bean.setValue("target", template.getObjectReference());
-        save(reminderTypeTemplate, template);
-        checkDue(reminder, "2007-01-01", "2007-02-14", false);
-        checkDue(reminder, "2007-01-01", "2007-02-15", true);
-    }
-
-    /**
      * Tests the {@link ReminderRules#shouldCancel(Act, Date)} method.
      */
     @Test
@@ -320,7 +283,9 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Date start = java.sql.Date.valueOf("2007-01-01");
         Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
         reminder.setActivityStartTime(start);
-        rules.calculateReminderDueDate(reminder);
+        Date due = rules.calculateReminderDueDate(start, reminderType);
+        reminder.setActivityStartTime(due);
+        reminder.setActivityEndTime(due);
 
         checkShouldCancel(reminder, "2007-01-01", false);
         checkShouldCancel(reminder, "2007-01-31", false);
@@ -788,22 +753,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Date expected = getDate(expectedDate);
         Date to = rules.calculateProductReminderDueDate(start, relationship);
         assertEquals(expected, to);
-    }
-
-    /**
-     * Checks if a reminder is due using
-     * {@link ReminderRules#isDue(Act, Date, Date)}.
-     *
-     * @param reminder the reminder
-     * @param fromDate the from date. May be <tt>null</tt>
-     * @param toDate   the to date. May be <tt>null</tt>
-     * @param expected the expected isDue result
-     */
-    private void checkDue(Act reminder, String fromDate, String toDate,
-                          boolean expected) {
-        Date from = (fromDate != null) ? java.sql.Date.valueOf(fromDate) : null;
-        Date to = (toDate != null) ? java.sql.Date.valueOf(toDate) : null;
-        assertEquals(expected, rules.isDue(reminder, from, to));
     }
 
     /**
