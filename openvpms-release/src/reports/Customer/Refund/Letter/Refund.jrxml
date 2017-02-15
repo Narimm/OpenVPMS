@@ -243,7 +243,7 @@
 					<rightPen lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
-					<font size="20" isBold="true" isItalic="false" isUnderline="false"/>
+					<font size="18" isBold="true" isItalic="false" isUnderline="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{isFinalised} ? "":"DRAFT"]]></textFieldExpression>
 			</textField>
@@ -345,7 +345,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
-				<subreportExpression><![CDATA["Receipt Items.jrxml"]]></subreportExpression>
+				<subreportExpression><![CDATA["Refund Items.jrxml"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

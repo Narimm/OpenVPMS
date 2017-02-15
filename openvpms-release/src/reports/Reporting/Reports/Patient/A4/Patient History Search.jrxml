@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T13:52:54 -->
+<!-- 2016-12-23T18:29:46 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient History Search" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="4802b0d8-72e3-448b-8bc6-4e28cfbd05eb">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -55,7 +55,8 @@
   lb.name as breed,
   adn.value as notes,
   cl.entity_id as clinician_id,
-  a.activity_start_time as visitDate
+  a.activity_start_time as visitDate,
+  if (a.arch_short_name='act.patientClinicalAddendum','Addendum','Note') as archType
 from acts a
   join participations ppa on ppa.act_id = a.act_id and ppa.arch_short_name='participation.patient'
   join entities pa on pa.entity_id = ppa.entity_id
@@ -76,7 +77,7 @@ where
   ls.name like concat(ifnull($P{species},""),"%") and
   lb.name like concat(ifnull($P{breed},""),"%") and
   ifnull(cl.name,'-') like concat(ifnull($P{vet},""),"%") and
-  a.arch_short_name = 'act.patientClinicalNote'
+  a.arch_short_name in('act.patientClinicalNote','act.patientClinicalAddendum')
 order by a.activity_start_time desc limit $P{limit};]]>
 	</queryString>
 	<field name="custLastName" class="java.lang.String"/>
@@ -89,6 +90,7 @@ order by a.activity_start_time desc limit $P{limit};]]>
 	<field name="notes" class="java.lang.String"/>
 	<field name="clinician_id" class="java.lang.Long"/>
 	<field name="visitDate" class="java.sql.Timestamp"/>
+	<field name="archType" class="java.lang.String"/>
 	<variable name="patient1" class="java.lang.String">
 		<variableExpression><![CDATA[$F{patient}+" "+$F{custLastName}+" ("+$F{patientId}.toString()+")"]]></variableExpression>
 	</variable>
@@ -381,14 +383,6 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				</textElement>
 				<text><![CDATA[Age(y):]]></text>
 			</staticText>
-			<staticText>
-				<reportElement x="0" y="20" width="100" height="20" uuid="41ffcd75-699f-4c2d-b197-304210e4eda1"/>
-				<textElement>
-					<font isBold="true"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Notes:]]></text>
-			</staticText>
 			<line>
 				<reportElement positionType="Float" x="0" y="85" width="533" height="1" uuid="fe5f30c9-cc1c-43cd-93b1-608513878644"/>
 				<graphicElement>
@@ -401,6 +395,14 @@ order by a.activity_start_time desc limit $P{limit};]]>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="20" width="100" height="20" uuid="54a26204-5a79-4cdb-aa5c-9dac62d25da8"/>
+				<textElement verticalAlignment="Top">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{archType}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -416,10 +418,10 @@ order by a.activity_start_time desc limit $P{limit};]]>
 				<textElement verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[This report shows the text (first 9 lines) of notes containing the specified text and matching the other criteria.
+				<text><![CDATA[This report shows the text (first 9 lines) of the Note field of Notes and Addendums containing the specified text and matching the other criteria.
 The Species, Breed and Clinician selection fields have % added so that leaving them blank will find all, and entering say species 'n' will include all patients with species starting 'n, and entering breed '%terrier' will find all patients with breeds containing 'terrier'. The selection is case-insensitive.
 The Text selection has '%' both prepended and appended are added automatically - hence entering the text 'cpr' searches for %cpr%.
-You can search for multiple words by separating them by % characters. Hence entering 'cpr%revived' would find "applied cpr and Fido revived". Note however, that it will not find "Fido revived after cpr was applied" because the word order is wrong.
+You can search for multiple words by separating them by % characters. Hence entering 'cpr%revived' would find "applied cpr and Fido revived". However, it will not find "Fido revived after cpr was applied" because the word order is wrong.
 Note that only the first N newest matches are shown where N is the 'Limit number of results to' parameter (which defaults to 20).
 The patient age shown is the age at the time of the visit.
 Patients are shown as name owner-name (ID) so Mrs Smith's Fido is shown as Fido Smith (12345).]]></text>

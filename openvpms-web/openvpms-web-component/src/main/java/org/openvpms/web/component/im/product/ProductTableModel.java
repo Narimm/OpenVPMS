@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -64,6 +64,11 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     private final ProductPricingContext pricingContext;
 
     /**
+     * Determines if the active column should be displayed.
+     */
+    private boolean showActive;
+
+    /**
      * Constructs a {@link ProductTableModel}.
      *
      * @param context the layout context
@@ -101,8 +106,20 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
             LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
             pricingContext = new ProductPricingContext(currency, practice, location, rules, locationRules);
         }
-        boolean active = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
-        setTableColumnModel(createTableColumnModel(active));
+        showActive = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
+        setTableColumnModel(createTableColumnModel(showActive));
+    }
+
+    /**
+     * Determines if the active column should be displayed.
+     *
+     * @param show if {@code true} show the active column
+     */
+    public void setShowActive(boolean show) {
+        if (show != showActive) {
+            showActive = show;
+            setTableColumnModel(createTableColumnModel(showActive));
+        }
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -24,6 +24,7 @@ import nextapp.echo2.webrender.ServiceRegistry;
 import nextapp.echo2.webrender.WebRenderServlet;
 import nextapp.echo2.webrender.service.AsyncMonitorService;
 import nextapp.echo2.webrender.service.CoreServices;
+import nextapp.echo2.webrender.service.SynchronizeService;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.echo.service.LaunchService;
 import org.openvpms.web.echo.service.WindowService;
@@ -157,8 +158,19 @@ public class SpringWebContainerServlet extends WebContainerServlet {
         HttpSession session = request.getSession();
 
         String serviceId = request.getParameter(SERVICE_ID_PARAMETER);
-        if (!AsyncMonitorService.SERVICE_ID.equals(serviceId)) {
-            // flag the session as active, if the request isn't associated with echo2 asynchronous tasks
+        boolean active = false;
+        if (AsyncMonitorService.SERVICE_ID.equals(serviceId) || SynchronizeService.SERVICE_ID.equals(serviceId)) {
+            // check if the user has been active since the last async call.
+            // This is designed to prevent auto-lock/logout if the user is active, but changes haven't been committed
+            // yet. See OVPMS-1847
+            String value = request.getParameter("active");
+            if (Boolean.valueOf(value)) {
+                active = true;
+            }
+        } else {
+            active = true;
+        }
+        if (active) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             getSessionMonitor().active(request, authentication);
         }

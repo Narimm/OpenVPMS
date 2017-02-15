@@ -258,7 +258,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<text><![CDATA[999.99]]></text>
+					<text><![CDATA[1]]></text>
 				</staticText>
 			</band>
 		</groupFooter>

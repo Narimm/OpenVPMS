@@ -26,7 +26,7 @@
 	</parameter>
 	<parameter name="IncInactive" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Include Inactive]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<parameter name="countsOnly" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Show only counts]]></parameterDescription>
@@ -34,7 +34,7 @@
 	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[select  distinct e.name as customerName, e.entity_id as cid, e.description as contact, e.active as active,
@@ -180,7 +180,7 @@ where
 				<text><![CDATA[Customer List Report]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="11" y="35" width="88" height="16" uuid="1524bbb4-a177-4f08-ad6d-55b108954756"/>
+				<reportElement key="staticText-9" x="1" y="35" width="87" height="16" uuid="1524bbb4-a177-4f08-ad6d-55b108954756"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -193,7 +193,7 @@ where
 				<text><![CDATA[Account Type: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="411" y="34" width="82" height="17" uuid="d75b8b89-900e-4270-b9c9-0438e4ca024f"/>
+				<reportElement key="textField-1" x="411" y="15" width="82" height="17" uuid="d75b8b89-900e-4270-b9c9-0438e4ca024f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -206,7 +206,7 @@ where
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="false">
-				<reportElement key="textField-2" x="494" y="34" width="55" height="17" uuid="bd59144b-0d1c-46a0-a2d2-59561e8ebd63"/>
+				<reportElement key="textField-2" x="494" y="15" width="55" height="17" uuid="bd59144b-0d1c-46a0-a2d2-59561e8ebd63"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -219,7 +219,7 @@ where
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="99" y="35" width="103" height="16" uuid="eded55e4-0841-4fe4-b266-fe4ca9591076">
+				<reportElement key="textField" x="88" y="35" width="179" height="16" uuid="eded55e4-0841-4fe4-b266-fe4ca9591076">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -243,7 +243,7 @@ where
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="211" y="35" width="87" height="16" uuid="dc31f293-397e-4cc5-835a-1b4095f20a9a"/>
+				<reportElement key="staticText-9" x="281" y="35" width="87" height="16" uuid="dc31f293-397e-4cc5-835a-1b4095f20a9a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -256,7 +256,7 @@ where
 				<text><![CDATA[Customer Type: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="298" y="35" width="103" height="16" uuid="b08a8138-5872-435c-9d54-28f88a662c1d">
+				<reportElement key="textField" x="368" y="35" width="167" height="16" uuid="b08a8138-5872-435c-9d54-28f88a662c1d">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -272,7 +272,7 @@ where
 				<textFieldExpression><![CDATA[($P{custType}==null)?"%":$P{custType}+"%"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="11" y="52" width="88" height="16" uuid="3ac9749a-47f4-4c78-af3d-c8eea4eeece5"/>
+				<reportElement key="staticText-9" x="1" y="52" width="87" height="16" uuid="3ac9749a-47f4-4c78-af3d-c8eea4eeece5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -285,7 +285,7 @@ where
 				<text><![CDATA[Practice Locn: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="99" y="52" width="103" height="16" uuid="515fadd1-8864-4619-aa7a-537ed6c6cc5a">
+				<reportElement key="textField" x="88" y="52" width="179" height="16" uuid="515fadd1-8864-4619-aa7a-537ed6c6cc5a">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -301,7 +301,7 @@ where
 				<textFieldExpression><![CDATA[($P{PracticeLocation}==null)?"%":$P{PracticeLocation}+"%"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-9" x="211" y="52" width="87" height="16" uuid="6726d430-19b6-475e-b309-087d0ad828af"/>
+				<reportElement key="staticText-9" x="281" y="52" width="87" height="16" uuid="6726d430-19b6-475e-b309-087d0ad828af"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -314,7 +314,7 @@ where
 				<text><![CDATA[Incl Inactive: ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="298" y="52" width="103" height="16" uuid="5f23b2f8-2bb2-4b29-87d9-40c1502e8606">
+				<reportElement key="textField" x="368" y="52" width="103" height="16" uuid="5f23b2f8-2bb2-4b29-87d9-40c1502e8606">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>

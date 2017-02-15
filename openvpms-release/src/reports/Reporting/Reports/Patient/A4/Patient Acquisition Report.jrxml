@@ -26,7 +26,7 @@
 	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new Boolean("false")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[select
@@ -41,9 +41,9 @@ from entities p
   left join entity_details d1 on d1.entity_id = p.entity_id and d1.name = "dateOfBirth"
   join entity_details d2 on d2.entity_id = p.entity_id and d2.name = "createdDate"
 where
-  p.arch_short_name like "party.patientpet%" and
+  p.arch_short_name = "party.patientpet" and
   p.active = 1 and
-  c.arch_short_name like "party.customer%" and
+  c.arch_short_name = "party.customerperson" and
   r.arch_short_name = "entityRelationship.patientOwner" and
   d2.value between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
 order by c.name]]>

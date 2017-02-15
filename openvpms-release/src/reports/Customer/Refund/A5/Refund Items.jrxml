@@ -51,7 +51,7 @@
 	</variable>
 	<variable name="dblCashOut" class="java.lang.Double">
 		<variableExpression><![CDATA[/*$V{isEFT}?$F{target.cashout}.doubleValue():0.0*/
-Double.ZERO]]></variableExpression>
+0.0]]></variableExpression>
 	</variable>
 	<variable name="dEFT" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isEFT}?(($V{dblCashOut}!=0.0)?
