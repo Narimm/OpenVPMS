@@ -26,7 +26,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -186,7 +186,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
 
             CommunicationLogger logger = (CommunicationHelper.isLoggingEnabled(practiceService.getPractice()))
                                          ? communicationLogger : null;
-            ReminderTypeCache reminderTypes = new ReminderTypeCache(service);
+            ReminderTypes reminderTypes = new ReminderTypes(service);
             ReminderConfiguration config = getReminderConfig(practice);
             total = sendEmailReminders(groupTemplate, reminderTypes, practice, config, logger);
             if (sms && !stop) {
@@ -210,7 +210,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * @param logger        the communication logger, or {@code null} if communication is not being logged
      * @return the statistics
      */
-    protected Stats sendEmailReminders(DocumentTemplate groupTemplate, ReminderTypeCache reminderTypes, Party practice,
+    protected Stats sendEmailReminders(DocumentTemplate groupTemplate, ReminderTypes reminderTypes, Party practice,
                                        ReminderConfiguration config, CommunicationLogger logger) {
         ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, groupTemplate, reminderTypes,
                                                                       rules, practice, service, config, logger,
@@ -229,7 +229,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * @param logger        the communication logger, or {@code null} if communication is not being logged
      * @return the statistics
      */
-    protected Stats sendSMSReminders(DocumentTemplate groupTemplate, ReminderTypeCache reminderTypes,
+    protected Stats sendSMSReminders(DocumentTemplate groupTemplate, ReminderTypes reminderTypes,
                                      Party practice, ReminderConfiguration config, CommunicationLogger logger) {
         ReminderSMSProcessor sender = new ReminderSMSProcessor(connectionFactory, evaluator, groupTemplate,
                                                                reminderTypes, rules, practice, service, config,
@@ -349,7 +349,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * @param reminderTypes the reminder types
      * @return a new iterator
      */
-    private GroupingReminderIterator createIterator(String shortName, ReminderTypeCache reminderTypes) {
+    private GroupingReminderIterator createIterator(String shortName, ReminderTypes reminderTypes) {
         ReminderItemQueryFactory factory = new ReminderItemQueryFactory(shortName, ReminderItemStatus.PENDING);
         return new GroupingReminderIterator(factory, reminderTypes, getPageSize(), service);
     }

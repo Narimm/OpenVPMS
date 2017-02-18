@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -101,7 +101,7 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
      * @param logger        the communication logger. May be {@code null}
      */
     public ReminderPrintProcessor(DocumentTemplate groupTemplate, Context context, MailContext mailContext,
-                                  HelpContext help, ReminderTypeCache reminderTypes, ReminderRules rules,
+                                  HelpContext help, ReminderTypes reminderTypes, ReminderRules rules,
                                   Party practice, IArchetypeService service, ReminderConfiguration config,
                                   CommunicationLogger logger) {
         super(groupTemplate, reminderTypes, rules, practice, service, config, logger);

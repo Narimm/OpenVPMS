@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
 import org.openvpms.web.component.mail.MailContext;
@@ -37,8 +38,11 @@ public class ReportingWorkspaces extends AbstractWorkspaces {
 
     /**
      * Constructs a {@code ReportingWorkspaces}.
+     *
+     * @param context     the context
+     * @param preferences the preferences
      */
-    public ReportingWorkspaces(Context context) {
+    public ReportingWorkspaces(Context context, Preferences preferences) {
         super("reporting");
 
         MailContext mailContext = new PracticeMailContext(context);
@@ -46,7 +50,7 @@ public class ReportingWorkspaces extends AbstractWorkspaces {
         addWorkspace(new DepositWorkspace(context, mailContext));
         addWorkspace(new StatementWorkspace(context, mailContext));
         addWorkspace(new IncompleteChargesWorkspace(context, mailContext));
-        addWorkspace(new ReminderWorkspace(context, mailContext));
+        addWorkspace(new ReminderWorkspace(context, mailContext, preferences));
         addWorkspace(new ReportingWorkspace(context, mailContext));
     }
 

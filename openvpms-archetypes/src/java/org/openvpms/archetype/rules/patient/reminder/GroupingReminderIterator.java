@@ -39,7 +39,7 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
     /**
      * The cache of reminder types.
      */
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
     /**
      * The archetype service.
@@ -84,7 +84,7 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
      * @param pageSize      the query page size
      * @param service       the archetype service
      */
-    public GroupingReminderIterator(ReminderItemQueryFactory factory, ReminderTypeCache reminderTypes,
+    public GroupingReminderIterator(ReminderItemQueryFactory factory, ReminderTypes reminderTypes,
                                     int pageSize, IArchetypeService service) {
         this.service = service;
         this.reminderTypes = reminderTypes;

@@ -31,7 +31,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -83,7 +83,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * The reminder types.
      */
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
     /**
      * The reminder rules.
@@ -226,7 +226,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         if (CommunicationHelper.isLoggingEnabled(practice)) {
             logger = ServiceHelper.getBean(CommunicationLogger.class);
         }
-        reminderTypes = new ReminderTypeCache(service);
+        reminderTypes = new ReminderTypes(service);
 
     }
 

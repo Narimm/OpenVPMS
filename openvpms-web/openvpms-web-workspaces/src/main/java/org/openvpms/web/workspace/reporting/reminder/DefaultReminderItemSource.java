@@ -18,7 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -39,9 +39,9 @@ public class DefaultReminderItemSource implements ReminderItemSource {
 
     private final ReminderItemQueryFactory factory;
 
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
-    public DefaultReminderItemSource(ReminderItemQueryFactory factory, ReminderTypeCache reminderTypes) {
+    public DefaultReminderItemSource(ReminderItemQueryFactory factory, ReminderTypes reminderTypes) {
         this.factory = factory;
         this.reminderTypes = reminderTypes;
     }

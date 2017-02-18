@@ -22,7 +22,7 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -98,7 +98,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * @param context       the context
      */
     public ReminderEmailProcessor(MailerFactory factory, DocumentTemplate groupTemplate,
-                                  ReminderTypeCache reminderTypes, ReminderRules rules, Party practice,
+                                  ReminderTypes reminderTypes, ReminderRules rules, Party practice,
                                   IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger,
                                   Context context) {
         super(groupTemplate, reminderTypes, rules, practice, service, config, logger);

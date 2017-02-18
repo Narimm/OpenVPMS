@@ -21,7 +21,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -49,7 +49,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * The reminder types.
      */
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
     /**
      * The statistics.
@@ -78,7 +78,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      * @param reminderTypes the reminder types
      * @param statistics    the statistics
      */
-    public AbstractReminderBatchProcessor(ReminderItemSource query, ReminderTypeCache reminderTypes,
+    public AbstractReminderBatchProcessor(ReminderItemSource query, ReminderTypes reminderTypes,
                                           Statistics statistics) {
         reminders = query.all();
         this.reminderTypes = reminderTypes;

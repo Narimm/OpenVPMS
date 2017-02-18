@@ -22,7 +22,7 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -76,7 +76,7 @@ public class PatientReminderSMSSender extends PatientReminderSender {
      * @param logger        the communication logger. May be {@code null}
      */
     public PatientReminderSMSSender(ConnectionFactory factory, SMSTemplateEvaluator evaluator,
-                                    DocumentTemplate groupTemplate, ReminderTypeCache reminderTypes, Party practice,
+                                    DocumentTemplate groupTemplate, ReminderTypes reminderTypes, Party practice,
                                     IArchetypeService service, ReminderConfiguration config,
                                     CommunicationLogger logger) {
         super(groupTemplate, reminderTypes, practice, service, config, logger);

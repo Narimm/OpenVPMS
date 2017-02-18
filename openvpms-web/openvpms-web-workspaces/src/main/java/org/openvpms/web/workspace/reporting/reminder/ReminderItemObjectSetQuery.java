@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
-import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -34,7 +34,10 @@ import org.openvpms.web.component.im.query.ObjectSetQueryExecutor;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.util.List;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.CANCELLED;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.COMPLETED;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.ERROR;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.PENDING;
 
 /**
  * Queries <em>act.patientReminderItem*</em> archetypes.
@@ -58,10 +61,10 @@ public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
      */
     private final boolean errorOnly;
 
-    /**
-     * The statuses to query.
-     */
-    private final static ActStatuses statuses = new ActStatuses(new StatusLookupQuery(), null);
+    private static final ActStatuses PENDING_STATUSES = new ActStatuses(new StatusLookupQuery(null, PENDING, ERROR));
+
+    private static final ActStatuses COMPLETE_STATUSES = new ActStatuses(new StatusLookupQuery(COMPLETED, COMPLETED,
+                                                                                               CANCELLED));
 
     /**
      * Dummy incomplete status. Finds all items with PENDING or ERROR status.
@@ -78,21 +81,28 @@ public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
      * Constructs a {@link ReminderItemObjectSetQuery}.
      */
     public ReminderItemObjectSetQuery() {
-        this(false);
+        this(true, false);
     }
 
     /**
      * Constructs a {@link ReminderItemObjectSetQuery}.
      *
+     * @param pending   if {@code true}, query pending items. No date range is included
      * @param errorOnly if {@code true}, only include items with error status
      */
-    public ReminderItemObjectSetQuery(boolean errorOnly) {
-        super(null, null, null, new String[]{ReminderArchetypes.REMINDER_ITEMS}, statuses, ObjectSet.class);
+    public ReminderItemObjectSetQuery(boolean pending, boolean errorOnly) {
+        super(null, null, null, new String[]{ReminderArchetypes.REMINDER_ITEMS}, (pending) ? PENDING_STATUSES : COMPLETE_STATUSES, ObjectSet.class);
         factory = new ReminderItemQueryFactory();
         dateRange = new DateRange(true);
+        if (!pending && !errorOnly) {
+            dateRange.getComponent();
+            dateRange.setAllDates(false);
+            dateRange.setFrom(DateRules.getToday());
+            dateRange.setFrom(DateRules.getTomorrow());
+        }
         this.errorOnly = errorOnly;
         if (errorOnly) {
-            setStatus(ReminderItemStatus.ERROR);
+            setStatus(ERROR);
         }
     }
 
@@ -130,9 +140,7 @@ public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
         factory.setShortNames(getShortNames());
         if (errorOnly) {
-            factory.setStatus(ReminderItemStatus.ERROR);
-        } else if (getStatusSelector().getSelected() == INCOMPLETE_STATUS) {
-            factory.setStatuses(new String[]{ReminderItemStatus.PENDING, ReminderItemStatus.ERROR});
+            factory.setStatus(ERROR);
         } else {
             factory.setStatuses(getStatuses());
         }
@@ -148,33 +156,24 @@ public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
 
     private static class StatusLookupQuery extends NodeLookupQuery {
 
+        private final Lookup defaultLookup;
+
         /**
          * Constructs a {@link StatusLookupQuery}.
          */
-        public StatusLookupQuery() {
-            super(ReminderArchetypes.EMAIL_REMINDER, "status");
+        public StatusLookupQuery(String defaultCode, String... codes) {
+            super(ReminderArchetypes.EMAIL_REMINDER, "status", codes);
+            defaultLookup = (defaultCode != null) ? getLookup(defaultCode, getLookups()) : null;
         }
 
         /**
          * Returns the default lookup.
          *
-         * @return {@link #INCOMPLETE_STATUS}
+         * @return the default lookup, or {@code null} if none is defined
          */
         @Override
         public Lookup getDefault() {
-            return INCOMPLETE_STATUS;
-        }
-
-        /**
-         * Returns the lookups.
-         *
-         * @return the lookups
-         */
-        @Override
-        public List<Lookup> getLookups() {
-            List<Lookup> lookups = super.getLookups();
-            lookups.add(0, INCOMPLETE_STATUS);
-            return lookups;
+            return defaultLookup;
         }
     }
 

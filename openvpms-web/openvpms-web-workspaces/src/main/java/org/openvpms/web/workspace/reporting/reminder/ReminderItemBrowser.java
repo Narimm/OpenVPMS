@@ -26,6 +26,7 @@ import org.openvpms.web.component.im.query.ObjectSetResultSetAdapter;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserAdapter;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 
 /**
  * A browser for <em>act.patientReminderItem*</em> acts.
@@ -47,6 +48,7 @@ class ReminderItemBrowser extends QueryBrowserAdapter<ObjectSet, Act> {
      */
     public ReminderItemBrowser(ReminderItemQuery query, LayoutContext context) {
         this.query = query;
+        context.setComponentFactory(new TableComponentFactory(context));
         setBrowser(createBrowser(query, context));
     }
 

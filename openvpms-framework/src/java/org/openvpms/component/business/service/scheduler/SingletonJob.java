@@ -14,35 +14,12 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.workspace;
-
-import nextapp.echo2.app.Component;
-import org.openvpms.web.echo.help.HelpContext;
+package org.openvpms.component.business.service.scheduler;
 
 /**
- * Tab pane component.
+ * A marker interface for jobs to indicate that only a single instance of the job class may be run at any given time.
  *
  * @author Tim Anderson
  */
-public interface TabComponent {
-
-    /**
-     * Invoked when the tab is displayed.
-     */
-    void show();
-
-    /**
-     * Returns the tab component.
-     *
-     * @return the tab component
-     */
-    Component getComponent();
-
-    /**
-     * Returns the help context for the tab.
-     *
-     * @return the help context
-     */
-    HelpContext getHelpContext();
-
+public interface SingletonJob {
 }

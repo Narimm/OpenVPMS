@@ -13,6 +13,7 @@
  *
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -22,7 +23,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderCount;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -62,7 +63,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public GroupedReminderProcessor(DocumentTemplate groupTemplate, ReminderTypeCache reminderTypes,
+    public GroupedReminderProcessor(DocumentTemplate groupTemplate, ReminderTypes reminderTypes,
                                     ReminderRules rules, Party practice, IArchetypeService service,
                                     ReminderConfiguration config, CommunicationLogger logger) {
         super(reminderTypes, rules, practice, service, config, logger);

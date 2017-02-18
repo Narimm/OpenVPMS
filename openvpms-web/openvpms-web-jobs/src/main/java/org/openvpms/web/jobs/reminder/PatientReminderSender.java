@@ -27,7 +27,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCount;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -71,7 +71,7 @@ public abstract class PatientReminderSender {
     /**
      * The reminder types.
      */
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
     /**
      * The archetype service.
@@ -99,7 +99,7 @@ public abstract class PatientReminderSender {
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public PatientReminderSender(DocumentTemplate groupTemplate, ReminderTypeCache reminderTypes,
+    public PatientReminderSender(DocumentTemplate groupTemplate, ReminderTypes reminderTypes,
                                  Party practice, IArchetypeService service, ReminderConfiguration config,
                                  CommunicationLogger logger) {
         this.groupTemplate = groupTemplate;
