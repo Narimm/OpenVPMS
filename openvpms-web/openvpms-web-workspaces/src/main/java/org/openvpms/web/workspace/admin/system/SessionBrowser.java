@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.admin.system;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
@@ -41,6 +42,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.help.HelpContext;
@@ -130,7 +132,7 @@ public class SessionBrowser extends AbstractTabComponent {
             });
             focus.add(field);
 
-            ButtonRow buttons = new ButtonRow(focus);
+            ButtonRow buttons = new ButtonRow();
             buttons.addButton(QUERY_ID, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
@@ -146,7 +148,7 @@ public class SessionBrowser extends AbstractTabComponent {
                                              ColumnFactory.create(Styles.WIDE_CELL_SPACING, row,
                                                                   sessions.getComponent()));
             focus.add(sessions.getComponent());
-            getButtonSet().add(RELOAD_LOG4J, new ActionListener() {
+            getButtons().addButton(RELOAD_LOG4J, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
                     onReloadLog();
@@ -154,7 +156,11 @@ public class SessionBrowser extends AbstractTabComponent {
             });
             focus.add(getButtonSet().getFocusGroup());
         }
-        return component;
+        // Cannot cache the SplitPane for some reason. Get a:
+        // "Cannot process ServerMessage (Phase 2) Error: Element c_246 already exists in document; cannot add"
+        // message.
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "SplitPaneWithButtonRow",
+                                       getButtons(), component);
     }
 
     /**

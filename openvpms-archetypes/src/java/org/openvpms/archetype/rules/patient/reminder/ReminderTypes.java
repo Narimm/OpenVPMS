@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class ReminderTypeCache {
+public class ReminderTypes {
 
     /**
      * The cached reminder types.
@@ -44,11 +44,11 @@ public class ReminderTypeCache {
 
 
     /**
-     * Constructs a {@link ReminderTypeCache}.
+     * Constructs a {@link ReminderTypes}.
      *
      * @param service the archetype service
      */
-    public ReminderTypeCache(IArchetypeService service) {
+    public ReminderTypes(IArchetypeService service) {
         this.service = service;
     }
 

@@ -24,17 +24,23 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
@@ -42,6 +48,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -96,11 +103,57 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     }
 
     /**
+     * Edits the current object.
+     */
+    @Override
+    public void edit() {
+        Act item = getObject();
+        if (item != null) {
+            Act reminder = getReminder(item);
+            if (reminder == null) {
+                ErrorDialog.show(Messages.format("imobject.noexist",
+                                                 DescriptorHelper.getDisplayName(ReminderArchetypes.REMINDER)));
+            } else {
+                ActBean bean = new ActBean(reminder);
+                ActRelationship relationship = bean.getRelationship(item);
+                edit(reminder, Arrays.asList(new Selection("items", null), new Selection(null, relationship)));
+            }
+        }
+    }
+
+    /**
+     * View an object.
+     *
+     * @param object the object to view. May be {@code null}
+     */
+    @Override
+    protected void view(Act object) {
+        Act reminder = (object != null) ? getReminder(object) : null;
+        super.view(reminder);
+    }
+
+    protected Act getReminder(Act item) {
+        return (Act) new ActBean(item).getNodeSourceObject("reminder");
+    }
+
+    /**
+     * Creates a new {@link IMObjectViewer} for an object.
+     *
+     * @param object the object to view
+     * @return a new viewer
+     */
+    @Override
+    protected IMObjectViewer createViewer(IMObject object) {
+        return super.createViewer(object);
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button set
      */
     protected void layoutButtons(ButtonSet buttons) {
+        buttons.add(createEditButton());
         buttons.add(SEND_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSend();
@@ -133,6 +186,7 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
+        buttons.setEnabled(EDIT_ID, enable);
         buttons.setEnabled(SEND_ID, enable);
         buttons.setEnabled(COMPLETE_ID, enable);
     }

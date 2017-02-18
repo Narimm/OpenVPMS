@@ -23,7 +23,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderExporter;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -64,7 +64,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderExportProcessor(ReminderTypeCache reminderTypes, ReminderRules rules, Party location, Party practice,
+    public ReminderExportProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party location, Party practice,
                                    IArchetypeService service, ReminderConfiguration config,
                                    CommunicationLogger logger) {
         super(reminderTypes, rules, practice, service, config, logger);

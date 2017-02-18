@@ -80,7 +80,7 @@ public class ReminderRules {
     /**
      * The reminder type cache. May be {@code null}.
      */
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
     /**
      * Reminder due indicator.
@@ -115,7 +115,7 @@ public class ReminderRules {
      * @param reminderTypes a cache for reminder types. If {@code null}, no caching is used
      * @param rules         the patient rules
      */
-    public ReminderRules(IArchetypeService service, ReminderTypeCache reminderTypes, PatientRules rules) {
+    public ReminderRules(IArchetypeService service, ReminderTypes reminderTypes, PatientRules rules) {
         this.service = service;
         this.rules = rules;
         this.reminderTypes = reminderTypes;

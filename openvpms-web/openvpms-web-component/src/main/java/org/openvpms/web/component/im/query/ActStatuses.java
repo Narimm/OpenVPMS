@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -70,6 +70,15 @@ public class ActStatuses implements LookupQuery {
      */
     public ActStatuses(String shortName, String exclude) {
         this(new NodeLookupQuery(shortName, "status"), exclude);
+    }
+
+    /**
+     * Constructs an {@link ActStatuses}.
+     *
+     * @param lookups the lookups
+     */
+    public ActStatuses(LookupQuery lookups) {
+        this(lookups, null);
     }
 
     /**

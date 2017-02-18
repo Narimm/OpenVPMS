@@ -23,7 +23,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -118,7 +118,7 @@ public abstract class PatientReminderProcessor {
     /**
      * The reminder types.
      */
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
     /**
      * The reminder rules.
@@ -150,7 +150,7 @@ public abstract class PatientReminderProcessor {
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public PatientReminderProcessor(ReminderTypeCache reminderTypes, ReminderRules rules, Party practice,
+    public PatientReminderProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party practice,
                                     IArchetypeService service, ReminderConfiguration config,
                                     CommunicationLogger logger) {
         this.reminderTypes = reminderTypes;
@@ -226,7 +226,7 @@ public abstract class PatientReminderProcessor {
      *
      * @return the reminder types
      */
-    public ReminderTypeCache getReminderTypes() {
+    public ReminderTypes getReminderTypes() {
         return reminderTypes;
     }
 

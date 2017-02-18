@@ -122,11 +122,9 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @throws SchedulerException for any error
      */
     public void schedule(IMObject configuration) {
-        if (log.isInfoEnabled()) {
-            log.info("Scheduling " + configuration.getName() + " (" + configuration.getId() + ")");
-        }
-        JobDetail job = createJobDetail(configuration);
-        Trigger trigger = createTrigger(configuration, job);
+        JobConfig config = new JobConfig(configuration, service);
+        JobDetail job = config.createJobDetail(context, service);
+        Trigger trigger = config.createTrigger();
         try {
             Date date = scheduler.scheduleJob(job, trigger);
             if (log.isInfoEnabled()) {
@@ -147,11 +145,10 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @throws SchedulerException for any error
      */
     public void run(IMObject configuration) {
+        String name = new JobConfig(configuration, service).getJobName();
         if (log.isInfoEnabled()) {
-            log.info("Running " + configuration.getName() + " (" + configuration.getId() + ")");
+            log.info("Running " + configuration.getName() + " (" + configuration.getId() + ") with job name " + name);
         }
-        IMObjectBean bean = new IMObjectBean(configuration, service);
-        String name = bean.getString("name");
 
         try {
             scheduler.triggerJob(name, Scheduler.DEFAULT_GROUP);
@@ -170,7 +167,8 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     public Date getNextRunTime(IMObject configuration) {
         Date result = null;
         try {
-            Trigger trigger = scheduler.getTrigger(configuration.getName(), Scheduler.DEFAULT_GROUP);
+            String name = new JobConfig(configuration, service).getJobName();
+            Trigger trigger = scheduler.getTrigger(name, Scheduler.DEFAULT_GROUP);
             if (trigger != null) {
                 result = trigger.getNextFireTime();
             }
@@ -193,54 +191,6 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
                 log.error(exception, exception);
             }
         }
-    }
-
-    /**
-     * Creates a {@code JobDetail} from a job configuration.
-     *
-     * @param configuration the job configuration
-     * @return a new {@code JobDetail}
-     * @throws SchedulerException for any error
-     */
-    protected JobDetail createJobDetail(IMObject configuration) {
-        IMObjectBean bean = new IMObjectBean(configuration, service);
-        JobDetail job = new JobDetail();
-        String name = bean.getString("name");
-        job.setName(name);
-        job.setGroup(Scheduler.DEFAULT_GROUP);
-        Class<?> type;
-        try {
-            type = Class.forName(bean.getString("class"));
-        } catch (ClassNotFoundException exception) {
-            throw new SchedulerException(exception);
-        }
-        Class runner = StatefulJob.class.isAssignableFrom(type) ? StatefulJobRunner.class : JobRunner.class;
-        job.setJobClass(runner);
-        job.getJobDataMap().put("Configuration", configuration);
-        job.getJobDataMap().put("ApplicationContext", context);
-        job.getJobDataMap().put("ArchetypeService", service);
-        return job;
-    }
-
-    /**
-     * Creates a trigger for a job.
-     *
-     * @param configuration the job configuration
-     * @param job           the job
-     * @return a new trigger
-     * @throws SchedulerException for any error
-     */
-    protected Trigger createTrigger(IMObject configuration, JobDetail job) {
-        IMObjectBean bean = new IMObjectBean(configuration, service);
-        String name = bean.getString("name");
-        CronTrigger trigger = new CronTrigger(name, job.getGroup());
-        try {
-            trigger.setJobName(name);
-            trigger.setCronExpression(bean.getString("expression"));
-        } catch (Throwable exception) {
-            throw new SchedulerException(exception);
-        }
-        return trigger;
     }
 
     /**
@@ -329,6 +279,104 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
         @Override
         public void rollback(IMObject object) {
             removePending(object);
+        }
+    }
+
+    private static final class JobConfig {
+
+        private final IMObjectBean config;
+
+        private Class<?> jobClass;
+
+        public JobConfig(IMObject config, IArchetypeService service) {
+            this(new IMObjectBean(config, service));
+        }
+
+        public JobConfig(IMObjectBean config) {
+            this.config = config;
+
+        }
+
+        /**
+         * Returns the job name.
+         * <p/>
+         * If the job class implements {@link SingletonJob}, the returned name will be the job class name prefixed with
+         * "singleton:".<br/>
+         * For all other job classes, the returned name will be the configuration name prefixed with
+         * "job:".<br/>
+         * This ensures that only a single instance of a {@link SingletonJob} can ever be scheduled.
+         *
+         * @return the job name
+         */
+        public String getJobName() {
+            String name;
+            Class type = getJobClass();
+            if (SingletonJob.class.isAssignableFrom(type)) {
+                name = "singleton:" + type.getName();
+            } else {
+                name = "job:" + config.getObject().getName();
+            }
+            return name;
+        }
+
+        /**
+         * Returns the job class.
+         *
+         * @return the job class
+         * @throws SchedulerException for any error
+         */
+        public Class<?> getJobClass() {
+            if (jobClass == null) {
+                try {
+                    jobClass = Class.forName(config.getString("class"));
+                } catch (ClassNotFoundException exception) {
+                    throw new SchedulerException(exception);
+                }
+            }
+            return jobClass;
+        }
+
+        /**
+         * Returns the class that will be used to run the {@link #getJobClass()}.
+         *
+         * @return the runner class
+         */
+        public Class getRunner() {
+            return StatefulJob.class.isAssignableFrom(getJobClass()) ? StatefulJobRunner.class : JobRunner.class;
+        }
+
+        /**
+         * Creates a {@code JobDetail} from a job configuration.
+         *
+         * @return a new {@code JobDetail}
+         * @throws SchedulerException for any error
+         */
+        public JobDetail createJobDetail(ApplicationContext context, IArchetypeService service) {
+            JobDetail job = new JobDetail();
+            job.setName(getJobName());
+            job.setGroup(Scheduler.DEFAULT_GROUP);
+            job.setJobClass(getRunner());
+            job.getJobDataMap().put("Configuration", config.getObject());
+            job.getJobDataMap().put("ApplicationContext", context);
+            job.getJobDataMap().put("ArchetypeService", service);
+            return job;
+        }
+
+        /**
+         * Creates a trigger for the job.
+         *
+         * @return a new trigger
+         */
+        public Trigger createTrigger() {
+            String jobName = getJobName();
+            CronTrigger trigger = new CronTrigger(jobName, Scheduler.DEFAULT_GROUP);
+            try {
+                trigger.setJobName(jobName);
+                trigger.setCronExpression(config.getString("expression"));
+            } catch (Throwable exception) {
+                throw new SchedulerException(exception);
+            }
+            return trigger;
         }
     }
 }

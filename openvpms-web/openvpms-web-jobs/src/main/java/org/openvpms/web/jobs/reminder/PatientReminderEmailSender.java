@@ -21,7 +21,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -90,7 +90,7 @@ public class PatientReminderEmailSender extends PatientReminderSender {
      * @param logger        the communication logger. May be {@code null}
      */
     public PatientReminderEmailSender(MailerFactory factory, Party practice, DocumentTemplate groupTemplate,
-                                      ReminderTypeCache reminderTypes, IArchetypeService service,
+                                      ReminderTypes reminderTypes, IArchetypeService service,
                                       ReminderConfiguration config, CommunicationLogger logger) {
         super(groupTemplate, reminderTypes, practice, service, config, logger);
         this.factory = factory;

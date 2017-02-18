@@ -21,7 +21,7 @@ import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -80,7 +80,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * @param context       the context
      * @param help          the help context
      */
-    public ReminderListProcessor(ReminderTypeCache reminderTypes, ReminderRules rules, Party practice,
+    public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party practice,
                                  IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger,
                                  Context context, HelpContext help) {
         super(reminderTypes, rules, practice, service, config, logger);

@@ -87,7 +87,7 @@ public class ReminderProcessor {
     /**
      * Reminder type cache.
      */
-    private final ReminderTypeCache reminderTypes;
+    private final ReminderTypes reminderTypes;
 
 
     /**
@@ -105,7 +105,7 @@ public class ReminderProcessor {
         this.disableSMS = disableSMS;
         this.service = service;
         this.patientRules = patientRules;
-        reminderTypes = new ReminderTypeCache(service);
+        reminderTypes = new ReminderTypes(service);
     }
 
     /**
@@ -442,7 +442,7 @@ public class ReminderProcessor {
      * Creates a reminder item.
      *
      * @param shortName the reminder item archetype
-     * @param startTime the start time (aka process from date)
+     * @param startTime the start time (aka send from date)
      * @param reminder  the parent reminder
      * @param count     the reminder count
      * @param error     the error message. May be {@code null}
@@ -452,8 +452,8 @@ public class ReminderProcessor {
     private Act createItem(String shortName, Date startTime, ActBean reminder, int count, String error,
                            List<Act> toSave) {
         Act act = (Act) service.create(shortName);
-        act.setActivityStartTime(startTime);                  // set the process by date
-        act.setActivityEndTime(reminder.getDate("endTime"));  // set the due date to that of the reminder
+        act.setActivityStartTime(DateRules.getDate(startTime));  // set the send date
+        act.setActivityEndTime(reminder.getDate("endTime"));     // set the due date to that of the reminder
         ActBean bean = new ActBean(act, service);
         bean.setValue("count", count);
         if (error != null) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -63,6 +63,10 @@ public class NodeLookupQuery extends AbstractLookupQuery {
      */
     private NodeDescriptor descriptor;
 
+    /**
+     * The codes to include. If null or empty, indicates all codes.
+     */
+    private final String[] codes;
 
     /**
      * Constructs a {@link NodeLookupQuery} for an archetype and node.
@@ -71,9 +75,19 @@ public class NodeLookupQuery extends AbstractLookupQuery {
      * @param node      the node name
      */
     public NodeLookupQuery(String shortName, String node) {
+        this(shortName, node, (String[]) null);
+    }
+
+    /**
+     * Constructs a {@link NodeLookupQuery} for an archetype and node.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node name
+     */
+    public NodeLookupQuery(String shortName, String node, String... codes) {
         this.shortName = shortName;
         this.node = node;
-
+        this.codes = codes;
     }
 
     /**
@@ -95,6 +109,7 @@ public class NodeLookupQuery extends AbstractLookupQuery {
     public NodeLookupQuery(IMObject object, NodeDescriptor descriptor) {
         this.object = object;
         this.descriptor = descriptor;
+        this.codes = null;
     }
 
     /**
@@ -110,10 +125,22 @@ public class NodeLookupQuery extends AbstractLookupQuery {
             NodeDescriptor node = getDescriptor();
             if (node != null) {
                 LookupAssertion assertion = LookupAssertionFactory.create(node, service, lookupService);
+                List<Lookup> lookups;
                 if (object != null) {
-                    result = new ArrayList<>(assertion.getLookups(object));
+                    lookups = new ArrayList<>(assertion.getLookups(object));
                 } else {
-                    result = new ArrayList<>(assertion.getLookups());
+                    lookups = assertion.getLookups();
+                }
+                if (codes != null && codes.length > 0) {
+                    result = new ArrayList<>();
+                    for (String code : codes) {
+                        Lookup lookup = getLookup(code, lookups);
+                        if (lookup != null) {
+                            result.add(lookup);
+                        }
+                    }
+                } else {
+                    result = lookups;
                 }
             }
         } catch (OpenVPMSException error) {
