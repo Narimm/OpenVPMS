@@ -131,9 +131,9 @@ public class ReminderWorkspace extends TabbedWorkspace<Act> {
         ReminderItemQuery query = new ReminderItemQuery(dateRangeQuery);
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
         ReminderItemBrowser browser = new ReminderItemBrowser(query, context);
-        ReminderItemCRUDWindow window = new ReminderItemCRUDWindow(browser, context.getContext(),
-                                                                   context.getHelpContext());
-        addTab("reporting.reminder.resend", model, new Tab(browser, window, false));
+        ReminderItemCRUDWindow window = new ResendReminderItemCRUDWindow(browser, context.getContext(),
+                                                                         context.getHelpContext());
+        addTab("reporting.reminder.resend", model, new Tab(browser, window));
     }
 
     private class Tab extends BrowserCRUDWindowTab<Act> {

@@ -26,6 +26,8 @@ import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRange;
 
+import java.util.List;
+
 /**
  * Queries <em>act.patientReminderItem*</em> archetypes.
  *
@@ -71,8 +73,18 @@ public class ReminderItemDateRangeObjectSetQuery extends ReminderItemObjectSetQu
      */
     @Override
     protected ArchetypeQuery createQuery(ReminderItemQueryFactory factory) {
-        factory.setShortNames(getShortNames());
-        factory.setStatuses(getStatuses());
+        String shortName = getShortName();
+        if (shortName != null) {
+            factory.setShortName(shortName);
+        } else {
+            factory.setShortNames(getShortNames());
+        }
+        String[] statuses = getStatuses();
+        if (statuses.length == 0) {
+            List<String> codes = getStatusLookups().getCodes();
+            statuses = codes.toArray(new String[codes.size()]);
+        }
+        factory.setStatuses(statuses);
         factory.setFrom(dateRange.getFrom());
         factory.setTo(dateRange.getTo());
         return factory.createQuery();

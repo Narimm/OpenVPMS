@@ -23,7 +23,12 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -42,6 +47,7 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
      */
     private SimpleProperty date = new SimpleProperty(
             "date", null, Date.class, DescriptorHelper.getDisplayName(ReminderArchetypes.PRINT_REMINDER, "startTime"));
+    private final ModifiableListener listener;
 
 
     /**
@@ -49,6 +55,32 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
      */
     public ReminderItemDateObjectSetQuery(String status) {
         super(status);
+        date.setValue(DateRules.getToday());
+        listener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onQuery();
+            }
+        };
+        date.addModifiableListener(listener);
+    }
+
+    /**
+     * Creates the result set.
+     *
+     * @param sort the sort criteria. May be {@code null}
+     * @return a new result set
+     */
+    @Override
+    protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
+        Date to = date.getDate();
+        if (to == null) {
+            to = DateRules.getToday();
+            date.removeModifiableListener(listener);
+            date.setValue(to);
+            date.addModifiableListener(listener);
+        }
+        return super.createResultSet(sort);
     }
 
     /**
@@ -73,10 +105,16 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
      */
     @Override
     protected ArchetypeQuery createQuery(ReminderItemQueryFactory factory) {
-        factory.setShortNames(getShortNames());
+        String shortName = getShortName();
+        if (shortName != null) {
+            factory.setShortName(shortName);
+        } else {
+            factory.setShortNames(getShortNames());
+        }
         factory.setStatuses(getStatuses());
         factory.setFrom(null);
-        factory.setTo(DateRules.getNextDate(date.getDate()));
+        Date to = date.getDate();
+        factory.setTo(DateRules.getNextDate(to));
         return factory.createQuery();
     }
 
