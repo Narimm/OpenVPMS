@@ -18,19 +18,22 @@ package org.openvpms.web.component.im.edit.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
@@ -166,23 +169,23 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
-     * Validates the object.
+     * Validates that the start and end times are valid.
      * <p/>
-     * This extends validation by ensuring that the start time is less than the end time, if non-null.
+     * This ensures that the start time (i.e. Next Due Date) is &gt;= the end time (First Due Date).
      *
      * @param validator the validator
-     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     * @return {@code true} if the start and end times are valid
      */
     @Override
-    protected boolean doValidation(Validator validator) {
-        Date nextDueDate = getStartTime();
-        Date firstDueDate = getEndTime();
-        if (firstDueDate != null && nextDueDate != null) {
-            if (DateRules.compareTo(firstDueDate, nextDueDate) > 0) {
-
-            }
+    protected boolean validateStartEndTimes(Validator validator) {
+        boolean result = true;
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null && start.getTime() < end.getTime()) {
+            validator.add(this, new ValidatorError(Messages.get("patient.reminder.firstDueGreaterThanNextDue")));
+            result = false;
         }
-        return super.doValidation(validator);
+        return result;
     }
 
     /**
@@ -198,6 +201,22 @@ public class ReminderEditor extends PatientActEditor {
         if (start != null && end != null) {
             if (start.compareTo(end) < 0) {
                 setStartTime(end, true);
+            }
+        }
+
+        // propagate the next due date to each of the reminder items with the same reminder count.
+        ActRelationshipCollectionEditor items = (ActRelationshipCollectionEditor) getEditor("items", false);
+        if (items != null) {
+            start = getStartTime();
+            int count = getReminderCount();
+            for (Act item : items.getCurrentActs()) {
+                IMObjectEditor editor = items.getEditor(item);
+                if (editor instanceof ReminderItemEditor) {
+                    ReminderItemEditor itemEditor = (ReminderItemEditor) editor;
+                    if (itemEditor.getCount() == count) {
+                        itemEditor.setEndTime(start);
+                    }
+                }
             }
         }
     }

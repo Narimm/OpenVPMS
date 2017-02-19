@@ -13,6 +13,7 @@
  *
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.logging.Log;
@@ -166,6 +167,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
                 processor.complete(currentState);
             }
             updateStatistics(currentState.getReminders());
+            super.processCompleted(currentReminders);
         } else {
             log.error("ReminderProgressBarProcess.processCompleted() invoked with no current reminders");
         }

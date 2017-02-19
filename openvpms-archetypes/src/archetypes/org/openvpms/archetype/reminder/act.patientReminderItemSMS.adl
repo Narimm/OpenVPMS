@@ -22,7 +22,7 @@
               derivedValue="'Patient SMS Reminder'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
         <node name="startTime" displayName="Send" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
-        <node name="endTime" displayName="Due Date" path="/activityEndTime" type="java.util.Date" minCardinality="1"/>
+        <node name="endTime" displayName="Due Date" path="/activityEndTime" type="java.util.Date" minCardinality="1" readOnly="true"/>
         <node name="count" path="/details/count" type="java.lang.Integer" minCardinality="1" defaultValue="0"
               readOnly="true"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'PENDING'">

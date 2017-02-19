@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -45,6 +46,7 @@ import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -193,24 +195,58 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     protected void layoutButtons(ButtonSet buttons) {
         buttons.add(createEditButton());
-        buttons.add(SEND_ID, new ActionListener() {
+        buttons.add(createSendButton());
+        buttons.add(createSendAllButton());
+        buttons.add(createCompleteButton());
+        buttons.add(createCompleteAllButton());
+    }
+
+    /**
+     * Helper to create a new button with id {@link #SEND_ID} linked to {@link #onSend()}.
+     *
+     * @return a new button
+     */
+    protected Button createSendButton() {
+        return ButtonFactory.create(SEND_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSend();
             }
         });
-        buttons.add(SEND_ALL_ID, new ActionListener() {
+    }
+
+    /**
+     * Helper to create a new button with id {@link #SEND_ALL_ID} linked to {@link #onSendAll()}.
+     *
+     * @return a new button
+     */
+    protected Button createSendAllButton() {
+        return ButtonFactory.create(SEND_ALL_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSendAll();
             }
         });
-        buttons.add(COMPLETE_ID, new ActionListener() {
-            @Override
+    }
+
+    /**
+     * Helper to create a new button with id {@link #COMPLETE_ID} linked to {@link #onComplete()} ()}.
+     *
+     * @return a new button
+     */
+    protected Button createCompleteButton() {
+        return ButtonFactory.create(COMPLETE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onComplete();
             }
         });
-        buttons.add(COMPLETE_ALL_ID, new ActionListener() {
-            @Override
+    }
+
+    /**
+     * Helper to create a new button with id {@link #COMPLETE_ALL_ID} linked to {@link #onCompleteAll()}.
+     *
+     * @return a new button
+     */
+    protected Button createCompleteAllButton() {
+        return ButtonFactory.create(COMPLETE_ALL_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCompleteAll();
             }

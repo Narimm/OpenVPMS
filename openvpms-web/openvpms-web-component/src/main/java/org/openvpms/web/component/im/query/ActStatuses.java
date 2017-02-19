@@ -21,6 +21,7 @@ import org.openvpms.web.component.im.lookup.LookupFilter;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -154,6 +155,19 @@ public class ActStatuses implements LookupQuery {
     }
 
     /**
+     * Returns the act status lookup codes.
+     *
+     * @return the act status lookup codes
+     */
+    public List<String> getCodes() {
+        List<String> result = new ArrayList<>();
+        for (Lookup lookup : getLookups()) {
+            result.add(lookup.getCode());
+        }
+        return result;
+    }
+
+    /**
      * Returns the excluded status code.
      *
      * @return the excluded status code. May be {@code null}
@@ -161,4 +175,5 @@ public class ActStatuses implements LookupQuery {
     public String getExcluded() {
         return exclude;
     }
+
 }
