@@ -653,7 +653,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(reminderType, bean.getNodeParticipant("reminderType"));
         assertEquals(product, bean.getNodeParticipant("product"));
-        assertEquals(form.getActivityStartTime(), reminder.getActivityStartTime());
+        assertEquals(dueDate, reminder.getActivityStartTime());
         assertEquals(dueDate, reminder.getActivityEndTime());
     }
 

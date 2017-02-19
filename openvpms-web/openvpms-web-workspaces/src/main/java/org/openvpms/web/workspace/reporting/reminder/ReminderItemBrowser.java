@@ -87,7 +87,7 @@ class ReminderItemBrowser extends QueryBrowserAdapter<ObjectSet, Act> {
      * <p/>
      * Note that this is a snapshot of the browser's result set. Iterating over it will not affect the browser.
      *
-     * @return the result set, or {@code null</tt> if the query hasn't been executed
+     * @return the result set, or {@code null} if the query hasn't been executed
      */
     @Override
     public ResultSet<Act> getResultSet() {
@@ -101,11 +101,11 @@ class ReminderItemBrowser extends QueryBrowserAdapter<ObjectSet, Act> {
      * @param context the layout context
      * @return a new browser
      */
-    private static Browser<ObjectSet> createBrowser(ReminderItemQuery query, LayoutContext context) {
+    protected Browser<ObjectSet> createBrowser(ReminderItemQuery query, LayoutContext context) {
         return new ReminderItemObjectSetBrowser(query.getQuery(), context);
     }
 
-    private static class ReminderItemObjectSetBrowser extends AbstractQueryBrowser<ObjectSet> {
+    protected static class ReminderItemObjectSetBrowser extends AbstractQueryBrowser<ObjectSet> {
         public ReminderItemObjectSetBrowser(Query<ObjectSet> delegate, LayoutContext context) {
             super(delegate, delegate.getDefaultSortConstraint(), new ReminderItemTableModel(context), context);
         }

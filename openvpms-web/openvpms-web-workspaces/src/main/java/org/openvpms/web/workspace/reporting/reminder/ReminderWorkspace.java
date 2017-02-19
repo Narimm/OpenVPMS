@@ -17,11 +17,13 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.workspace.BrowserCRUDWindowTab;
 import org.openvpms.web.component.workspace.TabComponent;
@@ -31,6 +33,9 @@ import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
+
+import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.CANCELLED;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.COMPLETED;
 
 
 /**
@@ -65,10 +70,16 @@ public class ReminderWorkspace extends TabbedWorkspace<Act> {
      */
     @Override
     public Component getSummary() {
-        CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
-                                                                              preferences);
-        return summary.getSummary(getObject());
+        Component result = null;
+        Tab tab = (Tab) getSelected();
+        Act reminder = (tab != null) ? tab.getWindow().getReminder() : null;
+        if (reminder != null) {
+            CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
+            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
+                                                                                  preferences);
+            result = summary.getSummary(reminder);
+        }
+        return result;
     }
 
     /**
@@ -95,33 +106,91 @@ public class ReminderWorkspace extends TabbedWorkspace<Act> {
 
     private void addSendBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("send");
-        ReminderItemQuery query = new ReminderItemQuery();
+        ReminderItemQuery query = new ReminderItemQuery(new ReminderItemDateObjectSetQuery(ReminderItemStatus.PENDING));
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
-        ReminderItemBrowser browser = new ReminderItemBrowser(query, context);
+        ReminderItemBrowser browser = new PendingReminderItemBrowser(query, context);
         ReminderItemCRUDWindow window = new ReminderItemCRUDWindow(browser, context.getContext(),
                                                                    context.getHelpContext());
-        addTab("reporting.reminder.send", model, new BrowserCRUDWindowTab<>(browser, window));
+        addTab("reporting.reminder.send", model, new Tab(browser, window));
     }
 
     private void addErrorBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("error");
-        ReminderItemQuery query = new ReminderItemQuery(new ReminderItemObjectSetQuery(true, true));
+        ReminderItemQuery query = new ReminderItemQuery(new ReminderItemDateObjectSetQuery(ReminderItemStatus.ERROR));
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
         ReminderItemBrowser browser = new ReminderItemBrowser(query, context);
-        ReminderItemCRUDWindow window = new ReminderItemCRUDWindow(browser, context.getContext(),
-                                                                   context.getHelpContext());
-        addTab("reporting.reminder.error", model, new BrowserCRUDWindowTab<>(browser, window));
+        ErrorReminderItemCRUDWindow window = new ErrorReminderItemCRUDWindow(browser, context.getContext(),
+                                                                             context.getHelpContext());
+        addTab("reporting.reminder.error", model, new Tab(browser, window));
     }
 
     private void addResendBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("resend");
-        ReminderItemQuery query = new ReminderItemQuery(new ReminderItemObjectSetQuery(true, true));
+        ReminderItemDateRangeObjectSetQuery dateRangeQuery = new ReminderItemDateRangeObjectSetQuery(
+                null, COMPLETED, CANCELLED);
+        ReminderItemQuery query = new ReminderItemQuery(dateRangeQuery);
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
         ReminderItemBrowser browser = new ReminderItemBrowser(query, context);
         ReminderItemCRUDWindow window = new ReminderItemCRUDWindow(browser, context.getContext(),
                                                                    context.getHelpContext());
-        addTab("reporting.reminder.resend", model, new BrowserCRUDWindowTab<>(browser, window, false));
+        addTab("reporting.reminder.resend", model, new Tab(browser, window, false));
     }
 
+    private class Tab extends BrowserCRUDWindowTab<Act> {
+
+        /**
+         * Constructs a {@link BrowserCRUDWindowTab}.
+         *
+         * @param browser the browser
+         * @param window  the window
+         */
+        public Tab(Browser<Act> browser, ReminderItemCRUDWindow window) {
+            super(browser, window);
+        }
+
+        /**
+         * Constructs a {@link BrowserCRUDWindowTab}.
+         *
+         * @param browser       the browser
+         * @param window        the window
+         * @param refreshOnShow determines if the browser should be refreshed when the tab is displayed.
+         */
+        public Tab(Browser<Act> browser, ReminderItemCRUDWindow window, boolean refreshOnShow) {
+            super(browser, window, refreshOnShow);
+        }
+
+        /**
+         * Invoked when the tab is displayed.
+         */
+        @Override
+        public void show() {
+            super.show();
+            firePropertyChange(SUMMARY_PROPERTY, null, null);
+        }
+
+        /**
+         * Returns the CRUD window.
+         *
+         * @return the window
+         */
+        @Override
+        public ReminderItemCRUDWindow getWindow() {
+            return (ReminderItemCRUDWindow) super.getWindow();
+        }
+
+        /**
+         * Selects the current object.
+         *
+         * @param object the selected object
+         */
+        @Override
+        protected void select(Act object) {
+            Act current = getWindow().getObject();
+            super.select(object);
+            if (getSelected() == this && current != object) {
+                firePropertyChange(SUMMARY_PROPERTY, null, null);
+            }
+        }
+    }
 }
 

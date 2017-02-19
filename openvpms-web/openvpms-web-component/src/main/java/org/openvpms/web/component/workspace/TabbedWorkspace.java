@@ -79,7 +79,7 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
      */
     @Override
     public void show() {
-        TabComponent tab = model.getObject(pane.getSelectedIndex());
+        TabComponent tab = getSelected();
         if (tab != null) {
             tab.show();
         }
@@ -94,12 +94,21 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
     public HelpContext getHelpContext() {
         HelpContext result = null;
         if (model != null && pane != null) {
-            TabComponent tab = model.getObject(pane.getSelectedIndex());
+            TabComponent tab = getSelected();
             if (tab != null) {
                 result = tab.getHelpContext();
             }
         }
         return (result == null) ? super.getHelpContext() : result;
+    }
+
+    /**
+     * Returns the selected tab.
+     *
+     * @return the selected tab, or {@code null} if none is selected
+     */
+    protected TabComponent getSelected() {
+        return model.getObject(pane.getSelectedIndex());
     }
 
     /**
@@ -153,20 +162,6 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
     protected abstract void addTabs(ObjectTabPaneModel<TabComponent> model);
 
     /**
-     * Invoked when a tab is selected.
-     *
-     * @param tab the tab
-     */
-    private void onTabSelected(TabComponent tab) {
-        if (tab != null) {
-            container.removeAll();
-            container.add(tabContainer);
-            container.add(tab.getComponent());
-            tab.show();
-        }
-    }
-
-    /**
      * Helper to add a tab to the tab pane.
      *
      * @param name  the tab name resource bundle key
@@ -188,6 +183,20 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
      */
     protected HelpContext subtopic(String topic) {
         return super.getHelpContext().subtopic(topic);
+    }
+
+    /**
+     * Invoked when a tab is selected.
+     *
+     * @param tab the tab
+     */
+    private void onTabSelected(TabComponent tab) {
+        if (tab != null) {
+            container.removeAll();
+            container.add(tabContainer);
+            container.add(tab.getComponent());
+            tab.show();
+        }
     }
 
 }
