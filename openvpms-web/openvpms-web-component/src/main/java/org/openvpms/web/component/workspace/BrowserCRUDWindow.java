@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -157,7 +157,9 @@ public class BrowserCRUDWindow<T extends IMObject> {
      * @param object the selected object
      */
     protected void select(T object) {
-        window.setObject(object);
+        if (window.getObject() != object) {
+            window.setObject(object);
+        }
     }
 
     /**
@@ -220,7 +222,13 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     private void refreshBrowser(T object) {
         browser.query();
-        browser.setSelected(object);
+        if (browser.setSelected(object)) {
+            if (window.getObject() != object) {
+                window.setObject(object);
+            }
+        } else {
+            window.setObject(null);
+        }
     }
 
 }

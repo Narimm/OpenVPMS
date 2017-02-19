@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.PagedReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
@@ -43,6 +44,7 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -103,6 +105,16 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     }
 
     /**
+     * Returns the reminder associated with the selected reminder item.
+     *
+     * @return the reminder, or {@code null} if no reminder item is selected
+     */
+    public Act getReminder() {
+        Act item = getObject();
+        return (item != null) ? getReminder(item) : null;
+    }
+
+    /**
      * Edits the current object.
      */
     @Override
@@ -130,6 +142,33 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     protected void view(Act object) {
         Act reminder = (object != null) ? getReminder(object) : null;
         super.view(reminder);
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(Act object, boolean isNew) {
+        Act item = IMObjectHelper.reload(getObject());
+        if (item != null) {
+            super.onSaved(item, false);
+        }
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onRefresh(Act object) {
+        Act item = IMObjectHelper.reload(getObject());
+        if (item != null) {
+            super.onRefresh(item);
+        }
     }
 
     protected Act getReminder(Act item) {
@@ -192,6 +231,15 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     }
 
     /**
+     * Returns the reminder item query factory.
+     *
+     * @return the query factory
+     */
+    protected ReminderItemQueryFactory getQueryFactory() {
+        return browser.getFactory();
+    }
+
+    /**
      * Invoked when the 'Send' button is pressed. Sends the selected reminder item.
      */
     private void onSend() {
@@ -230,6 +278,20 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * Invoked to complete a reminder.
      */
     private void onComplete() {
+        ConfirmationDialog.show(Messages.get("reporting.reminder.complete.title"),
+                                Messages.get("reporting.reminder.complete.message"),
+                                ConfirmationDialog.YES_NO, new WindowPaneListener() {
+                    @Override
+                    public void onClose(WindowPaneEvent event) {
+                        onCompleteConfirmed();
+                    }
+                });
+    }
+
+    /**
+     * Completes the selected reminder item.
+     */
+    private void onCompleteConfirmed() {
         Act object = getObject();
         Act item = IMObjectHelper.reload(object);
         if (item != null) {
@@ -246,10 +308,24 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     }
 
     /**
-     * Invoked to complete all reminders matching the query, without sending them.
+     * Invoked to complete all reminders items matching the query, without sending them.
      */
     private void onCompleteAll() {
-        ReminderItemQueryFactory factory = browser.getFactory();
+        ConfirmationDialog.show(Messages.get("reporting.reminder.completeall.title"),
+                                Messages.get("reporting.reminder.completeall.message"),
+                                ConfirmationDialog.YES_NO, new WindowPaneListener() {
+                    @Override
+                    public void onClose(WindowPaneEvent event) {
+                        onCompleteAllConfirmed();
+                    }
+                });
+    }
+
+    /**
+     * Completes all reminders items matching the query, without sending them.
+     */
+    private void onCompleteAllConfirmed() {
+        ReminderItemQueryFactory factory = getQueryFactory();
         if (factory != null) {
             PagedReminderIterator iterator = new PagedReminderIterator(factory, 1000,
                                                                        ServiceHelper.getArchetypeService());
@@ -267,6 +343,15 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
         onRefresh(getObject());
     }
 
+    /**
+     * Sets the status of the reminder item to {@code COMPLETED}.
+     * <br/>
+     * If there are no other {@code PENDING} or {@code ERROR} reminder items linked to the reminder, the
+     * reminder count will be incremented.
+     *
+     * @param item     the reminder item
+     * @param reminder the reminder
+     */
     private void complete(Act item, Act reminder) {
         item.setStatus(ReminderItemStatus.COMPLETED);
         ActBean itemBean = new ActBean(item);
@@ -286,7 +371,7 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
         try {
             HelpContext help = getHelpContext().subtopic("send");
             ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
-            ReminderItemQueryFactory queryFactory = browser.getFactory();
+            ReminderItemQueryFactory queryFactory = getQueryFactory();
             ReminderGenerator generator = factory.create(queryFactory, getContext(), getMailContext(), help);
             generateReminders(generator);
         } catch (Throwable exception) {

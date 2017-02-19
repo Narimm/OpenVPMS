@@ -19,32 +19,21 @@ package org.openvpms.web.workspace.reporting.reminder;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.AbstractArchetypeServiceResultSet;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
-import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.ObjectSetQueryExecutor;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.resource.i18n.Messages;
-
-import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.CANCELLED;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.COMPLETED;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.ERROR;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.PENDING;
 
 /**
  * Queries <em>act.patientReminderItem*</em> archetypes.
  *
  * @author Tim Anderson
  */
-public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
+public abstract class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
 
     /**
      * The query factory.
@@ -52,58 +41,23 @@ public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
     private final ReminderItemQueryFactory factory;
 
     /**
-     * The date range.
-     */
-    private final DateRange dateRange;
-
-    /**
-     * Determines if only items with error status should be displayed.
-     */
-    private final boolean errorOnly;
-
-    private static final ActStatuses PENDING_STATUSES = new ActStatuses(new StatusLookupQuery(null, PENDING, ERROR));
-
-    private static final ActStatuses COMPLETE_STATUSES = new ActStatuses(new StatusLookupQuery(COMPLETED, COMPLETED,
-                                                                                               CANCELLED));
-
-    /**
-     * Dummy incomplete status. Finds all items with PENDING or ERROR status.
-     */
-    private static final String INCOMPLETE = "INCOMPLETE";
-
-    /**
-     * Dummy incomplete status, used in the status selector.
-     */
-    private static Lookup INCOMPLETE_STATUS = new Lookup(new ArchetypeId("lookup.local"), INCOMPLETE,
-                                                         Messages.get("reporting.reminder.incomplete"));
-
-    /**
      * Constructs a {@link ReminderItemObjectSetQuery}.
+     *
+     * @param status the status to query
      */
-    public ReminderItemObjectSetQuery() {
-        this(true, false);
+    public ReminderItemObjectSetQuery(String status) {
+        this((ActStatuses) null);
+        setStatus(status);
     }
 
     /**
      * Constructs a {@link ReminderItemObjectSetQuery}.
      *
-     * @param pending   if {@code true}, query pending items. No date range is included
-     * @param errorOnly if {@code true}, only include items with error status
+     * @param statuses the statuses to query
      */
-    public ReminderItemObjectSetQuery(boolean pending, boolean errorOnly) {
-        super(null, null, null, new String[]{ReminderArchetypes.REMINDER_ITEMS}, (pending) ? PENDING_STATUSES : COMPLETE_STATUSES, ObjectSet.class);
+    public ReminderItemObjectSetQuery(ActStatuses statuses) {
+        super(null, null, null, new String[]{ReminderArchetypes.REMINDER_ITEMS}, statuses, ObjectSet.class);
         factory = new ReminderItemQueryFactory();
-        dateRange = new DateRange(true);
-        if (!pending && !errorOnly) {
-            dateRange.getComponent();
-            dateRange.setAllDates(false);
-            dateRange.setFrom(DateRules.getToday());
-            dateRange.setFrom(DateRules.getTomorrow());
-        }
-        this.errorOnly = errorOnly;
-        if (errorOnly) {
-            setStatus(ERROR);
-        }
     }
 
     /**
@@ -124,10 +78,6 @@ public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
     @Override
     protected void doLayout(Component container) {
         addShortNameSelector(container);
-        if (!errorOnly) {
-            addStatusSelector(container);
-        }
-        container.add(dateRange.getComponent());
     }
 
     /**
@@ -138,43 +88,21 @@ public class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
      */
     @Override
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        factory.setShortNames(getShortNames());
-        if (errorOnly) {
-            factory.setStatus(ERROR);
-        } else {
-            factory.setStatuses(getStatuses());
-        }
-        factory.setFrom(dateRange.getFrom());
-        factory.setTo(dateRange.getTo());
+        final ArchetypeQuery query = createQuery(factory);
         return new AbstractArchetypeServiceResultSet<ObjectSet>(getMaxResults(), null, new ObjectSetQueryExecutor()) {
             @Override
             protected ArchetypeQuery createQuery() {
-                return factory.createQuery();
+                return query;
             }
         };
     }
 
-    private static class StatusLookupQuery extends NodeLookupQuery {
-
-        private final Lookup defaultLookup;
-
-        /**
-         * Constructs a {@link StatusLookupQuery}.
-         */
-        public StatusLookupQuery(String defaultCode, String... codes) {
-            super(ReminderArchetypes.EMAIL_REMINDER, "status", codes);
-            defaultLookup = (defaultCode != null) ? getLookup(defaultCode, getLookups()) : null;
-        }
-
-        /**
-         * Returns the default lookup.
-         *
-         * @return the default lookup, or {@code null} if none is defined
-         */
-        @Override
-        public Lookup getDefault() {
-            return defaultLookup;
-        }
-    }
+    /**
+     * Creates a new query.
+     *
+     * @param factory the query factory
+     * @return a new query
+     */
+    protected abstract ArchetypeQuery createQuery(ReminderItemQueryFactory factory);
 
 }

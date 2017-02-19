@@ -31,13 +31,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 class ReminderItemQuery extends QueryAdapter<ObjectSet, Act> {
 
     /**
-     * Default constructor.
-     */
-    public ReminderItemQuery() {
-        this(new ReminderItemObjectSetQuery());
-    }
-
-    /**
      * Constructs a {@link QueryAdapter}.
      *
      * @param query the query to adapt from

@@ -23,6 +23,7 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -174,6 +176,24 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
             }
         } catch (Throwable exception) {
             throw new SchedulerException(exception);
+        }
+        return result;
+    }
+
+    /**
+     * Returns all jobs of the specified type.
+     *
+     * @param type the job archetype
+     * @return the job configurations
+     */
+    public List<IMObject> getJobs(String type) {
+        List<IMObject> result;
+        if (TypeHelper.matches(type, JOB_SHORT_NAME)) {
+            ArchetypeQuery query = new ArchetypeQuery(type, true);
+            query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+            result = service.get(query).getResults();
+        } else {
+            result = Collections.emptyList();
         }
         return result;
     }
