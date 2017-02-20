@@ -156,7 +156,7 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
     private class ReminderIterator implements Iterator<ObjectSet> {
 
         /**
-         * Seen reminder identifiers.
+         * Seen reminder item identifiers.
          */
         private Set<Long> ids = new HashSet<>();
 
@@ -197,8 +197,8 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
             if (iterator != null && next == null) {
                 while (iterator.hasNext()) {
                     ObjectSet set = iterator.next();
-                    Act reminder = (Act) set.get("reminder");
-                    long id = reminder.getId();
+                    Act item = (Act) set.get("item");
+                    long id = item.getId();
                     if (!ids.contains(id)) {
                         next = set;
                         ids.add(id);

@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -106,6 +107,16 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
         this.context = context;
         addresses = new PracticeEmailAddresses(practice, "REMINDER");
         evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
+    }
+
+    /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the archetype
+     */
+    @Override
+    public String getArchetype() {
+        return ReminderArchetypes.EMAIL_REMINDER;
     }
 
     /**

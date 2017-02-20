@@ -139,32 +139,50 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
      */
     private List<ObjectSet> getNext() {
         List<ObjectSet> result;
-        Party lastCustomer = null;
         result = getNextGroup();
         if (result == null) {
+            String lastArchetype = null;
+            Party lastCustomer = null;
+            Party lastPatient = null;
             while (pushbackIterator.hasNext()) {
                 ObjectSet set = pushbackIterator.next();
-                Party customer = (Party) set.get("customer");
-                if (lastCustomer == null || customer.equals(lastCustomer)) {
-                    lastCustomer = customer;
-                    Act reminder = (Act) set.get("reminder");
-                    ActBean bean = new ActBean(reminder, service);
-                    ReminderType type = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
-                    if (type == null || type.getGroupBy() == null) {
-                        noGroup = add(noGroup, set);
-                    } else if (type.getGroupBy() == ReminderType.GroupBy.CUSTOMER) {
-                        groupByCustomer = add(groupByCustomer, set);
-                    } else {
-                        groupByPatient = add(groupByPatient, set);
+                Act item = (Act) set.get("item");
+                boolean grouped = false;
+                String archetype = item.getArchetypeId().getShortName();
+                if (lastArchetype == null || lastArchetype.equals(archetype)) {
+                    lastArchetype = archetype;
+                    Party customer = (Party) set.get("customer");
+                    if (lastCustomer == null || customer.equals(lastCustomer)) {
+                        lastCustomer = customer;
+                        Act reminder = (Act) set.get("reminder");
+                        ActBean bean = new ActBean(reminder, service);
+                        ReminderType type = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
+                        if (type == null || type.getGroupBy() == ReminderType.GroupBy.NONE) {
+                            // reminder not grouped
+                            grouped = true;
+                            noGroup = add(noGroup, set);
+                        } else if (type.getGroupBy() == ReminderType.GroupBy.CUSTOMER) {
+                            grouped = true;
+                            groupByCustomer = add(groupByCustomer, set);
+                        } else {
+                            // reminder type grouped by patient
+                            Party patient = (Party) set.get("patient");
+                            if (lastPatient == null || lastPatient.equals(patient)) {
+                                grouped = true;
+                                lastPatient = patient;
+                                groupByPatient = add(groupByPatient, set);
+                            }
+                        }
                     }
-                } else {
+                }
+                if (!grouped) {
                     // put it back in the list
                     pushbackIterator.pushback(set);
                     break;
                 }
             }
+            result = getNextGroup();
         }
-        result = getNextGroup();
         return result;
     }
 
@@ -182,8 +200,14 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
             result = groupByCustomer;
             groupByCustomer = null;
         } else if (noGroup != null) {
-            result = noGroup;
-            noGroup = null;
+            // ungrouped reminder items are returned one at a time
+            if (noGroup.size() > 1) {
+                result = new ArrayList<>();
+                result.add(noGroup.remove(0));
+            } else {
+                result = noGroup;
+                noGroup = null;
+            }
         }
         return result;
     }

@@ -201,6 +201,13 @@ public abstract class PatientReminderProcessor {
     }
 
     /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the archetype
+     */
+    public abstract String getArchetype();
+
+    /**
      * Processes reminders.
      *
      * @param state the reminder state

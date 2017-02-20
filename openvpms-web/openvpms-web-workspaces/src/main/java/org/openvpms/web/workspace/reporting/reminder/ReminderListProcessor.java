@@ -89,6 +89,16 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     }
 
     /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the archetype
+     */
+    @Override
+    public String getArchetype() {
+        return ReminderArchetypes.EXPORT_REMINDER;
+    }
+
+    /**
      * Registers a listener for printer events.
      * <p/>
      * This must be registered prior to processing any reminders.

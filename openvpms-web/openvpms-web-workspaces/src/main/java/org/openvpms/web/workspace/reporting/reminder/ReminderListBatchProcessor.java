@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.print.PrinterListener;
@@ -27,8 +26,7 @@ import java.util.List;
 
 
 /**
- * Processor for {@link ReminderEvent.Action#PHONE} and {@link ReminderEvent.Action#LIST} events.
- * Prints all of the reminders to a report.
+ * Lists reminders for printing.
  *
  * @author Tim Anderson
  */
@@ -71,6 +69,16 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
                 notifyError(cause);
             }
         });
+    }
+
+    /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the reminder item archetype
+     */
+    @Override
+    public String getArchetype() {
+        return processor.getArchetype();
     }
 
     /**
