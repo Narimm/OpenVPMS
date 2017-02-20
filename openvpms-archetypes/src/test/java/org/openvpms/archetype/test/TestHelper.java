@@ -318,9 +318,20 @@ public class TestHelper {
      * @return a new patient
      */
     public static Party createPatient(boolean save) {
+        return createPatient("XPatient-" + nextId(), save);
+    }
+
+    /**
+     * Creates a new patient, with species='CANINE'.
+     *
+     * @param name the patient name
+     * @param save if {@code true} make the patient persistent
+     * @return a new patient
+     */
+    public static Party createPatient(String name, boolean save) {
         Party patient = (Party) create(PatientArchetypes.PATIENT);
         EntityBean bean = new EntityBean(patient);
-        bean.setValue("name", "XPatient-" + nextId());
+        bean.setValue("name", name);
         bean.setValue("species", "CANINE");
         bean.setValue("deceased", false);
         if (save) {
@@ -347,7 +358,19 @@ public class TestHelper {
      * @return a new patient
      */
     public static Party createPatient(Party owner, boolean save) {
-        Party patient = createPatient(save);
+        return createPatient("XPatient-" + nextId(), owner, save);
+    }
+
+    /**
+     * Creates a new patient, owned by the specified customer.
+     *
+     * @param name  the patient name
+     * @param owner the patient owner
+     * @param save  if {@code true}, make the patient persistent
+     * @return a new patient
+     */
+    public static Party createPatient(String name, Party owner, boolean save) {
+        Party patient = createPatient(name, save);
         PatientRules rules = new PatientRules(null, ArchetypeServiceHelper.getArchetypeService(), null, null);
         rules.addPatientOwnerRelationship(owner, patient);
         if (save) {

@@ -31,17 +31,29 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Default implementation of the {@link ReminderItemSource}.
+ * A {@link ReminderItemSource} that uses an {@link ReminderItemQueryFactory}.
  *
  * @author Tim Anderson
  */
-public class DefaultReminderItemSource implements ReminderItemSource {
+public class ReminderItemQuerySource implements ReminderItemSource {
 
+    /**
+     * The query factory.
+     */
     private final ReminderItemQueryFactory factory;
 
+    /**
+     * The reminder types.
+     */
     private final ReminderTypes reminderTypes;
 
-    public DefaultReminderItemSource(ReminderItemQueryFactory factory, ReminderTypes reminderTypes) {
+    /**
+     * Constructs a {@link ReminderItemQuerySource}.
+     *
+     * @param factory       the query factory
+     * @param reminderTypes the reminder types
+     */
+    public ReminderItemQuerySource(ReminderItemQueryFactory factory, ReminderTypes reminderTypes) {
         this.factory = factory;
         this.reminderTypes = reminderTypes;
     }

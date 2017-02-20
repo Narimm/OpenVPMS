@@ -21,6 +21,8 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
@@ -37,6 +39,11 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * An editor for {@link Act}s which have an archetype of <em>act.patientReminder</em>.
@@ -205,7 +212,7 @@ public class ReminderEditor extends PatientActEditor {
         }
 
         // propagate the next due date to each of the reminder items with the same reminder count.
-        ActRelationshipCollectionEditor items = (ActRelationshipCollectionEditor) getEditor("items", false);
+        ActRelationshipCollectionEditor items = getItems();
         if (items != null) {
             start = getStartTime();
             int count = getReminderCount();
@@ -228,7 +235,6 @@ public class ReminderEditor extends PatientActEditor {
      */
     @Override
     protected void onEndTimeChanged() {
-        Date start = getStartTime();
         Date end = getEndTime();
         if (end != null || getReminderCount() == 0) {
             setStartTime(end, true);
@@ -250,6 +256,60 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
+     * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that the start time is less than the end time, if non-null.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid = super.doValidation(validator);
+        if (valid) {
+            valid = validateItems(validator);
+        }
+        return valid;
+    }
+
+    /**
+     * Ensures that reminder item counts aren't duplicated.
+     *
+     * @param validator the validator
+     * @return {@code true} if the items are valid
+     */
+    private boolean validateItems(Validator validator) {
+        boolean valid = true;
+        ActRelationshipCollectionEditor items = getItems();
+        if (items != null) {
+            List<Act> acts = items.getCurrentActs();
+            if (acts.size() > 1) {
+                Map<Integer, Set<String>> map = new HashMap<>();
+                for (Act act : acts) {
+                    ActBean bean = new ActBean(act);
+                    int count = bean.getInt("count");
+                    Set<String> set = map.get(count);
+                    if (set == null) {
+                        set = new HashSet<>();
+                        map.put(count, set);
+                    }
+                    String archetype = act.getArchetypeId().getShortName();
+                    if (set.contains(archetype)) {
+                        String message = Messages.format("patient.reminder.duplicateItem",
+                                                         DescriptorHelper.getDisplayName(archetype), count);
+                        validator.add(this, new ValidatorError(message));
+                        valid = false;
+                        break;
+                    } else {
+                        set.add(archetype);
+                    }
+                }
+            }
+        }
+        return valid;
+    }
+
+    /**
      * Updates the Due Date based on the reminderType reminder interval.
      */
     private void onReminderTypeChanged() {
@@ -264,6 +324,15 @@ public class ReminderEditor extends PatientActEditor {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Returns the reminder items.
+     *
+     * @return the reminder items, or {@code null} if they haven't been created yet
+     */
+    private ActRelationshipCollectionEditor getItems() {
+        return (ActRelationshipCollectionEditor) getEditor("items", false);
     }
 
 }

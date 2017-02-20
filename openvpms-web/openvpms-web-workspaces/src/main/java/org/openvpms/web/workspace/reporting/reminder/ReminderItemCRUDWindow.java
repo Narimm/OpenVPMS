@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.PagedReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
@@ -45,7 +44,6 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -300,10 +298,10 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
         String title = Messages.get("reporting.reminder.run.title");
         String message = Messages.get("reporting.reminder.run.message");
         HelpContext help = getHelpContext().subtopic("confirmsend");
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
-            public void onOK() {
+            public void onYes() {
                 generateReminders();
             }
         });
@@ -316,9 +314,9 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private void onComplete() {
         ConfirmationDialog.show(Messages.get("reporting.reminder.complete.title"),
                                 Messages.get("reporting.reminder.complete.message"),
-                                ConfirmationDialog.YES_NO, new WindowPaneListener() {
+                                ConfirmationDialog.YES_NO, new PopupDialogListener() {
                     @Override
-                    public void onClose(WindowPaneEvent event) {
+                    public void onYes() {
                         onCompleteConfirmed();
                     }
                 });
@@ -349,9 +347,9 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private void onCompleteAll() {
         ConfirmationDialog.show(Messages.get("reporting.reminder.completeall.title"),
                                 Messages.get("reporting.reminder.completeall.message"),
-                                ConfirmationDialog.YES_NO, new WindowPaneListener() {
+                                ConfirmationDialog.YES_NO, new PopupDialogListener() {
                     @Override
-                    public void onClose(WindowPaneEvent event) {
+                    public void onYes() {
                         onCompleteAllConfirmed();
                     }
                 });

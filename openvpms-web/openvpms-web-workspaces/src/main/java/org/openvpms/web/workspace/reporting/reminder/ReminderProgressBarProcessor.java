@@ -97,6 +97,16 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     }
 
     /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the reminder item archetype
+     */
+    @Override
+    public String getArchetype() {
+        return processor.getArchetype();
+    }
+
+    /**
      * Determines if reminders should be updated on completion.
      * <p/>
      * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.

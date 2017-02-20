@@ -46,6 +46,16 @@ public class ReminderExportBatchProcessor extends AbstractReminderBatchProcessor
     }
 
     /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the reminder item archetype
+     */
+    @Override
+    public String getArchetype() {
+        return processor.getArchetype();
+    }
+
+    /**
      * The processor title.
      *
      * @return the processor title

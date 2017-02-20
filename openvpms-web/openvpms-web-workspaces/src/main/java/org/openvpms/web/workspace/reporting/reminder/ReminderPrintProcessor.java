@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
@@ -111,6 +112,16 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
     }
 
     /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the archetype
+     */
+    @Override
+    public String getArchetype() {
+        return ReminderArchetypes.PRINT_REMINDER;
+    }
+
+    /**
      * Registers a listener for printer events.
      * <p/>
      * This must be registered prior to processing any reminders.
@@ -120,7 +131,6 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
     public void setListener(PrinterListener listener) {
         this.listener = listener;
     }
-
 
     /**
      * Determines if reminder processing is performed asynchronously.

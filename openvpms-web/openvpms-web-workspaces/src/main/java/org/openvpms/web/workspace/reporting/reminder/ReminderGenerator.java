@@ -16,10 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
@@ -42,26 +38,11 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailerFactory;
-import org.openvpms.web.component.processor.BatchProcessorTask;
-import org.openvpms.web.component.processor.ProgressBarProcessor;
-import org.openvpms.web.component.workflow.DefaultTaskListener;
-import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.WorkflowImpl;
-import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
-import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.GridFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
@@ -131,11 +112,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private final HelpContext help;
 
     /**
-     * Determines if reminders can be sent via SMS.
-     */
-    private final boolean sms;
-
-    /**
      * The mailer factory.
      */
     private MailerFactory factory;
@@ -193,7 +169,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         for (String shortName : DescriptorHelper.getShortNames(factory.getShortNames())) {
             ReminderItemQueryFactory clone = new ReminderItemQueryFactory(shortName, factory.getStatuses(),
                                                                           factory.getFrom(), factory.getTo());
-            ReminderBatchProcessor processor = createBatchProcessor(new DefaultReminderItemSource(clone, reminderTypes));
+            ReminderBatchProcessor processor = createBatchProcessor(new ReminderItemQuerySource(clone, reminderTypes));
             processors.add(processor);
         }
     }
@@ -221,13 +197,10 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         if (groupTemplate == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
         }
-        sms = groupTemplate.getSMSTemplate() != null && SMSHelper.isSMSEnabled(context.getPractice());
-
         if (CommunicationHelper.isLoggingEnabled(practice)) {
             logger = ServiceHelper.getBean(CommunicationLogger.class);
         }
         reminderTypes = new ReminderTypes(service);
-
     }
 
     /**
@@ -236,8 +209,14 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     public void process() {
         if (!processors.isEmpty()) {
             if (popup) {
-                GenerationDialog dialog = new GenerationDialog(help);
+                ReminderGenerationDialog dialog = new ReminderGenerationDialog(processors, statistics, help);
                 dialog.show();
+                dialog.addWindowPaneListener(new WindowPaneListener() {
+                    @Override
+                    public void onClose(WindowPaneEvent event) {
+                        onCompletion();
+                    }
+                });
             } else {
                 // only processing a single reminder
                 for (BatchProcessor processor : processors) {
@@ -415,8 +394,8 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected ReminderSMSProcessor createSMSProcessor(DocumentTemplate groupTemplate) {
         ReminderSMSEvaluator evaluator = ServiceHelper.getBean(ReminderSMSEvaluator.class);
-        return new ReminderSMSProcessor(getConnectionFactory(), evaluator, groupTemplate, reminderTypes, rules, practice,
-                                        service, config, logger);
+        return new ReminderSMSProcessor(getConnectionFactory(), evaluator, groupTemplate, reminderTypes, rules,
+                                        practice, service, config, logger);
     }
 
     /**
@@ -456,14 +435,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected ReminderListProcessor createListProcessor() {
         return new ReminderListProcessor(reminderTypes, rules, practice, service, config, logger, context, help);
-    }
-
-    /**
-     * Displays reminder generation statistics.
-     */
-    private void showStatistics() {
-        SummaryDialog dialog = new SummaryDialog(statistics);
-        dialog.show();
     }
 
     /**
@@ -511,6 +482,12 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         return new ReminderConfiguration(config, service);
     }
 
+    /**
+     * Creates a batch processor.
+     *
+     * @param query the source query
+     * @return a new batch processor, or {@code null} if support for the query is disabled
+     */
     protected ReminderBatchProcessor createBatchProcessor(ReminderItemSource query) {
         ReminderBatchProcessor result;
         String[] shortNames = query.getShortNames();
@@ -526,230 +503,13 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         } else if (TypeHelper.matches(shortName, ReminderArchetypes.EXPORT_REMINDER)) {
             result = createExportProcessor(query);
         } else if (TypeHelper.matches(shortName, ReminderArchetypes.SMS_REMINDER)) {
-            if (sms) {
-                result = createBatchSMSProcessor(query);
-            } else {
-                result = createListProcessor(query);
-            }
+            result = createBatchSMSProcessor(query);
         } else if (TypeHelper.matches(shortName, ReminderArchetypes.LIST_REMINDER)) {
             result = createListProcessor(query);
         } else {
             throw new IllegalArgumentException("Unsupported archetype : " + shortName);
         }
         return result;
-    }
-
-    private class GenerationDialog extends PopupDialog {
-
-        /**
-         * The workflow.
-         */
-        private WorkflowImpl workflow;
-
-        /**
-         * The restart buttons.
-         */
-        private List<Button> restartButtons = new ArrayList<>();
-
-        /**
-         * The ok button.
-         */
-        private final Button ok;
-
-        /**
-         * The cancel button.
-         */
-        private final Button cancel;
-
-
-        /**
-         * Constructs a {@code GenerationDialog}.
-         */
-        public GenerationDialog(HelpContext help) {
-            super(Messages.get("reporting.reminder.run.title"), OK_CANCEL, help);
-            setModal(true);
-            workflow = new WorkflowImpl(help);
-            workflow.setBreakOnCancel(false);
-            Grid grid = GridFactory.create(3);
-            for (ReminderBatchProcessor processor : processors) {
-                BatchProcessorTask task = new BatchProcessorTask(processor);
-                task.setTerminateOnError(false);
-                workflow.addTask(task);
-                Label title = LabelFactory.create();
-                title.setText(processor.getTitle());
-                grid.add(title);
-                grid.add(processor.getComponent());
-                if (processor instanceof ReminderListProcessor
-                    || processor instanceof ReminderPrintProgressBarProcessor) {
-                    Button button = addReprintButton(processor);
-                    grid.add(button);
-                } else if (processor instanceof ReminderExportProcessor) {
-                    Button button = addExportButton(processor);
-                    grid.add(button);
-                } else {
-                    grid.add(LabelFactory.create());
-                }
-            }
-            getLayout().add(ColumnFactory.create(Styles.INSET, grid));
-            workflow.addTaskListener(new DefaultTaskListener() {
-                public void taskEvent(TaskEvent event) {
-                    onGenerationComplete();
-                }
-            });
-            ButtonSet buttons = getButtons();
-            ok = buttons.getButton(OK_ID);
-            cancel = getButtons().getButton(CANCEL_ID);
-
-            // disable OK, restart buttons
-            enableButtons(false);
-        }
-
-        /**
-         * Shows the dialog, and starts the reminder generation workflow.
-         */
-        public void show() {
-            super.show();
-            workflow.start();
-        }
-
-        /**
-         * Invoked when the 'OK' button is pressed. Closes the dialog and invokes
-         * {@link ReminderGenerator#onCompletion()}.
-         */
-        @Override
-        protected void onOK() {
-            super.onOK();
-            onCompletion();
-        }
-
-        /**
-         * Invoked when the 'cancel' button is pressed. This prompts for confirmation.
-         */
-        @Override
-        protected void onCancel() {
-            String title = Messages.get("reporting.reminder.run.cancel.title");
-            String msg = Messages.get("reporting.reminder.run.cancel.message");
-            final ConfirmationDialog dialog = new ConfirmationDialog(title, msg);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void onClose(WindowPaneEvent e) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        workflow.cancel();
-                        GenerationDialog.this.close(CANCEL_ID);
-                    } else {
-                        ReminderBatchProcessor processor = getCurrent();
-                        if (processor instanceof ProgressBarProcessor) {
-                            processor.process();
-                        }
-                    }
-                }
-            });
-            ReminderBatchProcessor processor = getCurrent();
-            if (processor instanceof ProgressBarProcessor) {
-                ((ProgressBarProcessor) processor).setSuspend(true);
-            }
-            dialog.show();
-        }
-
-
-        /**
-         * Adds a button to restart a processor to reprint reminders.
-         *
-         * @param processor the processor
-         * @return a new button
-         */
-        private Button addReprintButton(final ReminderBatchProcessor processor) {
-            Button button = ButtonFactory.create("reprint", new ActionListener() {
-                public void onAction(ActionEvent e) {
-                    restart(processor);
-                }
-            });
-            restartButtons.add(button);
-            return button;
-        }
-
-        /**
-         * Adds a button to restart a processor to export reminders.
-         *
-         * @param processor the processor
-         * @return a new button
-         */
-        private Button addExportButton(final ReminderBatchProcessor processor) {
-            Button button = ButtonFactory.create("button.reexport", new ActionListener() {
-                public void onAction(ActionEvent e) {
-                    restart(processor);
-                }
-            });
-            restartButtons.add(button);
-            return button;
-        }
-
-        /**
-         * Returns the current batch processor.
-         *
-         * @return the current batch processor, or {@code null} if there
-         * is none
-         */
-        private ReminderBatchProcessor getCurrent() {
-            BatchProcessorTask task = (BatchProcessorTask) workflow.getCurrent();
-            if (task != null) {
-                return (ReminderBatchProcessor) task.getProcessor();
-            }
-            return null;
-        }
-
-        /**
-         * Invoked when generation is complete.
-         * Displays statistics, and enables the reprint and OK buttons.
-         */
-        private void onGenerationComplete() {
-            showStatistics();
-            enableButtons(true);
-        }
-
-        /**
-         * Restarts a batch processor.
-         *
-         * @param processor the processor to restart
-         */
-        private void restart(ReminderBatchProcessor processor) {
-            enableButtons(false);
-            statistics.clear();
-            processor.restart();
-            workflow = new WorkflowImpl(help);
-            BatchProcessorTask task = new BatchProcessorTask(processor);
-            task.setTerminateOnError(false);
-            workflow.addTask(task);
-            workflow.addTaskListener(new DefaultTaskListener() {
-                public void taskEvent(TaskEvent event) {
-                    if (TaskEvent.Type.COMPLETED.equals(event.getType())) {
-                        showStatistics();
-                    }
-                    enableButtons(true);
-                }
-            });
-            workflow.start();
-        }
-
-        /**
-         * Enables/disables restart buttons and OK/Cancel buttons.
-         * <p/>
-         * When the restart buttons are enabled, the OK button is present. When the buttons are disabled,
-         * the cancel button is present.
-         *
-         * @param enable if {@code true} enable the buttons; otherwise disable them
-         */
-        private void enableButtons(boolean enable) {
-            for (Button button : restartButtons) {
-                button.setEnabled(enable);
-            }
-            ButtonSet buttons = getButtons();
-            buttons.removeAll();
-            if (enable) {
-                buttons.add(ok);
-            } else {
-                buttons.add(cancel);
-            }
-        }
     }
 
 }

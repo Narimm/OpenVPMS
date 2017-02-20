@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.party.SMSMatcher;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
@@ -42,6 +43,7 @@ import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
+import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSDisabled;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSMessageEmpty;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSMessageTooLong;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.TemplateMissingSMSText;
@@ -65,6 +67,11 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     private final ReminderSMSEvaluator evaluator;
 
     /**
+     * Determines if SMS enabled. If not, any reminder will have an error logged against it.
+     */
+    private final boolean smsEnabled;
+
+    /**
      * Constructs a {@link ReminderSMSProcessor}.
      *
      * @param factory       the SMS connection factory
@@ -84,6 +91,17 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
         super(groupTemplate, reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
         this.evaluator = evaluator;
+        smsEnabled = SMSHelper.isSMSEnabled(practice);
+    }
+
+    /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the archetype
+     */
+    @Override
+    public String getArchetype() {
+        return ReminderArchetypes.SMS_REMINDER;
     }
 
     /**
@@ -175,6 +193,19 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     @Override
     protected ContactMatcher createContactMatcher() {
         return new SMSMatcher(CONTACT_PURPOSE, false, getService());
+    }
+
+    /**
+     * Processes reminders.
+     *
+     * @param state the reminder state
+     */
+    @Override
+    public void process(State state) {
+        if (!smsEnabled) {
+            throw new ReportingException(SMSDisabled);
+        }
+        super.process(state);
     }
 
     /**

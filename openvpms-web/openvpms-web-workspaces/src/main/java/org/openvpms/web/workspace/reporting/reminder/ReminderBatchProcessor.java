@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.reporting.reminder;
 
@@ -24,6 +24,13 @@ import org.openvpms.web.component.processor.BatchProcessorComponent;
  * @author Tim Anderson
  */
 public interface ReminderBatchProcessor extends BatchProcessorComponent {
+
+    /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the reminder item archetype
+     */
+    String getArchetype();
 
     /**
      * Determines if reminders should be updated on completion.

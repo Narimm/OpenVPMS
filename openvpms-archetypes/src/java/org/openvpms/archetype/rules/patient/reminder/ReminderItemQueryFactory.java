@@ -249,10 +249,11 @@ public class ReminderItemQueryFactory {
         query.add(join("reminder", "r").add(reminder));
         query.add(sort("customer", "name"));
         query.add(sort("customer", "id"));
+        query.add(new ArchetypeSortConstraint(true));
         query.add(sort("patient", "name"));
+        query.add(sort("patient", "id"));
         query.add(sort("item", "startTime"));
         query.add(sort("item", "id"));
-        query.add(new ArchetypeSortConstraint(true));
         return query;
     }
 

@@ -39,6 +39,7 @@ public class ReportingException extends OpenVPMSException {
         SMSMessageEmpty,
         SMSMessageTooLong,
         SMSEvaluationFailed,
+        SMSDisabled,
         FailedToProcessReminder,
         ReminderMissingDocTemplate,
         NoGroupedReminderTemplate,

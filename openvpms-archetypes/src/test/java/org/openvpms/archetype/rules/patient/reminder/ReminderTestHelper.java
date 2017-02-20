@@ -324,66 +324,66 @@ public class ReminderTestHelper extends TestHelper {
     /**
      * Creates an email reminder item.
      *
-     * @param processBy the process by date
-     * @param dueDate   the due date
-     * @param status    the status
-     * @param count     the reminder count
+     * @param send    the send date
+     * @param dueDate the due date
+     * @param status  the status
+     * @param count   the reminder count
      * @return a new email reminder item
      */
-    public static Act createEmailReminder(Date processBy, Date dueDate, String status, int count) {
-        return createReminderItem(ReminderArchetypes.EMAIL_REMINDER, processBy, dueDate, status, count);
+    public static Act createEmailReminder(Date send, Date dueDate, String status, int count) {
+        return createReminderItem(ReminderArchetypes.EMAIL_REMINDER, send, dueDate, status, count);
     }
 
     /**
      * Creates an SMS reminder item.
      *
-     * @param processBy the process by date
-     * @param dueDate   the due date
-     * @param status    the status
-     * @param count     the reminder count
+     * @param send    the send date
+     * @param dueDate the due date
+     * @param status  the status
+     * @param count   the reminder count
      * @return a new SMS reminder item
      */
-    public static Act createSMSReminder(Date processBy, Date dueDate, String status, int count) {
-        return createReminderItem(ReminderArchetypes.SMS_REMINDER, processBy, dueDate, status, count);
+    public static Act createSMSReminder(Date send, Date dueDate, String status, int count) {
+        return createReminderItem(ReminderArchetypes.SMS_REMINDER, send, dueDate, status, count);
     }
 
     /**
      * Creates a print reminder item.
      *
-     * @param processBy the process by date
-     * @param dueDate   the due date
-     * @param status    the status
-     * @param count     the reminder count
+     * @param send    the send date
+     * @param dueDate the due date
+     * @param status  the status
+     * @param count   the reminder count
      * @return a new print reminder item
      */
-    public static Act createPrintReminder(Date processBy, Date dueDate, String status, int count) {
-        return createReminderItem(ReminderArchetypes.PRINT_REMINDER, processBy, dueDate, status, count);
+    public static Act createPrintReminder(Date send, Date dueDate, String status, int count) {
+        return createReminderItem(ReminderArchetypes.PRINT_REMINDER, send, dueDate, status, count);
     }
 
     /**
      * Creates an export reminder item.
      *
-     * @param processBy the process by date
-     * @param dueDate   the due date
-     * @param status    the status
-     * @param count     the reminder count
+     * @param send    the send date
+     * @param dueDate the due date
+     * @param status  the status
+     * @param count   the reminder count
      * @return a new export reminder item
      */
-    public static Act createExportReminder(Date processBy, Date dueDate, String status, int count) {
-        return createReminderItem(ReminderArchetypes.EXPORT_REMINDER, processBy, dueDate, status, count);
+    public static Act createExportReminder(Date send, Date dueDate, String status, int count) {
+        return createReminderItem(ReminderArchetypes.EXPORT_REMINDER, send, dueDate, status, count);
     }
 
     /**
      * Creates a list reminder item.
      *
-     * @param processBy the process by date
-     * @param dueDate   the due date
-     * @param status    the status
-     * @param count     the reminder count
+     * @param send    the send date
+     * @param dueDate the due date
+     * @param status  the status
+     * @param count   the reminder count
      * @return a new list reminder item
      */
-    public static Act createListReminder(Date processBy, Date dueDate, String status, int count) {
-        return createReminderItem(ReminderArchetypes.LIST_REMINDER, processBy, dueDate, status, count);
+    public static Act createListReminder(Date send, Date dueDate, String status, int count) {
+        return createReminderItem(ReminderArchetypes.LIST_REMINDER, send, dueDate, status, count);
     }
 
     /**
@@ -551,15 +551,15 @@ public class ReminderTestHelper extends TestHelper {
      * Creates a reminder item.
      *
      * @param shortName the reminder item short name
-     * @param processBy the process by date
+     * @param send      the send date
      * @param dueDate   the due date
      * @param status    the status
      * @param count     the reminder count
      * @return a new list reminder item
      */
-    private static Act createReminderItem(String shortName, Date processBy, Date dueDate, String status, int count) {
+    private static Act createReminderItem(String shortName, Date send, Date dueDate, String status, int count) {
         Act act = (Act) create(shortName);
-        act.setActivityStartTime(processBy);
+        act.setActivityStartTime(send);
         act.setActivityEndTime(dueDate);
         act.setStatus(status);
         ActBean bean = new ActBean(act);
