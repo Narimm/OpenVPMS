@@ -38,7 +38,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
@@ -107,7 +106,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     private final ReminderSMSEvaluator evaluator;
 
     /**
-     * The communication loggger.
+     * The communication logger.
      */
     private final CommunicationLogger communicationLogger;
 
@@ -115,7 +114,6 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * Used to send messages to users on completion or failure.
      */
     private final JobCompletionNotifier notifier;
-
 
     /**
      * Determines if sending should stop.
@@ -182,14 +180,12 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
             if (groupTemplate == null) {
                 throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
             }
-            boolean sms = groupTemplate.getSMSTemplate() != null && SMSHelper.isSMSEnabled(practice);
-
             CommunicationLogger logger = (CommunicationHelper.isLoggingEnabled(practiceService.getPractice()))
                                          ? communicationLogger : null;
             ReminderTypes reminderTypes = new ReminderTypes(service);
             ReminderConfiguration config = getReminderConfig(practice);
             total = sendEmailReminders(groupTemplate, reminderTypes, practice, config, logger);
-            if (sms && !stop) {
+            if (!stop) {
                 Stats stats = sendSMSReminders(groupTemplate, reminderTypes, practice, config, logger);
                 total = total.add(stats);
             }

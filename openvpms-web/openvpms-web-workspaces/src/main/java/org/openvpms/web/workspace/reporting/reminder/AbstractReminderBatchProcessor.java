@@ -20,19 +20,12 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
-import org.openvpms.archetype.rules.patient.reminder.ReminderType;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Abstract implementation of the {@link ReminderBatchProcessor} interface.
@@ -45,11 +38,6 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      * The reminders.
      */
     private final List<ObjectSet> reminders;
-
-    /**
-     * The reminder types.
-     */
-    private final ReminderTypes reminderTypes;
 
     /**
      * The statistics.
@@ -67,21 +55,13 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     private boolean update = true;
 
     /**
-     * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
-     */
-    private Set<IMObjectReference> completed = new HashSet<>();
-
-    /**
      * Constructs an {@link AbstractReminderBatchProcessor}.
      *
-     * @param query         the query
-     * @param reminderTypes the reminder types
-     * @param statistics    the statistics
+     * @param query      the query
+     * @param statistics the statistics
      */
-    public AbstractReminderBatchProcessor(ReminderItemSource query, ReminderTypes reminderTypes,
-                                          Statistics statistics) {
+    public AbstractReminderBatchProcessor(ReminderItemSource query, Statistics statistics) {
         reminders = query.all();
-        this.reminderTypes = reminderTypes;
         this.statistics = statistics;
         row = RowFactory.create();
     }
@@ -128,42 +108,14 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
-     * Updates reminders.
-     */
-    protected void updateReminders() {
-        setProcessed(reminders.size());
-        Date date = new Date();
-        for (ObjectSet set : reminders) {
-            Act item = (Act) set.get("item");
-            Act reminder = (Act) set.get("reminder");
-            ActBean bean = new ActBean(reminder);
-            ReminderType reminderType = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
-            IMObjectReference ref = item.getObjectReference();
-            if (update && !completed.contains(ref)) {
-                if (updateReminder(reminder, item, date)) {
-                    if (reminderType != null) {
-                        statistics.increment(set);
-                    }
-                    completed.add(ref);
-                } else {
-                    statistics.incErrors();
-                }
-            } else {
-                statistics.increment(set);
-            }
-        }
-    }
-
-    /**
-     * Updates a reminder and reminder item.
+     * Updates the progress bar with the count of processed reminders and calculates statistics.
      *
-     * @param reminder the reminder
-     * @param item     the reminder item
-     * @param date     the last-sent date
-     * @return {@code true} if the reminder was updated
+     * @param processor the processor
+     * @param state     the processed reminders
      */
-    protected boolean updateReminder(Act reminder, Act item, Date date) {
-        return ReminderHelper.update(reminder, date);
+    protected void updateReminders(PatientReminderProcessor processor, PatientReminderProcessor.State state) {
+        setProcessed(reminders.size());
+        processor.addStatistics(state, statistics);
     }
 
     /**

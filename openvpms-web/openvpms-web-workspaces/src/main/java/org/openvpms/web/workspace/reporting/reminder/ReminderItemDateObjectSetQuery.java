@@ -31,7 +31,6 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
 
 import java.util.Date;
 
@@ -94,7 +93,8 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
         super.doLayout(container);
         Label label = LabelFactory.create();
         label.setText(date.getDisplayName());
-        container.add(RowFactory.create(BoundDateFieldFactory.create(date)));
+        container.add(label);
+        container.add(BoundDateFieldFactory.create(date));
     }
 
     /**

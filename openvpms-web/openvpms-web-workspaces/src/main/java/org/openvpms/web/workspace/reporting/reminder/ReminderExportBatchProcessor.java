@@ -41,7 +41,7 @@ public class ReminderExportBatchProcessor extends AbstractReminderBatchProcessor
      */
     public ReminderExportBatchProcessor(ReminderItemSource query, ReminderExportProcessor processor,
                                         Statistics statistics) {
-        super(query, processor.getReminderTypes(), statistics);
+        super(query, statistics);
         this.processor = processor;
     }
 
@@ -73,7 +73,7 @@ public class ReminderExportBatchProcessor extends AbstractReminderBatchProcessor
             try {
                 PatientReminderProcessor.State state = processor.prepare(reminders, new Date());
                 processor.process(state);
-                updateReminders();
+                updateReminders(processor, state);
                 notifyCompleted();
             } catch (OpenVPMSException exception) {
                 notifyError(exception);

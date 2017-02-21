@@ -96,7 +96,7 @@ class PendingReminderItemBrowser extends ReminderItemBrowser {
                         label.setText(Messages.format("reporting.reminder.send.notscheduled",
                                                       configuration.getName()));
                     } else {
-                        label.setText(Messages.format("reporting.reminder.send.scheduled", configuration.getName(),
+                        label.setText(Messages.format("reporting.reminder.send.scheduled",
                                                       DateFormatter.formatDateTime(date, false)));
 
                     }

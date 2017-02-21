@@ -38,6 +38,11 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
     private final ReminderListProcessor processor;
 
     /**
+     * The reminders currently being processed.
+     */
+    private PatientReminderProcessor.State state;
+
+    /**
      * Constructs an {@link ReminderListBatchProcessor}.
      *
      * @param query      the query
@@ -45,7 +50,7 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
      * @param statistics the statistics
      */
     public ReminderListBatchProcessor(ReminderItemSource query, ReminderListProcessor processor, Statistics statistics) {
-        super(query, processor.getReminderTypes(), statistics);
+        super(query, statistics);
         this.processor = processor;
         processor.setListener(new PrinterListener() {
             public void printed(String printer) {
@@ -95,11 +100,17 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
      */
     public void process() {
         setStatus(Messages.get("reporting.reminder.list.status.begin"));
+        state = null;
         List<ObjectSet> reminders = getReminders();
         if (!reminders.isEmpty()) {
             try {
-                PatientReminderProcessor.State state = processor.prepare(reminders, new Date());
-                processor.process(state);
+                state = processor.prepare(reminders, new Date());
+                if (!state.getReminders().isEmpty()) {
+                    processor.process(state);
+                } else {
+                    updateReminders();
+                    notifyCompleted();
+                }
             } catch (OpenVPMSException exception) {
                 notifyError(exception);
             }
@@ -113,6 +124,15 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
      */
     public void restart() {
         // no-op
+    }
+
+    /**
+     * Updates reminders.
+     */
+    protected void updateReminders() {
+        if (state != null) {
+            updateReminders(processor, state);
+        }
     }
 
     /**

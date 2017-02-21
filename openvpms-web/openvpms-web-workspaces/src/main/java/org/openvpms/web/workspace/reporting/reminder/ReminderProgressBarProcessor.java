@@ -176,7 +176,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
             if (update) {
                 processor.complete(currentState);
             }
-            updateStatistics(currentState.getReminders());
+            processor.addStatistics(currentState, statistics);
             super.processCompleted(currentReminders);
         } else {
             log.error("ReminderProgressBarProcess.processCompleted() invoked with no current reminders");
@@ -241,17 +241,6 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
      */
     protected ReminderRules getRules() {
         return rules;
-    }
-
-    /**
-     * Updates statistics for a set of reminders.
-     *
-     * @param reminders the reminders
-     */
-    private void updateStatistics(List<ObjectSet> reminders) {
-        for (ObjectSet set : reminders) {
-            statistics.increment(set);
-        }
     }
 
     private static class LastSentCount {

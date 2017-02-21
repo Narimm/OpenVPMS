@@ -46,6 +46,7 @@ class SummaryDialog extends PopupDialog {
 
         Grid grid = GridFactory.create(2);
         add(grid, Messages.get("reporting.reminder.summary.cancel"), stats.getCancelled());
+        add(grid, Messages.get("reporting.reminder.summary.errors"), stats.getErrors());
 
         String[] shortNames = {ReminderArchetypes.EMAIL_REMINDER, ReminderArchetypes.SMS_REMINDER,
                                ReminderArchetypes.PRINT_REMINDER, ReminderArchetypes.LIST_REMINDER,
@@ -60,9 +61,6 @@ class SummaryDialog extends PopupDialog {
         add(grid, ReminderArchetypes.SMS_REMINDER, "sms", stats);
         add(grid, ReminderArchetypes.LIST_REMINDER, "list", stats);
         add(grid, ReminderArchetypes.EXPORT_REMINDER, "export", stats);
-
-        String errors = Messages.get("reporting.reminder.summary.errors");
-        add(grid, errors, stats.getErrors());
 
         getLayout().add(ColumnFactory.create(Styles.INSET, grid));
     }
