@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -51,15 +52,16 @@ public class Statistics {
     /**
      * Increments the count for a reminder.
      *
-     * @param reminder the reminder
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
      */
-    public void increment(ObjectSet reminder) {
-        Entity reminderType = (Entity) reminder.get("reminderType");
+    public void increment(ObjectSet reminder, ReminderType reminderType) {
         Act item = (Act) reminder.get("item");
-        Map<String, Integer> stats = statistics.get(reminderType);
+        Entity entity = reminderType.getEntity();
+        Map<String, Integer> stats = statistics.get(entity);
         if (stats == null) {
             stats = new HashMap<>();
-            statistics.put(reminderType, stats);
+            statistics.put(entity, stats);
         }
         String shortName = item.getArchetypeId().getShortName();
         Integer count = stats.get(shortName);
@@ -69,7 +71,6 @@ public class Statistics {
             stats.put(shortName, count + 1);
         }
     }
-
 
     /**
      * Returns the count for a reminder item.
@@ -131,7 +132,34 @@ public class Statistics {
      * Increments the error count.
      */
     public void incErrors() {
-        ++errors;
+        addErrors(1);
+    }
+
+    /**
+     * Adds errors.
+     *
+     * @param errors the no. of errors
+     */
+    public void addErrors(int errors) {
+        this.errors += errors;
+    }
+
+    /**
+     * Returns the no. of cancelled reminder items.
+     *
+     * @return the no. of cancelled reminder items
+     */
+    public int getCancelled() {
+        return cancelled;
+    }
+
+    /**
+     * Adds to the no. of cancelled reminder items.
+     *
+     * @param cancelled the no. of cancelled reminder items
+     */
+    public void addCancelled(int cancelled) {
+        this.cancelled += cancelled;
     }
 
     /**
@@ -140,9 +168,5 @@ public class Statistics {
     public void clear() {
         statistics.clear();
         errors = 0;
-    }
-
-    public int getCancelled() {
-        return cancelled;
     }
 }

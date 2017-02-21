@@ -69,6 +69,7 @@ class ErrorReminderItemCRUDWindow extends ReminderItemCRUDWindow {
      * @param buttons the button set
      */
     protected void layoutButtons(ButtonSet buttons) {
+        buttons.add(createEditButton());
         buttons.add(RESOLVE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onResolve();
@@ -79,6 +80,8 @@ class ErrorReminderItemCRUDWindow extends ReminderItemCRUDWindow {
                 onResolveAll();
             }
         });
+        buttons.add(createCompleteButton());
+        buttons.add(createCompleteAllButton());
     }
 
     /**

@@ -37,7 +37,7 @@ class ReminderSMSProgressBarProcessor extends ReminderProgressBarProcessor {
     public ReminderSMSProgressBarProcessor(ReminderItemSource query, ReminderSMSProcessor processor,
                                            Statistics statistics) {
         super(processor, statistics, Messages.get("reporting.reminder.run.sms"));
-        initIterator(ReminderArchetypes.EMAIL_REMINDER, query);
+        initIterator(ReminderArchetypes.SMS_REMINDER, query);
     }
 
 }

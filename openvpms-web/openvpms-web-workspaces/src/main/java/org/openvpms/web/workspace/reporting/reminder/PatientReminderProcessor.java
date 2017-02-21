@@ -183,7 +183,7 @@ public abstract class PatientReminderProcessor {
         for (ObjectSet set : reminders) {
             Act item = getItem(set);
             if (shouldCancel(item, cancelDate)) {
-                updateItem(item, ReminderItemStatus.CANCELLED, "Reminder not processed in time");
+                updateItem(item, ReminderItemStatus.CANCELLED, Messages.get("reporting.reminder.outofdate"));
                 updated.add(item);
                 Act reminder = updateReminder(set, item);
                 if (reminder != null) {
@@ -220,6 +220,31 @@ public abstract class PatientReminderProcessor {
      * @param state the reminder state
      */
     public abstract void complete(State state);
+
+    /**
+     * Collects statistics from the supplied state.
+     *
+     * @param state      the state
+     * @param statistics the statistics to update
+     */
+    public void addStatistics(State state, Statistics statistics) {
+        for (ObjectSet set : state.getReminders()) {
+            Act reminder = getReminder(set);
+            Act item = getItem(set);
+            ReminderType reminderType = reminderTypes.get(new ActBean(reminder).getNodeParticipantRef("reminderType"));
+            if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
+                statistics.addErrors(1);
+            } else if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
+                statistics.addCancelled(1);
+            } else {
+                if (reminderType != null) {
+                    statistics.increment(set, reminderType);
+                }
+            }
+        }
+        statistics.addErrors(state.getErrors().size());
+        statistics.addCancelled(state.getCancelled().size());
+    }
 
     /**
      * Determines if reminder processing is performed asynchronously.
