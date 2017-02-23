@@ -137,37 +137,13 @@ public class ReminderProcessor {
     }
 
     /**
-     * Returns the patient associated with a reminder.
+     * Process a reminder for a particular reminder count and contact.
      *
-     * @param reminder the reminder
-     * @return the patient, or {@code null} if none is found
-     * @throws ReminderProcessorException if the patient cannot be found
+     * @param reminder      the reminder
+     * @param reminderCount the reminder count
+     * @param contact       the contact
+     * @return the reminder item, linked to the reminder. The caller is reponsible for saving this
      */
-    public Party getPatient(Act reminder) {
-        return getPatient(new ActBean(reminder, service));
-    }
-
-    /**
-     * Returns the customer associated with a patient.
-     *
-     * @param patient the patient
-     * @return the corresponding customer, or {@code null} if it cannot be found
-     */
-    public Party getCustomer(Party patient) {
-        return patientRules.getOwner(patient);
-    }
-
-    /**
-     * Returns the reminder type associated with a reminder.
-     *
-     * @param reminder the reminder
-     * @return the reminder type
-     * @throws ReminderProcessorException if the reminder type cannot be found
-     */
-    public ReminderType getReminderType(Act reminder) {
-        return getReminderType(new ActBean(reminder, service));
-    }
-
     public Act process(Act reminder, int reminderCount, Contact contact) {
         ActBean bean = new ActBean(reminder, service);
         ReminderType reminderType = getReminderType(bean);
@@ -206,6 +182,39 @@ public class ReminderProcessor {
         }
         return toSave.get(0);
     }
+
+    /**
+     * Returns the patient associated with a reminder.
+     *
+     * @param reminder the reminder
+     * @return the patient, or {@code null} if none is found
+     * @throws ReminderProcessorException if the patient cannot be found
+     */
+    public Party getPatient(Act reminder) {
+        return getPatient(new ActBean(reminder, service));
+    }
+
+    /**
+     * Returns the customer associated with a patient.
+     *
+     * @param patient the patient
+     * @return the corresponding customer, or {@code null} if it cannot be found
+     */
+    public Party getCustomer(Party patient) {
+        return patientRules.getOwner(patient);
+    }
+
+    /**
+     * Returns the reminder type associated with a reminder.
+     *
+     * @param reminder the reminder
+     * @return the reminder type
+     * @throws ReminderProcessorException if the reminder type cannot be found
+     */
+    public ReminderType getReminderType(Act reminder) {
+        return getReminderType(new ActBean(reminder, service));
+    }
+
 
     protected Date now() {
         return new Date();

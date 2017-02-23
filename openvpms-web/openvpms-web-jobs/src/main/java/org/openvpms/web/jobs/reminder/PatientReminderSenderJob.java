@@ -273,7 +273,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
             List<ObjectSet> sets = iterator.next();
-            PatientReminderProcessor.State state = processor.prepare(sets, from);
+            PatientReminderProcessor.State state = processor.prepare(sets, from, false);
             processor.process(state);
             int cancelled = state.getCancelled().size();
             int errors = state.getErrors().size();

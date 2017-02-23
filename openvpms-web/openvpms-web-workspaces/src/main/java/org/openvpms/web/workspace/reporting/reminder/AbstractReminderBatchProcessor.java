@@ -50,9 +50,9 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     private final Row row;
 
     /**
-     * Determines if reminders should be updated on completion.
+     * Determines if reminders are being resent.
      */
-    private boolean update = true;
+    private boolean resend = false;
 
     /**
      * Constructs an {@link AbstractReminderBatchProcessor}.
@@ -67,14 +67,29 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
-     * Determines if reminders should be updated on completion.
+     * Indicates if reminders are being reprocessed.
      * <p/>
-     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
+     * If set:
+     * <ul>
+     * <li>due dates are ignored</li>
+     * <li>the reminder last sent date is not updated</li>
+     * </ul>
+     * <p/>
+     * Defaults to {@code false}.
      *
-     * @param update if {@code true} update reminders on completion
+     * @param resend if {@code true} reminders are being resent
      */
-    public void setUpdateOnCompletion(boolean update) {
-        this.update = update;
+    public void setResend(boolean resend) {
+        this.resend = resend;
+    }
+
+    /**
+     * Determines if reminders are being resent.
+     *
+     * @return {@code true} if reeminders are being resent
+     */
+    public boolean getResend() {
+        return resend;
     }
 
     /**
@@ -127,7 +142,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     @Override
     protected void notifyError(Throwable exception) {
         for (ObjectSet set : reminders) {
-            if (update) {
+            if (!resend) {
                 Act reminder = (Act) set.get("item");
                 ReminderHelper.setError(reminder, exception);
             }

@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCount;
+import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
@@ -37,13 +38,13 @@ import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
@@ -77,11 +78,6 @@ class ResendReminderDialog extends PopupDialog {
     private final Party patient;
 
     /**
-     * The current reminder count.
-     */
-    private final int reminderCount;
-
-    /**
      * The reminder processor.
      */
     private ReminderProcessor processor;
@@ -90,6 +86,11 @@ class ResendReminderDialog extends PopupDialog {
      * The context.
      */
     private final Context context;
+
+    /**
+     * The reminder rules.
+     */
+    private final ReminderRules rules;
 
     /**
      * The reminder count selector.
@@ -127,9 +128,9 @@ class ResendReminderDialog extends PopupDialog {
         this.reminder = reminder;
         this.customer = customer;
         this.patient = patient;
-        this.reminderCount = reminderCount;
         this.processor = processor;
         this.context = context;
+        this.rules = ServiceHelper.getBean(ReminderRules.class);
         setModal(true);
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("patient.reminder.resend.contacts"));
@@ -146,7 +147,7 @@ class ResendReminderDialog extends PopupDialog {
             countSelector.setSelectedIndex(0);
         }
         grid.add(countSelector);
-        getLayout().add(grid);
+        getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, grid));
     }
 
     /**
@@ -182,9 +183,9 @@ class ResendReminderDialog extends PopupDialog {
                         result = new ResendReminderDialog(reminder, customer, patient, contacts, counts, reminderCount,
                                                           processor, context, help);
                     } else {
-                        ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.format("patient.reminder.resend.notemplates",
-                                                                                    reminderType.getName(),
-                                                                                    reminderCount));
+                        ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.format(
+                                "patient.reminder.resend.notemplates",
+                                reminderType.getName(), reminderCount));
                     }
                 } else {
                     ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.get("patient.reminder.resend.nocontacts"));
@@ -220,16 +221,29 @@ class ResendReminderDialog extends PopupDialog {
      * @param contact       the contact to use
      */
     private void generate(final int reminderCount, Contact contact) {
-        Act item = processor.process(reminder, reminderCount, contact);
+        Act item = rules.getReminderItem(reminder, reminderCount, contact);
+        if (item == null) {
+            item = processor.process(reminder, reminderCount, contact);
+            // set the date to today, rather than the date when it should have been sent
+            item.setActivityStartTime(new Date());
+        }
+        generate(item);
+    }
+
+    /**
+     * Generates a reminder for an item.
+     *
+     * @param item the reminder item
+     */
+    private void generate(final Act item) {
         CustomerMailContext mailContext = CustomerMailContext.create(customer, patient, context, getHelpContext());
         ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
         final ReminderGenerator generator = factory.create(item, reminder, context, mailContext, getHelpContext());
-        generator.setUpdateOnCompletion(false);
+        item.setStatus(ReminderItemStatus.COMPLETED);
+        generator.setResend(true);
         generator.setListener(new BatchProcessorListener() {
             public void completed() {
-                if (generator.getProcessed() > 0 && generator.getErrors() == 0) {
-                    onGenerated(reminderCount);
-                }
+                close();
             }
 
             public void error(Throwable exception) {
@@ -237,49 +251,6 @@ class ResendReminderDialog extends PopupDialog {
             }
         });
         generator.process();
-    }
-
-    /**
-     * Invoked when a reminder is generated.
-     * <p/>
-     * If the selected reminder count is the current reminder count - 1 (i.e. the last sent), a dialog will be
-     * displayed prompting the user to update the reminder.
-     *
-     * @param count the count that the reminder was generated for
-     */
-    private void onGenerated(int count) {
-        if (count == reminderCount - 1) {
-            final ConfirmationDialog dialog = new ConfirmationDialog(
-                    Messages.get("patient.reminder.resend.update.title"),
-                    Messages.get("patient.reminder.resend.update"));
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                public void onOK() {
-                    update();
-                }
-
-                @Override
-                protected void onAction(PopupDialog dialog) {
-                    super.onAction(dialog);
-                    close(); // close the ResendReminderDialog dialog
-                }
-
-            });
-            dialog.show();
-        } else {
-            close();
-        }
-    }
-
-    /**
-     * Updates the reminder.
-     */
-    private void update() {
-        try {
-            ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
-            rules.updateReminder(reminder, reminderCount, new Date());
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
     }
 
     /**
@@ -339,6 +310,5 @@ class ResendReminderDialog extends PopupDialog {
         }
         return new ReminderConfiguration(config, ServiceHelper.getArchetypeService());
     }
-
 
 }

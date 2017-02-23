@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeRules;
@@ -36,7 +35,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -53,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -307,50 +304,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         patientBean.setValue("deceased", true);
         patientBean.save();
         checkShouldCancel(reminder, "2007-02-01", true);
-
-    }
-
-    /**
-     * Tests the {@link ReminderRules#getContact(Set)} method.
-     */
-    @Test
-    public void testGetContact() {
-        // create a patient, and owner. Remove default contacts from owner
-        Party owner = TestHelper.createCustomer();
-        Contact[] contacts = owner.getContacts().toArray(new Contact[owner.getContacts().size()]);
-        for (Contact contact : contacts) {
-            owner.removeContact(contact);
-        }
-
-        // add an email contact to the owner, and verify it is returned
-        Contact email = createEmail();
-        checkContact(owner, email, email);
-
-        // add a location contact to the owner, and verify it is returned
-        // instead of the email contact
-        Contact location = createLocation(false);
-        checkContact(owner, location, location);
-
-        // add a preferred phone contact to the owner, and verify the location
-        // contact is still returned
-        Contact phone = createPhone(true);
-        checkContact(owner, phone, location);
-
-        // add a preferred location contact to the owner, and verify it is
-        // returned instead of the non-preferred location contact
-        Contact preferredLocation = createLocation(true);
-        checkContact(owner, preferredLocation, preferredLocation);
-
-        // add a REMINDER classification to the email contact and verify it is
-        // returned instead of the preferred location contact
-        Lookup reminder = TestHelper.getLookup(ContactArchetypes.PURPOSE, "REMINDER");
-        email.addClassification(reminder);
-        checkContact(owner, email, email);
-
-        // add a REMINDER classification to the location contact and verify it
-        // is returned instead of the email contact
-        preferredLocation.addClassification(reminder);
-        checkContact(owner, preferredLocation, preferredLocation);
     }
 
     /**
@@ -658,19 +611,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Adds a contact to a customer and verifies the expected contact returned by {@link ReminderRules#getContact(Set)}.
-     *
-     * @param customer the customer
-     * @param contact  the contact to add
-     * @param expected the expected contact
-     */
-    private void checkContact(Party customer, Contact contact, Contact expected) {
-        customer.addContact(contact);
-        Contact c = rules.getContact(customer.getContacts());
-        assertEquals(expected, c);
-    }
-
-    /**
      * Helper to create a reminder.
      *
      * @param patient the patient
@@ -767,47 +707,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
                                    boolean expected) {
         assertEquals(expected, rules.shouldCancel(reminder,
                                                   java.sql.Date.valueOf(date)));
-    }
-
-    /**
-     * Helper to create an email contact.
-     *
-     * @return a new email contact
-     */
-    private Contact createEmail() {
-        Contact contact = (Contact) create(ContactArchetypes.EMAIL);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("emailAddress", "foo@bar.com");
-        bean.save();
-        return contact;
-    }
-
-    /**
-     * Helper to create a phone contact.
-     *
-     * @param preferred determines if it is the preferred contact
-     * @return a new phone contact
-     */
-    private Contact createPhone(boolean preferred) {
-        Contact contact = (Contact) create(ContactArchetypes.PHONE);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("preferred", preferred);
-        save(contact);
-        return contact;
-    }
-
-    /**
-     * Helper to create a location contact.
-     *
-     * @param preferred determines if it is the preferred contact
-     * @return a new location contact
-     */
-    private Contact createLocation(boolean preferred) {
-        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("preferred", preferred);
-        save(contact);
-        return contact;
     }
 
     /**

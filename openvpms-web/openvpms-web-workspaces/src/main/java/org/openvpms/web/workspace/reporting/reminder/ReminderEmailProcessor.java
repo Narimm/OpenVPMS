@@ -268,14 +268,14 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
     /**
      * Creates a new report.
      *
-     * @param sets             the reminder sets, used for grouped reminders. Empty otherwise
+     * @param sets             the reminder sets
      * @param documentTemplate the document template
      * @param context          the reporting context
      * @return a new report
      */
     private Document createReport(List<ObjectSet> sets, DocumentTemplate documentTemplate, Context context) {
         Document result;
-        if (!sets.isEmpty()) {
+        if (sets.size() > 1) {
             result = getDocument(new ObjectSetReporter(sets, documentTemplate), context);
         } else {
             List<Act> acts = new ArrayList<>();

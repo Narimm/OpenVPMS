@@ -13,6 +13,7 @@
  *
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.web.component.processor.BatchProcessorComponent;
@@ -33,12 +34,18 @@ public interface ReminderBatchProcessor extends BatchProcessorComponent {
     String getArchetype();
 
     /**
-     * Determines if reminders should be updated on completion.
+     * Indicates if reminders are being resent.
      * <p/>
-     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
+     * If set:
+     * <ul>
+     * <li>due dates are ignored</li>
+     * <li>the reminder last sent date is not updated</li>
+     * </ul>
+     * <p/>
+     * Defaults to {@code false}.
      *
-     * @param update if {@code true} update reminders on completion
+     * @param resend if {@code true} reminders are being resent
      */
-    void setUpdateOnCompletion(boolean update);
+    void setResend(boolean resend);
 
 }
