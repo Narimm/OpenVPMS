@@ -20,8 +20,6 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.NotPredicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
-import org.openvpms.archetype.rules.party.Contacts;
-import org.openvpms.archetype.rules.party.PurposeMatcher;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -40,6 +38,7 @@ import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -54,7 +53,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -325,44 +323,6 @@ public class ReminderRules {
     }
 
     /**
-     * Determines if a reminder has any PENDING or ERROR items outstanding, besides that supplied.
-     *
-     * @param reminder the reminder
-     * @param item     the item
-     * @return {@code true} if the reminder has outstanding items
-     */
-    private boolean hasOutstandingItems(ActBean reminder, Act item) {
-        Predicate targetEquals = RefEquals.getTargetEquals(item.getObjectReference());
-        for (Act act : reminder.getNodeTargetObjects("items", NotPredicate.getInstance(targetEquals), Act.class)) {
-            String status = act.getStatus();
-            if (ReminderItemStatus.PENDING.equals(status) || ReminderItemStatus.ERROR.equals(status)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns a contact for reminders.
-     * <p/>
-     * This returns:
-     * <ol>
-     * <li>the first location contact with classification 'REMINDER'; or </li>
-     * <li>any contact with classification 'REMINDER'; or</li>
-     * <li>the preferred location contact if no contact has a REMINDER classification; or</li>
-     * <li>any preferred contact if there is no preferred location contact; or</li>
-     * <li>the first available contact if there is no preferred contact.</li>
-     * </ol>
-     *
-     * @param contacts the contacts
-     * @return a contact, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Contact getContact(Set<Contact> contacts) {
-        return getContact(contacts, true, ContactArchetypes.LOCATION);
-    }
-
-    /**
      * Returns the reminder types associated with a product.
      *
      * @param product the product
@@ -478,6 +438,36 @@ public class ReminderRules {
         query.add(join("product").add(join("entity").add(join("type").add(join("target").add(
                 eq("name", productType))))));
         return getReminders(query, from, to);
+    }
+
+    /**
+     * Returns a reminder item for a reminder count and contact.
+     *
+     * @param reminder the reminder
+     * @param count    the reminder count
+     * @param contact  the contact
+     * @return the reminder, or {@code null} if none is found
+     */
+    public Act getReminderItem(Act reminder, int count, Contact contact) {
+        Act result = null;
+        boolean email = TypeHelper.isA(contact, ContactArchetypes.EMAIL);
+        boolean phone = TypeHelper.isA(contact, ContactArchetypes.PHONE);
+        boolean location = TypeHelper.isA(contact, ContactArchetypes.LOCATION);
+        if (email || phone || location) {
+            ActBean bean = new ActBean(reminder, service);
+            for (Act item : bean.getNodeActs("items")) {
+                ActBean itemBean = new ActBean(item, service);
+                if (itemBean.getInt("count") == count) {
+                    if ((TypeHelper.isA(item, ReminderArchetypes.EMAIL_REMINDER) && email)
+                        || (TypeHelper.isA(item, ReminderArchetypes.SMS_REMINDER) && phone)
+                        || (TypeHelper.isA(item, ReminderArchetypes.PRINT_REMINDER) && location)) {
+                        result = item;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     protected List<Act> getReminders(ArchetypeQuery query, Date from, Date to) {
@@ -712,33 +702,6 @@ public class ReminderRules {
     }
 
     /**
-     * Returns the first contact with classification 'REMINDER' or the preferred contact with the specified short name
-     * if no contact has this classification.
-     *
-     * @param contacts   the contacts
-     * @param anyContact if {@code true} any contact with a 'REMINDER classification will be returned.
-     * @param shortName  the archetype shortname of the preferred contact
-     * @return a contact, or {@code null} if none is found
-     */
-    private Contact getContact(Set<Contact> contacts, boolean anyContact, String shortName) {
-        List<Contact> list = Contacts.sort(contacts); // sort to make it deterministic
-        Contact result = Contacts.find(list, new PurposeMatcher(shortName, REMINDER, service));
-        if (result == null && anyContact) {
-            result = Contacts.find(list, new PurposeMatcher("contact.*", REMINDER, service));
-            if (result == null) {
-                // no contact found with reminder purpose, so use the preferred contact with the specified short name.
-                result = Contacts.find(list, new PurposeMatcher(shortName, null, false, service));
-                if (result == null) {
-                    // no contact found with the short name, so use the first available preferred contact, or
-                    // if none preferred, the first available
-                    result = Contacts.find(list, new PurposeMatcher("contact.*", null, false, service));
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Creates a reminder.
      *
      * @param reminderType the reminder type
@@ -750,7 +713,7 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any error
      */
     private Act createReminder(Entity reminderType, Date date, Date dueDate, Party patient, Product product) {
-        Act result = (Act) service.create("act.patientReminder");
+        Act result = (Act) service.create(ReminderArchetypes.REMINDER);
         ActBean bean = new ActBean(result, service);
         bean.setValue("createdTime", date);
         bean.addNodeParticipation("reminderType", reminderType);
@@ -761,6 +724,24 @@ public class ReminderRules {
         result.setActivityStartTime(dueDate);
         result.setActivityEndTime(dueDate);
         return result;
+    }
+
+    /**
+     * Determines if a reminder has any PENDING or ERROR items outstanding, besides that supplied.
+     *
+     * @param reminder the reminder
+     * @param item     the item
+     * @return {@code true} if the reminder has outstanding items
+     */
+    private boolean hasOutstandingItems(ActBean reminder, Act item) {
+        Predicate targetEquals = RefEquals.getTargetEquals(item.getObjectReference());
+        for (Act act : reminder.getNodeTargetObjects("items", NotPredicate.getInstance(targetEquals), Act.class)) {
+            String status = act.getStatus();
+            if (ReminderItemStatus.PENDING.equals(status) || ReminderItemStatus.ERROR.equals(status)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

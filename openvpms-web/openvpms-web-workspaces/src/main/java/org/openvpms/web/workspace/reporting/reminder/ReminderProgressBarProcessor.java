@@ -20,7 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -28,9 +27,7 @@ import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -52,19 +49,14 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     private final ReminderRules rules;
 
     /**
-     * Determines if reminders should be updated on completion.
+     * Determines if reminders are being reprocessed.
      */
-    private boolean update = true;
+    private boolean resend = true;
 
     /**
      * The statistics.
      */
     private final Statistics statistics;
-
-    /**
-     * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
-     */
-    private Map<Long, LastSentCount> lastSentCountMap = new HashMap<>();
 
     /**
      * The current reminders being processed.
@@ -107,14 +99,20 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     }
 
     /**
-     * Determines if reminders should be updated on completion.
+     * Indicates if reminders are being resent.
      * <p/>
-     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
+     * If set:
+     * <ul>
+     * <li>due dates are ignored</li>
+     * <li>the reminder last sent date is not updated</li>
+     * </ul>
+     * <p/>
+     * Defaults to {@code false}.
      *
-     * @param update if {@code true} update reminders on completion
+     * @param resend if {@code true} reminders are being resent
      */
-    public void setUpdateOnCompletion(boolean update) {
-        this.update = update;
+    public void setResend(boolean resend) {
+        this.resend = resend;
     }
 
     /**
@@ -126,26 +124,8 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     protected void process(List<ObjectSet> reminders) {
         this.currentReminders = reminders;
         this.currentState = null;
-        if (update) {
-            // need to cache the reminderCount and lastSent nodes to allow reprocessing with the original values
-            for (ObjectSet event : reminders) {
-                Act reminder = (Act) event.get("reminder");
-                long id = reminder.getId();
-                LastSentCount lastSentCount = lastSentCountMap.get(id);
-                if (lastSentCount != null) {
-                    // reprocessing a reminder - reset the reminderCount and lastSent nodes
-                    if (lastSentCount.isComplete()) {
-                        lastSentCount.reset(reminder);
-                    }
-                } else {
-                    lastSentCount = new LastSentCount(reminder);
-                    lastSentCountMap.put(id, lastSentCount);
-                }
-            }
-        }
-
         try {
-            currentState = processor.prepare(reminders, new Date());
+            currentState = processor.prepare(reminders, new Date(), resend);
             processor.process(currentState);
             if (processor.isAsynchronous()) {
                 // need to process these reminders asynchronously, so suspend
@@ -173,9 +153,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
      */
     protected void processCompleted() {
         if (currentState != null) {
-            if (update) {
-                processor.complete(currentState);
-            }
+            processor.complete(currentState);
             processor.addStatistics(currentState, statistics);
             super.processCompleted(currentReminders);
         } else {
@@ -188,7 +166,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
      * <p/>
      * This:
      * <ul>
-     * <li>updates the error node of each reminder if {@link #setUpdateOnCompletion(boolean)} is {@code true}</li>
+     * <li>updates the error node of each reminder if {@link #setResend(boolean)} is {@code true}</li>
      * <li>updates statistics</li>
      * <li>notifies any listeners of the error</li>
      * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing</li>
@@ -199,7 +177,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     protected void processError(Throwable exception) {
         if (currentReminders != null) {
             for (ObjectSet set : currentReminders) {
-                if (update) {
+                if (resend) {
                     ReminderHelper.setError((Act) set.get("item"), exception);
                 }
                 statistics.incErrors();
@@ -243,33 +221,4 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
         return rules;
     }
 
-    private static class LastSentCount {
-
-        private boolean completed;
-
-        private int reminderCount;
-
-        private Date lastSent;
-
-        public LastSentCount(Act reminder) {
-            IMObjectBean bean = new IMObjectBean(reminder);
-            reminderCount = bean.getInt("reminderCount");
-            lastSent = bean.getDate("lastSent");
-        }
-
-        public void setCompleted(boolean completed) {
-            this.completed = completed;
-        }
-
-        public boolean isComplete() {
-            return completed;
-        }
-
-        public void reset(Act reminder) {
-            IMObjectBean bean = new IMObjectBean(reminder);
-            bean.setValue("reminderCount", reminderCount);
-            bean.setValue("lastSent", lastSent);
-        }
-
-    }
 }

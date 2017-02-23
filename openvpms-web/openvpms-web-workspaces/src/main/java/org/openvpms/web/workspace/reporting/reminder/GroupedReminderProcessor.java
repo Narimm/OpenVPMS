@@ -89,8 +89,11 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      */
     @Override
     public void complete(State state) {
-        for (ObjectSet reminder : state.getReminders()) {
-            complete(reminder, state);
+        boolean resend = state.getResend();
+        if (!resend) {
+            for (ObjectSet reminder : state.getReminders()) {
+                complete(reminder, state);
+            }
         }
         save(state);
         CommunicationLogger logger = getLogger();

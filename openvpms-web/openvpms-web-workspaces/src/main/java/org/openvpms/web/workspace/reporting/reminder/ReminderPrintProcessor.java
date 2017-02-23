@@ -40,7 +40,6 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -188,11 +187,8 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(reminders, locator, context);
             print(printer);
         } else {
-            List<Act> acts = new ArrayList<>();
-            for (ObjectSet reminder : reminders) {
-                acts.add(getReminder(reminder));
-            }
-            IMPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
+            Act reminder = getReminder(reminders.get(0));
+            IMPrinter<Act> printer = new IMObjectReportPrinter<>(reminder, locator, context);
             print(printer);
         }
     }

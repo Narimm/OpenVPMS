@@ -104,7 +104,7 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
         List<ObjectSet> reminders = getReminders();
         if (!reminders.isEmpty()) {
             try {
-                state = processor.prepare(reminders, new Date());
+                state = processor.prepare(reminders, new Date(), getResend());
                 if (!state.getReminders().isEmpty()) {
                     processor.process(state);
                 } else {

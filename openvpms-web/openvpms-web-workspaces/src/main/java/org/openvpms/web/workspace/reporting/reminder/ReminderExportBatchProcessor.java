@@ -71,7 +71,7 @@ public class ReminderExportBatchProcessor extends AbstractReminderBatchProcessor
         List<ObjectSet> reminders = getReminders();
         if (!reminders.isEmpty()) {
             try {
-                PatientReminderProcessor.State state = processor.prepare(reminders, new Date());
+                PatientReminderProcessor.State state = processor.prepare(reminders, new Date(), getResend());
                 processor.process(state);
                 updateReminders(processor, state);
                 notifyCompleted();

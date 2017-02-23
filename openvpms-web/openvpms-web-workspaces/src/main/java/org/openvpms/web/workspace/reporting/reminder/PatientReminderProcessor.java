@@ -64,11 +64,15 @@ public abstract class PatientReminderProcessor {
 
         private final List<Act> updated;
 
-        public State(List<ObjectSet> reminders, List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated) {
+        private final boolean resend;
+
+        public State(List<ObjectSet> reminders, List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                     boolean resend) {
             this.reminders = reminders;
             this.cancelled = cancelled;
             this.errors = errors;
             this.updated = updated;
+            this.resend = resend;
         }
 
         public List<ObjectSet> getReminders() {
@@ -89,6 +93,10 @@ public abstract class PatientReminderProcessor {
 
         public List<ObjectSet> getErrors() {
             return errors;
+        }
+
+        public boolean getResend() {
+            return resend;
         }
 
         public int getProcessed() {
@@ -140,6 +148,7 @@ public abstract class PatientReminderProcessor {
      */
     private final CommunicationLogger logger;
 
+
     /**
      * Constructs a {@link PatientReminderProcessor}.
      *
@@ -164,25 +173,27 @@ public abstract class PatientReminderProcessor {
     /**
      * Prepares reminders for processing.
      * <p/>
-     * This:
+     * If reminders aren't being resent, this:
      * <ul>
      * <li>cancels any reminders that are no longer applicable</li>
      * <li>filters out any reminders that can't be processed due to missing data</li>
      * <li>adds meta-data for subsequent calls to {@link #process}</li>
      * </ul>
+     * If reminders are being resent, due dates are ignored, and no cancellation will occur.
      *
      * @param reminders  the reminders
      * @param cancelDate the date to use when determining if a reminder item should be cancelled
+     * @param resend     if {@code true}, reminders are being resent
      * @return the reminders to process
      */
-    public State prepare(List<ObjectSet> reminders, Date cancelDate) {
+    public State prepare(List<ObjectSet> reminders, Date cancelDate, boolean resend) {
         List<ObjectSet> toProcess = new ArrayList<>();
         List<ObjectSet> cancelled = new ArrayList<>();
         List<ObjectSet> errors = new ArrayList<>();
         List<Act> updated = new ArrayList<>();
         for (ObjectSet set : reminders) {
             Act item = getItem(set);
-            if (shouldCancel(item, cancelDate)) {
+            if (!resend && shouldCancel(item, cancelDate)) {
                 updateItem(item, ReminderItemStatus.CANCELLED, Messages.get("reporting.reminder.outofdate"));
                 updated.add(item);
                 Act reminder = updateReminder(set, item);
@@ -193,11 +204,15 @@ public abstract class PatientReminderProcessor {
             } else {
                 toProcess.add(set);
             }
+            if (item.isNew()) {
+                // items generated for resend are saved, unless the send is cancelled
+                updated.add(item);
+            }
         }
         if (!toProcess.isEmpty()) {
             toProcess = prepare(toProcess, updated, errors);
         }
-        return new State(toProcess, cancelled, errors, updated);
+        return new State(toProcess, cancelled, errors, updated, resend);
     }
 
     /**
@@ -498,10 +513,11 @@ public abstract class PatientReminderProcessor {
     protected void complete(ObjectSet event, State state) {
         Act item = updateItem(event, ReminderItemStatus.COMPLETED, null);
         state.updated(item);
-        Act reminder = updateReminder(event, item);
-        if (reminder != null) {
-            state.updated(reminder);
-        }
+        Act reminder = getReminder(event);
+        updateReminder(reminder, item);
+        ActBean bean = new ActBean(reminder);
+        bean.setValue("lastSent", new Date());
+        state.updated(reminder);
     }
 
     /**
@@ -513,10 +529,14 @@ public abstract class PatientReminderProcessor {
      */
     protected Act updateReminder(ObjectSet event, Act item) {
         Act reminder = (Act) event.get("reminder");
-        if (rules.updateReminder(reminder, item)) {
+        if (updateReminder(reminder, item)) {
             return reminder;
         }
         return null;
+    }
+
+    private boolean updateReminder(Act reminder, Act item) {
+        return rules.updateReminder(reminder, item);
     }
 
     /**

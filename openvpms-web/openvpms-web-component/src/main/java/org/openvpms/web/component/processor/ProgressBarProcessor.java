@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.processor;
@@ -28,8 +28,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.servlet.SessionMonitor;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.Collection;
 
 
 /**
@@ -91,16 +89,6 @@ public abstract class ProgressBarProcessor<T>
      */
     private static final long REFRESH_INTERVAL = DateUtils.MILLIS_PER_SECOND * 2;
 
-
-    /**
-     * Constructs a {@code ProgressBarProcessor}.
-     *
-     * @param items the items to process
-     * @param title the processor title. May be <tt>null</tt>
-     */
-    public ProgressBarProcessor(Collection<T> items, String title) {
-        this(items, items.size(), title);
-    }
 
     /**
      * Constructs a {@code ProgressBarProcessor}.
