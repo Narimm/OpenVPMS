@@ -348,7 +348,16 @@
           serviceName="archetypeService" method="save" archetypeShortName="act.patientReminder"/>
     <data id="RPATREM" archetype="security.archetypeAuthority" name="Patient Reminder Remove"
           description="Authority to Remove Reminder"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.patientReminder*"/>
+          serviceName="archetypeService" method="remove" archetypeShortName="act.patientReminder"/>
+    <data id="CPATREMI" archetype="security.archetypeAuthority" name="Patient Reminder Item Create"
+          description="Authority to Create Reminder Item"
+          serviceName="archetypeService" method="create" archetypeShortName="act.patientReminderItem*"/>
+    <data id="SPATREMI" archetype="security.archetypeAuthority" name="Patient Reminder Item Save"
+          description="Authority to Save Reminder Item"
+          serviceName="archetypeService" method="save" archetypeShortName="act.patientReminderItem*"/>
+    <data id="RPATREMI" archetype="security.archetypeAuthority" name="Patient Reminder Item Remove"
+          description="Authority to Remove Reminder Item"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.patientReminderItem*"/>
     <!-- Patient Medication Authorities -->
     <data id="CPATMED" archetype="security.archetypeAuthority" name="Patient Medication Create"
           description="Authority to Create Medication"

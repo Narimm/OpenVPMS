@@ -38,7 +38,6 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
-import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
@@ -115,87 +114,6 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     }
 
     /**
-     * Logs reminder communications.
-     *
-     * @param state  the reminder state
-     * @param logger the communication logger
-     */
-    @Override
-    protected void log(State state, CommunicationLogger logger) {
-        String subject = Messages.get("reminder.log.sms.subject");
-        for (ObjectSet set : state.getReminders()) {
-            String notes = getNote(set);
-            Party customer = getCustomer(set);
-            Party patient = getPatient(set);
-            Contact contact = (Contact) set.get("contact");
-            Party location = (Party) set.get("location");
-            String text = set.getString("text");
-            logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
-                          notes, location);
-        }
-    }
-
-    /**
-     * Prepares reminders for processing.
-     * <p/>
-     * This:
-     * <ul>
-     * <li>filters out any reminders that can't be processed due to missing data</li>
-     * <li>adds meta-data for subsequent calls to {@link #process}</li>
-     * </ul>
-     *
-     * @param reminders the reminders
-     * @param updated   acts that need to be saved on completion
-     * @param errors    reminders that can't be processed due to error
-     * @return the reminders to process
-     */
-    @Override
-    protected List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors) {
-        reminders = super.prepare(reminders, updated, errors);
-        if (!reminders.isEmpty()) {
-            ObjectSet reminder = reminders.get(0);
-            Party customer = getCustomer(reminder);
-            Party location = getCustomerLocation(customer);
-            for (ObjectSet set : reminders) {
-                set.set("location", location);
-            }
-        }
-        return reminders;
-    }
-
-    /**
-     * Returns the contact archetype.
-     *
-     * @return the contact archetype
-     */
-    @Override
-    protected String getContactArchetype() {
-        return ContactArchetypes.PHONE;
-    }
-
-    /**
-     * Returns the date from which a reminder item should be cancelled.
-     *
-     * @param startTime the item start time
-     * @param config    the reminder configuration
-     * @return the date when the item should be cancelled
-     */
-    @Override
-    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
-        return config.getSMSCancelDate(startTime);
-    }
-
-    /**
-     * Creates a contact matcher to locate the contact to send to.
-     *
-     * @return a new contact matcher
-     */
-    @Override
-    protected ContactMatcher createContactMatcher() {
-        return new SMSMatcher(CONTACT_PURPOSE, false, getService());
-    }
-
-    /**
      * Processes reminders.
      *
      * @param state the reminder state
@@ -212,7 +130,7 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      * Processes a list of reminder events.
      *
      * @param contact   the contact to send to
-     * @param reminders the events
+     * @param reminders the reminders
      * @param template  the document template to use. May be {@code null}
      */
     @Override
@@ -228,7 +146,10 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
 
         ObjectSet first = reminders.get(0);
         Party customer = getCustomer(first);
-        Party location = (Party) first.get("location");
+        Party location = getLocation(customer);
+        for (ObjectSet set : reminders) {
+            set.set("location", location);
+        }
 
         if (StringUtils.isEmpty(phoneNumber)) {
             throw new ReportingException(FailedToProcessReminder, "Contact has no phone number for customer=" +
@@ -256,4 +177,46 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
             }
         }
     }
+
+    /**
+     * Returns the contact archetype.
+     *
+     * @return the contact archetype
+     */
+    @Override
+    protected String getContactArchetype() {
+        return ContactArchetypes.PHONE;
+    }
+
+    /**
+     * Creates a contact matcher to locate the contact to send to.
+     *
+     * @return a new contact matcher
+     */
+    @Override
+    protected ContactMatcher createContactMatcher() {
+        return new SMSMatcher(CONTACT_PURPOSE, false, getService());
+    }
+
+    /**
+     * Logs reminder communications.
+     *
+     * @param state  the reminder state
+     * @param logger the communication logger
+     */
+    @Override
+    protected void log(State state, CommunicationLogger logger) {
+        String subject = Messages.get("reminder.log.sms.subject");
+        for (ObjectSet set : state.getReminders()) {
+            String notes = getNote(set);
+            Party customer = getCustomer(set);
+            Party patient = getPatient(set);
+            Contact contact = (Contact) set.get("contact");
+            Party location = (Party) set.get("location");
+            String text = set.getString("text");
+            logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
+                          notes, location);
+        }
+    }
+
 }

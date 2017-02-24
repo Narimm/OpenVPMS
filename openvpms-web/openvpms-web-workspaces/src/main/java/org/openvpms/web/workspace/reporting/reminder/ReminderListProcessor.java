@@ -39,7 +39,6 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -128,24 +127,6 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     }
 
     /**
-     * Completes processing.
-     *
-     * @param state the reminder state
-     */
-    @Override
-    public void complete(State state) {
-        List<ObjectSet> reminders = state.getReminders();
-        for (ObjectSet reminder : reminders) {
-            complete(reminder, state);
-        }
-        save(state);
-        CommunicationLogger logger = getLogger();
-        if (logger != null && !reminders.isEmpty()) {
-            log(state, logger);
-        }
-    }
-
-    /**
      * Determines if reminder processing is performed asynchronously.
      *
      * @return {@code true} if reminder processing is performed asynchronously
@@ -153,18 +134,6 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     @Override
     public boolean isAsynchronous() {
         return false;
-    }
-
-    /**
-     * Returns the date from which a reminder item should be cancelled.
-     *
-     * @param startTime the item start time
-     * @param config    the reminder configuration
-     * @return the date when the item should be cancelled
-     */
-    @Override
-    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
-        return config.getListCancelDate(startTime);
     }
 
     /**
@@ -199,12 +168,13 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      */
     protected void log(State state, CommunicationLogger logger) {
         String subject = Messages.get("reminder.log.list.subject");
-        Party location = context.getLocation();
         for (ObjectSet reminder : state.getReminders()) {
+            populate(reminder);
             Party customer = getCustomer(reminder);
             if (customer != null) {
                 Party patient = getPatient(reminder);
                 String notes = getNote(reminder);
+                Party location = getLocation(customer);
                 Contact contact = (Contact) reminder.get("contact");
                 String description = contact != null ? contact.getDescription() : "";
                 logger.logPhone(customer, patient, description, subject, COMMUNICATION_REASON, null, notes, location);

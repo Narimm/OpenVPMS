@@ -38,7 +38,6 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -100,6 +99,8 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     @Override
     public void process(State state) {
         List<ObjectSet> reminders = state.getReminders();
+        populate(reminders);
+
         List<ReminderEvent> events = new ArrayList<>();
         for (ObjectSet reminder : reminders) {
             events.add(createEvent(reminder));
@@ -144,38 +145,20 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     }
 
     /**
-     * Returns the date from which a reminder item should be cancelled.
+     * Logs reminder communications.
      *
-     * @param startTime the item start time
-     * @param config    the reminder configuration
-     * @return the date when the item should be cancelled
+     * @param state  the reminder state
+     * @param logger the communication logger
      */
     @Override
-    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
-        return config.getEmailCancelDate(startTime);
-    }
-
-    /**
-     * Completes processing.
-     *
-     * @param state the reminder state
-     */
-    @Override
-    public void complete(State state) {
+    protected void log(State state, CommunicationLogger logger) {
         List<ObjectSet> reminders = state.getReminders();
+        String subject = Messages.get("reminder.log.export.subject");
         for (ObjectSet reminder : reminders) {
-            complete(reminder, state);
-        }
-        save(state);
-        CommunicationLogger logger = getLogger();
-        if (logger != null && !reminders.isEmpty()) {
-            String subject = Messages.get("reminder.log.export.subject");
-            for (ObjectSet reminder : reminders) {
-                Contact contact = (Contact) reminder.get("contact");
-                String notes = getNote(reminder);
-                logger.logMail(getCustomer(reminder), getPatient(reminder), contact.getDescription(),
-                               subject, COMMUNICATION_REASON, null, notes, location);
-            }
+            Contact contact = (Contact) reminder.get("contact");
+            String notes = getNote(reminder);
+            logger.logMail(getCustomer(reminder), getPatient(reminder), contact.getDescription(),
+                           subject, COMMUNICATION_REASON, null, notes, location);
         }
     }
 

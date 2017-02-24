@@ -17,8 +17,8 @@
 package org.openvpms.web.component.workspace;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 
 /**
@@ -99,7 +99,12 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     protected void setBrowser(Browser<T> browser) {
         this.browser = browser;
-        browser.addBrowserListener(new AbstractBrowserListener<T>() {
+        browser.addBrowserListener(new BrowserListener<T>() {
+            @Override
+            public void query() {
+                onQuery();
+            }
+
             public void selected(T object) {
                 onSelected(object);
             }
@@ -108,6 +113,7 @@ public class BrowserCRUDWindow<T extends IMObject> {
             public void browsed(T object) {
                 onBrowsed(object);
             }
+
         });
         if (window != null) {
             select(browser.getSelected());
@@ -137,6 +143,15 @@ public class BrowserCRUDWindow<T extends IMObject> {
         if (browser != null) {
             window.setObject(browser.getSelected());
         }
+    }
+
+    /**
+     * Invoked when a query is performed.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    protected void onQuery() {
+
     }
 
     /**

@@ -351,7 +351,7 @@ public class ReminderProcessor {
     private boolean generateEmail(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
         boolean result = false;
         if (hasContact(ContactArchetypes.EMAIL, contacts)) {
-            createItem(ReminderArchetypes.EMAIL_REMINDER, config.getEmailStartTime(dueDate), reminder, count,
+            createItem(ReminderArchetypes.EMAIL_REMINDER, config.getEmailSendDate(dueDate), reminder, count,
                        null, toSave);
             result = true;
         }
@@ -371,7 +371,7 @@ public class ReminderProcessor {
     private boolean generateSMS(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
         boolean result = false;
         if (hasContact(ContactArchetypes.PHONE, contacts)) {
-            createItem(ReminderArchetypes.SMS_REMINDER, config.getSMSStartTime(dueDate), reminder, count, null,
+            createItem(ReminderArchetypes.SMS_REMINDER, config.getSMSSendDate(dueDate), reminder, count, null,
                        toSave);
             result = true;
         }
@@ -391,7 +391,7 @@ public class ReminderProcessor {
     private boolean generatePrint(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
         boolean result = false;
         if (hasContact(ContactArchetypes.LOCATION, contacts)) {
-            createItem(ReminderArchetypes.PRINT_REMINDER, config.getPrintStartTime(dueDate), reminder, count,
+            createItem(ReminderArchetypes.PRINT_REMINDER, config.getPrintSendDate(dueDate), reminder, count,
                        null, toSave);
             result = true;
         }
@@ -411,7 +411,7 @@ public class ReminderProcessor {
     private boolean generateExport(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
         boolean result = false;
         if (hasContact(ContactArchetypes.LOCATION, contacts)) {
-            createItem(ReminderArchetypes.EXPORT_REMINDER, config.getExportStartTime(dueDate), reminder, count,
+            createItem(ReminderArchetypes.EXPORT_REMINDER, config.getExportStartDate(dueDate), reminder, count,
                        null, toSave);
             result = true;
         }
@@ -427,7 +427,7 @@ public class ReminderProcessor {
      * @param toSave   the list of acts to save
      */
     private Act generateList(ActBean reminder, Date dueDate, int count, String error, List<Act> toSave) {
-        return createItem(ReminderArchetypes.LIST_REMINDER, config.getListStartTime(dueDate), reminder, count, error,
+        return createItem(ReminderArchetypes.LIST_REMINDER, config.getListStartDate(dueDate), reminder, count, error,
                           toSave);
     }
 

@@ -16,10 +16,16 @@
 
 package org.openvpms.web.component.im.edit.reminder;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Date;
 
 /**
  * An editor for <em>act.patientReminderItem*</em> acts.
@@ -35,6 +41,11 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 public class ReminderItemEditor extends AbstractActEditor {
 
     /**
+     * The reminder configuration.
+     */
+    private ReminderConfiguration configuration;
+
+    /**
      * Constructs a {@link ReminderItemEditor}.
      *
      * @param act     the act to edit
@@ -44,12 +55,30 @@ public class ReminderItemEditor extends AbstractActEditor {
     public ReminderItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         if (act.isNew() && parent != null) {
+            // calculate the start time based on reminder lead times
             // set the due date to to reminder's next due date
-            act.setActivityEndTime(parent.getActivityStartTime());
+            Date dueDate = parent.getActivityStartTime();
+            if (dueDate != null) {
+                setEndTime(dueDate);
+            }
             ActBean bean = new ActBean(parent);
 
             // copy the reminder count
             getProperty("count").setValue(bean.getInt("reminderCount"));
+        }
+    }
+
+    /**
+     * Sets the act end time.
+     *
+     * @param time the end time
+     */
+    @Override
+    public void setEndTime(Date time) {
+        super.setEndTime(time);
+        Date dueDate = getEndTime();
+        if (dueDate != null) {
+            setStartTime(getSendDate(dueDate), true);
         }
     }
 
@@ -60,5 +89,43 @@ public class ReminderItemEditor extends AbstractActEditor {
      */
     public int getCount() {
         return getProperty("count").getInt();
+    }
+
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+    }
+
+    /**
+     * Calculates the send date for the reminder item, based on the reminder due date.
+     *
+     * @return the send date, or {@code null} if it cannot be determined
+     */
+    private Date getSendDate(Date dueDate) {
+        Date result = null;
+        ReminderConfiguration config = getReminderConfiguration();
+        if (config != null) {
+            String shortName = getObject().getArchetypeId().getShortName();
+            result = config.getSendDate(dueDate, shortName);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the remidner configuration.
+     *
+     * @return the remidner configuration, or {@code null} if it hasn't been configured
+     */
+    private ReminderConfiguration getReminderConfiguration() {
+        if (configuration == null) {
+            Party practice = getLayoutContext().getContext().getPractice();
+            if (practice != null) {
+                configuration = ServiceHelper.getBean(ReminderRules.class).getConfiguration(practice);
+            }
+        }
+        return configuration;
     }
 }

@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -117,6 +118,18 @@ public class ReminderRules {
         this.service = service;
         this.rules = rules;
         this.reminderTypes = reminderTypes;
+    }
+
+    /**
+     * Returns the reminder configuration associated with a practice.
+     *
+     * @param practice the practice
+     * @return the reminder configuration, or {@code null} if none is configured
+     */
+    public ReminderConfiguration getConfiguration(Party practice) {
+        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObject object = bean.getNodeTargetObject("reminderConfiguration");
+        return object != null ? new ReminderConfiguration(object, service) : null;
     }
 
     /**

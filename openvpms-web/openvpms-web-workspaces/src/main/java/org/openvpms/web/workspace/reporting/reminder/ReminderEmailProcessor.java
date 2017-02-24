@@ -51,7 +51,6 @@ import org.openvpms.web.workspace.reporting.ReportingException;
 import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
@@ -137,18 +136,6 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
     @Override
     protected String getContactArchetype() {
         return ContactArchetypes.EMAIL;
-    }
-
-    /**
-     * Returns the date from which a reminder item should be cancelled.
-     *
-     * @param startTime the item start time
-     * @param config    the reminder configuration
-     * @return the date when the item should be cancelled
-     */
-    @Override
-    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
-        return config.getEmailCancelDate(startTime);
     }
 
     /**

@@ -42,6 +42,7 @@ import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -278,13 +279,30 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     private void onSend() {
         Act object = getObject();
-        Act item = IMObjectHelper.reload(object);
+        final Act item = IMObjectHelper.reload(object);
         if (item != null) {
             try {
                 HelpContext help = getHelpContext().subtopic("send");
                 ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
                 ReminderGenerator generator = factory.create(item, getContext(), getMailContext(), help);
-                generateReminders(generator);
+                generator.setListener(new BatchProcessorListener() {
+                    public void completed() {
+                        if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
+                            InformationDialog.show(Messages.get("reporting.reminder.send.title"),
+                                                   Messages.get("reporting.reminder.send.cancelled"));
+                        } else if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
+                            String error = new ActBean(item).getString("error");
+                            InformationDialog.show(Messages.get("reporting.reminder.send.title"),
+                                                   error);
+                        }
+                        onRefresh(getObject());
+                    }
+
+                    public void error(Throwable exception) {
+                        ErrorHelper.show(exception);
+                    }
+                });
+                generator.process();
             } catch (Throwable exception) {
                 ErrorHelper.show(exception);
             }

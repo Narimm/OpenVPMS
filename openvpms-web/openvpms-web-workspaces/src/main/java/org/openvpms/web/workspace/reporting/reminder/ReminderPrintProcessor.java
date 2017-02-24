@@ -40,7 +40,6 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
-import java.util.Date;
 import java.util.List;
 
 
@@ -152,18 +151,6 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
     }
 
     /**
-     * Returns the date from which a reminder item should be cancelled.
-     *
-     * @param startTime the item start time
-     * @param config    the reminder configuration
-     * @return the date when the item should be cancelled
-     */
-    @Override
-    protected Date getCancelDate(Date startTime, ReminderConfiguration config) {
-        return config.getPrintCancelDate(startTime);
-    }
-
-    /**
      * Returns the contact archetype.
      *
      * @return the contact archetype
@@ -177,7 +164,7 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
      * Processes a list of reminder events.
      *
      * @param contact   the contact to send to
-     * @param reminders the events
+     * @param reminders the reminders
      * @param template  the document template to use
      */
     @Override

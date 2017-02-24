@@ -74,6 +74,15 @@ public class BrowserCRUDWindowTab<T extends IMObject> extends BrowserCRUDWindow<
     }
 
     /**
+     * Invoked when a query is performed.
+     */
+    @Override
+    protected void onQuery() {
+        T selected = getBrowser().getSelected();
+        setSelected(selected);
+    }
+
+    /**
      * Returns the tab component.
      *
      * @return the tab component

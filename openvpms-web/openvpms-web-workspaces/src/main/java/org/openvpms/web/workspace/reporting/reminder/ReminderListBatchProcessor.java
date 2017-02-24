@@ -16,13 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.print.PrinterListener;
-import org.openvpms.web.resource.i18n.Messages;
-
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -33,30 +27,20 @@ import java.util.List;
 public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
 
     /**
-     * The processor.
-     */
-    private final ReminderListProcessor processor;
-
-    /**
-     * The reminders currently being processed.
-     */
-    private PatientReminderProcessor.State state;
-
-    /**
      * Constructs an {@link ReminderListBatchProcessor}.
      *
      * @param query      the query
      * @param processor  the reminder processor
      * @param statistics the statistics
      */
-    public ReminderListBatchProcessor(ReminderItemSource query, ReminderListProcessor processor, Statistics statistics) {
-        super(query, statistics);
-        this.processor = processor;
+    public ReminderListBatchProcessor(ReminderItemSource query, ReminderListProcessor processor,
+                                      Statistics statistics) {
+        super(query, processor, statistics, "reporting.reminder.run.list", "reporting.reminder.list.status.begin",
+              "reporting.reminder.list.status.end", "reporting.reminder.list.status.failed");
         processor.setListener(new PrinterListener() {
             public void printed(String printer) {
                 try {
-                    updateReminders();
-                    notifyCompleted();
+                    completed();
                 } catch (Throwable error) {
                     notifyError(error);
                 }
@@ -74,86 +58,5 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
                 notifyError(cause);
             }
         });
-    }
-
-    /**
-     * Returns the reminder item archetype that this processes.
-     *
-     * @return the reminder item archetype
-     */
-    @Override
-    public String getArchetype() {
-        return processor.getArchetype();
-    }
-
-    /**
-     * The processor title.
-     *
-     * @return the processor title
-     */
-    public String getTitle() {
-        return Messages.get("reporting.reminder.run.list");
-    }
-
-    /**
-     * Processes the batch.
-     */
-    public void process() {
-        setStatus(Messages.get("reporting.reminder.list.status.begin"));
-        state = null;
-        List<ObjectSet> reminders = getReminders();
-        if (!reminders.isEmpty()) {
-            try {
-                state = processor.prepare(reminders, new Date(), getResend());
-                if (!state.getReminders().isEmpty()) {
-                    processor.process(state);
-                } else {
-                    updateReminders();
-                    notifyCompleted();
-                }
-            } catch (OpenVPMSException exception) {
-                notifyError(exception);
-            }
-        } else {
-            notifyCompleted();
-        }
-    }
-
-    /**
-     * Restarts processing.
-     */
-    public void restart() {
-        // no-op
-    }
-
-    /**
-     * Updates reminders.
-     */
-    protected void updateReminders() {
-        if (state != null) {
-            updateReminders(processor, state);
-        }
-    }
-
-    /**
-     * Notifies the listener (if any) of processing completion.
-     */
-    @Override
-    protected void notifyCompleted() {
-        setStatus(Messages.get("reporting.reminder.list.status.end"));
-        super.notifyCompleted();
-    }
-
-    /**
-     * Invoked if an error occurs processing the batch.
-     * <p/>
-     * Sets the error message on each reminder, and notifies any listener.
-     *
-     * @param exception the cause
-     */
-    @Override
-    protected void notifyError(Throwable exception) {
-        setStatus(Messages.get("reporting.reminder.list.status.failed"));
-        super.notifyError(exception);
     }
 }

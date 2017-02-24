@@ -83,26 +83,6 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     }
 
     /**
-     * Completes processing.
-     *
-     * @param state the reminder state
-     */
-    @Override
-    public void complete(State state) {
-        boolean resend = state.getResend();
-        if (!resend) {
-            for (ObjectSet reminder : state.getReminders()) {
-                complete(reminder, state);
-            }
-        }
-        save(state);
-        CommunicationLogger logger = getLogger();
-        if (logger != null && !state.getReminders().isEmpty()) {
-            log(state, logger);
-        }
-    }
-
-    /**
      * Prepares reminders for processing.
      * <p/>
      * This:
@@ -220,14 +200,5 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @param template  the document template to use
      */
     protected abstract void process(Contact contact, List<ObjectSet> reminders, DocumentTemplate template);
-
-
-    /**
-     * Logs reminder communications.
-     *
-     * @param state  the reminder state
-     * @param logger the communication logger
-     */
-    protected abstract void log(State state, CommunicationLogger logger);
 
 }

@@ -34,9 +34,6 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
-import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.CANCELLED;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.COMPLETED;
-
 
 /**
  * Reminder generation workspace.
@@ -114,9 +111,17 @@ public class ReminderWorkspace extends TabbedWorkspace<Act> {
         addTab("reporting.reminder.send", model, new Tab(browser, window));
     }
 
+    /**
+     * Adds a browser for reminder item errors.
+     * <p/>
+     * This provides a date filter, and an option to view all errors.
+     *
+     * @param model the tab model
+     */
     private void addErrorBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("error");
-        ReminderItemQuery query = new ReminderItemQuery(new ReminderItemDateObjectSetQuery(ReminderItemStatus.ERROR));
+        ReminderItemQuery query = new ReminderItemQuery(
+                new ReminderItemDateObjectSetQuery(ReminderItemStatus.ERROR, true));
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
         ReminderItemBrowser browser = new ReminderItemBrowser(query, context);
         ErrorReminderItemCRUDWindow window = new ErrorReminderItemCRUDWindow(browser, context.getContext(),
@@ -127,7 +132,7 @@ public class ReminderWorkspace extends TabbedWorkspace<Act> {
     private void addResendBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("resend");
         ReminderItemDateRangeObjectSetQuery dateRangeQuery = new ReminderItemDateRangeObjectSetQuery(
-                null, COMPLETED, CANCELLED);
+                null, ReminderItemStatus.COMPLETED, ReminderItemStatus.CANCELLED);
         ReminderItemQuery query = new ReminderItemQuery(dateRangeQuery);
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
         ReminderItemBrowser browser = new ReminderItemBrowser(query, context);

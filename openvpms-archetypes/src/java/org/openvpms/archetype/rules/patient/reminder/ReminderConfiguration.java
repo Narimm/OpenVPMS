@@ -20,6 +20,7 @@ import org.joda.time.Period;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -33,12 +34,22 @@ import java.util.Date;
 public class ReminderConfiguration {
 
     /**
+     * The configuration.
+     */
+    private final IMObjectBean bean;
+
+    /**
+     * The location to use when a customer doesn't have a practice location.
+     */
+    private Party location;
+
+    /**
      * The period prior to a reminder due date to start sending email reminders.
      */
     private final Period emailPeriod;
 
     /**
-     * The period after a email reminder item start time when it should no longer be sent.
+     * The period after a email reminder item send date when it should no longer be sent.
      */
     private final Period emailCancelPeriod;
 
@@ -48,7 +59,7 @@ public class ReminderConfiguration {
     private final Period smsPeriod;
 
     /**
-     * The period after an SMS reminder item start time when it should no longer be sent.
+     * The period after an SMS reminder item send date when it should no longer be sent.
      */
     private final Period smsCancelPeriod;
 
@@ -58,7 +69,7 @@ public class ReminderConfiguration {
     private final Period printPeriod;
 
     /**
-     * The period after an print reminder item start time when it should no longer be printed.
+     * The period after an print reminder item send date when it should no longer be printed.
      */
     private final Period printCancelPeriod;
 
@@ -68,7 +79,7 @@ public class ReminderConfiguration {
     private final Period exportPeriod;
 
     /**
-     * The period after an export reminder item start time when it should no longer be exported.
+     * The period after an export reminder item send date when it should no longer be exported.
      */
     private final Period exportCancelPeriod;
 
@@ -78,7 +89,7 @@ public class ReminderConfiguration {
     private final Period listPeriod;
 
     /**
-     * The period after a list reminder item start time when it should no longer be listed.
+     * The period after a list reminder item send date when it should no longer be listed.
      */
     private final Period listCancelPeriod;
 
@@ -94,7 +105,7 @@ public class ReminderConfiguration {
      * @param service the archetype service
      */
     public ReminderConfiguration(IMObject config, IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(config, service);
+        bean = new IMObjectBean(config, service);
         emailPeriod = getPeriod(bean, "email");
         emailCancelPeriod = getPeriod(bean, "emailCancel");
         smsPeriod = getPeriod(bean, "sms");
@@ -109,6 +120,18 @@ public class ReminderConfiguration {
     }
 
     /**
+     * Returns the location to use when a customer doesn't have a preferred practice location.
+     *
+     * @return the location. May be {@code null}
+     */
+    public Party getLocation() {
+        if (location == null) {
+            location = (Party) bean.getNodeTargetObject("location");
+        }
+        return location;
+    }
+
+    /**
      * Returns the period prior to a reminder due date to start sending email reminders.
      *
      * @return the email period
@@ -118,7 +141,7 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the period after a email reminder item start time when it should no longer be sent.
+     * Returns the period after a email reminder item send date when it should no longer be sent.
      *
      * @return the email cancel period
      */
@@ -127,23 +150,23 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the start time for an email reminder item, <em>PRIOR</em> to the due date.
+     * Returns the send date for an email reminder item, <em>PRIOR</em> to the due date.
      *
      * @param dueDate the due date
-     * @return the email reminder item start time
+     * @return the email reminder item send date
      */
-    public Date getEmailStartTime(Date dueDate) {
+    public Date getEmailSendDate(Date dueDate) {
         return DateRules.minus(dueDate, getEmailPeriod());
     }
 
     /**
-     * Returns the date after the specified start time, when an email reminder item should no longer be sent.
+     * Returns the date after the specified send date, when an email reminder item should no longer be sent.
      *
-     * @param startTime the start time
+     * @param sendDate the send date
      * @return the cancel date
      */
-    public Date getEmailCancelDate(Date startTime) {
-        return DateRules.plus(startTime, getEmailCancelPeriod());
+    public Date getEmailCancelDate(Date sendDate) {
+        return DateRules.plus(sendDate, getEmailCancelPeriod());
     }
 
     /**
@@ -156,7 +179,7 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the period after an SMS reminder item start time when it should no longer be sent.
+     * Returns the period after an SMS reminder item send date when it should no longer be sent.
      *
      * @return the SMS cancel period
      */
@@ -165,23 +188,23 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the start time for an SMS reminder item, <em>PRIOR</em> to the due date.
+     * Returns the send date for an SMS reminder item, <em>PRIOR</em> to the due date.
      *
      * @param dueDate the due date
-     * @return the SMS reminder item start time
+     * @return the SMS reminder item send date
      */
-    public Date getSMSStartTime(Date dueDate) {
+    public Date getSMSSendDate(Date dueDate) {
         return DateRules.minus(dueDate, getSMSPeriod());
     }
 
     /**
-     * Returns the date after the specified start time, when an SMS reminder item should no longer be sent.
+     * Returns the date after the specified send date, when an SMS reminder item should no longer be sent.
      *
-     * @param startTime the start time
+     * @param sendDate the send date
      * @return the cancel date
      */
-    public Date getSMSCancelDate(Date startTime) {
-        return DateRules.plus(startTime, getSMSCancelPeriod());
+    public Date getSMSCancelDate(Date sendDate) {
+        return DateRules.plus(sendDate, getSMSCancelPeriod());
     }
 
     /**
@@ -194,7 +217,7 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the period after a print reminder item start time when it should no longer be printed.
+     * Returns the period after a print reminder item send date when it should no longer be printed.
      *
      * @return the print cancel period
      */
@@ -203,23 +226,23 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the start time for a print reminder item, <em>PRIOR</em> to the due date.
+     * Returns the send date for a print reminder item, <em>PRIOR</em> to the due date.
      *
      * @param dueDate the due date
-     * @return the print reminder item start time
+     * @return the print reminder item send date
      */
-    public Date getPrintStartTime(Date dueDate) {
+    public Date getPrintSendDate(Date dueDate) {
         return DateRules.minus(dueDate, getPrintPeriod());
     }
 
     /**
-     * Returns the date after the specified start time, when print reminder item should no longer be printed.
+     * Returns the date after the specified send date, when print reminder item should no longer be printed.
      *
-     * @param startTime the start time
+     * @param sendDate the send date
      * @return the cancel date
      */
-    public Date getPrintCancelDate(Date startTime) {
-        return DateRules.plus(startTime, getPrintCancelPeriod());
+    public Date getPrintCancelDate(Date sendDate) {
+        return DateRules.plus(sendDate, getPrintCancelPeriod());
     }
 
     /**
@@ -232,7 +255,7 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the period after an export reminder item start time when it should no longer be exported.
+     * Returns the period after an export reminder item send date when it should no longer be exported.
      *
      * @return the export cancel period
      */
@@ -241,23 +264,23 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the start time for an export reminder item, <em>PRIOR</em> to the due date.
+     * Returns the send date for an export reminder item, <em>PRIOR</em> to the due date.
      *
      * @param dueDate the due date
-     * @return the export reminder item start time
+     * @return the export reminder item send date
      */
-    public Date getExportStartTime(Date dueDate) {
+    public Date getExportStartDate(Date dueDate) {
         return DateRules.minus(dueDate, getExportPeriod());
     }
 
     /**
-     * Returns the date after the specified start time, when an export reminder item should no longer be exported.
+     * Returns the date after the specified send date, when an export reminder item should no longer be exported.
      *
-     * @param startTime the start time
+     * @param sendDate the send date
      * @return the cancel date
      */
-    public Date getExportCancelDate(Date startTime) {
-        return DateRules.plus(startTime, getExportCancelPeriod());
+    public Date getExportCancelDate(Date sendDate) {
+        return DateRules.plus(sendDate, getExportCancelPeriod());
     }
 
     /**
@@ -270,7 +293,7 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the period after a list reminder item start time when it should no longer be listed.
+     * Returns the period after a list reminder item send date when it should no longer be listed.
      *
      * @return the list cancel period
      */
@@ -279,23 +302,23 @@ public class ReminderConfiguration {
     }
 
     /**
-     * Returns the start time for a list reminder item, <em>PRIOR</em> to the due date.
+     * Returns the send date for a list reminder item, <em>PRIOR</em> to the due date.
      *
      * @param dueDate the due date
-     * @return the list reminder item start time
+     * @return the list reminder item send date
      */
-    public Date getListStartTime(Date dueDate) {
+    public Date getListStartDate(Date dueDate) {
         return DateRules.minus(dueDate, getListPeriod());
     }
 
     /**
-     * Returns the date after the specified start time, when a list reminder item should no longer be listed.
+     * Returns the date after the specified send date, when a list reminder item should no longer be listed.
      *
-     * @param startTime the start time
+     * @param sendDate the send date
      * @return the cancel date
      */
-    public Date getListCancelDate(Date startTime) {
-        return DateRules.plus(startTime, getListCancelPeriod());
+    public Date getListCancelDate(Date sendDate) {
+        return DateRules.plus(sendDate, getListCancelPeriod());
     }
 
     /**
@@ -312,6 +335,52 @@ public class ReminderConfiguration {
         result = DateRules.max(result, DateRules.plus(date, getExportPeriod()));
         result = DateRules.max(result, DateRules.plus(date, getListPeriod()));
         return result;
+    }
+
+    /**
+     * Returns the send date for a reminder item.
+     *
+     * @param dueDate   the reminder due date
+     * @param archetype the reminder item archetype
+     * @return the send date, or {@code null} if the archetype is unknown
+     */
+    public Date getSendDate(Date dueDate, String archetype) {
+        switch (archetype) {
+            case ReminderArchetypes.EMAIL_REMINDER:
+                return getEmailSendDate(dueDate);
+            case ReminderArchetypes.SMS_REMINDER:
+                return getSMSSendDate(dueDate);
+            case ReminderArchetypes.PRINT_REMINDER:
+                return getPrintSendDate(dueDate);
+            case ReminderArchetypes.EXPORT_REMINDER:
+                return getExportStartDate(dueDate);
+            case ReminderArchetypes.LIST_REMINDER:
+                return getListStartDate(dueDate);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the date after the specified send date, when a reminder item should no longer be sent.
+     *
+     * @param sendDate  the reminder item send date
+     * @param archetype the reminder item archetype
+     * @return the cancel date, or {@code null} if the archetype is unknown
+     */
+    public Date getCancelDate(Date sendDate, String archetype) {
+        switch (archetype) {
+            case ReminderArchetypes.EMAIL_REMINDER:
+                return getEmailCancelDate(sendDate);
+            case ReminderArchetypes.SMS_REMINDER:
+                return getSMSCancelDate(sendDate);
+            case ReminderArchetypes.PRINT_REMINDER:
+                return getPrintCancelDate(sendDate);
+            case ReminderArchetypes.EXPORT_REMINDER:
+                return getExportCancelDate(sendDate);
+            case ReminderArchetypes.LIST_REMINDER:
+                return getListCancelDate(sendDate);
+        }
+        return null;
     }
 
     /**

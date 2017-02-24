@@ -53,7 +53,7 @@ class ErrorReminderItemCRUDWindow extends ReminderItemCRUDWindow {
     private static final String RESOLVE_ALL_ID = "button.resolveAll";
 
     /**
-     * Constructs a {@link ErrorReminderItemCRUDWindow}.
+     * Constructs an {@link ErrorReminderItemCRUDWindow}.
      *
      * @param browser the browser
      * @param context the context

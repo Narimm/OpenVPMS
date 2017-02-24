@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import echopointng.DateField;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
@@ -25,12 +26,15 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Date;
 
@@ -42,19 +46,65 @@ import java.util.Date;
 public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
 
     /**
+     * The 'all dates' checkbox.
+     */
+    private final SimpleProperty all;
+
+    /**
      * The date.
      */
-    private SimpleProperty date = new SimpleProperty(
+    private final SimpleProperty date = new SimpleProperty(
             "date", null, Date.class, DescriptorHelper.getDisplayName(ReminderArchetypes.PRINT_REMINDER, "startTime"));
+
+    /**
+     * The date label.
+     */
+    private Label dateLabel;
+
+    /**
+     * The date field.
+     */
+    private DateField dateField;
+
+    /**
+     * Date change listener.
+     */
     private final ModifiableListener listener;
 
 
     /**
      * Constructs a {@link ReminderItemDateObjectSetQuery}.
+     *
+     * @param status the reminder item status to query
      */
     public ReminderItemDateObjectSetQuery(String status) {
+        this(status, false);
+    }
+
+    /**
+     * Constructs a {@link ReminderItemDateObjectSetQuery}.
+     *
+     * @param status the reminder item status to query
+     * @param all    if {@code true}, query all dates
+     */
+    public ReminderItemDateObjectSetQuery(String status, boolean all) {
         super(status);
         date.setValue(DateRules.getToday());
+        dateLabel = LabelFactory.create();
+        dateLabel.setText(date.getDisplayName());
+        dateField = BoundDateFieldFactory.create(date);
+        if (all) {
+            this.all = new SimpleProperty("all", true, Date.class, Messages.get("daterange.all"));
+            this.all.addModifiableListener(new ModifiableListener() {
+                @Override
+                public void modified(Modifiable modifiable) {
+                    onAllChanged();
+                }
+            });
+            enableDate();
+        } else {
+            this.all = null;
+        }
         listener = new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
@@ -72,12 +122,14 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
      */
     @Override
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        Date to = date.getDate();
-        if (to == null) {
-            to = DateRules.getToday();
-            date.removeModifiableListener(listener);
-            date.setValue(to);
-            date.addModifiableListener(listener);
+        if (all == null) {
+            Date to = date.getDate();
+            if (to == null) {
+                to = DateRules.getToday();
+                date.removeModifiableListener(listener);
+                date.setValue(to);
+                date.addModifiableListener(listener);
+            }
         }
         return super.createResultSet(sort);
     }
@@ -91,10 +143,14 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        Label label = LabelFactory.create();
-        label.setText(date.getDisplayName());
-        container.add(label);
-        container.add(BoundDateFieldFactory.create(date));
+        if (all != null) {
+            Label allLabel = LabelFactory.create();
+            allLabel.setText(all.getDisplayName());
+            container.add(allLabel);
+            container.add(new BoundCheckBox(all));
+        }
+        container.add(dateLabel);
+        container.add(dateField);
     }
 
     /**
@@ -113,9 +169,29 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
         }
         factory.setStatuses(getStatuses());
         factory.setFrom(null);
-        Date to = date.getDate();
-        factory.setTo(DateRules.getNextDate(to));
+        if (all != null && all.getBoolean()) {
+            factory.setTo(null);
+        } else {
+            Date to = date.getDate();
+            factory.setTo(DateRules.getNextDate(to));
+        }
         return factory.createQuery();
     }
 
+    /**
+     * Invoked when the All checkbox changes.
+     */
+    private void onAllChanged() {
+        enableDate();
+        onQuery();
+    }
+
+    /**
+     * Enables the date field if All is unticked, otherwise disables it.
+     */
+    private void enableDate() {
+        boolean enable = !all.getBoolean();
+        ComponentHelper.enable(dateLabel, enable);
+        ComponentHelper.enable(dateField, enable);
+    }
 }
