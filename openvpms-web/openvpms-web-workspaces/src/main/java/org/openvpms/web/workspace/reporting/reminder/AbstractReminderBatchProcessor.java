@@ -21,10 +21,13 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.resource.i18n.Messages;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,9 +43,39 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     private final List<ObjectSet> reminders;
 
     /**
+     * The processor.
+     */
+    private final PatientReminderProcessor processor;
+
+    /**
+     * The reminders currently being processed.
+     */
+    private PatientReminderProcessor.State state;
+
+    /**
      * The statistics.
      */
     private final Statistics statistics;
+
+    /**
+     * Title localisation key.
+     */
+    private final String titleKey;
+
+    /**
+     * Begin localisation key.
+     */
+    private final String beginKey;
+
+    /**
+     * End localisation key.
+     */
+    private final String completedKey;
+
+    /**
+     * Failure localisation key.
+     */
+    private final String failedKey;
 
     /**
      * The component layout row.
@@ -57,13 +90,35 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * Constructs an {@link AbstractReminderBatchProcessor}.
      *
-     * @param query      the query
-     * @param statistics the statistics
+     * @param query        the query
+     * @param processor    the processor
+     * @param statistics   the statistics
+     * @param titleKey     the title localisation key
+     * @param beginKey     the begin localisation key
+     * @param completedKey the completed localisation key
+     * @param failedKey    the failed localisation key
      */
-    public AbstractReminderBatchProcessor(ReminderItemSource query, Statistics statistics) {
+    public AbstractReminderBatchProcessor(ReminderItemSource query, PatientReminderProcessor processor,
+                                          Statistics statistics, String titleKey, String beginKey,
+                                          String completedKey, String failedKey) {
         reminders = query.all();
+        this.processor = processor;
         this.statistics = statistics;
+        this.titleKey = titleKey;
+        this.beginKey = beginKey;
+        this.completedKey = completedKey;
+        this.failedKey = failedKey;
         row = RowFactory.create();
+    }
+
+    /**
+     * Returns the reminder item archetype that this processes.
+     *
+     * @return the reminder item archetype
+     */
+    @Override
+    public String getArchetype() {
+        return processor.getArchetype();
     }
 
     /**
@@ -111,6 +166,67 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
+     * Returns the processor title.
+     *
+     * @return the processor title
+     */
+    @Override
+    public String getTitle() {
+        return Messages.get(titleKey);
+    }
+
+    /**
+     * Processes the batch.
+     */
+    public void process() {
+        if (beginKey != null) {
+            setStatus(Messages.get(beginKey));
+        } else {
+            setStatus(null);
+        }
+        state = null;
+        List<ObjectSet> reminders = getReminders();
+        if (!reminders.isEmpty()) {
+            try {
+                state = processor.prepare(reminders, new Date(), getResend());
+                if (!state.getReminders().isEmpty()) {
+                    processor.process(state);
+                    if (!processor.isAsynchronous()) {
+                        completed();
+                    }
+                } else {
+                    completed();
+                }
+            } catch (OpenVPMSException exception) {
+                notifyError(exception);
+            }
+        } else {
+            notifyCompleted();
+        }
+    }
+
+    protected void completed() {
+        updateReminders();
+        notifyCompleted();
+    }
+
+    /**
+     * Restarts processing.
+     */
+    public void restart() {
+        // no-op
+    }
+
+    /**
+     * Notifies the listener (if any) of processing completion.
+     */
+    @Override
+    protected void notifyCompleted() {
+        setStatus(Messages.get(completedKey));
+        super.notifyCompleted();
+    }
+
+    /**
      * Sets the status.
      *
      * @param status the status message
@@ -123,14 +239,14 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
-     * Updates the progress bar with the count of processed reminders and calculates statistics.
-     *
-     * @param processor the processor
-     * @param state     the processed reminders
+     * Updates reminders.
      */
-    protected void updateReminders(PatientReminderProcessor processor, PatientReminderProcessor.State state) {
-        setProcessed(reminders.size());
-        processor.addStatistics(state, statistics);
+    protected void updateReminders() {
+        if (state != null) {
+            setProcessed(reminders.size());
+            processor.complete(state);
+            processor.addStatistics(state, statistics);
+        }
     }
 
     /**
@@ -141,6 +257,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     @Override
     protected void notifyError(Throwable exception) {
+        setStatus(Messages.get(failedKey));
         for (ObjectSet set : reminders) {
             if (!resend) {
                 Act reminder = (Act) set.get("item");

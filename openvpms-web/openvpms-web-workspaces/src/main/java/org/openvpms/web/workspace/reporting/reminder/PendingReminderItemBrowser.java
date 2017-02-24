@@ -97,7 +97,7 @@ class PendingReminderItemBrowser extends ReminderItemBrowser {
                                                       configuration.getName()));
                     } else {
                         label.setText(Messages.format("reporting.reminder.send.scheduled",
-                                                      DateFormatter.formatDateTime(date, false)));
+                                                      DateFormatter.formatDateTimeAbbrev(date)));
 
                     }
                 }

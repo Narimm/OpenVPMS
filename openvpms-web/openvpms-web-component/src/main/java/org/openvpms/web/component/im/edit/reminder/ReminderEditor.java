@@ -173,6 +173,11 @@ public class ReminderEditor extends PatientActEditor {
             };
             reminderType.addModifiableListener(listener);
         }
+
+        ActRelationshipCollectionEditor items = getItems();
+        if (items != null) {
+            items.setExcludeDefaultValueObject(false);
+        }
     }
 
     /**
@@ -210,8 +215,11 @@ public class ReminderEditor extends PatientActEditor {
                 setStartTime(end, true);
             }
         }
+        updateReminderItemSendDates();
+    }
 
-        // propagate the next due date to each of the reminder items with the same reminder count.
+    private void updateReminderItemSendDates() {
+        Date start;// propagate the next due date to each of the reminder items with the same reminder count.
         ActRelationshipCollectionEditor items = getItems();
         if (items != null) {
             start = getStartTime();
@@ -238,6 +246,8 @@ public class ReminderEditor extends PatientActEditor {
         Date end = getEndTime();
         if (end != null || getReminderCount() == 0) {
             setStartTime(end, true);
+
+            updateReminderItemSendDates();
         }
     }
 

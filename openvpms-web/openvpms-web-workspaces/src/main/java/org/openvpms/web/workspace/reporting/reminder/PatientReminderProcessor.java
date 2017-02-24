@@ -204,10 +204,6 @@ public abstract class PatientReminderProcessor {
             } else {
                 toProcess.add(set);
             }
-            if (item.isNew()) {
-                // items generated for resend are saved, unless the send is cancelled
-                updated.add(item);
-            }
         }
         if (!toProcess.isEmpty()) {
             toProcess = prepare(toProcess, updated, errors);
@@ -234,7 +230,25 @@ public abstract class PatientReminderProcessor {
      *
      * @param state the reminder state
      */
-    public abstract void complete(State state);
+    public void complete(State state) {
+        boolean resend = state.getResend();
+        for (ObjectSet set : state.getReminders()) {
+            if (!resend) {
+                complete(set, state);
+            } else {
+                // if its a resend of a reminder, but the reminder item is new, complete it, if it isn't in error
+                Act item = getItem(set);
+                if (item.isNew() && !ReminderItemStatus.ERROR.equals(item.getStatus())) {
+                    completeItem(set, state);
+                }
+            }
+        }
+        save(state);
+        CommunicationLogger logger = getLogger();
+        if (logger != null && !state.getReminders().isEmpty()) {
+            log(state, logger);
+        }
+    }
 
     /**
      * Collects statistics from the supplied state.
@@ -301,18 +315,17 @@ public abstract class PatientReminderProcessor {
      * @return {@code true} if the reminder item should be cancelled
      */
     protected boolean shouldCancel(Act item, Date from) {
-        Date cancel = getCancelDate(item.getActivityStartTime(), config);
+        Date cancel = config.getCancelDate(item.getActivityStartTime(), getArchetype());
         return DateRules.compareDates(cancel, from) <= 0;
     }
 
     /**
-     * Returns the date from which a reminder item should be cancelled.
+     * Logs reminder communications.
      *
-     * @param startTime the item start time
-     * @param config    the reminder configuration
-     * @return the date when the item should be cancelled
+     * @param state  the reminder state
+     * @param logger the communication logger
      */
-    protected abstract Date getCancelDate(Date startTime, ReminderConfiguration config);
+    protected abstract void log(State state, CommunicationLogger logger);
 
     /**
      * Saves the state.
@@ -320,17 +333,25 @@ public abstract class PatientReminderProcessor {
      * @param state the state
      */
     protected void save(State state) {
-        service.save(state.getUpdated());
+        List<Act> updated = state.getUpdated();
+        if (!updated.isEmpty()) {
+            service.save(updated);
+        }
     }
 
     /**
-     * Returns the customer's preferred practice location.
+     * Returns the practice location to use when send reminders to a customer.
      *
      * @param customer the customer
-     * @return the customer's preferred practice location, or {@code null} if none is found
+     * @return the customer's preferred practice location, or the fallback reminder configuration location if the
+     * customer has none. May be {@code null}
      */
-    protected Party getCustomerLocation(Party customer) {
-        return (Party) new IMObjectBean(customer, service).getNodeTargetObject("practice");
+    protected Party getLocation(Party customer) {
+        Party location = (Party) new IMObjectBean(customer, service).getNodeTargetObject("practice");
+        if (location == null) {
+            location = config.getLocation();
+        }
+        return location;
     }
 
     /**
@@ -376,19 +397,28 @@ public abstract class PatientReminderProcessor {
      */
     protected void populate(List<ObjectSet> reminders) {
         for (ObjectSet set : reminders) {
-            Act reminder = getReminder(set);
-            Act item = getItem(set);
-            ActBean bean = new ActBean(reminder, service);
-            ActBean itemBean = new ActBean(item, service);
-            IMObjectReference reminderTypeRef = bean.getNodeParticipantRef("reminderType");
-            ReminderType reminderType = reminderTypes.get(reminderTypeRef);
-            set.set("reminderType", reminderType != null ? reminderType.getEntity() : null);
-            set.set("product", bean.getNodeParticipant("product"));
-            set.set("clinician", bean.getNodeParticipant("clinician"));
-            set.set("startTime", reminder.getActivityStartTime());
-            set.set("endTime", reminder.getActivityEndTime());
-            set.set("reminderCount", itemBean.getInt("count"));
+            populate(set);
         }
+    }
+
+    /**
+     * Adds meta-data to a reminder.
+     *
+     * @param set the reminder
+     */
+    protected void populate(ObjectSet set) {
+        Act reminder = getReminder(set);
+        Act item = getItem(set);
+        ActBean bean = new ActBean(reminder, service);
+        ActBean itemBean = new ActBean(item, service);
+        IMObjectReference reminderTypeRef = bean.getNodeParticipantRef("reminderType");
+        ReminderType reminderType = reminderTypes.get(reminderTypeRef);
+        set.set("reminderType", reminderType != null ? reminderType.getEntity() : null);
+        set.set("product", bean.getNodeParticipant("product"));
+        set.set("clinician", bean.getNodeParticipant("clinician"));
+        set.set("startTime", reminder.getActivityStartTime());
+        set.set("endTime", reminder.getActivityEndTime());
+        set.set("reminderCount", itemBean.getInt("count"));
     }
 
     /**
@@ -400,7 +430,7 @@ public abstract class PatientReminderProcessor {
     protected Context createContext(ObjectSet reminder) {
         Party patient = getPatient(reminder);
         Party customer = getCustomer(reminder);
-        Party location = getCustomerLocation(customer);
+        Party location = getLocation(customer);
         Context context = new LocalContext();
         context.setPatient(patient);
         context.setCustomer(customer);
@@ -511,13 +541,24 @@ public abstract class PatientReminderProcessor {
      * @param state the processing state
      */
     protected void complete(ObjectSet event, State state) {
-        Act item = updateItem(event, ReminderItemStatus.COMPLETED, null);
-        state.updated(item);
+        Act item = completeItem(event, state);
         Act reminder = getReminder(event);
         updateReminder(reminder, item);
         ActBean bean = new ActBean(reminder);
         bean.setValue("lastSent", new Date());
         state.updated(reminder);
+    }
+
+    /**
+     * Completes a reminder item.
+     *
+     * @param event the reminder event
+     * @param state the processing state
+     */
+    protected Act completeItem(ObjectSet event, State state) {
+        Act item = updateItem(event, ReminderItemStatus.COMPLETED, null);
+        state.updated(item);
+        return item;
     }
 
     /**
@@ -561,6 +602,7 @@ public abstract class PatientReminderProcessor {
      * @param message the error message. May be {@code null}
      */
     protected void updateItem(Act item, String status, String message) {
+        item.setActivityStartTime(new Date()); // update the send time to when it was actually sent
         item.setStatus(status);
         ActBean bean = new ActBean(item, service);
         bean.setValue("error", message);

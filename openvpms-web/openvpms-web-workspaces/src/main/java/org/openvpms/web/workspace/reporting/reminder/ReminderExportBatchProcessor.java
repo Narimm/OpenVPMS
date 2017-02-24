@@ -16,21 +16,12 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.resource.i18n.Messages;
-
-import java.util.Date;
-import java.util.List;
-
 /**
  * Exports reminders.
  *
  * @author Tim Anderson
  */
 public class ReminderExportBatchProcessor extends AbstractReminderBatchProcessor {
-
-    private final ReminderExportProcessor processor;
 
     /**
      * Constructs a {@link ReminderExportBatchProcessor}.
@@ -41,75 +32,8 @@ public class ReminderExportBatchProcessor extends AbstractReminderBatchProcessor
      */
     public ReminderExportBatchProcessor(ReminderItemSource query, ReminderExportProcessor processor,
                                         Statistics statistics) {
-        super(query, statistics);
-        this.processor = processor;
-    }
-
-    /**
-     * Returns the reminder item archetype that this processes.
-     *
-     * @return the reminder item archetype
-     */
-    @Override
-    public String getArchetype() {
-        return processor.getArchetype();
-    }
-
-    /**
-     * The processor title.
-     *
-     * @return the processor title
-     */
-    public String getTitle() {
-        return Messages.get("reporting.reminder.run.export");
-    }
-
-    /**
-     * Processes the batch.
-     */
-    public void process() {
-        List<ObjectSet> reminders = getReminders();
-        if (!reminders.isEmpty()) {
-            try {
-                PatientReminderProcessor.State state = processor.prepare(reminders, new Date(), getResend());
-                processor.process(state);
-                updateReminders(processor, state);
-                notifyCompleted();
-            } catch (OpenVPMSException exception) {
-                notifyError(exception);
-            }
-        } else {
-            notifyCompleted();
-        }
-    }
-
-    /**
-     * Restarts processing.
-     */
-    public void restart() {
-        // no-op
-    }
-
-    /**
-     * Notifies the listener (if any) of processing completion.
-     */
-    @Override
-    protected void notifyCompleted() {
-        setStatus(Messages.get("reporting.reminder.export.status.end"));
-        super.notifyCompleted();
-    }
-
-    /**
-     * Invoked if an error occurs processing the batch.
-     * <p/>
-     * Sets the error message on each reminder, and notifies any listener.
-     *
-     * @param exception the cause
-     */
-    @Override
-    protected void notifyError(Throwable exception) {
-        setStatus(Messages.get("reporting.reminder.export.status.failed"));
-        super.notifyError(exception);
+        super(query, processor, statistics, "reporting.reminder.run.export", null,
+              "reporting.reminder.export.status.end", "reporting.reminder.export.status.failed");
     }
 
 }

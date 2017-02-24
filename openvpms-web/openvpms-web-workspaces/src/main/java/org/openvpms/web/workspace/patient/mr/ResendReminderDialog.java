@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCount;
-import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
@@ -223,6 +222,7 @@ class ResendReminderDialog extends PopupDialog {
     private void generate(final int reminderCount, Contact contact) {
         Act item = rules.getReminderItem(reminder, reminderCount, contact);
         if (item == null) {
+            // no reminder item was created for the contact type. Create one now.
             item = processor.process(reminder, reminderCount, contact);
             // set the date to today, rather than the date when it should have been sent
             item.setActivityStartTime(new Date());
@@ -238,8 +238,7 @@ class ResendReminderDialog extends PopupDialog {
     private void generate(final Act item) {
         CustomerMailContext mailContext = CustomerMailContext.create(customer, patient, context, getHelpContext());
         ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
-        final ReminderGenerator generator = factory.create(item, reminder, context, mailContext, getHelpContext());
-        item.setStatus(ReminderItemStatus.COMPLETED);
+        ReminderGenerator generator = factory.create(item, reminder, context, mailContext, getHelpContext());
         generator.setResend(true);
         generator.setListener(new BatchProcessorListener() {
             public void completed() {

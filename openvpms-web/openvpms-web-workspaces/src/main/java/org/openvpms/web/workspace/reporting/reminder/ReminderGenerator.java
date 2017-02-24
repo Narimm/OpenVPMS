@@ -258,12 +258,12 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Returns the no. of errors encountered during processing.
+     * Returns the statistics.
      *
-     * @return the no. of errors
+     * @return the statistics
      */
-    public int getErrors() {
-        return statistics.getErrors();
+    public Statistics getStatistics() {
+        return statistics;
     }
 
     /**

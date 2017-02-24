@@ -51,7 +51,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     /**
      * Determines if reminders are being reprocessed.
      */
-    private boolean resend = true;
+    private boolean resend = false;
 
     /**
      * The statistics.
@@ -126,10 +126,14 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
         this.currentState = null;
         try {
             currentState = processor.prepare(reminders, new Date(), resend);
-            processor.process(currentState);
-            if (processor.isAsynchronous()) {
-                // need to process these reminders asynchronously, so suspend
-                setSuspend(true);
+            if (!currentState.getReminders().isEmpty()) {
+                processor.process(currentState);
+                if (processor.isAsynchronous()) {
+                    // need to process these reminders asynchronously, so suspend
+                    setSuspend(true);
+                } else {
+                    processCompleted();
+                }
             } else {
                 processCompleted();
             }
