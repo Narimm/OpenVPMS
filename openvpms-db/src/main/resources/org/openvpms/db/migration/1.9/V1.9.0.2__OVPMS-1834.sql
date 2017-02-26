@@ -112,7 +112,7 @@ SET t.reminder_count_id = e.entity_id;
 INSERT INTO entity_details (entity_id, name, type, value)
   SELECT
     t.reminder_count_id,
-    'reminderCount',
+    'count',
     'int',
     t.reminderCount
   FROM tmp_reminder_counts t
@@ -120,7 +120,7 @@ INSERT INTO entity_details (entity_id, name, type, value)
         AND NOT exists(SELECT *
                        FROM entity_details d
                        WHERE d.entity_id = t.reminder_count_id
-                             AND d.name = 'reminderCount');
+                             AND d.name = 'count');
 
 INSERT INTO entity_details (entity_id, name, type, value)
   SELECT
@@ -184,7 +184,7 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, acti
     'Reminder Rule',
     1
   FROM tmp_reminder_counts t
-  WHERE (t.list = 'true' OR t.sms = 'true' OR t.export = 'true') AND NOT exists(
+  WHERE NOT exists(
       SELECT *
       FROM entities e
       WHERE e.arch_short_name = 'entity.reminderRule'
@@ -205,8 +205,10 @@ INSERT INTO entity_details (entity_id, name, type, value)
       THEN 'list'
     WHEN t.export = 'true'
       THEN 'export'
+    WHEN t.sms = 'true'
+      THEN 'sms'
     ELSE
-      'sms'
+      'contact'
     END,
     'boolean',
     'true'
@@ -221,7 +223,7 @@ INSERT INTO entity_details (entity_id, name, type, value)
     t.rule_id,
     'sendTo',
     'string',
-    'ANY'
+    'FIRST'
   FROM tmp_reminder_counts t
   WHERE rule_id IS NOT NULL
         AND NOT exists(SELECT *
@@ -281,8 +283,11 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
 #
 # Delete entityRelationship.reminderTypeTemplate
 #
-DELETE r
-FROM entity_relationship_details r
+DELETE d
+FROM entity_relationship_details d
+  JOIN entity_relationships r
+    ON r.entity_relationship_id = d.entity_relationship_id
+       AND r.arch_short_name = 'entityRelationship.reminderTypeTemplate'
   JOIN tmp_reminder_counts t
     ON r.entity_relationship_id = t.relationship_id;
 
