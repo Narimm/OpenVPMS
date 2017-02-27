@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.resource.i18n.Messages;
@@ -38,9 +37,8 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      */
     public ReminderPrintProgressBarProcessor(ReminderItemSource query, ReminderPrintProcessor processor,
                                              Statistics statistics) {
-        super(processor, statistics, Messages.get("reporting.reminder.run.print"));
+        super(query, processor, statistics, Messages.get("reporting.reminder.run.print"));
 
-        initIterator(ReminderArchetypes.PRINT_REMINDER, query);
         PrinterListener listener = new PrinterListener() {
             public void printed(String printer) {
                 try {

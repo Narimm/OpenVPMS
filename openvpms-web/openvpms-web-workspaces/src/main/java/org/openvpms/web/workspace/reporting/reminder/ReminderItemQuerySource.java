@@ -17,7 +17,10 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderGroupingPolicy;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -48,14 +51,29 @@ public class ReminderItemQuerySource implements ReminderItemSource {
     private final ReminderTypes reminderTypes;
 
     /**
+     * Determines the policy when a reminder type indicates {@link ReminderType.GroupBy#CUSTOMER}.
+     */
+    private final ReminderGroupingPolicy groupByCustomer;
+
+    /**
+     * Determines the policy when a reminder type indicates {@link ReminderType.GroupBy#PATIENT}.
+     */
+    private final ReminderGroupingPolicy groupByPatient;
+
+
+    /**
      * Constructs a {@link ReminderItemQuerySource}.
      *
      * @param factory       the query factory
      * @param reminderTypes the reminder types
+     * @param configuration the reminder coonfiguration
      */
-    public ReminderItemQuerySource(ReminderItemQueryFactory factory, ReminderTypes reminderTypes) {
+    public ReminderItemQuerySource(ReminderItemQueryFactory factory, ReminderTypes reminderTypes,
+                                   ReminderConfiguration configuration) {
         this.factory = factory;
         this.reminderTypes = reminderTypes;
+        groupByCustomer = configuration.getGroupByCustomerPolicy();
+        groupByPatient = configuration.getGroupByPatientPolicy();
     }
 
     /**
@@ -84,11 +102,12 @@ public class ReminderItemQuerySource implements ReminderItemSource {
      *
      * @return the items matching the query
      */
-    public Iterable<List<ObjectSet>> query() {
-        return new Iterable<List<ObjectSet>>() {
+    public Iterable<GroupingReminderIterator.Reminders> query() {
+        return new Iterable<GroupingReminderIterator.Reminders>() {
             @Override
-            public Iterator<List<ObjectSet>> iterator() {
-                return new GroupingReminderIterator(factory, reminderTypes, 1000, ServiceHelper.getArchetypeService());
+            public Iterator<GroupingReminderIterator.Reminders> iterator() {
+                return new GroupingReminderIterator(factory, reminderTypes, 1000, groupByCustomer, groupByPatient,
+                                                    ServiceHelper.getArchetypeService());
             }
         };
     }

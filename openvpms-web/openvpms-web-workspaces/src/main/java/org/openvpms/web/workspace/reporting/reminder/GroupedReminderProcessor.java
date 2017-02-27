@@ -37,6 +37,8 @@ import org.openvpms.web.workspace.reporting.ReportingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.NoCustomerGroupedReminderTemplate;
+import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.NoPatientGroupedReminderTemplate;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
 
 
@@ -48,14 +50,8 @@ import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.
 public abstract class GroupedReminderProcessor extends PatientReminderProcessor {
 
     /**
-     * The grouped reminder template.
-     */
-    private final DocumentTemplate groupTemplate;
-
-    /**
      * Constructs a {@link GroupedReminderProcessor}.
      *
-     * @param groupTemplate the grouped reminder template
      * @param reminderTypes the reminder types
      * @param rules         the reminder rules
      * @param practice      the practice
@@ -63,11 +59,10 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public GroupedReminderProcessor(DocumentTemplate groupTemplate, ReminderTypes reminderTypes,
-                                    ReminderRules rules, Party practice, IArchetypeService service,
-                                    ReminderConfiguration config, CommunicationLogger logger) {
+    public GroupedReminderProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party practice,
+                                    IArchetypeService service, ReminderConfiguration config,
+                                    CommunicationLogger logger) {
         super(reminderTypes, rules, practice, service, config, logger);
-        this.groupTemplate = groupTemplate;
     }
 
     /**
@@ -79,7 +74,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     public void process(State state) {
         List<ObjectSet> reminders = state.getReminders();
         Contact contact = (Contact) reminders.get(0).get("contact");
-        process(contact, reminders);
+        process(contact, reminders, state.getGroupBy());
     }
 
     /**
@@ -138,14 +133,27 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      *
      * @param contact   the contact to send to
      * @param reminders the reminders
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
      */
-    protected void process(Contact contact, List<ObjectSet> reminders) {
+    protected void process(Contact contact, List<ObjectSet> reminders, ReminderType.GroupBy groupBy) {
         DocumentTemplate template;
 
         populate(reminders);
 
         if (reminders.size() > 1) {
-            template = groupTemplate;
+            if (groupBy == ReminderType.GroupBy.CUSTOMER) {
+                template = getConfig().getCustomerGroupedReminderTemplate();
+                if (template == null) {
+                    throw new ReportingException(NoCustomerGroupedReminderTemplate);
+                }
+            } else if (groupBy == ReminderType.GroupBy.PATIENT) {
+                template = getConfig().getPatientGroupedReminderTemplate();
+                if (template == null) {
+                    throw new ReportingException(NoPatientGroupedReminderTemplate);
+                }
+            } else {
+                throw new IllegalArgumentException("Multiple reminders specified for incorrect groupBy: " + groupBy);
+            }
         } else {
             ObjectSet first = reminders.get(0);
             ReminderType reminderType = getReminderType(first);

@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.apache.commons.collections4.iterators.PushbackIterator;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType.GroupBy;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -24,6 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -34,12 +36,47 @@ import java.util.NoSuchElementException;
  * @author Tim Anderson
  * @see ReminderItemQueryFactory
  */
-public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
+public class GroupingReminderIterator implements Iterator<GroupingReminderIterator.Reminders> {
+
+    public static class Reminders {
+
+        private List<ObjectSet> sets;
+
+        private GroupBy groupBy;
+
+        public Reminders(ObjectSet set) {
+            this(Collections.singletonList(set), GroupBy.NONE);
+        }
+
+        public Reminders(List<ObjectSet> sets, GroupBy groupBy) {
+            this.sets = sets;
+            this.groupBy = groupBy;
+        }
+
+        public List<ObjectSet> getReminders() {
+            return sets;
+        }
+
+        public GroupBy getGroupBy() {
+            return groupBy;
+        }
+
+    }
 
     /**
      * The cache of reminder types.
      */
     private final ReminderTypes reminderTypes;
+
+    /**
+     * Determines the policy to use when a reminder type indicates to group by customer.
+     */
+    private final ReminderGroupingPolicy groupByCustomer;
+
+    /**
+     * Determines the policy to use when a reminder type indicates to group by patient.
+     */
+    private final ReminderGroupingPolicy groupByPatient;
 
     /**
      * The archetype service.
@@ -59,35 +96,40 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
     /**
      * Reminders grouped by customer.
      */
-    private List<ObjectSet> groupByCustomer;
+    private List<ObjectSet> remindersByCustomer;
 
     /**
      * Reminders grouped by patient.
      */
-    private List<ObjectSet> groupByPatient;
+    private List<ObjectSet> remindersByPatient;
 
     /**
      * Reminders with no group.
      */
-    private List<ObjectSet> noGroup;
+    private List<ObjectSet> ungroupedReminders;
 
     /**
      * The next reminders to process.
      */
-    private List<ObjectSet> next;
+    private Reminders next;
 
     /**
      * Constructs a {@link GroupingReminderIterator}.
      *
-     * @param factory       the reminder item query factory
-     * @param reminderTypes the reminder type cache
-     * @param pageSize      the query page size
-     * @param service       the archetype service
+     * @param factory         the reminder item query factory
+     * @param reminderTypes   the reminder type cache
+     * @param pageSize        the query page size
+     * @param groupByCustomer determines the policy to use when a reminder type indicates to group by customer
+     * @param groupByPatient  determines the policy to use when a reminder type indicates to group by patient
+     * @param service         the archetype service
      */
     public GroupingReminderIterator(ReminderItemQueryFactory factory, ReminderTypes reminderTypes,
-                                    int pageSize, IArchetypeService service) {
+                                    int pageSize, ReminderGroupingPolicy groupByCustomer, ReminderGroupingPolicy groupByPatient,
+                                    IArchetypeService service) {
         this.service = service;
         this.reminderTypes = reminderTypes;
+        this.groupByCustomer = groupByCustomer;
+        this.groupByPatient = groupByPatient;
         pagedIterator = new PagedReminderIterator(factory, pageSize, service);
         pushbackIterator = new PushbackIterator<>(pagedIterator);
     }
@@ -113,14 +155,14 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
      * @throws NoSuchElementException if the iteration has no more elements
      */
     @Override
-    public List<ObjectSet> next() {
+    public Reminders next() {
         if (next == null) {
             next = getNext();
             if (next == null) {
                 throw new NoSuchElementException();
             }
         }
-        List<ObjectSet> result = next;
+        Reminders result = next;
         next = null;
         return result;
     }
@@ -137,9 +179,8 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
      *
      * @return the reminders
      */
-    private List<ObjectSet> getNext() {
-        List<ObjectSet> result;
-        result = getNextGroup();
+    private Reminders getNext() {
+        Reminders result = getNextGroup();
         if (result == null) {
             String lastArchetype = null;
             Party lastCustomer = null;
@@ -147,7 +188,7 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
             while (pushbackIterator.hasNext()) {
                 ObjectSet set = pushbackIterator.next();
                 Act item = (Act) set.get("item");
-                boolean grouped = false;
+                boolean processed = false;
                 String archetype = item.getArchetypeId().getShortName();
                 if (lastArchetype == null || lastArchetype.equals(archetype)) {
                     lastArchetype = archetype;
@@ -156,26 +197,28 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
                         lastCustomer = customer;
                         Act reminder = (Act) set.get("reminder");
                         ActBean bean = new ActBean(reminder, service);
-                        ReminderType type = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
-                        if (type == null || type.getGroupBy() == ReminderType.GroupBy.NONE) {
+                        GroupBy groupBy = getGroupBy(bean);
+                        if (groupBy == GroupBy.NONE
+                            || (groupBy == GroupBy.CUSTOMER && !groupByCustomer.group(archetype))
+                            || (groupBy == GroupBy.PATIENT && !groupByPatient.group(archetype))) {
                             // reminder not grouped
-                            grouped = true;
-                            noGroup = add(noGroup, set);
-                        } else if (type.getGroupBy() == ReminderType.GroupBy.CUSTOMER) {
-                            grouped = true;
-                            groupByCustomer = add(groupByCustomer, set);
+                            processed = true;
+                            ungroupedReminders = add(ungroupedReminders, set);
+                        } else if (groupBy == GroupBy.CUSTOMER) {
+                            processed = true;
+                            remindersByCustomer = add(remindersByCustomer, set);
                         } else {
                             // reminder type grouped by patient
                             Party patient = (Party) set.get("patient");
                             if (lastPatient == null || lastPatient.equals(patient)) {
-                                grouped = true;
+                                processed = true;
                                 lastPatient = patient;
-                                groupByPatient = add(groupByPatient, set);
+                                remindersByPatient = add(remindersByPatient, set);
                             }
                         }
                     }
                 }
-                if (!grouped) {
+                if (!processed) {
                     // put it back in the list
                     pushbackIterator.pushback(set);
                     break;
@@ -191,22 +234,21 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
      *
      * @return the next group of reminders
      */
-    private List<ObjectSet> getNextGroup() {
-        List<ObjectSet> result = null;
-        if (groupByPatient != null) {
-            result = groupByPatient;
-            groupByPatient = null;
-        } else if (groupByCustomer != null) {
-            result = groupByCustomer;
-            groupByCustomer = null;
-        } else if (noGroup != null) {
+    private Reminders getNextGroup() {
+        Reminders result = null;
+        if (remindersByPatient != null) {
+            result = new Reminders(remindersByPatient, GroupBy.PATIENT);
+            remindersByPatient = null;
+        } else if (remindersByCustomer != null) {
+            result = new Reminders(remindersByCustomer, GroupBy.CUSTOMER);
+            remindersByCustomer = null;
+        } else if (ungroupedReminders != null) {
             // ungrouped reminder items are returned one at a time
-            if (noGroup.size() > 1) {
-                result = new ArrayList<>();
-                result.add(noGroup.remove(0));
+            if (ungroupedReminders.size() > 1) {
+                result = new Reminders(ungroupedReminders.remove(0));
             } else {
-                result = noGroup;
-                noGroup = null;
+                result = new Reminders(ungroupedReminders, GroupBy.NONE);
+                ungroupedReminders = null;
             }
         }
         return result;
@@ -225,6 +267,17 @@ public class GroupingReminderIterator implements Iterator<List<ObjectSet>> {
         }
         list.add(set);
         return list;
+    }
+
+    /**
+     * Returns the group-by policy of the reminder type.
+     *
+     * @param bean the reminder bean
+     * @return the group-by policy
+     */
+    private GroupBy getGroupBy(ActBean bean) {
+        ReminderType type = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
+        return type != null ? type.getGroupBy() : GroupBy.NONE;
     }
 
 }

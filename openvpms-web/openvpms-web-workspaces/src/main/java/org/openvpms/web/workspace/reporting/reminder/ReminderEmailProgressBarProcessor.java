@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.web.resource.i18n.Messages;
 
 
@@ -36,8 +35,7 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
      */
     public ReminderEmailProgressBarProcessor(ReminderItemSource query, ReminderEmailProcessor processor,
                                              Statistics statistics) {
-        super(processor, statistics, Messages.get("reporting.reminder.run.email"));
-        initIterator(ReminderArchetypes.EMAIL_REMINDER, query);
+        super(query, processor, statistics, Messages.get("reporting.reminder.run.email"));
     }
 
 }

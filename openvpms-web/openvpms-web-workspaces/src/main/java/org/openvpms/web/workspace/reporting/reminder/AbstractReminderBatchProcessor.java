@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -188,7 +189,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
         List<ObjectSet> reminders = getReminders();
         if (!reminders.isEmpty()) {
             try {
-                state = processor.prepare(reminders, new Date(), getResend());
+                state = processor.prepare(reminders, ReminderType.GroupBy.NONE, new Date(), getResend());
                 if (!state.getReminders().isEmpty()) {
                     processor.process(state);
                     if (!processor.isAsynchronous()) {
