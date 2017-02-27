@@ -189,5 +189,11 @@
         </node>
         <node name="emailAttachments" displayName="Email Reminders as Attachments" path="/details/emailAttachments"
               type="java.lang.Boolean" minCardinality="1" defaultValue="true()"/>
+        <node name="customerTemplate" displayName="Customer Grouped Reminder Template" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.reminderConfigurationTemplateCustomer"/>
+        <node name="patientTemplate" displayName="Patient Grouped Reminder Template" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.reminderConfigurationTemplatePatient"/>
     </archetype>
 </archetypes>

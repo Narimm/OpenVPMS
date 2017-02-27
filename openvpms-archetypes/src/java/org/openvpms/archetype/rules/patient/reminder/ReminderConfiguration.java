@@ -17,8 +17,10 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.joda.time.Period;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -32,6 +34,11 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public class ReminderConfiguration {
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * The configuration.
@@ -99,12 +106,23 @@ public class ReminderConfiguration {
     private final boolean emailAttachments;
 
     /**
+     * The customer grouped reminder template.
+     */
+    private DocumentTemplate customerTemplate;
+
+    /**
+     * The patient grouped reminder template.
+     */
+    private DocumentTemplate patientTemplate;
+
+    /**
      * Constructs a {@link ReminderConfiguration}.
      *
      * @param config  the <em>entity.reminderConfigurationType</em>.
      * @param service the archetype service
      */
     public ReminderConfiguration(IMObject config, IArchetypeService service) {
+        this.service = service;
         bean = new IMObjectBean(config, service);
         emailPeriod = getPeriod(bean, "email");
         emailCancelPeriod = getPeriod(bean, "emailCancel");
@@ -391,6 +409,72 @@ public class ReminderConfiguration {
      */
     public boolean getEmailAttachments() {
         return emailAttachments;
+    }
+
+    /**
+     * Returns the customer grouped reminder template.
+     *
+     * @return the customer grouped reminder template, or {@code null} if none is defined
+     */
+    public DocumentTemplate getCustomerGroupedReminderTemplate() {
+        if (customerTemplate == null) {
+            Entity template = (Entity) bean.getNodeTargetObject("customerTemplate");
+            if (template != null) {
+                customerTemplate = new DocumentTemplate(template, service);
+            }
+        }
+        return customerTemplate;
+    }
+
+    /**
+     * Returns the patient grouped reminder template.
+     *
+     * @return the patient grouped reminder template, or {@code null} if none is defined
+     */
+    public DocumentTemplate getPatientGroupedReminderTemplate() {
+        if (patientTemplate == null) {
+            Entity template = (Entity) bean.getNodeTargetObject("patientTemplate");
+            if (template != null) {
+                patientTemplate = new DocumentTemplate(template, service);
+            }
+        }
+        return patientTemplate;
+    }
+
+    /**
+     * Returns the reminder grouping policy for reminder types that indicate {@link ReminderType.GroupBy#CUSTOMER}.
+     *
+     * @return the reminder grouping policy
+     */
+    public ReminderGroupingPolicy getGroupByCustomerPolicy() {
+        return getPolicy(getCustomerGroupedReminderTemplate());
+    }
+
+    /**
+     * Returns the reminder grouping policy for reminder types that indicate {@link ReminderType.GroupBy#PATIENT}.
+     *
+     * @return the reminder grouping policy
+     */
+    public ReminderGroupingPolicy getGroupByPatientPolicy() {
+        return getPolicy(getPatientGroupedReminderTemplate());
+    }
+
+    /**
+     * Returns the reminder grouping policy for a template.
+     *
+     * @param template the template
+     * @return the reminder grouping policy
+     */
+    private ReminderGroupingPolicy getPolicy(DocumentTemplate template) {
+        ReminderGroupingPolicy policy;
+        if (template == null) {
+            policy = ReminderGroupingPolicy.NONE;
+        } else {
+            boolean email = template.getEmailTemplate() != null;
+            boolean sms = template.getSMSTemplate() != null;
+            policy = ReminderGroupingPolicy.getPolicy(true, email, sms);
+        }
+        return policy;
     }
 
     /**

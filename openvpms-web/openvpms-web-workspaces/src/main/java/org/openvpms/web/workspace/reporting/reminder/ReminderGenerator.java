@@ -20,8 +20,6 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
@@ -90,11 +88,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * The practice.
      */
     private final Party practice;
-
-    /**
-     * The template for grouped reminders.
-     */
-    private final DocumentTemplate groupTemplate;
 
     /**
      * The mail context.
@@ -169,7 +162,8 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         for (String shortName : DescriptorHelper.getShortNames(factory.getShortNames())) {
             ReminderItemQueryFactory clone = new ReminderItemQueryFactory(shortName, factory.getStatuses(),
                                                                           factory.getFrom(), factory.getTo());
-            ReminderBatchProcessor processor = createBatchProcessor(new ReminderItemQuerySource(clone, reminderTypes));
+            ReminderBatchProcessor processor = createBatchProcessor(
+                    new ReminderItemQuerySource(clone, reminderTypes, config));
             processors.add(processor);
         }
     }
@@ -192,11 +186,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         this.context = context;
         this.mailContext = mailContext;
         this.help = help;
-        TemplateHelper helper = new TemplateHelper(service);
-        groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
-        if (groupTemplate == null) {
-            throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
-        }
         if (CommunicationHelper.isLoggingEnabled(practice)) {
             logger = ServiceHelper.getBean(CommunicationLogger.class);
         }
@@ -327,21 +316,19 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     protected ReminderBatchProcessor createBatchEmailProcessor(ReminderItemSource query) {
-        ReminderEmailProcessor processor = createEmailProcessor(practice, groupTemplate, context);
+        ReminderEmailProcessor processor = createEmailProcessor(practice, context);
         return new ReminderEmailProgressBarProcessor(query, processor, statistics);
     }
 
     /**
      * Creates a new processor to email reminders.
      *
-     * @param practice      the practice
-     * @param groupTemplate the template for grouped reminders
-     * @param context       the context
+     * @param practice the practice
+     * @param context  the context
      * @return a new processor
      */
-    protected ReminderEmailProcessor createEmailProcessor(Party practice, DocumentTemplate groupTemplate,
-                                                          Context context) {
-        return new ReminderEmailProcessor(getMailerFactory(), groupTemplate, reminderTypes, rules, practice, service,
+    protected ReminderEmailProcessor createEmailProcessor(Party practice, Context context) {
+        return new ReminderEmailProcessor(getMailerFactory(), reminderTypes, rules, practice, service,
                                           config, logger, context);
     }
 
@@ -354,25 +341,23 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     protected ReminderBatchProcessor createBatchPrintProcessor(ReminderItemSource query, boolean interactive) {
-        ReminderPrintProcessor processor = createPrintProcessor(groupTemplate, context, mailContext, help, interactive);
+        ReminderPrintProcessor processor = createPrintProcessor(context, mailContext, help, interactive);
         return new ReminderPrintProgressBarProcessor(query, processor, statistics);
     }
 
     /**
      * Creates a new processor to print reminders.
      *
-     * @param groupTemplate the grouped reminder document template
-     * @param context       the context
-     * @param mailContext   the mail context, used when printing interactively. May be {@code null}
-     * @param help          the help context
-     * @param interactive   if {@code true}, reminders should always be printed interactively. If {@code false},
-     *                      reminders will only be printed interactively if a printer needs to be selected
+     * @param context     the context
+     * @param mailContext the mail context, used when printing interactively. May be {@code null}
+     * @param help        the help context
+     * @param interactive if {@code true}, reminders should always be printed interactively. If {@code false},
+     *                    reminders will only be printed interactively if a printer needs to be selected
      * @return a new processor
      */
-    protected ReminderPrintProcessor createPrintProcessor(DocumentTemplate groupTemplate, Context context,
-                                                          MailContext mailContext, HelpContext help,
+    protected ReminderPrintProcessor createPrintProcessor(Context context, MailContext mailContext, HelpContext help,
                                                           boolean interactive) {
-        ReminderPrintProcessor processor = new ReminderPrintProcessor(groupTemplate, context, mailContext, help,
+        ReminderPrintProcessor processor = new ReminderPrintProcessor(context, mailContext, help,
                                                                       reminderTypes, rules, practice, service, config,
                                                                       logger);
         processor.setInteractiveAlways(interactive);
@@ -386,20 +371,19 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     protected ReminderBatchProcessor createBatchSMSProcessor(ReminderItemSource query) {
-        ReminderSMSProcessor processor = createSMSProcessor(groupTemplate);
+        ReminderSMSProcessor processor = createSMSProcessor();
         return new ReminderSMSProgressBarProcessor(query, processor, statistics);
     }
 
     /**
      * Creates a processor for SMS reminders.
      *
-     * @param groupTemplate the template for grouped reminders
      * @return a new processor
      */
-    protected ReminderSMSProcessor createSMSProcessor(DocumentTemplate groupTemplate) {
+    protected ReminderSMSProcessor createSMSProcessor() {
         ReminderSMSEvaluator evaluator = ServiceHelper.getBean(ReminderSMSEvaluator.class);
-        return new ReminderSMSProcessor(getConnectionFactory(), evaluator, groupTemplate, reminderTypes, rules,
-                                        practice, service, config, logger);
+        return new ReminderSMSProcessor(getConnectionFactory(), evaluator, reminderTypes, rules, practice, service,
+                                        config, logger);
     }
 
     /**
@@ -515,6 +499,5 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
         return result;
     }
-
 }
 

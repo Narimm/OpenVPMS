@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -27,7 +28,6 @@ import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -35,8 +35,13 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ObjectSet>>
+abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<GroupingReminderIterator.Reminders>
         implements ReminderBatchProcessor {
+
+    /**
+     * The reminder item source.
+     */
+    private final ReminderItemSource items;
 
     /**
      * The processor to use.
@@ -61,7 +66,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     /**
      * The current reminders being processed.
      */
-    private List<ObjectSet> currentReminders;
+    private GroupingReminderIterator.Reminders currentReminders;
 
     /**
      * The current reminder state.
@@ -77,12 +82,20 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     /**
      * Constructs a {@link ReminderProgressBarProcessor}.
      *
+     * @param items      the reminder item source
      * @param processor  the processor
      * @param statistics the statistics
      * @param title      the progress bar title for display purposes
      */
-    public ReminderProgressBarProcessor(PatientReminderProcessor processor, Statistics statistics, String title) {
+    public ReminderProgressBarProcessor(ReminderItemSource items, PatientReminderProcessor processor,
+                                        Statistics statistics, String title) {
         super(title);
+        String[] shortNames = items.getShortNames();
+        if (shortNames.length != 1 || !TypeHelper.matches(shortNames[0], processor.getArchetype())) {
+            throw new IllegalStateException("This may only query " + processor.getArchetype());
+        }
+
+        this.items = items;
         this.processor = processor;
         this.statistics = statistics;
         rules = ServiceHelper.getBean(ReminderRules.class);
@@ -116,16 +129,27 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
     }
 
     /**
+     * Processes the batch.
+     */
+    @Override
+    public void process() {
+        int count = items.count();
+        setItems(items.query(), count);
+        super.process();
+    }
+
+    /**
      * Processes a set of reminders.
      *
      * @param reminders the reminders to process
      * @throws OpenVPMSException if the events cannot be processed
      */
-    protected void process(List<ObjectSet> reminders) {
+    @Override
+    protected void process(GroupingReminderIterator.Reminders reminders) {
         this.currentReminders = reminders;
         this.currentState = null;
         try {
-            currentState = processor.prepare(reminders, new Date(), resend);
+            currentState = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), new Date(), resend);
             if (!currentState.getReminders().isEmpty()) {
                 processor.process(currentState);
                 if (processor.isAsynchronous()) {
@@ -140,16 +164,6 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
         } catch (Throwable exception) {
             processError(exception);
         }
-    }
-
-    protected void initIterator(String shortName, final ReminderItemSource query) {
-        String[] shortNames = query.getShortNames();
-        if (shortNames.length != 1 || !TypeHelper.matches(shortNames[0], shortName)) {
-            throw new IllegalStateException("This may only query " + shortName);
-        }
-
-        int count = query.count();
-        setItems(query.query(), count);
     }
 
     /**
@@ -180,7 +194,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
      */
     protected void processError(Throwable exception) {
         if (currentReminders != null) {
-            for (ObjectSet set : currentReminders) {
+            for (ObjectSet set : currentReminders.getReminders()) {
                 if (resend) {
                     ReminderHelper.setError((Act) set.get("item"), exception);
                 }
@@ -199,8 +213,8 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Ob
      * @param reminders the reminders
      */
     @Override
-    protected void incProcessed(List<ObjectSet> reminders) {
-        super.incProcessed(reminders.size());
+    protected void incProcessed(GroupingReminderIterator.Reminders reminders) {
+        super.incProcessed(reminders.getReminders().size());
     }
 
     /**

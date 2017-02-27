@@ -88,7 +88,6 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * Constructs a {@link ReminderEmailProcessor}.
      *
      * @param factory       the mailer factory
-     * @param groupTemplate the grouped reminder template
      * @param reminderTypes the reminder types
      * @param rules         the reminder rules
      * @param practice      the practice
@@ -97,11 +96,10 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * @param logger        the communication logger. May be {@code null}
      * @param context       the context
      */
-    public ReminderEmailProcessor(MailerFactory factory, DocumentTemplate groupTemplate,
-                                  ReminderTypes reminderTypes, ReminderRules rules, Party practice,
-                                  IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger,
-                                  Context context) {
-        super(groupTemplate, reminderTypes, rules, practice, service, config, logger);
+    public ReminderEmailProcessor(MailerFactory factory, ReminderTypes reminderTypes, ReminderRules rules,
+                                  Party practice, IArchetypeService service, ReminderConfiguration config,
+                                  CommunicationLogger logger, Context context) {
+        super(reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
         this.context = context;
         addresses = new PracticeEmailAddresses(practice, "REMINDER");

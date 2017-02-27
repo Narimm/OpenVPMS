@@ -86,9 +86,8 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
     private final HelpContext help;
 
     /**
-     * Constructs a {@link GroupedReminderProcessor}.
+     * Constructs a {@link ReminderPrintProcessor}.
      *
-     * @param groupTemplate the grouped reminder template
      * @param context       the context
      * @param mailContext   the mail context, used when printing interactively. May be {@code null}
      * @param help          the help context
@@ -99,11 +98,11 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderPrintProcessor(DocumentTemplate groupTemplate, Context context, MailContext mailContext,
+    public ReminderPrintProcessor(Context context, MailContext mailContext,
                                   HelpContext help, ReminderTypes reminderTypes, ReminderRules rules,
                                   Party practice, IArchetypeService service, ReminderConfiguration config,
                                   CommunicationLogger logger) {
-        super(groupTemplate, reminderTypes, rules, practice, service, config, logger);
+        super(reminderTypes, rules, practice, service, config, logger);
         this.context = context;
         this.mailContext = mailContext;
         this.help = help;

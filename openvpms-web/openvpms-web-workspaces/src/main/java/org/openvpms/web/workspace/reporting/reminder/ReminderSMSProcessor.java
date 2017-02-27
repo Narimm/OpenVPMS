@@ -75,7 +75,6 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      *
      * @param factory       the SMS connection factory
      * @param evaluator     the SMS template evaluator
-     * @param groupTemplate the grouped reminder template
      * @param reminderTypes the reminder types
      * @param rules         the reminder rules
      * @param practice      the practice
@@ -83,11 +82,10 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderSMSProcessor(ConnectionFactory factory, ReminderSMSEvaluator evaluator,
-                                DocumentTemplate groupTemplate, ReminderTypes reminderTypes, ReminderRules rules,
-                                Party practice, IArchetypeService service, ReminderConfiguration config,
-                                CommunicationLogger logger) {
-        super(groupTemplate, reminderTypes, rules, practice, service, config, logger);
+    public ReminderSMSProcessor(ConnectionFactory factory, ReminderSMSEvaluator evaluator, ReminderTypes reminderTypes,
+                                ReminderRules rules, Party practice, IArchetypeService service,
+                                ReminderConfiguration config, CommunicationLogger logger) {
+        super(reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
         this.evaluator = evaluator;
         smsEnabled = SMSHelper.isSMSEnabled(practice);

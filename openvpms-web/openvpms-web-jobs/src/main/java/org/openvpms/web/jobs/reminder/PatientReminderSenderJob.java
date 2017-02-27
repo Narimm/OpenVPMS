@@ -18,11 +18,10 @@ package org.openvpms.web.jobs.reminder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderGroupingPolicy;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -34,7 +33,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.mail.MailerFactory;
@@ -42,7 +40,6 @@ import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
-import org.openvpms.web.workspace.reporting.ReportingException;
 import org.openvpms.web.workspace.reporting.reminder.PatientReminderProcessor;
 import org.openvpms.web.workspace.reporting.reminder.ReminderEmailProcessor;
 import org.openvpms.web.workspace.reporting.reminder.ReminderSMSEvaluator;
@@ -54,7 +51,6 @@ import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -63,11 +59,6 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
-
-    /**
-     * The job configuration archetype.
-     */
-    protected static final String JOB_SHORT_NAME = "entity.jobPatientReminderSender";
 
     /**
      * The job configuration.
@@ -174,11 +165,6 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
             if (practice == null) {
                 throw new IllegalStateException("Practice is not configured");
             }
-            TemplateHelper helper = new TemplateHelper(service);
-            DocumentTemplate groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
-            if (groupTemplate == null) {
-                throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
-            }
             CommunicationLogger logger = (CommunicationHelper.isLoggingEnabled(practiceService.getPractice()))
                                          ? communicationLogger : null;
             ReminderTypes reminderTypes = new ReminderTypes(service);
@@ -187,9 +173,9 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
                 throw new IllegalStateException("Reminder Configuration does not specify a Location");
             }
             Date date = getSendDate();
-            total = sendEmailReminders(date, groupTemplate, reminderTypes, practice, config, logger);
+            total = sendEmailReminders(date, reminderTypes, practice, config, logger);
             if (!stop) {
-                Stats stats = sendSMSReminders(date, groupTemplate, reminderTypes, practice, config, logger);
+                Stats stats = sendSMSReminders(date, reminderTypes, practice, config, logger);
                 total = total.add(stats);
             }
             complete(null, begin, total);
@@ -203,19 +189,19 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * Sends email reminders.
      *
      * @param date          all email reminders with a startTime prior to this will be sent
-     * @param groupTemplate the grouped reminder template. May be {@code null}
      * @param reminderTypes the reminder types
      * @param practice      the practice
      * @param config        the reminder configuration
      * @param logger        the communication logger, or {@code null} if communication is not being logged
      * @return the statistics
      */
-    protected Stats sendEmailReminders(Date date, DocumentTemplate groupTemplate, ReminderTypes reminderTypes,
-                                       Party practice, ReminderConfiguration config, CommunicationLogger logger) {
-        ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, groupTemplate, reminderTypes,
+    protected Stats sendEmailReminders(Date date, ReminderTypes reminderTypes, Party practice,
+                                       ReminderConfiguration config, CommunicationLogger logger) {
+        ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, reminderTypes,
                                                                       rules, practice, service, config, logger,
                                                                       new LocalContext());
-        GroupingReminderIterator iterator = createIterator(ReminderArchetypes.EMAIL_REMINDER, reminderTypes, date);
+        GroupingReminderIterator iterator = createIterator(ReminderArchetypes.EMAIL_REMINDER, reminderTypes, date,
+                                                           config);
         return send(date, processor, iterator);
     }
 
@@ -223,19 +209,18 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * Sends SMS reminders.
      *
      * @param date          all SMS reminders with a startTime prior to this will be sent
-     * @param groupTemplate the grouped reminder template. May be {@code null}
      * @param reminderTypes the reminder types
      * @param practice      the practice
      * @param config        the reminder configuration
      * @param logger        the communication logger, or {@code null} if communication is not being logged
      * @return the statistics
      */
-    protected Stats sendSMSReminders(Date date, DocumentTemplate groupTemplate, ReminderTypes reminderTypes,
-                                     Party practice, ReminderConfiguration config, CommunicationLogger logger) {
-        ReminderSMSProcessor sender = new ReminderSMSProcessor(connectionFactory, evaluator, groupTemplate,
-                                                               reminderTypes, rules, practice, service, config,
-                                                               logger);
-        GroupingReminderIterator iterator = createIterator(ReminderArchetypes.SMS_REMINDER, reminderTypes, date);
+    protected Stats sendSMSReminders(Date date, ReminderTypes reminderTypes, Party practice,
+                                     ReminderConfiguration config, CommunicationLogger logger) {
+        ReminderSMSProcessor sender = new ReminderSMSProcessor(connectionFactory, evaluator, reminderTypes, rules,
+                                                               practice, service, config, logger);
+        GroupingReminderIterator iterator = createIterator(ReminderArchetypes.SMS_REMINDER, reminderTypes, date,
+                                                           config);
         return send(date, sender, iterator);
     }
 
@@ -276,8 +261,9 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     private Stats send(Date date, PatientReminderProcessor processor, GroupingReminderIterator iterator) {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
-            List<ObjectSet> sets = iterator.next();
-            PatientReminderProcessor.State state = processor.prepare(sets, date, false);
+            GroupingReminderIterator.Reminders reminders = iterator.next();
+            PatientReminderProcessor.State state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(),
+                                                                     date, false);
             processor.process(state);
             int cancelled = state.getCancelled().size();
             int errors = state.getErrors().size();
@@ -348,12 +334,18 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * @param shortName     the reminder item short name
      * @param reminderTypes the reminder types
      * @param date          the upper bound of the send date
+     * @param config        the reminder configuration
      * @return a new iterator
      */
-    private GroupingReminderIterator createIterator(String shortName, ReminderTypes reminderTypes, Date date) {
+    private GroupingReminderIterator createIterator(String shortName, ReminderTypes reminderTypes, Date date,
+                                                    ReminderConfiguration config) {
         ReminderItemQueryFactory factory = new ReminderItemQueryFactory(shortName, ReminderItemStatus.PENDING);
         factory.setTo(date);
-        return new GroupingReminderIterator(factory, reminderTypes, getPageSize(), service);
+        ReminderGroupingPolicy groupByCustomer = config.getGroupByCustomerPolicy();
+        ReminderGroupingPolicy groupByPatient = config.getGroupByPatientPolicy();
+        return new GroupingReminderIterator(factory, reminderTypes, getPageSize(), groupByCustomer, groupByPatient,
+                                            service);
     }
+
 
 }

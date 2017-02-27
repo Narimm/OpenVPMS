@@ -58,6 +58,8 @@ public abstract class PatientReminderProcessor {
 
         private final List<ObjectSet> reminders;
 
+        private final ReminderType.GroupBy groupBy;
+
         private final List<ObjectSet> cancelled;
 
         private final List<ObjectSet> errors;
@@ -66,9 +68,10 @@ public abstract class PatientReminderProcessor {
 
         private final boolean resend;
 
-        public State(List<ObjectSet> reminders, List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
-                     boolean resend) {
+        public State(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, List<ObjectSet> cancelled,
+                     List<ObjectSet> errors, List<Act> updated, boolean resend) {
             this.reminders = reminders;
+            this.groupBy = groupBy;
             this.cancelled = cancelled;
             this.errors = errors;
             this.updated = updated;
@@ -77,6 +80,10 @@ public abstract class PatientReminderProcessor {
 
         public List<ObjectSet> getReminders() {
             return reminders;
+        }
+
+        public ReminderType.GroupBy getGroupBy() {
+            return groupBy;
         }
 
         public void updated(Act act) {
@@ -182,11 +189,11 @@ public abstract class PatientReminderProcessor {
      * If reminders are being resent, due dates are ignored, and no cancellation will occur.
      *
      * @param reminders  the reminders
+     * @param groupBy    the reminder grouping policy. This determines which document template is selected
      * @param cancelDate the date to use when determining if a reminder item should be cancelled
-     * @param resend     if {@code true}, reminders are being resent
-     * @return the reminders to process
+     * @param resend     if {@code true}, reminders are being resent   @return the reminders to process
      */
-    public State prepare(List<ObjectSet> reminders, Date cancelDate, boolean resend) {
+    public State prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate, boolean resend) {
         List<ObjectSet> toProcess = new ArrayList<>();
         List<ObjectSet> cancelled = new ArrayList<>();
         List<ObjectSet> errors = new ArrayList<>();
@@ -208,7 +215,7 @@ public abstract class PatientReminderProcessor {
         if (!toProcess.isEmpty()) {
             toProcess = prepare(toProcess, updated, errors);
         }
-        return new State(toProcess, cancelled, errors, updated, resend);
+        return new State(toProcess, groupBy, cancelled, errors, updated, resend);
     }
 
     /**

@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.reporting.reminder;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.web.component.processor.BatchProcessorTask;
@@ -30,9 +29,7 @@ import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
-import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -63,11 +60,6 @@ class ReminderGenerationDialog extends PopupDialog {
     private WorkflowImpl workflow;
 
     /**
-     * The restart buttons.
-     */
-    private List<Button> restartButtons = new ArrayList<>();
-
-    /**
      * The ok button.
      */
     private final Button ok;
@@ -91,7 +83,7 @@ class ReminderGenerationDialog extends PopupDialog {
         this.statistics = statistics;
         workflow = new WorkflowImpl(help);
         workflow.setBreakOnCancel(false);
-        Grid grid = GridFactory.create(3);
+        Grid grid = GridFactory.create(2);
         for (ReminderBatchProcessor processor : sort(processors)) {
             BatchProcessorTask task = new BatchProcessorTask(processor);
             task.setTerminateOnError(false);
@@ -100,16 +92,6 @@ class ReminderGenerationDialog extends PopupDialog {
             title.setText(processor.getTitle());
             grid.add(title);
             grid.add(processor.getComponent());
-            if (processor instanceof ReminderListProcessor
-                || processor instanceof ReminderPrintProgressBarProcessor) {
-                Button button = addReprintButton(processor);
-                grid.add(button);
-            } else if (processor instanceof ReminderExportProcessor) {
-                Button button = addExportButton(processor);
-                grid.add(button);
-            } else {
-                grid.add(LabelFactory.create());
-            }
         }
         getLayout().add(ColumnFactory.create(Styles.INSET, grid));
         workflow.addTaskListener(new DefaultTaskListener() {
@@ -121,8 +103,9 @@ class ReminderGenerationDialog extends PopupDialog {
         ok = buttons.getButton(OK_ID);
         cancel = getButtons().getButton(CANCEL_ID);
 
-        // disable OK, restart buttons
-        enableButtons(false);
+        // disable OK button
+        ok.setEnabled(false);
+        cancel.setEnabled(true);
     }
 
     /**
@@ -140,10 +123,10 @@ class ReminderGenerationDialog extends PopupDialog {
     protected void onCancel() {
         String title = Messages.get("reporting.reminder.run.cancel.title");
         String msg = Messages.get("reporting.reminder.run.cancel.message");
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, msg);
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, msg, YES_NO);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                if (ConfirmationDialog.YES_ID.equals(dialog.getAction())) {
                     workflow.cancel();
                     ReminderGenerationDialog.this.close(CANCEL_ID);
                 } else {
@@ -170,38 +153,6 @@ class ReminderGenerationDialog extends PopupDialog {
     }
 
     /**
-     * Adds a button to restart a processor to reprint reminders.
-     *
-     * @param processor the processor
-     * @return a new button
-     */
-    private Button addReprintButton(final ReminderBatchProcessor processor) {
-        Button button = ButtonFactory.create("button.reprint", new ActionListener() {
-            public void onAction(ActionEvent e) {
-                restart(processor);
-            }
-        });
-        restartButtons.add(button);
-        return button;
-    }
-
-    /**
-     * Adds a button to restart a processor to export reminders.
-     *
-     * @param processor the processor
-     * @return a new button
-     */
-    private Button addExportButton(final ReminderBatchProcessor processor) {
-        Button button = ButtonFactory.create("button.reexport", new ActionListener() {
-            public void onAction(ActionEvent e) {
-                restart(processor);
-            }
-        });
-        restartButtons.add(button);
-        return button;
-    }
-
-    /**
      * Returns the current batch processor.
      *
      * @return the current batch processor, or {@code null} if there
@@ -217,56 +168,12 @@ class ReminderGenerationDialog extends PopupDialog {
 
     /**
      * Invoked when generation is complete.
-     * Displays statistics, and enables the reprint and OK buttons.
+     * Displays statistics, and enables the OK button.
      */
     private void onGenerationComplete() {
         showStatistics();
-        enableButtons(true);
-    }
-
-    /**
-     * Restarts a batch processor.
-     *
-     * @param processor the processor to restart
-     */
-    private void restart(ReminderBatchProcessor processor) {
-        enableButtons(false);
-        statistics.clear();
-        processor.restart();
-        workflow = new WorkflowImpl(getHelpContext());
-        BatchProcessorTask task = new BatchProcessorTask(processor);
-        task.setTerminateOnError(false);
-        workflow.addTask(task);
-        workflow.addTaskListener(new DefaultTaskListener() {
-            public void taskEvent(TaskEvent event) {
-                if (TaskEvent.Type.COMPLETED.equals(event.getType())) {
-                    showStatistics();
-                }
-                enableButtons(true);
-            }
-        });
-        workflow.start();
-    }
-
-    /**
-     * Enables/disables restart buttons and OK/Cancel buttons.
-     * <p/>
-     * When the restart buttons are enabled, the OK button is present. When the buttons are disabled,
-     * the cancel button is present.
-     *
-     * @param enable if {@code true} enable the buttons; otherwise disable them
-     */
-    private void enableButtons(boolean enable) {
-        for (Button button : restartButtons) {
-            button.setEnabled(enable);
-        }
-        ButtonSet buttons = getButtons();
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(ok);
-        } else {
-            buttons.add(cancel);
-        }
+        ok.setEnabled(true);
+        cancel.setEnabled(false);
     }
 
     /**

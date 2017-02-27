@@ -18,6 +18,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType.GroupBy;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -33,14 +34,19 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes.REMINDER_ITEMS;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderGroupingPolicy.ALL;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderGroupingPolicy.NONE;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus.PENDING;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailReminder;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createListReminder;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createPrintReminder;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminder;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createSMSReminder;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderType.GroupBy.CUSTOMER;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderType.GroupBy.PATIENT;
 
 /**
  * Tests the {@link GroupingReminderIterator}.
@@ -192,17 +198,90 @@ public class GroupingReminderIteratorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testIterator() {
-        GroupingReminderIterator iterator = new GroupingReminderIterator(factory, reminderTypes, 10,
+        GroupingReminderIterator iterator = new GroupingReminderIterator(factory, reminderTypes, 10, ALL, ALL,
                                                                          getArchetypeService());
-        checkIterator(iterator, emailReminderC1, emailReminderC2);  // customer=A, patient=Rukus, group by patient
-        checkIterator(iterator, listReminderC3, listReminderC6);    // customer=A, patient=Rukus, group by customer
-        checkIterator(iterator, listReminderC4);                    // customer=A, patient=Rukus, no group
-        checkIterator(iterator, listReminderC5);                    // customer=A, patient=Rukus, no group
-        checkIterator(iterator, emailReminderB1);                   // customer=B, patient=Fido, group by patient
-        checkIterator(iterator, emailReminderA1, emailReminderA2);  // customer=B, patient=Spot, group by patient
-        checkIterator(iterator, printReminderB2, printReminderA3);  // customer=B, group by customer
-        checkIterator(iterator, smsReminderB1);                     // customer=B, patient=Fido, group by patient
-        checkIterator(iterator, smsReminderA1, smsReminderA2);      // customer=B, patient=Spot, group by patient
+        check(iterator, PATIENT, emailReminderC1, emailReminderC2);      // customer=A, patient=Rukus, group by patient
+
+        // NOTE: list reminders aren't grouped
+        check(iterator, GroupBy.NONE, listReminderC3);                   // customer=A, patient=Rukus, group by customer
+        check(iterator, GroupBy.NONE, listReminderC4);                   // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC5);                   // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC6);                   // customer=A, patient=Rukus, group by customer
+
+        check(iterator, PATIENT, emailReminderB1);                       // customer=B, patient=Fido, group by patient
+        check(iterator, PATIENT, emailReminderA1, emailReminderA2);      // customer=B, patient=Spot, group by patient
+        check(iterator, CUSTOMER, printReminderB2, printReminderA3);     // customer=B, group by customer
+        check(iterator, PATIENT, smsReminderB1);                         // customer=B, patient=Fido, group by patient
+        check(iterator, PATIENT, smsReminderA1, smsReminderA2);          // customer=B, patient=Spot, group by patient
+    }
+
+    /**
+     * Tests iteration when reminder types indicate to group by customer, but grouping by customer is disabled.
+     */
+    @Test
+    public void testIteratorGroupByCustomerDisabled() {
+        GroupingReminderIterator iterator = new GroupingReminderIterator(factory, reminderTypes, 10, NONE, ALL,
+                                                                         getArchetypeService());
+        check(iterator, PATIENT, emailReminderC1, emailReminderC2);      // customer=A, patient=Rukus, group by patient
+        check(iterator, GroupBy.NONE, listReminderC3);                   // customer=A, patient=Rukus, group by customer
+        check(iterator, GroupBy.NONE, listReminderC4);                   // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC5);                   // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC6);                   // customer=A, patient=Rukus, group by customer
+        check(iterator, PATIENT, emailReminderB1);                       // customer=B, patient=Fido, group by patient
+        check(iterator, PATIENT, emailReminderA1, emailReminderA2);      // customer=B, patient=Spot, group by patient
+        check(iterator, GroupBy.NONE, printReminderB2);                  // customer=B, group by customer
+        check(iterator, GroupBy.NONE, printReminderA3);                  // customer=B, group by customer
+        check(iterator, PATIENT, smsReminderB1);                         // customer=B, patient=Fido, group by patient
+        check(iterator, PATIENT, smsReminderA1, smsReminderA2);          // customer=B, patient=Spot, group by patient
+    }
+
+    /**
+     * Tests iteration when reminder types indicate to group by patient, but grouping by patient is disabled.
+     */
+    @Test
+    public void testIteratorGroupByPatientDisabled() {
+        GroupingReminderIterator iterator = new GroupingReminderIterator(factory, reminderTypes, 10, ALL, NONE,
+                                                                         getArchetypeService());
+        check(iterator, GroupBy.NONE, emailReminderC1);                // customer=A, patient=Rukus, group by patient
+        check(iterator, GroupBy.NONE, emailReminderC2);                // customer=A, patient=Rukus, group by patient
+
+        // NOTE: list reminders aren't grouped
+        check(iterator, GroupBy.NONE, listReminderC3);                 // customer=A, patient=Rukus, group by customer
+        check(iterator, GroupBy.NONE, listReminderC4);                 // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC5);                 // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC6);                 // customer=A, patient=Rukus, group by customer
+
+        check(iterator, GroupBy.NONE, emailReminderB1);                   // customer=B, patient=Fido, group by patient
+        check(iterator, GroupBy.NONE, emailReminderA1);                   // customer=B, patient=Spot, group by patient
+        check(iterator, GroupBy.NONE, emailReminderA2);                   // customer=B, patient=Spot, group by patient
+        check(iterator, CUSTOMER, printReminderB2, printReminderA3);  // customer=B, group by customer
+        check(iterator, GroupBy.NONE, smsReminderB1);                     // customer=B, patient=Fido, group by patient
+        check(iterator, GroupBy.NONE, smsReminderA1);                     // customer=B, patient=Spot, group by patient
+        check(iterator, GroupBy.NONE, smsReminderA2);                     // customer=B, patient=Spot, group by patient
+    }
+
+    /**
+     * Tests iteration when reminder types indicate to group by customer and patient, but grouping by SMS is disabled.
+     */
+    @Test
+    public void testIteratorGroupBySMSDisabled() {
+        ReminderGroupingPolicy noSMS = ReminderGroupingPolicy.getPolicy(true, true, false);
+        GroupingReminderIterator iterator = new GroupingReminderIterator(factory, reminderTypes, 10, noSMS, noSMS,
+                                                                         getArchetypeService());
+        check(iterator, PATIENT, emailReminderC1, emailReminderC2);  // customer=A, patient=Rukus
+
+        // NOTE: list reminders aren't grouped, despite reminder type configuration
+        check(iterator, GroupBy.NONE, listReminderC3);                   // customer=A, patient=Rukus, group by customer
+        check(iterator, GroupBy.NONE, listReminderC4);                   // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC5);                   // customer=A, patient=Rukus, no group
+        check(iterator, GroupBy.NONE, listReminderC6);                   // customer=A, patient=Rukus, group by customer
+
+        check(iterator, PATIENT, emailReminderB1);                 // customer=B, patient=Fido, group by patient
+        check(iterator, PATIENT, emailReminderA1, emailReminderA2);// customer=B, patient=Spot, group by patient
+        check(iterator, CUSTOMER, printReminderB2, printReminderA3);// customer=B, group by customer
+        check(iterator, GroupBy.NONE, smsReminderB1);                     // customer=B, patient=Fido, group by patient
+        check(iterator, GroupBy.NONE, smsReminderA1);                     // customer=B, patient=Spot, group by patient
+        check(iterator, GroupBy.NONE, smsReminderA2);                     // customer=B, patient=Spot, group by patient
     }
 
     /**
@@ -210,33 +289,38 @@ public class GroupingReminderIteratorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testUpdate() {
-        GroupingReminderIterator iterator = new GroupingReminderIterator(factory, reminderTypes, 2,
+        GroupingReminderIterator iterator = new GroupingReminderIterator(factory, reminderTypes, 2, ALL, ALL,
                                                                          getArchetypeService());
+        complete(iterator, PATIENT, emailReminderC1, emailReminderC2);  // customer=A, patient=Rukus, group by patient
 
-        complete(iterator, emailReminderC1, emailReminderC2);  // customer=A, patient=Rukus, group by patient
-        complete(iterator, listReminderC3, listReminderC6);    // customer=A, patient=Rukus, group by customer
-        complete(iterator, listReminderC4);                    // customer=A, patient=Rukus, no group
-        complete(iterator, listReminderC5);                    // customer=A, patient=Rukus, no group
-        complete(iterator, emailReminderB1);                   // customer=B, patient=Fido, group by patient
-        complete(iterator, emailReminderA1, emailReminderA2);  // customer=B, patient=Spot, group by patient
-        complete(iterator, printReminderB2, printReminderA3);  // customer=B, group by customer
-        complete(iterator, smsReminderB1);                     // customer=B, patient=Fido, group by patient
-        complete(iterator, smsReminderA1, smsReminderA2);      // customer=B, patient=Spot, group by patient
+        // NOTE: list reminders aren't grouped
+        complete(iterator, GroupBy.NONE, listReminderC3);               // customer=A, patient=Rukus, group by customer
+        complete(iterator, GroupBy.NONE, listReminderC4);               // customer=A, patient=Rukus, no group
+        complete(iterator, GroupBy.NONE, listReminderC5);               // customer=A, patient=Rukus, no group
+        complete(iterator, GroupBy.NONE, listReminderC6);               // customer=A, patient=Rukus, group by customer
+
+        complete(iterator, PATIENT, emailReminderB1);                   // customer=B, patient=Fido, group by patient
+        complete(iterator, PATIENT, emailReminderA1, emailReminderA2);  // customer=B, patient=Spot, group by patient
+        complete(iterator, CUSTOMER, printReminderB2, printReminderA3);  // customer=B, group by customer
+        complete(iterator, PATIENT, smsReminderB1);                     // customer=B, patient=Fido, group by patient
+        complete(iterator, PATIENT, smsReminderA1, smsReminderA2);      // customer=B, patient=Spot, group by patient
     }
 
     /**
      * Checks that the iterator matches that expected.
      *
      * @param iterator the iterator
+     * @param groupBy  the expected reminder type group by specification
      * @param expected the expected acts
      */
-    private void checkIterator(GroupingReminderIterator iterator, Act... expected) {
+    private void check(GroupingReminderIterator iterator, GroupBy groupBy, Act... expected) {
         List<Act> list = Arrays.asList(expected);
         boolean found = false;
         while (iterator.hasNext()) {
-            List<ObjectSet> sets = iterator.next();
-            List<Act> next = getItems(sets);
+            GroupingReminderIterator.Reminders sets = iterator.next();
+            List<Act> next = getItems(sets.getReminders());
             if (next.equals(list)) {
+                assertEquals(groupBy, sets.getGroupBy());
                 found = true;
                 break;
             }
@@ -249,10 +333,11 @@ public class GroupingReminderIteratorTestCase extends ArchetypeServiceTest {
      * the iterator.
      *
      * @param iterator the iterator
+     * @param groupBy  the expected reminder type group by specification
      * @param expected the expected acts
      */
-    private void complete(GroupingReminderIterator iterator, Act... expected) {
-        checkIterator(iterator, expected);
+    private void complete(GroupingReminderIterator iterator, GroupBy groupBy, Act... expected) {
+        check(iterator, groupBy, expected);
         for (Act act : expected) {
             act.setStatus(ReminderItemStatus.COMPLETED);
             save(act);

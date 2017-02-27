@@ -42,7 +42,8 @@ public class ReportingException extends OpenVPMSException {
         SMSDisabled,
         FailedToProcessReminder,
         ReminderMissingDocTemplate,
-        NoGroupedReminderTemplate,
+        NoCustomerGroupedReminderTemplate,
+        NoPatientGroupedReminderTemplate,
         NoReminderCount
     }
 
