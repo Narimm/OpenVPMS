@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
@@ -61,9 +62,9 @@ import static org.openvpms.component.system.common.query.Constraints.sort;
 public class ReminderItemQueryFactory {
 
     /**
-     * The short names to query.
+     * The archetypes to query.
      */
-    private String[] shortNames;
+    private String[] archetypes;
 
     /**
      * The from date. May be {@code null}
@@ -81,6 +82,11 @@ public class ReminderItemQueryFactory {
     private String[] statuses;
 
     /**
+     * The customer.
+     */
+    private long customerId = -1;
+
+    /**
      * Constructs a {@link ReminderItemQueryFactory}.
      */
     public ReminderItemQueryFactory() {
@@ -90,35 +96,49 @@ public class ReminderItemQueryFactory {
     /**
      * Constructs a {@link ReminderItemQueryFactory}.
      *
-     * @param shortName the archetype short name to query. May contain wildcards
+     * @param archetype the archetypes to query. May contain wildcards
      */
-    public ReminderItemQueryFactory(String shortName) {
-        setShortName(shortName);
+    public ReminderItemQueryFactory(String archetype) {
+        setArchetype(archetype);
     }
 
     /**
      * Constructs a {@link ReminderItemQueryFactory}.
      *
-     * @param shortName the archetype short name to query. May contain wildcards
+     * @param archetype the archetype to query. May contain wildcards
      * @param status    the status
      */
-    public ReminderItemQueryFactory(String shortName, String status) {
-        setShortName(shortName);
+    public ReminderItemQueryFactory(String archetype, String status) {
+        setArchetype(archetype);
         setStatus(status);
     }
 
     /**
      * Constructs a {@link ReminderItemQueryFactory}
      *
-     * @param shortName the archetype short name to query. May contain wildcards
+     * @param archetype the archetype to query. May contain wildcards
      * @param statuses  the statuses. May be {@code null}
      * @param from      the from date range. If non-null, all reminder items with a {@code startTime} less than that
      *                  specified will be excluded.
      * @param to        the to date range. If non-null, all reminder items with a {@code startTime} greater than or
      *                  equal to that specified will be excluded.
      */
-    public ReminderItemQueryFactory(String shortName, String[] statuses, Date from, Date to) {
-        setShortName(shortName);
+    public ReminderItemQueryFactory(String archetype, String[] statuses, Date from, Date to) {
+        this(new String[]{archetype}, statuses, from, to);
+    }
+
+    /**
+     * Constructs a {@link ReminderItemQueryFactory}
+     *
+     * @param archetypes the archetypes to query. May contain wildcards
+     * @param statuses   the statuses. May be {@code null}
+     * @param from       the from date range. If non-null, all reminder items with a {@code startTime} less than that
+     *                   specified will be excluded.
+     * @param to         the to date range. If non-null, all reminder items with a {@code startTime} greater than or
+     *                   equal to that specified will be excluded.
+     */
+    public ReminderItemQueryFactory(String[] archetypes, String[] statuses, Date from, Date to) {
+        setArchetypes(archetypes);
         setStatuses(statuses);
         setFrom(from);
         setTo(to);
@@ -127,31 +147,31 @@ public class ReminderItemQueryFactory {
     /**
      * Sets the archetype short name to query.
      *
-     * @param shortName the archetype short name to query. May contain wildcards
+     * @param archetype the archetype to query. May contain wildcards
      */
-    public void setShortName(String shortName) {
-        setShortNames(new String[]{shortName});
+    public void setArchetype(String archetype) {
+        setArchetypes(new String[]{archetype});
     }
 
     /**
      * Sets the archetype short name to query.
      *
-     * @param shortNames the archetype short names to query. May contain wildcards
+     * @param archetypes the archetype to query. May contain wildcards
      */
-    public void setShortNames(String[] shortNames) {
-        if (!TypeHelper.matches(shortNames, ReminderArchetypes.REMINDER_ITEMS)) {
-            throw new IllegalArgumentException("Invalid reminder item names: " + StringUtils.join(shortNames, ','));
+    public void setArchetypes(String[] archetypes) {
+        if (!TypeHelper.matches(archetypes, ReminderArchetypes.REMINDER_ITEMS)) {
+            throw new IllegalArgumentException("Invalid reminder item names: " + StringUtils.join(archetypes, ','));
         }
-        this.shortNames = shortNames;
+        this.archetypes = archetypes;
     }
 
     /**
-     * Returns the archetype short names to query.
+     * Returns the archetypes to query.
      *
-     * @return the archetype short names to query
+     * @return the archetypes to query
      */
-    public String[] getShortNames() {
-        return shortNames;
+    public String[] getArchetypes() {
+        return archetypes;
     }
 
     /**
@@ -220,12 +240,21 @@ public class ReminderItemQueryFactory {
     }
 
     /**
+     * Sets the customer to constrain items to.
+     *
+     * @param customer the customer. May be  {@code null}
+     */
+    public void setCustomer(Party customer) {
+        this.customerId = (customer != null) ? customer.getId() : -1;
+    }
+
+    /**
      * Creates a new query.
      *
      * @return a new query
      */
     public ArchetypeQuery createQuery() {
-        ArchetypeQuery query = new ArchetypeQuery(shortName("item", shortNames, false));
+        ArchetypeQuery query = new ArchetypeQuery(shortName("item", archetypes, false));
         query.add(new ObjectSelectConstraint("item"));
         query.add(new ObjectSelectConstraint("reminder"));
         query.add(new ObjectSelectConstraint("patient"));
@@ -246,6 +275,9 @@ public class ReminderItemQueryFactory {
         ShortNameConstraint owner = shortName("owner", PatientArchetypes.PATIENT_OWNER);
         owner.add(isNull("activeEndTime")); // only include customers with an open-ended owner relationship
         patient.add(join("customers", owner).add(customer));
+        if (customerId != -1) {
+            customer.add(eq("id", customerId));
+        }
         query.add(join("reminder", "r").add(reminder));
         query.add(sort("customer", "name"));
         query.add(sort("customer", "id"));

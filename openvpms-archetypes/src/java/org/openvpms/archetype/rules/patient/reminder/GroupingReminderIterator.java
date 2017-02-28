@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.apache.commons.collections4.iterators.PushbackIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType.GroupBy;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -59,6 +60,17 @@ public class GroupingReminderIterator implements Iterator<GroupingReminderIterat
 
         public GroupBy getGroupBy() {
             return groupBy;
+        }
+
+        public boolean contains(Act item) {
+            IMObjectReference reference = item.getObjectReference();
+            for (ObjectSet set : sets) {
+                Act act = (Act) set.get("item");
+                if (act.getObjectReference().equals(reference)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
     }

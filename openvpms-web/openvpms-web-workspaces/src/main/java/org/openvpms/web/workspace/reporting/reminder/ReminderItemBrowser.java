@@ -95,6 +95,16 @@ class ReminderItemBrowser extends QueryBrowserAdapter<ObjectSet, Act> {
     }
 
     /**
+     * Returns the underlying browser.
+     *
+     * @return the underlying browser
+     */
+    @Override
+    public ReminderItemObjectSetBrowser getBrowser() {
+        return (ReminderItemObjectSetBrowser) super.getBrowser();
+    }
+
+    /**
      * Creates a table browser that changes the model depending on what columns have been queried on.
      *
      * @param query   the query

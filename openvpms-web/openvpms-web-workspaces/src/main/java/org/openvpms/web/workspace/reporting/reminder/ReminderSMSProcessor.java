@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -41,7 +42,6 @@ import org.openvpms.web.workspace.reporting.ReportingException;
 import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
-import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSDisabled;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSMessageEmpty;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.SMSMessageTooLong;
@@ -117,50 +117,25 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      * @param state the reminder state
      */
     @Override
-    public void process(State state) {
+    public void process(PatientReminders state) {
         if (!smsEnabled) {
             throw new ReportingException(SMSDisabled);
         }
-        super.process(state);
-    }
-
-    /**
-     * Processes a list of reminder events.
-     *
-     * @param contact   the contact to send to
-     * @param reminders the reminders
-     * @param template  the document template to use. May be {@code null}
-     */
-    @Override
-    protected void process(Contact contact, List<ObjectSet> reminders, DocumentTemplate template) {
-        if (template == null) {
-            throw new ReportingException(ReminderMissingDocTemplate);
-        }
-        Entity smsTemplate = template.getSMSTemplate();
-        if (smsTemplate == null) {
-            throw new ReportingException(TemplateMissingSMSText, template.getName());
-        }
-        String phoneNumber = SMSHelper.getPhone(contact);
-
-        ObjectSet first = reminders.get(0);
-        Party customer = getCustomer(first);
-        Party location = getLocation(customer);
-        for (ObjectSet set : reminders) {
-            set.set("location", location);
-        }
-
+        SMSReminders reminders = (SMSReminders) state;
+        String phoneNumber = reminders.getPhoneNumber();
         if (StringUtils.isEmpty(phoneNumber)) {
+            Party customer = reminders.getCustomer();
             throw new ReportingException(FailedToProcessReminder, "Contact has no phone number for customer=" +
                                                                   customer.getName() + " (" + customer.getId() + ")");
         } else {
             try {
-                Act reminder = getReminder(first);
-                Party patient = getPatient(first);
-                String text = evaluator.evaluate(smsTemplate, reminder, customer, patient, location, getPractice());
+                Party practice = getPractice();
+                String text = reminders.getText(practice);
                 if (StringUtils.isEmpty(text)) {
-                    throw new ReportingException(SMSMessageEmpty, smsTemplate.getName());
+                    throw new ReportingException(SMSMessageEmpty, reminders.getSMSTemplate().getName());
                 } else if (text.length() > 160) {
-                    throw new ReportingException(SMSMessageTooLong, smsTemplate.getName(), text.length());
+                    throw new ReportingException(SMSMessageTooLong, reminders.getSMSTemplate().getName(),
+                                                 text.length());
                 }
                 Connection connection = factory.createConnection();
                 try {
@@ -174,6 +149,35 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
                 throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
             }
         }
+    }
+
+    /**
+     * Prepares reminders for processing.
+     *
+     * @param reminders the reminders
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
+     * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
+     * @param customer  the customer, or {@code null} if there are no reminders to send
+     * @param contact   the contact,  or {@code null} if there are no reminders to send
+     * @param location  the practice location, or {@code null} if there are no reminders to send
+     * @param template  the document template, or {@code null} if there are no reminders to send
+     * @return the reminders to process
+     * @throws ReportingException if the reminders cannot be prepared
+     */
+    @Override
+    protected GroupedReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
+                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                                       boolean resend, Party customer, Contact contact, Party location,
+                                       DocumentTemplate template) {
+        Entity smsTemplate = template.getSMSTemplate();
+        if (smsTemplate == null) {
+            throw new ReportingException(TemplateMissingSMSText, template.getName());
+        }
+        return new SMSReminders(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location,
+                                template, smsTemplate, evaluator);
     }
 
     /**
@@ -203,7 +207,7 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      * @param logger the communication logger
      */
     @Override
-    protected void log(State state, CommunicationLogger logger) {
+    protected void log(PatientReminders state, CommunicationLogger logger) {
         String subject = Messages.get("reminder.log.sms.subject");
         for (ObjectSet set : state.getReminders()) {
             String notes = getNote(set);

@@ -41,9 +41,7 @@ import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Patient reminder processor.
@@ -53,67 +51,6 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public abstract class PatientReminderProcessor {
-
-    public static class State {
-
-        private final List<ObjectSet> reminders;
-
-        private final ReminderType.GroupBy groupBy;
-
-        private final List<ObjectSet> cancelled;
-
-        private final List<ObjectSet> errors;
-
-        private final List<Act> updated;
-
-        private final boolean resend;
-
-        public State(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, List<ObjectSet> cancelled,
-                     List<ObjectSet> errors, List<Act> updated, boolean resend) {
-            this.reminders = reminders;
-            this.groupBy = groupBy;
-            this.cancelled = cancelled;
-            this.errors = errors;
-            this.updated = updated;
-            this.resend = resend;
-        }
-
-        public List<ObjectSet> getReminders() {
-            return reminders;
-        }
-
-        public ReminderType.GroupBy getGroupBy() {
-            return groupBy;
-        }
-
-        public void updated(Act act) {
-            updated.add(act);
-        }
-
-        public List<Act> getUpdated() {
-            return updated;
-        }
-
-        public List<ObjectSet> getCancelled() {
-            return cancelled;
-        }
-
-        public List<ObjectSet> getErrors() {
-            return errors;
-        }
-
-        public boolean getResend() {
-            return resend;
-        }
-
-        public int getProcessed() {
-            Set<ObjectSet> sets = new HashSet<>();
-            sets.addAll(reminders);
-            sets.removeAll(cancelled);
-            sets.removeAll(errors);
-            return sets.size();
-        }
-    }
 
     /**
      * The reminder contact purpose.
@@ -191,9 +128,11 @@ public abstract class PatientReminderProcessor {
      * @param reminders  the reminders
      * @param groupBy    the reminder grouping policy. This determines which document template is selected
      * @param cancelDate the date to use when determining if a reminder item should be cancelled
-     * @param resend     if {@code true}, reminders are being resent   @return the reminders to process
+     * @param resend     if {@code true}, reminders are being resent
+     * @return the reminders to process
      */
-    public State prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate, boolean resend) {
+    public PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate,
+                                    boolean resend) {
         List<ObjectSet> toProcess = new ArrayList<>();
         List<ObjectSet> cancelled = new ArrayList<>();
         List<ObjectSet> errors = new ArrayList<>();
@@ -212,10 +151,7 @@ public abstract class PatientReminderProcessor {
                 toProcess.add(set);
             }
         }
-        if (!toProcess.isEmpty()) {
-            toProcess = prepare(toProcess, updated, errors);
-        }
-        return new State(toProcess, groupBy, cancelled, errors, updated, resend);
+        return prepare(toProcess, groupBy, cancelled, errors, updated, resend);
     }
 
     /**
@@ -228,32 +164,32 @@ public abstract class PatientReminderProcessor {
     /**
      * Processes reminders.
      *
-     * @param state the reminder state
+     * @param reminders the reminders
      */
-    public abstract void process(State state);
+    public abstract void process(PatientReminders reminders);
 
     /**
      * Completes processing.
      *
-     * @param state the reminder state
+     * @param reminders the reminders
      */
-    public void complete(State state) {
-        boolean resend = state.getResend();
-        for (ObjectSet set : state.getReminders()) {
+    public void complete(PatientReminders reminders) {
+        boolean resend = reminders.getResend();
+        for (ObjectSet set : reminders.getReminders()) {
             if (!resend) {
-                complete(set, state);
+                complete(set, reminders);
             } else {
                 // if its a resend of a reminder, but the reminder item is new, complete it, if it isn't in error
                 Act item = getItem(set);
                 if (item.isNew() && !ReminderItemStatus.ERROR.equals(item.getStatus())) {
-                    completeItem(set, state);
+                    completeItem(set, reminders);
                 }
             }
         }
-        save(state);
+        save(reminders);
         CommunicationLogger logger = getLogger();
-        if (logger != null && !state.getReminders().isEmpty()) {
-            log(state, logger);
+        if (logger != null && !reminders.getReminders().isEmpty()) {
+            log(reminders, logger);
         }
     }
 
@@ -263,7 +199,7 @@ public abstract class PatientReminderProcessor {
      * @param state      the state
      * @param statistics the statistics to update
      */
-    public void addStatistics(State state, Statistics statistics) {
+    public void addStatistics(PatientReminders state, Statistics statistics) {
         for (ObjectSet set : state.getReminders()) {
             Act reminder = getReminder(set);
             Act item = getItem(set);
@@ -307,12 +243,17 @@ public abstract class PatientReminderProcessor {
      * <li>adds meta-data for subsequent calls to {@link #process}</li>
      * </ul>
      *
-     * @param reminders the reminders
-     * @param updated   acts that need to be saved on completion
+     * @param reminders the reminders to prepare
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
      * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
      * @return the reminders to process
      */
-    protected abstract List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors);
+    protected abstract PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
+                                                List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                                                boolean resend);
 
     /**
      * Determines if a reminder item should be cancelled.
@@ -332,14 +273,14 @@ public abstract class PatientReminderProcessor {
      * @param state  the reminder state
      * @param logger the communication logger
      */
-    protected abstract void log(State state, CommunicationLogger logger);
+    protected abstract void log(PatientReminders state, CommunicationLogger logger);
 
     /**
      * Saves the state.
      *
      * @param state the state
      */
-    protected void save(State state) {
+    protected void save(PatientReminders state) {
         List<Act> updated = state.getUpdated();
         if (!updated.isEmpty()) {
             service.save(updated);
@@ -547,7 +488,7 @@ public abstract class PatientReminderProcessor {
      * @param event the reminder event
      * @param state the processing state
      */
-    protected void complete(ObjectSet event, State state) {
+    protected void complete(ObjectSet event, PatientReminders state) {
         Act item = completeItem(event, state);
         Act reminder = getReminder(event);
         updateReminder(reminder, item);
@@ -562,7 +503,7 @@ public abstract class PatientReminderProcessor {
      * @param event the reminder event
      * @param state the processing state
      */
-    protected Act completeItem(ObjectSet event, State state) {
+    protected Act completeItem(ObjectSet event, PatientReminders state) {
         Act item = updateItem(event, ReminderItemStatus.COMPLETED, null);
         state.updated(item);
         return item;

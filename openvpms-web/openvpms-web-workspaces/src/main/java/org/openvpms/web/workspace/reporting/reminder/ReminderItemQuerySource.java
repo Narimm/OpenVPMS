@@ -66,7 +66,7 @@ public class ReminderItemQuerySource implements ReminderItemSource {
      *
      * @param factory       the query factory
      * @param reminderTypes the reminder types
-     * @param configuration the reminder coonfiguration
+     * @param configuration the reminder configuration
      */
     public ReminderItemQuerySource(ReminderItemQueryFactory factory, ReminderTypes reminderTypes,
                                    ReminderConfiguration configuration) {
@@ -81,8 +81,8 @@ public class ReminderItemQuerySource implements ReminderItemSource {
      *
      * @return the reminder item archetype short names
      */
-    public String[] getShortNames() {
-        return factory.getShortNames();
+    public String[] getArchetypes() {
+        return factory.getArchetypes();
     }
 
     /**

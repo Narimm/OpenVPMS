@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -28,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -52,9 +54,9 @@ import java.util.List;
 public class ReminderListProcessor extends PatientReminderProcessor {
 
     /**
-     * The context.
+     * The location.
      */
-    private final Context context;
+    private final Party location;
 
     /**
      * The help context.
@@ -72,18 +74,18 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      *
      * @param reminderTypes the reminder types
      * @param rules         the reminder rules
+     * @param location      the practice location
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
-     * @param context       the context
      * @param help          the help context
      */
-    public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party practice,
+    public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party location, Party practice,
                                  IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger,
-                                 Context context, HelpContext help) {
+                                 HelpContext help) {
         super(reminderTypes, rules, practice, service, config, logger);
-        this.context = context;
+        this.location = location;
         this.help = help;
     }
 
@@ -111,17 +113,20 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     /**
      * Processes reminders.
      *
-     * @param state the reminder state
+     * @param reminders the reminder state
      */
     @Override
-    public void process(State state) {
+    public void process(PatientReminders reminders) {
         List<Act> acts = new ArrayList<>();
-        for (ObjectSet reminder : state.getReminders()) {
+        for (ObjectSet reminder : reminders.getReminders()) {
             acts.add(getReminder(reminder));
         }
+        Context context = new LocalContext();
+        context.setLocation(location);
+        context.setPractice(getPractice());
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER, context);
         IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
-        InteractivePrinter iPrinter = createPrinter(printer);
+        InteractivePrinter iPrinter = createPrinter(printer, context);
         iPrinter.setListener(listener);
         iPrinter.print();
     }
@@ -145,19 +150,24 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * <li>adds meta-data for subsequent calls to {@link #process}</li>
      * </ul>
      *
-     * @param reminders the reminders
-     * @param updated   acts that need to be saved on completion
+     * @param reminders the reminders to prepare
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
      * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
      * @return the reminders to process
      */
     @Override
-    protected List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors) {
+    protected PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
+                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                                       boolean resend) {
         ContactMatcher matcher = createContactMatcher(ContactArchetypes.PHONE);
         for (ObjectSet reminder : reminders) {
             Contact contact = getContact(reminder, matcher);
             reminder.set("contact", contact);
         }
-        return reminders;
+        return new PatientReminders(reminders, groupBy, cancelled, errors, updated, resend);
     }
 
     /**
@@ -166,7 +176,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * @param state  the reminder state
      * @param logger the communication logger
      */
-    protected void log(State state, CommunicationLogger logger) {
+    protected void log(PatientReminders state, CommunicationLogger logger) {
         String subject = Messages.get("reminder.log.list.subject");
         for (ObjectSet reminder : state.getReminders()) {
             populate(reminder);
@@ -186,9 +196,10 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * Creates a new interactive printer.
      *
      * @param printer the printer to delegate to
+     * @param context the context
      * @return a new interactive printer
      */
-    protected InteractivePrinter createPrinter(IMObjectReportPrinter<Act> printer) {
+    protected InteractivePrinter createPrinter(IMObjectReportPrinter<Act> printer, Context context) {
         return createPrinter(Messages.get("reporting.reminder.list.print.title"), printer, context, help);
     }
 

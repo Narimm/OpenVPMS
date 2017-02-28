@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderExporter;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -97,7 +98,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      * @param state the reminder state
      */
     @Override
-    public void process(State state) {
+    public void process(PatientReminders state) {
         List<ObjectSet> reminders = state.getReminders();
         populate(reminders);
 
@@ -110,6 +111,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
         DownloadServlet.startDownload(document);
     }
 
+
     /**
      * Prepares reminders for processing.
      * <p/>
@@ -119,13 +121,18 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      * <li>adds meta-data for subsequent calls to {@link #process}</li>
      * </ul>
      *
-     * @param reminders the reminders
-     * @param updated   acts that need to be saved on completion
+     * @param reminders the reminders to prepare
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
      * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
      * @return the reminders to process
      */
     @Override
-    protected List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors) {
+    protected PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
+                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                                       boolean resend) {
         List<ObjectSet> toProcess = new ArrayList<>();
         ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
         for (ObjectSet reminder : reminders) {
@@ -141,7 +148,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
                 errors.add(reminder);
             }
         }
-        return toProcess;
+        return new PatientReminders(toProcess, groupBy, cancelled, errors, updated, resend);
     }
 
     /**
@@ -151,7 +158,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      * @param logger the communication logger
      */
     @Override
-    protected void log(State state, CommunicationLogger logger) {
+    protected void log(PatientReminders state, CommunicationLogger logger) {
         List<ObjectSet> reminders = state.getReminders();
         String subject = Messages.get("reminder.log.export.subject");
         for (ObjectSet reminder : reminders) {

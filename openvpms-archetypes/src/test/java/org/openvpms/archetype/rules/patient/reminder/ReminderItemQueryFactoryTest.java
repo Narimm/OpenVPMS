@@ -85,7 +85,7 @@ public class ReminderItemQueryFactoryTest extends ArchetypeServiceTest {
         checkNotExists(query, reminder3, patient, customer, email3, list3);
 
         // change query to only return email items
-        query.setShortName(ReminderArchetypes.EMAIL_REMINDER);
+        query.setArchetype(ReminderArchetypes.EMAIL_REMINDER);
         checkExists(query, reminder1, patient, customer, email1);
         checkNotExists(query, reminder1, patient, customer, sms1, print1, export1, list1);
         checkNotExists(query, reminder2, patient, customer, email2, print2);
@@ -95,7 +95,7 @@ public class ReminderItemQueryFactoryTest extends ArchetypeServiceTest {
         email1.setStatus(ReminderItemStatus.ERROR);
         save(email1);
 
-        query.setShortName(ReminderArchetypes.REMINDER_ITEMS);
+        query.setArchetype(ReminderArchetypes.REMINDER_ITEMS);
         query.setStatus(ReminderItemStatus.PENDING);
         checkExists(query, reminder1, patient, customer, sms1, print1, export1, list1);
         checkNotExists(query, reminder1, patient, customer, email1);
@@ -107,6 +107,40 @@ public class ReminderItemQueryFactoryTest extends ArchetypeServiceTest {
         checkNotExists(query, reminder1, patient, customer, sms1, print1, export1, list1);
         checkNotExists(query, reminder2, patient, customer, email2, print2);
         checkNotExists(query, reminder3, patient, customer, email3, list3);
+    }
+
+    /**
+     * Verifies that reminder items can be restricted to a particular customer.
+     */
+    @Test
+    public void testQueryByCustomer() {
+        Entity reminderType = createReminderType(1, DateUnits.YEARS);
+        Party customer1 = TestHelper.createCustomer();
+        Party patient1 = createPatient(customer1);
+        Party customer2 = TestHelper.createCustomer();
+        Party patient2 = createPatient(customer2);
+
+        Date date = DateRules.getToday();
+
+        Act email1 = createEmailReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act sms1 = createSMSReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act print1 = createPrintReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act export1 = createExportReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act list1 = createListReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act reminder1 = createReminder(date, patient1, reminderType, email1, sms1, print1, export1, list1);
+
+        Act email2 = createPrintReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act print2 = createPrintReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act reminder2 = createReminder(date, patient2, reminderType, email2, print2);
+
+        ReminderItemQueryFactory query = new ReminderItemQueryFactory();
+        query.setCustomer(customer1);
+        checkExists(query, reminder1, patient1, customer1, email1, sms1, print1, export1, list1);
+        checkNotExists(query, reminder2, patient2, customer2, email2, print2);
+
+        query.setCustomer(customer2);
+        checkNotExists(query, reminder1, patient1, customer1, email1, sms1, print1, export1, list1);
+        checkExists(query, reminder2, patient2, customer2, email2, print2);
     }
 
     /**
