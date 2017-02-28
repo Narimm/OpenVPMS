@@ -163,9 +163,9 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
     protected ArchetypeQuery createQuery(ReminderItemQueryFactory factory) {
         String shortName = getShortName();
         if (shortName != null) {
-            factory.setShortName(shortName);
+            factory.setArchetype(shortName);
         } else {
-            factory.setShortNames(getShortNames());
+            factory.setArchetypes(getShortNames());
         }
         factory.setStatuses(getStatuses());
         factory.setFrom(null);

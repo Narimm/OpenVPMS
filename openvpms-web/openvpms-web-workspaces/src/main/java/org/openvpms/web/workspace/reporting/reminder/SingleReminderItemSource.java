@@ -75,7 +75,7 @@ public class SingleReminderItemSource implements ReminderItemSource {
      *
      * @return the reminder item archetype short names
      */
-    public String[] getShortNames() {
+    public String[] getArchetypes() {
         return shortNames;
     }
 

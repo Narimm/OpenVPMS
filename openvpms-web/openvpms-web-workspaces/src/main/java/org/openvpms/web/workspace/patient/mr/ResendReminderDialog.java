@@ -46,7 +46,6 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.reporting.reminder.ReminderGenerator;
 import org.openvpms.web.workspace.reporting.reminder.ReminderGeneratorFactory;
 
@@ -65,16 +64,6 @@ class ResendReminderDialog extends PopupDialog {
      * The reminder.
      */
     private final Act reminder;
-
-    /**
-     * The customer.
-     */
-    private final Party customer;
-
-    /**
-     * The patient.
-     */
-    private final Party patient;
 
     /**
      * The reminder processor.
@@ -111,8 +100,6 @@ class ResendReminderDialog extends PopupDialog {
      * Constructs a {@link ResendReminderDialog}.
      *
      * @param reminder       the reminder
-     * @param customer       the customer
-     * @param patient        the patient
      * @param contacts       the customer's email, SMS and location contacts
      * @param reminderCounts the reminder counts that may be (re)sent
      * @param reminderCount  the current reminder count
@@ -120,13 +107,10 @@ class ResendReminderDialog extends PopupDialog {
      * @param context        the context
      * @param help           the help context
      */
-    private ResendReminderDialog(Act reminder, Party customer, Party patient, List<Contact> contacts,
-                                 List<Integer> reminderCounts, int reminderCount, ReminderProcessor processor,
-                                 Context context, HelpContext help) {
+    private ResendReminderDialog(Act reminder, List<Contact> contacts, List<Integer> reminderCounts, int reminderCount,
+                                 ReminderProcessor processor, Context context, HelpContext help) {
         super(Messages.get("patient.reminder.resend.title"), OK_CANCEL, help);
         this.reminder = reminder;
-        this.customer = customer;
-        this.patient = patient;
         this.processor = processor;
         this.context = context;
         this.rules = ServiceHelper.getBean(ReminderRules.class);
@@ -179,7 +163,7 @@ class ResendReminderDialog extends PopupDialog {
                     ReminderType reminderType = processor.getReminderType(reminder);
                     List<Integer> counts = getReminderCounts(reminderType, reminderCount);
                     if (!counts.isEmpty()) {
-                        result = new ResendReminderDialog(reminder, customer, patient, contacts, counts, reminderCount,
+                        result = new ResendReminderDialog(reminder, contacts, counts, reminderCount,
                                                           processor, context, help);
                     } else {
                         ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.format(
@@ -236,9 +220,10 @@ class ResendReminderDialog extends PopupDialog {
      * @param item the reminder item
      */
     private void generate(final Act item) {
-        CustomerMailContext mailContext = CustomerMailContext.create(customer, patient, context, getHelpContext());
         ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
-        ReminderGenerator generator = factory.create(item, reminder, context, mailContext, getHelpContext());
+        Party location = context.getLocation();
+        Party practice = context.getPractice();
+        ReminderGenerator generator = factory.create(item, reminder, location, practice, getHelpContext());
         generator.setResend(true);
         generator.setListener(new BatchProcessorListener() {
             public void completed() {

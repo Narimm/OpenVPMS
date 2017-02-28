@@ -34,13 +34,13 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.sms.ConnectionFactory;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.reminder.PatientReminderProcessor;
+import org.openvpms.web.workspace.reporting.reminder.PatientReminders;
 import org.openvpms.web.workspace.reporting.reminder.ReminderEmailProcessor;
 import org.openvpms.web.workspace.reporting.reminder.ReminderSMSEvaluator;
 import org.openvpms.web.workspace.reporting.reminder.ReminderSMSProcessor;
@@ -198,8 +198,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     protected Stats sendEmailReminders(Date date, ReminderTypes reminderTypes, Party practice,
                                        ReminderConfiguration config, CommunicationLogger logger) {
         ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, reminderTypes,
-                                                                      rules, practice, service, config, logger,
-                                                                      new LocalContext());
+                                                                      rules, practice, service, config, logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.EMAIL_REMINDER, reminderTypes, date,
                                                            config);
         return send(date, processor, iterator);
@@ -262,7 +261,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
             GroupingReminderIterator.Reminders reminders = iterator.next();
-            PatientReminderProcessor.State state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(),
+            PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(),
                                                                      date, false);
             processor.process(state);
             int cancelled = state.getCancelled().size();

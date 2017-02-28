@@ -33,7 +33,7 @@ public interface ReminderItemSource {
      *
      * @return the reminder item archetype short names
      */
-    String[] getShortNames();
+    String[] getArchetypes();
 
     /**
      * Returns all items that match the query.

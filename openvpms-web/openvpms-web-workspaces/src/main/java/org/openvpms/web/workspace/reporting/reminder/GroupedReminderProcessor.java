@@ -66,18 +66,6 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     }
 
     /**
-     * Processes reminders.
-     *
-     * @param state the reminder state
-     */
-    @Override
-    public void process(State state) {
-        List<ObjectSet> reminders = state.getReminders();
-        Contact contact = (Contact) reminders.get(0).get("contact");
-        process(contact, reminders, state.getGroupBy());
-    }
-
-    /**
      * Prepares reminders for processing.
      * <p/>
      * This:
@@ -86,26 +74,67 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * <li>adds meta-data for subsequent calls to {@link #process}</li>
      * </ul>
      *
-     * @param reminders the reminders
-     * @param updated   acts that need to be saved on completion
+     * @param reminders the reminders to prepare
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
      * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
      * @return the reminders to process
+     * @throws ReportingException if the reminders cannot be prepared
      */
     @Override
-    protected List<ObjectSet> prepare(List<ObjectSet> reminders, List<Act> updated, List<ObjectSet> errors) {
-        List<ObjectSet> result = new ArrayList<>();
-        ObjectSet set = reminders.get(0);
-        Contact contact = getContact(set);
-        if (contact != null) {
-            for (ObjectSet reminder : reminders) {
-                reminder.set("contact", contact);
+    protected PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
+                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                                       boolean resend) {
+        DocumentTemplate template = null;
+        List<ObjectSet> toProcess = new ArrayList<>();
+        Party customer = null;
+        Contact contact = null;
+        Party location = null;
+        if (!reminders.isEmpty()) {
+            ObjectSet set = reminders.get(0);
+            customer = getCustomer(set);
+            if (customer != null) {
+                location = getLocation(customer);
             }
-            result.addAll(reminders);
-        } else {
-            noContact(reminders, updated);
-            errors.addAll(reminders);
+            contact = getContact(set);
+            if (contact != null) {
+                if (!reminders.isEmpty()) {
+                    toProcess.addAll(reminders);
+                    populate(reminders);
+                    template = getTemplate(toProcess, groupBy);
+                }
+            } else {
+                noContact(reminders, updated);
+                errors.addAll(reminders);
+            }
         }
-        return result;
+        return prepare(toProcess, groupBy, cancelled, errors, updated, resend, customer, contact, location, template);
+    }
+
+    /**
+     * Prepares reminders for processing.
+     *
+     * @param reminders the reminders
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
+     * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
+     * @param customer  the customer, or {@code null} if there are no reminders to send
+     * @param contact   the contact,  or {@code null} if there are no reminders to send
+     * @param location  the practice location, or {@code null} if there are no reminders to send
+     * @param template  the document template, or {@code null} if there are no reminders to send
+     * @return the reminders to process
+     * @throws ReportingException if the reminders cannot be prepared
+     */
+    protected GroupedReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
+                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                                       boolean resend, Party customer, Contact contact, Party location,
+                                       DocumentTemplate template) {
+        return new GroupedReminders(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location,
+                                    template);
     }
 
     /**
@@ -125,21 +154,15 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     }
 
     /**
-     * Processes a list of reminders.
-     * <p/>
-     * The reminders all belong to the same customer.
-     * <p/>
-     * This implementation delegates to {@link #process(Contact, List, DocumentTemplate)}.
+     * Returns the document template to use for the specified reminders and grouping policy.
      *
-     * @param contact   the contact to send to
      * @param reminders the reminders
-     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param groupBy   the reminder grouping policy
+     * @return the document template
+     * @throws ReportingException if the document template cannot be located
      */
-    protected void process(Contact contact, List<ObjectSet> reminders, ReminderType.GroupBy groupBy) {
+    protected DocumentTemplate getTemplate(List<ObjectSet> reminders, ReminderType.GroupBy groupBy) {
         DocumentTemplate template;
-
-        populate(reminders);
-
         if (reminders.size() > 1) {
             if (groupBy == ReminderType.GroupBy.CUSTOMER) {
                 template = getConfig().getCustomerGroupedReminderTemplate();
@@ -171,7 +194,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
                 throw new ReportingException(ReminderMissingDocTemplate);
             }
         }
-        process(contact, reminders, template);
+        return template;
     }
 
     /**
@@ -200,13 +223,5 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      */
     protected abstract String getContactArchetype();
 
-    /**
-     * Processes a list of reminders.
-     *
-     * @param contact   the contact to send to
-     * @param reminders the reminders
-     * @param template  the document template to use
-     */
-    protected abstract void process(Contact contact, List<ObjectSet> reminders, DocumentTemplate template);
 
 }

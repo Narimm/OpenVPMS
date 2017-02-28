@@ -19,14 +19,17 @@ package org.openvpms.web.workspace.reporting.reminder;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
+import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.PagedReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -52,6 +55,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -91,6 +95,11 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * Complete all reminders button identifier.
      */
     private static final String COMPLETE_ALL_ID = "button.completeAll";
+
+    /**
+     * Preview button identifier.
+     */
+    private static final String PREVIEW_ID = "button.preview";
 
     /**
      * Constructs a {@link ReminderItemCRUDWindow}.
@@ -198,6 +207,7 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
         buttons.add(createSendAllButton());
         buttons.add(createCompleteButton());
         buttons.add(createCompleteAllButton());
+        buttons.add(createPreviewButton());
     }
 
     /**
@@ -253,6 +263,56 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     }
 
     /**
+     * Helper to create a new button with id {@link #PREVIEW_ID} linked to {@link #onPreview()}.
+     *
+     * @return a new button
+     */
+    protected Button createPreviewButton() {
+        return ButtonFactory.create(PREVIEW_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onPreview();
+            }
+        });
+    }
+
+    @Override
+    protected void onPreview() {
+        ObjectSet selected = browser.getBrowser().getSelected();
+        if (selected != null) {
+            Act item = (Act) selected.get("item");
+            Party customer = (Party) selected.get("customer");
+            ReminderItemQueryFactory factory = browser.getFactory();
+            String archetype = item.getArchetypeId().getShortName();
+            ReminderItemQueryFactory copy = new ReminderItemQueryFactory(archetype, factory.getStatuses(),
+                                                                         factory.getFrom(), factory.getTo());
+            copy.setCustomer(customer);
+            ReminderGeneratorFactory generators = ServiceHelper.getBean(ReminderGeneratorFactory.class);
+            Context context = getContext();
+            PatientReminderProcessorFactory processorFactory = generators.createFactory(
+                    context.getLocation(), context.getPractice(), getHelpContext());
+            ReminderConfiguration config = processorFactory.getConfiguration();
+            GroupingReminderIterator iterator = new GroupingReminderIterator(
+                    copy, processorFactory.getReminderTypes(), 100, config.getGroupByCustomerPolicy(),
+                    config.getGroupByPatientPolicy(), ServiceHelper.getArchetypeService());
+            GroupingReminderIterator.Reminders found = null;
+            while (iterator.hasNext()) {
+                GroupingReminderIterator.Reminders reminders = iterator.next();
+                if (reminders.contains(item)) {
+                    found = reminders;
+                    break;
+
+                }
+            }
+            if (found != null) {
+                PatientReminderProcessor processor = processorFactory.create(archetype);
+                PatientReminderPreviewer previewer = generators.createPreviewer(processor, getHelpContext());
+                previewer.preview(found.getReminders(), found.getGroupBy(), new Date(), true);
+            }
+        }
+
+    }
+
+    /**
      * Enables/disables the buttons that require an object to be selected.
      *
      * @param buttons the button set
@@ -284,7 +344,10 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
             try {
                 HelpContext help = getHelpContext().subtopic("send");
                 ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
-                ReminderGenerator generator = factory.create(item, getContext(), getMailContext(), help);
+                Context context = getContext();
+                Party location = context.getLocation();
+                Party practice = context.getPractice();
+                ReminderGenerator generator = factory.create(item, location, practice, help);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {
                         if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
@@ -424,7 +487,10 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
             HelpContext help = getHelpContext().subtopic("send");
             ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
             ReminderItemQueryFactory queryFactory = getQueryFactory();
-            ReminderGenerator generator = factory.create(queryFactory, getContext(), getMailContext(), help);
+            Context context = getContext();
+            Party location = context.getLocation();
+            Party practice = context.getPractice();
+            ReminderGenerator generator = factory.create(queryFactory, location, practice, help);
             generateReminders(generator);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);

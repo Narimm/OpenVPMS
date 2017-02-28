@@ -51,7 +51,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * The reminders currently being processed.
      */
-    private PatientReminderProcessor.State state;
+    private PatientReminders state;
 
     /**
      * The statistics.

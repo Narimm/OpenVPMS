@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -55,12 +55,12 @@ public class SMSDialog extends PopupDialog {
     /**
      * Constructs an {@link SMSDialog}.
      *
-     * @param phone   the phone contact to send to
+     * @param phone   the phone contact to send to. May be {@code null}
      * @param context the context
      * @param help    the help context
      */
     public SMSDialog(Contact phone, Context context, HelpContext help) {
-        this(Collections.singletonList(phone), context, help);
+        this(phone != null ? Collections.singletonList(phone) : null, context, help);
     }
 
     /**

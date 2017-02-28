@@ -16,13 +16,13 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -31,14 +31,8 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.report.IMObjectReporter;
-import org.openvpms.web.component.im.report.ObjectSetReporter;
-import org.openvpms.web.component.im.report.ReportContextFactory;
-import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.Mailer;
@@ -50,7 +44,6 @@ import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
 import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
@@ -80,11 +73,6 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
     private final EmailTemplateEvaluator evaluator;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * Constructs a {@link ReminderEmailProcessor}.
      *
      * @param factory       the mailer factory
@@ -94,14 +82,12 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
-     * @param context       the context
      */
     public ReminderEmailProcessor(MailerFactory factory, ReminderTypes reminderTypes, ReminderRules rules,
                                   Party practice, IArchetypeService service, ReminderConfiguration config,
-                                  CommunicationLogger logger, Context context) {
+                                  CommunicationLogger logger) {
         super(reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
-        this.context = context;
         addresses = new PracticeEmailAddresses(practice, "REMINDER");
         evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
     }
@@ -127,34 +113,17 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
     }
 
     /**
-     * Returns the contact archetype.
+     * Processes reminders.
      *
-     * @return the contact archetype
+     * @param reminders the reminder state
      */
     @Override
-    protected String getContactArchetype() {
-        return ContactArchetypes.EMAIL;
-    }
-
-    /**
-     * Processes a list of reminder events.
-     *
-     * @param contact   the contact to send to
-     * @param reminders the reminders
-     * @param template  the document template to use
-     */
-    protected void process(Contact contact, List<ObjectSet> reminders, DocumentTemplate template) {
-        Entity emailTemplate = template.getEmailTemplate();
-        if (emailTemplate == null) {
-            throw new ReportingException(TemplateMissingEmailText, template.getName());
-        }
-        ObjectSet event = reminders.get(0);
-        Context context = createContext(event);
-        Party customer = getCustomer(event);
-        Mailer mailer = factory.create(new CustomerMailContext(context));
+    public void process(PatientReminders reminders) {
+        EmailReminders reminderState = (EmailReminders) reminders;
+        Mailer mailer;
 
         try {
-            send(customer, contact, reminders, template, emailTemplate, mailer, context);
+            mailer = send(reminderState);
         } catch (ArchetypeServiceException | ReportingException | ReminderProcessorException exception) {
             throw exception;
         } catch (Throwable exception) {
@@ -167,7 +136,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
             String subject = mailer.getSubject();
             String body = mailer.getBody();
             String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
-            for (ObjectSet reminder : reminders) {
+            for (ObjectSet reminder : reminderState.getReminders()) {
                 reminder.set("to", to);
                 reminder.set("cc", cc);
                 reminder.set("bcc", bcc);
@@ -179,13 +148,53 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
     }
 
     /**
+     * Prepares reminders for processing.
+     *
+     * @param reminders the reminders
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
+     * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
+     * @param customer  the customer, or {@code null} if there are no reminders to send
+     * @param contact   the contact,  or {@code null} if there are no reminders to send
+     * @param location  the practice location, or {@code null} if there are no reminders to send
+     * @param template  the document template, or {@code null} if there are no reminders to send
+     * @return the reminders to process
+     * @throws ReportingException if the reminders cannot be prepared
+     */
+    @Override
+    protected EmailReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
+                                     List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+                                     boolean resend, Party customer, Contact contact, Party location,
+                                     DocumentTemplate template) {
+        Entity emailTemplate = template.getEmailTemplate();
+        if (emailTemplate == null) {
+            throw new ReportingException(TemplateMissingEmailText, template.getName());
+        }
+        return new EmailReminders(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location,
+                                  template, emailTemplate, evaluator);
+    }
+
+    /**
+     * Returns the contact archetype.
+     *
+     * @return the contact archetype
+     */
+    @Override
+    protected String getContactArchetype() {
+        return ContactArchetypes.EMAIL;
+    }
+
+    /**
      * Logs reminder communications.
      *
      * @param state  the reminder state
      * @param logger the communication logger
      */
     @Override
-    protected void log(State state, CommunicationLogger logger) {
+    protected void log(PatientReminders state, CommunicationLogger logger) {
+        Party location = ((EmailReminders) state).getLocation();
         for (ObjectSet set : state.getReminders()) {
             String notes = getNote(set);
             String[] to = (String[]) set.get("to");
@@ -196,90 +205,38 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
             String attachments = set.getString("attachments");
 
             logger.logEmail(getCustomer(set), getPatient(set), to, cc, bcc, subject, COMMUNICATION_REASON, body,
-                            notes, attachments, context.getLocation());
+                            notes, attachments, location);
         }
     }
 
     /**
      * Emails reminders.
      *
-     * @param customer         the customer
-     * @param contact          the email contact
-     * @param events           the events
-     * @param reminderTemplate the reminder document template
-     * @param emailTemplate    the email template
-     * @param mailer           the mailer the mailer to user
-     * @param context          the reporting context
+     * @param reminders the reminders to email
      */
-    protected void send(Party customer, Contact contact, List<ObjectSet> events, DocumentTemplate reminderTemplate,
-                        Entity emailTemplate, Mailer mailer, Context context) {
-        String body = null;
-        Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, events, context);
-        if (reporter != null) {
-            body = evaluator.getMessage(reporter);
-            if (StringUtils.isEmpty(body)) {
-                throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
-            }
-        }
-        if (body == null) {
-            body = evaluator.getMessage(emailTemplate, customer, context);
-        }
-        if (StringUtils.isEmpty(body)) {
-            throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
-        }
-        IMObjectBean bean = new IMObjectBean(contact);
-        String to = bean.getString("emailAddress");
+    protected Mailer send(EmailReminders reminders) {
+        ObjectSet set = reminders.getReminders().get(0);
+        Context context = createContext(set);
+        Mailer mailer = factory.create(new CustomerMailContext(context));
+        String body = reminders.getMessage(context);
+        String to = reminders.getEmailAddress();
 
-        EmailAddress from = addresses.getAddress(customer);
+        EmailAddress from = addresses.getAddress(reminders.getCustomer());
         mailer.setFrom(from.toString(true));
         mailer.setTo(new String[]{to});
 
-        String subject = evaluator.getSubject(emailTemplate, customer, context);
-        if (StringUtils.isEmpty(subject)) {
-            subject = reminderTemplate.getName();
-        }
+        String subject = reminders.getSubject(context);
         mailer.setSubject(subject);
         mailer.setBody(body);
 
         ReminderConfiguration config = getConfig();
         if (config.getEmailAttachments()) {
-            Document document = createReport(events, reminderTemplate, context);
+            Document document = reminders.createAttachment(context);
             mailer.addAttachment(document);
         }
 
         mailer.send();
+        return mailer;
     }
 
-    /**
-     * Creates a new report.
-     *
-     * @param sets             the reminder sets
-     * @param documentTemplate the document template
-     * @param context          the reporting context
-     * @return a new report
-     */
-    private Document createReport(List<ObjectSet> sets, DocumentTemplate documentTemplate, Context context) {
-        Document result;
-        if (sets.size() > 1) {
-            result = getDocument(new ObjectSetReporter(sets, documentTemplate), context);
-        } else {
-            List<Act> acts = new ArrayList<>();
-            for (ObjectSet set : sets) {
-                acts.add((Act) set.get("reminder"));
-            }
-            result = getDocument(new IMObjectReporter<>(acts, documentTemplate), context);
-        }
-        return result;
-    }
-
-    /**
-     * Generates the reminder document to email.
-     *
-     * @param reporter the document generator
-     * @return the generated document
-     */
-    private Document getDocument(Reporter<?> reporter, Context context) {
-        reporter.setFields(ReportContextFactory.create(context));
-        return reporter.getDocument(DocFormats.PDF_TYPE, true);
-    }
 }

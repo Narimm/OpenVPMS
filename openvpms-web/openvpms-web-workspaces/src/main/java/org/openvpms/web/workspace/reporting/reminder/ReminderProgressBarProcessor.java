@@ -71,7 +71,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Groupin
     /**
      * The current reminder state.
      */
-    private PatientReminderProcessor.State currentState;
+    private PatientReminders currentState;
 
     /**
      * The logger.
@@ -90,7 +90,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Groupin
     public ReminderProgressBarProcessor(ReminderItemSource items, PatientReminderProcessor processor,
                                         Statistics statistics, String title) {
         super(title);
-        String[] shortNames = items.getShortNames();
+        String[] shortNames = items.getArchetypes();
         if (shortNames.length != 1 || !TypeHelper.matches(shortNames[0], processor.getArchetype())) {
             throw new IllegalStateException("This may only query " + processor.getArchetype());
         }

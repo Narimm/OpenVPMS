@@ -19,10 +19,13 @@ package org.openvpms.web.workspace.reporting.reminder;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
 import org.openvpms.web.workspace.reporting.ReportingException;
+
+import java.util.List;
 
 /**
  * Evaluates <em>entity.documentTemplateSMSReminder</em> templates.
@@ -66,6 +69,31 @@ public class ReminderSMSEvaluator {
         local.setPractice(practice);
         try {
             result = evaluator.evaluate(template, reminder, local);
+        } catch (Throwable exception) {
+            throw new ReportingException(ReportingException.ErrorCode.SMSEvaluationFailed, exception,
+                                         template.getName());
+        }
+        return result;
+    }
+
+    /**
+     * Evaluates a template against a collection of reminders.
+     *
+     * @param template the template
+     * @param reminders the reminders
+     * @param customer the customer
+     * @param location the practice location
+     * @param practice the practice
+     * @return the result of the expression. May be {@code null}, or too long for an SMS
+     */
+    public String evaluate(Entity template, List<ObjectSet> reminders, Party customer, Party location, Party practice) {
+        String result;
+        Context local = new LocalContext();
+        local.setCustomer(customer);
+        local.setLocation(location);
+        local.setPractice(practice);
+        try {
+            result = evaluator.evaluate(template, reminders, local);
         } catch (Throwable exception) {
             throw new ReportingException(ReportingException.ErrorCode.SMSEvaluationFailed, exception,
                                          template.getName());
