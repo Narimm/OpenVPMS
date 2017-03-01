@@ -177,7 +177,12 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
      * Queue reminders.
      */
     protected void queue() {
-        ReminderConfiguration config = getConfiguration();
+        Party practice = practiceService.getPractice();
+        if (practice == null) {
+            throw new IllegalStateException("The practice has not been configured");
+        }
+        ReminderConfiguration config = getConfiguration(practice);
+        boolean disableSMS = practiceService.getSMS() == null;
         Date maxLeadTime = config.getMaxLeadTime(getStartTime());
         Date date = DateRules.getDate(maxLeadTime, 1, DateUnits.DAYS); // process all reminders due up to max lead + 1
         ArchetypeQuery query = factory.createQuery(date);
@@ -189,7 +194,7 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
         queued = 0;
         cancelled = 0;
         skipped = 0;
-        ReminderProcessor processor = createProcessor(date, config);
+        ReminderProcessor processor = createProcessor(date, config, disableSMS);
 
         Set<Long> exclude = new HashSet<>(); // ids of reminders to exclude
         while (!stop && !done) {
@@ -224,12 +229,13 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
     /**
      * Creates a new {@link ReminderProcessor}.
      *
-     * @param date   process reminders due on or before this date
-     * @param config the reminder configuration
+     * @param date       process reminders due on or before this date
+     * @param config     the reminder configuration
+     * @param disableSMS if {@code true}, disable SMS
      * @return a new {@link ReminderProcessor}
      */
-    protected ReminderProcessor createProcessor(Date date, ReminderConfiguration config) {
-        return new ReminderProcessor(date, config, true, service, rules);
+    protected ReminderProcessor createProcessor(Date date, ReminderConfiguration config, boolean disableSMS) {
+        return new ReminderProcessor(date, config, disableSMS, service, rules);
     }
 
     /**
@@ -260,15 +266,12 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
     }
 
     /**
-     * Returns the reminder lead times.
+     * Returns the reminder configuration.
      *
-     * @return the reminder lead times
+     * @param practice the practice
+     * @return the reminder configuration
      */
-    protected ReminderConfiguration getConfiguration() {
-        Party practice = practiceService.getPractice();
-        if (practice == null) {
-            throw new IllegalStateException("The practice has not been configured");
-        }
+    protected ReminderConfiguration getConfiguration(Party practice) {
         IMObjectBean bean = new IMObjectBean(practice, service);
         IMObject config = bean.getNodeTargetObject("reminderConfiguration");
         if (config == null) {
