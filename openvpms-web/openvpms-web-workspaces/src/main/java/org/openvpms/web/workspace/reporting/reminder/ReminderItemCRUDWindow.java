@@ -166,6 +166,8 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
         Act item = IMObjectHelper.reload(getObject());
         if (item != null) {
             super.onSaved(item, false);
+        } else {
+            onDeleted(getObject());  // item may have been deleted within the reminder editor
         }
     }
 

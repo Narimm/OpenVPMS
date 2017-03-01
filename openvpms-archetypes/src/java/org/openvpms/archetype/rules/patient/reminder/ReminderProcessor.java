@@ -43,7 +43,6 @@ import java.util.Set;
 
 import static org.openvpms.archetype.rules.party.ContactArchetypes.EMAIL;
 import static org.openvpms.archetype.rules.party.ContactArchetypes.LOCATION;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.Late;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoContactsForRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderCount;
@@ -471,8 +470,9 @@ public class ReminderProcessor {
         } else if (DateRules.compareTo(startTime, now()) > 0) {
             act.setStatus(ReminderItemStatus.PENDING);
         } else {
-            act.setStatus(ReminderItemStatus.ERROR);
-            bean.setValue("error", new ReminderProcessorException(Late).getMessage());
+            // TODO - not sure this is required. Should be handled via cancellation
+//            act.setStatus(ReminderItemStatus.ERROR);
+//            bean.setValue("error", new ReminderProcessorException(Late).getMessage());
         }
         reminder.addNodeRelationship("items", act);
         toSave.add(act);

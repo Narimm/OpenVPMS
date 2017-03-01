@@ -131,6 +131,9 @@ Our records indicate that your pet(s) named above are due for some in-clinic tre
           description="&lt;patient&gt; is due for a vaccination at &lt;location&gt;. Call us on &lt;phone&gt; to make an appointment"
           contentType="XPATH"
           content="concat($patient.name, ' is due for a vaccination at ', $location.name, '.', $nl, 'Please contact us on ',  party:getTelephone($location), ' to make an appointment')"/>
-    <data id="REMINDER_CONFIG" archetype="entity.reminderConfigurationType"/>
+    <data id="REMINDER_CONFIG" archetype="entity.reminderConfigurationType">
+        <data collection="location" archetype="entityLink.reminderConfigurationLocation" source="id:REMINDER_CONFIG"
+              target="id:OL1"/>
+    </data>
 
 </archetype>

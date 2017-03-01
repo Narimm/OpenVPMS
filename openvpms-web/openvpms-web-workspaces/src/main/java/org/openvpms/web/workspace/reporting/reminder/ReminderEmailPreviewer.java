@@ -62,7 +62,9 @@ public class ReminderEmailPreviewer extends AbstractPatientReminderPreviewer {
         MailEditor editor = dialog.getMailEditor();
         editor.setSubject(state.getSubject(context));
         editor.setMessage(state.getMessage(context));
-        editor.addAttachment(state.createAttachment(context));
+        if (processor.getConfig().getEmailAttachments()) {
+            editor.addAttachment(state.createAttachment(context));
+        }
         dialog.show();
     }
 }

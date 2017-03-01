@@ -27,9 +27,9 @@
         <node name="class" path="/details/class" type="java.lang.String" minCardinality="1" readOnly="true"
               hidden="true" defaultValue="'org.openvpms.web.jobs.reminder.PatientReminderQueueJob'"/>
         <node name="minutes" path="/details/minutes" type="java.lang.String" minCardinality="1" maxLength="50"
-              defaultValue="'*/30'"/>
+              defaultValue="'0'"/>
         <node name="hours" path="/details/hours" type="java.lang.String" minCardinality="1" maxLength="50"
-              defaultValue="'9-17'"/>
+              defaultValue="'5'"/>
         <node name="dayOfMonth" path="/details/dayOfMonth" type="java.lang.String" minCardinality="1" maxLength="50"
               defaultValue="'?'"/>
         <node name="month" path="/details/month" type="java.lang.String" minCardinality="1" maxLength="50"
