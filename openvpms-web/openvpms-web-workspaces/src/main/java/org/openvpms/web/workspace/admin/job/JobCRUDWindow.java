@@ -18,17 +18,24 @@ package org.openvpms.web.workspace.admin.job;
 
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.scheduler.JobScheduler;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Date;
 
 /**
  * CRUD window for the job workspace.
@@ -37,6 +44,9 @@ import org.openvpms.web.system.ServiceHelper;
  */
 public class JobCRUDWindow extends ResultSetCRUDWindow<Entity> {
 
+    /**
+     * Run button identifier.
+     */
     private static final String RUN_ID = "button.run";
 
     /**
@@ -81,11 +91,31 @@ public class JobCRUDWindow extends ResultSetCRUDWindow<Entity> {
         buttons.setEnabled(RUN_ID, enable);
     }
 
+    /**
+     * Invoked to run a job.
+     */
     protected void onRun() {
-        IMObject object = getObject();
-        if (object != null) {
-            JobScheduler scheduler = ServiceHelper.getBean(JobScheduler.class);
-            scheduler.run(object);
+        Entity object = getObject();
+        final Entity config = IMObjectHelper.reload(object);
+        if (config != null) {
+            final JobScheduler scheduler = ServiceHelper.getBean(JobScheduler.class);
+            String title = Messages.get("admin.job.run.title");
+            if (!config.isActive()) {
+                InformationDialog.show(title, Messages.format("admin.job.run.inactive", config.getName()));
+            } else {
+                Date run = scheduler.getNextRunTime(config);
+                String scheduled = (run != null) ? DateFormatter.formatDateTimeAbbrev(run) :
+                                   Messages.get("admin.job.run.never");
+                String message = Messages.format("admin.job.run.message", config.getName(), scheduled);
+                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        scheduler.run(config);
+                    }
+                });
+            }
+        } else {
+            onRefresh(object);
         }
     }
 }

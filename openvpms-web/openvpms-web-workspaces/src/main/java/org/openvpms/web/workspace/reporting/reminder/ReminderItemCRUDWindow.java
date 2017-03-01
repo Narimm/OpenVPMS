@@ -204,11 +204,6 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     protected void layoutButtons(ButtonSet buttons) {
         buttons.add(createEditButton());
-        buttons.add(createSendButton());
-        buttons.add(createSendAllButton());
-        buttons.add(createCompleteButton());
-        buttons.add(createCompleteAllButton());
-        buttons.add(createPreviewButton());
     }
 
     /**
@@ -276,12 +271,17 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
         });
     }
 
+    /**
+     * Previews the selected item.
+     */
     @Override
     protected void onPreview() {
         ObjectSet selected = browser.getBrowser().getSelected();
         if (selected != null) {
             Act item = (Act) selected.get("item");
             Party customer = (Party) selected.get("customer");
+
+            // use the GroupingReminderIterator to locate reminders that will be grouped with the selected item
             ReminderItemQueryFactory factory = browser.getFactory();
             String archetype = item.getArchetypeId().getShortName();
             ReminderItemQueryFactory copy = factory.copy(archetype);
@@ -308,7 +308,6 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 preview(item, found, previewer);
             }
         }
-
     }
 
     /**

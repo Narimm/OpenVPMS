@@ -48,6 +48,7 @@ class ResendReminderItemCRUDWindow extends ReminderItemCRUDWindow {
         buttons.add(createEditButton());
         buttons.add(createSendButton());
         buttons.add(createSendAllButton());
+        buttons.add(createPreviewButton());
     }
 
 }

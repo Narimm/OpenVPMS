@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.help.HelpContext;
 
 import java.util.Date;
@@ -40,6 +41,21 @@ class PendingReminderItemCRUDWindow extends ReminderItemCRUDWindow {
      */
     public PendingReminderItemCRUDWindow(PendingReminderItemBrowser browser, Context context, HelpContext help) {
         super(browser, context, help);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button set
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+        buttons.add(createSendButton());
+        buttons.add(createSendAllButton());
+        buttons.add(createCompleteButton());
+        buttons.add(createCompleteAllButton());
+        buttons.add(createPreviewButton());
     }
 
     /**

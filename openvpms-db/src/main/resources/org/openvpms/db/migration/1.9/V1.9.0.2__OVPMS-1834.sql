@@ -386,23 +386,23 @@ CREATE TEMPORARY TABLE tmp_reminder_config (
 
 INSERT INTO tmp_reminder_config (name, type, value)
 VALUES ('emailAttachments', 'boolean', 'true'),
-  ('emailCancelInterval', 'int', '1'),
+  ('emailCancelInterval', 'int', '3'),
   ('emailCancelUnits', 'string', 'DAYS'),
   ('emailInterval', 'int', '3'),
   ('emailUnits', 'string', 'DAYS'),
-  ('exportCancelInterval', 'int', '5'),
-  ('exportCancelUnits', 'string', 'DAYS'),
+  ('exportCancelInterval', 'int', '2'),
+  ('exportCancelUnits', 'string', 'WEEKS'),
   ('exportInterval', 'int', '2'),
   ('exportUnits', 'string', 'WEEKS'),
-  ('listCancelInterval', 'int', '5'),
-  ('listCancelUnits', 'string', 'DAYS'),
+  ('listCancelInterval', 'int', '2'),
+  ('listCancelUnits', 'string', 'WEEKS'),
   ('listInterval', 'int', '2'),
   ('listUnits', 'string', 'WEEKS'),
-  ('printCancelInterval', 'int', '5'),
-  ('printCancelUnits', 'string', 'DAYS'),
+  ('printCancelInterval', 'int', '2'),
+  ('printCancelUnits', 'string', 'WEEKS'),
   ('printInterval', 'int', '2'),
   ('printUnits', 'string', 'WEEKS'),
-  ('smsCancelInterval', 'int', '1'),
+  ('smsCancelInterval', 'int', '3'),
   ('smsCancelUnits', 'string', 'DAYS'),
   ('smsInterval', 'int', '3'),
   ('smsUnits', 'string', 'DAYS');
@@ -413,8 +413,8 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, desc
     UUID(),
     'entity.reminderConfigurationType',
     '1.0',
-    'Default Reminder Configuration',
-    'Determines the intervals when reminders must be sent and cancelled',
+    'Patient Reminder Configuration',
+    'Determines how patient reminders will be processed',
     1
   FROM dual
   WHERE NOT exists(
@@ -465,3 +465,66 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
       FROM entity_links l
       WHERE l.arch_short_name = 'entityLink.practiceReminderConfiguration'
             AND l.source_id = practice.entity_id);
+
+#
+# Linked entity.reminderConfigurationType to the grouped reminder template
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    UUID(),
+    'entityLink.reminderConfigurationTemplateCustomer',
+    '1.0',
+    'Reminder Configuration Grouped Reminders Template by Customer',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    config.entity_id,
+    template.entity_id
+  FROM entities config
+    JOIN (
+           SELECT max(e.entity_id) entity_id
+           FROM entities e
+             JOIN entity_details d
+               ON d.entity_id = e.entity_id
+                  AND d.name = 'archetype'
+                  AND d.value = 'GROUPED_REMINDERS'
+           WHERE e.arch_short_name = 'entity.documentTemplate'
+                 AND e.active = 1) template
+  WHERE config.arch_short_name = 'entity.reminderConfigurationType' AND NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.arch_short_name = 'entityLink.reminderConfigurationTemplateCustomer'
+            AND l.source_id = config.entity_id);
+
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    UUID(),
+    'entityLink.reminderConfigurationTemplatePatient',
+    '1.0',
+    'Reminder Configuration Grouped Reminders Template by Patient',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    config.entity_id,
+    template.entity_id
+  FROM entities config
+    JOIN (
+           SELECT max(e.entity_id) entity_id
+           FROM entities e
+             JOIN entity_details d
+               ON d.entity_id = e.entity_id
+                  AND d.name = 'archetype'
+                  AND d.value = 'GROUPED_REMINDERS'
+           WHERE e.arch_short_name = 'entity.documentTemplate'
+                 AND e.active = 1) template
+  WHERE config.arch_short_name = 'entity.reminderConfigurationType' AND NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.arch_short_name = 'entityLink.reminderConfigurationTemplatePatient'
+            AND l.source_id = config.entity_id);

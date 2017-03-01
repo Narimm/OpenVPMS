@@ -102,6 +102,10 @@ public class ReminderGeneratorFactory {
             return new ReminderSMSPreviewer((ReminderSMSProcessor) processor, help);
         } else if (processor instanceof ReminderPrintProcessor) {
             return new ReminderPrintPreviewer((ReminderPrintProcessor) processor, help);
+        } else if (processor instanceof ReminderExportProcessor) {
+            return new ReminderExportPreviewer((ReminderExportProcessor) processor, help);
+        } else if (processor instanceof ReminderListProcessor) {
+            return new ReminderListPreviewer((ReminderListProcessor) processor, help);
         }
         throw new IllegalArgumentException("Unsupported processor: " + processor.getClass().getName());
     }
