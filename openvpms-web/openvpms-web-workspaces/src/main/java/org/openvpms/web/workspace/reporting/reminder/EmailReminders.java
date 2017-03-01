@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -115,11 +116,23 @@ public class EmailReminders extends GroupedReminders {
      */
     public String getMessage(Context context) {
         String body = null;
-        Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, getReminders(), context);
-        if (reporter != null) {
-            body = evaluator.getMessage(reporter);
-            if (StringUtils.isEmpty(body)) {
-                throw new ReportingException(TemplateMissingEmailText, getTemplate().getName());
+        List<ObjectSet> reminders = getReminders();
+        if (reminders.size() == 1) {
+            Act reminder = getReminder(reminders.get(0));
+            Reporter<IMObject> reporter = evaluator.getMessageReporter(emailTemplate, reminder, context);
+            if (reporter != null) {
+                body = evaluator.getMessage(reporter);
+                if (StringUtils.isEmpty(body)) {
+                    throw new ReportingException(TemplateMissingEmailText, getTemplate().getName());
+                }
+            }
+        } else {
+            Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, reminders, context);
+            if (reporter != null) {
+                body = evaluator.getMessage(reporter);
+                if (StringUtils.isEmpty(body)) {
+                    throw new ReportingException(TemplateMissingEmailText, getTemplate().getName());
+                }
             }
         }
         if (body == null) {
