@@ -71,22 +71,37 @@ public class ReminderGeneratorFactory {
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator create(ReminderItemQueryFactory factory, Party location, Party practice, HelpContext help) {
+    public ReminderGenerator create(ReminderItemQueryFactory factory, Party location, Party practice,
+                                    HelpContext help) {
         return new ReminderGenerator(factory, help, createFactory(location, practice, help));
     }
 
-
+    /**
+     * Creates a {@link PatientReminderProcessorFactory}.
+     *
+     * @param location the location
+     * @param practice the practice
+     * @param help     the help context
+     * @return a new factory
+     */
     public PatientReminderProcessorFactory createFactory(Party location, Party practice, HelpContext help) {
         return new PatientReminderProcessorFactory(location, practice, help);
     }
 
+    /**
+     * Creates a {@link PatientReminderPreviewer}.
+     *
+     * @param processor the processor
+     * @param help      the help context
+     * @return a new previewer
+     */
     public PatientReminderPreviewer createPreviewer(PatientReminderProcessor processor, HelpContext help) {
         if (processor instanceof ReminderEmailProcessor) {
             return new ReminderEmailPreviewer((ReminderEmailProcessor) processor, help);
         } else if (processor instanceof ReminderSMSProcessor) {
             return new ReminderSMSPreviewer((ReminderSMSProcessor) processor, help);
         } else if (processor instanceof ReminderPrintProcessor) {
-            return new ReminderPrintPreviewer((ReminderPrintProcessor) processor);
+            return new ReminderPrintPreviewer((ReminderPrintProcessor) processor, help);
         }
         throw new IllegalArgumentException("Unsupported processor: " + processor.getClass().getName());
     }

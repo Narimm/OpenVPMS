@@ -21,12 +21,10 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRange;
-
-import java.util.List;
 
 /**
  * Queries <em>act.patientReminderItem*</em> archetypes.
@@ -43,8 +41,8 @@ public class ReminderItemDateRangeObjectSetQuery extends ReminderItemObjectSetQu
     /**
      * Constructs a {@link ReminderItemDateRangeObjectSetQuery}.
      */
-    public ReminderItemDateRangeObjectSetQuery(String defaultStatus, String... statuses) {
-        super(new ActStatuses(new StatusLookupQuery(defaultStatus, statuses)));
+    public ReminderItemDateRangeObjectSetQuery(String defaultStatus, Context context, String... statuses) {
+        super(new ActStatuses(new StatusLookupQuery(defaultStatus, statuses)), context);
         dateRange = new DateRange(false);
         dateRange.getComponent();
         dateRange.setAllDates(false);
@@ -66,28 +64,15 @@ public class ReminderItemDateRangeObjectSetQuery extends ReminderItemObjectSetQu
     }
 
     /**
-     * Creates a new query.
+     * Populates the query factory.
      *
-     * @param factory the query factory
-     * @return a new query
+     * @param factory the factory
      */
     @Override
-    protected ArchetypeQuery createQuery(ReminderItemQueryFactory factory) {
-        String shortName = getShortName();
-        if (shortName != null) {
-            factory.setArchetype(shortName);
-        } else {
-            factory.setArchetypes(getShortNames());
-        }
-        String[] statuses = getStatuses();
-        if (statuses.length == 0) {
-            List<String> codes = getStatusLookups().getCodes();
-            statuses = codes.toArray(new String[codes.size()]);
-        }
-        factory.setStatuses(statuses);
+    protected void populate(ReminderItemQueryFactory factory) {
+        super.populate(factory);
         factory.setFrom(dateRange.getFrom());
         factory.setTo(dateRange.getTo());
-        return factory.createQuery();
     }
 
     private static class StatusLookupQuery extends NodeLookupQuery {

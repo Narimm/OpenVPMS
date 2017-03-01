@@ -16,7 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
+import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.List;
@@ -47,7 +47,7 @@ public interface ReminderItemSource {
      *
      * @return the items matching the query
      */
-    Iterable<GroupingReminderIterator.Reminders> query();
+    Iterable<Reminders> query();
 
     /**
      * Counts the number of items matching the criteria.

@@ -48,7 +48,7 @@ import static org.openvpms.archetype.test.TestHelper.createPatient;
  *
  * @author Tim Anderson
  */
-public class ReminderQueueQueryFactoryTest extends ArchetypeServiceTest {
+public class ReminderQueueQueryFactoryTestCase extends ArchetypeServiceTest {
 
     /**
      * Tests the behaviour of the query for reminders with no reminder items.

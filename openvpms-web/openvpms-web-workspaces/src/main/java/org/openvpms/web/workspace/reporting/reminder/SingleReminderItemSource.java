@@ -17,8 +17,8 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
+import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -93,12 +93,12 @@ public class SingleReminderItemSource implements ReminderItemSource {
      *
      * @return the items matching the query
      */
-    public Iterable<GroupingReminderIterator.Reminders> query() {
+    public Iterable<Reminders> query() {
         List<ObjectSet> reminders = new ArrayList<>();
         if (set != null) {
             reminders.add(set);
         }
-        return Collections.singletonList(new GroupingReminderIterator.Reminders(reminders, ReminderType.GroupBy.NONE));
+        return Collections.singletonList(new Reminders(reminders, ReminderType.GroupBy.NONE));
     }
 
     /**

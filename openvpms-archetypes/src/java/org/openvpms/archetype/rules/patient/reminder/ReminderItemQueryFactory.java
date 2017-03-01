@@ -18,7 +18,10 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.practice.Location;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -33,10 +36,13 @@ import java.util.Date;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.gte;
+import static org.openvpms.component.system.common.query.Constraints.idEq;
 import static org.openvpms.component.system.common.query.Constraints.isNull;
 import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.notExists;
 import static org.openvpms.component.system.common.query.Constraints.shortName;
 import static org.openvpms.component.system.common.query.Constraints.sort;
+import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 /**
  * A factory for creating queries operating on <em>act.patientReminderItem*</em> archetypes.
@@ -84,7 +90,13 @@ public class ReminderItemQueryFactory {
     /**
      * The customer.
      */
-    private long customerId = -1;
+    private IMObjectReference customerRef;
+
+    /**
+     * The customer's practice location.
+     */
+    private Location location = Location.ALL;
+
 
     /**
      * Constructs a {@link ReminderItemQueryFactory}.
@@ -245,7 +257,18 @@ public class ReminderItemQueryFactory {
      * @param customer the customer. May be  {@code null}
      */
     public void setCustomer(Party customer) {
-        this.customerId = (customer != null) ? customer.getId() : -1;
+        customerRef = (customer != null) ? customer.getObjectReference() : null;
+    }
+
+    /**
+     * Sets the location to query.
+     * <p/>
+     * Defaults to {@link Location#ALL}.
+     *
+     * @param location the location
+     */
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     /**
@@ -270,15 +293,28 @@ public class ReminderItemQueryFactory {
         }
         JoinConstraint reminder = join("source", "reminder");
         JoinConstraint patient = join("entity", "patient");
-        JoinConstraint customer = join("source", "customer");
         reminder.add(eq("status", ActStatus.IN_PROGRESS)).add(join("patient", "p").add(patient));
         ShortNameConstraint owner = shortName("owner", PatientArchetypes.PATIENT_OWNER);
+        ShortNameConstraint customer = shortName("customer", CustomerArchetypes.PERSON, true);
+
         owner.add(isNull("activeEndTime")); // only include customers with an open-ended owner relationship
-        patient.add(join("customers", owner).add(customer));
-        if (customerId != -1) {
-            customer.add(eq("id", customerId));
-        }
+
         query.add(join("reminder", "r").add(reminder));
+        query.add(owner);
+        query.add(customer);
+
+        if (customerRef != null) {
+            customer.add(eq("id", customerRef.getId()));
+        }
+        if (location.getLocation() != null) {
+            customer.add(join("practice", "l2").add(eq("target", location.getLocation())));
+        } else if (location.isNone()) {
+            query.add(notExists(subQuery(CustomerArchetypes.PERSON, "c2").add(
+                    join("practice", "l2").add(idEq("customer", "c2")))));
+        }
+
+        query.add(idEq("patient", "owner.target"));
+        query.add(idEq("customer", "owner.source"));
         query.add(sort("customer", "name"));
         query.add(sort("customer", "id"));
         query.add(new ArchetypeSortConstraint(true));
@@ -289,4 +325,16 @@ public class ReminderItemQueryFactory {
         return query;
     }
 
+    /**
+     * Copies this instance, for a single archetype.
+     *
+     * @param archetype the archetype
+     * @return a copy of this, with a single archetype populated
+     */
+    public ReminderItemQueryFactory copy(String archetype) {
+        ReminderItemQueryFactory result = new ReminderItemQueryFactory(archetype, statuses, from, to);
+        result.customerRef = customerRef;
+        result.location = location;
+        return result;
+    }
 }

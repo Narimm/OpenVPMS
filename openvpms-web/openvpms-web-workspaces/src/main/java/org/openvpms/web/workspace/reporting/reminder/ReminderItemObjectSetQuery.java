@@ -17,16 +17,25 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
+import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.location.LocationSelectField;
 import org.openvpms.web.component.im.query.AbstractArchetypeServiceResultSet;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.ObjectSetQueryExecutor;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.LabelFactory;
+
+import java.util.List;
 
 /**
  * Queries <em>act.patientReminderItem*</em> archetypes.
@@ -36,17 +45,28 @@ import org.openvpms.web.component.im.query.ResultSet;
 public abstract class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The query factory.
      */
     private final ReminderItemQueryFactory factory;
 
     /**
+     * The location filter.
+     */
+    private LocationSelectField location;
+
+    /**
      * Constructs a {@link ReminderItemObjectSetQuery}.
      *
-     * @param status the status to query
+     * @param status  the status to query
+     * @param context the context
      */
-    public ReminderItemObjectSetQuery(String status) {
-        this((ActStatuses) null);
+    public ReminderItemObjectSetQuery(String status, Context context) {
+        this((ActStatuses) null, context);
         setStatus(status);
     }
 
@@ -54,10 +74,21 @@ public abstract class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
      * Constructs a {@link ReminderItemObjectSetQuery}.
      *
      * @param statuses the statuses to query
+     * @param context  the context
      */
-    public ReminderItemObjectSetQuery(ActStatuses statuses) {
+    public ReminderItemObjectSetQuery(ActStatuses statuses, Context context) {
         super(null, null, null, new String[]{ReminderArchetypes.REMINDER_ITEMS}, statuses, ObjectSet.class);
+        this.context = context;
         factory = new ReminderItemQueryFactory();
+    }
+
+    /**
+     * Returns the location.
+     *
+     * @return the location
+     */
+    public Location getLocation() {
+        return location != null ? location.getSelected() : Location.ALL;
     }
 
     /**
@@ -81,6 +112,28 @@ public abstract class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
     }
 
     /**
+     * Adds the location selector to a container.
+     *
+     * @param container the container
+     */
+    protected void addLocationSelector(Component container) {
+        if (location == null) {
+            location = new LocationSelectField(context.getUser(), context.getPractice(), true);
+            location.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onQuery();
+                }
+            });
+        }
+
+        Label label = LabelFactory.create("reporting.reminder.location");
+        container.add(label);
+        container.add(location);
+        getFocusGroup().add(location);
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be {@code null}
@@ -88,7 +141,8 @@ public abstract class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
      */
     @Override
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        final ArchetypeQuery query = createQuery(factory);
+        populate(factory);
+        final ArchetypeQuery query = factory.createQuery();
         return new AbstractArchetypeServiceResultSet<ObjectSet>(getMaxResults(), null, new ObjectSetQueryExecutor()) {
             @Override
             protected ArchetypeQuery createQuery() {
@@ -98,12 +152,25 @@ public abstract class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
     }
 
     /**
-     * Creates a new query.
+     * Populates the query factory.
      *
-     * @param factory the query factory
-     * @return a new query
+     * @param factory the factory
      */
-    protected abstract ArchetypeQuery createQuery(ReminderItemQueryFactory factory);
+    protected void populate(ReminderItemQueryFactory factory) {
+        String shortName = getShortName();
+        if (shortName != null) {
+            factory.setArchetype(shortName);
+        } else {
+            factory.setArchetypes(getShortNames());
+        }
+        String[] statuses = getStatuses();
+        if (statuses.length == 0) {
+            List<String> codes = getStatusLookups().getCodes();
+            statuses = codes.toArray(new String[codes.size()]);
+        }
+        factory.setStatuses(statuses);
+        factory.setLocation(getLocation());
+    }
 
     /**
      * Invoked when the short name is selected.

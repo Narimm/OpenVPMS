@@ -16,44 +16,34 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderType;
-import org.openvpms.component.system.common.query.ObjectSet;
-
-import java.util.Date;
-import java.util.List;
+import org.openvpms.web.echo.help.HelpContext;
 
 /**
  * Previews print reminders.
  *
  * @author Tim Anderson
  */
-public class ReminderPrintPreviewer implements PatientReminderPreviewer {
-
-    /**
-     * The reminder processor.
-     */
-    private final ReminderPrintProcessor processor;
+public class ReminderPrintPreviewer extends AbstractPatientReminderPreviewer {
 
     /**
      * Constructs a {@link ReminderPrintPreviewer}.
      *
      * @param processor the processor to use to prepare reminders
+     * @param help      the help context
      */
-    public ReminderPrintPreviewer(ReminderPrintProcessor processor) {
-        this.processor = processor;
+    public ReminderPrintPreviewer(ReminderPrintProcessor processor, HelpContext help) {
+        super(processor, help);
     }
 
     /**
      * Previews reminders.
      *
-     * @param reminders  the reminders
-     * @param groupBy    the reminder grouping policy. This determines which document template is selected
-     * @param cancelDate the date to use when determining if a reminder item should be cancelled
-     * @param sent       if {@code true}, the reminder items have been sent previously
+     * @param reminders the reminders
+     * @param processor the processor
+     * @param help      the help context
      */
     @Override
-    public void preview(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate, boolean sent) {
-        PatientReminders state = processor.prepare(reminders, groupBy, cancelDate, sent);
-        processor.process(state);
+    protected void preview(PatientReminders reminders, PatientReminderProcessor processor, HelpContext help) {
+        processor.process(reminders);
     }
 }

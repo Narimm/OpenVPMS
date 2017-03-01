@@ -19,14 +19,12 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.apache.commons.collections4.iterators.PushbackIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType.GroupBy;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -37,43 +35,7 @@ import java.util.NoSuchElementException;
  * @author Tim Anderson
  * @see ReminderItemQueryFactory
  */
-public class GroupingReminderIterator implements Iterator<GroupingReminderIterator.Reminders> {
-
-    public static class Reminders {
-
-        private List<ObjectSet> sets;
-
-        private GroupBy groupBy;
-
-        public Reminders(ObjectSet set) {
-            this(Collections.singletonList(set), GroupBy.NONE);
-        }
-
-        public Reminders(List<ObjectSet> sets, GroupBy groupBy) {
-            this.sets = sets;
-            this.groupBy = groupBy;
-        }
-
-        public List<ObjectSet> getReminders() {
-            return sets;
-        }
-
-        public GroupBy getGroupBy() {
-            return groupBy;
-        }
-
-        public boolean contains(Act item) {
-            IMObjectReference reference = item.getObjectReference();
-            for (ObjectSet set : sets) {
-                Act act = (Act) set.get("item");
-                if (act.getObjectReference().equals(reference)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-    }
+public class GroupingReminderIterator implements Iterator<Reminders> {
 
     /**
      * The cache of reminder types.

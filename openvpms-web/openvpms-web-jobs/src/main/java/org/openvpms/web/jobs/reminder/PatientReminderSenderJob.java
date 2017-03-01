@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
+import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
@@ -260,7 +261,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     private Stats send(Date date, PatientReminderProcessor processor, GroupingReminderIterator iterator) {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
-            GroupingReminderIterator.Reminders reminders = iterator.next();
+            Reminders reminders = iterator.next();
             PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(),
                                                                      date, false);
             processor.process(state);
