@@ -23,9 +23,9 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -75,20 +75,22 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
     /**
      * Constructs a {@link ReminderItemDateObjectSetQuery}.
      *
-     * @param status the reminder item status to query
+     * @param status  the reminder item status to query
+     * @param context the context
      */
-    public ReminderItemDateObjectSetQuery(String status) {
-        this(status, false);
+    public ReminderItemDateObjectSetQuery(String status, Context context) {
+        this(status, false, context);
     }
 
     /**
      * Constructs a {@link ReminderItemDateObjectSetQuery}.
      *
-     * @param status the reminder item status to query
-     * @param all    if {@code true}, query all dates
+     * @param status  the reminder item status to query
+     * @param all     if {@code true}, query all dates
+     * @param context the context
      */
-    public ReminderItemDateObjectSetQuery(String status, boolean all) {
-        super(status);
+    public ReminderItemDateObjectSetQuery(String status, boolean all, Context context) {
+        super(status, context);
         date.setValue(DateRules.getToday());
         dateLabel = LabelFactory.create();
         dateLabel.setText(date.getDisplayName());
@@ -151,23 +153,17 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
         }
         container.add(dateLabel);
         container.add(dateField);
+        addLocationSelector(container);
     }
 
     /**
-     * Creates a new query.
+     * Populates the query factory.
      *
-     * @param factory the query factory
-     * @return a new query
+     * @param factory the factory
      */
     @Override
-    protected ArchetypeQuery createQuery(ReminderItemQueryFactory factory) {
-        String shortName = getShortName();
-        if (shortName != null) {
-            factory.setArchetype(shortName);
-        } else {
-            factory.setArchetypes(getShortNames());
-        }
-        factory.setStatuses(getStatuses());
+    protected void populate(ReminderItemQueryFactory factory) {
+        super.populate(factory);
         factory.setFrom(null);
         if (all != null && all.getBoolean()) {
             factory.setTo(null);
@@ -175,7 +171,6 @@ public class ReminderItemDateObjectSetQuery extends ReminderItemObjectSetQuery {
             Date to = date.getDate();
             factory.setTo(DateRules.getNextDate(to));
         }
-        return factory.createQuery();
     }
 
     /**

@@ -317,7 +317,7 @@ public class GroupingReminderIteratorTestCase extends ArchetypeServiceTest {
         List<Act> list = Arrays.asList(expected);
         boolean found = false;
         while (iterator.hasNext()) {
-            GroupingReminderIterator.Reminders sets = iterator.next();
+            Reminders sets = iterator.next();
             List<Act> next = getItems(sets.getReminders());
             if (next.equals(list)) {
                 assertEquals(groupBy, sets.getGroupBy());

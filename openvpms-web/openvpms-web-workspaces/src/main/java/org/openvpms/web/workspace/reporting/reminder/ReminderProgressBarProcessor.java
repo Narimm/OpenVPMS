@@ -18,8 +18,8 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -35,7 +35,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<GroupingReminderIterator.Reminders>
+abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminders>
         implements ReminderBatchProcessor {
 
     /**
@@ -66,7 +66,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Groupin
     /**
      * The current reminders being processed.
      */
-    private GroupingReminderIterator.Reminders currentReminders;
+    private Reminders currentReminders;
 
     /**
      * The current reminder state.
@@ -145,7 +145,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Groupin
      * @throws OpenVPMSException if the events cannot be processed
      */
     @Override
-    protected void process(GroupingReminderIterator.Reminders reminders) {
+    protected void process(Reminders reminders) {
         this.currentReminders = reminders;
         this.currentState = null;
         try {
@@ -213,7 +213,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Groupin
      * @param reminders the reminders
      */
     @Override
-    protected void incProcessed(GroupingReminderIterator.Reminders reminders) {
+    protected void incProcessed(Reminders reminders) {
         super.incProcessed(reminders.getReminders().size());
     }
 

@@ -34,7 +34,7 @@ import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.customer.communication.LoggingMailerFactory;
 
 /**
- * .
+ * Factory for {@link PatientReminderProcessor} instances.
  *
  * @author Tim Anderson
  */
@@ -110,6 +110,13 @@ public class PatientReminderProcessorFactory {
         reminderTypes = new ReminderTypes(service);
     }
 
+    /**
+     * Creates a processor for reminder items of the specified archetype.
+     *
+     * @param archetype the reminder item archetype
+     * @return a new processor
+     * @throws IllegalArgumentException if the archetype is unsupported
+     */
     public PatientReminderProcessor create(String archetype) {
         PatientReminderProcessor result;
         if (TypeHelper.matches(archetype, ReminderArchetypes.EMAIL_REMINDER)) {
@@ -131,34 +138,40 @@ public class PatientReminderProcessorFactory {
     /**
      * Creates a batch processor.
      *
-     * @param query      the source query
+     * @param items      the reminder items to process
      * @param statistics the statistics
-     * @return a new batch processor, or {@code null} if support for the query is disabled
+     * @return a new batch processor
+     * @throws IllegalArgumentException if the items return more than one archetype, or an unsupported archetype
      */
-    public ReminderBatchProcessor createBatchProcessor(ReminderItemSource query, Statistics statistics) {
+    public ReminderBatchProcessor createBatchProcessor(ReminderItemSource items, Statistics statistics) {
         ReminderBatchProcessor result;
-        String[] archetypes = query.getArchetypes();
+        String[] archetypes = items.getArchetypes();
         if (archetypes.length != 1) {
-            throw new IllegalStateException("Query must provide at most one archetype");
+            throw new IllegalArgumentException("Argument 'query' must a single archetype");
         }
         String archetype = archetypes[0];
 
         if (TypeHelper.matches(archetype, ReminderArchetypes.EMAIL_REMINDER)) {
-            result = createBatchEmailProcessor(query, statistics);
+            result = createBatchEmailProcessor(items, statistics);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.PRINT_REMINDER)) {
-            result = createBatchPrintProcessor(query, statistics);
+            result = createBatchPrintProcessor(items, statistics);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.EXPORT_REMINDER)) {
-            result = createExportProcessor(query, statistics);
+            result = createExportProcessor(items, statistics);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.SMS_REMINDER)) {
-            result = createBatchSMSProcessor(query, statistics);
+            result = createBatchSMSProcessor(items, statistics);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.LIST_REMINDER)) {
-            result = createListProcessor(query, statistics);
+            result = createListProcessor(items, statistics);
         } else {
             throw new IllegalArgumentException("Unsupported archetype : " + archetype);
         }
         return result;
     }
 
+    /**
+     * Returns the practice.
+     *
+     * @return the practice
+     */
     public Party getPractice() {
         return practice;
     }
@@ -214,6 +227,11 @@ public class PatientReminderProcessorFactory {
         return new ReminderPrintProgressBarProcessor(query, processor, statistics);
     }
 
+    /**
+     * Creates a new processor to SMS reminders.
+     *
+     * @return a new processor
+     */
     protected ReminderSMSProcessor createSMSProcessor() {
         ReminderSMSEvaluator evaluator = ServiceHelper.getBean(ReminderSMSEvaluator.class);
         return new ReminderSMSProcessor(getConnectionFactory(), evaluator, reminderTypes, rules, practice, service,

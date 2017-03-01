@@ -16,9 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.mail.MailContext;
@@ -29,25 +27,12 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 
-import java.util.Date;
-import java.util.List;
-
 /**
  * Previews email reminders.
  *
  * @author Tim Anderson
  */
-public class ReminderEmailPreviewer implements PatientReminderPreviewer {
-
-    /**
-     * The email reminder processor.
-     */
-    private final ReminderEmailProcessor processor;
-
-    /**
-     * The help context.
-     */
-    private final HelpContext help;
+public class ReminderEmailPreviewer extends AbstractPatientReminderPreviewer {
 
     /**
      * Constructs a {@link ReminderEmailPreviewer}.
@@ -56,22 +41,19 @@ public class ReminderEmailPreviewer implements PatientReminderPreviewer {
      * @param help      the help context
      */
     public ReminderEmailPreviewer(ReminderEmailProcessor processor, HelpContext help) {
-        this.processor = processor;
-        this.help = help;
+        super(processor, help);
     }
 
     /**
      * Previews reminders.
      *
-     * @param reminders  the reminders
-     * @param groupBy    the reminder grouping policy. This determines which document template is selected
-     * @param cancelDate the date to use when determining if a reminder item should be cancelled
-     * @param sent       if {@code true}, the reminder items have been sent previously
+     * @param reminders the reminders
+     * @param processor the processor
+     * @param help      the help context
      */
     @Override
-    public void preview(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate, boolean sent) {
-        EmailReminders state = (EmailReminders) processor.prepare(reminders, groupBy, cancelDate, sent);
-
+    protected void preview(PatientReminders reminders, PatientReminderProcessor processor, HelpContext help) {
+        EmailReminders state = (EmailReminders) reminders;
         Contact contact = state.getContact();
         Context context = state.createContext(processor.getPractice());
         MailContext mailContext = new CustomerMailContext(context, help);

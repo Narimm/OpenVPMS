@@ -16,32 +16,17 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.echo.help.HelpContext;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * Previews SMS patient reminders.
  *
  * @author Tim Anderson
  */
-public class ReminderSMSPreviewer implements PatientReminderPreviewer {
-
-    /**
-     * The reminder processor.
-     */
-    private final ReminderSMSProcessor processor;
-
-    /**
-     * The help context.
-     */
-    private final HelpContext help;
+public class ReminderSMSPreviewer extends AbstractPatientReminderPreviewer {
 
     /**
      * Constructs a {@link ReminderSMSPreviewer}.
@@ -49,22 +34,19 @@ public class ReminderSMSPreviewer implements PatientReminderPreviewer {
      * @param processor the processor to use to prepare reminders
      */
     public ReminderSMSPreviewer(ReminderSMSProcessor processor, HelpContext help) {
-        this.processor = processor;
-        this.help = help;
+        super(processor, help);
     }
 
     /**
      * Previews reminders.
      *
-     * @param reminders  the reminders
-     * @param groupBy    the reminder grouping policy. This determines which document template is selected
-     * @param cancelDate the date to use when determining if a reminder item should be cancelled
-     * @param sent       if {@code true}, the reminder items have been sent previously
+     * @param reminders the reminders
+     * @param processor the processor
+     * @param help      the help context
      */
     @Override
-    public void preview(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate, boolean sent) {
-        SMSReminders state = (SMSReminders) processor.prepare(reminders, groupBy, cancelDate, sent);
-
+    protected void preview(PatientReminders reminders, PatientReminderProcessor processor, HelpContext help) {
+        SMSReminders state = (SMSReminders) reminders;
         Contact contact = state.getContact();
         String text = state.getText(processor.getPractice());
         Context context = state.createContext(processor.getPractice());

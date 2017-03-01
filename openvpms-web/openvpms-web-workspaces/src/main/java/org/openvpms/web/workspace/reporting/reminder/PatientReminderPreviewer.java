@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Date;
@@ -32,11 +33,11 @@ public interface PatientReminderPreviewer {
     /**
      * Previews reminders.
      *
+     * @param item       the selected item
      * @param reminders  the reminders
      * @param groupBy    the reminder grouping policy. This determines which document template is selected
      * @param cancelDate the date to use when determining if a reminder item should be cancelled
      * @param sent       if {@code true}, the reminder items have been sent previously
      */
-    void preview(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate,
-                 boolean sent);
+    void preview(Act item, List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate, boolean sent);
 }

@@ -91,9 +91,8 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         this.help = help;
         ReminderTypes reminderTypes = processorFactory.getReminderTypes();
         ReminderConfiguration config = processorFactory.getConfiguration();
-        for (String shortName : DescriptorHelper.getShortNames(factory.getArchetypes())) {
-            ReminderItemQueryFactory clone = new ReminderItemQueryFactory(shortName, factory.getStatuses(),
-                                                                          factory.getFrom(), factory.getTo());
+        for (String archetype : DescriptorHelper.getShortNames(factory.getArchetypes())) {
+            ReminderItemQueryFactory clone = factory.copy(archetype);
             ReminderBatchProcessor processor = processorFactory.createBatchProcessor(
                     new ReminderItemQuerySource(clone, reminderTypes, config), statistics);
             processors.add(processor);

@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderGroupingPolicy;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
+import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -102,10 +103,10 @@ public class ReminderItemQuerySource implements ReminderItemSource {
      *
      * @return the items matching the query
      */
-    public Iterable<GroupingReminderIterator.Reminders> query() {
-        return new Iterable<GroupingReminderIterator.Reminders>() {
+    public Iterable<Reminders> query() {
+        return new Iterable<Reminders>() {
             @Override
-            public Iterator<GroupingReminderIterator.Reminders> iterator() {
+            public Iterator<Reminders> iterator() {
                 return new GroupingReminderIterator(factory, reminderTypes, 1000, groupByCustomer, groupByPatient,
                                                     ServiceHelper.getArchetypeService());
             }

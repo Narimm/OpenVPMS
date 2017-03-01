@@ -18,6 +18,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -25,6 +26,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
@@ -48,7 +50,7 @@ import static org.openvpms.archetype.test.TestHelper.createPatient;
  *
  * @author Tim Anderson
  */
-public class ReminderItemQueryFactoryTest extends ArchetypeServiceTest {
+public class ReminderItemQueryFactoryTestCase extends ArchetypeServiceTest {
 
     /**
      * Verifies that the expected items are returned by the query.
@@ -141,6 +143,60 @@ public class ReminderItemQueryFactoryTest extends ArchetypeServiceTest {
         query.setCustomer(customer2);
         checkNotExists(query, reminder1, patient1, customer1, email1, sms1, print1, export1, list1);
         checkExists(query, reminder2, patient2, customer2, email2, print2);
+    }
+
+    /**
+     * Verifies that reminder items can be excluded by customer location.
+     */
+    @Test
+    public void testQueryByLocation() {
+        Date date = DateRules.getToday();
+        Entity reminderType = createReminderType(1, DateUnits.YEARS);
+
+        // create a new reminder starting on startDate
+        Party customer1 = TestHelper.createCustomer();
+        Party customer2 = TestHelper.createCustomer();
+        Party customer3 = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient(customer1);
+        Party patient2 = TestHelper.createPatient(customer2);
+        Party patient3 = TestHelper.createPatient(customer3);
+
+        Act email1 = createEmailReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act reminder1 = createReminder(date, patient1, reminderType, email1);
+
+        Act email2 = createEmailReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act reminder2 = createReminder(date, patient2, reminderType, email2);
+
+        Act email3 = createEmailReminder(date, date, ReminderItemStatus.PENDING, 0);
+        Act reminder3 = createReminder(date, patient3, reminderType, email3);
+
+        // query reminders with reminderType. It should pick up all reminders
+        ReminderItemQueryFactory query = new ReminderItemQueryFactory();
+        checkExists(query, reminder1, patient1, customer1, email1);
+        checkExists(query, reminder2, patient2, customer2, email2);
+        checkExists(query, reminder3, patient3, customer3, email3);
+
+        // now query reminders for customers with no location. Should still pick up everything
+        query.setLocation(Location.NONE);
+        checkExists(query, reminder1, patient1, customer1, email1);
+        checkExists(query, reminder2, patient2, customer2, email2);
+        checkExists(query, reminder3, patient3, customer3, email3);
+
+        // link location1 to customer1. Should now be excluded from NONE query
+        Party location1 = TestHelper.createLocation();
+        IMObjectBean bean = new IMObjectBean(customer1);
+        bean.addNodeTarget("practice", location1);
+        bean.save();
+
+        checkNotExists(query, reminder1, patient1, customer1, email1);
+        checkExists(query, reminder2, patient2, customer2, email2);
+        checkExists(query, reminder3, patient3, customer3, email3);
+
+        // now constrain on location1
+        query.setLocation(new Location(location1));
+        checkExists(query, reminder1, patient1, customer1, email1);
+        checkNotExists(query, reminder2, patient2, customer2, email2);
+        checkNotExists(query, reminder3, patient3, customer3, email3);
     }
 
     /**

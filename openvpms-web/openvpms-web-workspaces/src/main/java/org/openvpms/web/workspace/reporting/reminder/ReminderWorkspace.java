@@ -101,13 +101,19 @@ public class ReminderWorkspace extends TabbedWorkspace<Act> {
         addResendBrowser(model);
     }
 
+    /**
+     * Adds a browser for pending reminder items .
+     *
+     * @param model the tab model
+     */
     private void addSendBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("send");
-        ReminderItemQuery query = new ReminderItemQuery(new ReminderItemDateObjectSetQuery(ReminderItemStatus.PENDING));
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
-        ReminderItemBrowser browser = new PendingReminderItemBrowser(query, context);
-        ReminderItemCRUDWindow window = new ReminderItemCRUDWindow(browser, context.getContext(),
-                                                                   context.getHelpContext());
+        ReminderItemQuery query = new ReminderItemQuery(new ReminderItemDateObjectSetQuery(ReminderItemStatus.PENDING,
+                                                                                           context.getContext()));
+        PendingReminderItemBrowser browser = new PendingReminderItemBrowser(query, context);
+        ReminderItemCRUDWindow window = new PendingReminderItemCRUDWindow(browser, context.getContext(),
+                                                                          context.getHelpContext());
         addTab("reporting.reminder.send", model, new Tab(browser, window));
     }
 
@@ -120,21 +126,26 @@ public class ReminderWorkspace extends TabbedWorkspace<Act> {
      */
     private void addErrorBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("error");
-        ReminderItemQuery query = new ReminderItemQuery(
-                new ReminderItemDateObjectSetQuery(ReminderItemStatus.ERROR, true));
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
+        ReminderItemQuery query = new ReminderItemQuery(
+                new ReminderItemDateObjectSetQuery(ReminderItemStatus.ERROR, true, context.getContext()));
         ReminderItemBrowser browser = new ReminderItemBrowser(query, context);
         ErrorReminderItemCRUDWindow window = new ErrorReminderItemCRUDWindow(browser, context.getContext(),
                                                                              context.getHelpContext());
         addTab("reporting.reminder.error", model, new Tab(browser, window));
     }
 
+    /**
+     * Adds a browser to resend reminder items.
+     *
+     * @param model the tab model
+     */
     private void addResendBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("resend");
-        ReminderItemDateRangeObjectSetQuery dateRangeQuery = new ReminderItemDateRangeObjectSetQuery(
-                null, ReminderItemStatus.COMPLETED, ReminderItemStatus.CANCELLED);
-        ReminderItemQuery query = new ReminderItemQuery(dateRangeQuery);
         LayoutContext context = new DefaultLayoutContext(getContext(), help);
+        ReminderItemDateRangeObjectSetQuery dateRangeQuery = new ReminderItemDateRangeObjectSetQuery(
+                null, context.getContext(), ReminderItemStatus.COMPLETED, ReminderItemStatus.CANCELLED);
+        ReminderItemQuery query = new ReminderItemQuery(dateRangeQuery);
         ReminderItemBrowser browser = new ReminderItemBrowser(query, context);
         ReminderItemCRUDWindow window = new ResendReminderItemCRUDWindow(browser, context.getContext(),
                                                                          context.getHelpContext());

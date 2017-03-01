@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -283,8 +284,7 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
             Party customer = (Party) selected.get("customer");
             ReminderItemQueryFactory factory = browser.getFactory();
             String archetype = item.getArchetypeId().getShortName();
-            ReminderItemQueryFactory copy = new ReminderItemQueryFactory(archetype, factory.getStatuses(),
-                                                                         factory.getFrom(), factory.getTo());
+            ReminderItemQueryFactory copy = factory.copy(archetype);
             copy.setCustomer(customer);
             ReminderGeneratorFactory generators = ServiceHelper.getBean(ReminderGeneratorFactory.class);
             Context context = getContext();
@@ -294,22 +294,34 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
             GroupingReminderIterator iterator = new GroupingReminderIterator(
                     copy, processorFactory.getReminderTypes(), 100, config.getGroupByCustomerPolicy(),
                     config.getGroupByPatientPolicy(), ServiceHelper.getArchetypeService());
-            GroupingReminderIterator.Reminders found = null;
+            Reminders found = null;
             while (iterator.hasNext()) {
-                GroupingReminderIterator.Reminders reminders = iterator.next();
+                Reminders reminders = iterator.next();
                 if (reminders.contains(item)) {
                     found = reminders;
                     break;
-
                 }
             }
             if (found != null) {
                 PatientReminderProcessor processor = processorFactory.create(archetype);
                 PatientReminderPreviewer previewer = generators.createPreviewer(processor, getHelpContext());
-                previewer.preview(found.getReminders(), found.getGroupBy(), new Date(), true);
+                preview(item, found, previewer);
             }
         }
 
+    }
+
+    /**
+     * Previews reminders.
+     * <p/>
+     * This implementation treats reminders as having been sent previously
+     *
+     * @param item      the selected reminder item
+     * @param reminders the reminders to preview
+     * @param previewer the previewer to use
+     */
+    protected void preview(Act item, Reminders reminders, PatientReminderPreviewer previewer) {
+        previewer.preview(item, reminders.getReminders(), reminders.getGroupBy(), new Date(), true);
     }
 
     /**
