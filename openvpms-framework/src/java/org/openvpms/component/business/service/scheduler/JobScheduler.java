@@ -124,7 +124,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @throws SchedulerException for any error
      */
     public void schedule(IMObject configuration) {
-        JobConfig config = new JobConfig(configuration, service);
+        JobConfig config = getJobConfig(configuration);
         JobDetail job = config.createJobDetail(context, service);
         Trigger trigger = config.createTrigger();
         try {
@@ -147,7 +147,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @throws SchedulerException for any error
      */
     public void run(IMObject configuration) {
-        String name = new JobConfig(configuration, service).getJobName();
+        String name = getJobName(configuration);
         if (log.isInfoEnabled()) {
             log.info("Running " + configuration.getName() + " (" + configuration.getId() + ") with job name " + name);
         }
@@ -169,7 +169,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     public Date getNextRunTime(IMObject configuration) {
         Date result = null;
         try {
-            String name = new JobConfig(configuration, service).getJobName();
+            String name = getJobName(configuration);
             Trigger trigger = scheduler.getTrigger(name, Scheduler.DEFAULT_GROUP);
             if (trigger != null) {
                 result = trigger.getNextFireTime();
@@ -220,7 +220,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      */
     private void unschedule(IMObject configuration) {
         IMObject existing = pending.get(configuration.getId());
-        String name = (existing != null) ? existing.getName() : configuration.getName();
+        String name = (existing != null) ? getJobName(existing) : getJobName(configuration);
         if (log.isInfoEnabled()) {
             log.info("Unscheduling " + name + " (" + configuration.getId() + ")");
         }
@@ -272,6 +272,26 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      */
     private void removePending(IMObject configuration) {
         pending.remove(configuration.getId());
+    }
+
+    /**
+     * Returns the job name for a configuration.
+     *
+     * @param configuration the configuration
+     * @return the job name
+     */
+    private String getJobName(IMObject configuration) {
+        return getJobConfig(configuration).getJobName();
+    }
+
+    /**
+     * Returns the job configuration for an <em>entity.job*</em>.
+     *
+     * @param configuration the job configuration
+     * @return the job configuration
+     */
+    private JobConfig getJobConfig(IMObject configuration) {
+        return new JobConfig(configuration, service);
     }
 
     private class UpdateListener extends AbstractArchetypeServiceListener {
