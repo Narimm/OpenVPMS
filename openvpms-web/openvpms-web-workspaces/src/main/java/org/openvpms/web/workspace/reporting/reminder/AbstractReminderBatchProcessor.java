@@ -223,7 +223,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     @Override
     protected void notifyCompleted() {
-        setStatus(Messages.get(completedKey));
+        setStatus(Messages.format(completedKey, reminders.size()));
         super.notifyCompleted();
     }
 

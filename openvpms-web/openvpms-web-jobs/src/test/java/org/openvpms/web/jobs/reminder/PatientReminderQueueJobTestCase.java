@@ -108,19 +108,21 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
         PracticeService practiceService = new PracticeService(service, practiceRules, null);
         job = new PatientReminderQueueJob(configuration, service, practiceService, patientRules, transactionManager) {
             @Override
-            protected ReminderConfiguration getConfiguration() {
+            protected ReminderConfiguration getConfiguration(Party practice) {
                 return config;
             }
+
 
             /**
              * Creates a new {@link ReminderProcessor}.
              *
-             * @param date      process reminders due on or before this date
-             * @param config the reminder configuration
+             * @param date       process reminders due on or before this date
+             * @param config     the reminder configuration
+             * @param disableSMS if {@code true}, disable SMS
              * @return a new {@link ReminderProcessor}
              */
             @Override
-            protected ReminderProcessor createProcessor(Date date, ReminderConfiguration config) {
+            protected ReminderProcessor createProcessor(Date date, ReminderConfiguration config, boolean disableSMS) {
                 return new ReminderProcessor(date, config, false, service, patientRules) {
                     @Override
                     protected Date now() {
@@ -143,7 +145,7 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
         // need to allow 3 days prior to a reminder being due, for emails
 
         Date today = DateRules.getToday();
-        Date threeFromToday = DateRules.getDate(today, 3, DateUnits.DAYS); // exactly 3 days. Will generate an error
+        Date threeFromToday = DateRules.getDate(today, 3, DateUnits.DAYS);
         Date fourFromToday = DateRules.getDate(today, 4, DateUnits.DAYS);
 
         Party customer1 = TestHelper.createCustomer(TestHelper.createEmailContact("foo@bar.com", true, "REMINDER"));
@@ -158,8 +160,8 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
         reminder1 = get(reminder1);
         reminder2 = get(reminder2);
 
-        checkEmailItem(reminder1, ReminderItemStatus.ERROR); // not queued in time
-        checkEmailItem(reminder2, ReminderItemStatus.PENDING);
+        checkEmailItem(reminder1, config.getEmailSendDate(threeFromToday), ReminderItemStatus.PENDING);
+        checkEmailItem(reminder2, config.getEmailSendDate(fourFromToday), ReminderItemStatus.PENDING);
     }
 
     /**
@@ -183,8 +185,9 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
 
         reminder1 = get(reminder1);
         reminder2 = get(reminder2);
-        checkListItem(reminder1, ReminderItemStatus.ERROR);
-        checkListItem(reminder2, ReminderItemStatus.ERROR);
+        Date sendDate = config.getListSendDate(due);
+        checkListItem(reminder1, sendDate, ReminderItemStatus.ERROR);
+        checkListItem(reminder2, sendDate, ReminderItemStatus.ERROR);
     }
 
     /**
@@ -274,20 +277,22 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
      * Verifies a reminder has an email item.
      *
      * @param reminder the reminder
+     * @param sendDate the expected item send date
      * @param status   the expected item status
      */
-    private void checkEmailItem(Act reminder, String status) {
-        checkItem(reminder, ReminderArchetypes.EMAIL_REMINDER, status);
+    private void checkEmailItem(Act reminder, Date sendDate, String status) {
+        checkItem(reminder, ReminderArchetypes.EMAIL_REMINDER, sendDate, status);
     }
 
     /**
      * Verifies a reminder has a list item.
      *
      * @param reminder the reminder
+     * @param sendDate the expected item send date
      * @param status   the expected item status
      */
-    private void checkListItem(Act reminder, String status) {
-        checkItem(reminder, ReminderArchetypes.LIST_REMINDER, status);
+    private void checkListItem(Act reminder, Date sendDate, String status) {
+        checkItem(reminder, ReminderArchetypes.LIST_REMINDER, sendDate, status);
     }
 
     /**
@@ -295,9 +300,11 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
      *
      * @param reminder  the reminder
      * @param shortName the expected item archetype short name
+     * @param sendDate  the expected item send date
      * @param status    the expected item status
      */
-    private void checkItem(Act reminder, String shortName, String status) {
+    private Act checkItem(Act reminder, String shortName, Date sendDate, String status) {
+        Act result = null;
         ActBean bean = new ActBean(reminder);
         List<Act> items = bean.getNodeActs("items");
         assertFalse(items.isEmpty());
@@ -305,11 +312,14 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
         for (Act item : items) {
             if (TypeHelper.isA(item, shortName)) {
                 found++;
+                assertEquals(0, DateRules.compareTo(sendDate, item.getActivityStartTime()));
                 assertEquals(reminder.getActivityEndTime(), item.getActivityEndTime()); // same due dates
                 assertEquals(status, item.getStatus());
+                result = item;
             }
         }
         assertEquals(1, found);
+        return result;
     }
 
 }

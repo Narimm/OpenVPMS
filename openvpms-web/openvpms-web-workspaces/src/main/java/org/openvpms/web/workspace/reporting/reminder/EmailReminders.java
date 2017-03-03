@@ -90,7 +90,7 @@ public class EmailReminders extends GroupedReminders {
      * @return the email address
      */
     public String getEmailAddress() {
-        IMObjectBean bean = new IMObjectBean(getCustomer());
+        IMObjectBean bean = new IMObjectBean(getContact());
         return bean.getString("emailAddress");
     }
 

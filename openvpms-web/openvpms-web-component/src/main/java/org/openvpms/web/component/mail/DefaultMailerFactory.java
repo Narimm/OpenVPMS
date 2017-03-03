@@ -11,17 +11,41 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
+
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.web.component.service.MailService;
 
 /**
  * Factory for {@link Mailer} instances.
  *
  * @author Tim Anderson
  */
-public class MailerFactory {
+public class DefaultMailerFactory implements MailerFactory {
+
+    /**
+     * The mail service.
+     */
+    private final MailService service;
+
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
+     * Constructs a {@link DefaultMailerFactory}.
+     *
+     * @param service  the mail service
+     * @param handlers the document handlers
+     */
+    public DefaultMailerFactory(MailService service, DocumentHandlers handlers) {
+        this.service = service;
+        this.handlers = handlers;
+    }
 
     /**
      * Creates a new {@link Mailer}.
@@ -29,7 +53,9 @@ public class MailerFactory {
      * @param context the mail context
      * @return a new {@link Mailer}
      */
+    @Override
     public Mailer create(MailContext context) {
-        return new DefaultMailer(context);
+        return new DefaultMailer(context, service, handlers);
     }
+
 }

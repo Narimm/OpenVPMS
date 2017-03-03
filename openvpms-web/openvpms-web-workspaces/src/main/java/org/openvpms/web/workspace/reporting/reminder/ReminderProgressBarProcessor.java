@@ -54,6 +54,11 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
     private final ReminderRules rules;
 
     /**
+     * Determines if the iterator has been initialised.
+     */
+    private boolean initialised = false;
+
+    /**
      * Determines if reminders are being reprocessed.
      */
     private boolean resend = false;
@@ -133,8 +138,11 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      */
     @Override
     public void process() {
-        int count = items.count();
-        setItems(items.query(), count);
+        if (!initialised) {
+            int count = items.count();
+            setItems(items.query(), count);
+            initialised = true;
+        }
         super.process();
     }
 
@@ -184,7 +192,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      * <p/>
      * This:
      * <ul>
-     * <li>updates the error node of each reminder if {@link #setResend(boolean)} is {@code true}</li>
+     * <li>updates the error node of each reminder if they aren't being resent</li>
      * <li>updates statistics</li>
      * <li>notifies any listeners of the error</li>
      * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing</li>
@@ -195,7 +203,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
     protected void processError(Throwable exception) {
         if (currentReminders != null) {
             for (ObjectSet set : currentReminders.getReminders()) {
-                if (resend) {
+                if (!currentState.getResend()) {
                     ReminderHelper.setError((Act) set.get("item"), exception);
                 }
                 statistics.incErrors();

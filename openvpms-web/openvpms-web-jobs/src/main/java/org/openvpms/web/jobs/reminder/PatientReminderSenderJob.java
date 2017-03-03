@@ -18,6 +18,7 @@ package org.openvpms.web.jobs.reminder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
@@ -27,6 +28,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
@@ -34,8 +36,12 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.sms.ConnectionFactory;
+import org.openvpms.web.component.mail.DefaultMailerFactory;
+import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.MailerFactory;
+import org.openvpms.web.component.service.PracticeMailService;
 import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
@@ -79,12 +85,22 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     /**
      * The reminder rules.
      */
-    private final ReminderRules rules;
+    private final ReminderRules reminderRules;
+
+    /**
+     * The practice rules.
+     */
+    private final PracticeRules practiceRules;
 
     /**
      * The mailer factory.
      */
     private final MailerFactory mailerFactory;
+
+    /**
+     * The email template evaluator.
+     */
+    private final EmailTemplateEvaluator emailTemplateEvaluator;
 
     /**
      * The SMS connection factory.
@@ -94,7 +110,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     /**
      * The SMS template evaluator.
      */
-    private final ReminderSMSEvaluator evaluator;
+    private final ReminderSMSEvaluator smsEvaluator;
 
     /**
      * The communication logger.
@@ -119,26 +135,32 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     /**
      * Constructs a {@link PatientReminderSenderJob}.
      *
-     * @param configuration       the configuration
-     * @param service             the archetype service
-     * @param practiceService     the practice service
-     * @param rules               the reminder rules
-     * @param mailerFactory       the mailer factory
-     * @param connectionFactory   the connection factory
-     * @param evaluator           the SMS template evaluator
-     * @param communicationLogger the communication logger
+     * @param configuration          the configuration
+     * @param service                the archetype service
+     * @param practiceService        the practice service
+     * @param reminderRules          the reminder rules
+     * @param mailService            the mail service
+     * @param handlers               the document handlers
+     * @param emailTemplateEvaluator the email template evaluator
+     * @param connectionFactory      the connection factory
+     * @param smsEvaluator           the SMS template evaluator
+     * @param communicationLogger    the communication logger
      */
-    public PatientReminderSenderJob(Entity configuration, IArchetypeService service, PracticeService practiceService,
-                                    ReminderRules rules, MailerFactory mailerFactory,
-                                    ConnectionFactory connectionFactory, ReminderSMSEvaluator evaluator,
+    public PatientReminderSenderJob(Entity configuration, IArchetypeRuleService service,
+                                    PracticeService practiceService, ReminderRules reminderRules,
+                                    PracticeRules practiceRules, PracticeMailService mailService,
+                                    DocumentHandlers handlers, EmailTemplateEvaluator emailTemplateEvaluator,
+                                    ConnectionFactory connectionFactory, ReminderSMSEvaluator smsEvaluator,
                                     CommunicationLogger communicationLogger) {
         this.configuration = configuration;
         this.service = service;
         this.practiceService = practiceService;
-        this.rules = rules;
-        this.mailerFactory = mailerFactory;
+        this.reminderRules = reminderRules;
+        this.practiceRules = practiceRules;
+        this.mailerFactory = new DefaultMailerFactory(mailService, handlers);
+        this.emailTemplateEvaluator = emailTemplateEvaluator;
         this.connectionFactory = connectionFactory;
-        this.evaluator = evaluator;
+        this.smsEvaluator = smsEvaluator;
         this.communicationLogger = communicationLogger;
         notifier = new JobCompletionNotifier(service);
     }
@@ -198,8 +220,9 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      */
     protected Stats sendEmailReminders(Date date, ReminderTypes reminderTypes, Party practice,
                                        ReminderConfiguration config, CommunicationLogger logger) {
-        ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, reminderTypes,
-                                                                      rules, practice, service, config, logger);
+        ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, emailTemplateEvaluator,
+                                                                      reminderTypes, practice, reminderRules,
+                                                                      practiceRules, service, config, logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.EMAIL_REMINDER, reminderTypes, date,
                                                            config);
         return send(date, processor, iterator);
@@ -217,8 +240,9 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      */
     protected Stats sendSMSReminders(Date date, ReminderTypes reminderTypes, Party practice,
                                      ReminderConfiguration config, CommunicationLogger logger) {
-        ReminderSMSProcessor sender = new ReminderSMSProcessor(connectionFactory, evaluator, reminderTypes, rules,
-                                                               practice, service, config, logger);
+        ReminderSMSProcessor sender = new ReminderSMSProcessor(connectionFactory, smsEvaluator, reminderTypes,
+                                                               practice, reminderRules, practiceRules, service, config,
+                                                               logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.SMS_REMINDER, reminderTypes, date,
                                                            config);
         return send(date, sender, iterator);
@@ -230,7 +254,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * @return the reminder configuration
      */
     protected ReminderConfiguration getReminderConfig(Party practice) {
-        ReminderConfiguration config = rules.getConfiguration(practice);
+        ReminderConfiguration config = reminderRules.getConfiguration(practice);
         if (config == null) {
             throw new IllegalStateException("Patient reminders have not been configured");
         }
@@ -263,7 +287,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         while (!stop && iterator.hasNext()) {
             Reminders reminders = iterator.next();
             PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(),
-                                                                     date, false);
+                                                       date, false);
             processor.process(state);
             int cancelled = state.getCancelled().size();
             int errors = state.getErrors().size();
@@ -310,7 +334,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         if (exception != null) {
             reason = SystemMessageReason.ERROR;
             subject = Messages.format("patientremindersender.subject.exception", configuration.getName());
-            text.append(Messages.format("patientremindersender.exception", exception.getMessage()));
+            text.append(Messages.format("patientremindersender.exception", exception.getMessage())).append("\n\n");
         } else {
             if (stats.getErrors() != 0) {
                 reason = SystemMessageReason.ERROR;
@@ -322,9 +346,9 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
                                           stats.getSent());
             }
         }
-        text.append(Messages.format("patientremindersender.sent", stats.getSent()));
-        text.append(Messages.format("patientremindersender.cancelled", stats.getCancelled()));
-        text.append(Messages.format("patientremindersender.errors", stats.getErrors()));
+        text.append(Messages.format("patientremindersender.sent", stats.getSent())).append('\n');
+        text.append(Messages.format("patientremindersender.cancelled", stats.getCancelled())).append('\n');
+        text.append(Messages.format("patientremindersender.errors", stats.getErrors())).append('\n');
         notifier.send(users, subject, reason, text.toString());
     }
 

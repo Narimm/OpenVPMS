@@ -11,17 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
 
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.mail.DefaultMailer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.Mailer;
+import org.openvpms.web.component.service.MailService;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 
 import java.util.List;
@@ -47,11 +49,14 @@ public class LoggingMailer implements Mailer {
     /**
      * Constructs a {@link LoggingMailer}.
      *
-     * @param context the mail context
-     * @param logger  the communication logger
+     * @param context  the mail context
+     * @param service  the mail service
+     * @param handlers the document handlers
+     * @param logger   the communication logger
      */
-    public LoggingMailer(MailContext context, CommunicationLogger logger) {
-        mailer = new DefaultMailer(context);
+    public LoggingMailer(MailContext context, MailService service, DocumentHandlers handlers,
+                         CommunicationLogger logger) {
+        mailer = new DefaultMailer(context, service, handlers);
         this.logger = logger;
     }
 
@@ -252,7 +257,7 @@ public class LoggingMailer implements Mailer {
             String reason = (mailer.getAttachments().isEmpty()) ? "AD_HOC_EMAIL" : "FORWARDED_DOCUMENT";
 
             logger.logEmail(customer, context.getPatient(), mailer.getTo(), mailer.getCc(), mailer.getBcc(),
-                                 mailer.getSubject(), reason, mailer.getBody(), null, attachments, location);
+                            mailer.getSubject(), reason, mailer.getBody(), null, attachments, location);
         }
     }
 

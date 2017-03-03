@@ -61,6 +61,7 @@ public class ReminderItemDateRangeObjectSetQuery extends ReminderItemObjectSetQu
         addShortNameSelector(container);
         addStatusSelector(container);
         container.add(dateRange.getComponent());
+        addLocationSelector(container);
     }
 
     /**
