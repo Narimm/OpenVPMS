@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -34,7 +35,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
-import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
@@ -76,19 +76,20 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      * @param factory       the SMS connection factory
      * @param evaluator     the SMS template evaluator
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
      * @param practice      the practice
+     * @param reminderRules the reminder rules
+     * @param practiceRules the practice rules
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
     public ReminderSMSProcessor(ConnectionFactory factory, ReminderSMSEvaluator evaluator, ReminderTypes reminderTypes,
-                                ReminderRules rules, Party practice, IArchetypeService service,
-                                ReminderConfiguration config, CommunicationLogger logger) {
-        super(reminderTypes, rules, practice, service, config, logger);
+                                Party practice, ReminderRules reminderRules, PracticeRules practiceRules,
+                                IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger) {
+        super(reminderTypes, reminderRules, practice, service, config, logger);
         this.factory = factory;
         this.evaluator = evaluator;
-        smsEnabled = SMSHelper.isSMSEnabled(practice);
+        smsEnabled = practiceRules.isSMSEnabled(practice);
     }
 
     /**
@@ -208,13 +209,14 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      */
     @Override
     protected void log(PatientReminders state, CommunicationLogger logger) {
+        SMSReminders reminders = (SMSReminders) state;
         String subject = Messages.get("reminder.log.sms.subject");
+        Party customer = reminders.getCustomer();
+        Party location = reminders.getLocation();
+        Contact contact = reminders.getContact();
         for (ObjectSet set : state.getReminders()) {
             String notes = getNote(set);
-            Party customer = getCustomer(set);
             Party patient = getPatient(set);
-            Contact contact = (Contact) set.get("contact");
-            Party location = (Party) set.get("location");
             String text = set.getString("text");
             logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
                           notes, location);

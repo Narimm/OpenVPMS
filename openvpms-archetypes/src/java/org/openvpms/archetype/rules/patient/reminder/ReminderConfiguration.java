@@ -287,7 +287,7 @@ public class ReminderConfiguration {
      * @param dueDate the due date
      * @return the export reminder item send date
      */
-    public Date getExportStartDate(Date dueDate) {
+    public Date getExportSendDate(Date dueDate) {
         return DateRules.minus(dueDate, getExportPeriod());
     }
 
@@ -325,7 +325,7 @@ public class ReminderConfiguration {
      * @param dueDate the due date
      * @return the list reminder item send date
      */
-    public Date getListStartDate(Date dueDate) {
+    public Date getListSendDate(Date dueDate) {
         return DateRules.minus(dueDate, getListPeriod());
     }
 
@@ -371,9 +371,9 @@ public class ReminderConfiguration {
             case ReminderArchetypes.PRINT_REMINDER:
                 return getPrintSendDate(dueDate);
             case ReminderArchetypes.EXPORT_REMINDER:
-                return getExportStartDate(dueDate);
+                return getExportSendDate(dueDate);
             case ReminderArchetypes.LIST_REMINDER:
-                return getListStartDate(dueDate);
+                return getListSendDate(dueDate);
         }
         return null;
     }

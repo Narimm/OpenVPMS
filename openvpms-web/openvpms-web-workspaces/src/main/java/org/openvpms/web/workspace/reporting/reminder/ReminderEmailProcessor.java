@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -37,7 +38,6 @@ import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.Mailer;
 import org.openvpms.web.component.mail.MailerFactory;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
@@ -76,20 +76,22 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * Constructs a {@link ReminderEmailProcessor}.
      *
      * @param factory       the mailer factory
+     * @param evaluator     the email template evaluator
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
      * @param practice      the practice
+     * @param rules         the reminder rules
+     * @param practiceRules the practice rules
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderEmailProcessor(MailerFactory factory, ReminderTypes reminderTypes, ReminderRules rules,
-                                  Party practice, IArchetypeService service, ReminderConfiguration config,
-                                  CommunicationLogger logger) {
+    public ReminderEmailProcessor(MailerFactory factory, EmailTemplateEvaluator evaluator, ReminderTypes reminderTypes,
+                                  Party practice, ReminderRules rules, PracticeRules practiceRules,
+                                  IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger) {
         super(reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
-        addresses = new PracticeEmailAddresses(practice, "REMINDER");
-        evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
+        this.evaluator = evaluator;
+        addresses = new PracticeEmailAddresses(practice, "REMINDER", practiceRules, service);
     }
 
     /**
