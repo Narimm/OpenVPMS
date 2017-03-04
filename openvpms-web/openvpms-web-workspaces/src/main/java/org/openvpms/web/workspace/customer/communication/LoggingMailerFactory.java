@@ -87,7 +87,7 @@ public class LoggingMailerFactory implements MailerFactory {
      */
     protected LoggingMailer createLoggingMailer(MailContext context, CommunicationLogger logger) {
         // need to lazily access the mail service, as it is
-        return new LoggingMailer(context, getMailService(), handlers, logger);
+        return new LoggingMailer(context, getMailService(), getDocumentHandlers(), logger);
     }
 
     /**
@@ -97,7 +97,7 @@ public class LoggingMailerFactory implements MailerFactory {
      * @return a new {@link Mailer}
      */
     protected Mailer createMailer(MailContext context) {
-        return new DefaultMailer(context, getMailService(), handlers);
+        return new DefaultMailer(context, getMailService(), getDocumentHandlers());
     }
 
     /**
@@ -109,6 +109,13 @@ public class LoggingMailerFactory implements MailerFactory {
      */
     protected MailService getMailService() {
         return ServiceHelper.getBean(CurrentLocationMailService.class);
+    }
+
+    /**
+     * Returns the document handlers.
+     */
+    protected DocumentHandlers getDocumentHandlers() {
+        return handlers;
     }
 
 }

@@ -101,7 +101,7 @@ public class PatientReminderProcessorFactory {
     private final IArchetypeService service;
 
     /**
-     * Constructs a {@link ReminderGenerator}.
+     * Constructs a {@link PatientReminderProcessorFactory}.
      *
      * @param location the practice location
      * @param practice the practice
@@ -189,6 +189,15 @@ public class PatientReminderProcessorFactory {
     }
 
     /**
+     * Returns the practice location.
+     *
+     * @return the practice location
+     */
+    public Party getLocation() {
+        return location;
+    }
+
+    /**
      * Returns the reminder types.
      *
      * @return the reminder types
@@ -204,6 +213,15 @@ public class PatientReminderProcessorFactory {
      */
     public ReminderConfiguration getConfiguration() {
         return config;
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    protected HelpContext getHelp() {
+        return help;
     }
 
     /**
@@ -270,8 +288,8 @@ public class PatientReminderProcessorFactory {
      * @return a new processor
      */
     protected ReminderPrintProcessor createPrintProcessor() {
-        ReminderPrintProcessor processor = new ReminderPrintProcessor(help, reminderTypes, reminderRules, practice, service,
-                                                                      config, logger);
+        ReminderPrintProcessor processor = new ReminderPrintProcessor(help, reminderTypes, reminderRules, practice,
+                                                                      service, config, logger);
         processor.setInteractiveAlways(true);
         return processor;
     }
