@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -83,6 +83,8 @@ public class CalendarBlockSeries extends CalendarEventSeries {
         super.populate(bean, state);
         BlockState block = (BlockState) state;
         bean.setNodeParticipant("type", block.getBlockType());
+        bean.setValue("name", block.getName());
+        bean.setValue("description", block.getDescription());
     }
 
     private static class BlockState extends State {
@@ -91,6 +93,16 @@ public class CalendarBlockSeries extends CalendarEventSeries {
          * The block type reference.
          */
         private IMObjectReference blockType;
+
+        /**
+         * The name.
+         */
+        private String name;
+
+        /**
+         * The description.
+         */
+        private String description;
 
         /**
          * Initialises the state from an event.
@@ -109,6 +121,8 @@ public class CalendarBlockSeries extends CalendarEventSeries {
         public BlockState(BlockState state) {
             super(state);
             blockType = state.blockType;
+            name = state.getName();
+            description = state.getDescription();
         }
 
         /**
@@ -120,6 +134,8 @@ public class CalendarBlockSeries extends CalendarEventSeries {
         public void update(ActBean event) {
             super.update(event);
             blockType = event.getNodeParticipantRef("type");
+            name = event.getString("name");
+            description = event.getString("description");
         }
 
         /**
@@ -129,6 +145,24 @@ public class CalendarBlockSeries extends CalendarEventSeries {
          */
         public IMObjectReference getBlockType() {
             return blockType;
+        }
+
+        /**
+         * Returns the block name.
+         *
+         * @return the block name. May be {@code null}
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Returns the block description.
+         *
+         * @return the block description. May be {@code null}
+         */
+        public String getDescription() {
+            return description;
         }
 
         /**
@@ -142,7 +176,9 @@ public class CalendarBlockSeries extends CalendarEventSeries {
             boolean result = false;
             if (obj instanceof BlockState && super.equals(obj)) {
                 BlockState other = (BlockState) obj;
-                result = ObjectUtils.equals(blockType, other.blockType);
+                result = ObjectUtils.equals(blockType, other.blockType)
+                         && ObjectUtils.equals(name, other.name)
+                         && ObjectUtils.equals(description, other.description);
             }
             return result;
         }
