@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -22,7 +22,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 
-import java.util.Collections;
 import java.util.Map;
 
 import static org.openvpms.report.ReportException.ErrorCode.NoExpressionEvaluatorForType;
@@ -48,11 +47,9 @@ public class ExpressionEvaluatorFactory {
     public static ExpressionEvaluator create(Object object, Map<String, Object> fields, IArchetypeService service,
                                              ILookupService lookups, Functions functions) {
         if (object instanceof IMObject) {
-            return new IMObjectExpressionEvaluator((IMObject) object, Collections.<String, Object>emptyMap(), fields,
-                                                   service, lookups, functions);
+            return new IMObjectExpressionEvaluator((IMObject) object, null, fields, service, lookups, functions);
         } else if (object instanceof ObjectSet) {
-            return new ObjectSetExpressionEvaluator((ObjectSet) object, Collections.<String, Object>emptyMap(), fields,
-                                                    service, lookups, functions);
+            return new ObjectSetExpressionEvaluator((ObjectSet) object, null, fields, service, lookups, functions);
         }
         throw new ReportException(NoExpressionEvaluatorForType, object.getClass().getName());
     }
