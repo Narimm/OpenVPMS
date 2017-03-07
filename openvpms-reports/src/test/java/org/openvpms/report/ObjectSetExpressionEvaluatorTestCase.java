@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -128,11 +128,11 @@ public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
     public void testParameters() {
         ObjectSet set = new ObjectSet();
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("P.param1", 1);
-        parameters.put("P.param2", "abc");
-        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, parameters, (PropertySet) null,
-                                                                             getArchetypeService(), getLookupService(),
-                                                                             functions);
+        parameters.put("param1", 1);
+        parameters.put("param2", "abc");
+        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(
+                set, new Parameters(parameters), (PropertySet) null, getArchetypeService(), getLookupService(),
+                functions);
         assertEquals(1, eval.evaluate("$P.param1"));
         assertEquals("abc", eval.evaluate("$P.param2"));
     }

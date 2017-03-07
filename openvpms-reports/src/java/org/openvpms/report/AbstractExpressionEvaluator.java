@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -42,7 +42,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 
 /**
@@ -60,7 +59,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     /**
      * Parameters available to expressions as variables. May be {@code null}
      */
-    private final Map<String, Object> parameters;
+    private final Parameters parameters;
 
     /**
      * Additional report fields. May be {@code null}.
@@ -103,7 +102,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      * @param lookups    the lookup service
      * @param functions  the JXPath extension functions
      */
-    public AbstractExpressionEvaluator(T object, Map<String, Object> parameters, PropertySet fields,
+    public AbstractExpressionEvaluator(T object, Parameters parameters, PropertySet fields,
                                        IArchetypeService service, ILookupService lookups, Functions functions) {
         this.object = object;
         this.parameters = parameters;
@@ -111,6 +110,15 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
         this.service = service;
         this.lookups = lookups;
         this.functions = functions;
+    }
+
+    /**
+     * Returns the object.
+     *
+     * @return the object
+     */
+    public T getObject() {
+        return object;
     }
 
     /**
@@ -203,15 +211,6 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      */
     protected Object getFieldValue(String name) {
         return getValue(fields.resolve(name));
-    }
-
-    /**
-     * Returns the object.
-     *
-     * @return the object
-     */
-    protected T getObject() {
-        return object;
     }
 
     /**
@@ -407,7 +406,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
          */
         @Override
         public boolean exists(String name) {
-            return super.exists(name) || parameters.containsKey(name);
+            return super.exists(name) || parameters.exists(name);
         }
 
         /**
@@ -419,7 +418,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
          */
         @Override
         public Object getVariable(String varName) {
-            if (parameters.containsKey(varName)) {
+            if (parameters.exists(varName)) {
                 return parameters.get(varName);
             } else {
                 return super.getVariable(varName);
