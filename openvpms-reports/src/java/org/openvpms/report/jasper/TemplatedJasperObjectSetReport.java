@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.ResolvingPropert
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.Parameters;
 
 import java.util.Map;
 
@@ -64,7 +65,8 @@ public class TemplatedJasperObjectSetReport extends AbstractTemplatedJasperIMRep
         ILookupService lookups = getLookupService();
         IArchetypeService service = getArchetypeService();
         PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, service, lookups) : null;
-        return new ObjectSetDataSource(objects, parameters, f, service, lookups, getFunctions());
+        Parameters p = (parameters) != null ? new Parameters(parameters) : null;
+        return new ObjectSetDataSource(objects, p, f, service, lookups, getDocumentHandlers(), getFunctions());
     }
 
 }

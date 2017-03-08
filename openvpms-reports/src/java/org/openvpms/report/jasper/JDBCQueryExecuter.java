@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -21,12 +21,14 @@ import net.sf.jasperreports.engine.JRDataset;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import net.sf.jasperreports.engine.JRValueParameter;
 import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.query.JRJdbcQueryExecuter;
 import org.apache.commons.jxpath.Functions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
@@ -124,7 +126,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     /**
      * Wraps an {@code JRDataSource}, in order to support {@link #fields}.
      */
-    public class FieldDataSource extends AbstractDataSource {
+    public class FieldDataSource implements DataSource {
 
         /**
          * The data source to delegate to. May be {@code null} if the report has no SQL statement.
@@ -142,7 +144,6 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
          * @param dataSource the data source to wrap. May be {@code null}
          */
         public FieldDataSource(JRDataSource dataSource) {
-            super(service, lookups, functions);
             this.dataSource = dataSource;
             evaluator = new JDBCExpressionEvaluator(dataSource, fields, service, lookups, functions);
         }
@@ -156,6 +157,17 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
         @Override
         public boolean next() throws JRException {
             return dataSource != null && dataSource.next();
+        }
+
+        /**
+         * Returns the field value.
+         *
+         * @param name the field name
+         * @return the field value. May be {@code null}
+         */
+        @Override
+        public Object getFieldValue(String name) {
+            return evaluator.getValue(name);
         }
 
         /**
@@ -177,6 +189,44 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
         @Override
         public Object evaluate(String expression) {
             return evaluator.evaluate(expression);
+        }
+
+        /**
+         * Returns a data source for a collection node.
+         *
+         * @param name the collection node name
+         * @return the data source
+         * @throws JRException for any error
+         */
+        @Override
+        public JRRewindableDataSource getDataSource(String name) throws JRException {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Returns a data source for a collection node.
+         *
+         * @param name      the collection node name
+         * @param sortNodes the list of nodes to sort on
+         * @return the data source
+         * @throws JRException for any error
+         */
+        @Override
+        public JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Returns a data source for the given jxpath expression.
+         *
+         * @param expression the expression. Must return an {@code Iterable} or {@code Iterator} returning
+         *                   {@link IMObject}s
+         * @return the data source
+         * @throws JRException for any error
+         */
+        @Override
+        public JRRewindableDataSource getExpressionDataSource(String expression) throws JRException {
+            throw new UnsupportedOperationException();
         }
     }
 

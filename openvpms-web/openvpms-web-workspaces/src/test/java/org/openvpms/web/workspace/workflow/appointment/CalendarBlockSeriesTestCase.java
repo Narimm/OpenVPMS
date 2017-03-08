@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -89,7 +89,10 @@ public class CalendarBlockSeriesTestCase extends CalendarEventSeriesTest {
      */
     @Override
     protected Act createEvent(Date startTime, Date endTime, Entity schedule, Entity appointmentType, User author) {
-        return ScheduleTestHelper.createCalendarBlock(startTime, endTime, schedule, blockType, author);
+        Act block = ScheduleTestHelper.createCalendarBlock(startTime, endTime, schedule, blockType, author);
+        block.setName("block name");
+        block.setDescription("block description");
+        return block;
     }
 
     /**
@@ -114,12 +117,14 @@ public class CalendarBlockSeriesTestCase extends CalendarEventSeriesTest {
         ActBean bean = new ActBean(event);
         Entity schedule = bean.getNodeParticipant("schedule");
         Entity blockType = bean.getNodeParticipant("type");
+        String name = event.getName();
+        String description = event.getDescription();
         for (Act act : acts) {
             if (act.equals(event)) {
                 User eventAuthor = (User) bean.getNodeParticipant("author");
-                checkEvent(act, from, to, schedule, blockType, eventAuthor);
+                checkEvent(act, from, to, schedule, blockType, eventAuthor, name, description);
             } else {
-                checkEvent(act, from, to, schedule, blockType, author);
+                checkEvent(act, from, to, schedule, blockType, author, name, description);
             }
             from = DateRules.getDate(from, interval, units);
             to = DateRules.getDate(to, interval, units);
@@ -141,15 +146,17 @@ public class CalendarBlockSeriesTestCase extends CalendarEventSeriesTest {
     /**
      * Verifies an event matches that expected.
      *
-     * @param act       the appointment
-     * @param startTime the expected start time
-     * @param endTime   the expected end time
-     * @param schedule  the expected schedule
-     * @param blockType the expected appointment type
-     * @param author    the expected author
+     * @param act         the appointment
+     * @param startTime   the expected start time
+     * @param endTime     the expected end time
+     * @param schedule    the expected schedule
+     * @param blockType   the expected appointment type
+     * @param author      the expected author
+     * @param name        the expected name
+     * @param description the expected description
      */
     private void checkEvent(Act act, Date startTime, Date endTime, Entity schedule, Entity blockType,
-                            User author) {
+                            User author, String name, String description) {
         assertEquals(0, DateRules.compareTo(startTime, act.getActivityStartTime()));
         assertEquals(0, DateRules.compareTo(endTime, act.getActivityEndTime()));
         ActBean bean = new ActBean(act);
@@ -157,6 +164,8 @@ public class CalendarBlockSeriesTestCase extends CalendarEventSeriesTest {
         assertEquals(blockType, bean.getNodeParticipant("type"));
         assertNull(act.getStatus());
         assertEquals(author, bean.getNodeParticipant("author"));
+        assertEquals(name, bean.getString("name"));
+        assertEquals(description, bean.getString("description"));
     }
 
 }

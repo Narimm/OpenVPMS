@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.payment;
@@ -20,8 +20,8 @@ package org.openvpms.web.workspace.customer.payment;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.FinancialActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -45,7 +45,7 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * @param help       the help context
      */
     public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
-        super(archetypes, ActActions.<FinancialAct>edit(true), context, help);
+        super(archetypes, new FinancialActions<FinancialAct>(), context, help);
     }
 
     /**
