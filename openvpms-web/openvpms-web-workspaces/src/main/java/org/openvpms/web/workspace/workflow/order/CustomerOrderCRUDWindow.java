@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.order;
@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.FinancialActions;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Query;
@@ -198,7 +198,7 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
     }
 
 
-    private static class OrderActions extends ActActions<FinancialAct> {
+    private static class OrderActions extends FinancialActions<FinancialAct> {
 
         public static final OrderActions INSTANCE = new OrderActions();
 

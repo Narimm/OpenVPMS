@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
@@ -33,7 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.FinancialActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.UserHelper;
@@ -360,7 +360,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
 
-    private class AccountActActions extends ActActions<FinancialAct> {
+    private class AccountActActions extends FinancialActions<FinancialAct> {
 
         /**
          * Determines if an act can be unhidden.

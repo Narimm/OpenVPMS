@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -57,7 +57,7 @@ public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMO
      * @param lookups    the lookup service
      * @param functions  the JXPath extension functions
      */
-    public IMObjectExpressionEvaluator(IMObject object, Map<String, Object> parameters, Map<String, Object> fields,
+    public IMObjectExpressionEvaluator(IMObject object, Parameters parameters, Map<String, Object> fields,
                                        IArchetypeService service, ILookupService lookups, Functions functions) {
         super(object, parameters, fields != null ? new ResolvingPropertySet(fields, service, lookups) : null, service,
               lookups, functions);
@@ -74,7 +74,7 @@ public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMO
      * @param lookups    the lookup service
      * @param functions  the JXPath extension functions
      */
-    public IMObjectExpressionEvaluator(IMObject object, NodeResolver resolver, Map<String, Object> parameters,
+    public IMObjectExpressionEvaluator(IMObject object, NodeResolver resolver, Parameters parameters,
                                        PropertySet fields, IArchetypeService service, ILookupService lookups,
                                        Functions functions) {
         super(object, parameters, fields, service, lookups, functions);

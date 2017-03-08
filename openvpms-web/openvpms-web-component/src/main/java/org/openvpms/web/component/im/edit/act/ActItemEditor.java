@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -500,17 +500,6 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     protected ProductPrice getProductPrice(String shortName, Product product) {
         return rules.getProductPrice(product, shortName, getStartTime(), pricingGroup);
-    }
-
-    /**
-     * Returns the first product price with the specified short name and price.
-     *
-     * @param shortName the price short name
-     * @param price     the price
-     * @param product   the product
-     */
-    protected ProductPrice getProductPrice(String shortName, BigDecimal price, Product product) {
-        return rules.getProductPrice(product, price, shortName, getStartTime(), pricingGroup);
     }
 
     /**
