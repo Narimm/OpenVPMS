@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.FinancialActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -57,7 +57,7 @@ import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchet
 public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
-     * Constructs a {@code ChargeCRUDWindow}.
+     * Constructs a {@link ChargeCRUDWindow}.
      * <p/>
      * This makes the default archetype {@link CustomerAccountArchetypes#INVOICE}.
      *
@@ -67,7 +67,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
         super(Archetypes.create(archetypes.getShortNames(), archetypes.getType(), INVOICE, archetypes.getDisplayName()),
-              ActActions.<FinancialAct>edit(true), context, help);
+              new FinancialActions<FinancialAct>(), context, help);
     }
 
     /**
@@ -187,6 +187,5 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         tasks.addTask(print);
         tasks.start(context);
     }
-
 
 }
