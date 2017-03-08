@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -245,7 +244,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         InteractiveIMPrinter<T> printer = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new BasicPrinterListener() {
             public void printed(String printer) {
-                if (ActStatus.POSTED.equals(object.getStatus()) && getActions().setPrinted(object)) {
+                if (getActions().setPrinted(object)) {
                     saved(object);
                 }
             }
