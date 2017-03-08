@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -824,6 +825,61 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         checkStock(product, BigDecimal.ONE.negate());
     }
 
+    /**
+     * Verifies that discounts are limited to those specified on the fixed price.
+     */
+    @Test
+    public void testFixedPriceMaximumDiscount() {
+        ProductPrice fixedPrice1 = ProductPriceTestHelper.createFixedPrice("20", "10", "100", "75", (Date) null, null,
+                                                                           true);
+        ProductPrice fixedPrice2 = ProductPriceTestHelper.createFixedPrice("40", "20", "100", "50", (Date) null, null,
+                                                                           false);
+        Party patient = TestHelper.createPatient();
+        Product product = ProductTestHelper.createMerchandise();
+
+        // create a 100% discount, and associate it with the product nad patient.
+        Entity discount = DiscountTestHelper.createDiscount(MathRules.ONE_HUNDRED, true, DiscountRules.PERCENTAGE);
+        IMObjectBean patientBean = new IMObjectBean(patient);
+        patientBean.addNodeTarget("discounts", discount);
+
+        product.addProductPrice(fixedPrice1);
+        product.addProductPrice(fixedPrice2);
+        IMObjectBean productBean = new IMObjectBean(product);
+        productBean.addNodeTarget("discounts", discount);
+        save(patient, product);
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct invoice = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        User author = TestHelper.createUser();
+        layout.getContext().setUser(author); // to propagate to acts
+        TestCustomerChargeActItemEditor editor = createEditor(invoice, item, createEditContext(layout), layout);
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+
+        // fixed price should be calculated from the default $20. This has a 75% maximum discount
+        checkEquals(new BigDecimal("22.0"), editor.getFixedPrice());
+        checkEquals(new BigDecimal("5.50"), editor.getTotal());
+
+        // now change the price to the $44, which calculated from the tax-inc $40 price. This has a 50% maximum discount
+        editor.setFixedPrice(new BigDecimal("44.0"));
+        checkEquals(new BigDecimal("22.00"), editor.getTotal());
+
+        // now change the price to one not linked to the product. The maximum disccount should default to 100%
+        editor.setFixedPrice(new BigDecimal("11.0"));
+        checkEquals(BigDecimal.ZERO, editor.getTotal());
+    }
+
+    /**
+     * Verifies stock matches that expected.
+     *
+     * @param product  the product
+     * @param expected the expected stock
+     */
     private void checkStock(Product product, BigDecimal expected) {
         StockRules rules = new StockRules(getArchetypeService());
         Party stockLocation = context.getStockLocation();

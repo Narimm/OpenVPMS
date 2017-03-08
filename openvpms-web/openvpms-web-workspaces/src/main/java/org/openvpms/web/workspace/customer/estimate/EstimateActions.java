@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.FinancialActions;
 
 import static org.openvpms.archetype.rules.act.ActStatus.CANCELLED;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
@@ -30,13 +30,13 @@ import static org.openvpms.archetype.rules.act.EstimateActStatus.INVOICED;
  *
  * @author Tim Anderson
  */
-public class EstimateActions extends ActActions<Act> {
+public class EstimateActions extends FinancialActions<Act> {
 
     /**
      * Default constructor.
      */
     public EstimateActions() {
-        super(true);
+        super();
     }
 
     /**

@@ -11,25 +11,41 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.jxpath.Functions;
+import org.apache.commons.jxpath.JXPathContext;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.Parameters;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 
 /**
  * Base class for JasperReports data sources.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractDataSource implements JRDataSource {
+public abstract class AbstractDataSource implements DataSource {
+
+    /**
+     * Report parameters. May be {@code null}
+     */
+    private final Parameters parameters;
+
+    /**
+     * Additional fields. May be {@code null}
+     */
+    private final PropertySet fields;
 
     /**
      * The archetype service.
@@ -42,6 +58,11 @@ public abstract class AbstractDataSource implements JRDataSource {
     private final ILookupService lookups;
 
     /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
      * The JXPath extension functions.
      */
     private final Functions functions;
@@ -49,23 +70,88 @@ public abstract class AbstractDataSource implements JRDataSource {
     /**
      * Constructs an {@link AbstractDataSource}.
      *
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param parameters the report parameters. May be {@code null}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
      */
-    public AbstractDataSource(IArchetypeService service, ILookupService lookups, Functions functions) {
+    public AbstractDataSource(Parameters parameters, PropertySet fields, IArchetypeService service,
+                              ILookupService lookups, DocumentHandlers handlers, Functions functions) {
+        this.parameters = parameters;
+        this.fields = fields;
         this.functions = functions;
         this.service = service;
+        this.handlers = handlers;
         this.lookups = lookups;
     }
 
     /**
-     * Evaluates an xpath expression.
+     * Returns a data source for a collection node.
      *
-     * @param expression the expression
-     * @return the result of the expression. May be {@code null}
+     * @param name the collection node name
+     * @return the data source
+     * @throws JRException for any error
      */
-    public abstract Object evaluate(String expression);
+    public JRRewindableDataSource getDataSource(String name) throws JRException {
+        return getDataSource(name, new String[0]);
+    }
+
+    /**
+     * Returns a data source for the given jxpath expression.
+     *
+     * @param object     the object
+     * @param expression the expression. Must return an {@code Iterable}returning {@link IMObject}s
+     * @return the data source
+     * @throws JRException for any error
+     */
+    protected JRRewindableDataSource getExpressionDataSource(Object object, String expression) throws JRException {
+        JXPathContext context = JXPathHelper.newContext(object, getFunctions());
+        Object value = context.getValue(expression);
+        return getCollectionDataSource(value, expression);
+    }
+
+    /**
+     * Returns a collection data source for the supplied value.
+     *
+     * @param value      the value. Must be a single {@link IMObject} or an {@link Iterable} returning
+     *                   {@link IMObject}s.
+     * @param expression the expression that generated the value
+     * @return the data source
+     * @throws JRException if the value is not supported
+     */
+    @SuppressWarnings("unchecked")
+    protected JRRewindableDataSource getCollectionDataSource(Object value, String expression) throws JRException {
+        Iterable<IMObject> iterable;
+        if (value instanceof Iterable) {
+            iterable = (Iterable<IMObject>) value;
+        } else if (value instanceof IMObject) {
+            iterable = Collections.singletonList((IMObject) value);
+        } else {
+            throw new JRException("Unsupported value type=" + ((value != null) ? value.getClass() : null)
+                                  + " returned by expression=" + expression);
+        }
+        return new IMObjectCollectionDataSource(iterable, parameters, fields, service, lookups, handlers, functions);
+    }
+
+    /**
+     * Returns the parameters.
+     *
+     * @return the parameters. May be {@code null}
+     */
+    protected Parameters getParameters() {
+        return parameters;
+    }
+
+    /**
+     * Returns the fields.
+     *
+     * @return the fields. May be {@code null}
+     */
+    protected PropertySet getFields() {
+        return fields;
+    }
 
     /**
      * Returns the archetype service.
@@ -95,17 +181,12 @@ public abstract class AbstractDataSource implements JRDataSource {
     }
 
     /**
-     * Helper to prefix parameter names with P. to distinguish them from other variables.
+     * Returns the document handlers.
      *
-     * @param parameters the parameters
-     * @return the prefixed parameters
+     * @return the document handlers
      */
-    protected Map<String, Object> getParameters(Map<String, Object> parameters) {
-        Map<String, Object> result = new HashMap<>();
-        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            result.put("P." + entry.getKey(), entry.getValue());
-        }
-        return result;
+    protected DocumentHandlers getDocumentHandlers() {
+        return handlers;
     }
 
 }

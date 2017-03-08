@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -23,6 +23,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
@@ -41,6 +42,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -166,7 +168,20 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         if (act == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
-            final RefreshDialog dialog = new RefreshDialog(act, getHelpContext());
+            String name = act.getFileName();
+            if (name == null) {
+                ActBean bean = new ActBean(act);
+                if (bean.hasNode("documentTemplate")) {
+                    Entity documentTemplate = bean.getNodeParticipant("documentTemplate");
+                    if (documentTemplate != null) {
+                        name = documentTemplate.getName();
+                    }
+                }
+            }
+            if (name == null) {
+                name = Messages.get("imobject.none");
+            }
+            final RefreshDialog dialog = new RefreshDialog(act, name, getHelpContext());
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -244,14 +259,14 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
 
         /**
-         * Constructs a new {@code RefreshDialog}.
+         * Constructs a {@link RefreshDialog}.
          *
          * @param act  the document act
+         * @param name the name of the document
          * @param help the help context
          */
-        public RefreshDialog(DocumentAct act, HelpContext help) {
-            super(Messages.get("document.refresh.title"),
-                  Messages.format("document.refresh.message", act.getFileName()),
+        public RefreshDialog(DocumentAct act, String name, HelpContext help) {
+            super(Messages.get("document.refresh.title"), Messages.format("document.refresh.message", name),
                   help.subtopic("refresh"));
             DocumentRules rules = new DocumentRules(ServiceHelper.getArchetypeService());
             if (act.getDocument() != null && rules.supportsVersions(act)) {
@@ -276,8 +291,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
             if (version != null) {
                 Label content = LabelFactory.create(true, true);
                 content.setText(getMessage());
-                Column column = ColumnFactory.create("WideCellSpacing", content, version);
-                Row row = RowFactory.create("Inset", column);
+                Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, content, version);
+                Row row = RowFactory.create(Styles.LARGE_INSET, column);
                 getLayout().add(row);
             } else {
                 super.doLayout();

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -513,7 +513,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private ProductPrice getProductPrice(Product product, String shortName, ProductPrice current, BigDecimal price) {
         ProductPrice result = null;
         if (current != null && current.getProduct().equals(product)) {
-            BigDecimal defaultValue = current.getPrice();
+            BigDecimal defaultValue = getPrice(product, current);
             if (price.compareTo(defaultValue) == 0) {
                 result = current;
             }
@@ -526,6 +526,18 @@ public abstract class PriceActItemEditor extends ActItemEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the first product price with the specified short name and price, active as of the date.
+     *
+     * @param shortName the price short name
+     * @param price     the tax-inclusive price
+     * @param product   the product
+     * @return the product price, or {@code null} if none is found
+     */
+    protected ProductPrice getProductPrice(String shortName, BigDecimal price, Product product) {
+        return editContext.getPricingContext().getProductPrice(shortName, price, product, getStartTime());
     }
 
     /**
