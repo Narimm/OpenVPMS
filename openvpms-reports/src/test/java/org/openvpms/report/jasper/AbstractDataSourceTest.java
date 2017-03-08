@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -21,14 +21,18 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
 import net.sf.jasperreports.engine.design.JRDesignField;
+import org.apache.commons.jxpath.Functions;
+import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.report.AbstractReportTest;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openvpms.report.Parameters;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,28 +46,76 @@ import static org.junit.Assert.fail;
 
 
 /**
- * Base class for {@link AbstractIMObjectDataSource} test cases.
+ * Base class for {@link AbstractDataSource} test cases.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractIMObjectDataSourceTestCase extends AbstractReportTest {
+public abstract class AbstractDataSourceTest<T> extends AbstractReportTest {
 
     /**
-     * The document handlers.
+     * Tests the {@link DataSource#getExpressionDataSource(String)} method.
+     *
+     * @throws Exception for any error
      */
-    @Autowired
-    protected DocumentHandlers handlers;
+    @Test
+    public void testExpressionDataSource() throws Exception {
+        Party customer = TestHelper.createCustomer(false);
+        List<T> objects = createCollection(customer);
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("Globals.A", "A");
+        fields.put("Globals.1", 1);
+        PropertySet f = new ResolvingPropertySet(fields, getArchetypeService(), getLookupService());
+        DataSource source = createDataSource(objects, new Parameters(null), f);
+        assertTrue(source.next());
+        checkExpressionDataSource(source, f);
+    }
 
     /**
-     * Tests the {@link AbstractIMObjectDataSource#getExpressionDataSource(String)} method.
+     * Creates a new data source.
+     *
+     * @param objects    the objects
+     * @param parameters the parameters
+     * @param fields     the fields
+     * @return a new data source
+     */
+    protected DataSource createDataSource(List<T> objects, Parameters parameters, PropertySet fields) {
+        Functions functions = applicationContext.getBean(Functions.class);
+        DocumentHandlers handlers = applicationContext.getBean(DocumentHandlers.class);
+        return createDataSource(objects, parameters, fields, handlers, functions);
+    }
+
+    /**
+     * Creates a new data source.
+     *
+     * @param objects    the objects
+     * @param parameters the parameters
+     * @param fields     the fields
+     * @param handlers   the document handlers
+     * @param functions  the functions
+     * @return a new data source
+     */
+    protected abstract DataSource createDataSource(List<T> objects, Parameters parameters, PropertySet fields,
+                                                   DocumentHandlers handlers, Functions functions);
+
+    /**
+     * Creates a collection of customers to pass to the data source.
+     *
+     * @param customers the customers
+     * @return a collection to pass to the data source
+     */
+    protected abstract List<T> createCollection(Party... customers);
+
+
+    /**
+     * Tests the {@link AbstractDataSource#getExpressionDataSource(String)} method.
      *
      * @param dataSource     the data source
      * @param expectedFields fields expected to be available to the data source
      * @throws Exception for any error
      */
-    protected void checkExpressionDataSource(AbstractIMObjectDataSource dataSource, PropertySet expectedFields)
+    protected void checkExpressionDataSource(DataSource dataSource, PropertySet expectedFields)
             throws Exception {
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         Lookup lookup1 = TestHelper.getLookup("lookup.state", "VIC");
         Lookup lookup2 = TestHelper.getLookup("lookup.state", "QLD");
         properties.put("xtest", new TestFunctions(Arrays.<IMObject>asList(lookup1, lookup2)));
@@ -123,8 +175,9 @@ public abstract class AbstractIMObjectDataSourceTestCase extends AbstractReportT
         }
     }
 
+
     /**
-     * Helper class for testing {@link AbstractIMObjectDataSource#getExpressionDataSource(String)}.
+     * Helper class for testing {@link AbstractDataSource#getExpressionDataSource(String)}.
      */
     public static class TestFunctions {
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -53,7 +53,7 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
      * @param lookups    the lookup service
      * @param functions  the JXPath extension functions
      */
-    public ObjectSetExpressionEvaluator(ObjectSet set, Map<String, Object> parameters, Map<String, Object> fields,
+    public ObjectSetExpressionEvaluator(ObjectSet set, Parameters parameters, Map<String, Object> fields,
                                         IArchetypeService service, ILookupService lookups, Functions functions) {
         this(set, parameters, fields != null ? new ResolvingPropertySet(fields, service, lookups) : null, service,
              lookups, functions);
@@ -69,7 +69,7 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
      * @param lookups    the lookup service
      * @param functions  the JXPath extension functions
      */
-    public ObjectSetExpressionEvaluator(ObjectSet set, Map<String, Object> parameters, PropertySet fields,
+    public ObjectSetExpressionEvaluator(ObjectSet set, Parameters parameters, PropertySet fields,
                                         IArchetypeService service, ILookupService lookups, Functions functions) {
         super(set, parameters, fields, service, lookups, functions);
     }
@@ -80,7 +80,7 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
      * @param name the node name
      * @return the node value
      */
-    protected Object getNodeValue(String name) {
+    public Object getNodeValue(String name) {
         int index = 0;
         String objectName = name;
         String nodeName = "";

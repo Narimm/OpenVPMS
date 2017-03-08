@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -78,4 +78,15 @@ public interface PricingContext {
      * @return the unit price, or {@code null} if none is found
      */
     ProductPrice getUnitPrice(Product product, Date date);
+
+    /**
+     * Returns the first product price with the specified short name and price, active as of the date.
+     *
+     * @param shortName the price short name
+     * @param price     the tax-inclusive price
+     * @param product   the product
+     * @param date      the date
+     * @return the product price, or {@code null} if none is found
+     */
+    ProductPrice getProductPrice(String shortName, BigDecimal price, Product product, Date date);
 }
