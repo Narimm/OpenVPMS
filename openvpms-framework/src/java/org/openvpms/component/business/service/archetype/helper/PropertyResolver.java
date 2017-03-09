@@ -11,13 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.util.PropertyState;
+
+import java.util.List;
 
 /**
  * Resolves values from an object given a naming scheme of the form
@@ -35,8 +38,7 @@ import org.openvpms.component.system.common.util.PropertyState;
  * <li>get the value of the "name" node of the entity.</li>
  * </ul>
  * <p/>
- * When an {@link IMObject} is resolved, several special property names are
- * defined:
+ * When an {@link IMObject} is resolved, several special property names are defined:
  * <ul>
  * <li><em>shortName</em> - returns the value of the archetypes short name</li>
  * <li><em>displayName</em> - returns the value of the archetypes display
@@ -57,6 +59,17 @@ public interface PropertyResolver {
      * @throws PropertyResolverException if the name is invalid
      */
     Object getObject(String name);
+
+    /**
+     * Returns all objects matching the named property.
+     * <p/>
+     * Unlike {@link #getObject(String)}, this method handles collections of arbitrary size.
+     *
+     * @param name the property name
+     * @return the corresponding property values
+     * @throws PropertyResolverException if the name is invalid
+     */
+    List<Object> getObjects(String name);
 
     /**
      * Resolves the state corresponding to a property.

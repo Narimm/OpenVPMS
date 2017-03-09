@@ -46,6 +46,11 @@ public class SMSReminders extends GroupedReminders {
     private final ReminderSMSEvaluator evaluator;
 
     /**
+     * The reminder text.
+     */
+    private String text;
+
+    /**
      * Constructs a {@link GroupedReminders}.
      *
      * @param reminders   the reminders to send
@@ -107,13 +112,27 @@ public class SMSReminders extends GroupedReminders {
                 Party patient = (Party) reminder.get("patient");
                 result = evaluator.evaluate(smsTemplate, act, customer, patient, location, practice);
             } else {
-                result = evaluator.evaluate(smsTemplate, reminders, customer, location, practice);
+                ObjectSet reminder = reminders.get(0);
+                Party patient = (Party) reminder.get("patient"); // pass the first patient.
+                result = evaluator.evaluate(smsTemplate, reminders, customer, patient, location, practice);
             }
         } catch (Throwable exception) {
             throw new ReportingException(ReportingException.ErrorCode.SMSEvaluationFailed, exception,
                                          smsTemplate.getName());
         }
+        text = result;
         return result;
+    }
+
+    /**
+     * Returns the reminder SMS text.
+     * <p/>
+     * The {@link #getText(Party)} must have been invoked.
+     *
+     * @return the reminder SMS text. May be {@code null}
+     */
+    public String getText() {
+        return text;
     }
 
 }
