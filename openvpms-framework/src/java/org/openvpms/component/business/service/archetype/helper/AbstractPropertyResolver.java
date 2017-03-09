@@ -158,12 +158,10 @@ public abstract class AbstractPropertyResolver extends BasePropertyResolver {
         while (object == null && index != -1) {
             if (exists(objectName)) {
                 object = get(objectName);
-                if (object instanceof IMObject) {
-                    break;
-                } else if (object instanceof IMObjectReference) {
-                    object = getObject((IMObjectReference) object);
-                    break;
+                if (object instanceof IMObjectReference) {
+                    object = resolve((IMObjectReference) object);
                 }
+                break;
             } else {
                 index = name.indexOf('.', index);
                 if (index != -1) {

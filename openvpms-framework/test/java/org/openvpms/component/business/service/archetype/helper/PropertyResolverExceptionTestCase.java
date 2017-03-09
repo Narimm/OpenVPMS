@@ -39,7 +39,7 @@ public class PropertyResolverExceptionTestCase {
         checkException(PropertyResolverException.ErrorCode.InvalidObject,
                        "Property does not refer to a valid object: foo", "foo");
         checkException(PropertyResolverException.ErrorCode.InvalidNode,
-                       "No node found named foo in archetype bar", "foo", "bar");
+                       "No node named foo found in archetype bar", "foo", "bar");
     }
 
     /**

@@ -100,18 +100,22 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#names(Iterable)}, {@link ListFunctions#names(Iterable, String)}
-     * and {@link ListFunctions#names(Iterable), String, String} methods.
+     * Tests the {@link ListFunctions#names(Object)}, {@link ListFunctions#names(Object, String)}
+     * and {@link ListFunctions#names(Object), String, String} methods.
      */
     @Test
     public void testNames() {
         assertEquals("C, A, B", ctx.getValue("list:names(.)"));
         assertEquals("C;A;B", ctx.getValue("list:names(., ';')"));
         assertEquals("C, A & B", ctx.getValue("list:names(., ', ', ' & ')"));
+        assertEquals("C, A and B are", ctx.getValue("list:names(., ', ', ' and ', ' is', ' are')"));
+        assertEquals("C is", ctx.getValue("list:names(list:first(.), ', ', ' and ', ' is', ' are')"));
     }
 
     /**
-     * Tests the {@link ListFunctions#sortNamesOf(Object, String)} method
+     * Tests the {@link ListFunctions#sortNamesOf(ExpressionContext, String)},
+     * {@link ListFunctions#sortNamesOf(Object, String)} and
+     * {@link ListFunctions#sortNamesOf(Object, String, String, String, String, String)} methods.
      */
     @Test
     public void testSortNamesOf() {
@@ -122,36 +126,45 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
 
         JXPathContext ctx = createContext(vet);
 
+        assertEquals("Large Animals, Snakes, Surgery", ctx.getValue("list:sortNamesOf('classifications')"));
+
         assertEquals("Large Animals, Snakes, Surgery", ctx.getValue("list:sortNamesOf(., 'classifications')"));
 
         assertEquals("(Large Animals, Snakes, Surgery)",
                      ctx.getValue("expr:concatIf('(', list:sortNamesOf(., 'classifications'), ')')"));
+
+        assertEquals("Large Animals, Snakes, Surgery classifications", ctx.getValue(
+                "list:sortNamesOf(., 'classifications', ', ',', ',' classification',' classifications')"));
     }
 
     /**
-     * Tests the {@link ListFunctions#sortNames(Iterable)} and {@link ListFunctions#sortNames(Iterable, String)}
+     * Tests the {@link ListFunctions#sortNames(Object)} and {@link ListFunctions#sortNames(Object, String)}
      * methods.
      */
     @Test
     public void testSortNames() {
         assertEquals("A, B, C", ctx.getValue("list:sortNames(.)"));
         assertEquals("A;B;C", ctx.getValue("list:sortNames(., ';')"));
+        assertEquals("A,B&C are", ctx.getValue("list:sortNames(., ',','&',' is', ' are')"));
+        assertEquals("C is", ctx.getValue("list:sortNames(list:first(.), ',','&',' is', ' are')"));
     }
 
     /**
-     * Tests the {@link ListFunctions#join(Iterable, String)}, {@link ListFunctions#join(Iterable, String, String)} and
-     * {@link ListFunctions#join(Iterable, String, String, String)} methods for a collection of {@link IMObject}s.
+     * Tests the {@link ListFunctions#join(Object, String)}, {@link ListFunctions#join(Object, String, String)} and
+     * {@link ListFunctions#join(Object, String, String, String)} methods for a collection of {@link IMObject}s.
      */
     @Test
     public void testJoin() {
         assertEquals("CANINE, FELINE, BOVINE", ctx.getValue("list:join(.,'species')"));
         assertEquals("CANINE;FELINE;BOVINE", ctx.getValue("list:join(.,'species',';')"));
         assertEquals("Canine, Feline and Bovine", ctx.getValue("list:join(.,'species.name',', ',' and ')"));
+        assertEquals("CANINE, FELINE and BOVINE are", ctx.getValue("list:join(.,'species',', ',' and ',' is',' are')"));
+        assertEquals("CANINE is", ctx.getValue("list:join(list:first(.),'species',', ',' and ',' is',' are')"));
     }
 
     /**
-     * Tests the {@link ListFunctions#join(Iterable, String)}, {@link ListFunctions#join(Iterable, String, String)} and
-     * {@link ListFunctions#join(Iterable, String, String, String)} methods when provided {@link PropertySet}s.
+     * Tests the {@link ListFunctions#join(Object, String)}, {@link ListFunctions#join(Object, String, String)} and
+     * {@link ListFunctions#join(Object, String, String, String)} methods when provided {@link PropertySet}s.
      */
     @Test
     public void testJoinPropertySet() {

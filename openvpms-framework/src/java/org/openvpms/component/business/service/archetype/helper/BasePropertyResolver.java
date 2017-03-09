@@ -204,7 +204,7 @@ public abstract class BasePropertyResolver implements PropertyResolver {
     protected Object getValue(IMObject parent, NodeDescriptor descriptor, boolean resolveLookups) {
         Object result;
         if (descriptor.isObjectReference()) {
-            result = getObject(parent, descriptor);
+            result = resolve(parent, descriptor);
         } else if (descriptor.isCollection()) {
             List<IMObject> values = descriptor.getChildren(parent);
             int size = values.size();
@@ -231,7 +231,7 @@ public abstract class BasePropertyResolver implements PropertyResolver {
      * @param ref the reference. May be {@code null}
      * @return the corresponding object, or {@code null} if it is not found
      */
-    protected IMObject getObject(IMObjectReference ref) {
+    protected IMObject resolve(IMObjectReference ref) {
         return ref != null ? service.get(ref) : null;
     }
 
@@ -280,9 +280,9 @@ public abstract class BasePropertyResolver implements PropertyResolver {
      * @param parent     the parent object
      * @param descriptor the reference descriptor
      */
-    private IMObject getObject(IMObject parent, NodeDescriptor descriptor) {
+    private IMObject resolve(IMObject parent, NodeDescriptor descriptor) {
         IMObjectReference ref = (IMObjectReference) descriptor.getValue(parent);
-        return getObject(ref);
+        return resolve(ref);
     }
 
 }
