@@ -11,29 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
-import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertyState;
 
 import java.util.List;
 
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidNode;
 import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
-import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidProperty;
 
 
 /**
@@ -41,7 +34,7 @@ import static org.openvpms.component.business.service.archetype.helper.PropertyR
  *
  * @author Tim Anderson
  */
-public class NodeResolver implements PropertyResolver {
+public class NodeResolver extends BasePropertyResolver {
 
     /**
      * The root object.
@@ -52,21 +45,6 @@ public class NodeResolver implements PropertyResolver {
      * The archetype descriptor.
      */
     private final ArchetypeDescriptor archetype;
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
-
-    /**
-     * The lookup service. May be {@code null}
-     */
-    private final ILookupService lookups;
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(NodeResolver.class);
 
     /**
      * Constructs a {@link NodeResolver}.
@@ -86,10 +64,9 @@ public class NodeResolver implements PropertyResolver {
      * @param lookups the lookup service. May be {@code null}
      */
     public NodeResolver(IMObject root, IArchetypeService service, ILookupService lookups) {
+        super(service, lookups);
         this.root = root;
         archetype = service.getArchetypeDescriptor(root.getArchetypeId());
-        this.service = service;
-        this.lookups = lookups;
     }
 
     /**
@@ -113,6 +90,20 @@ public class NodeResolver implements PropertyResolver {
     }
 
     /**
+     * Returns all objects matching the named property.
+     * <p/>
+     * Unlike {@link #getObject(String)}, this method handles collections of arbitrary size.
+     *
+     * @param name the property name
+     * @return the corresponding property values
+     * @throws PropertyResolverException if the name is invalid
+     */
+    @Override
+    public List<Object> getObjects(String name) {
+        return getObjects(root, name);
+    }
+
+    /**
      * Resolves the state corresponding to a property.
      *
      * @param name the property name
@@ -120,7 +111,6 @@ public class NodeResolver implements PropertyResolver {
      * @throws PropertyResolverException if the name is invalid
      */
     @Override
-    @SuppressWarnings({"deprecation"})
     public PropertyState resolve(String name) {
         PropertyState state;
         IMObject object = root;
@@ -128,9 +118,9 @@ public class NodeResolver implements PropertyResolver {
         int index;
         while ((index = name.indexOf(".")) != -1) {
             String nodeName = name.substring(0, index);
-            NodeDescriptor node = archetype.getNodeDescriptor(nodeName);
+            NodeDescriptor node = getNode(archetype, nodeName);
             if (node == null) {
-                throw new NodeResolverException(InvalidProperty, name);
+                throw new PropertyResolverException(InvalidNode, name, archetype);
             }
             Object value = getValue(object, node, true);
             if (value == null) {
@@ -138,85 +128,18 @@ public class NodeResolver implements PropertyResolver {
                 object = null;
                 break;
             } else if (!(value instanceof IMObject)) {
-                throw new NodeResolverException(InvalidObject, name);
+                throw new PropertyResolverException(InvalidObject, name);
             }
             object = (IMObject) value;
-            archetype = service.getArchetypeDescriptor(object.getArchetypeId());
+            archetype = getArchetype(object);
             name = name.substring(index + 1);
         }
         if (object != null) {
-            NodeDescriptor leafNode = (archetype != null) ? archetype.getNodeDescriptor(name) : null;
-            Object value;
-            if (leafNode == null) {
-                if ("displayName".equals(name) && archetype != null) {
-                    value = archetype.getDisplayName();
-                } else if ("shortName".equals(name)) {
-                    value = object.getArchetypeId().getShortName();
-                } else if ("uid".equals(name)) {
-                    value = object.getId();
-                } else if (object instanceof Lookup) {
-                    // local lookup
-                    if ("name".equals(name)) {
-                        value = object.getName();
-                    } else if ("code".equals(name)) {
-                        value = ((Lookup) object).getCode();
-                    } else {
-                        throw new NodeResolverException(InvalidProperty, name);
-                    }
-                } else {
-                    throw new NodeResolverException(InvalidProperty, name);
-                }
-            } else {
-                value = getValue(object, leafNode, false);
-            }
-            state = new PropertyState(object, archetype, name, leafNode, value);
+            state = getLeafPropertyState(object, name, archetype);
         } else {
             state = new PropertyState();
         }
         return state;
-    }
-
-    /**
-     * Returns the value of a node, converting any object references or
-     * single element arrays to their corresponding IMObject instance.
-     *
-     * @param parent         the parent object
-     * @param descriptor     the node descriptor
-     * @param resolveLookups if {@code true}, retrieve lookups, rather than return their codes
-     */
-    private Object getValue(IMObject parent, NodeDescriptor descriptor, boolean resolveLookups) {
-        Object result;
-        if (descriptor.isObjectReference()) {
-            result = getObject(parent, descriptor);
-        } else if (descriptor.isCollection() && descriptor.getMaxCardinality() == 1) {
-            List<IMObject> values = descriptor.getChildren(parent);
-            result = (!values.isEmpty()) ? values.get(0) : null;
-        } else {
-            result = descriptor.getValue(parent);
-            if (result != null && resolveLookups && lookups != null && descriptor.isLookup()) {
-                LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, lookups);
-                result = assertion.getLookup(parent, result.toString());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Resolve a reference.
-     *
-     * @param parent     the parent object
-     * @param descriptor the reference descriptor
-     */
-    private IMObject getObject(IMObject parent, NodeDescriptor descriptor) {
-        IMObjectReference ref = (IMObjectReference) descriptor.getValue(parent);
-        if (ref != null) {
-            try {
-                return service.get(ref);
-            } catch (OpenVPMSException exception) {
-                log.warn(exception, exception);
-            }
-        }
-        return null;
     }
 
 }

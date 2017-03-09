@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.list;
@@ -19,28 +19,33 @@ package org.openvpms.archetype.function.list;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
-import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
+import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
+import org.openvpms.component.business.service.archetype.helper.PropertySetResolver;
 import org.openvpms.component.business.service.archetype.helper.sort.IMObjectSorter;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.jxpath.AbstractObjectFunctions;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Functions operating on lists of {@link IMObject}s.
  *
  * @author Tim Anderson
  */
-public class ListFunctions {
+public class ListFunctions extends AbstractObjectFunctions {
 
     /**
      * Default separator.
@@ -64,15 +69,43 @@ public class ListFunctions {
 
 
     /**
-     * Constructs an {@link ListFunctions}.
+     * Constructs a {@link ListFunctions}.
      *
      * @param service the archetype service
      * @param lookups the lookups
      */
     public ListFunctions(IArchetypeService service, ILookupService lookups) {
+        super("list");
+        setObject(this);
         this.service = service;
         this.lookups = lookups;
         sorter = new IMObjectSorter(service, lookups);
+    }
+
+    /**
+     * Returns the first object in a collection.
+     *
+     * @param objects the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @return the first object, or {@code null} if the collection is empty
+     */
+    public Object first(Iterable<Object> objects) {
+        if (objects != null) {
+            Iterator<Object> iterator = ((Iterable) objects).iterator();
+            return iterator.hasNext() ? iterator.next() : null;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the first object in a collection.
+     *
+     * @param object the root object. May be an {@link IMObject} or {@link PropertySet}, or a collection of these
+     * @param name   the node name. May be a composite node
+     * @return the first object, or {@code null} if the collection is empty
+     */
+    public Object first(Object object, String name) {
+        List<Object> objects = values(object, name);
+        return !objects.isEmpty() ? objects.get(0) : null;
     }
 
     /**
@@ -83,54 +116,92 @@ public class ListFunctions {
      * @return the sorted objects
      */
     public <T extends IMObject> List<T> sort(Iterable<T> objects, String node) {
-        return sorter.sort(toList(objects), node, true);
+        return sorter.sort(asList(objects), node, true);
     }
 
     /**
      * Concatenates object names, comma separated.
      *
-     * @param objects the objects
+     * @param objects the objects. May be a collection of {@link IMObject} or {@link PropertySet}
      * @return the concatenated names
      */
-    public <T extends IMObject> String names(Iterable<T> objects) {
+    public String names(Iterable<Object> objects) {
         return names(objects, SEPARATOR);
     }
 
     /**
      * Concatenates object names, with the separator string between names.
      *
-     * @param objects   the objects
+     * @param objects   the objects. May be a collection of {@link IMObject} or {@link PropertySet}
      * @param separator the separator
      * @return the concatenated names
      */
-    public <T extends IMObject> String names(Iterable<T> objects, String separator) {
+    public String names(Iterable<Object> objects, String separator) {
         return join(objects, "name", separator);
+    }
+
+    /**
+     * Concatenates object names, with the separator string between names.
+     * <p/>
+     * The last separator is used to separate the list two names in the list e.g. given {@code separator=',' and
+     * lastSeparator='and'}:<br/>
+     * {@code apple, orange, pear and grapefruit}
+     *
+     * @param objects   the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param separator the separator
+     * @return the concatenated names
+     */
+    public String names(Iterable<Object> objects, String separator, String lastSeparator) {
+        return join(objects, "name", separator, lastSeparator);
     }
 
     /**
      * Convenience function to sort and concatenate the object names of the specified node, separated by commas.
      *
-     * @param context the expression context. Must refer to an {@link IMObject}.
-     * @param node    the collection node name
+     * @param object the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
+     *               of these
+     * @param node   the collection node name
      * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
      */
-    public String sortNamesOf(ExpressionContext context, String node) {
-        Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof IMObject) {
-            IMObjectBean bean = new IMObjectBean((IMObject) value, service);
-            return sortNames(bean.getValues(node, IMObject.class));
-        }
-        return null;
+    public String sortNamesOf(Object object, String node) {
+        return sortNamesOf(object, node, SEPARATOR);
+    }
+
+    /**
+     * Convenience function to sort and concatenate the object names of the specified node, separated by commas.
+     *
+     * @param object    the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
+     *                  of these
+     * @param node      the collection node name
+     * @param separator the separator
+     * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
+     */
+    public String sortNamesOf(Object object, String node, String separator) {
+        return sortNamesOf(object, node, separator, separator);
+    }
+
+    /**
+     * Convenience function to sort and concatenate the object names of the specified node, separated by commas.
+     *
+     * @param object        the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a
+     *                      collection of these
+     * @param node          the collection node name
+     * @param separator     the separator
+     * @param lastSeparator the last separator
+     * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
+     */
+    public String sortNamesOf(Object object, String node, String separator, String lastSeparator) {
+        List<Object> objects = values(object, node);
+        return sortNames(objects, separator, lastSeparator);
     }
 
     /**
      * Convenience function to sort and concatenate the names of the specified objects, separated by commas.
      *
-     * @param objects the objects
+     * @param objects the objects. May be a collection of {@link IMObject} or {@link PropertySet}
      * @return the concatenated names
      */
-    public <T extends IMObject> String sortNames(Iterable<T> objects) {
+    public String sortNames(Iterable<Object> objects) {
         return sortNames(objects, SEPARATOR);
     }
 
@@ -138,95 +209,145 @@ public class ListFunctions {
      * Convenience function to sort and concatenate the names of the specified objects, with the separator between
      * names.
      *
-     * @param objects   the objects
+     * @param objects   the objects. May be a collection of {@link IMObject} or {@link PropertySet}
      * @param separator the separator
      * @return the concatenated names
      */
-    public <T extends IMObject> String sortNames(Iterable<T> objects, String separator) {
-        return names(sort(objects, "name"), separator);
+    public String sortNames(Iterable<Object> objects, String separator) {
+        return sortNames(objects, separator, separator);
+    }
+
+    /**
+     * Convenience function to sort and concatenate the names of the specified objects, with the separator between
+     * names.
+     *
+     * @param objects       the objects
+     * @param separator     the separator
+     * @param lastSeparator the last separator
+     * @return the concatenated names
+     */
+    public String sortNames(Iterable<Object> objects, String separator, String lastSeparator) {
+        return join(objects, "name", separator, lastSeparator, new Comparator<Object>() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                String v1 = (o1 != null) ? o1.toString() : null;
+                String v2 = (o2 != null) ? o2.toString() : null;
+                return ObjectUtils.compare(v1, v2);
+            }
+        });
     }
 
     /**
      * Iterates through a list of objects, joining the string value of the specified node.
      *
-     * @param objects the objects
+     * @param objects the objects. May be a collection of {@link IMObject} or {@link PropertySet}
      * @param node    the node name
      * @return the concatenated node
      */
-    public <T extends IMObject> String join(Iterable<T> objects, String node) {
+    public String join(Iterable<Object> objects, String node) {
         return join(objects, node, SEPARATOR);
     }
 
     /**
      * Iterates through a list of objects, joining the string value of the specified node.
      *
-     * @param objects   the objects
-     * @param node      the node name
+     * @param objects   the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param name      the node name
      * @param separator the separator
      * @return the concatenated node
      */
-    public <T extends IMObject> String join(Iterable<T> objects, String node, String separator) {
+    public String join(Iterable<Object> objects, String name, String separator) {
+        return join(objects, name, separator, separator);
+    }
+
+    /**
+     * Iterates through a list of objects, joining the string value of the specified node.
+     *
+     * @param objects       the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param name          the node name
+     * @param separator     the separator
+     * @param lastSeparator the last separator
+     * @return the concatenated node
+     */
+    public String join(Iterable<Object> objects, String name, String separator, String lastSeparator) {
         StringBuilder builder = new StringBuilder();
-        int i = 0;
-        for (T object : objects) {
+        List<Object> values = new ArrayList<>();
+        collect(objects, name, values);
+        for (int i = 0; i < values.size(); ++i) {
             if (i > 0) {
-                builder.append(separator);
+                if (i == values.size() - 1) {
+                    builder.append(lastSeparator);
+                } else {
+                    builder.append(separator);
+                }
             }
-            NodeResolver resolver = new NodeResolver(object, service, lookups);
-            try {
-                Object value = resolver.getObject(node);
-                builder.append(value);
-            } catch (PropertyResolverException ignore) {
-                // do nothing
-            }
-            ++i;
+            builder.append(values.get(i));
         }
         return builder.toString();
     }
 
     /**
-     * Returns the values of a collection node.
+     * Returns the unique values of a collection.
      *
-     * @param context the expression context. Must refer to an {@link IMObject}.
-     * @param node    the node name. May be a composite node
+     * @param context the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
+     *                of these
+     * @param name    the node name. May be a composite node
      * @return the collection values
      */
-    public List<Object> values(ExpressionContext context, String node) {
+    public Set<Object> set(ExpressionContext context, String name) {
         Pointer pointer = context.getContextNodePointer();
         Object value = pointer.getValue();
-        if (value instanceof IMObject) {
-            return values((IMObject) value, node);
-        }
-        return Collections.emptyList();
+        return set(value, name);
     }
 
     /**
-     * Returns the values of a collection node.
+     * Returns the unique values of a collection.
      *
-     * @param object the object
-     * @param node   the node name. May be a composite node
+     * @param object the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
+     *               of these
+     * @param name   the node name. May be a composite node
      * @return the collection values
      */
-    public List<Object> values(IMObject object, String node) {
-        List<Object> result = new ArrayList<>();
-        values(object, node, result);
-        return result;
+    public Set<Object> set(Object object, String name) {
+        return collect(object, name, new LinkedHashSet<>());
+    }
+
+    /**
+     * Returns the values of a collection.
+     *
+     * @param context the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
+     *                of these
+     * @param name    the node name. May be a composite node
+     * @return the collection values
+     */
+    public List<Object> values(ExpressionContext context, String name) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        return values(value, name);
+    }
+
+    /**
+     * Returns the values of a collection.
+     *
+     * @param object the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
+     *               of these
+     * @param name   the node name. May be a composite node
+     * @return the collection values
+     */
+    public List<Object> values(Object object, String name) {
+        return collect(object, name, new ArrayList<>());
     }
 
     /**
      * Returns the distinct values of a collection node.
      *
-     * @param context the expression context. Must refer to an {@link IMObject}.
+     * @param context the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
+     *                of these
      * @param node    the node name. May be a composite node
      * @return the distinct collection values
      */
     public List<Object> distinct(ExpressionContext context, String node) {
-        Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof IMObject) {
-            return distinct((IMObject) value, node);
-        }
-        return Collections.emptyList();
+        return new ArrayList<>(set(context, node));
     }
 
     /**
@@ -236,71 +357,40 @@ public class ListFunctions {
      * @param node   the node name. May be a composite node
      * @return the distinct collection values
      */
-    public List<Object> distinct(IMObject object, String node) {
-        LinkedHashSet<Object> result = new LinkedHashSet<>();
-        values(object, node, result);
-        return new ArrayList<>(result);
+    public List<Object> distinct(Object object, String node) {
+        return new ArrayList<>(set(object, node));
     }
 
+
     /**
-     * Collects the values of a collection node.
+     * Iterates through a list of objects, joining the string value of the specified node.
      *
-     * @param object the object
-     * @param node   the node name. May be a composite node
-     * @param result the collected values
+     * @param objects       the objects
+     * @param name          the node name
+     * @param separator     the separator
+     * @param lastSeparator the last separator
+     * @param comparator    comparator to order values. May be {@code null}
+     * @return the concatenated node
      */
-    protected void values(IMObject object, String node, Collection<Object> result) {
-        List<IMObject> parents = new ArrayList<>();
-        parents.add(object);
-        String[] nodes = node.split("\\.");
-        for (int i = 0; i < nodes.length; ++i) {
-            boolean last = (i + 1 == nodes.length);
-            List<IMObject> children = new ArrayList<>();
-            for (IMObject parent : parents) {
-                IMObjectBean bean = new IMObjectBean(parent, service);
-                String name = nodes[i];
-                NodeDescriptor descriptor = bean.getDescriptor(name);
-                if (descriptor == null) {
-                    throw new PropertyResolverException(PropertyResolverException.ErrorCode.InvalidProperty, name);
-                }
-                if (descriptor.isCollection()) {
-                    for (IMObject child : bean.getValues(name)) {
-                        add(child, last, result, children, name);
-                    }
+    protected String join(Iterable<Object> objects, String name, String separator, String lastSeparator,
+                          Comparator<Object> comparator) {
+        StringBuilder builder = new StringBuilder();
+        List<Object> values = new ArrayList<>();
+        collect(objects, name, values);
+        if (comparator != null && values.size() > 1) {
+            Collections.sort(values, comparator);
+        }
+        for (int i = 0; i < values.size(); ++i) {
+            if (i > 0) {
+                if (i == values.size() - 1) {
+                    builder.append(lastSeparator);
                 } else {
-                    Object child = bean.getValue(name);
-                    add(child, last, result, children, name);
+                    builder.append(separator);
                 }
             }
-            parents = children;
+            builder.append(values.get(i));
         }
-    }
-
-    /**
-     * Adds a value to a collection.
-     * <p/>
-     * If the value is a reference, the corresponding object is retrieved.
-     *
-     * @param value    the value to add
-     * @param last     determines if the last node is being retrieved
-     * @param result   the result collection, if its the last node
-     * @param children the children collection, used if the last node is not being retrieved
-     * @param name     the node name, for error reporting purposes
-     */
-    private void add(Object value, boolean last, Collection<Object> result, List<IMObject> children, String name) {
-        if (value instanceof IMObjectReference) {
-            value = service.get((IMObjectReference) value);
-        }
-        if (value != null) {
-            if (last) {
-                result.add(value);
-            } else if (value instanceof IMObject) {
-                children.add((IMObject) value);
-            } else {
-                // not the last node in the composite node, but not an IMObject
-                throw new PropertyResolverException(PropertyResolverException.ErrorCode.InvalidProperty, name);
-            }
-        }
+        return builder.toString();
     }
 
     /**
@@ -309,7 +399,7 @@ public class ListFunctions {
      * @param objects the iterable
      * @return a list
      */
-    protected <T extends IMObject> List<T> toList(Iterable<T> objects) {
+    protected <T extends IMObject> List<T> asList(Iterable<T> objects) {
         List<T> list;
         if (objects instanceof Collection) {
             list = new ArrayList<>((Collection<T>) objects);
@@ -318,6 +408,60 @@ public class ListFunctions {
             CollectionUtils.addAll(list, objects);
         }
         return list;
+    }
+
+    /**
+     * Collects all values for a node.
+     *
+     * @param object the root object. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param name   the node name. May be a composite node
+     * @param result the collection to collect values in
+     * @return {@code result}
+     */
+    protected <T extends Collection<Object>> T collect(Object object, String name, T result) {
+        if (object instanceof IMObject || object instanceof PropertySet) {
+            getValues(object, name, result);
+        } else if (object instanceof Iterable) {
+            for (Object element : (Iterable) object) {
+                getValues(element, name, result);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Collects all values for a node.
+     *
+     * @param object the root object. May be an {@link IMObject} or {@link PropertySet}.
+     * @param name   the node name. May be a composite node
+     * @param result the collection to collect values in
+     * @return {@code result}
+     */
+    protected <T extends Collection<Object>> T getValues(Object object, String name, T result) {
+        PropertyResolver resolver = createResolver(object);
+        if (resolver != null) {
+            List<Object> values = resolver.getObjects(name);
+            if (values != null) {
+                result.addAll(values);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a resolver for the specified object.
+     *
+     * @param object the object
+     * @return a new resolver or {@code null} if the object isn't supported
+     */
+    private PropertyResolver createResolver(Object object) {
+        PropertyResolver resolver = null;
+        if (object instanceof IMObject) {
+            resolver = new NodeResolver((IMObject) object, service, lookups);
+        } else if (object instanceof ObjectSet) {
+            resolver = new PropertySetResolver((ObjectSet) object, service, lookups);
+        }
+        return resolver;
     }
 
 }

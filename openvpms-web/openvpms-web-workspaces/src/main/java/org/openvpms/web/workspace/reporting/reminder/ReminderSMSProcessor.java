@@ -214,10 +214,10 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
         Party customer = reminders.getCustomer();
         Party location = reminders.getLocation();
         Contact contact = reminders.getContact();
+        String text = ((SMSReminders) state).getText();
         for (ObjectSet set : state.getReminders()) {
             String notes = getNote(set);
             Party patient = getPatient(set);
-            String text = set.getString("text");
             logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
                           notes, location);
         }

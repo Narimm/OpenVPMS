@@ -79,17 +79,20 @@ public class ReminderSMSEvaluator {
     /**
      * Evaluates a template against a collection of reminders.
      *
-     * @param template the template
+     * @param template  the template
      * @param reminders the reminders
-     * @param customer the customer
-     * @param location the practice location
-     * @param practice the practice
+     * @param customer  the customer
+     * @param patient   the patient
+     * @param location  the practice location
+     * @param practice  the practice
      * @return the result of the expression. May be {@code null}, or too long for an SMS
      */
-    public String evaluate(Entity template, List<ObjectSet> reminders, Party customer, Party location, Party practice) {
+    public String evaluate(Entity template, List<ObjectSet> reminders, Party customer, Party patient,
+                           Party location, Party practice) {
         String result;
         Context local = new LocalContext();
         local.setCustomer(customer);
+        local.setPatient(patient);
         local.setLocation(location);
         local.setPractice(practice);
         try {

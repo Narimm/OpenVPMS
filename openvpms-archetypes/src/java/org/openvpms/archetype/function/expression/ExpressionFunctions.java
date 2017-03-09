@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.expression;
@@ -178,6 +178,18 @@ public class ExpressionFunctions extends AbstractObjectFunctions {
      */
     public String trim(String value, int maxLength) {
         return value != null && value.length() > maxLength ? value.substring(0, maxLength) : value;
+    }
+
+    /**
+     * Replaces a value with another if it exceeds a maximum length.
+     *
+     * @param value     the value
+     * @param maxLength the maximum length
+     * @param elseValue the value to return if {@code value} is too long
+     * @return {@code value} or {@code elseValue} if {@code value} is too long
+     */
+    public String replaceIf(String value, int maxLength, String elseValue) {
+        return (value != null && value.length() > maxLength) ? elseValue : value;
     }
 
     /**
