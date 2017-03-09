@@ -122,21 +122,21 @@ public class ListFunctions extends AbstractObjectFunctions {
     /**
      * Concatenates object names, comma separated.
      *
-     * @param objects the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param objects the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
      * @return the concatenated names
      */
-    public String names(Iterable<Object> objects) {
+    public String names(Object objects) {
         return names(objects, SEPARATOR);
     }
 
     /**
      * Concatenates object names, with the separator string between names.
      *
-     * @param objects   the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param objects   the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
      * @param separator the separator
      * @return the concatenated names
      */
-    public String names(Iterable<Object> objects, String separator) {
+    public String names(Object objects, String separator) {
         return join(objects, "name", separator);
     }
 
@@ -147,52 +147,96 @@ public class ListFunctions extends AbstractObjectFunctions {
      * lastSeparator='and'}:<br/>
      * {@code apple, orange, pear and grapefruit}
      *
-     * @param objects   the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param objects   the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
      * @param separator the separator
      * @return the concatenated names
      */
-    public String names(Iterable<Object> objects, String separator, String lastSeparator) {
-        return join(objects, "name", separator, lastSeparator);
+    public String names(Object objects, String separator, String lastSeparator) {
+        return names(objects, separator, lastSeparator, null, null);
     }
 
     /**
-     * Convenience function to sort and concatenate the object names of the specified node, separated by commas.
+     * Concatenates object names, with the separator string between names.
+     * <p/>
+     * The last separator is used to separate the list two names in the list e.g. given {@code separator=',' and
+     * lastSeparator='and'}:<br/>
+     * {@code apple, orange, pear and grapefruit}
      *
-     * @param object the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
-     *               of these
-     * @param node   the collection node name
+     * @param objects   the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param separator the separator
+     * @param singular  if non-null, is appended to the string if there is only a single name
+     * @param plural    if non-null, is appended to the string if there are multiple names
+     * @return the concatenated names
+     */
+    public String names(Object objects, String separator, String lastSeparator, String singular, String plural) {
+        return join(objects, "name", separator, lastSeparator, singular, plural);
+    }
+
+    /**
+     * Convenience function to sort and concatenate the object names of the specified property, separated by commas.
+     *
+     * @param context the context. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param name    the property name
      * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
      */
-    public String sortNamesOf(Object object, String node) {
-        return sortNamesOf(object, node, SEPARATOR);
+    public String sortNamesOf(ExpressionContext context, String name) {
+        return sortNamesOf(context.getContextNodePointer().getValue(), name);
     }
 
     /**
-     * Convenience function to sort and concatenate the object names of the specified node, separated by commas.
+     * Convenience function to sort and concatenate the object names of the specified property, separated by commas.
      *
-     * @param object    the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a collection
-     *                  of these
-     * @param node      the collection node name
+     * @param objects the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param name    the property name
+     * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
+     */
+    public String sortNamesOf(Object objects, String name) {
+        return sortNamesOf(objects, name, SEPARATOR);
+    }
+
+    /**
+     * Convenience function to sort and concatenate the object names of the specified property, separated by the
+     * specified separator.
+     *
+     * @param objects   the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param name      the property name
      * @param separator the separator
      * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
      */
-    public String sortNamesOf(Object object, String node, String separator) {
-        return sortNamesOf(object, node, separator, separator);
+    public String sortNamesOf(Object objects, String name, String separator) {
+        return sortNamesOf(objects, name, separator, separator);
     }
 
     /**
-     * Convenience function to sort and concatenate the object names of the specified node, separated by commas.
+     * Convenience function to sort and concatenate the object names of the specified property, separated by the
+     * specified separator.
      *
-     * @param object        the expression context. May refer to an {@link IMObject}, {@link PropertySet}, or a
-     *                      collection of these
-     * @param node          the collection node name
+     * @param objects       the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param name          the property name
      * @param separator     the separator
      * @param lastSeparator the last separator
      * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
      */
-    public String sortNamesOf(Object object, String node, String separator, String lastSeparator) {
-        List<Object> objects = values(object, node);
-        return sortNames(objects, separator, lastSeparator);
+    public String sortNamesOf(Object objects, String name, String separator, String lastSeparator) {
+        return sortNamesOf(objects, name, separator, lastSeparator, null, null);
+    }
+
+    /**
+     * Convenience function to sort and concatenate the object names of the specified property, separated by the
+     * specified separator.
+     *
+     * @param objects       the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param name          the property name
+     * @param separator     the separator
+     * @param lastSeparator the last separator
+     * @param singular      if non-null, is appended to the string if there is only a single name
+     * @param plural        if non-null, is appended to the string if there are multiple names
+     * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
+     */
+    public String sortNamesOf(Object objects, String name, String separator, String lastSeparator, String singular,
+                              String plural) {
+        List<Object> values = values(objects, name);
+        return sortNames(values, separator, lastSeparator, singular, plural);
     }
 
     /**
@@ -201,7 +245,7 @@ public class ListFunctions extends AbstractObjectFunctions {
      * @param objects the objects. May be a collection of {@link IMObject} or {@link PropertySet}
      * @return the concatenated names
      */
-    public String sortNames(Iterable<Object> objects) {
+    public String sortNames(Object objects) {
         return sortNames(objects, SEPARATOR);
     }
 
@@ -209,11 +253,11 @@ public class ListFunctions extends AbstractObjectFunctions {
      * Convenience function to sort and concatenate the names of the specified objects, with the separator between
      * names.
      *
-     * @param objects   the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param objects   the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
      * @param separator the separator
      * @return the concatenated names
      */
-    public String sortNames(Iterable<Object> objects, String separator) {
+    public String sortNames(Object objects, String separator) {
         return sortNames(objects, separator, separator);
     }
 
@@ -221,13 +265,28 @@ public class ListFunctions extends AbstractObjectFunctions {
      * Convenience function to sort and concatenate the names of the specified objects, with the separator between
      * names.
      *
-     * @param objects       the objects
+     * @param objects       the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
      * @param separator     the separator
      * @param lastSeparator the last separator
      * @return the concatenated names
      */
-    public String sortNames(Iterable<Object> objects, String separator, String lastSeparator) {
-        return join(objects, "name", separator, lastSeparator, new Comparator<Object>() {
+    public String sortNames(Object objects, String separator, String lastSeparator) {
+        return sortNames(objects, separator, lastSeparator, null, null);
+    }
+
+    /**
+     * Convenience function to sort and concatenate the names of the specified objects, with the separator between
+     * names.
+     *
+     * @param objects       the objects. May be an {@link IMObject}, {@link PropertySet}, or a collection of these
+     * @param separator     the separator
+     * @param lastSeparator the last separator
+     * @param singular      if non-null, is appended to the string if there is only a single name
+     * @param plural        if non-null, is appended to the string if there are multiple names
+     * @return the concatenated names
+     */
+    public String sortNames(Object objects, String separator, String lastSeparator, String singular, String plural) {
+        return join(objects, "name", separator, lastSeparator, singular, plural, new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2) {
                 String v1 = (o1 != null) ? o1.toString() : null;
@@ -244,7 +303,7 @@ public class ListFunctions extends AbstractObjectFunctions {
      * @param node    the node name
      * @return the concatenated node
      */
-    public String join(Iterable<Object> objects, String node) {
+    public String join(Object objects, String node) {
         return join(objects, node, SEPARATOR);
     }
 
@@ -256,34 +315,37 @@ public class ListFunctions extends AbstractObjectFunctions {
      * @param separator the separator
      * @return the concatenated node
      */
-    public String join(Iterable<Object> objects, String name, String separator) {
+    public String join(Object objects, String name, String separator) {
         return join(objects, name, separator, separator);
     }
 
     /**
-     * Iterates through a list of objects, joining the string value of the specified node.
+     * Iterates through a list of objects, joining the string value of the specified property.
      *
      * @param objects       the objects. May be a collection of {@link IMObject} or {@link PropertySet}
-     * @param name          the node name
+     * @param name          the property name
      * @param separator     the separator
      * @param lastSeparator the last separator
      * @return the concatenated node
      */
-    public String join(Iterable<Object> objects, String name, String separator, String lastSeparator) {
-        StringBuilder builder = new StringBuilder();
-        List<Object> values = new ArrayList<>();
-        collect(objects, name, values);
-        for (int i = 0; i < values.size(); ++i) {
-            if (i > 0) {
-                if (i == values.size() - 1) {
-                    builder.append(lastSeparator);
-                } else {
-                    builder.append(separator);
-                }
-            }
-            builder.append(values.get(i));
-        }
-        return builder.toString();
+    public String join(Object objects, String name, String separator, String lastSeparator) {
+        return join(objects, name, separator, lastSeparator, null, null);
+    }
+
+    /**
+     * Iterates through a list of objects, joining the string value of the specified property.
+     *
+     * @param objects       the objects. May be a collection of {@link IMObject} or {@link PropertySet}
+     * @param name          the property name
+     * @param separator     the separator
+     * @param lastSeparator the last separator
+     * @param singular      if non-null, is appended to the string if there is only a single string
+     * @param plural        if non-null, is appended to the string if there are multiple strings
+     * @return the concatenated node
+     */
+    public String join(Object objects, String name, String separator, String lastSeparator, String singular,
+                       String plural) {
+        return join(objects, name, separator, lastSeparator, singular, plural, null);
     }
 
     /**
@@ -361,34 +423,41 @@ public class ListFunctions extends AbstractObjectFunctions {
         return new ArrayList<>(set(object, node));
     }
 
-
     /**
-     * Iterates through a list of objects, joining the string value of the specified node.
+     * Iterates through a list of objects, joining the string value of the specified property.
      *
      * @param objects       the objects
-     * @param name          the node name
+     * @param name          the property name
      * @param separator     the separator
      * @param lastSeparator the last separator
+     * @param singular      if non-null, is appended to the string if there is only a single string
+     * @param plural        if non-null, is appended to the string if there are multiple strings
      * @param comparator    comparator to order values. May be {@code null}
-     * @return the concatenated node
+     * @return the concatenated values
      */
-    protected String join(Iterable<Object> objects, String name, String separator, String lastSeparator,
-                          Comparator<Object> comparator) {
+    protected String join(Object objects, String name, String separator, String lastSeparator,
+                          String singular, String plural, Comparator<Object> comparator) {
         StringBuilder builder = new StringBuilder();
         List<Object> values = new ArrayList<>();
         collect(objects, name, values);
-        if (comparator != null && values.size() > 1) {
+        int size = values.size();
+        if (comparator != null && size > 1) {
             Collections.sort(values, comparator);
         }
-        for (int i = 0; i < values.size(); ++i) {
+        for (int i = 0; i < size; ++i) {
             if (i > 0) {
-                if (i == values.size() - 1) {
+                if (i == size - 1) {
                     builder.append(lastSeparator);
                 } else {
                     builder.append(separator);
                 }
             }
             builder.append(values.get(i));
+        }
+        if (size == 1 && singular != null) {
+            builder.append(singular);
+        } else if (size > 1 && plural != null) {
+            builder.append(plural);
         }
         return builder.toString();
     }
