@@ -34,6 +34,8 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -77,6 +79,24 @@ public class UserRules {
             return iterator.next();
         }
         return null;
+    }
+
+    /**
+     * Returns the user associated with an authentication request.
+     *
+     * @param authentication the authentication
+     * @return the user, or {@code null} if one cannot be determined
+     */
+    public User getUser(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        User user = null;
+        if (principal instanceof User) {
+            user = (User) principal;
+        } else if (principal instanceof UserDetails) {
+            String name = ((UserDetails) principal).getUsername();
+            user = getUser(name);
+        }
+        return user;
     }
 
     /**

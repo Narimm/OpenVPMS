@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -44,13 +44,17 @@ import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
@@ -127,6 +131,11 @@ public class AppointmentEditor extends CalendarEventEditor {
      * The 'reminder error' node name.
      */
     private static final String REMINDER_ERROR = "reminderError";
+
+    /**
+     * The online booking notes.
+     */
+    private static final String BOOKING_NOTES = "bookingNotes";
 
     /**
      * Constructs an {@link AppointmentEditor}.
@@ -327,6 +336,27 @@ public class AppointmentEditor extends CalendarEventEditor {
     }
 
     /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return validateCustomer(validator) && super.doValidation(validator);
+    }
+
+    private boolean validateCustomer(Validator validator) {
+        if (getCustomer() == null) {
+            Property customer = getProperty("customer");
+            String format = Messages.format("property.error.required", customer.getDisplayName());
+            validator.add(customer, new ValidatorError(customer, format));
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Invoked when the patient changes. This updates the alerts.
      */
     private void onPatientChanged() {
@@ -524,7 +554,7 @@ public class AppointmentEditor extends CalendarEventEditor {
          */
         public AppointmentLayoutStrategy() {
             ArchetypeNodes archetypeNodes = getArchetypeNodes();
-            archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
+            archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR, BOOKING_NOTES);
             if (!smsPractice || !scheduleReminders) {
                 archetypeNodes.exclude(SEND_REMINDER);
             } else {
