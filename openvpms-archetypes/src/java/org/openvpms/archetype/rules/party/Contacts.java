@@ -11,12 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,11 +32,65 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Operations for collections of {@link Contact} instances.
+ * Contact helpers.
  *
  * @author Tim Anderson
  */
 public class Contacts {
+
+    /**
+     * The email address node.
+     */
+    public static final String EMAIL_ADDRESS = "emailAddress";
+
+    /**
+     * The telephone number node.
+     */
+    public static final String TELEPHONE_NUMBER = "telephoneNumber";
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Constructs a {@link Contacts}.
+     *
+     * @param service the archetype service
+     */
+    public Contacts(IArchetypeService service) {
+        this.service = service;
+    }
+
+    /**
+     * Returns fully populated email contacts for a party.
+     *
+     * @param party the party
+     * @return the email contacts
+     */
+    public List<Contact> getEmailContacts(Party party) {
+        return getContacts(party, new EmailPredicate());
+    }
+
+    /**
+     * Returns fully populated SMS contacts for a party.
+     *
+     * @param party the party
+     * @return the SMS contacts
+     */
+    public List<Contact> getSMSContacts(Party party) {
+        return getContacts(party, new SMSPredicate());
+    }
+
+    /**
+     * Determines if a party can receive SMS messages.
+     *
+     * @param party the party
+     * @return {@code true} if the party can receive SMS messages
+     */
+    public boolean canSMS(Party party) {
+        return CollectionUtils.find(party.getContacts(), new SMSPredicate()) != null;
+    }
 
     /**
      * Sorts contacts on increasing identifier.
@@ -58,7 +119,7 @@ public class Contacts {
      * @return the sorted contacts
      */
     public static List<Contact> sort(Collection<Contact> contacts) {
-        return sort(new ArrayList<Contact>(contacts));
+        return sort(new ArrayList<>(contacts));
     }
 
     /**
@@ -77,6 +138,100 @@ public class Contacts {
             }
         }
         return matcher.getMatch();
+    }
+
+    /**
+     * Returns the phone number from a contact, extracting any formatting.
+     *
+     * @param contact the phone contact
+     * @return the phone number. May be {@code null}
+     */
+    public String getPhone(Contact contact) {
+        IMObjectBean bean = new IMObjectBean(contact, service);
+        String areaCode = bean.getString("areaCode");
+        String phone = bean.getString("telephoneNumber");
+        String result = null;
+        if (!StringUtils.isEmpty(areaCode)) {
+            result = areaCode;
+            if (!StringUtils.isEmpty(phone)) {
+                result += phone;
+            }
+        } else if (!StringUtils.isEmpty(phone)) {
+            result = phone;
+        }
+        result = getPhone(result);
+        return result;
+    }
+
+    /**
+     * Returns the phone number from a string, extracting any formatting.
+     *
+     * @param phone the formatted phone number
+     * @return the phone number. May be {@code null}
+     */
+    public static String getPhone(String phone) {
+        String result = phone;
+        if (!StringUtils.isEmpty(result)) {
+            // strip any spaces, hyphens, and brackets, and any characters after the last digit.
+            result = result.replaceAll("[\\s\\-()]", "").replaceAll("[^\\d\\+].*", "");
+        }
+        return result;
+    }
+
+    /**
+     * Returns contacts matching a predicate.
+     *
+     * @param party     the party
+     * @param predicate the predicate
+     * @return contacts matching the predicate
+     */
+    public static List<Contact> getContacts(Party party, Predicate<Contact> predicate) {
+        List<Contact> result = new ArrayList<>();
+        CollectionUtils.select(party.getContacts(), predicate, result);
+        return result;
+    }
+
+    private class SMSPredicate implements Predicate<Contact> {
+
+        /**+
+         * Use the specified parameter to perform a test that returns true or false.
+         *
+         * @param contact the object to evaluate, should not be changed
+         * @return true or false
+         */
+        public boolean evaluate(Contact contact) {
+            boolean result = false;
+            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+                IMObjectBean bean = new IMObjectBean(contact, service);
+                if (bean.getBoolean("sms")) {
+                    String phone = bean.getString(TELEPHONE_NUMBER);
+                    if (!StringUtils.isEmpty(phone)) {
+                        result = true;
+                    }
+                }
+            }
+            return result;
+        }
+    }
+
+    private class EmailPredicate implements Predicate<Contact> {
+
+        /**
+         * Use the specified parameter to perform a test that returns true or false.
+         *
+         * @param contact the object to evaluate, should not be changed
+         * @return true or false
+         */
+        public boolean evaluate(Contact contact) {
+            boolean result = false;
+            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
+                IMObjectBean bean = new IMObjectBean(contact, service);
+                if (!StringUtils.isEmpty(bean.getString(EMAIL_ADDRESS))) {
+                    result = true;
+                }
+            }
+            return result;
+        }
     }
 
 }
