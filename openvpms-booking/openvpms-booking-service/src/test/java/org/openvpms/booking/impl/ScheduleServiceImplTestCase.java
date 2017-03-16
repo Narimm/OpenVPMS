@@ -47,7 +47,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Tim Anderson
  */
-public class ScheduleServiceImplTest extends ArchetypeServiceTest {
+public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
 
     /**
      * The appointment rules.

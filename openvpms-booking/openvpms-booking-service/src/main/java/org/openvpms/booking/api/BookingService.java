@@ -51,7 +51,7 @@ public interface BookingService {
     Response create(Booking booking, @Context UriInfo uriInfo);
 
     /**
-     * Creates a new appointment from a booking request.
+     * Returns a booking given its reference.
      *
      * @param reference the booking reference
      * @return the booking

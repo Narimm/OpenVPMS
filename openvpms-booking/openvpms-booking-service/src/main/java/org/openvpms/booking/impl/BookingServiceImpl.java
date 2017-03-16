@@ -133,6 +133,28 @@ public class BookingServiceImpl implements BookingService {
         if (booking == null) {
             throw new BadRequestException("Booking is required");
         }
+        Date start = getRequired("start", booking.getStart());
+        Date end = getRequired("end", booking.getEnd());
+        Date now = new Date();
+        if (start.compareTo(now) < 0) {
+            throw new BadRequestException("Cannot make a booking in the past");
+        }
+        if (end.compareTo(start) <= 0) {
+            throw new BadRequestException("Booking start must be less than end");
+        }
+        Entity schedule = getSchedule(booking);
+        Entity appointmentType = getAppointmentType(booking);
+
+        int slotSize = appointmentRules.getSlotSize(schedule);
+        Date slotStart = appointmentRules.getSlotTime(start, slotSize, false);
+        if (slotStart.compareTo(start) != 0) {
+            throw new BadRequestException("Booking start is not on a slot boundary");
+        }
+        Date slotEnd = appointmentRules.getSlotTime(end, slotSize, true);
+        if (slotEnd.compareTo(end) != 0) {
+            throw new BadRequestException("Booking end is not on a slot boundary");
+        }
+
         StringBuilder notes = new StringBuilder();
         Party customer = getCustomer(booking);
         Party patient = null;
@@ -159,11 +181,6 @@ public class BookingServiceImpl implements BookingService {
             append(notes, "Notes", booking.getNotes());
         }
 
-        Entity schedule = getSchedule(booking);
-        Entity appointmentType = getAppointmentType(booking);
-        Date start = getRequired("start", booking.getStart());
-        Date end = getRequired("end", booking.getEnd());
-        // todo - check end > start, rounded to slot size, in future
         Act act = (Act) service.create(ScheduleArchetypes.APPOINTMENT);
         ActBean bean = new ActBean(act, service);
         bean.setValue("startTime", start);
@@ -180,8 +197,8 @@ public class BookingServiceImpl implements BookingService {
         if (!bookingNotes.isEmpty()) {
             bean.setValue("bookingNotes", bookingNotes);
         }
-        if (appointmentRules.isRemindersEnabled(schedule) && appointmentRules.isRemindersEnabled(appointmentType)
-            && contacts.canSMS(customer)) {
+        if (customer != null && appointmentRules.isRemindersEnabled(schedule)
+            && appointmentRules.isRemindersEnabled(appointmentType) && contacts.canSMS(customer)) {
             Period noReminderPeriod = appointmentRules.getNoReminderPeriod();
             if (noReminderPeriod != null) {
                 Date date = DateRules.plus(new Date(), noReminderPeriod);
@@ -226,7 +243,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     * Creates a new appointment from a booking request.
+     * Returns a booking given its reference.
      *
      * @param reference the booking reference
      * @return the booking
