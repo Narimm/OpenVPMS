@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -147,6 +147,11 @@ public class ScheduleEvent {
      * The consult start time.
      */
     public static final String CONSULT_START_TIME = "consultStartTime";
+
+    /**
+     * The online booking flag.
+     */
+    public static final String ONLINE_BOOKING = "onlineBooking";
 
     /**
      * The booking notes.

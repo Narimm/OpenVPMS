@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -45,20 +46,21 @@ public class TaskGrid extends AbstractScheduleEventGrid {
 
 
     /**
-     * Creates a new <tt>TaskGrid</tt>.
+     * Constructs a {@link TaskGrid}.
      *
      * @param scheduleView the schedule view
      * @param date         the date
      * @param tasks        the tasks
+     * @param rules        the appointment rules
      */
-    public TaskGrid(Entity scheduleView, Date date, Map<Entity, List<PropertySet>> tasks) {
-        super(scheduleView, date);
+    public TaskGrid(Entity scheduleView, Date date, Map<Entity, List<PropertySet>> tasks, AppointmentRules rules) {
+        super(scheduleView, date, rules);
 
         List<Schedule> schedules = new ArrayList<>();
         for (Map.Entry<Entity, List<PropertySet>> entry : tasks.entrySet()) {
             Entity workList = entry.getKey();
             List<PropertySet> sets = entry.getValue();
-            TaskSchedule schedule = new TaskSchedule(workList);
+            TaskSchedule schedule = new TaskSchedule(workList, rules);
             for (PropertySet set : sets) {
                 schedule.addEvent(set);
             }

@@ -11,13 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -29,7 +32,20 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Tim Anderson
  */
-public class IntersectComparatorTestCase {
+public class IntersectComparatorTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The appointment rules.
+     */
+    private AppointmentRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        rules = applicationContext.getBean(AppointmentRules.class);
+    }
 
     /**
      * Tests events that are as long as the slot size.
@@ -40,7 +56,7 @@ public class IntersectComparatorTestCase {
         PropertySet event2 = createEvent("2014-03-01 10:15:00", "2014-03-01 10:30:00");
         PropertySet event3 = createEvent("2014-03-01 10:30:00", "2014-03-01 10:45:00");
 
-        IntersectComparator comparator = new IntersectComparator(15);
+        IntersectComparator comparator = new IntersectComparator(15, rules);
         assertEquals(0, comparator.compare(event1, event1));
         assertEquals(-1, comparator.compare(event1, event2));
         assertEquals(-1, comparator.compare(event1, event3));
@@ -64,7 +80,7 @@ public class IntersectComparatorTestCase {
         PropertySet event3 = createEvent("2014-03-01 10:10:00", "2014-03-01 10:15:00");
         PropertySet event4 = createEvent("2014-03-01 10:15:00", "2014-03-01 10:20:00");
 
-        IntersectComparator comparator = new IntersectComparator(10);
+        IntersectComparator comparator = new IntersectComparator(10, rules);
         assertEquals(0, comparator.compare(event1, event1));
         assertEquals(0, comparator.compare(event1, event2));
         assertEquals(0, comparator.compare(event2, event1));
@@ -95,7 +111,7 @@ public class IntersectComparatorTestCase {
         PropertySet event2 = createEvent("2014-03-01 10:10:00", "2014-03-01 10:20:00");
         PropertySet event3 = createEvent("2014-03-01 10:20:00", "2014-03-01 10:30:00");
 
-        IntersectComparator comparator = new IntersectComparator(5);
+        IntersectComparator comparator = new IntersectComparator(5, rules);
         assertEquals(0, comparator.compare(event1, event1));
         assertEquals(-1, comparator.compare(event1, event2));
         assertEquals(-1, comparator.compare(event1, event3));

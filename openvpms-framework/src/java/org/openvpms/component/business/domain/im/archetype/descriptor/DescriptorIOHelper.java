@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
@@ -22,6 +22,9 @@ import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 import org.xml.sax.InputSource;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -66,6 +69,27 @@ class DescriptorIOHelper {
     public static Object read(InputStream stream, Mapping mapping) {
         Object result;
         result = read(stream, mapping, "<unknown mapping path>");
+        return result;
+    }
+
+    /**
+     * Reads an object from a file using the supplied mapping.
+     *
+     * @param file    the file to read from
+     * @param mapping the mapping
+     * @return the object
+     * @throws FileNotFoundException if the file cannot be found
+     * @throws DescriptorException   if the read fails
+     */
+    public static Object read(File file, Mapping mapping) throws FileNotFoundException {
+        Object result;
+        try {
+            Unmarshaller unmarshaller = new Unmarshaller(mapping);
+            result = unmarshaller.unmarshal(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
+        } catch (Exception exception) {
+            throw new DescriptorException(DescriptorException.ErrorCode.FileReadError, exception,
+                                          file.getAbsolutePath(), "<unknown mapping path>", exception.getMessage());
+        }
         return result;
     }
 

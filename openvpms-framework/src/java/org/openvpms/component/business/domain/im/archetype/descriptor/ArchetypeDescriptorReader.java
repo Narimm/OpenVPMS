@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 import org.exolab.castor.mapping.Mapping;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 /**
@@ -57,6 +59,18 @@ public class ArchetypeDescriptorReader {
      */
     public ArchetypeDescriptors read(InputStream stream) {
         return read(stream, ArchetypeDescriptors.class);
+    }
+
+    /**
+     * Reads descriptors from a file.
+     *
+     * @param file the file to read from
+     * @return the read descriptors
+     * @throws DescriptorException   if the descriptors cannot be read
+     * @throws FileNotFoundException if the file cannot be found
+     */
+    public ArchetypeDescriptors read(File file) throws FileNotFoundException {
+        return ArchetypeDescriptors.class.cast(DescriptorIOHelper.read(file, mapping));
     }
 
     /**
