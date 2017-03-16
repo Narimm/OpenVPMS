@@ -605,6 +605,7 @@
         <module>openvpms-sms</module>
         <module>openvpms-esci-adapter</module>
         <module>openvpms-db</module>
+        <module>openvpms-booking</module>
         <module>openvpms-web</module>
         <module>openvpms-etl</module>
         <module>openvpms-release</module>
@@ -762,6 +763,7 @@
         <javassist.version>3.4.GA</javassist.version>
         <javax.mail.version>1.4.4</javax.mail.version>
         <javax.servlet.version>3.0.1</javax.servlet.version>
+        <jersey.version>2.22.1</jersey.version>
         <joda.time.version>1.6.2</joda.time.version>
         <jdom.version>1.0</jdom.version>
         <jsap.version>2.0a</jsap.version>

@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -37,9 +38,11 @@ public class MultiDayScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param date         the date
      * @param days         the number of days to display
      * @param events       the events
+     * @param rules        the appointment rules
      */
-    public MultiDayScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> events) {
-        super(scheduleView, date, days, events);
+    public MultiDayScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> events,
+                                AppointmentRules rules) {
+        super(scheduleView, date, days, events, rules);
     }
 
 }

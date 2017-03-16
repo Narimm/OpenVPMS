@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -273,13 +273,13 @@ public class AppointmentBrowser extends ScheduleBrowser {
             AppointmentQuery.Show show = query.getShow();
             if (show == AppointmentQuery.Show.CAGE
                 || show == AppointmentQuery.Show.SUMMARY) {
-                grid = new CageScheduleGrid(scheduleView, date, days, events);
+                grid = new CageScheduleGrid(scheduleView, date, days, events, rules);
             } else if (show == AppointmentQuery.Show.CHECKIN) {
-                grid = new CheckInScheduleGrid(scheduleView, date, days, events);
+                grid = new CheckInScheduleGrid(scheduleView, date, days, events, rules);
             } else if (show == AppointmentQuery.Show.CHECKOUT) {
-                grid = new CheckOutScheduleGrid(scheduleView, date, days, events);
+                grid = new CheckOutScheduleGrid(scheduleView, date, days, events, rules);
             } else {
-                grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
+                grid = new MultiDayScheduleGrid(scheduleView, date, days, events, rules);
             }
         } else {
             if (schedules.size() == 1) {
@@ -494,7 +494,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private boolean hasOverlappingEvents(List<PropertySet> events, Party schedule) {
         AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
         int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, rules);
-        IntersectComparator comparator = new IntersectComparator(slotSize);
+        IntersectComparator comparator = new IntersectComparator(slotSize, rules);
         List<PropertySet> list = new ArrayList<>();
 
         for (PropertySet event : events) {

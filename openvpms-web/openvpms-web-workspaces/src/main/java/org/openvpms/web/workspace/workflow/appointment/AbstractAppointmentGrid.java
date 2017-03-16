@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
-import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -89,7 +88,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * @param rules        the appointment rules
      */
     public AbstractAppointmentGrid(Entity scheduleView, Date date, int startMins, int endMins, AppointmentRules rules) {
-        super(scheduleView, date);
+        super(scheduleView, date, rules);
         this.startMins = startMins;
         this.endMins = endMins;
         this.rules = rules;
@@ -307,7 +306,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * @return the minutes from midnight for the specified time
      */
     protected int getSlotMinutes(Date time, boolean roundUp) {
-        return SchedulingHelper.getSlotMinutes(time, slotSize, roundUp);
+        return rules.getSlotMinutes(time, slotSize, roundUp);
     }
 
     /**
@@ -339,7 +338,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
             endMins = startMins;
         }
 
-        return new Schedule(schedule, null, startMins, endMins, slotSize);
+        return new Schedule(schedule, null, startMins, endMins, slotSize, rules);
     }
 
     /**
