@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
@@ -29,7 +29,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.doc.HtmlToTextFormatter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
 
@@ -195,14 +194,7 @@ public class CommunicationLogger {
      */
     protected ActBean createLog(String shortName, Party customer, Party patient, String address, String subject,
                                 String reason, String note, Party location) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User author = null;
-        if (principal instanceof User) {
-            author = (User) principal;
-        } else if (principal instanceof UserDetails) {
-            String name = ((UserDetails) principal).getUsername();
-            author = rules.getUser(name);
-        }
+        User author = rules.getUser(SecurityContextHolder.getContext().getAuthentication());
         return createLog(shortName, customer, patient, author, address, subject, reason, note, location);
     }
 

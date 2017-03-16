@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -273,7 +273,7 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     private void initUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
-            User user = userRules.getUser(auth.getName());
+            User user = userRules.getUser(auth);
             if (user != null) {
                 context.setUser(user);
                 if (userRules.isClinician(user)) {

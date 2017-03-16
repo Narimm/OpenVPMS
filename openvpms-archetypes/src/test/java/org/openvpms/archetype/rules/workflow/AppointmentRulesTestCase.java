@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -52,6 +52,7 @@ import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.util.DateUnits.HOURS;
 import static org.openvpms.archetype.rules.util.DateUnits.MONTHS;
 import static org.openvpms.archetype.rules.util.DateUnits.YEARS;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 
 /**
@@ -444,6 +445,24 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         checkAppointments(rules.getCustomerAppointments(customer1, 1, YEARS), act1b, act1c);
         checkAppointments(rules.getPatientAppointments(patient1a, 3, YEARS), act1d);
         checkAppointments(rules.getCustomerAppointments(customer2, 1, YEARS), act2c);
+    }
+
+    /**
+     * Tests the {@link AppointmentRules#getSlotTime} method.
+     */
+    @Test
+    public void testGetSlotTime() {
+        Date date1 = getDatetime("2015-03-05 09:00:00");
+        assertEquals(date1, rules.getSlotTime(date1, 15, false));
+        assertEquals(date1, rules.getSlotTime(date1, 15, true));
+
+        Date date2 = getDatetime("2015-03-05 09:05:00");
+        assertEquals(getDatetime("2015-03-05 09:00:00"), rules.getSlotTime(date2, 15, false));
+        assertEquals(getDatetime("2015-03-05 09:15:00"), rules.getSlotTime(date2, 15, true));
+
+        Date date3 = getDatetime("2015-03-05 12:15:00");
+        assertEquals(getDatetime("2015-03-05 12:00:00"), rules.getSlotTime(date3, 30, false));
+        assertEquals(getDatetime("2015-03-05 12:30:00"), rules.getSlotTime(date3, 30, true));
     }
 
     /**

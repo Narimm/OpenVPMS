@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.tools.archetype.io;
@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
@@ -87,7 +86,7 @@ public class FileSystemLoader implements DescriptorLoader {
      * Determines if the returned descriptors are all available descriptors, or a subset.
      *
      * @return {@code true} if the returned descriptors are all available descriptors, {@code false} if they are
-     *         a subset
+     * a subset
      */
     @Override
     public boolean isAll() {
@@ -111,7 +110,7 @@ public class FileSystemLoader implements DescriptorLoader {
      * @throws FileNotFoundException if the file is not found
      */
     private void read(File file, Map<String, ArchetypeDescriptor> result) throws FileNotFoundException {
-        ArchetypeDescriptors descriptors = reader.read(new FileInputStream(file));
+        ArchetypeDescriptors descriptors = reader.read(file);
         for (ArchetypeDescriptor descriptor : descriptors.getArchetypeDescriptorsAsArray()) {
             result.put(descriptor.getShortName(), descriptor);
         }

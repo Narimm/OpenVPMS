@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -44,13 +45,17 @@ import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
@@ -60,6 +65,9 @@ import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSerie
 
 import java.util.Date;
 
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_ERROR;
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_SENT;
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.SEND_REMINDER;
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 import static org.openvpms.web.echo.style.Styles.INSET;
@@ -114,19 +122,9 @@ public class AppointmentEditor extends CalendarEventEditor {
     private BoundCheckBox sendReminder;
 
     /**
-     * The 'send reminder' node name.
+     * The online booking notes.
      */
-    private static final String SEND_REMINDER = "sendReminder";
-
-    /**
-     * The 'reminder sent' node name.
-     */
-    private static final String REMINDER_SENT = "reminderSent";
-
-    /**
-     * The 'reminder error' node name.
-     */
-    private static final String REMINDER_ERROR = "reminderError";
+    private static final String BOOKING_NOTES = ScheduleEvent.BOOKING_NOTES;
 
     /**
      * Constructs an {@link AppointmentEditor}.
@@ -327,6 +325,27 @@ public class AppointmentEditor extends CalendarEventEditor {
     }
 
     /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return validateCustomer(validator) && super.doValidation(validator);
+    }
+
+    private boolean validateCustomer(Validator validator) {
+        if (getCustomer() == null) {
+            Property customer = getProperty("customer");
+            String format = Messages.format("property.error.required", customer.getDisplayName());
+            validator.add(customer, new ValidatorError(customer, format));
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Invoked when the patient changes. This updates the alerts.
      */
     private void onPatientChanged() {
@@ -524,7 +543,7 @@ public class AppointmentEditor extends CalendarEventEditor {
          */
         public AppointmentLayoutStrategy() {
             ArchetypeNodes archetypeNodes = getArchetypeNodes();
-            archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
+            archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR, BOOKING_NOTES);
             if (!smsPractice || !scheduleReminders) {
                 archetypeNodes.exclude(SEND_REMINDER);
             } else {
