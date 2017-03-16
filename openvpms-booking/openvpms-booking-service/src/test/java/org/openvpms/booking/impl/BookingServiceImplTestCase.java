@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -40,7 +39,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -62,7 +60,7 @@ import static org.junit.Assert.fail;
  *
  * @author Tim Anderson
  */
-public class BookingServiceImplTest extends ArchetypeServiceTest {
+public class BookingServiceImplTestCase extends ArchetypeServiceTest {
 
     /**
      * The customer rules.
@@ -79,7 +77,6 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
     /**
      * The user rules.
      */
-    @Autowired
     private UserRules userRules;
 
     /**
@@ -110,6 +107,7 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
         appointmentRules = new AppointmentRules(getArchetypeService());
         location = TestHelper.createLocation();
         appointmentType = ScheduleTestHelper.createAppointmentType();
+        userRules = new UserRules(getArchetypeService());
         IMObjectBean appointmentTypeBean = new IMObjectBean(appointmentType);
         appointmentTypeBean.setValue("sendReminders", true);
         appointmentTypeBean.save();
@@ -137,7 +135,7 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
         booking.setSchedule(schedule.getId());
         booking.setAppointmentType(appointmentType.getId());
         Date startTime = DateRules.getTomorrow();
-        Date endTime = DateRules.getDate(startTime, 1, DateUnits.MINUTES);
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         booking.setStart(startTime);
         booking.setEnd(endTime);
         booking.setTitle("Mr");
@@ -152,17 +150,16 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Test booking for new customer.
+     * Test booking for a new customer. The appointment will be created without a customer participation.
      */
     @Test
     public void testBookingForNewCustomer() {
-        Party onlineBookingCustomer = getOnlineBookingCustomer(true);
         Booking booking = new Booking();
         booking.setLocation(location.getId());
         booking.setSchedule(schedule.getId());
         booking.setAppointmentType(appointmentType.getId());
         Date startTime = DateRules.getTomorrow();
-        Date endTime = DateRules.getDate(startTime, 1, DateUnits.MINUTES);
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         booking.setStart(startTime);
         booking.setEnd(endTime);
         booking.setTitle("Mr");
@@ -177,11 +174,11 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
                               "Last Name: " + booking.getLastName() + "\n" +
                               "Email: foo@bar.com\n" +
                               "Patient: Fido";
-        checkAppointment(appointment, startTime, endTime, onlineBookingCustomer, null, false, bookingNotes);
+        checkAppointment(appointment, startTime, endTime, null, null, false, bookingNotes);
     }
 
     /**
-     * Verifies that the send reminder flag is set if the appointment if the customer can receive SMS
+     * Verifies that the send reminder flag is set if the appointment if the customer can receive SMS.
      */
     @Test
     public void testSendReminder() {
@@ -197,7 +194,7 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
         booking.setSchedule(schedule.getId());
         booking.setAppointmentType(appointmentType.getId());
         Date startTime = DateRules.getNextDate(DateRules.getTomorrow());
-        Date endTime = DateRules.getDate(startTime, 1, DateUnits.MINUTES);
+        Date endTime = DateRules.getDate(startTime, 30, DateUnits.MINUTES);
         booking.setStart(startTime);
         booking.setEnd(endTime);
         booking.setTitle("Mr");
@@ -211,55 +208,13 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that a {@code BadRequestException} is thrown if no online customer is configured.
-     */
-    @Test
-    public void testMissingOnlineBookingCustomer() {
-        Party onlineBookingCustomer = getOnlineBookingCustomer(false);
-        if (onlineBookingCustomer != null) {
-            onlineBookingCustomer.setActive(false);
-            save(onlineBookingCustomer);
-        }
-        Booking booking = new Booking();
-        booking.setLocation(location.getId());
-        booking.setSchedule(schedule.getId());
-        booking.setAppointmentType(appointmentType.getId());
-        Date startTime = DateRules.getTomorrow();
-        Date endTime = DateRules.getDate(startTime, 1, DateUnits.MINUTES);
-        booking.setStart(startTime);
-        booking.setEnd(endTime);
-        booking.setTitle("Mr");
-        booking.setFirstName("Foo");
-        booking.setLastName("Bar");
-
-        try {
-            createBooking(booking);
-            fail("Expected BadRequestException");
-        } catch (BadRequestException exception) {
-            assertEquals("There is no Online Booking customer configured to handle new customers",
-                         exception.getMessage());
-        }
-    }
-
-    /**
      * Tests booking cancellation.
      */
     @Test
     public void testCancel() {
-        getOnlineBookingCustomer(true);
-        Booking booking = new Booking();
-        booking.setLocation(location.getId());
-        booking.setSchedule(schedule.getId());
-        booking.setAppointmentType(appointmentType.getId());
         Date startTime = DateRules.getTomorrow();
-        Date endTime = DateRules.getDate(startTime, 1, DateUnits.MINUTES);
-        booking.setStart(startTime);
-        booking.setEnd(endTime);
-        booking.setTitle("Mr");
-        booking.setFirstName("Foo");
-        booking.setLastName("Bar" + System.currentTimeMillis());
-        booking.setEmail("foo@bar.com");
-        booking.setPatientName("Fido");
+        Date endTime = DateRules.getDate(startTime, 45, DateUnits.MINUTES);
+        Booking booking = createBooking(startTime, endTime);
 
         ArrayList<Act> acts = new ArrayList<>();
         BookingService service = createBookingService(acts);
@@ -282,6 +237,94 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
         } catch (NotFoundException exception) {
             assertEquals("Booking not found", exception.getMessage());
         }
+    }
+
+    /**
+     * Verifies that trying to create an appointment in the past throws {@link BadRequestException}.
+     */
+    @Test
+    public void testBackDatedAppointment() {
+        Date startTime = DateRules.getYesterday();
+        Date endTime = DateRules.getDate(startTime, 45, DateUnits.MINUTES);
+        Booking booking = createBooking(startTime, endTime);
+        BookingService service = createBookingService();
+
+        try {
+            service.create(booking, createUriInfo());
+            fail("Expected back-dated create to fail");
+        } catch (BadRequestException exception) {
+            assertEquals("Cannot make a booking in the past", exception.getMessage());
+        }
+    }
+
+    /**
+     * Verifies that trying to create an appointment with a start less than end throws {@link BadRequestException}.
+     */
+    @Test
+    public void testStartLessThanEnd() {
+        Date startTime = DateRules.getTomorrow();
+        Date endTime = DateRules.getDate(startTime, 45, DateUnits.MINUTES);
+        Booking booking = createBooking(endTime, startTime);
+        BookingService service = createBookingService();
+
+        try {
+            service.create(booking, createUriInfo());
+            fail("Expected create to fail");
+        } catch (BadRequestException exception) {
+            assertEquals("Booking start must be less than end", exception.getMessage());
+        }
+    }
+
+    /**
+     * Verifies that trying to create an appointment that doesn't start or end on a slot boundary throws
+     * {@link BadRequestException}.
+     */
+    @Test
+    public void testInvalidSlotBoundary() {
+        BookingService service = createBookingService();
+        Date start1 = DateRules.getDate(DateRules.getTomorrow(), 5, DateUnits.MINUTES);
+        Date end1 = DateRules.getDate(start1, 45, DateUnits.MINUTES);
+        Booking booking1 = createBooking(start1, end1);
+
+        try {
+            service.create(booking1, createUriInfo());
+            fail("Expected create to fail");
+        } catch (BadRequestException exception) {
+            assertEquals("Booking start is not on a slot boundary", exception.getMessage());
+        }
+
+        Date start2 = DateRules.getTomorrow();
+        Date end2 = DateRules.getDate(start1, 20, DateUnits.MINUTES);
+        Booking booking2 = createBooking(start2, end2);
+
+        try {
+            service.create(booking2, createUriInfo());
+            fail("Expected create to fail");
+        } catch (BadRequestException exception) {
+            assertEquals("Booking end is not on a slot boundary", exception.getMessage());
+        }
+    }
+
+    /**
+     * Helper to create a booking.
+     *
+     * @param startTime the booking start time
+     * @param endTime   the booking end time
+     * @return a new booking
+     */
+    private Booking createBooking(Date startTime, Date endTime) {
+        Booking booking = new Booking();
+        booking.setLocation(location.getId());
+        booking.setSchedule(schedule.getId());
+        booking.setAppointmentType(appointmentType.getId());
+        booking.setStart(startTime);
+        booking.setEnd(endTime);
+        booking.setTitle("Mr");
+        booking.setFirstName("Foo");
+        booking.setLastName("Bar" + System.currentTimeMillis());
+        booking.setEmail("foo@bar.com");
+        booking.setPatientName("Fido");
+        return booking;
     }
 
     /**
@@ -356,6 +399,16 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Creates a booking service.
+     *
+     * @return the booking service
+     */
+    private BookingServiceImpl createBookingService() {
+        return new BookingServiceImpl(getArchetypeService(), customerRules, appointmentRules,
+                                      userRules, transactionManager);
+    }
+
+    /**
      * Creates a booking service that collects appointments.
      *
      * @param acts the list to collect appointment acts
@@ -391,20 +444,4 @@ public class BookingServiceImplTest extends ArchetypeServiceTest {
         return uriInfo;
     }
 
-    /**
-     * Returns the online booking customer.
-     *
-     * @param create if {@code true}, create the customer if it doesn't exist
-     * @return the customer, or {@code null} if it doesn't exist
-     */
-    private Party getOnlineBookingCustomer(boolean create) {
-        ArchetypeQuery query = new ArchetypeQuery(CustomerArchetypes.PERSON, true);
-        query.add(Constraints.eq("name", "Online Booking,"));
-        IMObjectQueryIterator<Party> iterator = new IMObjectQueryIterator<>(getArchetypeService(), query);
-        Party customer = (iterator.hasNext()) ? iterator.next() : null;
-        if (customer == null && create) {
-            customer = TestHelper.createCustomer(null, "Online Booking", true);
-        }
-        return customer;
-    }
 }
