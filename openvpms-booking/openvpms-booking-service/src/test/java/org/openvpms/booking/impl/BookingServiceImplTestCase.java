@@ -53,6 +53,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -349,6 +350,7 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         assertEquals(appointmentType, bean.getNodeParticipant("appointmentType"));
         assertEquals(sendReminder, bean.getBoolean("sendReminder"));
         assertEquals(bookingNotes, bean.getString("bookingNotes"));
+        assertTrue(bean.getBoolean("onlineBooking"));
     }
 
     private void configureSMSJob() {

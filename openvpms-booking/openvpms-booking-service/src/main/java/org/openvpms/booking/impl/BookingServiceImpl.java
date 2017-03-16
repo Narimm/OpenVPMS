@@ -193,6 +193,7 @@ public class BookingServiceImpl implements BookingService {
         if (patient != null) {
             bean.setNodeParticipant("patient", patient);
         }
+        bean.setValue("onlineBooking", true);
         String bookingNotes = StringUtils.abbreviate(notes.toString(), 5000);
         if (!bookingNotes.isEmpty()) {
             bean.setValue("bookingNotes", bookingNotes);
