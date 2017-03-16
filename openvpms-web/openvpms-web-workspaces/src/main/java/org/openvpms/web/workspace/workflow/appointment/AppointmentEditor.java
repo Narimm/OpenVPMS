@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -64,6 +65,9 @@ import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSerie
 
 import java.util.Date;
 
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_ERROR;
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_SENT;
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.SEND_REMINDER;
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 import static org.openvpms.web.echo.style.Styles.INSET;
@@ -118,24 +122,9 @@ public class AppointmentEditor extends CalendarEventEditor {
     private BoundCheckBox sendReminder;
 
     /**
-     * The 'send reminder' node name.
-     */
-    private static final String SEND_REMINDER = "sendReminder";
-
-    /**
-     * The 'reminder sent' node name.
-     */
-    private static final String REMINDER_SENT = "reminderSent";
-
-    /**
-     * The 'reminder error' node name.
-     */
-    private static final String REMINDER_ERROR = "reminderError";
-
-    /**
      * The online booking notes.
      */
-    private static final String BOOKING_NOTES = "bookingNotes";
+    private static final String BOOKING_NOTES = ScheduleEvent.BOOKING_NOTES;
 
     /**
      * Constructs an {@link AppointmentEditor}.

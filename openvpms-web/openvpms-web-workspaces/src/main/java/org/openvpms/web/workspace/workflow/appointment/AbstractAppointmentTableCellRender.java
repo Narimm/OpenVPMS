@@ -184,8 +184,8 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
             }
         }
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        boolean onlineBooking = event.exists(ScheduleEvent.BOOKING_NOTES)
-                                && !StringUtils.isEmpty(event.getString(ScheduleEvent.BOOKING_NOTES));
+        boolean onlineBooking = event.exists(ScheduleEvent.ONLINE_BOOKING)
+                                && event.getBoolean(ScheduleEvent.ONLINE_BOOKING);
         result = createLabelWithNotes(text, notes, event.getBoolean(ScheduleEvent.SEND_REMINDER),
                                       event.getDate(ScheduleEvent.REMINDER_SENT),
                                       event.getString(ScheduleEvent.REMINDER_ERROR), onlineBooking);

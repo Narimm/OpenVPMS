@@ -73,6 +73,8 @@
               maxCardinality="1" hidden="true" readOnly="true"/>
         <node name="firstPetRate" path="/details/firstPetRate" type="java.lang.Boolean" minCardinality="0"
               maxCardinality="1" hidden="true" readOnly="true"/>
+        <node name="onlineBooking" path="/details/onlineBooking" type="java.lang.Boolean" minCardinality="0"
+              maxCardinality="1" readOnly="true"/>
         <node name="bookingNotes" path="/details/bookingNotes" type="java.lang.String" minCardinality="0"
               maxCardinality="1" maxLength="5000" readOnly="true"/>
         <node name="event" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
