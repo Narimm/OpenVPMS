@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -838,12 +838,15 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
         /**
          * Determines if an appointment can be checked in.
+         * <p/>
+         * The appointment must be {@link AppointmentStatus#PENDING}, and have a customer assigned.
          *
          * @param act the appointment
          * @return {@code true} if it can be checked in
          */
         public boolean canCheckIn(Act act) {
-            return isAppointment(act) && AppointmentStatus.PENDING.equals(act.getStatus());
+            return isAppointment(act) && AppointmentStatus.PENDING.equals(act.getStatus())
+                   && new ActBean(act).getNodeParticipantRef("customer") != null;
         }
 
         /**
@@ -869,10 +872,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
          * receive SMS messages
          */
         public boolean canSMS(Act act) {
+            boolean result = false;
             ActBean bean = new ActBean(act);
-            return isAppointment(act) && AppointmentStatus.PENDING.equals(act.getStatus())
-                   && DateRules.compareDateToToday(act.getActivityStartTime()) >= 0
-                   && SMSHelper.canSMS((Party) bean.getNodeParticipant("customer"));
+            if (isAppointment(act) && AppointmentStatus.PENDING.equals(act.getStatus())
+                && DateRules.compareDateToToday(act.getActivityStartTime()) >= 0) {
+                Party customer = (Party) bean.getNodeParticipant("customer");
+                if (customer != null && SMSHelper.canSMS(customer)) {
+                    result = true;
+                }
+            }
+            return result;
         }
 
         /**

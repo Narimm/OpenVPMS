@@ -11,27 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectSorter;
+import org.openvpms.web.system.ServiceHelper;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -55,13 +53,15 @@ public class ContactHelper {
         if (party == null) {
             return Collections.emptyList();
         }
-        return getContacts(party, SMSPredicate.INSTANCE, SMSPredicate.TELEPHONE_NUMBER);
+        return sort(new Contacts(ServiceHelper.getArchetypeService()).getSMSContacts(party), Contacts.TELEPHONE_NUMBER);
     }
 
     /**
      * Returns email contacts for a party.
      * <p/>
      * The preferred email contact is the first element in the returned list, if it exists.
+     * <p/>
+     * Any email contact that doesn't have an email address will be excluded.
      *
      * @param party the party. May be {@code null}
      * @return the email contacts
@@ -70,7 +70,7 @@ public class ContactHelper {
         if (party == null) {
             return Collections.emptyList();
         }
-        return getContacts(party, EmailPredicate.INSTANCE, EmailPredicate.EMAIL_ADDRESS);
+        return sort(new Contacts(ServiceHelper.getArchetypeService()).getEmailContacts(party), Contacts.EMAIL_ADDRESS);
     }
 
     /**
@@ -142,89 +142,19 @@ public class ContactHelper {
     }
 
     /**
-     * Returns contacts for the specified party that match the predicate.
+     * Sorts contacts. Any preferred contact will appear first.
      *
-     * @param party     the party
-     * @param predicate the predicate
-     * @param sortNode  the node to sort on
-     * @return the matching contacts
+     * @param contacts the contacts
+     * @param sortNode the node to sort on
+     * @return the sorted contacts
      */
-    private static List<Contact> getContacts(Party party, Predicate predicate, String sortNode) {
-        List<Contact> result = new ArrayList<>();
-        CollectionUtils.select(party.getContacts(), predicate, result);
-        if (result.size() > 1) {
+    private static List<Contact> sort(List<Contact> contacts, String sortNode) {
+        if (contacts.size() > 1) {
             SortConstraint[] sort = {new NodeSortConstraint("preferred", false),
                                      new NodeSortConstraint(sortNode, true)};
-            IMObjectSorter.sort(result, sort);
+            IMObjectSorter.sort(contacts, sort);
         }
-        return result;
-    }
-
-
-    private static class SMSPredicate implements Predicate {
-
-        /**
-         * The singleton instance.
-         */
-        public static Predicate INSTANCE = new SMSPredicate();
-
-        /**
-         * The telephone number node.
-         */
-        private static final String TELEPHONE_NUMBER = "telephoneNumber";
-
-        /**
-         * Use the specified parameter to perform a test that returns true or false.
-         *
-         * @param object the object to evaluate, should not be changed
-         * @return true or false
-         */
-        public boolean evaluate(Object object) {
-            boolean result = false;
-            Contact contact = (Contact) object;
-            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-                IMObjectBean bean = new IMObjectBean(contact);
-                if (bean.getBoolean("sms")) {
-                    String phone = bean.getString(TELEPHONE_NUMBER);
-                    if (!StringUtils.isEmpty(phone)) {
-                        result = true;
-                    }
-                }
-            }
-            return result;
-        }
-    }
-
-    private static class EmailPredicate implements Predicate {
-
-        /**
-         * The singleton instance.
-         */
-        public static Predicate INSTANCE = new EmailPredicate();
-
-        /**
-         * The email address node.
-         */
-        private static final String EMAIL_ADDRESS = "emailAddress";
-
-        /**
-         * Use the specified parameter to perform a test that returns true or false.
-         *
-         * @param object the object to evaluate, should not be changed
-         * @return true or false
-         */
-        public boolean evaluate(Object object) {
-            boolean result = false;
-            Contact contact = (Contact) object;
-            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                IMObjectBean bean = new IMObjectBean(contact);
-                if (!StringUtils.isEmpty(bean.getString(EMAIL_ADDRESS))) {
-                    result = true;
-                }
-            }
-            return result;
-        }
-
+        return contacts;
     }
 
 }

@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -55,9 +56,11 @@ public class CageScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param date         the date
      * @param days         the number of days to display
      * @param appointments the appointments
+     * @param rules        the appointment rules
      */
-    public CageScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> appointments) {
-        super(scheduleView, date, days, appointments);
+    public CageScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> appointments,
+                            AppointmentRules rules) {
+        super(scheduleView, date, days, appointments, rules);
 
         groups = new LinkedHashSet<>();
         CageScheduleGroup schedulesWithOutCageType = new CageScheduleGroup(null);

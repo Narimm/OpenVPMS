@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -53,15 +54,20 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
      */
     private Date endDate;
 
+    /**
+     * The appointment rules.
+     */
+    private final AppointmentRules rules;
 
     /**
      * Constructs an {@link AbstractScheduleEventGrid}.
      *
      * @param scheduleView the schedule view
      * @param date         the grid start and end date
+     * @param rules        the appointment rules
      */
-    public AbstractScheduleEventGrid(Entity scheduleView, Date date) {
-        this(scheduleView, date, date);
+    public AbstractScheduleEventGrid(Entity scheduleView, Date date, AppointmentRules rules) {
+        this(scheduleView, date, date, rules);
     }
 
     /**
@@ -70,9 +76,11 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
      * @param scheduleView the schedule view
      * @param startDate    the grid start date
      * @param endDate      the grid end date
+     * @param rules        the appointment rules
      */
-    public AbstractScheduleEventGrid(Entity scheduleView, Date startDate, Date endDate) {
+    public AbstractScheduleEventGrid(Entity scheduleView, Date startDate, Date endDate, AppointmentRules rules) {
         this.scheduleView = scheduleView;
+        this.rules = rules;
         setStartDate(startDate);
         setEndDate(endDate);
     }
@@ -184,10 +192,18 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
         }
         if (!found) {
             // event intersects an existing one, so create a new Schedule. Any blocking event will be shared.
-            column = new Schedule(match);
+            column = new Schedule(match, rules);
             columns.add(index + 1, column);
         }
         column.addEvent(event);
     }
 
+    /**
+     * Returns the appointment rules.
+     *
+     * @return the rules
+     */
+    protected AppointmentRules getAppointmentRules() {
+        return rules;
+    }
 }

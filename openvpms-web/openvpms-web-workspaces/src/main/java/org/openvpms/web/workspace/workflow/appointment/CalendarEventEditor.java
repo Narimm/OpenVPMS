@@ -47,7 +47,6 @@ import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSerie
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
-import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -316,7 +315,7 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
     protected void onStartTimeChanged() {
         Date start = getStartTime();
         if (start != null && slotSize != 0) {
-            Date rounded = SchedulingHelper.getSlotTime(start, slotSize, false);
+            Date rounded = rules.getSlotTime(start, slotSize, false);
             if (DateRules.compareTo(start, rounded) != 0) {
                 setStartTime(rounded, true);
             }
@@ -345,7 +344,7 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
             if (end.compareTo(start) < 0) {
                 calculateEndTime();
             } else if (slotSize != 0) {
-                Date rounded = SchedulingHelper.getSlotTime(end, slotSize, true);
+                Date rounded = rules.getSlotTime(end, slotSize, true);
                 if (DateRules.compareTo(end, rounded) != 0) {
                     setEndTime(rounded, true);
                 }
