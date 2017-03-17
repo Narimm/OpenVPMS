@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper.function;
@@ -23,7 +23,7 @@ import net.sf.jasperreports.functions.annotations.Function;
 import net.sf.jasperreports.functions.annotations.FunctionCategories;
 import net.sf.jasperreports.functions.annotations.FunctionParameter;
 import net.sf.jasperreports.functions.annotations.FunctionParameters;
-import org.openvpms.report.jasper.AbstractDataSource;
+import org.openvpms.report.jasper.DataSource;
 
 /**
  * Provides a JasperReport function to evaluate an xpath expression.
@@ -43,8 +43,8 @@ public class EvaluateFunction extends AbstractFunctionSupport {
     @FunctionParameters({@FunctionParameter("expression")})
     public Object EVALUATE(String expression) {
         JRDataSource dataSource = (JRDataSource) getContext().getParameterValue(JRParameter.REPORT_DATA_SOURCE, true);
-        if (dataSource instanceof AbstractDataSource) {
-            return ((AbstractDataSource) dataSource).evaluate(expression);
+        if (dataSource instanceof DataSource) {
+            return ((DataSource) dataSource).evaluate(expression);
         }
         return null;
     }
