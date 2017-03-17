@@ -100,7 +100,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     @Override
     public void process(PatientReminders state) {
         List<ObjectSet> reminders = state.getReminders();
-        populate(reminders);
+        populate(reminders, location);
 
         List<ReminderEvent> events = new ArrayList<>();
         for (ObjectSet reminder : reminders) {

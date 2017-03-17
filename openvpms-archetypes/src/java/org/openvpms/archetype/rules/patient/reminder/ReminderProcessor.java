@@ -56,7 +56,10 @@ import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorExc
  */
 public class ReminderProcessor {
 
-    public static final String REMINDER = "REMINDER";
+    /**
+     * Reminder contact purpose.
+     */
+    public static final String REMINDER_PURPOSE = "REMINDER";
 
     /**
      * Process reminders due on or before this date.
@@ -574,11 +577,11 @@ public class ReminderProcessor {
         int size = matches.size();
         if (template != null) {
             if (!disableSMS && template.getSMSTemplate() != null) {
-                matches.addAll(Contacts.findAll(contacts, new SMSMatcher(REMINDER, true, service)));
+                matches.addAll(Contacts.findAll(contacts, new SMSMatcher(REMINDER_PURPOSE, true, service)));
             }
-            matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(LOCATION, REMINDER, true, service)));
+            matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(LOCATION, REMINDER_PURPOSE, true, service)));
             if (template.getEmailTemplate() != null) {
-                matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(EMAIL, REMINDER, true, service)));
+                matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(EMAIL, REMINDER_PURPOSE, true, service)));
             }
         }
         return size != matches.size();
@@ -607,7 +610,7 @@ public class ReminderProcessor {
      */
     private boolean addSMSContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
         return template != null && template.getSMSTemplate() != null
-               && addContact(contacts, matches, new SMSMatcher(REMINDER, false, service));
+               && addContact(contacts, matches, new SMSMatcher(REMINDER_PURPOSE, false, service));
     }
 
     /**
@@ -631,7 +634,7 @@ public class ReminderProcessor {
      * @return {@code true} if a contact was matched, otherwise {@code false}
      */
     private boolean addContact(String shortName, List<Contact> contacts, Set<Contact> matches) {
-        PurposeMatcher matcher = new PurposeMatcher(shortName, REMINDER, false, service);
+        PurposeMatcher matcher = new PurposeMatcher(shortName, REMINDER_PURPOSE, false, service);
         return addContact(contacts, matches, matcher);
     }
 

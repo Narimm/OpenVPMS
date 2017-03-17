@@ -288,7 +288,7 @@ public abstract class PatientReminderProcessor {
     }
 
     /**
-     * Returns the practice location to use when send reminders to a customer.
+     * Returns the practice location to use when sending reminders to a customer.
      *
      * @param customer the customer
      * @return the customer's preferred practice location, or the fallback reminder configuration location if the
@@ -342,19 +342,21 @@ public abstract class PatientReminderProcessor {
      * Adds meta-data to reminders.
      *
      * @param reminders the reminders
+     * @param location  the customer location. May be {@code null}
      */
-    protected void populate(List<ObjectSet> reminders) {
+    protected void populate(List<ObjectSet> reminders, Party location) {
         for (ObjectSet set : reminders) {
-            populate(set);
+            populate(set, location);
         }
     }
 
     /**
      * Adds meta-data to a reminder.
      *
-     * @param set the reminder
+     * @param set      the reminder
+     * @param location  the customer location. May be {@code null}
      */
-    protected void populate(ObjectSet set) {
+    protected void populate(ObjectSet set, Party location) {
         Act reminder = getReminder(set);
         Act item = getItem(set);
         ActBean bean = new ActBean(reminder, service);
@@ -367,18 +369,19 @@ public abstract class PatientReminderProcessor {
         set.set("startTime", reminder.getActivityStartTime());
         set.set("endTime", reminder.getActivityEndTime());
         set.set("reminderCount", itemBean.getInt("count"));
+        set.set("location", location);
     }
 
     /**
      * Creates a context for a reminder.
      *
      * @param reminder the reminder set
+     * @param location the customer location. May be {@code null}
      * @return a new context
      */
-    protected Context createContext(ObjectSet reminder) {
+    protected Context createContext(ObjectSet reminder, Party location) {
         Party patient = getPatient(reminder);
         Party customer = getCustomer(reminder);
-        Party location = getLocation(customer);
         Context context = new LocalContext();
         context.setPatient(patient);
         context.setCustomer(customer);

@@ -128,6 +128,16 @@
         <servlet-class>org.openvpms.web.webdav.servlet.WebDAVEditorLauncherServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>BookingServlet</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>org.openvpms.booking.BookingApplication</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
@@ -173,15 +183,6 @@
         <url-pattern>/webstart/*</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>BookingServlet</servlet-name>
-        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>org.openvpms.booking.BookingApplication</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
     <servlet-mapping>
         <servlet-name>BookingServlet</servlet-name>
         <url-pattern>/ws/booking/v1/*</url-pattern>

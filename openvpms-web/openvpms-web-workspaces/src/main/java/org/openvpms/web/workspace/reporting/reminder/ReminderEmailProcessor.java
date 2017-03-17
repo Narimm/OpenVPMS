@@ -170,9 +170,13 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
                                      List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
                                      boolean resend, Party customer, Contact contact, Party location,
                                      DocumentTemplate template) {
-        Entity emailTemplate = template.getEmailTemplate();
-        if (emailTemplate == null) {
-            throw new ReportingException(TemplateMissingEmailText, template.getName());
+
+        Entity emailTemplate = null;
+        if (template != null && !reminders.isEmpty()) {
+            emailTemplate = template.getEmailTemplate();
+            if (emailTemplate == null) {
+                throw new ReportingException(TemplateMissingEmailText, template.getName());
+            }
         }
         return new EmailReminders(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location,
                                   template, emailTemplate, evaluator);
@@ -218,7 +222,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      */
     protected Mailer send(EmailReminders reminders) {
         ObjectSet set = reminders.getReminders().get(0);
-        Context context = createContext(set);
+        Context context = createContext(set, reminders.getLocation());
         Mailer mailer = factory.create(new CustomerMailContext(context));
         String body = reminders.getMessage(context);
         String to = reminders.getEmailAddress();

@@ -105,14 +105,35 @@ public class Reminders {
      * @return {@code true} if the reminders contains the reminder item, otherwise {@code false}
      */
     public static boolean contains(Act item, List<ObjectSet> reminders) {
+        return find(item, reminders) != null;
+    }
+
+    /**
+     * Finds a reminder {@link ObjectSet} containing the specified reminder item.
+     *
+     * @param item      the reminder item, an <em>act.patientReminderItem*</em>.
+     * @param reminders the reminders
+     * @return the reminder, or {@code null} if none is found
+     */
+    public static ObjectSet find(Act item, List<ObjectSet> reminders) {
         IMObjectReference reference = item.getObjectReference();
         for (ObjectSet set : reminders) {
-            Act act = (Act) set.get("item");
+            Act act = getItem(set);
             if (act.getObjectReference().equals(reference)) {
-                return true;
+                return set;
             }
         }
-        return false;
+        return null;
+    }
+
+    /**
+     * Returns the reminder item from a reminder {@link ObjectSet}.
+     *
+     * @param reminder the reminder. May be {@code null}
+     * @return the reminder item, or {@code null} if {@code reminder} is {@code null}
+     */
+    public static Act getItem(ObjectSet reminder) {
+        return (reminder != null) ? (Act) reminder.get("item") : null;
     }
 
 }
