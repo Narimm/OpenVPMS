@@ -102,7 +102,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
             if (contact != null) {
                 if (!reminders.isEmpty()) {
                     toProcess.addAll(reminders);
-                    populate(reminders);
+                    populate(reminders, location);
                     template = getTemplate(toProcess, groupBy);
                 }
             } else {

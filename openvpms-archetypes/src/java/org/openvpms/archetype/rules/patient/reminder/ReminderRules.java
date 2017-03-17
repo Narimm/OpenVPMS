@@ -91,11 +91,6 @@ public class ReminderRules {
     }
 
     /**
-     * The reminder contact classification code.
-     */
-    private static final String REMINDER = "REMINDER";
-
-    /**
      * Constructs a {@link ReminderRules}.
      *
      * @param service      the archetype service

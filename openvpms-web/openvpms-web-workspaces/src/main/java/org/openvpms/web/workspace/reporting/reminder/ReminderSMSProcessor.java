@@ -173,9 +173,12 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
                                        List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
                                        boolean resend, Party customer, Contact contact, Party location,
                                        DocumentTemplate template) {
-        Entity smsTemplate = template.getSMSTemplate();
-        if (smsTemplate == null) {
-            throw new ReportingException(TemplateMissingSMSText, template.getName());
+        Entity smsTemplate = null;
+        if (template != null && !reminders.isEmpty()) {
+            smsTemplate = template.getSMSTemplate();
+            if (smsTemplate == null) {
+                throw new ReportingException(TemplateMissingSMSText, template.getName());
+            }
         }
         return new SMSReminders(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location,
                                 template, smsTemplate, evaluator);

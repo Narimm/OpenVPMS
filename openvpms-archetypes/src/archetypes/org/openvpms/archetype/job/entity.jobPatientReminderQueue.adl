@@ -17,7 +17,7 @@
 <archetypes>
     <archetype name="entity.jobPatientReminderQueue.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity"
-               displayName="Job Configuration: Patient Reminder Queue">
+               displayName="Patient Reminder Queue">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100"
               defaultValue="'Patient Reminder Queue Job'"/>

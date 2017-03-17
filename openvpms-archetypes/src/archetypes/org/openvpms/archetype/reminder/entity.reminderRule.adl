@@ -28,12 +28,12 @@
         <node name="print" path="/details/print" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="list" path="/details/list" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="export" path="/details/export" type="java.lang.Boolean" defaultValue="false()"/>
-        <node name="sendTo" path="/details/sendTo" type="java.lang.String" defaultValue="'ANY'" minCardinality="1">
+        <node name="sendTo" path="/details/sendTo" type="java.lang.String" defaultValue="'FIRST'" minCardinality="1">
             <assertion name="lookup.local">
                 <propertyList name="entries">
-                    <property name="ALL" value="All"/>
                     <property name="FIRST" value="First"/>
                     <property name="ANY" value="Any"/>
+                    <property name="ALL" value="All"/>
                 </propertyList>
             </assertion>
         </node>

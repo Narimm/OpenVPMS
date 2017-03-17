@@ -179,7 +179,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     protected void log(PatientReminders state, CommunicationLogger logger) {
         String subject = Messages.get("reminder.log.list.subject");
         for (ObjectSet reminder : state.getReminders()) {
-            populate(reminder);
+            populate(reminder, location);
             Party customer = getCustomer(reminder);
             if (customer != null) {
                 Party patient = getPatient(reminder);

@@ -152,6 +152,14 @@ public class ReminderTestHelper extends TestHelper {
     }
 
     /**
+     * Creates an <em>entity.reminderRule</em> for contacts.
+     * @return a new rule
+     */
+    public static Entity createContactRule() {
+        return createRule(true, false, false, false, false, false, ReminderRule.SendTo.ANY);
+    }
+
+    /**
      * Creates an <em>entity.reminderRule</em> for email.
      *
      * @return a new rule

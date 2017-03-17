@@ -62,12 +62,12 @@ public class ReminderItemTableModel extends AbstractIMTableModel<ObjectSet> {
     /**
      * Process by column index.
      */
-    private static final int PROCESS_BY_INDEX = STATUS_INDEX + 1;
+    private static final int SEND_DATE_INDEX = STATUS_INDEX + 1;
 
     /**
      * Due date column index.
      */
-    private static final int DUE_DATE_INDEX = PROCESS_BY_INDEX + 1;
+    private static final int DUE_DATE_INDEX = SEND_DATE_INDEX + 1;
 
     /**
      * Customer column index.
@@ -131,7 +131,7 @@ public class ReminderItemTableModel extends AbstractIMTableModel<ObjectSet> {
             case ARCHETYPE_INDEX:
                 return DescriptorHelper.getDisplayName(getReminderItem(object));
             case STATUS_INDEX:
-            case PROCESS_BY_INDEX:
+            case SEND_DATE_INDEX:
             case DUE_DATE_INDEX:
             case REMINDER_COUNT_INDEX:
             case ERROR_INDEX:
@@ -173,7 +173,7 @@ public class ReminderItemTableModel extends AbstractIMTableModel<ObjectSet> {
         List<ArchetypeDescriptor> reminderArchetype = DescriptorHelper.getArchetypeDescriptors(REMINDER);
         model.addColumn(createTableColumn(ARCHETYPE_INDEX, ARCHETYPE));
         model.addColumn(new DescriptorTableColumn(STATUS_INDEX, "status", itemArchetypes));
-        model.addColumn(new DescriptorTableColumn(PROCESS_BY_INDEX, "startTime", itemArchetypes));
+        model.addColumn(new DescriptorTableColumn(SEND_DATE_INDEX, "startTime", itemArchetypes));
         model.addColumn(new DescriptorTableColumn(DUE_DATE_INDEX, "endTime", itemArchetypes));
         model.addColumn(createTableColumn(CUSTOMER_INDEX, "patientremindertablemodel.customer"));
         model.addColumn(createColumn(PATIENT_INDEX, getDisplayName(REMINDER, "patient")));
