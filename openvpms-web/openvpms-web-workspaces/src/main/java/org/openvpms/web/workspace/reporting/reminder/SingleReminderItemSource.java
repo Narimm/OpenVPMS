@@ -17,12 +17,12 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -37,9 +37,9 @@ import java.util.List;
 public class SingleReminderItemSource implements ReminderItemSource {
 
     /**
-     * The reminder set, or {@code null} if the patient or customer cannot be determined.
+     * The reminder event, or {@code null} if the patient or customer cannot be determined.
      */
-    private final ObjectSet set;
+    private final ReminderEvent event;
 
     /**
      * The reminder item short name.
@@ -56,18 +56,14 @@ public class SingleReminderItemSource implements ReminderItemSource {
         this.shortNames = new String[]{item.getArchetypeId().getShortName()};
         ActBean bean = new ActBean(reminder);
         Party patient = (Party) bean.getNodeParticipant("patient");
-        ObjectSet set = null;
+        ReminderEvent event = null;
         if (patient != null) {
             Party customer = ServiceHelper.getBean(PatientRules.class).getOwner(patient);
             if (customer != null) {
-                set = new ObjectSet();
-                set.set("reminder", reminder);
-                set.set("item", item);
-                set.set("customer", customer);
-                set.set("patient", patient);
+                event = new ReminderEvent(reminder, item, patient, customer);
             }
         }
-        this.set = set;
+        this.event = event;
     }
 
     /**
@@ -84,8 +80,8 @@ public class SingleReminderItemSource implements ReminderItemSource {
      *
      * @return all items that match the query
      */
-    public List<ObjectSet> all() {
-        return set == null ? Collections.<ObjectSet>emptyList() : Collections.singletonList(set);
+    public List<ReminderEvent> all() {
+        return event == null ? Collections.<ReminderEvent>emptyList() : Collections.singletonList(event);
     }
 
     /**
@@ -94,9 +90,9 @@ public class SingleReminderItemSource implements ReminderItemSource {
      * @return the items matching the query
      */
     public Iterable<Reminders> query() {
-        List<ObjectSet> reminders = new ArrayList<>();
-        if (set != null) {
-            reminders.add(set);
+        List<ReminderEvent> reminders = new ArrayList<>();
+        if (event != null) {
+            reminders.add(event);
         }
         return Collections.singletonList(new Reminders(reminders, ReminderType.GroupBy.NONE));
     }
@@ -107,7 +103,7 @@ public class SingleReminderItemSource implements ReminderItemSource {
      * @return the number of items matching
      */
     public int count() {
-        return set == null ? 0 : 1;
+        return event == null ? 0 : 1;
     }
 
 }

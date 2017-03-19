@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderGroupingPolicy;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
@@ -31,6 +32,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -92,10 +94,15 @@ public class ReminderItemQuerySource implements ReminderItemSource {
      * @return all items that match the query
      */
     @Override
-    public List<ObjectSet> all() {
+    public List<ReminderEvent> all() {
+        List<ReminderEvent> result = new ArrayList<>();
         ArchetypeQuery query = factory.createQuery();
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
-        return ServiceHelper.getArchetypeService().getObjects(query).getResults();
+        List<ObjectSet> sets = ServiceHelper.getArchetypeService().getObjects(query).getResults();
+        for (ObjectSet set : sets) {
+            sets.add(new ReminderEvent(set));
+        }
+        return result;
     }
 
     /**

@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -41,7 +42,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * The reminders.
      */
-    private final List<ObjectSet> reminders;
+    private final List<ReminderEvent> reminders;
 
     /**
      * The processor.
@@ -162,7 +163,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      *
      * @return the reminders
      */
-    public List<ObjectSet> getReminders() {
+    public List<ReminderEvent> getReminders() {
         return reminders;
     }
 
@@ -186,7 +187,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
             setStatus(null);
         }
         state = null;
-        List<ObjectSet> reminders = getReminders();
+        List<ReminderEvent> reminders = getReminders();
         if (!reminders.isEmpty()) {
             try {
                 state = processor.prepare(reminders, ReminderType.GroupBy.NONE, new Date(), getResend());
@@ -209,13 +210,6 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     protected void completed() {
         updateReminders();
         notifyCompleted();
-    }
-
-    /**
-     * Restarts processing.
-     */
-    public void restart() {
-        // no-op
     }
 
     /**

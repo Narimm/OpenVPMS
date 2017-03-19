@@ -11,19 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
 
 import org.apache.commons.io.FilenameUtils;
+import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.report.ReportException;
 import org.openvpms.web.component.im.doc.FileNameFormatter;
 
 import java.util.Iterator;
+
+import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
 
 
 /**
@@ -114,12 +119,25 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * Returns the document template associated with the template entity.
      *
-     * @return the document, or {@code null} if none can be found
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return the document
+     * @throws ReportException   if the template cannot be found
+     * @throws DocumentException if the template doesn't have a document
      */
     public Document getTemplateDocument() {
         DocumentTemplate template = getTemplate();
-        return (template != null) ? template.getDocument() : null;
+        if (template == null) {
+            String shortName = getShortName();
+            String displayName = DescriptorHelper.getDisplayName(shortName);
+            if (displayName == null) {
+                displayName = shortName;
+            }
+            throw new ReportException(NoTemplateForArchetype, displayName);
+        }
+        Document doc = template.getDocument();
+        if (doc == null) {
+            throw new DocumentException(DocumentException.ErrorCode.TemplateHasNoDocument, template.getName());
+        }
+        return doc;
     }
 
     /**

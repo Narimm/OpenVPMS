@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -33,7 +33,7 @@ public class DocumentExceptionTestCase {
     @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     9, DocumentException.ErrorCode.values().length);
+                     11, DocumentException.ErrorCode.values().length);
         checkException(DocumentException.ErrorCode.UnsupportedDoc,
                        "File 'foo' has an unsupported content type: bar", "foo", "bar");
         checkException(DocumentException.ErrorCode.ReadError, "Failed to read foo", "foo");
@@ -44,6 +44,9 @@ public class DocumentExceptionTestCase {
         checkException(DocumentException.ErrorCode.InvalidMediaTray, "Invalid media tray: foo", "foo");
         checkException(DocumentException.ErrorCode.InvalidPaperSize, "Invalid paper size: foo", "foo");
         checkException(DocumentException.ErrorCode.InvalidSides, "Invalid sides: foo", "foo");
+        checkException(DocumentException.ErrorCode.TemplateHasNoDocument, "Document Template 'foo' has no document",
+                       "foo");
+        checkException(DocumentException.ErrorCode.DocumentHasNoTemplate, "Document has no template");
     }
 
     /**

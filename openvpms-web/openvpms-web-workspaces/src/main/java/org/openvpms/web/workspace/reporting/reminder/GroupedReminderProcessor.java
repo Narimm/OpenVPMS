@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCount;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
@@ -29,7 +30,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
@@ -84,25 +84,25 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @throws ReportingException if the reminders cannot be prepared
      */
     @Override
-    protected PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
-                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+    protected PatientReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                                       List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
                                        boolean resend) {
         DocumentTemplate template = null;
-        List<ObjectSet> toProcess = new ArrayList<>();
+        List<ReminderEvent> toProcess = new ArrayList<>();
         Party customer = null;
         Contact contact = null;
         Party location = null;
         if (!reminders.isEmpty()) {
-            ObjectSet set = reminders.get(0);
-            customer = getCustomer(set);
+            ReminderEvent event = reminders.get(0);
+            customer = event.getCustomer();
             if (customer != null) {
-                location = getLocation(customer);
+                contact = getContact(customer);
             }
-            contact = getContact(set);
             if (contact != null) {
+                location = getLocation(customer);
                 if (!reminders.isEmpty()) {
                     toProcess.addAll(reminders);
-                    populate(reminders, location);
+                    populate(reminders, contact, location);
                     template = getTemplate(toProcess, groupBy);
                 }
             } else {
@@ -129,8 +129,8 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @return the reminders to process
      * @throws ReportingException if the reminders cannot be prepared
      */
-    protected GroupedReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
-                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+    protected GroupedReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                                       List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
                                        boolean resend, Party customer, Contact contact, Party location,
                                        DocumentTemplate template) {
         return new GroupedReminders(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location,
@@ -144,10 +144,10 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @param reminders the reminder sets
      * @param toSave    the updated reminder items
      */
-    protected void noContact(List<ObjectSet> reminders, List<Act> toSave) {
+    protected void noContact(List<ReminderEvent> reminders, List<Act> toSave) {
         String message = Messages.format("reporting.reminder.nocontact",
                                          DescriptorHelper.getDisplayName(getContactArchetype(), getService()));
-        for (ObjectSet event : reminders) {
+        for (ReminderEvent event : reminders) {
             Act item = updateItem(event, ReminderItemStatus.ERROR, message);
             toSave.add(item);
         }
@@ -161,7 +161,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @return the document template
      * @throws ReportingException if the document template cannot be located
      */
-    protected DocumentTemplate getTemplate(List<ObjectSet> reminders, ReminderType.GroupBy groupBy) {
+    protected DocumentTemplate getTemplate(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy) {
         DocumentTemplate template;
         if (reminders.size() > 1) {
             if (groupBy == ReminderType.GroupBy.CUSTOMER) {
@@ -178,7 +178,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
                 throw new IllegalArgumentException("Multiple reminders specified for incorrect groupBy: " + groupBy);
             }
         } else {
-            ObjectSet first = reminders.get(0);
+            ReminderEvent first = reminders.get(0);
             ReminderType reminderType = getReminderType(first);
             if (reminderType == null) {
                 throw new IllegalStateException("Cannot determine reminder type");
@@ -200,11 +200,11 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     /**
      * Returns the contact to use.
      *
-     * @param reminder the reminder set
+     * @param customer the customer
      * @return the contact, or {@code null} if none is found
      */
-    protected Contact getContact(ObjectSet reminder) {
-        return getContact(reminder, createContactMatcher());
+    protected Contact getContact(Party customer) {
+        return getContact(customer, createContactMatcher());
     }
 
     /**

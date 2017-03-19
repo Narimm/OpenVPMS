@@ -135,14 +135,6 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
-     * Restarts processing.
-     */
-    public void restart() {
-        setIterator(items.iterator());
-        lastRefresh = 0;
-    }
-
-    /**
      * Returns the expected no. of items to process.
      *
      * @return the expected no. of items to process

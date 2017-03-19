@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
@@ -27,7 +28,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
@@ -96,7 +96,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      */
     @Override
     public String getArchetype() {
-        return ReminderArchetypes.EXPORT_REMINDER;
+        return ReminderArchetypes.LIST_REMINDER;
     }
 
     /**
@@ -118,8 +118,8 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     @Override
     public void process(PatientReminders reminders) {
         List<Act> acts = new ArrayList<>();
-        for (ObjectSet reminder : reminders.getReminders()) {
-            acts.add(getReminder(reminder));
+        for (ReminderEvent reminder : reminders.getReminders()) {
+            acts.add(reminder.getReminder());
         }
         Context context = new LocalContext();
         context.setLocation(location);
@@ -159,13 +159,15 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * @return the reminders to process
      */
     @Override
-    protected PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
-                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+    protected PatientReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                                       List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
                                        boolean resend) {
         ContactMatcher matcher = createContactMatcher(ContactArchetypes.PHONE);
-        for (ObjectSet reminder : reminders) {
-            Contact contact = getContact(reminder, matcher);
-            reminder.set("contact", contact);
+        for (ReminderEvent reminder : reminders) {
+            Party customer = reminder.getCustomer();
+            Party location = getLocation(customer);
+            Contact contact = getContact(customer, matcher);
+            populate(reminder, contact, location);
         }
         return new PatientReminders(reminders, groupBy, cancelled, errors, updated, resend);
     }
@@ -178,17 +180,14 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      */
     protected void log(PatientReminders state, CommunicationLogger logger) {
         String subject = Messages.get("reminder.log.list.subject");
-        for (ObjectSet reminder : state.getReminders()) {
-            populate(reminder, location);
-            Party customer = getCustomer(reminder);
-            if (customer != null) {
-                Party patient = getPatient(reminder);
-                String notes = getNote(reminder);
-                Party location = getLocation(customer);
-                Contact contact = (Contact) reminder.get("contact");
-                String description = contact != null ? contact.getDescription() : "";
-                logger.logPhone(customer, patient, description, subject, COMMUNICATION_REASON, null, notes, location);
-            }
+        for (ReminderEvent reminder : state.getReminders()) {
+            Party customer = reminder.getCustomer();
+            Party patient = reminder.getPatient();
+            String notes = getNote(reminder);
+            Party location = reminder.getLocation();
+            Contact contact = reminder.getContact();
+            String description = contact != null ? contact.getDescription() : "";
+            logger.logPhone(customer, patient, description, subject, COMMUNICATION_REASON, null, notes, location);
         }
     }
 

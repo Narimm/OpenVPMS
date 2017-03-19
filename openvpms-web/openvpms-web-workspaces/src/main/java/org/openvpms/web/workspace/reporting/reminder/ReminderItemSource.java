@@ -16,8 +16,8 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
-import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public interface ReminderItemSource {
      *
      * @return all items that match the query
      */
-    List<ObjectSet> all();
+    List<ReminderEvent> all();
 
     /**
      * Executes the query.

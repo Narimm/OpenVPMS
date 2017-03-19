@@ -17,11 +17,11 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 
 import java.util.List;
@@ -70,9 +70,9 @@ public class GroupedReminders extends PatientReminders {
      * @param location  the practice location. May be {@code null} if there are no reminders to send
      * @param template  the document template to use. May be {@code null} if there are no reminders to send
      */
-    public GroupedReminders(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
-                            List<ObjectSet> cancelled,
-                            List<ObjectSet> errors, List<Act> updated, boolean resend,
+    public GroupedReminders(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                            List<ReminderEvent> cancelled,
+                            List<ReminderEvent> errors, List<Act> updated, boolean resend,
                             Party customer, Contact contact, Party location, DocumentTemplate template) {
         super(reminders, groupBy, cancelled, errors, updated, resend);
         this.customer = customer;
@@ -128,10 +128,10 @@ public class GroupedReminders extends PatientReminders {
         Context context = super.createContext(practice);
         context.setCustomer(customer);
         context.setLocation(location);
-        List<ObjectSet> reminders = getReminders();
+        List<ReminderEvent> reminders = getReminders();
         if (reminders.size() == 1 || getGroupBy() == ReminderType.GroupBy.PATIENT) {
-            ObjectSet set = reminders.get(0);
-            context.setPatient((Party) set.get("patient"));
+            ReminderEvent reminder = reminders.get(0);
+            context.setPatient(reminder.getPatient());
         }
         return context;
     }

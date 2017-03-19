@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -168,7 +169,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         IMObjectBean location = new IMObjectBean(event.getContact(), service);
         IMObjectBean patient = new IMObjectBean(event.getPatient(), service);
         ActBean reminder = new ActBean(event.getReminder(), service);
-        ReminderType reminderType = event.getReminderType();
+        Entity reminderType = event.getReminderType();
 
         String[] line = getExportData(event, customer, location, patient, reminder, reminderType);
         writer.writeNext(line);
@@ -186,7 +187,7 @@ public class ReminderCSVExporter implements ReminderExporter {
      * @return the data to export
      */
     protected String[] getExportData(ReminderEvent event, IMObjectBean customer, IMObjectBean location,
-                                     IMObjectBean patient, ActBean reminder, ReminderType reminderType) {
+                                     IMObjectBean patient, ActBean reminder, Entity reminderType) {
         Party practiceLocation = (Party) customer.getNodeTargetObject("practice");
         String customerId = Long.toString(customer.getObject().getId());
         String title = getLookup(customer, "title");
@@ -208,7 +209,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         String sex = getLookup(patient, "sex");
         String colour = patient.getString("colour");
         String dateOfBirth = getDate(patient.getDate("dateOfBirth"));
-        String reminderTypeId = Long.toString(reminderType.getEntity().getId());
+        String reminderTypeId = Long.toString(reminderType.getId());
         String reminderTypeName = reminderType.getName();
         String dueDate = getDate(event.getReminder().getActivityEndTime());
         String reminderCount = reminder.getString("reminderCount");
