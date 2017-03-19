@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
@@ -166,8 +167,8 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * @throws ReportingException if the reminders cannot be prepared
      */
     @Override
-    protected EmailReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
-                                     List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+    protected EmailReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                                     List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
                                      boolean resend, Party customer, Contact contact, Party location,
                                      DocumentTemplate template) {
 
@@ -201,16 +202,16 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
     @Override
     protected void log(PatientReminders state, CommunicationLogger logger) {
         Party location = ((EmailReminders) state).getLocation();
-        for (ObjectSet set : state.getReminders()) {
-            String notes = getNote(set);
-            String[] to = (String[]) set.get("to");
-            String[] cc = (String[]) set.get("cc");
-            String[] bcc = (String[]) set.get("bcc");
-            String subject = set.getString("subject");
-            String body = set.getString("body");
-            String attachments = set.getString("attachments");
+        for (ReminderEvent event : state.getReminders()) {
+            String notes = getNote(event);
+            String[] to = (String[]) event.get("to");
+            String[] cc = (String[]) event.get("cc");
+            String[] bcc = (String[]) event.get("bcc");
+            String subject = event.getString("subject");
+            String body = event.getString("body");
+            String attachments = event.getString("attachments");
 
-            logger.logEmail(getCustomer(set), getPatient(set), to, cc, bcc, subject, COMMUNICATION_REASON, body,
+            logger.logEmail(event.getCustomer(), event.getPatient(), to, cc, bcc, subject, COMMUNICATION_REASON, body,
                             notes, attachments, location);
         }
     }
@@ -221,8 +222,8 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * @param reminders the reminders to email
      */
     protected Mailer send(EmailReminders reminders) {
-        ObjectSet set = reminders.getReminders().get(0);
-        Context context = createContext(set, reminders.getLocation());
+        ReminderEvent event = reminders.getReminders().get(0);
+        Context context = createContext(event, reminders.getLocation());
         Mailer mailer = factory.create(new CustomerMailContext(context));
         String body = reminders.getMessage(context);
         String to = reminders.getEmailAddress();

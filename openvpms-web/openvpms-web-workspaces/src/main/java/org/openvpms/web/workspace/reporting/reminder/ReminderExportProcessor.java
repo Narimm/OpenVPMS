@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -99,15 +98,9 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      */
     @Override
     public void process(PatientReminders state) {
-        List<ObjectSet> reminders = state.getReminders();
-        populate(reminders, location);
-
-        List<ReminderEvent> events = new ArrayList<>();
-        for (ObjectSet reminder : reminders) {
-            events.add(createEvent(reminder));
-        }
+        List<ReminderEvent> reminders = state.getReminders();
         ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
-        Document document = exporter.export(events);
+        Document document = exporter.export(reminders);
         DownloadServlet.startDownload(document);
     }
 
@@ -130,15 +123,16 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      * @return the reminders to process
      */
     @Override
-    protected PatientReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
-                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+    protected PatientReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                                       List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
                                        boolean resend) {
-        List<ObjectSet> toProcess = new ArrayList<>();
+        List<ReminderEvent> toProcess = new ArrayList<>();
         ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
-        for (ObjectSet reminder : reminders) {
-            Contact contact = getContact(reminder, matcher);
+        for (ReminderEvent reminder : reminders) {
+            Party customer = reminder.getCustomer();
+            Contact contact = getContact(customer, matcher);
             if (contact != null) {
-                reminder.set("contact", contact);
+                populate(reminder, contact, getLocation(customer));
                 toProcess.add(reminder);
             } else {
                 String message = Messages.format("reporting.reminder.nocontact", DescriptorHelper.getDisplayName(
@@ -159,20 +153,14 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      */
     @Override
     protected void log(PatientReminders state, CommunicationLogger logger) {
-        List<ObjectSet> reminders = state.getReminders();
+        List<ReminderEvent> reminders = state.getReminders();
         String subject = Messages.get("reminder.log.export.subject");
-        for (ObjectSet reminder : reminders) {
-            Contact contact = (Contact) reminder.get("contact");
+        for (ReminderEvent reminder : reminders) {
+            Contact contact = reminder.getContact();
             String notes = getNote(reminder);
-            logger.logMail(getCustomer(reminder), getPatient(reminder), contact.getDescription(),
+            logger.logMail(reminder.getCustomer(), reminder.getPatient(), contact.getDescription(),
                            subject, COMMUNICATION_REASON, null, notes, location);
         }
-    }
-
-    private ReminderEvent createEvent(ObjectSet reminder) {
-        return new ReminderEvent(ReminderEvent.Action.EXPORT, getReminder(reminder),
-                                 getReminderType(reminder), getPatient(reminder),
-                                 getCustomer(reminder), (Contact) reminder.get("contact"), null);
     }
 
 }

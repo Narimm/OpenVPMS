@@ -16,11 +16,11 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -66,14 +66,14 @@ public abstract class AbstractPatientReminderPreviewer implements PatientReminde
      * @param sent       if {@code true}, the reminder items have been sent previously
      */
     @Override
-    public void preview(Act item, List<ObjectSet> reminders, ReminderType.GroupBy groupBy, Date cancelDate,
+    public void preview(Act item, List<ReminderEvent> reminders, ReminderType.GroupBy groupBy, Date cancelDate,
                         boolean sent) {
         PatientReminders state = processor.prepare(reminders, groupBy, cancelDate, sent);
         if (!Reminders.contains(item, state.getReminders())) {
             if (Reminders.contains(item, state.getCancelled())) {
                 InformationDialog.show(Messages.get("reporting.reminder.send.cancelled"));
             } else {
-                item = Reminders.getItem(Reminders.find(item, state.getErrors()));
+                item = Reminders.findItem(item, state.getErrors());
                 String error = null;
                 if (item != null) {
                     ActBean bean = new ActBean(item);

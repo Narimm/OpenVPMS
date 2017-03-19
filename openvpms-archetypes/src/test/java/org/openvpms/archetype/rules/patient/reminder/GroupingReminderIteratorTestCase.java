@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -346,15 +345,15 @@ public class GroupingReminderIteratorTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Returns the items from a group of sets.
+     * Returns the items from a group of events.
      *
-     * @param sets the sets
+     * @param events the reminder events
      * @return the reminder items
      */
-    private List<Act> getItems(List<ObjectSet> sets) {
+    private List<Act> getItems(List<ReminderEvent> events) {
         List<Act> result = new ArrayList<>();
-        for (ObjectSet set : sets) {
-            result.add((Act) set.get("item"));
+        for (ReminderEvent event : events) {
+            result.add(event.getItem());
         }
         return result;
     }

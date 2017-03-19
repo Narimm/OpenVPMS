@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -26,6 +27,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,8 +54,7 @@ public class SMSReminders extends GroupedReminders {
 
     /**
      * Constructs a {@link GroupedReminders}.
-     *
-     * @param reminders   the reminders to send
+     *  @param reminders   the reminders to send
      * @param groupBy     the reminder grouping policy. This is used to determine which document template, if any, is
      *                    selected to process reminders.
      * @param cancelled   reminders that have been cancelled
@@ -67,8 +68,8 @@ public class SMSReminders extends GroupedReminders {
      * @param smsTemplate the SMS template. May be {@code null} if there are no reminders to send
      * @param evaluator   the SMS evaluator
      */
-    public SMSReminders(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, List<ObjectSet> cancelled,
-                        List<ObjectSet> errors, List<Act> updated, boolean resend, Party customer, Contact contact,
+    public SMSReminders(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy, List<ReminderEvent> cancelled,
+                        List<ReminderEvent> errors, List<Act> updated, boolean resend, Party customer, Contact contact,
                         Party location, DocumentTemplate template, Entity smsTemplate, ReminderSMSEvaluator evaluator) {
         super(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location, template);
         this.smsTemplate = smsTemplate;
@@ -102,19 +103,21 @@ public class SMSReminders extends GroupedReminders {
      */
     public String getText(Party practice) {
         String result;
-        List<ObjectSet> reminders = getReminders();
+        List<ReminderEvent> reminders = getReminders();
         Party customer = getCustomer();
         Party location = getLocation();
         try {
             if (reminders.size() == 1) {
-                ObjectSet reminder = reminders.get(0);
-                Act act = getReminder(reminder);
-                Party patient = (Party) reminder.get("patient");
-                result = evaluator.evaluate(smsTemplate, act, customer, patient, location, practice);
+                ReminderEvent event = reminders.get(0);
+                Act reminder = event.getReminder();
+                Party patient = (Party) event.get("patient");
+                result = evaluator.evaluate(smsTemplate, reminder, customer, patient, location, practice);
             } else {
-                ObjectSet reminder = reminders.get(0);
-                Party patient = (Party) reminder.get("patient"); // pass the first patient.
-                result = evaluator.evaluate(smsTemplate, reminders, customer, patient, location, practice);
+                ReminderEvent event = reminders.get(0);
+                Party patient = event.getPatient(); // pass the first patient.
+                List<ObjectSet> sets = new ArrayList<>();
+                sets.addAll(reminders);
+                result = evaluator.evaluate(smsTemplate, sets, customer, patient, location, practice);
             }
         } catch (Throwable exception) {
             throw new ReportingException(ReportingException.ErrorCode.SMSEvaluationFailed, exception,

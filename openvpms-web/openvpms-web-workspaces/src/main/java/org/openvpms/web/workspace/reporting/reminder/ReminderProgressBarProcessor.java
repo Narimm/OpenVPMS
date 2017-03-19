@@ -159,7 +159,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
         try {
             currentState = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), new Date(), resend);
             if (!currentState.getReminders().isEmpty()) {
-                processor.process(currentState);
+                process(currentState);
                 if (processor.isAsynchronous()) {
                     // need to process these reminders asynchronously, so suspend
                     setSuspend(true);
@@ -172,6 +172,24 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
         } catch (Throwable exception) {
             processError(exception);
         }
+    }
+
+    /**
+     * Processes reminders.
+     *
+     * @param reminders the reminders
+     */
+    protected void process(PatientReminders reminders) {
+        processor.process(reminders);
+    }
+
+    /**
+     * Returns the reminder processor.
+     *
+     * @return the reminder processor
+     */
+    protected PatientReminderProcessor getProcessor() {
+        return processor;
     }
 
     /**

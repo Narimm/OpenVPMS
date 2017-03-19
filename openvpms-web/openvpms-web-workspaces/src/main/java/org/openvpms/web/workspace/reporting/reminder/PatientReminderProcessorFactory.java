@@ -256,7 +256,7 @@ public class PatientReminderProcessorFactory {
      */
     protected ReminderBatchProcessor createBatchPrintProcessor(ReminderItemSource query, Statistics statistics) {
         ReminderPrintProcessor processor = createPrintProcessor();
-        return new ReminderPrintProgressBarProcessor(query, processor, statistics);
+        return new ReminderPrintProgressBarProcessor(query, processor, statistics, help);
     }
 
     /**

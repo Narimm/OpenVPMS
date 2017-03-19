@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -23,6 +24,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +39,7 @@ public class PatientReminders {
     /**
      * The reminders to process.
      */
-    private final List<ObjectSet> reminders;
+    private final List<ReminderEvent> reminders;
 
     /**
      * The reminder grouping policy. This is used to determine which document template, if any, is selected to process
@@ -48,12 +50,12 @@ public class PatientReminders {
     /**
      * Cancelled reminders.
      */
-    private final List<ObjectSet> cancelled;
+    private final List<ReminderEvent> cancelled;
 
     /**
      * Reminders in error.
      */
-    private final List<ObjectSet> errors;
+    private final List<ReminderEvent> errors;
 
     /**
      * Reminders or their items that have been updated.
@@ -76,8 +78,8 @@ public class PatientReminders {
      * @param updated   reminders/reminder items that have been updated
      * @param resend    determines if reminders are being resent
      */
-    public PatientReminders(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, List<ObjectSet> cancelled,
-                            List<ObjectSet> errors, List<Act> updated, boolean resend) {
+    public PatientReminders(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy, List<ReminderEvent> cancelled,
+                            List<ReminderEvent> errors, List<Act> updated, boolean resend) {
         this.reminders = reminders;
         this.groupBy = groupBy;
         this.cancelled = cancelled;
@@ -91,7 +93,7 @@ public class PatientReminders {
      *
      * @return the reminders
      */
-    public List<ObjectSet> getReminders() {
+    public List<ReminderEvent> getReminders() {
         return reminders;
     }
 
@@ -127,7 +129,7 @@ public class PatientReminders {
      *
      * @return the cancelled reminders
      */
-    public List<ObjectSet> getCancelled() {
+    public List<ReminderEvent> getCancelled() {
         return cancelled;
     }
 
@@ -136,7 +138,7 @@ public class PatientReminders {
      *
      * @return the reminders in error
      */
-    public List<ObjectSet> getErrors() {
+    public List<ReminderEvent> getErrors() {
         return errors;
     }
 
@@ -175,13 +177,15 @@ public class PatientReminders {
     }
 
     /**
-     * Returns the reminder act associated with a reminder set.
+     * Returns the supplied remidners as a collection of {@link ObjectSet}s.
      *
-     * @param reminder the reminder set
-     * @return the reminder act
+     * @param reminders the reminders
+     * @return the reminders as {@link ObjectSet}s
      */
-    public Act getReminder(ObjectSet reminder) {
-        return (Act) reminder.get("reminder");
+    public List<ObjectSet> getObjectSets(List<ReminderEvent> reminders) {
+        List<ObjectSet> sets = new ArrayList<>();
+        sets.addAll(reminders);
+        return sets;
     }
 
 }

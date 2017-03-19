@@ -70,17 +70,17 @@ public class GroupingReminderIterator implements Iterator<Reminders> {
     /**
      * Reminders grouped by customer.
      */
-    private List<ObjectSet> remindersByCustomer;
+    private List<ReminderEvent> remindersByCustomer;
 
     /**
      * Reminders grouped by patient.
      */
-    private List<ObjectSet> remindersByPatient;
+    private List<ReminderEvent> remindersByPatient;
 
     /**
      * Reminders with no group.
      */
-    private List<ObjectSet> ungroupedReminders;
+    private List<ReminderEvent> ungroupedReminders;
 
     /**
      * The next reminders to process.
@@ -235,11 +235,12 @@ public class GroupingReminderIterator implements Iterator<Reminders> {
      * @param set  the reminder set
      * @return the list
      */
-    private List<ObjectSet> add(List<ObjectSet> list, ObjectSet set) {
+    private List<ReminderEvent> add(List<ReminderEvent> list, ObjectSet set) {
         if (list == null) {
             list = new ArrayList<>();
         }
-        list.add(set);
+        list.add(new ReminderEvent((Act) set.get("reminder"), (Act) set.get("item"), (Party) set.get("patient"),
+                                   (Party) set.get("customer")));
         return list;
     }
 

@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -142,13 +143,14 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
     public void process(PatientReminders reminders) {
         GroupedReminders groupedReminders = (GroupedReminders) reminders;
         DocumentTemplateLocator locator = new StaticDocumentTemplateLocator(groupedReminders.getTemplate());
-        List<ObjectSet> sets = reminders.getReminders();
+        List<ReminderEvent> events = reminders.getReminders();
         Context context = reminders.createContext(getPractice());
-        if (sets.size() > 1) {
+        if (events.size() > 1) {
+            List<ObjectSet> sets = reminders.getObjectSets(events);
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator, context);
             print(printer, context);
         } else {
-            Act reminder = getReminder(sets.get(0));
+            Act reminder = events.get(0).getReminder();
             IMPrinter<Act> printer = new IMObjectReportPrinter<>(reminder, locator, context);
             print(printer, context);
         }
@@ -177,9 +179,9 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
         Contact contact = reminders.getContact();
         Party location = reminders.getLocation();
         String subject = Messages.get("reminder.log.mail.subject");
-        for (ObjectSet reminder : state.getReminders()) {
+        for (ReminderEvent reminder : state.getReminders()) {
             String notes = getNote(reminder);
-            Party patient = getPatient(reminder);
+            Party patient = reminder.getPatient();
             logger.logMail(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, null, notes,
                            location);
         }

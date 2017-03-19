@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -60,8 +61,7 @@ public class EmailReminders extends GroupedReminders {
 
     /**
      * Constructs a {@link EmailReminders}.
-     *
-     * @param reminders     the reminders to send
+     *  @param reminders     the reminders to send
      * @param groupBy       the reminder grouping policy. This is used to determine which document template, if any, is
      *                      selected to process reminders.
      * @param cancelled     reminders that have been cancelled
@@ -75,9 +75,9 @@ public class EmailReminders extends GroupedReminders {
      * @param emailTemplate the email template to use. May be {@code null} if there are no reminders to send
      * @param evaluator     the template evaluator
      */
-    public EmailReminders(List<ObjectSet> reminders, ReminderType.GroupBy groupBy, List<ObjectSet> cancelled,
-                          List<ObjectSet> errors, List<Act> updated, boolean resend, Party customer, Contact contact,
-                          Party location, DocumentTemplate template, Entity emailTemplate,
+    public EmailReminders(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy, List<ReminderEvent> cancelled,
+                          List<ReminderEvent> errors, List<Act> updated, boolean resend, Party customer,
+                          Contact contact, Party location, DocumentTemplate template, Entity emailTemplate,
                           EmailTemplateEvaluator evaluator) {
         super(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location, template);
         this.emailTemplate = emailTemplate;
@@ -116,9 +116,9 @@ public class EmailReminders extends GroupedReminders {
      */
     public String getMessage(Context context) {
         String body = null;
-        List<ObjectSet> reminders = getReminders();
+        List<ReminderEvent> reminders = getReminders();
         if (reminders.size() == 1) {
-            Act reminder = getReminder(reminders.get(0));
+            Act reminder = reminders.get(0).getReminder();
             Reporter<IMObject> reporter = evaluator.getMessageReporter(emailTemplate, reminder, context);
             if (reporter != null) {
                 body = evaluator.getMessage(reporter);
@@ -127,7 +127,8 @@ public class EmailReminders extends GroupedReminders {
                 }
             }
         } else {
-            Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, reminders, context);
+            List<ObjectSet> sets = getObjectSets(reminders);
+            Reporter<ObjectSet> reporter = evaluator.getMessageReporter(emailTemplate, sets, context);
             if (reporter != null) {
                 body = evaluator.getMessage(reporter);
                 if (StringUtils.isEmpty(body)) {
@@ -152,14 +153,14 @@ public class EmailReminders extends GroupedReminders {
      */
     public Document createAttachment(Context context) {
         Document result;
-        List<ObjectSet> reminders = getReminders();
+        List<ReminderEvent> reminders = getReminders();
         DocumentTemplate template = getTemplate();
         if (reminders.size() > 1) {
-            result = getDocument(new ObjectSetReporter(reminders, template), context);
+            result = getDocument(new ObjectSetReporter(getObjectSets(reminders), template), context);
         } else {
             List<Act> acts = new ArrayList<>();
-            for (ObjectSet set : reminders) {
-                acts.add((Act) set.get("reminder"));
+            for (ReminderEvent event : reminders) {
+                acts.add(event.getReminder());
             }
             result = getDocument(new IMObjectReporter<>(acts, template), context);
         }

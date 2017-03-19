@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
@@ -32,7 +33,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.resource.i18n.Messages;
@@ -169,8 +169,8 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      * @throws ReportingException if the reminders cannot be prepared
      */
     @Override
-    protected GroupedReminders prepare(List<ObjectSet> reminders, ReminderType.GroupBy groupBy,
-                                       List<ObjectSet> cancelled, List<ObjectSet> errors, List<Act> updated,
+    protected GroupedReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                                       List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
                                        boolean resend, Party customer, Contact contact, Party location,
                                        DocumentTemplate template) {
         Entity smsTemplate = null;
@@ -218,9 +218,9 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
         Party location = reminders.getLocation();
         Contact contact = reminders.getContact();
         String text = ((SMSReminders) state).getText();
-        for (ObjectSet set : state.getReminders()) {
-            String notes = getNote(set);
-            Party patient = getPatient(set);
+        for (ReminderEvent event : state.getReminders()) {
+            String notes = getNote(event);
+            Party patient = event.getPatient();
             logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
                           notes, location);
         }
