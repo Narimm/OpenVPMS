@@ -28,14 +28,11 @@ class ReminderSMSProgressBarProcessor extends ReminderProgressBarProcessor {
 
     /**
      * Constructs a {@link ReminderSMSProgressBarProcessor}.
-     *
-     * @param query      the query
+     *  @param query      the query
      * @param processor  the SMS processor
-     * @param statistics the statistics
      */
-    public ReminderSMSProgressBarProcessor(ReminderItemSource query, ReminderSMSProcessor processor,
-                                           Statistics statistics) {
-        super(query, processor, statistics, Messages.get("reporting.reminder.run.sms"));
+    public ReminderSMSProgressBarProcessor(ReminderItemSource query, ReminderSMSProcessor processor) {
+        super(query, processor, Messages.get("reporting.reminder.run.sms"));
     }
 
 }

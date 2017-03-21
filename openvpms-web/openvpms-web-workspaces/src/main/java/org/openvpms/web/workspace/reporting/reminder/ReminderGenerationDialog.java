@@ -16,14 +16,20 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
+import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -31,7 +37,6 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
@@ -48,11 +53,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 class ReminderGenerationDialog extends PopupDialog {
-
-    /**
-     * The reminder statistics.
-     */
-    private final Statistics statistics;
 
     /**
      * The workflow.
@@ -74,26 +74,36 @@ class ReminderGenerationDialog extends PopupDialog {
      * Constructs a {@link ReminderGenerationDialog}.
      *
      * @param processors the processors
-     * @param statistics the statistics
      * @param help       the help context
      */
-    public ReminderGenerationDialog(List<ReminderBatchProcessor> processors, Statistics statistics, HelpContext help) {
-        super(Messages.get("reporting.reminder.run.title"), OK_CANCEL, help);
+    public ReminderGenerationDialog(List<ReminderBatchProcessor> processors, HelpContext help) {
+        super(Messages.get("reporting.reminder.run.title"), "ReminderSendDialog", OK_CANCEL, help);
         setModal(true);
-        this.statistics = statistics;
         workflow = new WorkflowImpl(help);
         workflow.setBreakOnCancel(false);
-        Grid grid = GridFactory.create(2);
+        ComponentGrid grid = new ComponentGrid();
         for (ReminderBatchProcessor processor : sort(processors)) {
-            BatchProcessorTask task = new BatchProcessorTask(processor);
+            ReminderBatchProcessorTask task = new ReminderBatchProcessorTask(processor);
             task.setTerminateOnError(false);
             workflow.addTask(task);
-            Label title = LabelFactory.create();
+            Label title = LabelFactory.create(null, Styles.BOLD);
             title.setText(processor.getTitle());
-            grid.add(title);
-            grid.add(processor.getComponent());
+
+            SendStats statistics = new SendStats();
+            Component component = processor.getComponent();
+            if (component == null) {
+                component = LabelFactory.create();
+            }
+
+            grid.add(title, component, task.getStatus());
+            grid.add(new Label(), LabelFactory.create("reporting.reminder.run.sent"), statistics.getSentComponent());
+            grid.add(new Label(), LabelFactory.create("reporting.reminder.run.errors"),
+                     statistics.getErrorComponent());
+            grid.add(new Label(), LabelFactory.create("reporting.reminder.run.cancelled"),
+                     statistics.getCancelledComponent());
+            processor.setStatistics(statistics);
         }
-        getLayout().add(ColumnFactory.create(Styles.INSET, grid));
+        getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, grid.createGrid()));
         workflow.addTaskListener(new DefaultTaskListener() {
             public void taskEvent(TaskEvent event) {
                 onGenerationComplete();
@@ -145,14 +155,6 @@ class ReminderGenerationDialog extends PopupDialog {
     }
 
     /**
-     * Displays reminder generation statistics.
-     */
-    private void showStatistics() {
-        SummaryDialog dialog = new SummaryDialog(statistics);
-        dialog.show();
-    }
-
-    /**
      * Returns the current batch processor.
      *
      * @return the current batch processor, or {@code null} if there
@@ -168,10 +170,9 @@ class ReminderGenerationDialog extends PopupDialog {
 
     /**
      * Invoked when generation is complete.
-     * Displays statistics, and enables the OK button.
+     * Enables the OK button.
      */
     private void onGenerationComplete() {
-        showStatistics();
         ok.setEnabled(true);
         cancel.setEnabled(false);
     }
@@ -205,6 +206,124 @@ class ReminderGenerationDialog extends PopupDialog {
                 return 3;
             default:
                 return 4;
+        }
+    }
+
+    private static class ReminderBatchProcessorTask extends BatchProcessorTask {
+
+        private final Label status;
+
+        /**
+         * Creates a new {@link ReminderBatchProcessorTask}.
+         *
+         * @param processor the processor
+         */
+        public ReminderBatchProcessorTask(BatchProcessor processor) {
+            super(processor);
+            status = LabelFactory.create(null, Styles.BOLD);
+        }
+
+        public Label getStatus() {
+            return status;
+        }
+
+        /**
+         * Notifies the registered listener of a task about to start.
+         *
+         * @param task the task
+         */
+        @Override
+        protected void notifyStarting(Task task) {
+            super.notifyStarting(task);
+            status.setText(Messages.get("reporting.reminder.run.running"));
+        }
+
+        /**
+         * Notifies any registered listener that the task has completed.
+         *
+         * @throws IllegalStateException if notification has already occurred
+         */
+        @Override
+        protected void notifyCompleted() {
+            super.notifyCompleted();
+            status.setText(Messages.get("reporting.reminder.run.completed"));
+        }
+
+        /**
+         * Notifies any registered listener that the task has been cancelled.
+         *
+         * @throws IllegalStateException if notification has already occurred
+         */
+        @Override
+        protected void notifyCancelled() {
+            super.notifyCancelled();
+            status.setText(Messages.get("reporting.reminder.run.cancelled"));
+        }
+    }
+
+    private static class SendStats extends Statistics {
+
+        private Label sentLabel;
+        private Label errorLabel;
+        private Label cancelledLabel;
+
+        public SendStats() {
+            sentLabel = createLabel();
+            errorLabel = createLabel();
+            cancelledLabel = createLabel();
+        }
+
+        public Label getSentComponent() {
+            return sentLabel;
+        }
+
+        public Label getErrorComponent() {
+            return errorLabel;
+        }
+
+        public Label getCancelledComponent() {
+            return cancelledLabel;
+        }
+
+        /**
+         * Increments the count for a reminder.
+         *
+         * @param reminder     the reminder
+         * @param reminderType the reminder type
+         */
+        @Override
+        public void increment(ReminderEvent reminder, ReminderType reminderType) {
+            super.increment(reminder, reminderType);
+            sentLabel.setText(Integer.toString(getCount()));
+        }
+
+        /**
+         * Adds errors.
+         *
+         * @param errors the no. of errors
+         */
+        @Override
+        public void addErrors(int errors) {
+            super.addErrors(errors);
+            errorLabel.setText(Integer.toString(getErrors()));
+        }
+
+        /**
+         * Adds to the no. of cancelled reminder items.
+         *
+         * @param cancelled the no. of cancelled reminder items
+         */
+        @Override
+        public void addCancelled(int cancelled) {
+            super.addCancelled(cancelled);
+            cancelledLabel.setText(Integer.toString(getCancelled()));
+        }
+
+        private Label createLabel() {
+            final Label label = new Label();
+            label.setLayoutData(ComponentGrid.layout(Alignment.ALIGN_RIGHT));
+            label.setText("0");
+            return label;
         }
     }
 

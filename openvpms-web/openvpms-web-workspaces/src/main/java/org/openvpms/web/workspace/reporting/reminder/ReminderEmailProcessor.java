@@ -33,7 +33,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
@@ -139,7 +138,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
             String subject = mailer.getSubject();
             String body = mailer.getBody();
             String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
-            for (ObjectSet reminder : reminderState.getReminders()) {
+            for (ReminderEvent reminder : reminderState.getReminders()) {
                 reminder.set("to", to);
                 reminder.set("cc", cc);
                 reminder.set("bcc", bcc);

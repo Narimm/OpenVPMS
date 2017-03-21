@@ -52,11 +52,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private boolean popup = true;
 
     /**
-     * The reminder statistics.
-     */
-    private Statistics statistics = new Statistics();
-
-    /**
      * The help context.
      */
     private final HelpContext help;
@@ -74,7 +69,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                              PatientReminderProcessorFactory processorFactory) {
         this.help = help;
         ReminderItemSource query = new SingleReminderItemSource(item, reminder);
-        ReminderBatchProcessor processor = processorFactory.createBatchProcessor(query, statistics);
+        ReminderBatchProcessor processor = processorFactory.createBatchProcessor(query);
         processors.add(processor);
         popup = false;
     }
@@ -94,7 +89,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         for (String archetype : DescriptorHelper.getShortNames(factory.getArchetypes())) {
             ReminderItemQueryFactory clone = factory.copy(archetype);
             ReminderBatchProcessor processor = processorFactory.createBatchProcessor(
-                    new ReminderItemQuerySource(clone, reminderTypes, config), statistics);
+                    new ReminderItemQuerySource(clone, reminderTypes, config));
             processors.add(processor);
         }
     }
@@ -105,7 +100,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     public void process() {
         if (!processors.isEmpty()) {
             if (popup) {
-                ReminderGenerationDialog dialog = new ReminderGenerationDialog(processors, statistics, help);
+                ReminderGenerationDialog dialog = new ReminderGenerationDialog(processors, help);
                 dialog.show();
                 dialog.addWindowPaneListener(new WindowPaneListener() {
                     @Override
@@ -151,15 +146,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         for (ReminderBatchProcessor processor : processors) {
             processor.setResend(resend);
         }
-    }
-
-    /**
-     * Returns the statistics.
-     *
-     * @return the statistics
-     */
-    public Statistics getStatistics() {
-        return statistics;
     }
 
     /**

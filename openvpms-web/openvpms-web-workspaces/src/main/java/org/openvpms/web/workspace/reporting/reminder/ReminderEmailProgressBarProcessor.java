@@ -29,13 +29,11 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
     /**
      * Constructs a {@link ReminderEmailProgressBarProcessor}.
      *
-     * @param query      the query
-     * @param processor  the email processor
-     * @param statistics the statistics
+     * @param query     the query
+     * @param processor the email processor
      */
-    public ReminderEmailProgressBarProcessor(ReminderItemSource query, ReminderEmailProcessor processor,
-                                             Statistics statistics) {
-        super(query, processor, statistics, Messages.get("reporting.reminder.run.email"));
+    public ReminderEmailProgressBarProcessor(ReminderItemSource query, ReminderEmailProcessor processor) {
+        super(query, processor, Messages.get("reporting.reminder.run.email"));
     }
 
 }

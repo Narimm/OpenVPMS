@@ -150,12 +150,11 @@ public class PatientReminderProcessorFactory {
     /**
      * Creates a batch processor.
      *
-     * @param items      the reminder items to process
-     * @param statistics the statistics
+     * @param items the reminder items to process
      * @return a new batch processor
      * @throws IllegalArgumentException if the items return more than one archetype, or an unsupported archetype
      */
-    public ReminderBatchProcessor createBatchProcessor(ReminderItemSource items, Statistics statistics) {
+    public ReminderBatchProcessor createBatchProcessor(ReminderItemSource items) {
         ReminderBatchProcessor result;
         String[] archetypes = items.getArchetypes();
         if (archetypes.length != 1) {
@@ -164,15 +163,15 @@ public class PatientReminderProcessorFactory {
         String archetype = archetypes[0];
 
         if (TypeHelper.matches(archetype, ReminderArchetypes.EMAIL_REMINDER)) {
-            result = createBatchEmailProcessor(items, statistics);
+            result = createBatchEmailProcessor(items);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.PRINT_REMINDER)) {
-            result = createBatchPrintProcessor(items, statistics);
+            result = createBatchPrintProcessor(items);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.EXPORT_REMINDER)) {
-            result = createExportProcessor(items, statistics);
+            result = createExportProcessor(items);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.SMS_REMINDER)) {
-            result = createBatchSMSProcessor(items, statistics);
+            result = createBatchSMSProcessor(items);
         } else if (TypeHelper.matches(archetype, ReminderArchetypes.LIST_REMINDER)) {
-            result = createListProcessor(items, statistics);
+            result = createListProcessor(items);
         } else {
             throw new IllegalArgumentException("Unsupported archetype : " + archetype);
         }
@@ -238,25 +237,23 @@ public class PatientReminderProcessorFactory {
     /**
      * Creates a processor to email a batch of reminders.
      *
-     * @param query      the reminder item query
-     * @param statistics the statistics
+     * @param query the reminder item query
      * @return a new processor
      */
-    protected ReminderBatchProcessor createBatchEmailProcessor(ReminderItemSource query, Statistics statistics) {
+    protected ReminderBatchProcessor createBatchEmailProcessor(ReminderItemSource query) {
         ReminderEmailProcessor processor = createEmailProcessor();
-        return new ReminderEmailProgressBarProcessor(query, processor, statistics);
+        return new ReminderEmailProgressBarProcessor(query, processor);
     }
 
     /**
      * Creates a new processor to print a batch of reminders.
      *
-     * @param query      the reminder item query
-     * @param statistics the statistics
+     * @param query the reminder item query
      * @return a new processor
      */
-    protected ReminderBatchProcessor createBatchPrintProcessor(ReminderItemSource query, Statistics statistics) {
+    protected ReminderBatchProcessor createBatchPrintProcessor(ReminderItemSource query) {
         ReminderPrintProcessor processor = createPrintProcessor();
-        return new ReminderPrintProgressBarProcessor(query, processor, statistics, help);
+        return new ReminderPrintProgressBarProcessor(query, processor, help);
     }
 
     /**
@@ -273,13 +270,12 @@ public class PatientReminderProcessorFactory {
     /**
      * Creates a processor to SMS a batch of reminders.
      *
-     * @param query      the reminder query
-     * @param statistics the statistics
+     * @param query the reminder query
      * @return a new processor
      */
-    protected ReminderBatchProcessor createBatchSMSProcessor(ReminderItemSource query, Statistics statistics) {
+    protected ReminderBatchProcessor createBatchSMSProcessor(ReminderItemSource query) {
         ReminderSMSProcessor processor = createSMSProcessor();
-        return new ReminderSMSProgressBarProcessor(query, processor, statistics);
+        return new ReminderSMSProgressBarProcessor(query, processor);
     }
 
     /**
@@ -306,12 +302,11 @@ public class PatientReminderProcessorFactory {
     /**
      * Creates a new export processor.
      *
-     * @param query      the reminder item query
-     * @param statistics the statistics
+     * @param query the reminder item query
      * @return a new processor
      */
-    protected ReminderBatchProcessor createExportProcessor(ReminderItemSource query, Statistics statistics) {
-        return new ReminderExportBatchProcessor(query, createExportProcessor(), statistics);
+    protected ReminderBatchProcessor createExportProcessor(ReminderItemSource query) {
+        return new ReminderExportBatchProcessor(query, createExportProcessor());
     }
 
     /**
@@ -320,18 +315,18 @@ public class PatientReminderProcessorFactory {
      * @return a new list processor
      */
     protected ReminderListProcessor createListProcessor() {
-        return new ReminderListProcessor(reminderTypes, reminderRules, location, practice, service, config, logger, help);
+        return new ReminderListProcessor(reminderTypes, reminderRules, location, practice, service, config, logger,
+                                         help);
     }
 
     /**
      * Creates a new list processor.
      *
-     * @param query      the reminder item query
-     * @param statistics the statistics
+     * @param query the reminder item query
      * @return a new processor
      */
-    protected ReminderBatchProcessor createListProcessor(ReminderItemSource query, Statistics statistics) {
-        return new ReminderListBatchProcessor(query, createListProcessor(), statistics);
+    protected ReminderBatchProcessor createListProcessor(ReminderItemSource query) {
+        return new ReminderListBatchProcessor(query, createListProcessor());
     }
 
     /**

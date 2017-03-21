@@ -26,14 +26,11 @@ public class ReminderExportBatchProcessor extends AbstractReminderBatchProcessor
     /**
      * Constructs a {@link ReminderExportBatchProcessor}.
      *
-     * @param query      the query
-     * @param processor  the processor
-     * @param statistics the statistics
+     * @param query     the query
+     * @param processor the processor
      */
-    public ReminderExportBatchProcessor(ReminderItemSource query, ReminderExportProcessor processor,
-                                        Statistics statistics) {
-        super(query, processor, statistics, "reporting.reminder.run.export", null,
-              "reporting.reminder.export.status.end", "reporting.reminder.export.status.failed");
+    public ReminderExportBatchProcessor(ReminderItemSource query, ReminderExportProcessor processor) {
+        super(query, processor, "reporting.reminder.run.export");
     }
 
 }

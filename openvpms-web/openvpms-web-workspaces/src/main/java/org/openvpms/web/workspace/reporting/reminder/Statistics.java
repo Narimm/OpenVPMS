@@ -16,10 +16,10 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,8 +55,8 @@ public class Statistics {
      * @param reminder     the reminder
      * @param reminderType the reminder type
      */
-    public void increment(ObjectSet reminder, ReminderType reminderType) {
-        Act item = (Act) reminder.get("item");
+    public void increment(ReminderEvent reminder, ReminderType reminderType) {
+        Act item = reminder.getItem();
         Entity entity = reminderType.getEntity();
         Map<String, Integer> stats = statistics.get(entity);
         if (stats == null) {
@@ -70,6 +70,23 @@ public class Statistics {
         } else {
             stats.put(shortName, count + 1);
         }
+    }
+
+    /**
+     * Returns the sent count for all reminder items.
+     *
+     * @return the sent count
+     */
+    public int getCount() {
+        int result = 0;
+        for (Map<String, Integer> stats : statistics.values()) {
+            for (Integer count : stats.values()) {
+                if (count != null) {
+                    result += count;
+                }
+            }
+        }
+        return result;
     }
 
     /**

@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.web.component.processor.BatchProcessorComponent;
 
 
@@ -47,5 +48,20 @@ public interface ReminderBatchProcessor extends BatchProcessorComponent {
      * @param resend if {@code true} reminders are being resent
      */
     void setResend(boolean resend);
+
+    /**
+     * Registers the statistics.
+     *
+     * @param statistics the statistics
+     */
+    void setStatistics(Statistics statistics);
+
+    /**
+     * Returns the component.
+     *
+     * @return the component, or {@code null} if this doesn't render one
+     */
+    @Override
+    Component getComponent();
 
 }
