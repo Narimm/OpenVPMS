@@ -141,6 +141,23 @@ public class Contacts {
     }
 
     /**
+     * Finds all contacts that match the criteria.
+     *
+     * @param contacts the contacts
+     * @param matcher  the contact matcher
+     * @return the matching contacts
+     */
+    public static List<Contact> findAll(Collection<Contact> contacts, ContactMatcher matcher) {
+        List<Contact> result = new ArrayList<>();
+        for (Contact contact : contacts) {
+            if (matcher.matches(contact)) {
+                result.add(contact);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the phone number from a contact, extracting any formatting.
      *
      * @param contact the phone contact

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -79,6 +79,17 @@ public class DateRules {
      */
     public static Date plus(Date date, Period period) {
         return new DateTime(date).plus(period).toDate();
+    }
+
+    /**
+     * Helper to subtract a {@code Period} from a {@code Date}.
+     *
+     * @param date   the date
+     * @param period the period to subtract
+     * @return a new date
+     */
+    public static Date minus(Date date, Period period) {
+        return new DateTime(date).minus(period).toDate();
     }
 
     /**

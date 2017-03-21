@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -23,6 +23,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -398,7 +399,7 @@ public class PatientTestHelper {
      * @return a new investigation
      */
     public static DocumentAct createInvestigation(Date startTime, Party patient, User clinician, Party location,
-                                          Entity investigationType) {
+                                                  Entity investigationType) {
         DocumentAct act = (DocumentAct) createAct(InvestigationArchetypes.PATIENT_INVESTIGATION, startTime, patient,
                                                   clinician);
         ActBean bean = new ActBean(act);
@@ -555,4 +556,29 @@ public class PatientTestHelper {
         return act;
     }
 
+    /**
+     * Creates a new microchip identity.
+     *
+     * @param microchip the microchip
+     * @return a new identity
+     */
+    public static EntityIdentity createMicrochip(String microchip) {
+        EntityIdentity result = (EntityIdentity) create(PatientArchetypes.MICROCHIP);
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.setValue("microchip", microchip);
+        return result;
+    }
+
+    /**
+     * Creates a new pet tag identity.
+     *
+     * @param tag the tag
+     * @return a new identity
+     */
+    public static EntityIdentity createPetTag(String tag) {
+        EntityIdentity result = (EntityIdentity) create(PatientArchetypes.PET_TAG);
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.setValue("petTag", tag);
+        return result;
+    }
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin;
@@ -21,6 +21,7 @@ import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.admin.archetype.ArchetypeWorkspace;
 import org.openvpms.web.workspace.admin.group.GroupWorkspace;
 import org.openvpms.web.workspace.admin.hl7.HL7Workspace;
+import org.openvpms.web.workspace.admin.job.JobWorkspace;
 import org.openvpms.web.workspace.admin.lookup.LookupWorkspace;
 import org.openvpms.web.workspace.admin.system.SystemWorkspace;
 import org.openvpms.web.workspace.admin.template.DocumentTemplateWorkspace;
@@ -47,6 +48,7 @@ public class AdminWorkspaces extends AbstractWorkspaces {
         addWorkspace(new DocumentTemplateWorkspace(context));
         addWorkspace(new LookupWorkspace(context));
         addWorkspace(new HL7Workspace(context));
+        addWorkspace(new JobWorkspace(context));
         addWorkspace(new UserWorkspace(context));
         addWorkspace(new GroupWorkspace(context));
         addWorkspace(new RoleWorkspace(context));

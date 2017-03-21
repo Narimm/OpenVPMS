@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
@@ -29,8 +29,6 @@ import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.web.system.ServiceHelper;
-
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 
 
 /**
@@ -92,9 +90,6 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     public IMReport<IMObject> getReport() {
         if (report == null) {
             Document doc = getTemplateDocument();
-            if (doc == null) {
-                throw new DocumentException(NotFound);
-            }
             ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
             report = factory.createIMObjectReport(doc);
         }
@@ -127,7 +122,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
         ActBean bean = new ActBean(act);
         Entity template = bean.getParticipant(DocumentArchetypes.DOCUMENT_TEMPLATE_PARTICIPATION);
         if (template == null && required) {
-            throw new DocumentException(NotFound);
+            throw new DocumentException(DocumentException.ErrorCode.DocumentHasNoTemplate);
         }
         return (template != null) ? new DocumentTemplate(template, ServiceHelper.getArchetypeService()) : null;
     }

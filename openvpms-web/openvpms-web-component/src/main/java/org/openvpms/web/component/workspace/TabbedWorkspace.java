@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -21,15 +21,14 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ChangeEvent;
+import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -80,7 +79,7 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
      */
     @Override
     public void show() {
-        TabComponent tab = model.getObject(pane.getSelectedIndex());
+        TabComponent tab = getSelected();
         if (tab != null) {
             tab.show();
         }
@@ -95,12 +94,21 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
     public HelpContext getHelpContext() {
         HelpContext result = null;
         if (model != null && pane != null) {
-            TabComponent tab = model.getObject(pane.getSelectedIndex());
+            TabComponent tab = getSelected();
             if (tab != null) {
                 result = tab.getHelpContext();
             }
         }
         return (result == null) ? super.getHelpContext() : result;
+    }
+
+    /**
+     * Returns the selected tab.
+     *
+     * @return the selected tab, or {@code null} if none is selected
+     */
+    protected TabComponent getSelected() {
+        return model.getObject(pane.getSelectedIndex());
     }
 
     /**
@@ -112,12 +120,17 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
      */
     @Override
     protected Component doLayout() {
-        SplitPane root = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, STYLE);
-        container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, STYLE);
-        Component heading = super.doLayout();
-        tabContainer = ColumnFactory.create(Styles.INSET_Y);
+        tabContainer = ColumnFactory.create();
+        SplitPaneLayoutData layoutData = new SplitPaneLayoutData();
+        layoutData.setOverflow(SplitPaneLayoutData.OVERFLOW_HIDDEN); // to avoid scrollbars in tab section
+        tabContainer.setLayoutData(layoutData);
+        container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, "TabbedBrowser", tabContainer);
         model = createTabModel(tabContainer);
+
+        Component heading = super.doLayout();
+        SplitPane root = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, STYLE, heading, container);
         pane = TabbedPaneFactory.create(model);
+        pane.setStyleName("VisitEditor.TabbedPane");
         pane.getSelectionModel().addChangeListener(new ChangeListener() {
             @Override
             public void onChange(ChangeEvent event) {
@@ -126,9 +139,6 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
         });
         tabContainer.add(pane);
         onTabSelected(model.getObject(0));
-
-        root.add(heading);
-        root.add(this.container);
         return root;
     }
 
@@ -152,25 +162,6 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
     protected abstract void addTabs(ObjectTabPaneModel<TabComponent> model);
 
     /**
-     * Invoked when a tab is selected.
-     *
-     * @param tab the tab
-     */
-    private void onTabSelected(TabComponent tab) {
-        if (tab != null) {
-            container.removeAll();
-            Component buttons = tab.getButtons();
-            if (buttons != null) {
-                container.add(buttons);
-            } else {
-                container.add(LabelFactory.create());
-            }
-            container.add(tabContainer);
-            tab.show();
-        }
-    }
-
-    /**
      * Helper to add a tab to the tab pane.
      *
      * @param name  the tab name resource bundle key
@@ -192,6 +183,20 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
      */
     protected HelpContext subtopic(String topic) {
         return super.getHelpContext().subtopic(topic);
+    }
+
+    /**
+     * Invoked when a tab is selected.
+     *
+     * @param tab the tab
+     */
+    private void onTabSelected(TabComponent tab) {
+        if (tab != null) {
+            container.removeAll();
+            container.add(tabContainer);
+            container.add(tab.getComponent());
+            tab.show();
+        }
     }
 
 }

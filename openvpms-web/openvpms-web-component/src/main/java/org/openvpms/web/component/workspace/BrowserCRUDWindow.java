@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 
 /**
@@ -99,7 +99,12 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     protected void setBrowser(Browser<T> browser) {
         this.browser = browser;
-        browser.addBrowserListener(new AbstractBrowserListener<T>() {
+        browser.addBrowserListener(new BrowserListener<T>() {
+            @Override
+            public void query() {
+                onQuery();
+            }
+
             public void selected(T object) {
                 onSelected(object);
             }
@@ -108,6 +113,7 @@ public class BrowserCRUDWindow<T extends IMObject> {
             public void browsed(T object) {
                 onBrowsed(object);
             }
+
         });
         if (window != null) {
             select(browser.getSelected());
@@ -140,6 +146,15 @@ public class BrowserCRUDWindow<T extends IMObject> {
     }
 
     /**
+     * Invoked when a query is performed.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    protected void onQuery() {
+
+    }
+
+    /**
      * Selects the current object. If the object is double clicked, invokes {@link #onDoubleClick()}.
      *
      * @param object the selected object
@@ -157,7 +172,9 @@ public class BrowserCRUDWindow<T extends IMObject> {
      * @param object the selected object
      */
     protected void select(T object) {
-        window.setObject(object);
+        if (window.getObject() != object) {
+            window.setObject(object);
+        }
     }
 
     /**
@@ -220,7 +237,13 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     private void refreshBrowser(T object) {
         browser.query();
-        browser.setSelected(object);
+        if (browser.setSelected(object)) {
+            if (window.getObject() != object) {
+                window.setObject(object);
+            }
+        } else {
+            window.setObject(null);
+        }
     }
 
 }

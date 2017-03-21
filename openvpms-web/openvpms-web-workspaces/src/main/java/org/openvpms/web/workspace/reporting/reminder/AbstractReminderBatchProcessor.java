@@ -11,26 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.resource.i18n.Messages;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Abstract implementation of the {@link ReminderBatchProcessor} interface.
@@ -42,62 +37,90 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * The reminders.
      */
-    private final List<ReminderEvent> reminders = new ArrayList<>();
+    private final List<ReminderEvent> reminders;
+
+    /**
+     * The processor.
+     */
+    private final PatientReminderProcessor processor;
+
+    /**
+     * The reminders currently being processed.
+     */
+    private PatientReminders state;
+
+    /**
+     * Title localisation key.
+     */
+    private final String titleKey;
+
+    /**
+     * Determines if reminders are being resent.
+     */
+    private boolean resend = false;
 
     /**
      * The statistics.
      */
-    private final Statistics statistics;
-
-    /**
-     * The component layout row.
-     */
-    private final Row row;
-
-    /**
-     * Determines if reminders should be updated on completion.
-     */
-    private boolean update = true;
-
-    /**
-     * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
-     */
-    private Set<IMObjectReference> completed = new HashSet<>();
+    private Statistics statistics;
 
     /**
      * Constructs an {@link AbstractReminderBatchProcessor}.
      *
-     * @param reminders  the reminders
-     * @param statistics the statistics
+     * @param query        the query
+     * @param processor    the processor
+     * @param titleKey     the title localisation key
      */
-    public AbstractReminderBatchProcessor(List<List<ReminderEvent>> reminders, Statistics statistics) {
-        for (List<ReminderEvent> list : reminders) {
-            for (ReminderEvent reminder : list) {
-                this.reminders.add(reminder);
-            }
-        }
-        this.statistics = statistics;
-        row = RowFactory.create();
+    public AbstractReminderBatchProcessor(ReminderItemSource query, PatientReminderProcessor processor,
+                                          String titleKey) {
+        reminders = query.all();
+        this.processor = processor;
+        this.titleKey = titleKey;
     }
 
     /**
-     * Determines if reminders should be updated on completion.
-     * <p/>
-     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
+     * Returns the reminder item archetype that this processes.
      *
-     * @param update if {@code true} update reminders on completion
+     * @return the reminder item archetype
      */
-    public void setUpdateOnCompletion(boolean update) {
-        this.update = update;
+    @Override
+    public String getArchetype() {
+        return processor.getArchetype();
+    }
+
+    /**
+     * Indicates if reminders are being reprocessed.
+     * <p/>
+     * If set:
+     * <ul>
+     * <li>due dates are ignored</li>
+     * <li>the reminder last sent date is not updated</li>
+     * </ul>
+     * <p/>
+     * Defaults to {@code false}.
+     *
+     * @param resend if {@code true} reminders are being resent
+     */
+    public void setResend(boolean resend) {
+        this.resend = resend;
+    }
+
+    /**
+     * Determines if reminders are being resent.
+     *
+     * @return {@code true} if reeminders are being resent
+     */
+    public boolean getResend() {
+        return resend;
     }
 
     /**
      * The component.
      *
-     * @return the component
+     * @return {@code null} - this doesn't render a component
      */
     public Component getComponent() {
-        return row;
+        return null;
     }
 
     /**
@@ -110,48 +133,73 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
-     * Sets the status.
+     * Returns the processor title.
      *
-     * @param status the status message
+     * @return the processor title
      */
-    protected void setStatus(String status) {
-        row.removeAll();
-        Label label = LabelFactory.create();
-        label.setText(status);
-        row.add(label);
+    @Override
+    public String getTitle() {
+        return Messages.get(titleKey);
+    }
+
+    /**
+     * Registers the statistics.
+     *
+     * @param statistics the statistics
+     */
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
+    }
+
+    /**
+     * Processes the batch.
+     */
+    public void process() {
+        state = null;
+        List<ReminderEvent> reminders = getReminders();
+        if (!reminders.isEmpty()) {
+            try {
+                state = processor.prepare(reminders, ReminderType.GroupBy.NONE, new Date(), getResend());
+                if (!state.getReminders().isEmpty()) {
+                    processor.process(state);
+                    if (!processor.isAsynchronous()) {
+                        completed();
+                    }
+                } else {
+                    completed();
+                }
+            } catch (OpenVPMSException exception) {
+                notifyError(exception);
+            }
+        } else {
+            notifyCompleted();
+        }
+    }
+
+    protected void completed() {
+        updateReminders();
+        notifyCompleted();
+    }
+
+    /**
+     * Notifies the listener (if any) of processing completion.
+     */
+    @Override
+    protected void notifyCompleted() {
+        super.notifyCompleted();
     }
 
     /**
      * Updates reminders.
      */
     protected void updateReminders() {
-        setProcessed(reminders.size());
-        Date date = new Date();
-        for (ReminderEvent reminder : reminders) {
-            IMObjectReference ref = reminder.getReminder().getObjectReference();
-            if (update && !completed.contains(ref)) {
-                if (updateReminder(reminder, date)) {
-                    statistics.increment(reminder);
-                    completed.add(ref);
-                } else {
-                    statistics.incErrors();
-                }
-            } else {
-                statistics.increment(reminder);
+        if (state != null) {
+            setProcessed(reminders.size());
+            processor.complete(state);
+            if (statistics != null) {
+                processor.addStatistics(state, statistics);
             }
         }
-    }
-
-    /**
-     * Updates a reminder.
-     *
-     * @param reminder the reminder to update
-     * @param date     the last-sent date
-     * @return {@code true} if the reminder was updated
-     */
-    protected boolean updateReminder(ReminderEvent reminder, Date date) {
-        Act act = reminder.getReminder();
-        return ReminderHelper.update(act, date);
     }
 
     /**
@@ -163,10 +211,13 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     @Override
     protected void notifyError(Throwable exception) {
         for (ReminderEvent event : reminders) {
-            if (update) {
-                ReminderHelper.setError(event.getReminder(), exception);
+            if (!resend) {
+                Act item = event.getItem();
+                ReminderHelper.setError(item, exception);
             }
-            statistics.incErrors();
+            if (statistics != null) {
+                statistics.incErrors();
+            }
         }
         super.notifyError(exception);
     }

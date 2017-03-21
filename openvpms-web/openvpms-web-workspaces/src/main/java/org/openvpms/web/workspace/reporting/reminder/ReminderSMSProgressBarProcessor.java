@@ -11,15 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.web.resource.i18n.Messages;
-
-import java.util.List;
 
 
 /**
@@ -30,37 +27,12 @@ import java.util.List;
 class ReminderSMSProgressBarProcessor extends ReminderProgressBarProcessor {
 
     /**
-     * The SMS processor.
-     */
-    private final ReminderSMSProcessor processor;
-
-
-    /**
      * Constructs a {@link ReminderSMSProgressBarProcessor}.
-     *
-     * @param reminders  the reminders
+     *  @param query      the query
      * @param processor  the SMS processor
-     * @param statistics the statistics
      */
-    public ReminderSMSProgressBarProcessor(List<List<ReminderEvent>> reminders, ReminderSMSProcessor processor,
-                                           Statistics statistics) {
-        super(reminders, statistics, Messages.get("reporting.reminder.run.sms"));
-        this.processor = processor;
-    }
-
-    /**
-     * Processes an object.
-     *
-     * @param events the reminder events to process
-     */
-    protected void process(List<ReminderEvent> events) {
-        super.process(events);
-        try {
-            processor.process(events);
-            processCompleted(events);
-        } catch (Throwable exception) {
-            processError(exception, events);
-        }
+    public ReminderSMSProgressBarProcessor(ReminderItemSource query, ReminderSMSProcessor processor) {
+        super(query, processor, Messages.get("reporting.reminder.run.sms"));
     }
 
 }

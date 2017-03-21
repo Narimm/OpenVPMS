@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -21,7 +21,7 @@ package org.openvpms.web.component.mail;
  *
  * @author Tim Anderson
  */
-public class MailerFactory {
+public interface MailerFactory {
 
     /**
      * Creates a new {@link Mailer}.
@@ -29,7 +29,5 @@ public class MailerFactory {
      * @param context the mail context
      * @return a new {@link Mailer}
      */
-    public Mailer create(MailContext context) {
-        return new DefaultMailer(context);
-    }
+    Mailer create(MailContext context);
 }

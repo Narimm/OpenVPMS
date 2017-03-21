@@ -11,15 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.web.resource.i18n.Messages;
-
-import java.util.List;
 
 
 /**
@@ -30,50 +27,13 @@ import java.util.List;
 class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
 
     /**
-     * The email processor.
-     */
-    private final ReminderEmailProcessor processor;
-
-
-    /**
      * Constructs a {@link ReminderEmailProgressBarProcessor}.
      *
-     * @param reminders  the reminders
-     * @param processor  the email processor
-     * @param statistics the statistics
+     * @param query     the query
+     * @param processor the email processor
      */
-    public ReminderEmailProgressBarProcessor(List<List<ReminderEvent>> reminders, ReminderEmailProcessor processor,
-                                             Statistics statistics) {
-        super(reminders, statistics, Messages.get("reporting.reminder.run.email"));
-        this.processor = processor;
-    }
-
-    /**
-     * Processes an object.
-     *
-     * @param events the reminder events to process
-     */
-    protected void process(List<ReminderEvent> events) {
-        super.process(events);
-        try {
-            processor.process(events);
-            processCompleted(events);
-        } catch (Throwable exception) {
-/*            if (exception.getCause() instanceof AddressException) {
-                ReminderEvent event = events.get(0);
-                Contact contact = event.getContact();
-                String to = null;
-
-                Party party = contact.getParty();
-                String customer = null;
-                if (party != null) {
-                    customer = "id=" + party.getId() + ", name=" + party.getName();
-                }
-
-                log.warn("Invalid email address for customer " + customer + ": " + to, exception.getCause());
-            }*/
-            processError(exception, events);
-        }
+    public ReminderEmailProgressBarProcessor(ReminderItemSource query, ReminderEmailProcessor processor) {
+        super(query, processor, Messages.get("reporting.reminder.run.email"));
     }
 
 }

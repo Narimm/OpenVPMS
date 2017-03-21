@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -20,16 +20,13 @@ import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -40,7 +37,7 @@ import static org.junit.Assert.fail;
  * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
-public class NodeResolverTestCase extends AbstractArchetypeServiceTest {
+public class NodeResolverTestCase extends AbstractIMObjectBeanTestCase {
 
     /**
      * The lookup service.
@@ -55,8 +52,8 @@ public class NodeResolverTestCase extends AbstractArchetypeServiceTest {
     public void testSingleLevelResolution() {
         Party party = createCustomer();
         NodeResolver resolver = new NodeResolver(party, getArchetypeService());
-        assertEquals("J", resolver.getObject("firstName"));
-        assertEquals("Zoo", resolver.getObject("lastName"));
+        assertEquals("Foo", resolver.getObject("firstName"));
+        assertEquals("Bar", resolver.getObject("lastName"));
         assertEquals("Customer(Person)", resolver.getObject("displayName"));
         assertEquals("party.customerperson", resolver.getObject("shortName"));
     }
@@ -70,8 +67,8 @@ public class NodeResolverTestCase extends AbstractArchetypeServiceTest {
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
         NodeResolver resolver = new NodeResolver(act.getAct(), getArchetypeService());
-        assertEquals("J", resolver.getObject("customer.entity.firstName"));
-        assertEquals("Zoo", resolver.getObject("customer.entity.lastName"));
+        assertEquals("Foo", resolver.getObject("customer.entity.firstName"));
+        assertEquals("Bar", resolver.getObject("customer.entity.lastName"));
 
         assertEquals("Estimation", resolver.getObject("displayName"));
         assertEquals("Act Customer",
@@ -202,8 +199,25 @@ public class NodeResolverTestCase extends AbstractArchetypeServiceTest {
             resolver2.getObject("species.code");
             fail("expected PropertyResolverException to be thrown");
         } catch (PropertyResolverException exception) {
-            assertEquals(PropertyResolverException.ErrorCode.InvalidProperty, exception.getErrorCode());
+            assertEquals(PropertyResolverException.ErrorCode.InvalidNode, exception.getErrorCode());
         }
+    }
+
+    /**
+     * Tests the {@link NodeResolver#getObjects(String)} method.
+     */
+    @Test
+    public void testGetObjects() {
+        Party customer = createCustomer();
+        Party patient1 = createPatient(customer);
+        Party patient2 = createPatient(customer);
+
+        NodeResolver resolver = new NodeResolver(customer, getArchetypeService(), lookups);
+        checkEquals(resolver.getObjects("title"), "MR");
+        checkEquals(resolver.getObjects("title.code"), "MR");
+        checkEquals(resolver.getObjects("title.name"), "Mr");
+        checkEquals(resolver.getObjects("patients.target"), patient1, patient2);
+        checkEquals(resolver.getObjects("patients.target.id"), patient1.getId(), patient2.getId());
     }
 
     /**
@@ -216,20 +230,4 @@ public class NodeResolverTestCase extends AbstractArchetypeServiceTest {
         return new ActBean((Act) create(shortName));
     }
 
-    /**
-     * Helper to create and save a customer.
-     *
-     * @return a new customer
-     */
-    private Party createCustomer() {
-        IMObjectBean bean = createBean("party.customerperson");
-        bean.setValue("title", "MR");
-        bean.setValue("firstName", "J");
-        bean.setValue("lastName", "Zoo");
-        Contact contact = (Contact) create("contact.phoneNumber");
-        assertNotNull(contact);
-        bean.addValue("contacts", contact);
-        bean.save();
-        return (Party) bean.getObject();
-    }
 }

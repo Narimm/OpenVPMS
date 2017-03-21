@@ -246,7 +246,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         addWorkspaces(factory.createSupplierWorkspaces(context));
         addWorkspaces(factory.createWorkflowWorkspaces(context, preferences));
         addWorkspaces(factory.createProductWorkspaces(context));
-        addWorkspaces(factory.createReportingWorkspaces(context));
+        addWorkspaces(factory.createReportingWorkspaces(context, preferences));
 
         context.addListener(this);
 

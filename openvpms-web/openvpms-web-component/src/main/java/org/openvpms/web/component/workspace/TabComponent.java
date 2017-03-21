@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -37,13 +37,6 @@ public interface TabComponent {
      * @return the tab component
      */
     Component getComponent();
-
-    /**
-     * Returns the button component.
-     *
-     * @return the button component, or {@code null} if this tab doesn't provide any buttons
-     */
-    Component getButtons();
 
     /**
      * Returns the help context for the tab.

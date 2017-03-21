@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -20,115 +20,109 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.system.common.query.ObjectSet;
 
 
 /**
  * Reminder event.
+ * <p/>
+ * This extends {@link ObjectSet} so reminder information can be supplied to reports.
  *
  * @author Tim Anderson
  */
-public class ReminderEvent {
-
-    public enum Action {
-
-        SKIP,        // indicates reminder should be skipped as it is not due
-        CANCEL,      // indicates reminder should be cancelled
-        EMAIL,       // indicates reminder should be emailed
-        PHONE,       // indicates reminder should be phoned
-        SMS,         // indicates reminder should be sent via SMS
-        PRINT,       // indicates reminder should be printed
-        EXPORT,      // indicates reminder should be exported
-        LIST         // indicates reminder has no or unrecognised contact
-    }
-
-    /**
-     * The reminder action.
-     */
-    private final Action action;
+public class ReminderEvent extends ObjectSet {
 
     /**
      * The reminder.
      */
-    private final Act reminder;
+    private static final String REMINDER = "reminder";
+
+    /**
+     * The reminder item.
+     */
+    private static final String ITEM = "item";
+
+    /**
+     * The patient.
+     */
+    private static final String PATIENT = "patient";
+
+    /**
+     * The customer.
+     */
+    private static final String CUSTOMER = "customer";
 
     /**
      * The reminder type.
      */
-    private final ReminderType reminderType;
+    private static final String REMINDER_TYPE = "reminderType";
 
     /**
-     * The patient. May be {@code null}
+     * The reminder start time. This is its next due date.
      */
-    private final Party patient;
+    private static final String START_TIME = "startTime";
 
     /**
-     * The customer. May be {@code null}
+     * The reminder end time. This is its first due date.
      */
-    private final Party customer;
+    private static final String END_TIME = "endTime";
 
     /**
-     * The contact. May be {@code null}.
+     * The reminder count.
      */
-    private final Contact contact;
+    private static final String REMINDER_COUNT = "reminderCount";
 
     /**
-     * The document template. May be {@code null}.
+     * The product.
      */
-    private final Entity documentTemplate;
+    private static final String PRODUCT = "product";
 
     /**
-     * Constructs a new {@code ReminderEvent}.
+     * The clinician.
+     */
+    private static final String CLINICIAN = "clinician";
+
+    /**
+     * The contact.
+     */
+    private static final String CONTACT = "contact";
+
+    /**
+     * The practice location.
+     */
+    private static final String LOCATION = "location";
+
+    /**
+     * The document template.
+     */
+    private static final String DOCUMENT_TEMPLATE = "documentTemplate";
+
+    /**
+     * Constructs a {@link ReminderEvent} from an existing set.
      *
-     * @param action       the reminder action
-     * @param reminder     the reminder
-     * @param reminderType the reminder type
+     * @param set the set
      */
-    public ReminderEvent(Action action, Act reminder, ReminderType reminderType) {
-        this(action, reminder, reminderType, null, null);
+    public ReminderEvent(ObjectSet set) {
+        this((Act) set.get(REMINDER), (Act) set.get(ITEM), (Party) set.get(PATIENT), (Party) set.get(CUSTOMER));
     }
 
     /**
-     * Constructs a new {@code ReminderEvent}.
+     * Constructs a {@link ReminderEvent}.
      *
-     * @param action       the reminder action
-     * @param reminder     the reminder
-     * @param reminderType the reminder type
-     * @param patient      the patient. May be {@code null}
-     * @param customer     the customer. May be {@code null}
+     * @param reminder the reminder
+     * @param item     the reminder item
+     * @param patient  the patient
+     * @param customer the customer
      */
-    public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party patient, Party customer) {
-        this(action, reminder, reminderType, patient, customer, null, null);
-    }
-
-    /**
-     * Constructs a new {@code ReminderEvent}.
-     *
-     * @param action           the reminder action
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param patient          the patient. May be {@code null}
-     * @param customer         the customer. May be {@code null}
-     * @param contact          the reminder contact. May be {@code null}
-     * @param documentTemplate the document template. May be {@code null}
-     */
-    public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party patient, Party customer,
-                         Contact contact, Entity documentTemplate) {
-        this.action = action;
-        this.reminder = reminder;
-        this.reminderType = reminderType;
-        this.patient = patient;
-        this.customer = customer;
-        this.contact = contact;
-        this.documentTemplate = documentTemplate;
-    }
-
-    /**
-     * Returns the reminder action.
-     *
-     * @return the action
-     */
-    public Action getAction() {
-        return action;
+    public ReminderEvent(Act reminder, Act item, Party patient, Party customer) {
+        set(REMINDER, reminder);
+        set(ITEM, item);
+        set(PATIENT, patient);
+        set(CUSTOMER, customer);
+        set(START_TIME, reminder.getActivityStartTime());
+        set(END_TIME, reminder.getActivityEndTime());
     }
 
     /**
@@ -137,16 +131,70 @@ public class ReminderEvent {
      * @return the reminder
      */
     public Act getReminder() {
-        return reminder;
+        return (Act) get(REMINDER);
+    }
+
+    /**
+     * Returns the reminder item.
+     *
+     * @return the reminder item
+     */
+    public Act getItem() {
+        return (Act) get(ITEM);
     }
 
     /**
      * Returns the reminder type.
      *
-     * @return the reminder type
+     * @return the reminder type. May be {@code null}
      */
-    public ReminderType getReminderType() {
-        return reminderType;
+    public Entity getReminderType() {
+        return safeGet(REMINDER_TYPE, null);
+    }
+
+    /**
+     * Sets the reminder type.
+     *
+     * @param reminderType the reminder type
+     */
+    public void setReminderType(Entity reminderType) {
+        set(REMINDER_TYPE, reminderType);
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product. May be {@code null}
+     */
+    public Product getProduct() {
+        return safeGet(PRODUCT, null);
+    }
+
+    /**
+     * Sets the product.
+     *
+     * @param product the product
+     */
+    public void setProduct(Product product) {
+        set(PRODUCT, product);
+    }
+
+    /**
+     * Returns the clinician.
+     *
+     * @return the clinician. May be {@code null}
+     */
+    public User getClinician() {
+        return safeGet(CLINICIAN, null);
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician the clinician
+     */
+    public void setClinician(User clinician) {
+        set(CLINICIAN, clinician);
     }
 
     /**
@@ -155,7 +203,7 @@ public class ReminderEvent {
      * @return the patient. May be {@code null}
      */
     public Party getPatient() {
-        return patient;
+        return (Party) get(PATIENT);
     }
 
     /**
@@ -164,7 +212,16 @@ public class ReminderEvent {
      * @return the customer. May be {@code null}
      */
     public Party getCustomer() {
-        return customer;
+        return (Party) get(CUSTOMER);
+    }
+
+    /**
+     * Sets the contact.
+     *
+     * @param contact the contact. May be {@code null}
+     */
+    public void setContact(Contact contact) {
+        set("contact", contact);
     }
 
     /**
@@ -173,7 +230,7 @@ public class ReminderEvent {
      * @return the contact. May be {@code null}
      */
     public Contact getContact() {
-        return contact;
+        return (Contact) safeGet(CONTACT, null);
     }
 
     /**
@@ -182,7 +239,54 @@ public class ReminderEvent {
      * @return the document template. May be {@code null}
      */
     public Entity getDocumentTemplate() {
-        return documentTemplate;
+        return (Entity) safeGet(DOCUMENT_TEMPLATE, null);
     }
 
+    /**
+     * Returns the reminder count.
+     *
+     * @return the reminder count
+     */
+    public int getReminderCount() {
+        return safeGet(REMINDER_COUNT, 0);
+    }
+
+    /**
+     * Sets the reminder count.
+     *
+     * @param count the reminder count
+     */
+    public void setReminderCount(int count) {
+        set(REMINDER_COUNT, count);
+    }
+
+    /**
+     * Returns the customer's practice location.
+     *
+     * @return the customer's practice location. May be {@code null}
+     */
+    public Party getLocation() {
+        return (Party) get(LOCATION);
+    }
+
+    /**
+     * Sets the customers practice location.
+     *
+     * @param location the location
+     */
+    public void setLocation(Party location) {
+        set(LOCATION, location);
+    }
+
+    /**
+     * Returns the named object if it exists, or {@code defaultValue} if it doesn't.
+     *
+     * @param name         the object name
+     * @param defaultValue the default value
+     * @return the named object if it exists, or {@code defaultValue} if it doesn't
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T safeGet(String name, T defaultValue) {
+        return exists(name) ? (T) get(name) : defaultValue;
+    }
 }
