@@ -311,6 +311,10 @@
               description="Lists prices as at a date with selection by name, product type, and pricing group"
               path="Reporting/Reports/Product/A4/Product Price List Report.jrxml" mimeType="text/xml"
               docType="document.other"/>
+    <template name="Product Price Structure Report" archetype="REPORT" reportType="PRODUCT"
+              description="Shows price structure of selected products as at a date with selection by name, type, and pricing group"
+              path="Reporting/Reports/Product/A4/Product Price Structure Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
     <template name="Products Missing Prices for Pricing Group Report" archetype="REPORT" reportType="PRODUCT"
               description="Shows products where active prices have pricing groups, but not all pricing groups are specified"
               path="Reporting/Reports/Product/A4/Products Missing Prices for Pricing Group Report.jrxml" mimeType="text/xml"
