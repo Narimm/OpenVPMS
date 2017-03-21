@@ -29,14 +29,11 @@ public class ReminderListBatchProcessor extends AbstractReminderBatchProcessor {
     /**
      * Constructs an {@link ReminderListBatchProcessor}.
      *
-     * @param query      the query
-     * @param processor  the reminder processor
-     * @param statistics the statistics
+     * @param query     the query
+     * @param processor the reminder processor
      */
-    public ReminderListBatchProcessor(ReminderItemSource query, ReminderListProcessor processor,
-                                      Statistics statistics) {
-        super(query, processor, statistics, "reporting.reminder.run.list", "reporting.reminder.list.status.begin",
-              "reporting.reminder.list.status.end", "reporting.reminder.list.status.failed");
+    public ReminderListBatchProcessor(ReminderItemSource query, ReminderListProcessor processor) {
+        super(query, processor, "reporting.reminder.run.list");
         processor.setListener(new PrinterListener() {
             public void printed(String printer) {
                 try {

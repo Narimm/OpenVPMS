@@ -76,15 +76,13 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
 
     /**
      * Constructs a {@link ReminderPrintProgressBarProcessor}.
-     *
-     * @param query      the query
+     *  @param query      the query
      * @param processor  the email processor
-     * @param statistics the statistics
      * @param help       the help context
      */
     public ReminderPrintProgressBarProcessor(ReminderItemSource query, ReminderPrintProcessor processor,
-                                             Statistics statistics, HelpContext help) {
-        super(query, processor, statistics, Messages.get("reporting.reminder.run.print"));
+                                             HelpContext help) {
+        super(query, processor, Messages.get("reporting.reminder.run.print"));
         this.help = help;
 
         PrinterListener listener = new PrinterListener() {

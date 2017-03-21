@@ -27,7 +27,6 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -115,8 +114,7 @@ public class SMSReminders extends GroupedReminders {
             } else {
                 ReminderEvent event = reminders.get(0);
                 Party patient = event.getPatient(); // pass the first patient.
-                List<ObjectSet> sets = new ArrayList<>();
-                sets.addAll(reminders);
+                List<ObjectSet> sets = getObjectSets(reminders);
                 result = evaluator.evaluate(smsTemplate, sets, customer, patient, location, practice);
             }
         } catch (Throwable exception) {

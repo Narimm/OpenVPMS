@@ -100,11 +100,9 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
             }
             if (contact != null) {
                 location = getLocation(customer);
-                if (!reminders.isEmpty()) {
-                    toProcess.addAll(reminders);
-                    populate(reminders, contact, location);
-                    template = getTemplate(toProcess, groupBy);
-                }
+                toProcess.addAll(reminders);
+                populate(reminders, contact, location);
+                template = getTemplate(toProcess, groupBy);
             } else {
                 noContact(reminders, updated);
                 errors.addAll(reminders);
@@ -183,7 +181,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
             if (reminderType == null) {
                 throw new IllegalStateException("Cannot determine reminder type");
             }
-            int reminderCount = first.getInt("reminderCount");
+            int reminderCount = first.getReminderCount();
             ReminderCount count = reminderType.getReminderCount(reminderCount);
             if (count == null) {
                 throw new ReportingException(ReportingException.ErrorCode.NoReminderCount, reminderType.getName(),

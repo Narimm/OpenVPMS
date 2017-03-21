@@ -201,9 +201,8 @@ public abstract class PatientReminderProcessor {
      */
     public void addStatistics(PatientReminders state, Statistics statistics) {
         for (ReminderEvent event : state.getReminders()) {
-            Act reminder = event.getReminder();
             Act item = event.getItem();
-            ReminderType reminderType = reminderTypes.get(new ActBean(reminder).getNodeParticipantRef("reminderType"));
+            ReminderType reminderType = reminderTypes.get(event.getReminderType());
             if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
                 statistics.addErrors(1);
             } else if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {

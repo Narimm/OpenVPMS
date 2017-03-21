@@ -18,12 +18,11 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -66,7 +65,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
     /**
      * The statistics.
      */
-    private final Statistics statistics;
+    private Statistics statistics;
 
     /**
      * The current reminders being processed.
@@ -87,13 +86,11 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
     /**
      * Constructs a {@link ReminderProgressBarProcessor}.
      *
-     * @param items      the reminder item source
-     * @param processor  the processor
-     * @param statistics the statistics
-     * @param title      the progress bar title for display purposes
+     * @param items     the reminder item source
+     * @param processor the processor
+     * @param title     the progress bar title for display purposes
      */
-    public ReminderProgressBarProcessor(ReminderItemSource items, PatientReminderProcessor processor,
-                                        Statistics statistics, String title) {
+    public ReminderProgressBarProcessor(ReminderItemSource items, PatientReminderProcessor processor, String title) {
         super(title);
         String[] shortNames = items.getArchetypes();
         if (shortNames.length != 1 || !TypeHelper.matches(shortNames[0], processor.getArchetype())) {
@@ -102,7 +99,6 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
 
         this.items = items;
         this.processor = processor;
-        this.statistics = statistics;
         rules = ServiceHelper.getBean(ReminderRules.class);
     }
 
@@ -131,6 +127,16 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      */
     public void setResend(boolean resend) {
         this.resend = resend;
+    }
+
+    /**
+     * Registers the statistics.
+     *
+     * @param statistics the statistics
+     */
+    @Override
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
     }
 
     /**
@@ -198,7 +204,9 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
     protected void processCompleted() {
         if (currentState != null) {
             processor.complete(currentState);
-            processor.addStatistics(currentState, statistics);
+            if (statistics != null) {
+                processor.addStatistics(currentState, statistics);
+            }
             super.processCompleted(currentReminders);
         } else {
             log.error("ReminderProgressBarProcess.processCompleted() invoked with no current reminders");
@@ -220,11 +228,13 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      */
     protected void processError(Throwable exception) {
         if (currentReminders != null) {
-            for (ObjectSet set : currentReminders.getReminders()) {
-                if (!currentState.getResend()) {
-                    ReminderHelper.setError((Act) set.get("item"), exception);
+            for (ReminderEvent event : currentReminders.getReminders()) {
+                if (!resend) {
+                    ReminderHelper.setError(event.getItem(), exception);
                 }
-                statistics.incErrors();
+                if (statistics != null) {
+                    statistics.incErrors();
+                }
             }
             notifyError(exception);
             super.processCompleted(currentReminders);
