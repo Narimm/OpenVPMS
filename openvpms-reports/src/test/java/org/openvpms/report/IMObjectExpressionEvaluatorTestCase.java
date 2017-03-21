@@ -76,7 +76,7 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
         assertEquals("1234 Foo St\nMelbourne VIC 3001", eval.getValue(expression));
 
         // test invalid nodes
-        assertEquals("Invalid property name: act.customer.foo", eval.getValue("act.customer.foo"));
+        assertEquals("No node named act found in archetype act.customerEstimation", eval.getValue("act.customer.foo"));
     }
 
     /**
@@ -111,7 +111,7 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
         assertEquals("1234 Foo St\nMelbourne VIC 3001", eval.getFormattedValue(expression));
 
         // test invalid nodes
-        assertEquals("Invalid property name: act.customer.foo", eval.getValue("act.customer.foo"));
+        assertEquals("No node named act found in archetype act.customerEstimation", eval.getValue("act.customer.foo"));
     }
 
     /**
@@ -130,7 +130,8 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
         assertEquals(party, eval.getValue("OpenVPMS.customer"));
         assertEquals("Zoo,J", eval.getValue("OpenVPMS.customer.name"));
 
-        assertEquals("Invalid property name: OpenVPMS.patient", eval.getValue("OpenVPMS.patient"));
+        assertEquals("No node named OpenVPMS found in archetype party.customerperson",
+                     eval.getValue("OpenVPMS.patient"));
 
         // test variable evaluation
         assertEquals(party, eval.getValue("[$OpenVPMS.customer]"));

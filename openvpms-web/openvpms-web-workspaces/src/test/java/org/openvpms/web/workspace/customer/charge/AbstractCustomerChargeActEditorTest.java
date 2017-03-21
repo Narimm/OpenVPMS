@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -48,6 +49,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -471,7 +473,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
         assertEquals(1, rels.size());
         ActBean bean = new ActBean(reminder);
-        assertEquals(item.getActivityStartTime(), reminder.getActivityStartTime());
+        Date createdTime = DateUtils.truncate(bean.getDate("createdTime"), Calendar.SECOND); // details nodes store ms
+        assertEquals(0, DateRules.compareTo(item.getActivityStartTime(), createdTime));
         Date dueDate = rules.calculateProductReminderDueDate(item.getActivityStartTime(), rels.get(0));
         assertEquals(0, DateRules.compareTo(reminder.getActivityEndTime(), dueDate));
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));

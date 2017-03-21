@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.job;
@@ -21,11 +21,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.style.Styles;
 
 /**
  * Layout strategy for <em>entity.jobAppointmentReminder</em>.
@@ -90,31 +86,9 @@ public class AppointmentReminderJobLayoutStrategy extends AbstractLayoutStrategy
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        addComponent(getInterval(SMS_FROM, SMS_FROM_UNITS, object, properties, context));
-        addComponent(getInterval(SMS_TO, SMS_TO_UNITS, object, properties, context));
-        addComponent(getInterval(NO_REMINDER, NO_REMINDER_UNITS, object, properties, context));
+        addComponent(createComponentPair(SMS_FROM, SMS_FROM_UNITS, object, properties, context));
+        addComponent(createComponentPair(SMS_TO, SMS_TO_UNITS, object, properties, context));
+        addComponent(createComponentPair(NO_REMINDER, NO_REMINDER_UNITS, object, properties, context));
         return super.apply(object, properties, parent, context);
-    }
-
-    /**
-     * Creates a component representing an interval and its units.
-     *
-     * @param interval   the interval property name
-     * @param units      the units property name
-     * @param object     the object to apply
-     * @param properties the object's properties
-     * @param context    the layout context
-     * @return a new component
-     */
-    private ComponentState getInterval(String interval, String units, IMObject object, PropertySet properties,
-                                       LayoutContext context) {
-        Property property = properties.get(interval);
-        ComponentState intervalState = createComponent(property, object, context);
-        ComponentState unitsState = createComponent(properties.get(units), object, context);
-        FocusGroup group = new FocusGroup(interval);
-        group.add(intervalState.getComponent());
-        group.add(unitsState.getComponent());
-        return new ComponentState(RowFactory.create(Styles.CELL_SPACING, intervalState.getComponent(),
-                                                    unitsState.getComponent()), intervalState.getProperty(), group);
     }
 }

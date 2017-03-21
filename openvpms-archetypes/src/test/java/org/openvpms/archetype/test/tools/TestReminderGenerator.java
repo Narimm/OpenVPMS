@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test.tools;
@@ -53,7 +53,7 @@ public class TestReminderGenerator {
         Entity documentTemplate = ReminderTestHelper.createDocumentTemplate();
         for (int i = 0; i < reminderTypes.length; ++i) {
             Entity reminderType = ReminderTestHelper.createReminderType();
-            ReminderTestHelper.addTemplate(reminderType, documentTemplate, 0, 1, DateUnits.DAYS);
+            ReminderTestHelper.addReminderCount(reminderType, 0, 1, DateUnits.DAYS, documentTemplate);
             reminderTypes[i] = reminderType;
         }
 

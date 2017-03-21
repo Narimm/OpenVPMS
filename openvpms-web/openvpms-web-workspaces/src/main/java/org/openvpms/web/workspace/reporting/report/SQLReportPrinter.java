@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.report;
@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.TemplateHasNoDocument;
 import static org.openvpms.web.workspace.reporting.report.SQLReportException.ErrorCode.ConnectionError;
 import static org.openvpms.web.workspace.reporting.report.SQLReportException.ErrorCode.NoQuery;
 
@@ -104,7 +104,7 @@ public class SQLReportPrinter extends AbstractPrinter {
      */
     protected SQLReportPrinter(DocumentTemplate template, Document document, Context context) {
         if (document == null) {
-            throw new DocumentException(NotFound);
+            throw new DocumentException(TemplateHasNoDocument, template.getName());
         }
         ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
         report = factory.createReport(document);

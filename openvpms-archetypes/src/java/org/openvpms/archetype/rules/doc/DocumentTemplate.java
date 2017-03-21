@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -106,6 +106,15 @@ public class DocumentTemplate {
      */
     private final IArchetypeService service;
 
+    /**
+     * Cached email template.
+     */
+    private Entity email;
+
+    /**
+     * Cached SMS template.
+     */
+    private Entity sms;
 
     /**
      * Constructs a {@link DocumentTemplate}.
@@ -391,7 +400,10 @@ public class DocumentTemplate {
      * @return the email template. May be {@code null}
      */
     public Entity getEmailTemplate() {
-        return bean.getNodeTargetEntity("email");
+        if (email == null) {
+            email = bean.getNodeTargetEntity("email");
+        }
+        return email;
     }
 
     /**
@@ -400,25 +412,10 @@ public class DocumentTemplate {
      * @return the SMS template. May be {@code null}
      */
     public Entity getSMSTemplate() {
-        return bean.getNodeTargetEntity("sms");
-    }
-
-    /**
-     * Returns the text to use when the template is sent via SMS.
-     *
-     * @return the SMS text. May be {@code null}
-     */
-    public String getSMS() {
-        return bean.getString("sms");
-    }
-
-    /**
-     * Sets the text to use when the the template is sent via SMS.
-     *
-     * @param text the text. May be {@code null}
-     */
-    public void setSMS(String text) {
-        bean.setValue("sms", text);
+        if (sms == null) {
+            sms = bean.getNodeTargetEntity("sms");
+        }
+        return sms;
     }
 
     /**

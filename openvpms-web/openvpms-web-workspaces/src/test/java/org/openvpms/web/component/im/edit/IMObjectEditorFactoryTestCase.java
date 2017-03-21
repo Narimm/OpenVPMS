@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -53,7 +53,6 @@ import org.openvpms.web.workspace.admin.lookup.MacroEditor;
 import org.openvpms.web.workspace.admin.lookup.SpeciesLookupEditor;
 import org.openvpms.web.workspace.admin.lookup.SuburbLookupEditor;
 import org.openvpms.web.workspace.admin.template.DocumentTemplatePrinterEditor;
-import org.openvpms.web.workspace.admin.type.ReminderTypeTemplateEditor;
 import org.openvpms.web.workspace.customer.CustomerEditor;
 import org.openvpms.web.workspace.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.workspace.customer.account.AdjustmentActEditor;
@@ -135,9 +134,6 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     break;
                 case "entityRelationship.productReminder":
                     checkCreate(shortName, ProductReminderRelationshipEditor.class);
-                    break;
-                case "entityRelationship.reminderTypeTemplate":
-                    checkCreate(shortName, ReminderTypeTemplateEditor.class);
                     break;
                 case "entityRelationship.scheduleDocumentTemplate":
                 case "entityRelationship.worklistDocumentTemplate":

@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
-import org.openvpms.web.component.service.CurrentLocationMailService;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.web.component.service.MailService;
 
 
 /**
@@ -30,10 +30,12 @@ public class DefaultMailer extends AbstractMailer {
     /**
      * Constructs a {@link DefaultMailer}.
      *
-     * @param context the mail context
+     * @param context  the mail context
+     * @param service  the mail service
+     * @param handlers the document handlers
      */
-    public DefaultMailer(MailContext context) {
-        super(context, ServiceHelper.getBean(CurrentLocationMailService.class), ServiceHelper.getDocumentHandlers());
+    public DefaultMailer(MailContext context, MailService service, DocumentHandlers handlers) {
+        super(context, service, handlers);
     }
 
 }

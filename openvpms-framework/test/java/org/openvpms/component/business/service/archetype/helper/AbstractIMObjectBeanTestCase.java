@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -108,6 +108,19 @@ public abstract class AbstractIMObjectBeanTestCase extends AbstractArchetypeServ
         Lookup canine = LookupUtil.getLookup(getArchetypeService(), "lookup.species", "CANINE");
         bean.setValue("species", canine.getCode());
         bean.save();
+        return patient;
+    }
+
+    /**
+     * Helper to create a patient with an owner.
+     *
+     * @param customer the owner
+     * @return a new patient
+     */
+    protected Party createPatient(Party customer) {
+        Party patient = createPatient();
+        addOwnerRelationship(customer, patient);
+        save(customer, patient);
         return patient;
     }
 

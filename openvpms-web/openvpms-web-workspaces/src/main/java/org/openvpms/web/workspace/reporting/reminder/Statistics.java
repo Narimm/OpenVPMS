@@ -11,16 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,45 +36,69 @@ public class Statistics {
     /**
      * Tracks statistics by reminder type.
      */
-    private final Map<Entity, Map<ReminderEvent.Action, Integer>> statistics = new HashMap<>();
+    private final Map<Entity, Map<String, Integer>> statistics = new HashMap<>();
 
     /**
      * The no. of errors encountered.
      */
     private int errors;
 
+    /**
+     * The no. of cancelled reminders.
+     */
+    private int cancelled;
+
 
     /**
      * Increments the count for a reminder.
      *
-     * @param reminder the reminder event
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
      */
-    public void increment(ReminderEvent reminder) {
-        Entity reminderType = reminder.getReminderType().getEntity();
-        ReminderEvent.Action action = reminder.getAction();
-        Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
+    public void increment(ReminderEvent reminder, ReminderType reminderType) {
+        Act item = reminder.getItem();
+        Entity entity = reminderType.getEntity();
+        Map<String, Integer> stats = statistics.get(entity);
         if (stats == null) {
             stats = new HashMap<>();
-            statistics.put(reminderType, stats);
+            statistics.put(entity, stats);
         }
-        Integer count = stats.get(action);
+        String shortName = item.getArchetypeId().getShortName();
+        Integer count = stats.get(shortName);
         if (count == null) {
-            stats.put(action, 1);
+            stats.put(shortName, 1);
         } else {
-            stats.put(action, count + 1);
+            stats.put(shortName, count + 1);
         }
     }
 
     /**
-     * Returns the count for a processing type.
+     * Returns the sent count for all reminder items.
      *
-     * @param type the processing type
-     * @return the count for the processing type
+     * @return the sent count
      */
-    public int getCount(ReminderEvent.Action type) {
+    public int getCount() {
         int result = 0;
-        for (Map<ReminderEvent.Action, Integer> stats : statistics.values()) {
-            Integer count = stats.get(type);
+        for (Map<String, Integer> stats : statistics.values()) {
+            for (Integer count : stats.values()) {
+                if (count != null) {
+                    result += count;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the count for a reminder item.
+     *
+     * @param shortName the reminder item archetype short name
+     * @return the count for the reminder item
+     */
+    public int getCount(String shortName) {
+        int result = 0;
+        for (Map<String, Integer> stats : statistics.values()) {
+            Integer count = stats.get(shortName);
             if (count != null) {
                 result += count;
             }
@@ -91,18 +116,18 @@ public class Statistics {
     }
 
     /**
-     * Returns the count for a reminder type and set of action.
+     * Returns the count for a reminder type and set of reminder items.
      *
      * @param reminderType the reminder type
-     * @param actions      the actions
+     * @param shortNames   the reminder item short names
      * @return the count
      */
-    public int getCount(Entity reminderType, EnumSet<ReminderEvent.Action> actions) {
+    public int getCount(Entity reminderType, String... shortNames) {
         int result = 0;
-        Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
+        Map<String, Integer> stats = statistics.get(reminderType);
         if (stats != null) {
-            for (ReminderEvent.Action action : actions) {
-                Integer value = stats.get(action);
+            for (String shortName : shortNames) {
+                Integer value = stats.get(shortName);
                 if (value != null) {
                     result += value;
                 }
@@ -124,7 +149,34 @@ public class Statistics {
      * Increments the error count.
      */
     public void incErrors() {
-        ++errors;
+        addErrors(1);
+    }
+
+    /**
+     * Adds errors.
+     *
+     * @param errors the no. of errors
+     */
+    public void addErrors(int errors) {
+        this.errors += errors;
+    }
+
+    /**
+     * Returns the no. of cancelled reminder items.
+     *
+     * @return the no. of cancelled reminder items
+     */
+    public int getCancelled() {
+        return cancelled;
+    }
+
+    /**
+     * Adds to the no. of cancelled reminder items.
+     *
+     * @param cancelled the no. of cancelled reminder items
+     */
+    public void addCancelled(int cancelled) {
+        this.cancelled += cancelled;
     }
 
     /**
@@ -134,5 +186,4 @@ public class Statistics {
         statistics.clear();
         errors = 0;
     }
-
 }

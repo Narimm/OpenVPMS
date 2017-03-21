@@ -11,16 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
-import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -182,9 +180,7 @@ public class ReminderSMSEvaluatorTestCase extends ArchetypeServiceTest {
      */
     private String evaluate(String contentType, String content) {
         Entity template = ReminderTestHelper.createSMSTemplate(contentType, content);
-        ReminderType type = new ReminderType(this.reminderType, getArchetypeService());
-        ReminderEvent event = new ReminderEvent(ReminderEvent.Action.SMS, act, type, patient, customer);
-        return evaluator.evaluate(template, event, location, practice);
+        return evaluator.evaluate(template, act, customer, patient, location, practice);
     }
 
 }

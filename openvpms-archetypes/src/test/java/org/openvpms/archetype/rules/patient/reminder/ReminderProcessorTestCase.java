@@ -11,14 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.component.processor.ProcessorListener;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -27,19 +28,32 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addEmailTemplate;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addReminderCount;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addSMSTemplate;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createContactRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createDocumentTemplate;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailTemplate;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createExportRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createListRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createPrintRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createSMSRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createSMSTemplate;
 
 /**
  * Tests the {@link ReminderProcessor}.
@@ -82,157 +96,199 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         IArchetypeService service = getArchetypeService();
         rules = new PatientRules(new PracticeRules(service, null), service, getLookupService());
         reminderRules = new ReminderRules(service, rules);
-        customer = TestHelper.createCustomer(false);
-        customer.getContacts().clear();
-        save(customer);
+        customer = TestHelper.createCustomer(new Contact[0]); // customer with no contacts
         patient = TestHelper.createPatient(customer);
         reminderType = ReminderTestHelper.createReminderType(1, DateUnits.MONTHS, 1, DateUnits.DAYS);
     }
 
     /**
-     * Verifies that a reminder for a customer with a single location contact is set to PRINT.
+     * Verifies that an reminder item is created for each type of contact with REMINDER classification when
+     * a rule has contact set to {@code true}.
      */
     @Test
-    public void testLocationContact() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
+    public void testContact() {
+        Entity emailTemplate = createEmailTemplate("subject", "text");
+        Entity smsTemplate = createSMSTemplate("TEXT", "text");
+        Entity template = createDocumentTemplate(emailTemplate, smsTemplate);
+
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createContactRule());
         Act reminder = createReminderDueTomorrow();
 
-        Contact contact = createLocation();
-        checkProcess(contact, ReminderEvent.Action.PRINT, reminder, reminderType, customer, patient, template);
+        // no contacts, so listed
+        checkProcess(false, false, false, false, true, reminder);
+
+        // add contacts with no reminder purpose. This should also be listed
+        addContacts(createEmail(false), createPhone(true, false), createLocation(false));
+        checkProcess(false, false, false, false, true, reminder);
+
+        // now add contacts with reminder purpose
+        addContacts(createEmail(true));
+        checkProcess(true, false, false, false, false, reminder);
+
+        addContacts(createPhone(true, true));
+        checkProcess(true, true, false, false, false, reminder);
+
+        addContacts(createLocation(true));
+        checkProcess(true, true, true, false, false, reminder);
     }
 
     /**
-     * Verifies that a reminder for a customer with a single phone contact is set to PHONE.
+     * Verifies that an <em>act.patientReminderItemEmail</em> is created when the rule specifies email, and the
+     * customer has an email contact.
      */
     @Test
-    public void testPhoneContact() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
+    public void testEmail() {
+        Entity emailTemplate = createEmailTemplate("subject", "text");
+        Entity smsTemplate = createSMSTemplate("TEXT", "text");
+        Entity template = createDocumentTemplate(emailTemplate, smsTemplate);
+
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createEmailRule());
         Act reminder = createReminderDueTomorrow();
 
-        Contact contact = createPhone(false);
-        checkProcess(contact, ReminderEvent.Action.PHONE, reminder, reminderType, customer, patient, template);
+        addContacts(createEmail(false));
+        checkProcess(true, false, false, false, false, reminder);
+
+        // with no email contact, email=true is ignored
+        clearContacts();
+        checkProcess(false, false, false, false, true, reminder);
     }
 
     /**
-     * Verifies that a reminder for a customer with a single phone contact with SMS enabled is set to SMS.
+     * Verifies that if a rule specifies email and template has no email template, the reminder will be listed.
      */
     @Test
-    public void testSMSContact() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        IMObjectBean bean = new IMObjectBean(template);
-        Entity smsTemplate = ReminderTestHelper.createSMSTemplate("TEXT", "Some plain text");
-        bean.addNodeTarget("sms", smsTemplate);
-        save(template, smsTemplate);
-        ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
+    public void testEmailForNoEmailTemplate() {
+        Entity template = createDocumentTemplate();
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createEmailRule());
         Act reminder = createReminderDueTomorrow();
 
-        Contact contact = createPhone(true);
-        checkProcess(contact, ReminderEvent.Action.SMS, reminder, reminderType, customer, patient, template);
+        addContacts(createEmail(false));
+        checkProcess(false, false, false, false, true, reminder);
+
+        // now add an email template and verify an act.patientReminderItemEmail is created.
+        addEmailTemplate(template, createEmailTemplate("subject", "text"));
+        checkProcess(true, false, false, false, false, reminder);
     }
 
     /**
-     * Verifies that if a template has no SMS text, the reminders will have PHONE action rather than SMS.
+     * Verifies that an <em>act.patientReminderItemSMS</em> is created when the rule specifies SMS, and the
+     * customer has an SMS contact.
      */
     @Test
-    public void testProcessSMSForNoSMText() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        IMObjectBean bean = new IMObjectBean(template);
-        assertNull(bean.getNodeTargetObjectRef("sms"));
-        ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
+    public void testSMS() {
+        Entity emailTemplate = createEmailTemplate("subject", "text");
+        Entity smsTemplate = createSMSTemplate("TEXT", "text");
+        Entity template = createDocumentTemplate(emailTemplate, smsTemplate);
+
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createSMSRule());
         Act reminder = createReminderDueTomorrow();
 
-        Contact contact = createPhone(true);
-        checkProcess(contact, ReminderEvent.Action.PHONE, reminder, reminderType, customer, patient, template);
+        addContacts(createPhone(true, false));
+        checkProcess(false, true, false, false, false, reminder);
+
+        // with no SMS contact, sms=true is ignored
+        clearContacts();
+        checkProcess(false, false, false, false, true, reminder);
+
+        // with a phone contact , sms=true is ignored
+        addContacts(createPhone(false, false));
+        checkProcess(false, false, false, false, true, reminder);
     }
 
     /**
-     * Verifies that a reminder for a customer with an email contact is set to EMAIL.
+     * Verifies that if a rule specifies SMS and the template has no SMS template, the reminder will be listed.
      */
     @Test
-    public void testProcessEmail() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
+    public void testSMSForNoSMSTemplate() {
+        Entity template = createDocumentTemplate();
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createSMSRule());
         Act reminder = createReminderDueTomorrow();
 
-        Contact contact = createEmail();
-        checkProcess(contact, ReminderEvent.Action.EMAIL, reminder, reminderType, customer, patient, template);
+        addContacts(createPhone(true, false));
+        checkProcess(false, false, false, false, true, reminder);
+
+        // now add an SMS template and verify an act.patientReminderItemSMS is created.
+        addSMSTemplate(template, createSMSTemplate("TEXT", "text"));
+        checkProcess(false, true, false, false, false, reminder);
     }
 
     /**
-     * Verifies that if a reminder type relationship has {@code list = true}, reminders are set to {@code LIST}.
+     * Verifies that an <em>act.patientReminderItemSMS</em> is created when the rule specifies print, and the
+     * customer has a location contact.
      */
     @Test
-    public void testProcessList() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        EntityRelationship relationship = ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
-        IMObjectBean bean = new IMObjectBean(relationship);
-        bean.setValue("list", true);
+    public void testPrint() {
+        Entity template = createDocumentTemplate();
+
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createPrintRule());
+        Act reminder = createReminderDueTomorrow();
+
+        addContacts(createLocation(false));
+        checkProcess(false, false, true, false, false, reminder);
+
+        // with no location contact, print=true is ignored
+        clearContacts();
+        checkProcess(false, false, false, false, true, reminder);
+    }
+
+    /**
+     * Verifies that if a rule specifies print and there is no template, the reminder will be listed.
+     */
+    @Test
+    public void testPrintForNoPrintTemplate() {
+        Entity count = addReminderCount(reminderType, 0, 0, DateUnits.DAYS, null, createPrintRule());
+        Act reminder = createReminderDueTomorrow();
+
+        addContacts(createLocation(false));
+        checkProcess(false, false, false, false, true, reminder);
+
+        // now add a template and verify an act.patientReminderItemPrint is created.
+        IMObjectBean bean = new IMObjectBean(count);
+        bean.addNodeTarget("template", createDocumentTemplate());
         bean.save();
-        Act reminder = createReminderDueTomorrow();
-
-        Contact contact = createEmail();
-        checkProcess(contact, ReminderEvent.Action.LIST, reminder, reminderType, customer, patient, template);
+        checkProcess(false, false, true, false, false, reminder);
     }
 
     /**
-     * Verifies that if a reminder type relationship has {@code export = true}, and the customer has a location contact,
-     * reminders are set to {@code EXPORT}.
+     * Verifies that an <em>act.patientReminderItemExport</em> is created when the rule specifies export, and the
+     * customer has a location contact.
      */
     @Test
     public void testProcessExport() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        EntityRelationship relationship = ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
-        IMObjectBean bean = new IMObjectBean(relationship);
-        bean.setValue("export", true);
-        bean.save();
+        Entity template = createDocumentTemplate();
 
-        Act reminder1 = createReminderDueTomorrow();
-        checkProcess(createLocation(), ReminderEvent.Action.EXPORT, reminder1, reminderType, customer, patient,
-                     template);
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createExportRule());
+        Act reminder = createReminderDueTomorrow();
 
-        customer.getContacts().clear();
+        addContacts(createLocation(false));
+        checkProcess(false, false, false, true, false, reminder);
 
         // with no location contact, export=true is ignored
-        Act reminder2 = createReminderDueTomorrow();
-        checkProcess(createEmail(), ReminderEvent.Action.EMAIL, reminder2, reminderType, customer, patient, template);
+        clearContacts();
+        checkProcess(false, false, false, false, true, reminder);
     }
 
     /**
-     * Verifies that if a reminder type relationship has {@code sms = true}, and the customer has an SMS contact,
-     * reminders are set to {@code SMS}.
+     * Verifies that an <em>act.patientReminderItemExport</em> is created when the rule specifies list.
      */
     @Test
-    public void testProcessSMS() {
-        Entity template = ReminderTestHelper.createDocumentTemplate();
-        IMObjectBean templateBean = new IMObjectBean(template);
-        Entity smsTemplate = ReminderTestHelper.createSMSTemplate("TEXT", "Some plain text");
-        templateBean.addNodeTarget("sms", smsTemplate);
-        save(template, smsTemplate);
-        EntityRelationship relationship = ReminderTestHelper.addTemplate(reminderType, template, 0, 0, DateUnits.DAYS);
-        IMObjectBean bean = new IMObjectBean(relationship);
-        bean.setValue("sms", true);
-        bean.save();
+    public void testProcessList() {
+        Entity template = createDocumentTemplate();
+
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createListRule());
         Act reminder = createReminderDueTomorrow();
 
-        customer.addContact(createLocation());
-        checkProcess(createPhone(true), ReminderEvent.Action.SMS, reminder, reminderType, customer, patient, template);
-
-        customer.getContacts().clear();
-
-        // with no SMS contact, sms=true is ignored
-        checkProcess(createLocation(), ReminderEvent.Action.PRINT, reminder, reminderType, customer, patient, template);
+        // no contacts are required for list
+        checkProcess(false, false, false, false, true, reminder);
     }
 
     /**
-     * Verifies that a reminder type without a template is skipped.
+     * Verifies that a reminder type without a count is listed.
      */
     @Test
-    public void testSkip() {
+    public void testListForNoReminderCount() {
         Act reminder = createReminderDueTomorrow();
-        Contact contact = createLocation();
-        checkProcess(contact, ReminderEvent.Action.SKIP, reminder, reminderType, null, null, null);
+        checkProcess(false, false, false, false, true, reminder);
     }
 
     /**
@@ -243,8 +299,10 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         Act reminder = createReminder(DateRules.getYesterday());
         assertTrue(reminderRules.shouldCancel(reminder, new Date()));
 
-        Contact contact = createLocation();
-        checkProcess(contact, ReminderEvent.Action.CANCEL, reminder, reminderType, null, null, null);
+        List<Act> acts = process(reminder);
+        assertEquals(1, acts.size());
+        assertTrue(TypeHelper.isA(acts.get(0), ReminderArchetypes.REMINDER));
+        assertEquals(ActStatus.CANCELLED, acts.get(0).getStatus());
     }
 
     /**
@@ -256,8 +314,31 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         rules.setDeceased(patient);
         save(patient);
 
-        Contact contact = createLocation();
-        checkProcess(contact, ReminderEvent.Action.CANCEL, reminder, reminderType, null, null, null);
+        addContacts(createLocation(false));
+        List<Act> acts = process(reminder);
+        assertEquals(1, acts.size());
+        assertTrue(TypeHelper.isA(acts.get(0), ReminderArchetypes.REMINDER));
+        assertEquals(ActStatus.CANCELLED, acts.get(0).getStatus());
+    }
+
+    /**
+     * Adds contacts to the customer.
+     *
+     * @param contacts the contacts to add
+     */
+    private void addContacts(Contact... contacts) {
+        for (Contact contact : contacts) {
+            customer.addContact(contact);
+        }
+        save(customer);
+    }
+
+    /**
+     * Removes all contacts from the customer.
+     */
+    private void clearContacts() {
+        customer.getContacts().clear();
+        save(customer);
     }
 
     /**
@@ -267,9 +348,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      * @return a new reminder
      */
     private Act createReminder(Date due) {
-        Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
-        reminder.setActivityEndTime(due);
-        return reminder;
+        return ReminderTestHelper.createReminder(due, patient, reminderType);
     }
 
     /**
@@ -284,99 +363,112 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
     /**
      * Processes a reminder and verifies the result matches that expected.
      *
-     * @param contact          the customer contact
-     * @param action           the expected action
-     * @param reminder         the reminder to process
-     * @param reminderType     the expected reminderType
-     * @param customer         the expected customer. May be {@code null}
-     * @param patient          the expected patient. May be {@code null}
-     * @param documentTemplate the expected document template. May be {@code null}
+     * @param email    if {@code true} expect an <em>act.patientReminderItemEmail</em>
+     * @param sms      if {@code true} expect an <em>act.patientReminderItemSMS</em>
+     * @param print    if {@code true} expect an <em>act.patientReminderItemPrint</em>
+     * @param export   if {@code true} expect an <em>act.patientReminderItemExport</em>
+     * @param list     if {@code true} expect an <em>act.patientReminderItemList</em>
+     * @param reminder the reminder to process
      */
-    private void checkProcess(Contact contact, ReminderEvent.Action action, Act reminder, Entity reminderType,
-                              Party customer, Party patient, Entity documentTemplate) {
-        this.customer.addContact(contact);
-        save(this.customer);
-        ReminderEvent event = process(reminder);
-        if (action == ReminderEvent.Action.CANCEL || action == ReminderEvent.Action.SKIP) {
-            contact = null;
+    private void checkProcess(boolean email, boolean sms, boolean print, boolean export, boolean list,
+                              Act reminder) {
+        List<Act> acts = process(reminder);
+        assertFalse(acts.isEmpty());
+        save(acts);
+        checkActs(acts, ReminderArchetypes.EMAIL_REMINDER, email);
+        checkActs(acts, ReminderArchetypes.SMS_REMINDER, sms);
+        checkActs(acts, ReminderArchetypes.PRINT_REMINDER, print);
+        checkActs(acts, ReminderArchetypes.EXPORT_REMINDER, export);
+        checkActs(acts, ReminderArchetypes.LIST_REMINDER, list);
+    }
+
+    /**
+     * Verifies that the specified act exists/doesn't exist.
+     *
+     * @param acts      the acts
+     * @param shortName the act short name
+     * @param exists    if {@code true}, it must exist at most once in {@code acts}, otherwise it mustn't exist
+     */
+    private void checkActs(List<Act> acts, String shortName, boolean exists) {
+        int found = 0;
+        for (Act act : acts) {
+            if (TypeHelper.isA(act, shortName)) {
+                found++;
+            }
         }
-        checkEvent(event, action, reminder, reminderType, customer, contact, patient, documentTemplate);
+        if (exists) {
+            if (found == 0) {
+                fail(shortName + " not found");
+            } else if (found > 1) {
+                fail(shortName + " found more than once");
+            }
+        } else if (found != 0) {
+            fail(shortName + " found");
+        }
     }
 
     /**
      * Processes a reminder.
      *
      * @param reminder the reminder
-     * @return the reminder event
      */
-    private ReminderEvent process(Act reminder) {
-        ReminderProcessor processor = new ReminderProcessor(null, null, new Date(), false, getArchetypeService(),
-                                                            rules);
-        final List<ReminderEvent> events = new ArrayList<ReminderEvent>();
-        processor.addListener(new ProcessorListener<ReminderEvent>() {
-            @Override
-            public void process(ReminderEvent event) {
-                events.add(event);
-            }
-        });
-
-        processor.process(reminder);
-        assertEquals(1, events.size());
-        return events.get(0);
-    }
-
-    /**
-     * Verifies that the attributes of an event match that expected.
-     *
-     * @param event            the event to check
-     * @param action           the expected action
-     * @param reminder         the expected reminder
-     * @param reminderType     the expected reminderType
-     * @param customer         the expected customer. May be {@code null}
-     * @param contact          the expected contact. May be {@code null}
-     * @param patient          the expected patient. May be {@code null}
-     * @param documentTemplate the expected document template. May be {@code null}
-     */
-    private void checkEvent(ReminderEvent event, ReminderEvent.Action action, Act reminder, Entity reminderType,
-                            Party customer, Contact contact, Party patient, Entity documentTemplate) {
-        assertEquals(action, event.getAction());
-        assertEquals(reminder, event.getReminder());
-        assertEquals(reminderType, event.getReminderType().getEntity());
-        assertEquals(customer, event.getCustomer());
-        assertEquals(contact, event.getContact());
-        assertEquals(patient, event.getPatient());
-        assertEquals(documentTemplate, event.getDocumentTemplate());
+    private List<Act> process(Act reminder) {
+        IMObject object = create(ReminderArchetypes.CONFIGURATION);
+        ReminderConfiguration config = new ReminderConfiguration(object, getArchetypeService());
+        ReminderProcessor processor = new ReminderProcessor(new Date(), config, false, getArchetypeService(), rules);
+        return processor.process(reminder);
     }
 
     /**
      * Creates a location contact.
      *
+     * @param addReminderPurpose if {@code true}, add a REMINDER purpose
      * @return a new contact
      */
-    private Contact createLocation() {
-        return TestHelper.createLocationContact("Foo", "ELTHAM", "VIC", "3095");
+    private Contact createLocation(boolean addReminderPurpose) {
+        Contact contact = TestHelper.createLocationContact("Foo", "ELTHAM", "VIC", "3095");
+        if (addReminderPurpose) {
+            addReminderPurpose(contact);
+        }
+        return contact;
     }
 
     /**
      * Creates an email contact.
      *
+     * @param addReminderPurpose if {@code true}, add a REMINDER purpose
      * @return a new contact
      */
-    private Contact createEmail() {
-        return TestHelper.createEmailContact("foo@bar.com");
+    private Contact createEmail(boolean addReminderPurpose) {
+        Contact contact = TestHelper.createEmailContact("foo@bar.com");
+        if (addReminderPurpose) {
+            addReminderPurpose(contact);
+        }
+        return contact;
     }
 
     /**
      * Creates a phone contact.
      *
-     * @param sms if {@code true}, enables SMS messages
+     * @param sms                if {@code true}, enables SMS messages
+     * @param addReminderPurpose if {@code true}, add a REMINDER purpose
      * @return a new contact
      */
-    private Contact createPhone(boolean sms) {
-        Contact contact = TestHelper.createPhoneContact("03", "1234566789");
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("sms", sms);
+    private Contact createPhone(boolean sms, boolean addReminderPurpose) {
+        Contact contact = TestHelper.createPhoneContact("03", "1234566789", sms);
+        if (addReminderPurpose) {
+            addReminderPurpose(contact);
+        }
         return contact;
+    }
+
+    /**
+     * Adds a reminder purpose to a contact.
+     *
+     * @param contact the contact
+     */
+    private void addReminderPurpose(Contact contact) {
+        contact.addClassification(TestHelper.getLookup(ContactArchetypes.PURPOSE, ReminderProcessor.REMINDER_PURPOSE));
     }
 
 }

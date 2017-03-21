@@ -13,6 +13,7 @@
  *
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.supplier.delivery;
 
 import org.openvpms.archetype.rules.act.ActStatus;

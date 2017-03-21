@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -258,13 +258,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return {@code true} if an object exists and there is no edit button or it is enabled
      */
     public boolean canEdit() {
-        boolean edit = false;
-        if (actions.canEdit(object)) {
-            ButtonSet buttons = getButtons();
-            Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
-            edit = button != null && button.isEnabled();
-        }
-        return edit;
+        return canEdit(object);
     }
 
     /**
@@ -283,7 +277,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public void edit(List<Selection> path) {
         T object = getObject();
         if (object != null) {
-            if (canEdit()) {
+            if (canEdit(object)) {
                 if (object.isNew()) {
                     edit(object, path);
                 } else {
@@ -571,6 +565,22 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     protected void onCreated(T object) {
         edit(object, null);
+    }
+
+    /**
+     * Determines if an object can be edited.
+     *
+     * @param object the object
+     * @return {@code true} if an object exists and there is no edit button or it is enabled
+     */
+    protected boolean canEdit(T object) {
+        boolean edit = false;
+        if (actions.canEdit(object)) {
+            ButtonSet buttons = getButtons();
+            Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
+            edit = button != null && button.isEnabled();
+        }
+        return edit;
     }
 
     /**

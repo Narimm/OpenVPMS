@@ -11,18 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.component.processor.AbstractActionProcessor;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.Contacts;
+import org.openvpms.archetype.rules.party.PurposeMatcher;
+import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -32,9 +34,18 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
+import static org.openvpms.archetype.rules.party.ContactArchetypes.EMAIL;
+import static org.openvpms.archetype.rules.party.ContactArchetypes.LOCATION;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoContactsForRules;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderCount;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderType;
 
 
@@ -43,26 +54,22 @@ import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorExc
  *
  * @author Tim Anderson
  */
-public class ReminderProcessor
-        extends AbstractActionProcessor<Action, Act, ReminderEvent> {
+public class ReminderProcessor {
 
     /**
-     * The processing date, used to determine when reminders should be
-     * cancelled.
+     * Reminder contact purpose.
+     */
+    public static final String REMINDER_PURPOSE = "REMINDER";
+
+    /**
+     * Process reminders due on or before this date.
      */
     private final Date processingDate;
 
     /**
-     * The 'from' date. If non-null, only process reminders that have a next-due
-     * date >= from.
+     * The reminder configuration.
      */
-    private final Date from;
-
-    /**
-     * The 'to' date. If non-null, only process reminders that have a next-due
-     * date <= to.
-     */
-    private final Date to;
+    private final ReminderConfiguration config;
 
     /**
      * If {@code true}, ignore any reminder templates with {@code sms = true}
@@ -75,11 +82,6 @@ public class ReminderProcessor
     private final IArchetypeService service;
 
     /**
-     * Reminder rules.
-     */
-    private final ReminderRules rules;
-
-    /**
      * Patient rules.
      */
     private final PatientRules patientRules;
@@ -87,47 +89,39 @@ public class ReminderProcessor
     /**
      * Reminder type cache.
      */
-    private final ReminderTypeCache reminderTypes;
-
-    /**
-     * Determines if evaluation of patients and customers should occur, even if the reminder must be cancelled or
-     * skipped.
-     */
-    private boolean evaluateFully = false;
+    private final ReminderTypes reminderTypes;
 
 
     /**
      * Constructs a {@link ReminderProcessor}.
      *
-     * @param from           the 'from' date. May be {@code null}
-     * @param to             the 'to' date. Nay be {@code null}
-     * @param processingDate the processing date
-     * @param disableSMS     if {@code true}, ignore any reminder templates with {@code sms = true}
-     * @param service        the archetype service
+     * @param date       process reminders due on or before this date
+     * @param config     the reminder configuration
+     * @param disableSMS if {@code true}, ignore any reminder templates with {@code sms = true}
+     * @param service    the archetype service
      */
-    public ReminderProcessor(Date from, Date to, Date processingDate, boolean disableSMS, IArchetypeService service,
+    public ReminderProcessor(Date date, ReminderConfiguration config, boolean disableSMS, IArchetypeService service,
                              PatientRules patientRules) {
-        this.from = from;
-        this.to = to;
-        this.processingDate = processingDate;
+        this.processingDate = date;
+        this.config = config;
         this.disableSMS = disableSMS;
         this.service = service;
         this.patientRules = patientRules;
-        rules = new ReminderRules(service, new ReminderTypeCache(), patientRules);
-        reminderTypes = new ReminderTypeCache(service);
+        reminderTypes = new ReminderTypes(service);
     }
 
     /**
      * Process a reminder.
      *
      * @param reminder the reminder to process
+     * @return the acts to save
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    public void process(Act reminder) {
+    public List<Act> process(Act reminder) {
         ActBean bean = new ActBean(reminder, service);
         int reminderCount = bean.getInt("reminderCount");
-        process(reminder, reminderCount, bean, false);
+        return process(reminder, reminderCount, bean, false);
     }
 
     /**
@@ -135,252 +129,97 @@ public class ReminderProcessor
      *
      * @param reminder      the reminder
      * @param reminderCount the reminder count
-     * @return the reminder event
+     * @return the acts to save
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    public ReminderEvent process(Act reminder, int reminderCount) {
+    public List<Act> process(Act reminder, int reminderCount) {
         ActBean bean = new ActBean(reminder, service);
         return process(reminder, reminderCount, bean, true);
     }
 
     /**
-     * Determines if reminder events should be fully populated, even if the reminder is to be cancelled or skipped.
-     * <p/>
-     * For performance, defaults to {@code false}
+     * Process a reminder for a particular reminder count and contact.
      *
-     * @param evaluateFully if {@code true} populate patient, customer and contact information for cancelled and
-     *                      skipped reminders
+     * @param reminder      the reminder
+     * @param reminderCount the reminder count
+     * @param contact       the contact
+     * @return the reminder item, linked to the reminder. The caller is reponsible for saving this
      */
-    public void setEvaluateFully(boolean evaluateFully) {
-        this.evaluateFully = evaluateFully;
-    }
-
-    /**
-     * Generates a reminder.
-     *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param template         the template. An instance of <em>entityRelationship.reminderTypeTemplate</em>
-     * @param documentTemplate the document template. An instance of <em>entity.documentTemplate</em>.
-     *                         May be {@code null}
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected ReminderEvent generate(Act reminder, ReminderType reminderType, EntityRelationship template,
-                                     Entity documentTemplate) {
-        ReminderEvent result;
-        Party patient = getPatient(reminder);
-        if (patient != null) {
-            IMObjectBean templateBean = new IMObjectBean(template, service);
-            boolean list = templateBean.getBoolean("list");
-            boolean export = templateBean.getBoolean("export");
-            boolean canSMSTemplate = !disableSMS && canSMSTemplate(documentTemplate);
-            boolean sms = templateBean.getBoolean("sms") && canSMSTemplate;
-            if (!list && !export && documentTemplate == null) {
-                // no template, so can't process. Strictly speaking this shouldn't happen - a template relationship
-                // should always have a template
-                result = skip(reminder, reminderType, patient);
-            } else {
-                Party customer = getCustomer(patient);
-                Contact contact = getContact(customer, sms);
-                if (list) {
-                    result = list(reminder, reminderType, patient, customer, contact, documentTemplate);
-                } else if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-                    if (export) {
-                        result = export(reminder, reminderType, patient, customer, contact, documentTemplate);
-                    } else {
-                        result = print(reminder, reminderType, patient, customer, contact, documentTemplate);
-                    }
-                } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-                    if (canSMSTemplate && canSMS(contact)) {
-                        result = sms(reminder, reminderType, patient, customer, contact, documentTemplate);
-                    } else {
-                        result = phone(reminder, reminderType, patient, customer, contact, documentTemplate);
-                    }
-                } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                    result = email(reminder, reminderType, patient, customer, contact, documentTemplate);
-                } else {
-                    // no/unrecognised contact
-                    result = list(reminder, reminderType, patient, customer, contact, documentTemplate);
-                }
+    public Act process(Act reminder, int reminderCount, Contact contact) {
+        ActBean bean = new ActBean(reminder, service);
+        ReminderType reminderType = getReminderType(bean);
+        ReminderCount count = reminderType.getReminderCount(reminderCount);
+        if (count == null) {
+            throw new ReminderProcessorException(NoReminderCount, reminderType.getName(), reminderCount);
+        }
+        ArrayList<Act> toSave = new ArrayList<>();
+        Date dueDate = reminder.getActivityStartTime();
+        Set<Contact> contacts = Collections.singleton(contact);
+        if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
+            if (!generateEmail(bean, dueDate, contacts, reminderCount, toSave)) {
+                throw new IllegalStateException("Failed to generate email");
+            }
+        } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+            if (disableSMS) {
+                throw new IllegalStateException("Cannot process phone contacts. SMS is disabled");
+            }
+            IMObjectBean contactBean = new IMObjectBean(contact, service);
+            if (!contactBean.getBoolean("sms")) {
+                throw new IllegalArgumentException("Cannot use contact to SMS");
+            }
+            if (!generateSMS(bean, dueDate, contacts, reminderCount, toSave)) {
+                throw new IllegalStateException("Failed to generate SMS");
+            }
+        } else if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
+            if (!generatePrint(bean, dueDate, contacts, reminderCount, toSave)) {
+                throw new IllegalStateException("Failed to generate SMS");
             }
         } else {
-            // need a patient
-            result = skip(reminder, reminderType);
+            throw new IllegalArgumentException("Invalid archetype for contact: "
+                                               + contact.getArchetypeId().getShortName());
         }
-        return result;
+        if (toSave.size() != 1) {
+            throw new IllegalStateException("Failed to generate reminder item");
+        }
+        return toSave.get(0);
     }
 
     /**
-     * Notifies listeners to skip a reminder, when the patient cannot be determined.
+     * Returns the patient associated with a reminder.
      *
-     * @param reminder     the reminder
-     * @param reminderType the reminder type
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
+     * @param reminder the reminder
+     * @return the patient, or {@code null} if none is found
+     * @throws ReminderProcessorException if the patient cannot be found
      */
-    protected ReminderEvent skip(Act reminder, ReminderType reminderType) {
-        ReminderEvent event = new ReminderEvent(Action.SKIP, reminder, reminderType);
-        notifyListeners(event.getAction(), event);
-        return event;
+    public Party getPatient(Act reminder) {
+        return getPatient(new ActBean(reminder, service));
     }
 
     /**
-     * Notifies listeners to skip a reminder.
+     * Returns the customer associated with a patient.
      *
-     * @param reminder     the reminder
-     * @param reminderType the reminder type
-     * @param patient      the patient. May be {@code null}
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
+     * @param patient the patient
+     * @return the corresponding customer, or {@code null} if it cannot be found
      */
-    protected ReminderEvent skip(Act reminder, ReminderType reminderType, Party patient) {
-        return notifyListeners(Action.SKIP, reminder, reminderType, patient);
+    public Party getCustomer(Party patient) {
+        return patientRules.getOwner(patient);
     }
 
     /**
-     * Notifies listeners to cancel a reminder.
+     * Returns the reminder type associated with a reminder.
      *
-     * @param reminder     the reminder
-     * @param reminderType the reminder type
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
+     * @param reminder the reminder
+     * @return the reminder type
+     * @throws ReminderProcessorException if the reminder type cannot be found
      */
-    protected ReminderEvent cancel(Act reminder, ReminderType reminderType) {
-        return notifyListeners(Action.CANCEL, reminder, reminderType, null);
+    public ReminderType getReminderType(Act reminder) {
+        return getReminderType(new ActBean(reminder, service));
     }
 
-    /**
-     * Notifies listeners to email a reminder.
-     *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param patient          the patient
-     * @param customer         the customer
-     * @param contact          the reminder contact
-     * @param documentTemplate the document template
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected ReminderEvent email(Act reminder, ReminderType reminderType, Party patient, Party customer,
-                                  Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.EMAIL, reminder, reminderType, patient, customer, contact,
-                                                documentTemplate);
-        notifyListeners(event.getAction(), event);
-        return event;
-    }
 
-    /**
-     * Notifies listeners to SMS a reminder.
-     *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param patient          the patient
-     * @param customer         the customer
-     * @param contact          the reminder contact
-     * @param documentTemplate the document template. May be {@code null}
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected ReminderEvent sms(Act reminder, ReminderType reminderType, Party patient, Party customer,
-                                Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.SMS, reminder, reminderType, patient, customer, contact,
-                                                documentTemplate);
-        notifyListeners(event.getAction(), event);
-        return event;
-    }
-
-    /**
-     * Notifies listeners to phone a reminder.
-     *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param patient          the patient
-     * @param customer         the customer
-     * @param contact          the reminder contact
-     * @param documentTemplate the document template. May be {@code null}
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected ReminderEvent phone(Act reminder, ReminderType reminderType, Party patient, Party customer,
-                                  Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.PHONE, reminder, reminderType, patient, customer, contact,
-                                                documentTemplate);
-        notifyListeners(event.getAction(), event);
-        return event;
-    }
-
-    /**
-     * Notifies listeners to print a reminder.
-     *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param patient          the patient
-     * @param customer         the customer
-     * @param contact          the reminder contact
-     * @param documentTemplate the document template
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected ReminderEvent print(Act reminder, ReminderType reminderType, Party patient, Party customer,
-                                  Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.PRINT, reminder, reminderType, patient, customer, contact,
-                                                documentTemplate);
-        notifyListeners(event.getAction(), event);
-        return event;
-    }
-
-    /**
-     * Notifies listeners to list a reminder. This is for reminders that have no contact, or a contact that is not one
-     * of <em>contact.location<em>, <em>contact.phoneNumber</em>, or <em>contact.email</em>.
-     *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param patient          the patient
-     * @param customer         the customer
-     * @param contact          the reminder contact. May be {@code null}
-     * @param documentTemplate the document template
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected ReminderEvent list(Act reminder, ReminderType reminderType, Party patient, Party customer,
-                                 Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.LIST, reminder, reminderType, patient, customer, contact,
-                                                documentTemplate);
-        notifyListeners(event.getAction(), event);
-        return event;
-    }
-
-    /**
-     * Notifies listeners to export a reminder. This is for reminders that would normally be printed, but whose
-     * reminder type has its {@code export} node set to {@code true}.
-     *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param patient          the patient
-     * @param customer         the customer
-     * @param contact          the reminder contact. May be {@code null}
-     * @param documentTemplate the document template
-     * @return the reminder event
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected ReminderEvent export(Act reminder, ReminderType reminderType, Party patient, Party customer,
-                                   Contact contact, Entity documentTemplate) {
-        ReminderEvent event = new ReminderEvent(Action.EXPORT, reminder, reminderType, patient, customer, contact,
-                                                documentTemplate);
-        notifyListeners(event.getAction(), event);
-        return event;
+    protected Date now() {
+        return new Date();
     }
 
     /**
@@ -390,142 +229,430 @@ public class ReminderProcessor
      * @param reminderCount the reminder count
      * @param bean          contains the reminder
      * @param ignoreDueDate if {@code true}, ignore the reminder due date
-     * @return the reminder event
+     * @return the acts to save
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    private ReminderEvent process(Act reminder, int reminderCount, ActBean bean, boolean ignoreDueDate) {
-        ReminderEvent result;
+    private List<Act> process(Act reminder, int reminderCount, ActBean bean, boolean ignoreDueDate) {
+        List<Act> result;
+        ReminderType reminderType = getReminderType(bean);
 
-        IMObjectReference ref = bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
-        ReminderType reminderType = reminderTypes.get(ref);
-        if (reminderType == null) {
-            throw new ReminderProcessorException(NoReminderType);
-        }
-        Date dueDate = reminder.getActivityEndTime();
-        if (rules.shouldCancel(reminder, processingDate)) {
-            result = cancel(reminder, reminderType);
+        Date dueDate = reminder.getActivityStartTime();
+        if (!ignoreDueDate && reminderType.shouldCancel(dueDate, processingDate)) {
+            result = cancel(reminder);
         } else {
-            if (ignoreDueDate || reminderType.isDue(dueDate, reminderCount, from, to)) {
-                EntityRelationship template = reminderType.getTemplateRelationship(reminderCount);
-                if (template != null) {
-                    result = generate(reminder, reminderType, template,
-                                      reminderType.getDocumentTemplate(reminderCount));
-                } else {
-                    // no template, so skip the reminder
-                    result = skip(reminder, reminderType, null);
-                }
+            Party patient = getPatient(bean);
+            if (!patient.isActive() || patientRules.isDeceased(patient)) {
+                result = cancel(reminder);
             } else {
-                result = skip(reminder, reminderType, null);
+                ReminderCount count = reminderType.getReminderCount(reminderCount);
+                if (count != null) {
+                    result = generate(patient, reminder, count);
+                } else {
+                    // no reminder count, so list the reminder
+                    result = new ArrayList<>();
+                    String error = new ReminderProcessorException(NoReminderCount, reminderType.getName(),
+                                                                  reminderCount).getMessage();
+                    generateList(new ActBean(reminder, service), dueDate, reminderCount, error, result);
+                }
             }
         }
         return result;
     }
 
     /**
-     * Notifies listeners of a reminder event.
+     * Generates reminder items for a reminder based on the reminder count rules and available customer contacts.
      *
-     * @param action       the event action
-     * @param reminder     the reminder
-     * @param reminderType the reminder type
-     * @param patient      the patient. May be {@code null}
-     * @return a new reminder event
+     * @param patient  the patient
+     * @param reminder the reminder
+     * @param count    the reminder count
+     * @return the acts to save
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    private ReminderEvent notifyListeners(Action action, Act reminder, ReminderType reminderType, Party patient) {
-        Party customer = null;
-        Contact contact = null;
-        if (evaluateFully) {
-            if (patient == null) {
-                patient = getPatient(reminder);
-            }
-            if (patient != null) {
-                customer = getCustomer(patient);
-                contact = getContact(customer);
+    protected List<Act> generate(Party patient, Act reminder, ReminderCount count) {
+        Party customer = getCustomer(patient);
+        List<Contact> list = customer != null
+                             ? Contacts.sort(customer.getContacts()) : Collections.<Contact>emptyList();
+        Set<Contact> found = null;
+        DocumentTemplate template = count.getTemplate();
+        ReminderRule matchingRule = null;
+        for (ReminderRule rule : count.getRules()) {
+            Set<Contact> matches = new HashSet<>();
+            if (getContacts(rule, list, matches, template)) {
+                found = matches;
+                matchingRule = rule;
+                break;
             }
         }
-        ReminderEvent event = new ReminderEvent(action, reminder, reminderType, patient, customer, contact, null);
-        notifyListeners(event.getAction(), event);
-        return event;
+        ActBean bean = new ActBean(reminder, service);
+        List<Act> toSave = new ArrayList<>();
+        Date dueDate = reminder.getActivityStartTime();
+        if (matchingRule != null) {
+            ReminderRule.SendTo sendTo = matchingRule.getSendTo();
+            if (sendTo == ReminderRule.SendTo.ALL || sendTo == ReminderRule.SendTo.ANY) {
+                if (matchingRule.canEmail()) {
+                    generateEmail(bean, dueDate, found, count.getCount(), toSave);
+                }
+                if (!disableSMS && matchingRule.canSMS()) {
+                    generateSMS(bean, dueDate, found, count.getCount(), toSave);
+                }
+                if (matchingRule.canPrint()) {
+                    generatePrint(bean, dueDate, found, count.getCount(), toSave);
+                }
+            } else {
+                boolean generated = matchingRule.canEmail() && generateEmail(bean, dueDate, found, count.getCount(),
+                                                                             toSave);
+                if (!generated) {
+                    generated = !disableSMS && matchingRule.canSMS() && generateSMS(bean, dueDate, found,
+                                                                                    count.getCount(), toSave);
+                    if (!generated && matchingRule.canPrint()) {
+                        generatePrint(bean, dueDate, found, count.getCount(), toSave);
+                    }
+                }
+            }
+            if (matchingRule.isExport()) {
+                generateExport(bean, dueDate, found, count.getCount(), toSave);
+            }
+            if (matchingRule.isList()) {
+                generateList(bean, dueDate, count.getCount(), null, toSave);
+            }
+        } else {
+            String message = new ReminderProcessorException(NoContactsForRules).getMessage();
+            generateList(bean, dueDate, count.getCount(), message, toSave);
+        }
+        toSave.add(reminder);
+        return toSave;
+    }
+
+
+    /**
+     * Returns the patient associated with a reminder.
+     *
+     * @param bean the reminder
+     * @return the patient
+     */
+    private Party getPatient(ActBean bean) {
+        Party patient = (Party) bean.getNodeParticipant("patient");
+        if (patient == null) {
+            throw new ReminderProcessorException(NoPatient);
+        }
+        return patient;
     }
 
     /**
-     * Returns the patient of a reminder.
+     * Generates an email reminder item, if there is an email contact.
      *
      * @param reminder the reminder
-     * @return the patient, or {@code null} if it cannot be found
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param dueDate  the reminder due date
+     * @param contacts the contacts
+     * @param count    the reminder count
+     * @param toSave   the list of acts to save
+     * @return {@code true}, if an item was generated
      */
-    private Party getPatient(Act reminder) {
-        ActBean bean = new ActBean(reminder, service);
-        return (Party) bean.getParticipant("participation.patient");
-    }
-
-    /**
-     * Returns the customer associated with a patient.
-     *
-     * @param patient the patient
-     * @return the corresponding customer, or {@code null} if it cannot be found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private Party getCustomer(Party patient) {
-        return patientRules.getOwner(patient);
-    }
-
-    /**
-     * Returns the default contact for a customer.
-     *
-     * @param customer the customer. May be {@code null}
-     * @return the default contact, or {@code null}
-     */
-    private Contact getContact(Party customer) {
-        return getContact(customer, false);
-    }
-
-    /**
-     * Returns the contact for a customer.
-     *
-     * @param customer the customer. May be {@code null}
-     * @param sms      if {@code true}, return an SMS contact, if one is present
-     * @return the contact, or {@code null}
-     */
-    private Contact getContact(Party customer, boolean sms) {
-        Contact result = null;
-        if (customer != null) {
-            if (sms) {
-                result = rules.getSMSContact(customer.getContacts());
-                if (result == null) {
-                    result = rules.getContact(customer.getContacts());
-                }
-            } else {
-                result = rules.getContact(customer.getContacts());
-            }
+    private boolean generateEmail(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+        boolean result = false;
+        if (hasContact(ContactArchetypes.EMAIL, contacts)) {
+            createItem(ReminderArchetypes.EMAIL_REMINDER, config.getEmailSendDate(dueDate), reminder, count,
+                       null, toSave);
+            result = true;
         }
         return result;
     }
 
     /**
-     * Determines if a document template has SMS text.
+     * Generates an SNS reminder item, if there is an SMS contact.
      *
-     * @param documentTemplate the document template. May be {@code null}
-     * @return {@code true} if the template has SMS text
+     * @param reminder the reminder
+     * @param dueDate  the reminder due date
+     * @param contacts the contacts
+     * @param count    the reminder count
+     * @param toSave   the list of acts to save
+     * @return {@code true}, if an item was generated
      */
-    private boolean canSMSTemplate(Entity documentTemplate) {
-        if (documentTemplate != null) {
-            IMObjectBean bean = new IMObjectBean(documentTemplate, service);
-            return !StringUtils.isEmpty(bean.getString("sms"));
+    private boolean generateSMS(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+        boolean result = false;
+        if (hasContact(ContactArchetypes.PHONE, contacts)) {
+            createItem(ReminderArchetypes.SMS_REMINDER, config.getSMSSendDate(dueDate), reminder, count, null,
+                       toSave);
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Generates a print reminder item, if there is an location contact.
+     *
+     * @param reminder the reminder
+     * @param dueDate  the reminder due date
+     * @param contacts the contacts
+     * @param count    the reminder count
+     * @param toSave   the list of acts to save
+     * @return {@code true}, if an item was generated
+     */
+    private boolean generatePrint(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+        boolean result = false;
+        if (hasContact(ContactArchetypes.LOCATION, contacts)) {
+            createItem(ReminderArchetypes.PRINT_REMINDER, config.getPrintSendDate(dueDate), reminder, count,
+                       null, toSave);
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Generates an export reminder item, if there is an location contact.
+     *
+     * @param reminder the reminder
+     * @param dueDate  the reminder due date
+     * @param contacts the contacts
+     * @param count    the reminder count
+     * @param toSave   the list of acts to save
+     * @return {@code true}, if an item was generated
+     */
+    private boolean generateExport(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+        boolean result = false;
+        if (hasContact(ContactArchetypes.LOCATION, contacts)) {
+            createItem(ReminderArchetypes.EXPORT_REMINDER, config.getExportSendDate(dueDate), reminder, count,
+                       null, toSave);
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Generates a list reminder item.
+     *
+     * @param reminder the reminder
+     * @param dueDate  the reminder due date
+     * @param count    the reminder count
+     * @param toSave   the list of acts to save
+     */
+    private Act generateList(ActBean reminder, Date dueDate, int count, String error, List<Act> toSave) {
+        return createItem(ReminderArchetypes.LIST_REMINDER, config.getListSendDate(dueDate), reminder, count, error,
+                          toSave);
+    }
+
+    /**
+     * Determines if a contact type exists.
+     *
+     * @param shortName the contact archetype short name
+     * @param contacts  the available contacts
+     * @return {@code true} if the contact exists
+     */
+    private boolean hasContact(String shortName, Set<Contact> contacts) {
+        for (Contact contact : contacts) {
+            if (TypeHelper.isA(contact, shortName)) {
+                return true;
+            }
         }
         return false;
     }
 
     /**
-     * Determines if a reminder can be sent via SMS.
+     * Creates a reminder item.
      *
-     * @param contact the phone contact
-     * @return {@code true} if an SMS can be sent
+     * @param shortName the reminder item archetype
+     * @param startTime the start time (aka send from date)
+     * @param reminder  the parent reminder
+     * @param count     the reminder count
+     * @param error     the error message. May be {@code null}
+     * @param toSave    the list to add the changed acts to
+     * @return the new reminder item
      */
-    private boolean canSMS(Contact contact) {
-        IMObjectBean bean = new IMObjectBean(contact, service);
-        return bean.getBoolean("sms");
+    private Act createItem(String shortName, Date startTime, ActBean reminder, int count, String error,
+                           List<Act> toSave) {
+        Act act = (Act) service.create(shortName);
+        act.setActivityStartTime(DateRules.getDate(startTime));  // set the send date
+        act.setActivityEndTime(reminder.getDate("endTime"));     // set the due date to that of the reminder
+        ActBean bean = new ActBean(act, service);
+        bean.setValue("count", count);
+        if (error != null) {
+            bean.setValue("error", error);
+            act.setStatus(ReminderItemStatus.ERROR);
+        } else {  // if (DateRules.compareTo(startTime, now()) > 0) {
+            act.setStatus(ReminderItemStatus.PENDING);
+        }
+        // } else {
+        // TODO - not sure this is required. Should be handled via cancellation
+//            act.setStatus(ReminderItemStatus.ERROR);
+//            bean.setValue("error", new ReminderProcessorException(Late).getMessage());
+        //}
+
+        reminder.addNodeRelationship("items", act);
+        toSave.add(act);
+        return act;
+    }
+
+    /**
+     * Adds contacts matching the rule.
+     *
+     * @param rule     the rule
+     * @param contacts the available contacts
+     * @param matches  the matches to add to
+     * @param template the document template
+     * @return {@code true} if the rule matched, otherwise {@code false}
+     */
+    private boolean getContacts(ReminderRule rule, List<Contact> contacts, Set<Contact> matches,
+                                DocumentTemplate template) {
+        ReminderRule.SendTo sendTo = rule.getSendTo();
+        boolean isAll = sendTo == ReminderRule.SendTo.ALL;
+        if (!contacts.isEmpty()) {
+            if (rule.isContact()) {
+                if (!addReminderContacts(contacts, matches, template) && isAll) {
+                    return false;
+                }
+            }
+            if (rule.isEmail()) {
+                if (!addEmailContact(contacts, matches, template) && isAll) {
+                    return false;
+                }
+            }
+            if (rule.isSMS()) {
+                if (isAll && disableSMS) {
+                    return false;
+                }
+                if (!addSMSContact(contacts, matches, template) && isAll) {
+                    return false;
+                }
+            }
+            if (rule.isPrint()) {
+                if (!addLocationContact(contacts, matches, template) && isAll) {
+                    return false;
+                }
+            }
+        }
+        if ((rule.isExport() || rule.isList())) {
+            addContact(LOCATION, contacts, matches);
+        }
+
+        return !matches.isEmpty();
+    }
+
+    /**
+     * Returns the reminder type associated with a reminder.
+     *
+     * @param bean the reminder
+     * @return the reminder type
+     * @throws ReminderProcessorException if the reminder type cannot be found
+     */
+    private ReminderType getReminderType(ActBean bean) {
+        IMObjectReference ref = bean.getNodeParticipantRef("reminderType");
+        ReminderType reminderType = reminderTypes.get(ref);
+        if (reminderType == null) {
+            throw new ReminderProcessorException(NoReminderType);
+        }
+        return reminderType;
+    }
+
+    /**
+     * Cancels a reminder.
+     *
+     * @param reminder the reminder to cancel
+     * @return the lists of acts requiring saving
+     */
+    private List<Act> cancel(Act reminder) {
+        reminder.setStatus(ActStatus.CANCELLED);
+        List<Act> toSave = new ArrayList<>();
+        toSave.add(reminder);
+        ActBean bean = new ActBean(reminder, service);
+        for (Act item : bean.getNodeActs("items")) {
+            if (!ActStatus.COMPLETED.equals(item.getStatus())) {
+                item.setStatus(ActStatus.CANCELLED);
+                toSave.add(item);
+            }
+        }
+        return toSave;
+    }
+
+    /**
+     * Adds contacts with <em>REMINDER</em> purpose.
+     *
+     * @param contacts the customer's contacts
+     * @param matches  the matches to add to
+     * @param template the reminder template. If {@code null}, no contacts will be added
+     * @return {@code true} if any contacts were added
+     */
+    private boolean addReminderContacts(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
+        int size = matches.size();
+        if (template != null) {
+            if (!disableSMS && template.getSMSTemplate() != null) {
+                matches.addAll(Contacts.findAll(contacts, new SMSMatcher(REMINDER_PURPOSE, true, service)));
+            }
+            matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(LOCATION, REMINDER_PURPOSE, true, service)));
+            if (template.getEmailTemplate() != null) {
+                matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(EMAIL, REMINDER_PURPOSE, true, service)));
+            }
+        }
+        return size != matches.size();
+    }
+
+    /**
+     * Adds the customer's email contact, if any.
+     *
+     * @param contacts the customer's contacts
+     * @param matches  the matches to add to
+     * @param template the reminder template. If {@code null} no contact will be added
+     * @return {@code true} if any contacts were added
+     */
+    private boolean addEmailContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
+        return template != null && template.getEmailTemplate() != null
+               && addContact(ContactArchetypes.EMAIL, contacts, matches);
+    }
+
+    /**
+     * Adds the customer's SMS contact, if any.
+     *
+     * @param contacts the customer's contacts
+     * @param matches  the matches to add to
+     * @param template the reminder template. If {@code null} no contact will be added
+     * @return {@code true} if any contacts were added
+     */
+    private boolean addSMSContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
+        return template != null && template.getSMSTemplate() != null
+               && addContact(contacts, matches, new SMSMatcher(REMINDER_PURPOSE, false, service));
+    }
+
+    /**
+     * Adds the customer's location contact, if any.
+     *
+     * @param contacts the customer's contacts
+     * @param matches  the matches to add to
+     * @param template the reminder template. If {@code null} no contact will be added
+     * @return {@code true} if any contacts were added
+     */
+    private boolean addLocationContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
+        return (template != null) && addContact(LOCATION, contacts, matches);
+    }
+
+    /**
+     * Adds a contact of the specified type if one is present.
+     *
+     * @param shortName the contact archetype short name
+     * @param contacts  the available contacts
+     * @param matches   the matches to add to
+     * @return {@code true} if a contact was matched, otherwise {@code false}
+     */
+    private boolean addContact(String shortName, List<Contact> contacts, Set<Contact> matches) {
+        PurposeMatcher matcher = new PurposeMatcher(shortName, REMINDER_PURPOSE, false, service);
+        return addContact(contacts, matches, matcher);
+    }
+
+    /**
+     * Adds a contact matching the criteria, if one is present.
+     *
+     * @param contacts the available contacts
+     * @param matches  the matches to add to
+     * @param matcher  the criteria
+     * @return {@code true} if a contact was matched, otherwise {@code false}
+     */
+    private boolean addContact(List<Contact> contacts, Set<Contact> matches, PurposeMatcher matcher) {
+        Contact contact = Contacts.find(contacts, matcher);
+        if (contact != null) {
+            matches.add(contact);
+            return true;
+        }
+        return false;
     }
 
 }

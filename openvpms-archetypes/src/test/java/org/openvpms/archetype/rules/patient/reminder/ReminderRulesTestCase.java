@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeRules;
@@ -36,7 +35,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -53,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -272,43 +269,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderRules#isDue(Act, Date, Date)} method.
-     */
-    @Test
-    public void testIsDue() {
-        Lookup group = ReminderTestHelper.createReminderGroup();
-        Party patient = TestHelper.createPatient();
-        Entity reminderType = ReminderTestHelper.createReminderType(
-                1, DateUnits.MONTHS, group);
-        Date start = java.sql.Date.valueOf("2007-01-01");
-        Date due = rules.calculateReminderDueDate(start, reminderType);
-        Act reminder = createReminderWithDueDate(patient, reminderType,
-                                                 due);
-
-        checkDue(reminder, null, null, true);
-        checkDue(reminder, null, "2007-01-01", false);
-        checkDue(reminder, "2007-01-01", null, true);
-        checkDue(reminder, "2007-01-01", "2007-01-31", false);
-        checkDue(reminder, "2007-01-01", "2007-02-01", true);
-
-        // Now add a template to the reminderType, due 2 weeks after the current
-        // due date.
-        EntityRelationship reminderTypeTemplate = (EntityRelationship) create(
-                ReminderArchetypes.REMINDER_TYPE_TEMPLATE);
-        Entity template = (Entity) create("entity.documentTemplate");
-        template.setName("XTestTemplate_" + System.currentTimeMillis());
-        IMObjectBean bean = new IMObjectBean(reminderTypeTemplate);
-        bean.setValue("reminderCount", 0);
-        bean.setValue("interval", 2);
-        bean.setValue("units", DateUnits.WEEKS);
-        bean.setValue("source", reminderType.getObjectReference());
-        bean.setValue("target", template.getObjectReference());
-        save(reminderTypeTemplate, template);
-        checkDue(reminder, "2007-01-01", "2007-02-14", false);
-        checkDue(reminder, "2007-01-01", "2007-02-15", true);
-    }
-
-    /**
      * Tests the {@link ReminderRules#shouldCancel(Act, Date)} method.
      */
     @Test
@@ -320,7 +280,9 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Date start = java.sql.Date.valueOf("2007-01-01");
         Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
         reminder.setActivityStartTime(start);
-        rules.calculateReminderDueDate(reminder);
+        Date due = rules.calculateReminderDueDate(start, reminderType);
+        reminder.setActivityStartTime(due);
+        reminder.setActivityEndTime(due);
 
         checkShouldCancel(reminder, "2007-01-01", false);
         checkShouldCancel(reminder, "2007-01-31", false);
@@ -342,50 +304,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         patientBean.setValue("deceased", true);
         patientBean.save();
         checkShouldCancel(reminder, "2007-02-01", true);
-
-    }
-
-    /**
-     * Tests the {@link ReminderRules#getContact(Set)} method.
-     */
-    @Test
-    public void testGetContact() {
-        // create a patient, and owner. Remove default contacts from owner
-        Party owner = TestHelper.createCustomer();
-        Contact[] contacts = owner.getContacts().toArray(new Contact[owner.getContacts().size()]);
-        for (Contact contact : contacts) {
-            owner.removeContact(contact);
-        }
-
-        // add an email contact to the owner, and verify it is returned
-        Contact email = createEmail();
-        checkContact(owner, email, email);
-
-        // add a location contact to the owner, and verify it is returned
-        // instead of the email contact
-        Contact location = createLocation(false);
-        checkContact(owner, location, location);
-
-        // add a preferred phone contact to the owner, and verify the location
-        // contact is still returned
-        Contact phone = createPhone(true);
-        checkContact(owner, phone, location);
-
-        // add a preferred location contact to the owner, and verify it is
-        // returned instead of the non-preferred location contact
-        Contact preferredLocation = createLocation(true);
-        checkContact(owner, preferredLocation, preferredLocation);
-
-        // add a REMINDER classification to the email contact and verify it is
-        // returned instead of the preferred location contact
-        Lookup reminder = TestHelper.getLookup(ContactArchetypes.PURPOSE, "REMINDER");
-        email.addClassification(reminder);
-        checkContact(owner, email, email);
-
-        // add a REMINDER classification to the location contact and verify it
-        // is returned instead of the email contact
-        preferredLocation.addClassification(reminder);
-        checkContact(owner, preferredLocation, preferredLocation);
     }
 
     /**
@@ -688,21 +606,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(reminderType, bean.getNodeParticipant("reminderType"));
         assertEquals(product, bean.getNodeParticipant("product"));
-        assertEquals(form.getActivityStartTime(), reminder.getActivityStartTime());
+        assertEquals(dueDate, reminder.getActivityStartTime());
         assertEquals(dueDate, reminder.getActivityEndTime());
-    }
-
-    /**
-     * Adds a contact to a customer and verifies the expected contact returned by {@link ReminderRules#getContact(Set)}.
-     *
-     * @param customer the customer
-     * @param contact  the contact to add
-     * @param expected the expected contact
-     */
-    private void checkContact(Party customer, Contact contact, Contact expected) {
-        customer.addContact(contact);
-        Contact c = rules.getContact(customer.getContacts());
-        assertEquals(expected, c);
     }
 
     /**
@@ -791,22 +696,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Checks if a reminder is due using
-     * {@link ReminderRules#isDue(Act, Date, Date)}.
-     *
-     * @param reminder the reminder
-     * @param fromDate the from date. May be <tt>null</tt>
-     * @param toDate   the to date. May be <tt>null</tt>
-     * @param expected the expected isDue result
-     */
-    private void checkDue(Act reminder, String fromDate, String toDate,
-                          boolean expected) {
-        Date from = (fromDate != null) ? java.sql.Date.valueOf(fromDate) : null;
-        Date to = (toDate != null) ? java.sql.Date.valueOf(toDate) : null;
-        assertEquals(expected, rules.isDue(reminder, from, to));
-    }
-
-    /**
      * Checks if a reminder should be cancelled using
      * {@link ReminderRules#shouldCancel(Act, Date)}.
      *
@@ -818,47 +707,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
                                    boolean expected) {
         assertEquals(expected, rules.shouldCancel(reminder,
                                                   java.sql.Date.valueOf(date)));
-    }
-
-    /**
-     * Helper to create an email contact.
-     *
-     * @return a new email contact
-     */
-    private Contact createEmail() {
-        Contact contact = (Contact) create(ContactArchetypes.EMAIL);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("emailAddress", "foo@bar.com");
-        bean.save();
-        return contact;
-    }
-
-    /**
-     * Helper to create a phone contact.
-     *
-     * @param preferred determines if it is the preferred contact
-     * @return a new phone contact
-     */
-    private Contact createPhone(boolean preferred) {
-        Contact contact = (Contact) create(ContactArchetypes.PHONE);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("preferred", preferred);
-        save(contact);
-        return contact;
-    }
-
-    /**
-     * Helper to create a location contact.
-     *
-     * @param preferred determines if it is the preferred contact
-     * @return a new location contact
-     */
-    private Contact createLocation(boolean preferred) {
-        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("preferred", preferred);
-        save(contact);
-        return contact;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.expression;
@@ -121,5 +121,15 @@ public class ExpressionFunctionsTestCase {
         assertEquals("abc", ctx.getValue("expr:trim('abc', 4)"));
         assertEquals("ab", ctx.getValue("expr:trim('abc', 2)"));
         assertEquals("", ctx.getValue("expr:trim('', 255)"));
+    }
+
+    /**
+     * Tests the {@link ExpressionFunctions#replaceIf(String, int, String)} method.
+     */
+    @Test
+    public void testReplaceIf() {
+        assertEquals("abc", ctx.getValue("expr:replaceIf('abc', 4, '123')"));
+        assertEquals("abcd", ctx.getValue("expr:replaceIf('abcd', 4, '123')"));
+        assertEquals("123", ctx.getValue("expr:replaceIf('abcd', 3, '123')"));
     }
 }
