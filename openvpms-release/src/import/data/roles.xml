@@ -723,4 +723,15 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SSUPALL"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RSUPALL"/>
     </data>
+
+    <data id="ROLE_ONLINE_BOOKING" archetype="security.role" name="Online Booking"
+          description="Restricted role to enable external providers to submit online bookings">
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKAPP"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKAPP"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CACTREL"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SACTREL"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPARTIC"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPARTIC"/>
+    </data>
+
 </archetype>
