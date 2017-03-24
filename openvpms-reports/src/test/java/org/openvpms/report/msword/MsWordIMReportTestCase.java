@@ -18,6 +18,7 @@ package org.openvpms.report.msword;
 
 import org.junit.Test;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -63,7 +64,8 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
-        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null, null, null);
+        BasicAddressFormatter formatter = new BasicAddressFormatter(service, lookups);
+        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null, null, formatter, null);
         IMReport<IMObject> report = new MsWordIMReport<>(doc, service, lookups, getHandlers(), factory.create());
 
         Map<String, Object> fields = new HashMap<>();
@@ -96,7 +98,8 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
-        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null, null, null);
+        BasicAddressFormatter formatter = new BasicAddressFormatter(service, lookups);
+        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null, null, formatter, null);
         IMReport<IMObject> report = new MsWordIMReport<>(doc, service, lookups, getHandlers(), factory.create());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();

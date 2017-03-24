@@ -20,10 +20,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -42,6 +45,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -75,114 +79,264 @@ import static org.openvpms.archetype.rules.util.DateUnits.YEARS;
 public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
     /**
-     * Tests the {@link PartyFunctions#getTelephone(Party)} method.
+     * Test customer.
+     */
+    private Party customer;
+
+    /**
+     * Test patient.
+     */
+    private Party patient;
+
+    /**
+     * Estimate linked to the customer.
+     */
+    private Act estimate;
+
+    /**
+     * Item linked to the patient.
+     */
+    private Act item;
+
+    @Before
+    public void setUp() {
+        customer = TestHelper.createCustomer("Foo", "Bar", false, true);
+        IMObjectBean bean = new IMObjectBean(customer);
+        bean.setValue("title", TestHelper.getLookup("lookup.personTitle", "MR").getCode());
+        patient = TestHelper.createPatient(customer);
+        User author = TestHelper.createUser();
+        item = EstimateTestHelper.createEstimateItem(patient, TestHelper.createProduct(), author, BigDecimal.TEN);
+        estimate = EstimateTestHelper.createEstimate(customer, author, item);
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getPartyFullName(Party)}, {@link PartyFunctions#getPartyFullName(Act)} and
+     * {@link PartyFunctions#getPartyFullName(ExpressionContext)} methods.
+     */
+    @Test
+    public void testGetPartyFullName() {
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate); // verifies the customer is accessed from the Act
+        JXPathContext context3 = createContext(item);     // verifies the customer is accessed from the patient owner
+
+        // test the ExpressionContext form
+        assertEquals("Mr Foo Bar", context1.getValue("party:getPartyFullName()"));
+        assertEquals("Mr Foo Bar", context2.getValue("party:getPartyFullName()"));
+        assertEquals("Mr Foo Bar", context3.getValue("party:getPartyFullName()"));
+
+        // test the Party version
+        assertEquals("Mr Foo Bar", context1.getValue("party:getPartyFullName(.)"));
+
+        // test the Act version
+        assertEquals("Mr Foo Bar", context2.getValue("party:getPartyFullName(.)"));
+        assertEquals("Mr Foo Bar", context3.getValue("party:getPartyFullName(.)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getPatientOwner(Party)}, {@link PartyFunctions#getPatientOwner(Act)} and
+     * {@link PartyFunctions#getPatientOwner(ExpressionContext)} methods.
+     */
+    @Test
+    public void testGetPatientOwner() {
+        JXPathContext context1 = createContext(patient);
+        JXPathContext context2 = createContext(item); // verifies the patient is accessed from the Act
+
+        // test the ExpressionContext form
+        assertEquals(customer, context1.getValue("party:getPatientOwner()"));
+        assertEquals(customer, context2.getValue("party:getPatientOwner()"));
+
+        // test the Party version
+        assertEquals(customer, context1.getValue("party:getPatientOwner(.)"));
+
+        // test the Act version
+        assertEquals(customer, context2.getValue("party:getPatientOwner(.)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getTelephone(Party)} and {@link PartyFunctions#getTelephone(Act)} methods.
      */
     @Test
     public void testGetTelephone() {
-        Party party = TestHelper.createCustomer(false);
-        party.getContacts().clear(); // remove all contacts
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
+        assertEquals("", context1.getValue("party:getTelephone(.)"));
+        assertEquals("", context2.getValue("party:getTelephone(.)"));
+        assertEquals("", context3.getValue("party:getTelephone(.)"));
 
-        JXPathContext ctx = createContext(party);
-        assertEquals("", ctx.getValue("party:getTelephone(.)"));
-
-        party.addContact(createPhone("12345", false, "HOME"));
-        party.addContact(createPhone("45678", true, null));  // preferred
-        assertEquals("(03) 45678", ctx.getValue("party:getTelephone(.)"));
+        customer.addContact(createPhone("12345", false, "HOME"));
+        customer.addContact(createPhone("45678", true, null));  // preferred
+        save(customer);
+        assertEquals("(03) 45678", context1.getValue("party:getTelephone(.)"));
+        assertEquals("(03) 45678", context2.getValue("party:getTelephone(.)"));
+        assertEquals("(03) 45678", context3.getValue("party:getTelephone(.)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getTelephone(Act)} method.
-     */
-    @Test
-    public void testActGetTelephone() {
-        Act act = (Act) create("act.customerEstimation");
-        Party party = TestHelper.createCustomer();
-        party.getContacts().clear(); // remove all contacts
-        save(party);
-
-        JXPathContext ctx = createContext(act);
-        assertEquals("", ctx.getValue("party:getTelephone(.)"));
-
-        party.addContact(createPhone("12345", false, "HOME"));
-        party.addContact(createPhone("45678", true, null));  // preferred
-        save(party);
-
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", party);
-
-        assertEquals("(03) 45678", ctx.getValue("party:getTelephone(.)"));
-    }
-
-    /**
-     * Tests the {@link PartyFunctions#getHomeTelephone(Party)} method.
+     * Tests the {@link PartyFunctions#getHomeTelephone(Party)} and {@link PartyFunctions#getHomeTelephone(Act)}
+     * methods.
      */
     @Test
     public void testGetHomeTelephone() {
-        Party party = TestHelper.createCustomer(false);
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
+        assertEquals("", context1.getValue("party:getHomeTelephone(.)"));
+        assertEquals("", context2.getValue("party:getHomeTelephone(.)"));
+        assertEquals("", context3.getValue("party:getHomeTelephone(.)"));
 
-        JXPathContext ctx = createContext(party);
-        assertEquals("", ctx.getValue("party:getHomeTelephone(.)"));
+        Contact home = createPhone("12345", true, "HOME");
+        customer.addContact(home);
+        save(customer);
+        assertEquals("(03) 12345", context1.getValue("party:getHomeTelephone(.)"));
+        assertEquals("(03) 12345", context2.getValue("party:getHomeTelephone(.)"));
+        assertEquals("(03) 12345", context3.getValue("party:getHomeTelephone(.)"));
 
-        party.addContact(createPhone("12345", true, "HOME"));
-        assertEquals("(03) 12345", ctx.getValue("party:getHomeTelephone(.)"));
+        // remove the home contact
+        customer.removeContact(home);
+        save(customer);
+        assertEquals("", context1.getValue("party:getHomeTelephone(.)"));
+        assertEquals("", context2.getValue("party:getHomeTelephone(.)"));
+        assertEquals("", context3.getValue("party:getHomeTelephone(.)"));
+
+        // add a work contact, and verify it is returned. See OVPMS-718
+        customer.addContact(createPhone("56789", true, "WORK"));
+        save(customer);
+
+        assertEquals("(03) 56789", context1.getValue("party:getHomeTelephone(.)"));
+        assertEquals("(03) 56789", context2.getValue("party:getHomeTelephone(.)"));
+        assertEquals("(03) 56789", context3.getValue("party:getHomeTelephone(.)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getHomeTelephone(Act)} method.
-     */
-    @Test
-    public void testActGetHomeTelephone() {
-        Act act = (Act) create("act.customerEstimation");
-        Party party = TestHelper.createCustomer();
-
-        JXPathContext ctx = createContext(act);
-        assertEquals("", ctx.getValue("party:getHomeTelephone(.)"));
-
-        party.addContact(createPhone("12345", true, "HOME"));
-        save(party);
-
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", party);
-
-        assertEquals("(03) 12345", ctx.getValue("party:getHomeTelephone(.)"));
-        assertEquals("", ctx.getValue("party:getWorkTelephone(.)"));
-    }
-
-    /**
-     * Tests the {@link PartyFunctions#getWorkTelephone(Party)} method.
+     * Tests the {@link PartyFunctions#getWorkTelephone(Party)} and {@link PartyFunctions#getWorkTelephone(Act)}
+     * methods.
      */
     @Test
     public void testGetWorkTelephone() {
-        Party party = TestHelper.createCustomer();
-        party.getContacts().clear();
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
 
-        JXPathContext ctx = createContext(party);
-        assertEquals("", ctx.getValue("party:getWorkTelephone(.)"));
+        assertEquals("", context1.getValue("party:getWorkTelephone(.)"));
+        assertEquals("", context2.getValue("party:getWorkTelephone(.)"));
+        assertEquals("", context3.getValue("party:getWorkTelephone(.)"));
 
-        party.addContact(createPhone("56789", true, "WORK"));
-        assertEquals("(03) 56789", ctx.getValue("party:getWorkTelephone(.)"));
-        assertEquals("(03) 56789", ctx.getValue("party:getHomeTelephone(.)")); // OVPMS-718
+        customer.addContact(createPhone("56789", true, "WORK"));
+        save(customer);
+        assertEquals("(03) 56789", context1.getValue("party:getWorkTelephone(.)"));
+        assertEquals("(03) 56789", context2.getValue("party:getWorkTelephone(.)"));
+        assertEquals("(03) 56789", context3.getValue("party:getWorkTelephone(.)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getWorkTelephone(Act)} method.
+     * Tests the {@link PartyFunctions#getBillingAddress(Party)},
+     * {@link PartyFunctions#getBillingAddress(Act, boolean)},  {@link PartyFunctions#getBillingAddress(Act)},
+     * {@link PartyFunctions#getBillingAddress(Act, boolean)} and
+     * {@link PartyFunctions#getBillingAddress(ExpressionContext)} methods.
      */
     @Test
-    public void testActGetWorkTelephone() {
-        Act act = (Act) create("act.customerEstimation");
-        Party party = TestHelper.createCustomer();
-        party.getContacts().clear();
+    public void testGetBillingAddress() {
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
 
-        JXPathContext ctx = createContext(act);
-        assertEquals("", ctx.getValue("party:getWorkTelephone(.)"));
+        assertEquals("", context1.getValue("party:getBillingAddress(.)"));  // party
+        assertEquals("", context2.getValue("party:getBillingAddress(.)"));  // act -> customer
+        assertEquals("", context3.getValue("party:getBillingAddress(.)"));  // act -> patient -> patient owner
 
-        party.addContact(createPhone("56789", true, "WORK"));
-        save(party);
+        // test the ExpressionContext form
+        assertEquals("", context1.getValue("party:getBillingAddress()"));
+        assertEquals("", context2.getValue("party:getBillingAddress()"));
+        assertEquals("", context3.getValue("party:getBillingAddress()"));
 
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", party);
+        Contact home = TestHelper.createLocationContact("123 4th Avenue", "SAWTELL", "NSW", "2452");
+        home.addClassification(TestHelper.getLookup("lookup.contactPurpose", "BILLING"));
+        home.addClassification(TestHelper.getLookup("lookup.contactPurpose", "HOME"));
+        Contact work = TestHelper.createLocationContact("456 Main Rd", "SAWTELL", "NSW", "2452");
+        work.addClassification(TestHelper.getLookup("lookup.contactPurpose", "WORK"));
+        customer.addContact(home);
+        customer.addContact(work);
+        save(customer);
 
-        assertEquals("(03) 56789", ctx.getValue("party:getWorkTelephone(.)"));
+        assertEquals("123 4th Avenue, Sawtell Nsw 2452", context1.getValue("party:getBillingAddress(., true())"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context1.getValue("party:getBillingAddress(., false())"));
+        assertEquals("123 4th Avenue, Sawtell Nsw 2452", context2.getValue("party:getBillingAddress(., true())"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context2.getValue("party:getBillingAddress(., false())"));
+        assertEquals("123 4th Avenue, Sawtell Nsw 2452", context3.getValue("party:getBillingAddress(., true())"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context3.getValue("party:getBillingAddress(., false())"));
+
+        // test the ExpressionContext form
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context1.getValue("party:getBillingAddress()"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context2.getValue("party:getBillingAddress()"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context3.getValue("party:getBillingAddress()"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getCorrespondenceAddress(Party)},
+     * {@link PartyFunctions#getCorrespondenceAddress(Act, boolean)},
+     * {@link PartyFunctions#getCorrespondenceAddress(Act)},
+     * {@link PartyFunctions#getCorrespondenceAddress(Act, boolean)} and
+     * {@link PartyFunctions#getCorrespondenceAddress(ExpressionContext)} methods.
+     */
+    @Test
+    public void testGetCorrespondenceAddress() {
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
+
+        assertEquals("", context1.getValue("party:getCorrespondenceAddress(.)"));  // party
+        assertEquals("", context2.getValue("party:getCorrespondenceAddress(.)"));  // act -> customer
+        assertEquals("", context3.getValue("party:getCorrespondenceAddress(.)"));  // act -> patient -> patient owner
+
+        // test the ExpressionContext form
+        assertEquals("", context1.getValue("party:getCorrespondenceAddress()"));
+        assertEquals("", context2.getValue("party:getCorrespondenceAddress()"));
+        assertEquals("", context3.getValue("party:getCorrespondenceAddress()"));
+
+        Contact home = TestHelper.createLocationContact("123 4th Avenue", "SAWTELL", "NSW", "2452");
+        home.addClassification(TestHelper.getLookup("lookup.contactPurpose", "CORRESPONDENCE"));
+        home.addClassification(TestHelper.getLookup("lookup.contactPurpose", "HOME"));
+        Contact work = TestHelper.createLocationContact("456 Main Rd", "SAWTELL", "NSW", "2452");
+        work.addClassification(TestHelper.getLookup("lookup.contactPurpose", "WORK"));
+        customer.addContact(home);
+        customer.addContact(work);
+        save(customer);
+
+        assertEquals("123 4th Avenue, Sawtell Nsw 2452",
+                     context1.getValue("party:getCorrespondenceAddress(., true())"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452",
+                     context1.getValue("party:getCorrespondenceAddress(., false())"));
+        assertEquals("123 4th Avenue, Sawtell Nsw 2452",
+                     context2.getValue("party:getCorrespondenceAddress(., true())"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452",
+                     context2.getValue("party:getCorrespondenceAddress(., false())"));
+        assertEquals("123 4th Avenue, Sawtell Nsw 2452",
+                     context3.getValue("party:getCorrespondenceAddress(., true())"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452",
+                     context3.getValue("party:getCorrespondenceAddress(., false())"));
+
+        // test the ExpressionContext form
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context1.getValue("party:getCorrespondenceAddress()"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context2.getValue("party:getCorrespondenceAddress()"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context3.getValue("party:getCorrespondenceAddress()"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getPracticeAddress()} and {@link PartyFunctions#getPracticeAddress(boolean)}
+     * methods.
+     */
+    @Test
+    public void testGetPracticeAddress() {
+        JXPathContext context = createContext(new IMObject());
+        Party practice = TestHelper.getPractice();
+        practice.getContacts().clear();
+        practice.addContact(TestHelper.createLocationContact("123 Main Rd", "ELTHAM", "VIC", "3095"));
+        save(practice);
+
+        assertEquals("123 Main Rd, Eltham Vic 3095", context.getValue("party:getPracticeAddress()"));
+        assertEquals("123 Main Rd, Eltham Vic 3095", context.getValue("party:getPracticeAddress(true())"));
+        assertEquals("123 Main Rd\nEltham Vic 3095", context.getValue("party:getPracticeAddress(false())"));
     }
 
     /**
@@ -595,7 +749,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link PartyFunctions#getAddress(Party, String)} method.
+     * Tests the {@link PartyFunctions#getAddress(Party, String)}
+     * and {@link PartyFunctions#getAddress(Party, String, boolean)} methods.
      */
     @Test
     public void testGetAddress() {
@@ -613,6 +768,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
         JXPathContext context = createContext(customer);
         assertEquals("123 Main Rd\nKongwak Vic 3058", context.getValue("party:getAddress(., 'BILLING')"));
+        assertEquals("123 Main Rd\nKongwak Vic 3058", context.getValue("party:getAddress(., 'BILLING', false())"));
+        assertEquals("123 Main Rd, Kongwak Vic 3058", context.getValue("party:getAddress(., 'BILLING', true())"));
         assertEquals("456 Smith St\nWonthaggi Vic 3058", context.getValue("party:getAddress(., 'SHIPPING')"));
         assertEquals("123 Main Rd\nKongwak Vic 3058", context.getValue("party:getAddress(., 'NO_SUCH_PURPOSE')"));
     }
@@ -693,7 +850,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
         ArchetypeServiceFunctions functions = new ArchetypeServiceFunctions(service, lookups);
-        PartyFunctions partyFunctions = new PartyFunctions(service, lookups, new PatientRules(null, service, lookups));
+        PartyFunctions partyFunctions = new PartyFunctions(service, lookups, new PatientRules(null, service, lookups),
+                                                           new BasicAddressFormatter(service, lookups));
         FunctionLibrary library = new FunctionLibrary();
         library.addFunctions(new ObjectFunctions(functions, "openvpms"));
         library.addFunctions(new ObjectFunctions(partyFunctions, "party"));

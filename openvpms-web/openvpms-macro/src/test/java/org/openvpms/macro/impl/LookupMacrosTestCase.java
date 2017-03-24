@@ -21,6 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -424,7 +426,11 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("recursivemacro1", "$recursivemacro2");
         MacroTestHelper.createMacro("recursivemacro2", "$recursivemacro1");
 
-        ArchetypeFunctionsFactory functions = new DefaultArchetypeFunctionsFactory(getArchetypeService(), getLookupService(), null, null, null) {
+        final IArchetypeService service = getArchetypeService();
+        final ILookupService lookups = getLookupService();
+        AddressFormatter formatter = new BasicAddressFormatter(service, lookups);
+        ArchetypeFunctionsFactory functions = new DefaultArchetypeFunctionsFactory(service, lookups, null, null,
+                                                                                   formatter, null) {
             @Override
             public FunctionLibrary create(IArchetypeService service, boolean cache) {
                 FunctionLibrary library = super.create(service, cache);
@@ -432,10 +438,9 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
                 return library;
             }
         };
-        ILookupService lookups = getLookupService();
-        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups,
-                                                  new DocumentHandlers(getArchetypeService()), functions);
-        macros = new LookupMacros(lookups, getArchetypeService(), factory, functions);
+        ReportFactory factory = new ReportFactory(service, lookups,
+                                                  new DocumentHandlers(service), functions);
+        macros = new LookupMacros(lookups, service, factory, functions);
         macros.afterPropertiesSet();
     }
 

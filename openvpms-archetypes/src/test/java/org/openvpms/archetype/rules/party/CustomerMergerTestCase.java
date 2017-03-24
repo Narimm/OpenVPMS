@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.statement.EndOfPeriodProcessor;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -331,7 +332,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         template = new TransactionTemplate(mgr);
 
         customerRules = new CustomerRules(getArchetypeService(), getLookupService());
-        practice = (Party) create("party.organisationPractice");
+        practice = (Party) create(PracticeArchetypes.PRACTICE);
     }
 
     /**

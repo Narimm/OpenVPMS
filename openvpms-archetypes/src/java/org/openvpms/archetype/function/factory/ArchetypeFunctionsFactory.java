@@ -32,6 +32,7 @@ import org.openvpms.archetype.function.reminder.ReminderFunctions;
 import org.openvpms.archetype.function.supplier.SupplierFunctions;
 import org.openvpms.archetype.function.user.CachingUserFunctions;
 import org.openvpms.archetype.function.user.UserFunctions;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
@@ -88,14 +89,15 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
      */
     public FunctionLibrary create(IArchetypeService service, boolean cache) {
         ILookupService lookups = getLookupService();
-        PatientAgeFormatter formatter = getPatientAgeFormatter();
+        PatientAgeFormatter ageFormatter = getPatientAgeFormatter();
+        AddressFormatter addressFormatter = getAddressFormatter();
 
+        PracticeService practiceService = getPracticeService();
         PracticeRules rules = new PracticeRules(service, getCurrencies());
-        PatientRules patientRules = new PatientRules(rules, service, lookups, formatter);
-        CustomerRules customerRules = new CustomerRules(service, lookups);
+        PatientRules patientRules = new PatientRules(rules, service, lookups, ageFormatter);
+        CustomerRules customerRules = new CustomerRules(service, lookups, addressFormatter);
         ReminderRules reminderRules = new ReminderRules(service, patientRules);
         SupplierRules supplierRules = new SupplierRules(service);
-        PracticeService practiceService = getPracticeService();
         FunctionLibrary library = new FunctionLibrary();
         library.addFunctions(create("date", new DateFunctions()));
         library.addFunctions(new ExpressionFunctions("expr"));
@@ -104,7 +106,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(create("lookup", LookupFunctions.class));
         library.addFunctions(create("math", new MathFunctions()));
         library.addFunctions(create("openvpms", new ArchetypeServiceFunctions(service, lookups)));
-        library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules)));
+        library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules, addressFormatter)));
         library.addFunctions(new ProductFunctions(new ProductPriceRules(service), practiceService, service));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
         library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
@@ -144,6 +146,13 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
      * @return the currencies
      */
     protected abstract Currencies getCurrencies();
+
+    /**
+     * Returns the address formatter.
+     *
+     * @return the address formatter
+     */
+    protected abstract AddressFormatter getAddressFormatter();
 
     /**
      * Returns the patient age formatter.

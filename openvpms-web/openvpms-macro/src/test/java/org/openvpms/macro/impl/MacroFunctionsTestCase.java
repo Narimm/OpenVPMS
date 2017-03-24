@@ -22,11 +22,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.report.ReportFactory;
 
@@ -59,7 +62,9 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
 
         final IArchetypeService service = getArchetypeService();
-        functions = new DefaultArchetypeFunctionsFactory(service, getLookupService(), null, null, null) {
+        final ILookupService lookups = getLookupService();
+        AddressFormatter formatter = new BasicAddressFormatter(service, lookups);
+        functions = new DefaultArchetypeFunctionsFactory(service, lookups, null, null, formatter, null) {
             @Override
             public FunctionLibrary create(IArchetypeService service, boolean cache) {
                 FunctionLibrary library = super.create(service, cache);
@@ -68,9 +73,9 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
             }
         };
 
-        ReportFactory factory = new ReportFactory(service, getLookupService(), new DocumentHandlers(service),
+        ReportFactory factory = new ReportFactory(service, lookups, new DocumentHandlers(service),
                                                   functions);
-        macros = new LookupMacros(getLookupService(), service, factory, functions);
+        macros = new LookupMacros(lookups, service, factory, functions);
         macros.afterPropertiesSet();
     }
 

@@ -23,12 +23,10 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
@@ -160,6 +158,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetContactPurposes() {
         Contact contact = (Contact) create(ContactArchetypes.LOCATION);
+        assertEquals("", rules.getContactPurposes(contact));
+
         contact.addClassification(getContactPurpose("HOME"));
 
         assertEquals("(Home)", rules.getContactPurposes(contact));
@@ -169,12 +169,11 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         String purposes = rules.getContactPurposes(contact);
 
         // order not guaranteed
-        assertTrue(purposes.equals("(Home, Work)")
-                   || purposes.equals("(Work, Home)"));
+        assertEquals("(Home, Work)", purposes);
     }
 
     /**
-     * Tests the {@link PartyRules#getBillingAddress(Party)} method.
+     * Tests the {@link PartyRules#getBillingAddress(Party, boolean)} method.
      */
     @Test
     public void testGetBillingAddress() {
@@ -184,39 +183,45 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
         Contact location = getContact(party, ContactArchetypes.LOCATION);
         populateLocation(location, "1 Foo St", null);
+        save(party);
 
         // no location with billing address, uses the first available.
-        assertEquals("1 Foo St\nCoburg Victoria 3071", rules.getBillingAddress(party));
+        assertEquals("1 Foo St, Coburg Victoria 3071", rules.getBillingAddress(party, true));
+        assertEquals("1 Foo St\nCoburg Victoria 3071", rules.getBillingAddress(party, false));
 
         // add a billing location
         Contact billing = createLocation("3 Bar St", "BILLING");
         party.addContact(billing);
 
         // verify the billing address is that just added
-        assertEquals("3 Bar St\nCoburg Victoria 3071", rules.getBillingAddress(party));
+        assertEquals("3 Bar St, Coburg Victoria 3071", rules.getBillingAddress(party, true));
+        assertEquals("3 Bar St\nCoburg Victoria 3071", rules.getBillingAddress(party, false));
 
         // verify nulls aren't displayed if the state doesn't exist
         IMObjectBean locationBean = new IMObjectBean(billing);
         locationBean.setValue("state", "BAD_STATE");
-        assertEquals("3 Bar St\n3071", rules.getBillingAddress(party));
+        assertEquals("3 Bar St, 3071", rules.getBillingAddress(party, true));
+        assertEquals("3 Bar St\n3071", rules.getBillingAddress(party, false));
 
         // verify nulls aren't displayed if the suburb doesn't exist
         locationBean.setValue("state", "VIC");
         locationBean.setValue("suburb", "BAD_SUBURB");
-        assertEquals("3 Bar St\nVictoria 3071", rules.getBillingAddress(party));
-
+        assertEquals("3 Bar St, Victoria 3071", rules.getBillingAddress(party, true));
+        assertEquals("3 Bar St\nVictoria 3071", rules.getBillingAddress(party, false));
 
         // remove all the contacts and verify there is no billing address
-        Contact[] contacts = party.getContacts().toArray(new Contact[party.getContacts().size()]);
-        for (Contact c : contacts) {
-            party.removeContact(c);
-        }
+        party.getContacts().clear();
 
-        assertEquals("", rules.getBillingAddress(party));
+        assertEquals("", rules.getBillingAddress(party, true));
+        assertEquals("", rules.getBillingAddress(party, false));
+
+        // check nulls
+        assertEquals("", rules.getBillingAddress(null, true));
+        assertEquals("", rules.getBillingAddress(null, false));
     }
 
     /**
-     * Tests the {@link PartyRules#getCorrespondenceAddress(Party)} method.
+     * Tests the {@link PartyRules#getCorrespondenceAddress(Party, boolean)} method.
      */
     @Test
     public void testGetCorrespondenceAddress() {
@@ -228,16 +233,16 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
-        assertEquals("1 Foo St\nCoburg Victoria 3071",
-                     rules.getCorrespondenceAddress(party));
+        assertEquals("1 Foo St, Coburg Victoria 3071", rules.getCorrespondenceAddress(party, true));
+        assertEquals("1 Foo St\nCoburg Victoria 3071", rules.getCorrespondenceAddress(party, false));
 
         // add a correspondence location
         Contact correspondence = createLocation("3 Bar St", "CORRESPONDENCE");
         party.addContact(correspondence);
 
         // verify the correspondence address is that just added
-        assertEquals("3 Bar St\nCoburg Victoria 3071",
-                     rules.getCorrespondenceAddress(party));
+        assertEquals("3 Bar St, Coburg Victoria 3071", rules.getCorrespondenceAddress(party, true));
+        assertEquals("3 Bar St\nCoburg Victoria 3071", rules.getCorrespondenceAddress(party, false));
 
         // remove all the contacts and verify there is no correspondence address
         Contact[] contacts = party.getContacts().toArray(new Contact[party.getContacts().size()]);
@@ -245,7 +250,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
             party.removeContact(c);
         }
 
-        assertEquals("", rules.getCorrespondenceAddress(party));
+        assertEquals("", rules.getCorrespondenceAddress(party, true));
+        assertEquals("", rules.getCorrespondenceAddress(party, false));
     }
 
     /**
@@ -262,27 +268,6 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         Contact phone2 = createPhone("56789", true, null);
         party.addContact(phone2);
         assertEquals("(03) 56789", rules.getTelephone(party));
-    }
-
-    /**
-     * Tests the {@link PartyRules#getTelephone(Party)} method.
-     */
-    @Test
-    public void testActGetTelephone() {
-        Act act = (Act) create("act.customerEstimation");
-        assertEquals("", rules.getTelephone(act));
-
-        Party party = TestHelper.createCustomer(false);
-        Contact phone1 = getContact(party, ContactArchetypes.PHONE);
-        populatePhone(phone1, "12345", false, null);
-        Contact phone2 = createPhone("56789", true, null);
-        party.addContact(phone2);
-        save(party);
-
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", party);
-
-        assertEquals("(03) 56789", rules.getTelephone(act));
     }
 
     /**
@@ -327,44 +312,6 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
         phone2.addClassification(purpose);
         assertEquals("(03) 56789", rules.getWorkTelephone(party));
-    }
-
-    /**
-     * Tests the {@link PartyRules#getHomeTelephone(Act)} method.
-     */
-    @Test
-    public void testActGetHomeTelephone() {
-        Act act = (Act) create("act.customerEstimation");
-        assertEquals("", rules.getHomeTelephone(act));
-
-        Party party = TestHelper.createCustomer();
-        Contact phone = getContact(party, ContactArchetypes.PHONE);
-        populatePhone(phone, "12345", false, "HOME");
-        save(phone);
-
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", party);
-
-        assertEquals("(03) 12345", rules.getHomeTelephone(act));
-    }
-
-    /**
-     * Tests the {@link PartyRules#getWorkTelephone(Act)} method.
-     */
-    @Test
-    public void testActGetWorkTelephone() {
-        Act act = (Act) create("act.customerEstimation");
-        assertEquals("", rules.getWorkTelephone(act));
-
-        Party party = TestHelper.createCustomer();
-        Contact phone = getContact(party, ContactArchetypes.PHONE);
-        populatePhone(phone, "12345", false, "WORK");
-        save(phone);
-
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", party);
-
-        assertEquals("(03) 12345", rules.getWorkTelephone(act));
     }
 
     /**
@@ -526,6 +473,19 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyRules#getPracticeAddress(boolean)} method.
+     */
+    @Test
+    public void testGetPracticeAddress() {
+        Party practice = TestHelper.getPractice();
+        practice.getContacts().clear();
+        practice.addContact(TestHelper.createLocationContact("123 Foo St", "PRESTON", "VIC", "3072"));
+        save(practice);
+        assertEquals("123 Foo St, Preston Vic 3072", rules.getPracticeAddress(true));
+        assertEquals("123 Foo St\nPreston Vic 3072", rules.getPracticeAddress(false));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -607,8 +567,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * @param address the address
      * @param purpose the contact purpose. May be {@code null}
      */
-    private void populateLocation(Contact contact, String address,
-                                  String purpose) {
+    private void populateLocation(Contact contact, String address, String purpose) {
         IMObjectBean bean = new IMObjectBean(contact);
         Lookup state = TestHelper.getLookup("lookup.state", "VIC");
         Lookup suburb = TestHelper.getLookup("lookup.suburb", "COBURG", "Coburg", state,

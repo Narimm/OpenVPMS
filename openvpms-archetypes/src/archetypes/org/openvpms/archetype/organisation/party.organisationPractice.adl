@@ -33,6 +33,12 @@
                 <errorMessage>Invalid currency</errorMessage>
             </assertion>
         </node>
+        <node name="addressFormat" path="/details/addressFormat" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.addressformat"/>
+            </assertion>
+        </node>
         <node name="patientAgeFormat" path="/details/patientAgeFormat" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
