@@ -30,7 +30,7 @@
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>
         <node displayName="Default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
-              defaultValue="false()"/>
+              defaultValue="false()" hidden="true"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="singleLineFormat" path="/details/singleLineFormat" type="java.lang.String" minCardinality="1"
               maxLength="5000"
