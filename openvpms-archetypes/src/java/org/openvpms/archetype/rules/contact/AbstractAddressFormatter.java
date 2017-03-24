@@ -66,7 +66,7 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      */
     protected String format(Contact location, String address, String suburb, String stateCode, String stateName,
                             String postcode, boolean singleLine) {
-        return formatDefault(address, suburb, stateCode, postcode, singleLine);
+        return formatDefault(address, suburb, stateName, postcode, singleLine);
     }
 
     /**
@@ -74,13 +74,12 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      *
      * @param address    the address
      * @param suburb     the suburb
-     * @param stateCode  the state code
+     * @param state      the state
      * @param postcode   the postcode
      * @param singleLine if {@code true} formats the address on a single line
      * @return the formatted address
      */
-    protected String formatDefault(String address, String suburb, String stateCode, String postcode,
-                                   boolean singleLine) {
+    protected String formatDefault(String address, String suburb, String state, String postcode, boolean singleLine) {
         StringBuilder result = new StringBuilder();
         if (!StringUtils.isEmpty(address)) {
             if (singleLine) {
@@ -95,8 +94,8 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
             result.append(suburb);
             result.append(" ");
         }
-        if (!StringUtils.isEmpty(stateCode)) {
-            result.append(stateCode);
+        if (!StringUtils.isEmpty(state)) {
+            result.append(state);
             result.append(" ");
         }
         if (!StringUtils.isEmpty(postcode)) {
