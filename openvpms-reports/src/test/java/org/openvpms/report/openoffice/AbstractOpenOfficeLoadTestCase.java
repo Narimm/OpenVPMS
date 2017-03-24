@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -123,8 +124,9 @@ public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeD
         public void test() {
             Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
+            BasicAddressFormatter formatter = new BasicAddressFormatter(getArchetypeService(), getLookupService());
             ArchetypeFunctionsFactory factory = new DefaultArchetypeFunctionsFactory(
-                    getArchetypeService(), getLookupService(), null, null, null);
+                    getArchetypeService(), getLookupService(), null, null, formatter, null);
             IMReport<IMObject> report = new OpenOfficeIMReport<>(doc, getArchetypeService(), getLookupService(),
                                                                          getHandlers(), factory.create());
 

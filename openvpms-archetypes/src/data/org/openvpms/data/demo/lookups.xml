@@ -156,6 +156,7 @@
     <data archetype="lookup.pricingGroup" code="MAIN" name="Main Pricing Group"/>
     <data archetype="lookup.pricingGroup" code="BRANCH" name="Branch Pricing Group"/>
 
+    <data archetype="lookup.addressformat" code="DEFAULT_ADDRESS_FORMAT" name="Default Address Format"/>
     <data archetype="lookup.fileNameFormat" code="DOC_NAME_DOC_DATE"
           name="Document name - document date"
           description="Valid for customer, patient, and supplier documents only"

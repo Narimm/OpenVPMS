@@ -96,10 +96,21 @@ public class PracticeRules {
     /**
      * Returns the practice.
      *
-     * @return the practice, or <tt>null</tt> if none is found
+     * @return the practice, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getPractice() {
+        return getPractice(service);
+    }
+
+    /**
+     * Returns the practice.
+     *
+     * @param service the archetype service
+     * @return the practice, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static Party getPractice(IArchetypeService service) {
         ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
         query.setMaxResults(1);
         IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<>(service, query);
@@ -150,7 +161,7 @@ public class PracticeRules {
      *
      * @param practice the practice
      * @return the default location, or the first location if there is no
-     * default location or <tt>null</tt> if none is found
+     * default location or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getDefaultLocation(Party practice) {

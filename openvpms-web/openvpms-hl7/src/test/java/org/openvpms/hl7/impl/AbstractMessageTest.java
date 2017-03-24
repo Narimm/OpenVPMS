@@ -20,6 +20,7 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import org.junit.Before;
 import org.mockito.Mockito;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
@@ -33,6 +34,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -66,7 +68,8 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
     public void setUp() {
         ILookupService lookups = getLookupService();
         PatientRules rules = new PatientRules(null, getArchetypeService(), lookups);
-        CustomerRules customerRules = new CustomerRules(getArchetypeService(), lookups);
+        IArchetypeService service = getArchetypeService();
+        CustomerRules customerRules = new CustomerRules(service, lookups, new BasicAddressFormatter(service, lookups));
         MedicalRecordRules medicalRecordRules = new MedicalRecordRules(getArchetypeService());
         Party owner = TestHelper.createCustomer("Foo", "Bar", true);
         Party patient = TestHelper.createPatient(owner);

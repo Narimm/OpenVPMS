@@ -17,23 +17,22 @@
 package org.openvpms.archetype.rules.party;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,9 +57,24 @@ public class PartyRules {
     private final ILookupService lookups;
 
     /**
-     * Helper functions.
+     * The address formatter.
      */
-    private final ArchetypeServiceFunctions functions;
+    private final AddressFormatter addressFormatter;
+
+    /**
+     * Home lookup.contactPurpose code.
+     */
+    private static final String HOME_PURPOSE = "HOME";
+
+    /**
+     * Mobile lookup.contactPurpose code.
+     */
+    private static final String MOBILE_PURPOSE = "MOBILE";
+
+    /**
+     * Correspondence lookup.contactPurpose code.
+     */
+    private static final String CORRESPONDENCE_PURPOSE = "CORRESPONDENCE";
 
     /**
      * Fax lookup.contactPurpose code.
@@ -68,33 +82,26 @@ public class PartyRules {
     private static final String FAX_PURPOSE = "FAX";
 
     /**
-     * Constructs a {@code PartyRules}.
+     * Constructs a {@link PartyRules}.
      *
      * @param service the archetype service
      * @param lookups the lookup service
      */
     public PartyRules(IArchetypeService service, ILookupService lookups) {
-        this.service = service;
-        this.lookups = lookups;
-        functions = new ArchetypeServiceFunctions(service, lookups);
+        this(service, lookups, new BasicAddressFormatter(service, lookups));
     }
 
     /**
-     * Returns a specified node for a customer associated with an
-     * act via an <em>participation.customer</em> or an
-     * <em>participation.patient</em> participation.
+     * Constructs a {@link PartyRules}.
      *
-     * @param act      the act
-     * @param nodeName the name of the node
-     * @return a node object may be null if no customer or invalid node
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param formatter the address formatter
      */
-    public Object getCustomerNode(Act act, String nodeName) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return getCustomerNode(party, nodeName);
+    public PartyRules(IArchetypeService service, ILookupService lookups, AddressFormatter formatter) {
+        this.service = service;
+        this.lookups = lookups;
+        this.addressFormatter = formatter;
     }
 
     /**
@@ -105,12 +112,13 @@ public class PartyRules {
      * @return a node object may be null if no customer or invalid node
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Deprecated
     public Object getCustomerNode(Party party, String nodeName) {
         if (party != null) {
-            IMObjectBean bean = new IMObjectBean(party);
+            IMObjectBean bean = new IMObjectBean(party, service);
             NodeDescriptor descriptor = bean.getDescriptor(nodeName);
             if (descriptor != null && descriptor.isLookup()) {
-                return functions.lookup(party, nodeName);
+                return lookups.getName(party, nodeName);
             } else {
                 return bean.getValue(nodeName);
             }
@@ -153,21 +161,6 @@ public class PartyRules {
     }
 
     /**
-     * Returns the formatted full name of a party.
-     *
-     * @param act the Act
-     * @return the formatted full name of the party
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getFullName(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getFullName(party) : "";
-    }
-
-    /**
      * Returns a set of default contacts containing an
      * <em>contact.phoneNumber</em> and <em>contact.location</em>.
      *
@@ -187,7 +180,7 @@ public class PartyRules {
 
     /**
      * Returns a formatted string of preferred contacts for a party.
-     * <p/>
+     * <p>
      * If there are multiple preferred contacts, these are sorted on identifier.
      *
      * @param party the party
@@ -225,9 +218,6 @@ public class PartyRules {
         if (bean.hasNode("purposes")) {
             List<IMObject> list = bean.getValues("purposes");
             if (!list.isEmpty()) {
-                if (result.length() != 0) {
-                    result.append(" ");
-                }
                 result.append("(");
                 result.append(getValues(list, "name"));
                 result.append(")");
@@ -239,94 +229,40 @@ public class PartyRules {
     /**
      * Returns a formatted billing address for a party.
      *
-     * @param party the party
+     * @param party      the party. May be {@code null}
+     * @param singleLine if {@code true}, return the address as a single line
      * @return a formatted billing address for a party. May be empty if
      * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getBillingAddress(Party party) {
-        return getAddress(party, "BILLING");
-    }
-
-    /**
-     * Returns a formatted billing address for a customer associated with an
-     * act via an <em>participation.customer</em> or an
-     * <em>participation.patient</em> participation.
-     *
-     * @param act the act
-     * @return a formatted billing address for a party. May be empty if
-     * the act has no customer party or the party has no corresponding
-     * <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getBillingAddress(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getBillingAddress(party) : "";
+    public String getBillingAddress(Party party, boolean singleLine) {
+        return getAddress(party, "BILLING", singleLine);
     }
 
     /**
      * Returns a formatted correspondence address for a party.
      *
-     * @param party the party
-     * @return a formatted correspondence address for a party. May be empty if
-     * there is no corresponding <em>contact.location</em> contact
+     * @param party      the party
+     * @param singleLine if {@code true}, return the address as a single line
+     * @return a formatted correspondence address for a party. May be empty if there is no corresponding
+     * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceAddress(Party party) {
-        return getAddress(party, "CORRESPONDENCE");
+    public String getCorrespondenceAddress(Party party, boolean singleLine) {
+        return getAddress(party, CORRESPONDENCE_PURPOSE, singleLine);
     }
 
     /**
      * Returns a formatted correspondence name and address for a party.
      *
-     * @param party the party
+     * @param party      the party
+     * @param singleLine if {@code true}, return the address as a single line
      * @return a formatted correspondence name and address for a party. May be empty if
      * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceNameAddress(Party party) {
-        return getFullName(party) + "\n" + getAddress(party, "CORRESPONDENCE");
-    }
-
-    /**
-     * Returns a formatted correspondence address for a customer associated with
-     * an act via an <em>participation.customer</em> or an
-     * <em>participation.patient</em> participation.
-     *
-     * @param act the act
-     * @return a formatted billing address for a party. May be empty if
-     * the act has no customer party or the party has no corresponding
-     * <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getCorrespondenceAddress(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getCorrespondenceAddress(party) : "";
-    }
-
-    /**
-     * Returns a formatted correspondence name and address for a customer associated with
-     * an act via an <em>participation.customer</em> or an
-     * <em>participation.patient</em> participation.
-     *
-     * @param act the act
-     * @return a formatted name and billing address for a party. May be empty if
-     * the act has no customer party or the party has no corresponding
-     * <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getCorrespondenceNameAddress(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getCorrespondenceNameAddress(party) : "";
+    public String getCorrespondenceNameAddress(Party party, boolean singleLine) {
+        return getFullName(party) + "\n" + getAddress(party, CORRESPONDENCE_PURPOSE, singleLine);
     }
 
     /**
@@ -335,20 +271,20 @@ public class PartyRules {
      * If it cannot find the specified purpose, it uses the preferred location contact or
      * any location contact if there is no preferred.
      *
-     * @param party   the party
-     * @param purpose the contact purpose of the address
+     * @param party      the party
+     * @param purpose    the contact purpose of the address
+     * @param singleLine if {@code true}, return the address as a single line
      * @return a formatted address. May be empty if there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getAddress(Party party, String purpose) {
-        Contact contact = getContact(party, ContactArchetypes.LOCATION, purpose);
-        return (contact != null) ? formatAddress(contact) : "";
+    public String getAddress(Party party, String purpose, boolean singleLine) {
+        return formatAddress(getContact(party, ContactArchetypes.LOCATION, purpose), singleLine);
     }
 
     /**
      * Returns a formatted preferred telephone number for a party.
      *
-     * @param party the party
+     * @param party the party. May be {@code null}
      * @return a formatted telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact
      */
@@ -359,7 +295,7 @@ public class PartyRules {
     /**
      * Returns a formatted preferred telephone number for a party.
      *
-     * @param party    the party
+     * @param party    the party. May be {@code null}
      * @param withName if {@code true} includes the name, if it is not the default value for the contact
      * @return a formatted telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact
@@ -370,82 +306,29 @@ public class PartyRules {
     }
 
     /**
-     * Returns a formatted preferred telephone number for a party associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act
-     * @return a formatted telephone number for the party. May be empty if there is no corresponding
-     * <em>contact.phoneNumber</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getTelephone(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getTelephone(party) : "";
-    }
-
-    /**
      * Returns a formatted home telephone number for a party.
+     * <p>
+     * This will return a phone contact with HOME purpose, or any phone contact if there is none.
      *
      * @param party the party
-     * @return a formatted home telephone number for the party. May be empty if
-     * there is no corresponding <em>contact.phoneNumber</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return a formatted home telephone number for the party. May be empty if there is no corresponding
+     * <em>contact.phoneNumber</em> contact
      */
     public String getHomeTelephone(Party party) {
-        Contact contact = getContact(party, ContactArchetypes.PHONE, false, FAX_PURPOSE, "HOME");
+        Contact contact = getContact(party, ContactArchetypes.PHONE, false, FAX_PURPOSE, HOME_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
-    }
-
-    /**
-     * Returns a formatted home telephone number for a party associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act
-     * @return a formatted home telephone number for the party. May be empty if
-     * there is no customer, or corresponding
-     * <em>contact.phoneNumber</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getHomeTelephone(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getHomeTelephone(party) : "";
     }
 
     /**
      * Returns a formatted mobile telephone number for a party.
      *
      * @param party the party
-     * @return a formatted mobile telephone number for the party. May be empty if
-     * there is no corresponding <em>contact.phoneNumber</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return a formatted mobile telephone number for the party. May be empty if there is no corresponding
+     * <em>contact.phoneNumber</em> contact
      */
     public String getMobileTelephone(Party party) {
-        Contact contact = getContact(party, ContactArchetypes.PHONE, true, FAX_PURPOSE, "MOBILE");
+        Contact contact = getContact(party, ContactArchetypes.PHONE, true, FAX_PURPOSE, MOBILE_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
-    }
-
-    /**
-     * Returns a formatted mobile telephone number for a party associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act
-     * @return a formatted mobile telephone number for the party. May be empty if
-     * there is no customer, or corresponding
-     * <em>contact.phoneNumber</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getMobileTelephone(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getMobileTelephone(party) : "";
     }
 
     /**
@@ -459,24 +342,6 @@ public class PartyRules {
     public String getWorkTelephone(Party party) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, true, FAX_PURPOSE, "WORK");
         return (contact != null) ? formatPhone(contact, false) : "";
-    }
-
-    /**
-     * Returns a formatted work telephone number for a party associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act
-     * @return a formatted work telephone number for the party. May be empty if
-     * there is no customer, or corresponding
-     * <em>contact.phoneNumber</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getWorkTelephone(Act act) {
-        Party party = getCustomer(act);
-        if (party == null) {
-            party = getOwner(act);
-        }
-        return (party != null) ? getWorkTelephone(party) : "";
     }
 
     /**
@@ -587,8 +452,7 @@ public class PartyRules {
      */
     private String getPersonName(IMObjectBean bean, boolean includeTitle) {
         StringBuilder result = new StringBuilder();
-        NodeDescriptor descriptor = bean.getDescriptor("title");
-        String title = (includeTitle) ? LookupHelper.getName(service, lookups, descriptor, bean.getObject()) : null;
+        String title = (includeTitle) ? lookups.getName(bean.getObject(), "title") : null;
         String firstName = bean.getString("firstName", "");
         String lastName = bean.getString("lastName", "");
         if (title != null) {
@@ -603,53 +467,41 @@ public class PartyRules {
      * If cannot find one with matching purpose returns last preferred contact.
      * If cannot find with matching purpose and preferred returns last found.
      *
-     * @param party   the party
+     * @param party   the party. May be {@code null}
      * @param type    the contact archetype shortname
      * @param purpose the contact purpose. May be {@code null}
      * @return the corresponding contact, or {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getContact(Party party, String type, String purpose) {
-        return (purpose != null) ? getContact(party, type, false, null, purpose) : getContact(party, type, false, null);
+        Contact result = null;
+        if (party != null) {
+            if (purpose != null) {
+                result = getContact(party, type, false, null, purpose);
+            } else {
+                result = getContact(party, type, false, null);
+            }
+        }
+        return result;
     }
 
     /**
-     * Returns the customer associated with an act via an
-     * <em>participation.customer</em> participation.
+     * Returns the practice.
      *
-     * @param act the act
-     * @return the customer, or {@code null} if none is present
-     */
-    public Party getCustomer(Act act) {
-        ActBean bean = new ActBean(act, service);
-        return (Party) bean.getParticipant("participation.customer");
-    }
-
-    /**
-     * Returns the Practice party
-     *
-     * @return the practice party object
+     * @return the practice. May be {@code null}
      */
     public Party getPractice() {
-        // First get the Practice.  Should only be one but get first if more.
-        List<IMObject> rows = ArchetypeQueryHelper.get(
-                service, "party", "organisationPractice", null, true,
-                0, 1).getResults();
-        if (!rows.isEmpty()) {
-            return (Party) rows.get(0);
-        } else {
-            return null;
-        }
+        return PracticeRules.getPractice(service);
     }
 
     /**
-     * Returns the Practice address
+     * Returns the practice address.
      *
+     * @param singleLine if {@code true}, return the address as a single line string, otherwise as a multi-line string
      * @return the practice address string
      */
-    public String getPracticeAddress() {
-        return formatAddress(
-                getContact(getPractice(), ContactArchetypes.LOCATION, null), true);
+    public String getPracticeAddress(boolean singleLine) {
+        return formatAddress(getContact(getPractice(), ContactArchetypes.LOCATION, null), singleLine);
     }
 
     /**
@@ -741,16 +593,6 @@ public class PartyRules {
     }
 
     /**
-     * Returns the patient owner for the patient referenced by an act.
-     *
-     * @param act the act
-     * @return the patient owner. May be {@code null}
-     */
-    private Party getOwner(Act act) {
-        return new PatientRules(null, service, null, null).getOwner(act);
-    }
-
-    /**
      * Returns a concatenated list of values for a set of objects.
      *
      * @param objects the objects
@@ -760,15 +602,23 @@ public class PartyRules {
      */
     private String getValues(List<IMObject> objects, String node) {
         StringBuilder result = new StringBuilder();
+        List<String> values = new ArrayList<>();
 
         for (IMObject object : objects) {
             IMObjectBean bean = new IMObjectBean(object, service);
             if (bean.hasNode(node)) {
-                if (result.length() != 0) {
-                    result.append(", ");
-                }
-                result.append(bean.getString(node));
+                String value = bean.getString(node, "");
+                values.add(value);
             }
+        }
+        if (values.size() > 1) {
+            Collections.sort(values);
+        }
+        for (String value : values) {
+            if (result.length() != 0) {
+                result.append(", ");
+            }
+            result.append(value);
         }
         return result.toString();
     }
@@ -784,9 +634,13 @@ public class PartyRules {
      * @return the matching contact or {@code null}
      */
     public Contact getContact(Party party, String type, boolean exact, String exclusion, String... purposes) {
-        PurposeMatcher matcher = new PurposeMatcher(type, exact, service, purposes);
-        matcher.setExclusion(exclusion);
-        return (party != null) ? getContact(party, matcher) : null;
+        Contact contact = null;
+        if (party != null) {
+            PurposeMatcher matcher = new PurposeMatcher(type, exact, service, purposes);
+            matcher.setExclusion(exclusion);
+            contact = getContact(party, matcher);
+        }
+        return contact;
     }
 
     /**
@@ -802,46 +656,21 @@ public class PartyRules {
     }
 
     /**
-     * Formats an address from an <em>contact.location</em> contact.
+     * Formats an address.
      *
-     * @param contact contact
-     * @return a formatted address
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private String formatAddress(Contact contact) {
-        return formatAddress(contact, false);
-    }
-
-    /**
-     * Formats an address from an <em>contact.location</em> contact.
-     *
-     * @param contact    contact
-     * @param singleLine if {@code true} formats the address on a single line
-     * @return a formatted address
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param contact    the location contact. May be {@code null}
+     * @param singleLine if {@code true}, return the address as a single line
+     * @return the address, or an empty string if contacat is not supplied, or cannot be formatted
      */
     private String formatAddress(Contact contact, boolean singleLine) {
-        IMObjectBean bean = new IMObjectBean(contact, service);
-        StringBuilder result = new StringBuilder();
-        if (singleLine) {
-            result.append(bean.getString("address", "").replace('\n', ' '));
-            result.append(" ");
-        } else {
-            result.append(bean.getString("address", ""));
-            result.append("\n");
+        String result = null;
+        if (contact != null) {
+            result = addressFormatter.format(contact, singleLine);
         }
-        String suburb = functions.lookup(contact, "suburb", "");
-        if (!StringUtils.isEmpty(suburb)) {
-            result.append(suburb);
-            result.append(" ");
+        if (result == null) {
+            result = "";
         }
-        String state = functions.lookup(contact, "state", "");
-        if (!StringUtils.isEmpty(state)) {
-            result.append(state);
-            result.append(" ");
-        }
-        result.append(bean.getString("postcode", ""));
-        return result.toString();
+        return result;
     }
 
     /**

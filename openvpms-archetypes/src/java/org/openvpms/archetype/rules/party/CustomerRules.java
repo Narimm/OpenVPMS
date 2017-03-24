@@ -16,6 +16,8 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.openvpms.archetype.rules.contact.AddressFormatter;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -39,14 +41,24 @@ import java.util.List;
 public class CustomerRules extends PartyRules {
 
     /**
-     * /**
-     * Constructs a {@code CustomerRules}.
+     * Constructs a {@link CustomerRules}.
      *
-     * @param service the archetype service
-     * @param lookups the lookup service
+     * @param service          the archetype service
+     * @param lookups          the lookup service
      */
     public CustomerRules(IArchetypeService service, ILookupService lookups) {
-        super(service, lookups);
+        this(service, lookups, new BasicAddressFormatter(service, lookups));
+    }
+
+    /**
+     * Constructs a {@link CustomerRules}.
+     *
+     * @param service          the archetype service
+     * @param lookups          the lookup service
+     * @param addressFormatter the address formatter
+     */
+    public CustomerRules(IArchetypeService service, ILookupService lookups, AddressFormatter addressFormatter) {
+        super(service, lookups, addressFormatter);
     }
 
     /**
@@ -74,7 +86,7 @@ public class CustomerRules extends PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void mergeCustomers(Party from, Party to) {
-        CustomerMerger merger = new CustomerMerger(getArchetypeService(), getLookupService());
+        CustomerMerger merger = new CustomerMerger(getArchetypeService(), this);
         merger.merge(from, to);
     }
 
