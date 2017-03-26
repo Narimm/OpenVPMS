@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2017-01-18T12:00:57 -->
+<!-- 2017-03-27T05:10:35 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Estimates Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="60860d28-cf57-4940-8c9d-f9fa06efd5e1">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -30,7 +30,7 @@
 		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="showFinalised" class="java.lang.Boolean">
-		<parameterDescription><![CDATA[Show Completed]]></parameterDescription>
+		<parameterDescription><![CDATA[Show Finalised]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="showInvoiced" class="java.lang.Boolean">
