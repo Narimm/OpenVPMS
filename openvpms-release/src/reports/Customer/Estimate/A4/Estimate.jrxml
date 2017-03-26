@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-10-11T05:42:03 -->
+<!-- 2017-03-27T07:35:51 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Estimate" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" isSummaryWithPageHeaderAndFooter="true" resourceBundle="localisation.reports" uuid="8c42a3ea-6f37-49f5-803e-e1f46987b877">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -78,6 +78,65 @@
 	<variable name="clinician" class="java.lang.String">
 		<variableExpression><![CDATA[EVALUATE("user:format(openvpms:get(., 'clinician.entity'), 'long')")]]></variableExpression>
 	</variable>
+	<group name="Dummy">
+		<groupFooter>
+			<band height="36" splitType="Prevent">
+				<subreport isUsingCache="false">
+					<reportElement positionType="Float" x="0" y="0" width="539" height="20" isRemoveLineWhenBlank="true" uuid="55aff566-d882-4118-ba76-727dd4854ff1">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("customerNotes")]]></dataSourceExpression>
+					<subreportExpression><![CDATA["Invoice Notes.jrxml"]]></subreportExpression>
+				</subreport>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Summary Group">
+		<groupFooter>
+			<band height="56" splitType="Immediate">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField-5" positionType="Float" x="20" y="11" width="486" height="14" isRemoveLineWhenBlank="true" uuid="bbfafec8-8370-46eb-928c-7b34b7efd335"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="10"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement key="line-2" x="0" y="1" width="539" height="1" uuid="978f931b-5539-4f20-ac4c-8ba34d3b75fd">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="staticText-1" positionType="Float" x="0" y="25" width="539" height="26" uuid="0a6c564f-e095-4338-b500-7bd85f101322">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[($F{OpenVPMS.location.letterhead.target.estimateMsg}==null)?Boolean.FALSE:
+($F{OpenVPMS.location.letterhead.target.estimateMsg}.trim().length()>0)]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="10" isBold="true" isItalic="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.estimateMsg}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
 	<background>
 		<band height="20" splitType="Stretch"/>
 	</background>
@@ -85,7 +144,7 @@
 		<band height="200" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement key="staticText-7" positionType="Float" x="0" y="162" width="240" height="18" uuid="5e1ade05-e56a-4861-a4f4-75d813c74f76"/>
+				<reportElement key="staticText-7" positionType="Float" x="0" y="162" width="270" height="18" uuid="5e1ade05-e56a-4861-a4f4-75d813c74f76"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -98,7 +157,7 @@
 				<text><![CDATA[Estimate of Costs for Professional Services for:]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField" positionType="Float" x="247" y="162" width="285" height="18" uuid="23f23dc7-63eb-469a-92b2-e4c509de06f4"/>
+				<reportElement key="textField" positionType="Float" x="280" y="162" width="252" height="18" uuid="23f23dc7-63eb-469a-92b2-e4c509de06f4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -122,7 +181,7 @@
 				<textFieldExpression><![CDATA[$V{clinician}==null?" ":$V{clinician}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-8" positionType="Float" x="360" y="181" width="99" height="16" uuid="c488176c-4f47-4d64-97f6-d4f49042ea98"/>
+				<reportElement key="staticText-8" positionType="Float" x="350" y="181" width="109" height="16" uuid="c488176c-4f47-4d64-97f6-d4f49042ea98"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -145,7 +204,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{endTime}==null?"--":$F{endTime}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{endTime}==null?"--":DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{endTime})]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-3" positionType="Float" x="460" y="79" width="79" height="14" uuid="c43fcb74-88a2-4377-a34c-2e27bb0e4203">
@@ -350,14 +409,14 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font  size="8"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement x="494" y="25" width="45" height="13" uuid="3cca5bd4-10b4-49c4-8789-f4e2095c31f1"/>
 				<textElement textAlignment="Left">
-					<font  size="8"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
@@ -374,9 +433,7 @@
 					<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("customer")]]></dataSourceExpression>
-				<subreportExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.useProductTypes}==null?
-("Estimate Items.jrxml"):
-("Estimate Items"+($F{OpenVPMS.location.letterhead.target.useProductTypes}?"-PT":"")+".jrxml")]]></subreportExpression>
+				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
 			</subreport>
 		</band>
 	</pageHeader>
@@ -436,53 +493,4 @@
 			</textField>
 		</band>
 	</lastPageFooter>
-	<summary>
-		<band height="65" splitType="Immediate">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" positionType="Float" x="20" y="11" width="486" height="14" isRemoveLineWhenBlank="true" uuid="bbfafec8-8370-46eb-928c-7b34b7efd335"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font size="10"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
-			</textField>
-			<subreport isUsingCache="false">
-				<reportElement positionType="Float" x="0" y="51" width="539" height="14" isRemoveLineWhenBlank="true" uuid="55aff566-d882-4118-ba76-727dd4854ff1">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("customerNotes")]]></dataSourceExpression>
-				<subreportExpression><![CDATA["Invoice Notes.jrxml"]]></subreportExpression>
-			</subreport>
-			<line>
-				<reportElement key="line-2" x="0" y="1" width="539" height="1" uuid="978f931b-5539-4f20-ac4c-8ba34d3b75fd">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-			</line>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="staticText-1" positionType="Float" x="0" y="25" width="539" height="26" uuid="0a6c564f-e095-4338-b500-7bd85f101322">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[($F{OpenVPMS.location.letterhead.target.estimateMsg}==null)?Boolean.FALSE:
-($F{OpenVPMS.location.letterhead.target.estimateMsg}.trim().length()>0)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="10" isBold="true" isItalic="true"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.estimateMsg}]]></textFieldExpression>
-			</textField>
-		</band>
-	</summary>
 </jasperReport>
