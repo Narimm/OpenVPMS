@@ -255,6 +255,9 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
         Party customer = TestHelper.createCustomer();
         Party patient1 = TestHelper.createPatient();
         Party patient2 = TestHelper.createPatient();
+        patient1.setName("Fido");
+        patient2.setName("Spot");
+        save(patient1, patient2);
         List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(BigDecimal.TEN, customer, patient1, product,
                                                                            ActStatus.IN_PROGRESS);
         FinancialAct invoice = acts.get(0);
@@ -291,6 +294,12 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
 
         List<Long> values3 = (List<Long>) context.getValue("list:distinct(., 'items.target.product.entity.id')");
         checkValues(values3, product.getId());
+
+        // check names
+        String names1 = (String) context.getValue("list:sortNames(list:distinct('items.target.patient.entity'))");
+        assertEquals("Fido, Spot", names1);
+        String names2 = (String) context.getValue("list:sortNames(list:set('items.target.patient.entity'))");
+        assertEquals("Fido, Spot", names2);
     }
 
     /**

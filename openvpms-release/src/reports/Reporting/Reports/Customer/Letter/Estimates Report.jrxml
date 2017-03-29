@@ -28,7 +28,7 @@
 		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="showFinalised" class="java.lang.Boolean">
-		<parameterDescription><![CDATA[Show Completed]]></parameterDescription>
+		<parameterDescription><![CDATA[Show Finalised]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="showInvoiced" class="java.lang.Boolean">
