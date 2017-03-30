@@ -318,7 +318,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(3, DateUnits.MONTHS);
         addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, null, createEmailRule());
-        addReminderCount(reminderType, 0, 1, DateUnits.MONTHS, null, createEmailRule());
+        addReminderCount(reminderType, 1, 1, DateUnits.MONTHS, null, createEmailRule());
 
         Act reminder = createReminder(patient, reminderType, "2016-01-01 00:00:00", IN_PROGRESS);
         Date due = TestHelper.getDate("2016-04-01");
