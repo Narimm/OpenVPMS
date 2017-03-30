@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
 
 import org.apache.commons.logging.Log;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
@@ -26,9 +27,11 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.Collections;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -127,6 +130,19 @@ public abstract class FlowSheetService {
             resource.register(new LoggingFilter(new DebugLog(log), true));
         }
         return resource;
+    }
+
+    /**
+     * Returns a proxy for the specified type.
+     *
+     * @param type   the type
+     * @param client the client
+     * @return a proxy for the type
+     */
+    protected <T> T getResource(Class<T> type, javax.ws.rs.client.Client client) {
+        WebTarget target = getWebTarget(client);
+        return WebResourceFactory.newResource(type, target, false, getHeaders(), Collections.<Cookie>emptyList(),
+                                              EMPTY_FORM);
     }
 
     /**
