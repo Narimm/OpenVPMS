@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.i18n;
@@ -54,7 +54,17 @@ public class FlowSheetMessages {
     }
 
     /**
-     *  Creats a message when the treatment templates cant be returned.
+     * Creates a message when the departments can't be returned.
+     *
+     * @return a new message
+     */
+    public static Message failedToGetDepartments() {
+        return messages.getMessage(106);
+    }
+
+    /**
+     * Creates a message when the treatment templates can't be returned.
+     *
      * @return a new message
      */
     public static Message failedToGetTemplates() {
@@ -83,7 +93,7 @@ public class FlowSheetMessages {
 
     /**
      * Creates a message indicating that SSL handing shaking has failed.
-     * <p>
+     * <p/>
      * This typically indicates that the Start Com certification authority has not been imported into cacerts.
      *
      * @param url the url being connected to

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
@@ -101,17 +101,17 @@ public class FlowSheetServiceFactory {
     }
 
     /**
-     * Creates a {@link ConfigurationService} for the specified practice location.
+     * Creates a {@link ReferenceDataService} for the specified practice location.
      *
      * @param location the practice location
-     * @return a new {@link ConfigurationService}
+     * @return a new {@link ReferenceDataService}
      */
-    public ConfigurationService getConfigurationService(Party location) {
+    public ReferenceDataService getReferenceDataService(Party location) {
         String clinicKey = getClinicAPIKey(location);
         if (clinicKey == null) {
             throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
         }
-        return new ConfigurationService(url, emrApiKey, clinicKey, TimeZone.getDefault());
+        return new ReferenceDataService(url, emrApiKey, clinicKey, TimeZone.getDefault());
     }
 
     /**

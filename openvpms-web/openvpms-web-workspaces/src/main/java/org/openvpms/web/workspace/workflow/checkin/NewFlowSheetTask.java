@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -231,13 +231,15 @@ public class NewFlowSheetTask extends Tasks {
                 // no weight entered
                 notifyCancelled();
             } else {
-                final FlowSheetEditDialog dialog = new FlowSheetEditDialog(factory, location, null, getDays(), false);
+                final FlowSheetEditDialog dialog = new FlowSheetEditDialog(factory, location, -1, null, getDays(),
+                                                                           false);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
                         int days = dialog.getExpectedStay();
+                        int departmentId = dialog.getDepartmentId();
                         String template = dialog.getTemplate();
-                        client.add(patientContext, days, template);
+                        client.add(patientContext, days, departmentId, template);
                         notifyCompleted();
                     }
 
