@@ -144,7 +144,7 @@ public class ReminderProcessor {
      * @param reminder      the reminder
      * @param reminderCount the reminder count
      * @param contact       the contact
-     * @return the reminder item, linked to the reminder. The caller is reponsible for saving this
+     * @return the reminder item, linked to the reminder. The caller is responsible for saving this
      */
     public Act process(Act reminder, int reminderCount, Contact contact) {
         ActBean bean = new ActBean(reminder, service);
@@ -248,12 +248,15 @@ public class ReminderProcessor {
                 ReminderCount count = reminderType.getReminderCount(reminderCount);
                 if (count != null) {
                     result = generate(patient, reminder, count);
-                } else {
+                } else if (reminderCount == 0) {
                     // no reminder count, so list the reminder
                     result = new ArrayList<>();
                     String error = new ReminderProcessorException(NoReminderCount, reminderType.getName(),
                                                                   reminderCount).getMessage();
                     generateList(new ActBean(reminder, service), dueDate, reminderCount, error, result);
+                } else {
+                    // a reminderCount > 0 with no ReminderCount is valid - just skip the reminder
+                    result = Collections.emptyList();
                 }
             }
         }
@@ -324,7 +327,6 @@ public class ReminderProcessor {
         toSave.add(reminder);
         return toSave;
     }
-
 
     /**
      * Returns the patient associated with a reminder.
@@ -470,14 +472,9 @@ public class ReminderProcessor {
         if (error != null) {
             bean.setValue("error", error);
             act.setStatus(ReminderItemStatus.ERROR);
-        } else {  // if (DateRules.compareTo(startTime, now()) > 0) {
+        } else {
             act.setStatus(ReminderItemStatus.PENDING);
         }
-        // } else {
-        // TODO - not sure this is required. Should be handled via cancellation
-//            act.setStatus(ReminderItemStatus.ERROR);
-//            bean.setValue("error", new ReminderProcessorException(Late).getMessage());
-        //}
 
         reminder.addNodeRelationship("items", act);
         toSave.add(act);

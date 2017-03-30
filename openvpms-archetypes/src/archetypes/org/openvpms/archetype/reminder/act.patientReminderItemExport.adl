@@ -28,9 +28,9 @@
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'PENDING'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
-                    <property name="PENDING" value="Pending"/>
-                    <property name="COMPLETED" value="Completed"/>
-                    <property name="CANCELLED" value="Cancelled"/>
+                    <property name="PENDING" value="Queued"/>
+                    <property name="COMPLETED" value="Sent"/>
+                    <property name="CANCELLED" value="Dequeued"/>
                     <property name="ERROR" value="Error"/>
                 </propertyList>
             </assertion>

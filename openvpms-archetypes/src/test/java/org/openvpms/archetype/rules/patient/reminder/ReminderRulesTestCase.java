@@ -60,6 +60,10 @@ import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderStatus.CANCELLED;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addReminderCount;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailReminder;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createPrintReminder;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderWithDueDate;
 import static org.openvpms.archetype.test.TestHelper.getDate;
@@ -307,6 +311,33 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderRules#updateReminder(Act, Act)} method.
+     */
+    @Test
+    public void testUpdateReminder() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType(3, DateUnits.MONTHS);
+        addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, null, createEmailRule());
+        addReminderCount(reminderType, 0, 1, DateUnits.MONTHS, null, createEmailRule());
+
+        Act reminder = createReminder(patient, reminderType, "2016-01-01 00:00:00", IN_PROGRESS);
+        Date due = TestHelper.getDate("2016-04-01");
+        assertEquals(due, reminder.getActivityStartTime());
+        assertEquals(due, reminder.getActivityEndTime());
+        Act item1 = createEmailReminder(due, due, ReminderItemStatus.PENDING, 0);
+        Act item2 = createPrintReminder(due, due, ReminderItemStatus.PENDING, 0);
+        ActBean bean = new ActBean(reminder);
+        bean.addNodeRelationship("items", item1);
+        bean.addNodeRelationship("items", item2);
+        save(reminder, item1, item2);
+        assertFalse(rules.updateReminder(reminder, item1));
+        item2.setStatus(ReminderItemStatus.COMPLETED);
+        save(item2);
+        assertTrue(rules.updateReminder(reminder, item1));
+        assertEquals(getDate("2016-05-01"), reminder.getActivityStartTime());
+    }
+
+    /**
      * Tests the {@link ReminderRules#getDocumentFormReminder} method, when the <em>act.patientDocumentForm</em> is
      * linked to an invoice item.
      */
@@ -376,7 +407,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertNotNull(reminder1);
         assertTrue(reminder1.isNew()); // reminders from products should not be persistent
         Date dueDate1 = rules.calculateProductReminderDueDate(form.getActivityStartTime(), productReminder1);
-        checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
+        checkReminder(reminder1, reminderType1, patient, product, dueDate1);
 
         Entity reminderType2 = createReminderType();
         EntityRelationship productReminder2 = productBean.addNodeRelationship("reminders", reminderType2);
@@ -388,7 +419,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder2 = rules.getDocumentFormReminder(form);
         assertNotNull(reminder2);
         assertTrue(reminder2.isNew()); // reminders from products should not be persistent
-        checkReminder(reminder2, reminderType2, patient, product, form, dueDate2);
+        checkReminder(reminder2, reminderType2, patient, product, dueDate2);
     }
 
     /**
@@ -410,7 +441,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder1 = rules.getDocumentFormReminder(form);
         assertNotNull(reminder1);
         assertTrue(reminder1.isNew()); // reminders from products should not be persistent
-        checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
+        checkReminder(reminder1, reminderType1, patient, product, dueDate1);
 
         // create an invoice item and associate the form with it
         Act item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient, product, Money.ONE
@@ -597,11 +628,9 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @param reminderType the expected reminder type
      * @param patient      the expected patient
      * @param product      the expected product
-     * @param form         the expected form
      * @param dueDate      the expected due date
      */
-    private void checkReminder(Act reminder, Entity reminderType, Party patient, Product product, DocumentAct form,
-                               Date dueDate) {
+    private void checkReminder(Act reminder, Entity reminderType, Party patient, Product product, Date dueDate) {
         ActBean bean = new ActBean(reminder);
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(reminderType, bean.getNodeParticipant("reminderType"));

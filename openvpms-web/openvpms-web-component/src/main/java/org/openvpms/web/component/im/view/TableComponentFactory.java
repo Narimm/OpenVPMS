@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.NumericPropertyFormatter;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
@@ -132,6 +133,19 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
     protected String getDateValue(Property property) {
         Date value = (Date) property.getValue();
         return (value != null) ? DateFormatter.formatDate(value, false) : null;
+    }
+
+    /**
+     * Returns a component bound to a boolean property.
+     *
+     * @param property the property to bind
+     * @return a new component
+     */
+    @Override
+    protected Component createBoolean(Property property) {
+        // force the check-box to render to minimum width, so that it doesn't fill the cell. This allows row selection
+        // events
+        return RowFactory.create(RowFactory.create(super.createBoolean(property)));
     }
 
     /**

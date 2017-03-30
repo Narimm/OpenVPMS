@@ -109,7 +109,7 @@ public class ReminderTestHelper extends TestHelper {
      * Creates and saves a reminder count, optionally associated with a template and rules.
      *
      * @param count    the reminder count
-     * @param template the document template
+     * @param template the document template. May be {@code null}
      * @param rules    the rules
      * @return a new reminder count
      */

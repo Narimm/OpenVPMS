@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
@@ -289,6 +290,18 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
     public void testListForNoReminderCount() {
         Act reminder = createReminderDueTomorrow();
         checkProcess(false, false, false, false, true, reminder);
+    }
+
+    /**
+     * Verifies that a reminder type without a ReminderCount > 0 is skipped.
+     */
+    @Test
+    public void testSkipForNoReminderCountGreaterThanZero() {
+        Act reminder = createReminderDueTomorrow();
+        ActBean bean = new ActBean(reminder);
+        bean.setValue("reminderCount", 1);
+        List<Act> acts = process(reminder);
+        assertEquals(0, acts.size());
     }
 
     /**
