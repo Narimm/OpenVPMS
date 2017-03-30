@@ -271,34 +271,6 @@ public class ReminderRules {
     }
 
     /**
-     * Updates a reminder that has been successfully sent.
-     *
-     * @param reminder the reminder
-     * @param lastSent the date when the reminder was sent
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void updateReminder(Act reminder, Date lastSent) {
-        ActBean bean = new ActBean(reminder, service);
-        int count = bean.getInt("reminderCount");
-        updateReminder(reminder, count + 1, lastSent);
-    }
-
-    /**
-     * Updates a reminder that has been successfully sent.
-     *
-     * @param reminder      the reminder
-     * @param reminderCount the reminder count
-     * @param lastSent      the date when the reminder was sent
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void updateReminder(Act reminder, int reminderCount, Date lastSent) {
-        ActBean bean = new ActBean(reminder, service);
-        bean.setValue("reminderCount", reminderCount);
-        bean.setValue("lastSent", lastSent);
-        bean.save();
-    }
-
-    /**
      * Updates a reminder if it has no PENDING or ERROR items besides that supplied.
      * <p/>
      * This increments the reminder count.
@@ -320,7 +292,7 @@ public class ReminderRules {
                 result = true;
                 ReminderType reminderType = getReminderType(bean);
                 if (reminderType != null) {
-                    Date dueDate = reminderType.getNextDueDate(reminder.getActivityStartTime(), count);
+                    Date dueDate = reminderType.getNextDueDate(reminder.getActivityEndTime(), count);
                     if (dueDate != null) {
                         reminder.setActivityStartTime(dueDate);
                     }

@@ -16,6 +16,8 @@
 
 package org.openvpms.web.workspace.admin.type;
 
+import org.joda.time.Seconds;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -26,6 +28,13 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityLinkCollectionTargetEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.i18n.Messages;
+
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * An editor for <em>entity.reminderType</em>.
@@ -127,6 +136,54 @@ public class ReminderTypeEditor extends AbstractIMObjectEditor {
         @Override
         protected void swapped(IMObject object1, IMObject object2) {
             resequence();
+        }
+
+        /**
+         * Validates the object.
+         * <p>
+         * This validates the current object being edited, and if valid, the collection.
+         *
+         * @param validator the validator
+         * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+         */
+        @Override
+        protected boolean doValidation(Validator validator) {
+            return super.doValidation(validator) && validateOverdueIntervals(validator);
+        }
+
+        /**
+         * Ensures that overdue intervals are in increasing order by reminder count.
+         *
+         * @param validator the validator
+         * @return {@code true} if the overdue intervals are valid, otherwise {@code false}
+         */
+        private boolean validateOverdueIntervals(Validator validator) {
+            boolean valid = true;
+            SortedMap<Integer, Seconds> overdue = new TreeMap<>();
+            for (IMObject object : getCurrentObjects()) {
+                IMObjectBean bean = new IMObjectBean(object);
+                int count = bean.getInt("count");
+                int interval = bean.getInt("interval");
+                String units = bean.getString("units");
+                if (units != null) {
+                    Seconds period = DateUnits.fromString(units).toPeriod(interval).toStandardSeconds();
+                    overdue.put(count, period);
+                }
+            }
+            Map.Entry<Integer, Seconds> last = null;
+            for (Map.Entry<Integer, Seconds> entry : overdue.entrySet()) {
+                if (last == null || entry.getValue().compareTo(last.getValue()) > 0) {
+                    last = entry;
+                } else {
+                    int count1 = last.getKey();
+                    int count2 = entry.getKey();
+                    String message = Messages.format("reminder.type.overdueintervals", count1, count2);
+                    validator.add(this, new ValidatorError(message));
+                    valid = false;
+                    break;
+                }
+            }
+            return valid;
         }
 
         /**

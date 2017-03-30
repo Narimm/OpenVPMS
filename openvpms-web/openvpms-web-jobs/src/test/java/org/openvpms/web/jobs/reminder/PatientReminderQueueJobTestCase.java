@@ -19,6 +19,7 @@ package org.openvpms.web.jobs.reminder;
 import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
@@ -259,6 +260,42 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
         reminder = get(reminder);
         assertEquals(ReminderStatus.CANCELLED, reminder.getStatus());
         checkItems(reminder, 0);
+    }
+
+    /**
+     * Verifies that if a reminder has a reminder type with no reminder count, it is skipped.
+     */
+    @Test
+    public void testSkipReminderWithNoReminderCount() {
+        assertEquals(Period.days(3), config.getEmailPeriod());
+        // need to allow 3 days prior to a reminder being due, for emails
+
+        Date today = DateRules.getToday();
+        Date send = DateRules.getDate(today, 3, DateUnits.DAYS);
+
+        Party customer1 = TestHelper.createCustomer(TestHelper.createEmailContact("foo@bar.com", true, "REMINDER"));
+        Party patient = TestHelper.createPatient(customer1);
+
+        // set up 2 reminders:
+        // reminder1 - has reminderCount=0 and should have an email item generated when the job runs
+        // reminder2 - has reminderCount=1 and should be skipped when the job runs
+        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate(true, false);
+        addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, documentTemplate, createEmailRule());
+        Act reminder1 = createReminder(send, patient, reminderType, ReminderStatus.IN_PROGRESS);
+        Act reminder2 = createReminder(send, patient, reminderType, ReminderStatus.IN_PROGRESS);
+        ActBean bean = new ActBean(reminder2);
+        bean.setValue("reminderCount", 1);
+        bean.save();
+        job.execute(null);
+
+        // check the reminders
+        reminder1 = get(reminder1);
+        reminder2 = get(reminder2);
+
+        checkEmailItem(reminder1, config.getEmailSendDate(send), ReminderItemStatus.PENDING);
+        assertEquals(ActStatus.IN_PROGRESS, reminder2.getStatus());
+        bean = new ActBean(reminder2);
+        assertEquals(0, bean.getNodeActs("items").size());
     }
 
     /**
