@@ -288,7 +288,8 @@ public class ReminderRules {
             ActBean itemBean = new ActBean(item, service);
             int count = itemBean.getInt("count");
             if (count == bean.getInt("reminderCount")) {
-                bean.setValue("reminderCount", count + 1);
+                count++;
+                bean.setValue("reminderCount", count);
                 result = true;
                 ReminderType reminderType = getReminderType(bean);
                 if (reminderType != null) {
