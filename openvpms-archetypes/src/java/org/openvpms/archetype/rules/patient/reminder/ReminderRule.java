@@ -16,6 +16,8 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -107,9 +109,9 @@ public class ReminderRule {
     public ReminderRule(IMObject rule, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(rule, service);
         contact = bean.getBoolean("contact");
-        print = bean.getBoolean("print");
         email = bean.getBoolean("email");
         sms = bean.getBoolean("sms");
+        print = bean.getBoolean("print");
         list = bean.getBoolean("list");
         export = bean.getBoolean("export");
 
@@ -211,5 +213,36 @@ public class ReminderRule {
      */
     public SendTo getSendTo() {
         return sendTo;
+    }
+
+    /**
+     * Returns a string representation of the rule.
+     *
+     * @return a string representation of the rule
+     */
+    @Override
+    public String toString() {
+        ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        append(builder, "contact", contact);
+        append(builder, "email", email);
+        append(builder, "sms", sms);
+        append(builder, "print", print);
+        append(builder, "export", export);
+        append(builder, "list", list);
+        builder.append("sendTo", sendTo);
+        return builder.toString();
+    }
+
+    /**
+     * Helper to appends a field value if it is true.
+     *
+     * @param builder the builder
+     * @param name    the field name
+     * @param value   the field value
+     */
+    private void append(ToStringBuilder builder, String name, boolean value) {
+        if (value) {
+            builder.append(name, true);
+        }
     }
 }
