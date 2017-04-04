@@ -30,7 +30,7 @@
     <name>openvpms-db</name>
 
     <properties>
-        <flyway.version>4.0.3</flyway.version>
+        <flyway.version>4.1.2</flyway.version>
     </properties>
 
     <dependencies>

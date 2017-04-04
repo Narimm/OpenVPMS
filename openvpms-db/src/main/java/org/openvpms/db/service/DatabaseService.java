@@ -37,9 +37,10 @@ public interface DatabaseService {
      *
      * @param adminUser     the database administrator user name
      * @param adminPassword the database administrator password
+     * @param createTables  if {@code true}, create the tables, and base-line
      * @throws SQLException for any SQL error
      */
-    void create(String adminUser, String adminPassword) throws SQLException;
+    void create(String adminUser, String adminPassword, boolean createTables) throws SQLException;
 
     /**
      * Determines if the database needs migration.
