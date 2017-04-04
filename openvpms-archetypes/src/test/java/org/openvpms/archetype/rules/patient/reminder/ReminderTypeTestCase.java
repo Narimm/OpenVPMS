@@ -23,11 +23,13 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
@@ -156,6 +158,57 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that reminder counts are returned in the correct order.
+     */
+    @Test
+    public void testGetReminderCounts() {
+        Entity entity = createReminderType();
+        Entity contact0 = ReminderTestHelper.createContactRule();
+        Entity email0 = ReminderTestHelper.createEmailRule();
+        Entity sms0 = ReminderTestHelper.createSMSRule();
+        ReminderTestHelper.addReminderCount(entity, 0, 0, DateUnits.DAYS, null, contact0, email0, sms0);
+        Entity email1 = ReminderTestHelper.createEmailRule();
+        Entity sms1 = ReminderTestHelper.createSMSRule();
+        ReminderTestHelper.addReminderCount(entity, 1, 30, DateUnits.DAYS, null, email1, sms1);
+        Entity list2 = ReminderTestHelper.createListRule();
+        ReminderTestHelper.addReminderCount(entity, 2, 60, DateUnits.DAYS, null, list2);
+
+        ReminderType reminderType = new ReminderType(entity, getArchetypeService());
+        checkReminderCount(reminderType.getReminderCount(0), 0, 0, DateUnits.DAYS, contact0, email0, sms0);
+        checkReminderCount(reminderType.getReminderCount(1), 1, 30, DateUnits.DAYS, email1, sms1);
+        checkReminderCount(reminderType.getReminderCount(2), 2, 60, DateUnits.DAYS, list2);
+        assertNull(reminderType.getReminderCount(3));
+
+        List<ReminderCount> counts = reminderType.getReminderCounts();
+        assertEquals(3, counts.size());
+        checkReminderCount(counts.get(0), 0, 0, DateUnits.DAYS, contact0, email0, sms0);
+        checkReminderCount(counts.get(1), 1, 30, DateUnits.DAYS, email1, sms1);
+        checkReminderCount(counts.get(2), 2, 60, DateUnits.DAYS, list2);
+    }
+
+    /**
+     * Verifies a {@link ReminderCount} matches that expected.
+     *
+     * @param count            the reminder count
+     * @param expectedCount    the expected count
+     * @param expectedInterval the expected overdue interval
+     * @param expectedUnits    the expected overdue units
+     * @param expectedRules    the expected rules
+     */
+    private void checkReminderCount(ReminderCount count, int expectedCount, int expectedInterval,
+                                    DateUnits expectedUnits, Entity... expectedRules) {
+        assertEquals(expectedCount, count.getCount());
+        assertEquals(expectedInterval, count.getInterval());
+        assertEquals(expectedUnits, count.getUnits());
+        List<ReminderRule> rules = count.getRules();
+        assertEquals(expectedRules.length, rules.size());
+        for (int i = 0; i < expectedRules.length; ++i) {
+            ReminderRule expected = new ReminderRule(expectedRules[i], getArchetypeService());
+            assertEquals(expected, rules.get(i));
+        }
+    }
+
+    /**
      * Verifies that due dates are correctly calculated.
      *
      * @param start    the start date
@@ -211,17 +264,6 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
         bean.setValue("cancelUnits", units.toString());
         ReminderType type = new ReminderType(bean.getEntity(), getArchetypeService());
         assertEquals(expected, type.shouldCancel(dueDate, cancelDate));
-    }
-
-    /**
-     * Helper to create a new <em>entity.reminderType</em>.
-     *
-     * @return a new reminder type
-     */
-    private Entity createReminderType() {
-        Entity entity = (Entity) create("entity.reminderType");
-        entity.setName("XReminderType-" + System.currentTimeMillis());
-        return entity;
     }
 
     /**
