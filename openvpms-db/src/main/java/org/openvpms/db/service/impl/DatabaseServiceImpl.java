@@ -92,6 +92,17 @@ public class DatabaseServiceImpl implements DatabaseService {
      * @param driver     the driver class name
      * @param url        the driver url
      * @param dataSource the data source
+     */
+    public DatabaseServiceImpl(String driver, String url, DataSource dataSource) {
+        this(driver, url, dataSource, null);
+    }
+
+    /**
+     * Constructs a {@link DatabaseServiceImpl}.
+     *
+     * @param driver     the driver class name
+     * @param url        the driver url
+     * @param dataSource the data source
      * @param listener   the listener to notify of Flyway events. May be {@code null}
      */
     public DatabaseServiceImpl(String driver, String url, DataSource dataSource, final FlywayCallback listener) {
@@ -152,7 +163,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 SqlScript script = new SqlScript(support, resource, new PlaceholderReplacer(placeholders, "${", "}"),
                                                  "UTF-8", false);
                 script.execute(support.getJdbcTemplate());
-            } else if (!createTables){
+            } else if (!createTables) {
                 throw new SQLException("Cannot create " + schemaName + " as it already exists");
             }
         }
