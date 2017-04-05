@@ -115,6 +115,20 @@ public class FlowSheetServiceFactory {
     }
 
     /**
+     * Creates a {@link InventoryService} for the specified practice location.
+     *
+     * @param location the practice location
+     * @return a new {@link InventoryService}
+     */
+    public InventoryService getInventoryService(Party location) {
+        String clinicKey = getClinicAPIKey(location);
+        if (clinicKey == null) {
+            throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
+        }
+        return new InventoryService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service);
+    }
+
+    /**
      * Returns the clinic API key for a practice location.
      *
      * @param location the practice location

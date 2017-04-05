@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -116,6 +116,24 @@ public class ConfirmationDialog extends MessageDialog {
      */
     public static void show(String title, String message, String[] buttons, WindowPaneListener listener) {
         ConfirmationDialog dialog = new ConfirmationDialog(title, message, buttons);
+        if (listener != null) {
+            dialog.addWindowPaneListener(listener);
+        }
+        dialog.show();
+    }
+
+    /**
+     * Helper to show a new confirmation dialog.
+     *
+     * @param title    the dialog title
+     * @param message  dialog message
+     * @param buttons  the buttons to display
+     * @param help     the help context
+     * @param listener the listener to notify when the dialog closes. May be {@code null}
+     */
+    public static void show(String title, String message, String[] buttons, HelpContext help,
+                            WindowPaneListener listener) {
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, buttons, help);
         if (listener != null) {
             dialog.addWindowPaneListener(listener);
         }

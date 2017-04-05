@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -35,6 +35,8 @@ import org.openvpms.archetype.rules.product.io.ProductImporter;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
+import org.openvpms.smartflow.client.InventoryService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
@@ -78,6 +80,11 @@ import java.util.List;
 public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
 
     /**
+     * The Smart Flow Sheet service factory.
+     */
+    private final FlowSheetServiceFactory flowSheetServiceFactory;
+
+    /**
      * Copy button identifier.
      */
     private static final String COPY_ID = "copy";
@@ -92,6 +99,11 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      */
     private static final String IMPORT_ID = "button.import";
 
+    /**
+     * Synchronise with Smart Flow Sheet button identifier.
+     */
+    private static final String SYNCH_ID = "button.synchwithsfs";
+
 
     /**
      * Constructs a {@code ProductCRUDWindow}.
@@ -105,6 +117,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     public ProductCRUDWindow(Archetypes<Product> archetypes, Query<Product> query, ResultSet<Product> set,
                              Context context, HelpContext help) {
         super(archetypes, query, set, context, help);
+        flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
     }
 
     /**
@@ -138,6 +151,14 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
                     onImport();
                 }
             }));
+            if (flowSheetServiceFactory.supportsSmartFlowSheet(getContext().getLocation())) {
+                buttons.add(ButtonFactory.create(SYNCH_ID, new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        onSynchronise();
+                    }
+                }));
+            }
         }
     }
 
@@ -169,15 +190,28 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             String title = Messages.format("product.information.copy.title", displayName);
             String message = Messages.format("product.information.copy.message", name);
             HelpContext help = getHelpContext().subtopic("copy");
-            final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
-            dialog.addWindowPaneListener(new PopupDialogListener() {
+            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, help, new PopupDialogListener() {
                 @Override
-                public void onOK() {
+                public void onYes() {
                     copy(product);
                 }
             });
-            dialog.show();
         }
+    }
+
+    /**
+     * Invoked when the 'synchronise with SFS' button is pressed.
+     */
+    protected void onSynchronise() {
+        HelpContext help = getHelpContext().subtopic("sync");
+        ConfirmationDialog.show(Messages.get("product.information.sync.title"),
+                                Messages.get("product.information.sync.message"),
+                                ConfirmationDialog.YES_NO, help, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        synchroniseProducts();
+                    }
+                });
     }
 
     /**
@@ -201,6 +235,18 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             String title = Messages.format("product.information.copy.failed", getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
+    }
+
+    /**
+     * Synchronises products.
+     */
+    private void synchroniseProducts() {
+        InventoryService service = flowSheetServiceFactory.getInventoryService(getContext().getLocation());
+        InventoryService.Sync sync = service.synchronise();
+        String title = Messages.get("product.information.sync.title");
+        String message = sync.changed() ? Messages.get("product.information.sync.updated")
+                                        : Messages.get("product.information.sync.noupdate");
+        InformationDialog.show(title, message);
     }
 
     /**

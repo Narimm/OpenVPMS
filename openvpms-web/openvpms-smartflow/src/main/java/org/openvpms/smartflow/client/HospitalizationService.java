@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.i18n.Message;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Client;
@@ -43,7 +44,6 @@ import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.service.Hospitalizations;
 
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
@@ -124,25 +124,25 @@ public class HospitalizationService extends FlowSheetService {
      * @param context the patient context
      * @return the hospitalization, or {@code null} if none exists
      */
-    public Hospitalization getHospitalization(PatientContext context) {
-        Hospitalization result = null;
-        javax.ws.rs.client.Client client = getClient();
-        try {
-            Hospitalizations hospitalizations = getResource(Hospitalizations.class, client);
-            try {
-                result = hospitalizations.get(Long.toString(context.getVisitId()));
-            } catch (NotFoundException ignore) {
-                log.debug("No hospitalization found for id=" + context.getVisitId());
+    public Hospitalization getHospitalization(final PatientContext context) {
+        Call<Hospitalization, Hospitalizations> call = new Call<Hospitalization, Hospitalizations>() {
+            @Override
+            public Hospitalization call(Hospitalizations resource) throws Exception {
+                Hospitalization result = null;
+                try {
+                    result = resource.get(Long.toString(context.getVisitId()));
+                } catch (NotFoundException ignore) {
+                    log.debug("No hospitalization found for id=" + context.getVisitId());
+                }
+                return result;
             }
-        } catch (NotAuthorizedException exception) {
-            notAuthorised(exception);
-        } catch (Throwable exception) {
-            checkSSL(exception);
-            throw new FlowSheetException(FlowSheetMessages.failedToGetHospitalization(context.getPatient()), exception);
-        } finally {
-            client.close();
-        }
-        return result;
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToGetHospitalization(context.getPatient());
+            }
+        };
+        return call(Hospitalizations.class, call);
     }
 
     /**
@@ -155,8 +155,8 @@ public class HospitalizationService extends FlowSheetService {
      * @param departmentId the department identifier, or {@code -1} to use the default department
      * @param template     the treatment template name. May be {@code null}
      */
-    public void add(PatientContext context, int stayDuration, int departmentId, String template) {
-        Hospitalization hospitalization = new Hospitalization();
+    public void add(final PatientContext context, int stayDuration, int departmentId, String template) {
+        final Hospitalization hospitalization = new Hospitalization();
         Patient patient = createPatient(context);
         hospitalization.setPatient(patient);
         hospitalization.setFileNumber(patient.getPatientId());
@@ -188,18 +188,19 @@ public class HospitalizationService extends FlowSheetService {
             hospitalization.setDiseases(diseases);
         }
 
-        javax.ws.rs.client.Client client = getClient();
-        try {
-            Hospitalizations hospitalizations = getResource(Hospitalizations.class, client);
-            hospitalizations.add(hospitalization);
-        } catch (NotAuthorizedException exception) {
-            notAuthorised(exception);
-        } catch (Throwable exception) {
-            checkSSL(exception);
-            throw new FlowSheetException(FlowSheetMessages.failedToCreateFlowSheet(context.getPatient()), exception);
-        } finally {
-            client.close();
-        }
+        Call<Void, Hospitalizations> call = new Call<Void, Hospitalizations>() {
+            @Override
+            public Void call(Hospitalizations resource) throws Exception {
+                resource.add(hospitalization);
+                return null;
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToCreateFlowSheet(context.getPatient());
+            }
+        };
+        call(Hospitalizations.class, call);
     }
 
     /**
@@ -269,45 +270,45 @@ public class HospitalizationService extends FlowSheetService {
      * @param context   the patient context
      * @param retriever the report retriever
      */
-    private void saveReport(String name, PatientContext context, ReportRetriever retriever) {
-        String id = Long.toString(context.getVisitId());
-        javax.ws.rs.client.Client client = getClient();
-        try {
-            Hospitalizations hospitalizations = getResource(Hospitalizations.class, client);
-            Response response = retriever.getResponse(hospitalizations, id);
-            if (response.hasEntity() && MediaTypeHelper.isPDF(response.getMediaType())) {
-                try (InputStream stream = (InputStream) response.getEntity()) {
-                    String fileName = name + ".pdf";
-                    DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
-                    DocumentRules rules = new DocumentRules(service);
-                    Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
-                    DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
-                    ActBean bean = new ActBean(act, service);
-                    if (context.getClinician() != null) {
-                        bean.addNodeParticipation("clinician", context.getClinician());
+    private void saveReport(final String name, final PatientContext context, final ReportRetriever retriever) {
+        final String id = Long.toString(context.getVisitId());
+        Call<Void, Hospitalizations> call = new Call<Void, Hospitalizations>() {
+            @Override
+            public Void call(Hospitalizations resource) throws Exception {
+                Response response = retriever.getResponse(resource, id);
+                if (response.hasEntity() && MediaTypeHelper.isPDF(response.getMediaType())) {
+                    try (InputStream stream = (InputStream) response.getEntity()) {
+                        String fileName = name + ".pdf";
+                        DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
+                        DocumentRules rules = new DocumentRules(service);
+                        Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
+                        DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
+                        ActBean bean = new ActBean(act, service);
+                        if (context.getClinician() != null) {
+                            bean.addNodeParticipation("clinician", context.getClinician());
+                        }
+                        Act visit = context.getVisit();
+                        ActBean visitBean = new ActBean(visit, service);
+                        visitBean.addNodeRelationship("items", act);
+                        bean.addNodeParticipation("patient", context.getPatient());
+                        List<IMObject> objects = rules.addDocument(act, document);
+                        objects.add(act);
+                        service.save(objects);
                     }
-                    Act visit = context.getVisit();
-                    ActBean visitBean = new ActBean(visit, service);
-                    visitBean.addNodeRelationship("items", act);
-                    bean.addNodeParticipation("patient", context.getPatient());
-                    List<IMObject> objects = rules.addDocument(act, document);
-                    objects.add(act);
-                    service.save(objects);
-                } catch (NotAuthorizedException exception) {
-                    notAuthorised(exception);
-                } catch (Throwable exception) {
-                    checkSSL(exception);
-                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name),
-                                                 exception);
+                } else {
+                    log.error("Failed to get " + name + " for hospitalizationId=" + id + ", status="
+                              + response.getStatus() + ", mediaType=" + response.getMediaType());
+                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name));
                 }
-            } else {
-                log.error("Failed to get " + name + " for hospitalizationId=" + id + ", status=" + response.getStatus()
-                          + ", mediaType=" + response.getMediaType());
-                throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name));
+                return null;
             }
-        } finally {
-            client.close();
-        }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name);
+            }
+        };
+        call(Hospitalizations.class, call);
     }
 
     /**

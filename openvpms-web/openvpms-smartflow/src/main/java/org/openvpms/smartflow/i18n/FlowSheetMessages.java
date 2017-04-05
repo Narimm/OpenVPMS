@@ -72,6 +72,33 @@ public class FlowSheetMessages {
     }
 
     /**
+     * Creates a message when the inventory items can't be returned.
+     *
+     * @return a new message
+     */
+    public static Message failedToGetInventory() {
+        return messages.getMessage(107);
+    }
+
+    /**
+     * Creates a message when the inventory items can't be updated.
+     *
+     * @return a new message
+     */
+    public static Message failedToUpdateInventory() {
+        return messages.getMessage(108);
+    }
+
+    /**
+     * Creates a message when an inventory items can't be removed.
+     *
+     * @return a new message
+     */
+    public static Message failedToRemoveInventoryItem(String id, String name) {
+        return messages.getMessage(109, id, name);
+    }
+
+    /**
      * Creates a message indicating that a PDF couldn't be downloaded for a patient.
      *
      * @param patient the patient
@@ -102,4 +129,5 @@ public class FlowSheetMessages {
     public static Message cannotConnectUsingSSL(String url) {
         return messages.getMessage(104, url);
     }
+
 }
