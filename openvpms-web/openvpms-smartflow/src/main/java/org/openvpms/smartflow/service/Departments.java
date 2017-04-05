@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Smart Flow Sheet departments API.
  *
- * @author benjamincharlton on 21/10/2015.
+ * @author Tim Anderson.
  */
 @Path("/departments")
 public interface Departments {

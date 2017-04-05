@@ -17,13 +17,13 @@
 package org.openvpms.smartflow.client;
 
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.system.common.i18n.Message;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Department;
 import org.openvpms.smartflow.model.TreatmentTemplate;
 import org.openvpms.smartflow.service.Departments;
 import org.openvpms.smartflow.service.TreatmentTemplates;
 
-import javax.ws.rs.NotAuthorizedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
@@ -54,20 +54,22 @@ public class ReferenceDataService extends FlowSheetService {
      * @return the departments
      */
     public List<Department> getDepartments() {
-        List<Department> departments = new ArrayList<>();
-        javax.ws.rs.client.Client client = getClient();
-        try {
-            Departments service = getResource(Departments.class, client);
-            departments.addAll(service.getDepartments());
-        } catch (NotAuthorizedException exception) {
-            notAuthorised(exception);
-        } catch (Throwable exception) {
-            checkSSL(exception);
-            throw new FlowSheetException(FlowSheetMessages.failedToGetDepartments(), exception);
-        } finally {
-            client.close();
-        }
-        return departments;
+        Call<List<Department>, Departments> call = new Call<List<Department>, Departments>() {
+            @Override
+            public List<Department> call(Departments resource) throws Exception {
+                List<Department> departments = resource.getDepartments();
+                if (departments == null) {
+                    departments = new ArrayList<>();
+                }
+                return departments;
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToGetDepartments();
+            }
+        };
+        return call(Departments.class, call);
     }
 
     /**
@@ -76,23 +78,22 @@ public class ReferenceDataService extends FlowSheetService {
      * @return the treatment template names
      */
     public List<String> getTreatmentTemplates() {
-        List<String> templates = new ArrayList<>();
-        javax.ws.rs.client.Client client = getClient();
-        try {
-            TreatmentTemplates service = getResource(TreatmentTemplates.class, client);
-            for (TreatmentTemplate template : service.getTemplates()) {
-                templates.add(template.getName());
+        Call<List<String>, TreatmentTemplates> call = new Call<List<String>, TreatmentTemplates>() {
+            @Override
+            public List<String> call(TreatmentTemplates resource) throws Exception {
+                List<String> templates = new ArrayList<>();
+                for (TreatmentTemplate template : resource.getTemplates()) {
+                    templates.add(template.getName());
+                }
+                return templates;
             }
-        } catch (NotAuthorizedException exception) {
-            notAuthorised(exception);
-        } catch (Throwable exception) {
-            checkSSL(exception);
-            throw new FlowSheetException(FlowSheetMessages.failedToGetTemplates(), exception);
-        } finally {
-            client.close();
-        }
-        return templates;
-    }
 
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToGetTemplates();
+            }
+        };
+        return call(TreatmentTemplates.class, call);
+    }
 
 }
