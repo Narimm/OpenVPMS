@@ -37,6 +37,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.InventoryService;
+import org.openvpms.smartflow.client.SyncState;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
@@ -242,7 +243,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      */
     private void synchroniseProducts() {
         InventoryService service = flowSheetServiceFactory.getInventoryService(getContext().getLocation());
-        InventoryService.Sync sync = service.synchronise();
+        SyncState sync = service.synchronise();
         String title = Messages.get("product.information.sync.title");
         String message = sync.changed() ? Messages.get("product.information.sync.updated")
                                         : Messages.get("product.information.sync.noupdate");

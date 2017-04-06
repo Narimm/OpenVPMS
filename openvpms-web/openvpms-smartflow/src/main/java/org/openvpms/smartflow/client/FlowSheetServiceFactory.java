@@ -111,7 +111,7 @@ public class FlowSheetServiceFactory {
         if (clinicKey == null) {
             throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
         }
-        return new ReferenceDataService(url, emrApiKey, clinicKey, TimeZone.getDefault());
+        return new ReferenceDataService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service);
     }
 
     /**

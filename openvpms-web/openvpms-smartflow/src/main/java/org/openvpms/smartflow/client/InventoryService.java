@@ -54,37 +54,6 @@ import java.util.UUID;
  */
 public class InventoryService extends FlowSheetService {
 
-    public class Sync {
-
-        private final int added;
-
-        private final int updated;
-
-        private final int removed;
-
-        public Sync(int added, int updated, int removed, String id) {
-            this.added = added;
-            this.updated = updated;
-            this.removed = removed;
-        }
-
-        public int getAdded() {
-            return added;
-        }
-
-        public int getUpdated() {
-            return updated;
-        }
-
-        public int getRemoved() {
-            return removed;
-        }
-
-        public boolean changed() {
-            return added != 0 || updated != 0 || removed != 0;
-        }
-    }
-
     /**
      * The archetype service.
      */
@@ -132,18 +101,17 @@ public class InventoryService extends FlowSheetService {
      * Updates inventory items.
      *
      * @param items the items to update
-     * @return the update identifier, or {@code null} if no update is required
+     * @param uuid  a unique identifier for this update
      */
-    public String update(final List<InventoryItem> items) {
-        Call<String, Inventory> call = new Call<String, Inventory>() {
+    public void update(final List<InventoryItem> items, final UUID uuid) {
+        Call<Void, Inventory> call = new Call<Void, Inventory>() {
             @Override
-            public String call(Inventory service) throws Exception {
-                String id = UUID.randomUUID().toString();
+            public Void call(Inventory service) throws Exception {
                 InventoryItems inventory = new InventoryItems();
                 inventory.setInventoryitems(items);
-                inventory.setId(id);
+                inventory.setId(uuid.toString());
                 service.update(inventory);
-                return id;
+                return null;
             }
 
             @Override
@@ -151,7 +119,7 @@ public class InventoryService extends FlowSheetService {
                 return FlowSheetMessages.failedToUpdateInventory();
             }
         };
-        return call(Inventory.class, call);
+        call(Inventory.class, call);
     }
 
     /**
@@ -182,11 +150,10 @@ public class InventoryService extends FlowSheetService {
      *
      * @return the result of the synchronisation
      */
-    public Sync synchronise() {
+    public SyncState synchronise() {
         int added = 0;
         int updated = 0;
         int removed = 0;
-        String syncId = null;
         Map<String, InventoryItem> inventoryItems = getInventoryItems();
         List<InventoryItem> add = new ArrayList<>();
         Iterator<Product> products = getProducts();
@@ -205,13 +172,13 @@ public class InventoryService extends FlowSheetService {
             }
         }
         if (!add.isEmpty()) {
-            syncId = update(add);
+            update(add, UUID.randomUUID());
         }
         for (InventoryItem item : inventoryItems.values()) {
             remove(item);
             removed++;
         }
-        return new Sync(added, updated, removed, syncId);
+        return new SyncState(added, updated, removed);
     }
 
     /**

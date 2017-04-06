@@ -90,7 +90,7 @@ public class FlowSheetMessages {
     }
 
     /**
-     * Creates a message when an inventory items can't be removed.
+     * Creates a message when an inventory item can't be removed.
      *
      * @return a new message
      */
@@ -107,6 +107,35 @@ public class FlowSheetMessages {
      */
     public static Message failedToDownloadPDF(Party patient, String name) {
         return messages.getMessage(102, patient.getName(), name);
+    }
+
+    /**
+     * Creates a message when the medics can't be returned.
+     *
+     * @return a new message
+     */
+    public static Message failedToGetMedics() {
+        return messages.getMessage(110);
+    }
+
+    /**
+     * Creates a message when the medics can't be updated.
+     *
+     * @return a new message
+     */
+    public static Message failedToUpdateMedics() {
+        return messages.getMessage(111);
+    }
+
+    /**
+     * Creates a message when a medic can't be removed.
+     *
+     * @param medicId the medic identifier
+     * @param name    the medic name
+     * @return a new message
+     */
+    public static Message failedToRemoveMedic(String medicId, String name) {
+        return messages.getMessage(112, medicId, name);
     }
 
     /**

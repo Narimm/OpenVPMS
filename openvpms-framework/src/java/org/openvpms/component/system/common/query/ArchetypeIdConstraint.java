@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * A constraint based on a single {@link ArchetypeId};
+ * A constraint based on a single {@link ArchetypeId}.
  *
  * @author Jim Alateras
  * @author Tim Anderson
@@ -41,6 +41,14 @@ public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
      */
     private ArchetypeId archetypeId;
 
+    /**
+     * Create a constraint for the specified archetype.
+     *
+     * @param archetype the archetype. May be a short name or qualified name
+     */
+    public ArchetypeIdConstraint(String archetype) {
+        this(new ArchetypeId(archetype), true);
+    }
 
     /**
      * Create a constraint for the specified archetype id
@@ -55,12 +63,11 @@ public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
     /**
      * Create a constraint for the specified archetype id.
      *
-     * @param alias       the type alias. May be <code>null</code>
+     * @param alias       the type alias. May be {@code null}
      * @param archetypeId a valid archetype identity
      * @param activeOnly  constraint to active only
      */
-    public ArchetypeIdConstraint(String alias, ArchetypeId archetypeId,
-                                 boolean activeOnly) {
+    public ArchetypeIdConstraint(String alias, ArchetypeId archetypeId, boolean activeOnly) {
         super(alias, false, activeOnly);
         this.archetypeId = archetypeId;
     }
