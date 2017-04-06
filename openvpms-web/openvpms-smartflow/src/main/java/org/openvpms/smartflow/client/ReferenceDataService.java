@@ -16,17 +16,32 @@
 
 package org.openvpms.smartflow.client;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.i18n.Message;
+import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Department;
+import org.openvpms.smartflow.model.Medic;
+import org.openvpms.smartflow.model.Medics;
 import org.openvpms.smartflow.model.TreatmentTemplate;
-import org.openvpms.smartflow.service.Departments;
-import org.openvpms.smartflow.service.TreatmentTemplates;
+import org.openvpms.smartflow.service.ReferenceData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
+
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.join;
 
 /**
  * Smart Flow Sheet reference data service.
@@ -37,15 +52,23 @@ import java.util.TimeZone;
 public class ReferenceDataService extends FlowSheetService {
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * Constructs a {@link ReferenceDataService}.
      *
      * @param url          the Smart Flow Sheet URL
      * @param emrApiKey    the EMR API key
      * @param clinicApiKey the clinic API key
      * @param timeZone     the timezone. This determines how dates are serialized
+     * @param service      the archetype service
      */
-    public ReferenceDataService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone) {
+    public ReferenceDataService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone,
+                                IArchetypeService service) {
         super(url, emrApiKey, clinicApiKey, timeZone, LogFactory.getLog(ReferenceDataService.class));
+        this.service = service;
     }
 
     /**
@@ -54,9 +77,9 @@ public class ReferenceDataService extends FlowSheetService {
      * @return the departments
      */
     public List<Department> getDepartments() {
-        Call<List<Department>, Departments> call = new Call<List<Department>, Departments>() {
+        Call<List<Department>, ReferenceData> call = new Call<List<Department>, ReferenceData>() {
             @Override
-            public List<Department> call(Departments resource) throws Exception {
+            public List<Department> call(ReferenceData resource) throws Exception {
                 List<Department> departments = resource.getDepartments();
                 if (departments == null) {
                     departments = new ArrayList<>();
@@ -69,7 +92,102 @@ public class ReferenceDataService extends FlowSheetService {
                 return FlowSheetMessages.failedToGetDepartments();
             }
         };
-        return call(Departments.class, call);
+        return call(ReferenceData.class, call);
+    }
+
+    /**
+     * Returns the medics.
+     *
+     * @return the medics
+     */
+    public List<Medic> getMedics() {
+        Call<List<Medic>, ReferenceData> call = new Call<List<Medic>, ReferenceData>() {
+            @Override
+            public List<Medic> call(ReferenceData resource) throws Exception {
+                List<Medic> medics = resource.getMedics();
+                if (medics == null) {
+                    medics = new ArrayList<>();
+                }
+                return medics;
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToGetMedics();
+            }
+        };
+        return call(ReferenceData.class, call);
+    }
+
+    public void updateMedics(final List<Medic> medics, final UUID uuid) {
+        Call<Void, ReferenceData> call = new Call<Void, ReferenceData>() {
+            @Override
+            public Void call(ReferenceData resource) throws Exception {
+                Medics update = new Medics();
+                update.setMedics(medics);
+                update.setId(uuid.toString());
+                resource.updateMedics(update);
+                return null;
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToUpdateMedics();
+            }
+        };
+        call(ReferenceData.class, call);
+    }
+
+    /**
+     * Removes a medic.
+     *
+     * @param medic the medic to remove
+     */
+    public void removeMedic(final Medic medic) {
+        Call<Void, ReferenceData> call = new Call<Void, ReferenceData>() {
+            @Override
+            public Void call(ReferenceData resource) throws Exception {
+                resource.removeMedic(medic.getMedicId());
+                return null;
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToRemoveMedic(medic.getMedicId(), medic.getName());
+            }
+        };
+        call(ReferenceData.class, call);
+    }
+
+    public SyncState synchroniseMedics() {
+        Iterator<User> clinicians = getClinicians();
+        Map<String, Medic> medicMap = getMedicMap();
+        int added = 0;
+        int updated = 0;
+        int removed = 0;
+        List<Medic> changed = new ArrayList<>();
+        while (clinicians.hasNext()) {
+            User clinician = clinicians.next();
+            String id = Long.toString(clinician.getId());
+            Medic currentMedic = medicMap.remove(id);
+            Medic updatedMedic = synchronise(clinician, currentMedic, id);
+            if (updatedMedic != null) {
+                changed.add(updatedMedic);
+                if (currentMedic == null) {
+                    added++;
+                } else {
+                    updated++;
+                }
+            }
+        }
+        if (!changed.isEmpty()) {
+            updateMedics(changed, UUID.randomUUID());
+        }
+        for (Medic item : medicMap.values()) {
+            removeMedic(item);
+            removed++;
+        }
+        return new SyncState(added, updated, removed);
     }
 
     /**
@@ -78,9 +196,9 @@ public class ReferenceDataService extends FlowSheetService {
      * @return the treatment template names
      */
     public List<String> getTreatmentTemplates() {
-        Call<List<String>, TreatmentTemplates> call = new Call<List<String>, TreatmentTemplates>() {
+        Call<List<String>, ReferenceData> call = new Call<List<String>, ReferenceData>() {
             @Override
-            public List<String> call(TreatmentTemplates resource) throws Exception {
+            public List<String> call(ReferenceData resource) throws Exception {
                 List<String> templates = new ArrayList<>();
                 for (TreatmentTemplate template : resource.getTemplates()) {
                     templates.add(template.getName());
@@ -93,7 +211,43 @@ public class ReferenceDataService extends FlowSheetService {
                 return FlowSheetMessages.failedToGetTemplates();
             }
         };
-        return call(TreatmentTemplates.class, call);
+        return call(ReferenceData.class, call);
+    }
+
+    private Medic synchronise(User clinician, Medic medic, String id) {
+        Medic result = null;
+
+        String name = clinician.getName();
+        if (medic == null || !ObjectUtils.equals(name, medic.getName())) {
+            result = new Medic();
+            result.setMedicId(id);
+            result.setName(name);
+        }
+        return result;
+    }
+
+    /**
+     * Returns an iterator over the clinicians.
+     *
+     * @return the clinicians
+     */
+    private Iterator<User> getClinicians() {
+        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
+        query.add(join("classifications", new ArchetypeIdConstraint("lookup.userType")).add(eq("code", "CLINICIAN")));
+        return new IMObjectQueryIterator<User>(service, query);
+    }
+
+    /**
+     * Returns the medics.
+     *
+     * @return the medics
+     */
+    private Map<String, Medic> getMedicMap() {
+        Map<String, Medic> result = new HashMap<>();
+        for (Medic medic : getMedics()) {
+            result.put(medic.getMedicId(), medic);
+        }
+        return result;
     }
 
 }

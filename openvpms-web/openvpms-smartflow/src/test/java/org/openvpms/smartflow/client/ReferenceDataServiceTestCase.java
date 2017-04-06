@@ -90,6 +90,7 @@ public class ReferenceDataServiceTestCase extends ArchetypeServiceTest {
      */
     private ReferenceDataService createService() {
         String url = "http://localhost:" + wireMockRule.port() + "/";
-        return new ReferenceDataService(url, "foo", "bar", TimeZone.getTimeZone("Australia/Sydney"));
+        return new ReferenceDataService(url, "foo", "bar", TimeZone.getTimeZone("Australia/Sydney"),
+                                        getArchetypeService());
     }
 }
