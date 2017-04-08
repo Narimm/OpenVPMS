@@ -100,7 +100,7 @@ public class ReminderItemQuerySource implements ReminderItemSource {
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         List<ObjectSet> sets = ServiceHelper.getArchetypeService().getObjects(query).getResults();
         for (ObjectSet set : sets) {
-            sets.add(new ReminderEvent(set));
+            result.add(new ReminderEvent(set));
         }
         return result;
     }
