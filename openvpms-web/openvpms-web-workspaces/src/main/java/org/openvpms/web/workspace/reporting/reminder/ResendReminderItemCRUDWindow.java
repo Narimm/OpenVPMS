@@ -36,7 +36,7 @@ class ResendReminderItemCRUDWindow extends ReminderItemCRUDWindow {
      * @param help    the help context
      */
     public ResendReminderItemCRUDWindow(ReminderItemBrowser browser, Context context, HelpContext help) {
-        super(browser, context, help);
+        super(browser, true, context, help);
     }
 
     /**
