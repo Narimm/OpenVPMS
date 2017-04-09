@@ -40,7 +40,7 @@ class PendingReminderItemCRUDWindow extends ReminderItemCRUDWindow {
      * @param help    the help context
      */
     public PendingReminderItemCRUDWindow(PendingReminderItemBrowser browser, Context context, HelpContext help) {
-        super(browser, context, help);
+        super(browser, false, context, help);
     }
 
     /**
