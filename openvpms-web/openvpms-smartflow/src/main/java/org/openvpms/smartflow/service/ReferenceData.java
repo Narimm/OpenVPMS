@@ -19,6 +19,7 @@ package org.openvpms.smartflow.service;
 import org.openvpms.smartflow.model.Department;
 import org.openvpms.smartflow.model.Medic;
 import org.openvpms.smartflow.model.Medics;
+import org.openvpms.smartflow.model.ServiceBusConfig;
 import org.openvpms.smartflow.model.TreatmentTemplate;
 
 import javax.ws.rs.Consumes;
@@ -87,4 +88,13 @@ public interface ReferenceData {
     @Produces({MediaType.APPLICATION_JSON})
     List<TreatmentTemplate> getTemplates();
 
+    /**
+     * Returns the service bus configuration.
+     *
+     * @return the service bus configuration
+     */
+    @GET
+    @Path("/sb-credentials")
+    @Produces({MediaType.APPLICATION_JSON})
+    ServiceBusConfig getServiceBusConfig();
 }

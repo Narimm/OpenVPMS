@@ -139,6 +139,15 @@ public class FlowSheetMessages {
     }
 
     /**
+     * Creates a message when the Azure Service Bus configuration can't be retrieved.
+     *
+     * @return a new message
+     */
+    public static Message failedToGetServiceBusConfig() {
+        return messages.getMessage(113);
+    }
+
+    /**
      * Creates a message indicating that an operation has failed through lack of authorisation.
      *
      * @return a new message
@@ -159,4 +168,15 @@ public class FlowSheetMessages {
         return messages.getMessage(104, url);
     }
 
+    /**
+     * Creates a message indicating that a Azure Service Bus message couldn't be deserialized
+     *
+     * @param messageId   the message identifier
+     * @param contentType the content type
+     * @param reason      the reason
+     * @return a new message
+     */
+    public static Message failedToDeserializeMessage(String messageId, String contentType, String reason) {
+        return messages.getMessage(114, messageId, contentType, reason);
+    }
 }
