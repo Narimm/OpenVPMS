@@ -29,6 +29,7 @@ import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Department;
 import org.openvpms.smartflow.model.Medic;
 import org.openvpms.smartflow.model.Medics;
+import org.openvpms.smartflow.model.ServiceBusConfig;
 import org.openvpms.smartflow.model.TreatmentTemplate;
 import org.openvpms.smartflow.service.ReferenceData;
 
@@ -159,6 +160,11 @@ public class ReferenceDataService extends FlowSheetService {
         call(ReferenceData.class, call);
     }
 
+    /**
+     * Synchronise medics.
+     *
+     * @return the synchronisation state
+     */
     public SyncState synchroniseMedics() {
         Iterator<User> clinicians = getClinicians();
         Map<String, Medic> medicMap = getMedicMap();
@@ -214,6 +220,34 @@ public class ReferenceDataService extends FlowSheetService {
         return call(ReferenceData.class, call);
     }
 
+    /**
+     * Returns the Azure Service Bus configuration.
+     *
+     * @return the configuration
+     */
+    public ServiceBusConfig getServiceBusConfig() {
+        Call<ServiceBusConfig, ReferenceData> call = new Call<ServiceBusConfig, ReferenceData>() {
+            @Override
+            public ServiceBusConfig call(ReferenceData resource) throws Exception {
+                return resource.getServiceBusConfig();
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToGetServiceBusConfig();
+            }
+        };
+        return call(ReferenceData.class, call);
+    }
+
+    /**
+     * Synchronise a medic with its clinician.
+     *
+     * @param clinician the clinican
+     * @param medic     the medic, or {@code null} if it doesn't exist
+     * @param id        the item identifier
+     * @return the synchronised item, or {@code null} if no synchronisation is required
+     */
     private Medic synchronise(User clinician, Medic medic, String id) {
         Medic result = null;
 
@@ -234,7 +268,7 @@ public class ReferenceDataService extends FlowSheetService {
     private Iterator<User> getClinicians() {
         ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
         query.add(join("classifications", new ArchetypeIdConstraint("lookup.userType")).add(eq("code", "CLINICIAN")));
-        return new IMObjectQueryIterator<User>(service, query);
+        return new IMObjectQueryIterator<>(service, query);
     }
 
     /**

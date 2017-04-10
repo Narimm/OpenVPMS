@@ -26,7 +26,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import java.util.TimeZone;
 
 /**
- * Factory for {@link HospitalizationService} instances.
+ * Factory for Smart Flow Sheet services.
  *
  * @author Tim Anderson
  */
@@ -135,7 +135,7 @@ public class FlowSheetServiceFactory {
      * @return the clinic API key, or {@code null} if none exists
      */
     private String getClinicAPIKey(Party location) {
-        IMObjectBean bean = new IMObjectBean(location);
+        IMObjectBean bean = new IMObjectBean(location, service);
         return StringUtils.trimToNull(bean.getString("smartFlowSheetKey"));
     }
 }
