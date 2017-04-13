@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -108,7 +108,11 @@
         <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
     </bean>
 
+    <!-- The supplierServiceLocator is responsible for accessing ESCI web services.                          -->
+    <!-- The timeout argument determines how long calls to ESCI web services may take before being cancelled -->
+    <!-- The default value is 30 seconds. Set to 0 to disable timeout                                        -->
     <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator">
+        <constructor-arg name="timeout" value="30"/>
         <property name="beanFactory" ref="imObjectBeanFactory"/>
         <property name="serviceLocatorFactory" ref="serviceLocatorFactory"/>
         <property name="supplierRules" ref="supplierRules"/>
