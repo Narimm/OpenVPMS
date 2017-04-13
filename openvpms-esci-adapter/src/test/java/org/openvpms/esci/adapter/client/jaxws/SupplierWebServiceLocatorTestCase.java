@@ -11,13 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.client.jaxws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
@@ -33,11 +30,16 @@ import org.openvpms.esci.service.DelegatingRegistryService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.DefaultServiceLocatorFactory;
+import org.openvpms.esci.service.exception.DuplicateOrderException;
 import org.openvpms.esci.ubl.order.Order;
 import org.openvpms.esci.ubl.order.OrderType;
 import org.springframework.test.context.ContextConfiguration;
 
 import javax.annotation.Resource;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -69,7 +71,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
      */
     @Test
     public void testGetServiceByESCIConfiguration() throws Exception {
-        FutureValue<OrderType> future = new FutureValue<OrderType>();
+        FutureValue<OrderType> future = new FutureValue<>();
         registerOrderService(future);
 
         Party supplier = getSupplier();
@@ -77,7 +79,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         String wsdl = getWSDL("wsdl/RegistryService.wsdl");
         addESCIConfiguration(supplier, location, wsdl);
 
-        SupplierServiceLocator locator = createLocator();
+        SupplierServiceLocator locator = createLocator(0);
         OrderService service = locator.getOrderService(supplier, location);
         service.submitOrder(new Order());
 
@@ -93,10 +95,10 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
      */
     @Test
     public void testGetServiceByURL() throws Exception {
-        FutureValue<OrderType> future = new FutureValue<OrderType>();
+        FutureValue<OrderType> future = new FutureValue<>();
         registerOrderService(future);
 
-        SupplierServiceLocator locator = createLocator();
+        SupplierServiceLocator locator = createLocator(0);
         String wsdl = getWSDL("wsdl/RegistryService.wsdl");
         OrderService service = locator.getOrderService(wsdl, "foo", "bar");
         service.submitOrder(new Order());
@@ -114,7 +116,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         Party supplier = getSupplier();
         Party location = getStockLocation();
         try {
-            SupplierServiceLocator locator = createLocator();
+            SupplierServiceLocator locator = createLocator(0);
             locator.getOrderService(supplier, location);
             fail("Expected getOrderService() to fail");
         } catch (ESCIAdapterException exception) {
@@ -133,7 +135,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         Party location = getStockLocation();
         addESCIConfiguration(supplier, location, "invalidURL");
         try {
-            SupplierServiceLocator locator = createLocator();
+            SupplierServiceLocator locator = createLocator(0);
             locator.getOrderService(supplier, location);
             fail("Expected getOrderService() to fail");
         } catch (ESCIAdapterException exception) {
@@ -148,7 +150,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
     @Test
     public void testInvalidURL() {
         try {
-            SupplierServiceLocator locator = createLocator();
+            SupplierServiceLocator locator = createLocator(0);
             locator.getOrderService("invalidURL", "foo", "bar");
             fail("Expected getOrderService() to fail");
         } catch (ESCIAdapterException exception) {
@@ -162,7 +164,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
     @Test
     public void testConnectionFailed() {
         try {
-            SupplierServiceLocator locator = createLocator();
+            SupplierServiceLocator locator = createLocator(0);
             locator.getOrderService("http://localhost:8888", "foo", "bar");
             fail("Expected getOrderService() to fail");
         } catch (ESCIAdapterException exception) {
@@ -180,7 +182,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         Party location = getStockLocation();
         addESCIConfiguration(supplier, location, "http://localhost:8888");
         try {
-            SupplierServiceLocator locator = createLocator();
+            SupplierServiceLocator locator = createLocator(0);
             locator.getOrderService(supplier, location);
             fail("Expected getOrderService() to fail");
         } catch (ESCIAdapterException exception) {
@@ -191,13 +193,46 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
     }
 
     /**
+     * Verifies that an {@link ESCIAdapterException} is thrown if a call cannot be made in the required time..
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testConnectionTimeout() throws Exception {
+        delegatingOrderService.setOrderService(new OrderService() {
+            @Override
+            public void submitOrder(Order order) throws DuplicateOrderException {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ignore) {
+                    // do nothing
+                }
+            }
+        });
+        Party supplier = getSupplier();
+        Party location = getStockLocation();
+        String wsdl = getWSDL("wsdl/RegistryService.wsdl");
+        addESCIConfiguration(supplier, location, wsdl);
+
+        SupplierServiceLocator locator = createLocator(1);
+        OrderService service = locator.getOrderService(supplier, location);
+        try {
+            service.submitOrder(new Order());
+            fail("Expected submitOrder() to fail");
+        } catch (ESCIAdapterException expected) {
+            assertEquals("ESCIA-0007: Web service did not respond in time " + wsdl + " for supplier "
+                         + supplier.getName() + " (" + supplier.getId() + ")", expected.getMessage());
+        }
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
         super.setUp();
-        applicationContext.getBean("registryService"); // force registation of the registry dispatcher
-        applicationContext.getBean("orderService");    // force registation of the order dispatcher
+        applicationContext.getBean("registryService"); // force registration of the registry dispatcher
+        applicationContext.getBean("orderService");    // force registration of the order dispatcher
         delegatingRegistryService.setRegistry(new RegistryService() {
             public String getInboxService() {
                 return getWSDL("wsdl/InboxService.wsdl");
@@ -212,10 +247,11 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
     /**
      * Creates a new supplier service locator.
      *
+     * @param timeout the conn
      * @return a new supplier service locator
      */
-    private SupplierWebServiceLocator createLocator() {
-        SupplierWebServiceLocator locator = new InVMSupplierServiceLocator(); // to test method invocation
+    private SupplierWebServiceLocator createLocator(int timeout) {
+        SupplierWebServiceLocator locator = new InVMSupplierServiceLocator(timeout); // to test method invocation
         locator.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
         locator.setServiceLocatorFactory(new DefaultServiceLocatorFactory());
         locator.setSupplierRules(new SupplierRules(getArchetypeService()));
