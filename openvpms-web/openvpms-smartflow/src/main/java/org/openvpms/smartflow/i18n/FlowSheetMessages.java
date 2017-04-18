@@ -179,4 +179,22 @@ public class FlowSheetMessages {
     public static Message failedToDeserializeMessage(String messageId, String contentType, String reason) {
         return messages.getMessage(114, messageId, contentType, reason);
     }
+
+    /**
+     * Creates a message indicating that Smart Flow Sheet is not configured at a practice location.
+     *
+     * @param location the practice location
+     * @return a new message
+     */
+    public static Message notConfigured(Party location) {
+        return messages.getMessage(115, location.getName());
+    }
+
+    public static Message noVisitForHospitalization(String hospitalizationId, String patient) {
+        return messages.getMessage(116, hospitalizationId, patient);
+    }
+
+    public static Message noPatientForHospitalization(String hospitalizationId, String patientId, String name) {
+        return messages.getMessage(117, hospitalizationId, patientId, name);
+    }
 }

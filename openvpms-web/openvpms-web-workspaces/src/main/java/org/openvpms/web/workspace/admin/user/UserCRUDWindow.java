@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.admin.user;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.prefs.PreferenceService;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.ReferenceDataService;
@@ -102,7 +103,8 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
                 onResetPreferences();
             }
         });
-        if (flowSheetServiceFactory.supportsSmartFlowSheet(getContext().getLocation())) {
+        Party location = getContext().getLocation();
+        if (location != null && flowSheetServiceFactory.isSmartFlowSheetEnabled(location)) {
             buttons.add(SYNCH_ID, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {

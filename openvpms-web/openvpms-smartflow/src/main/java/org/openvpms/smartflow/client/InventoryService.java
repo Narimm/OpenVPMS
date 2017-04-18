@@ -16,6 +16,8 @@
 
 package org.openvpms.smartflow.client;
 
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.collections4.iterators.FilterIterator;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -205,7 +207,17 @@ public class InventoryService extends FlowSheetService {
         ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
         query.add(Constraints.sort("id"));
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
-        return new IMObjectQueryIterator<>(service, query);
+        IMObjectQueryIterator<Product> iterator = new IMObjectQueryIterator<>(service, query);
+
+        // exclude all templateOnly products
+        Predicate<Product> predicate = new Predicate<Product>() {
+            @Override
+            public boolean evaluate(Product object) {
+                IMObjectBean bean = new IMObjectBean(object, service);
+                return !bean.getBoolean("templateOnly");
+            }
+        };
+        return new FilterIterator<>(iterator, predicate);
     }
 
     /**

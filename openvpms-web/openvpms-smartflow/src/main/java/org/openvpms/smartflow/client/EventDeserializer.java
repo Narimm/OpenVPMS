@@ -127,7 +127,9 @@ public class EventDeserializer extends StdDeserializer<Event> {
                     }
                     break;
                 case START_OBJECT:
-                    if ("hospitalization.created".equals(eventType)) {
+                    if ("hospitalizations.created".equals(eventType)) {
+                        result = createMultipleAdmission(parser, clinicApiKey, eventType);
+                    } else if ("hospitalization.created".equals(eventType)) {
                         result = createAdmission(parser, clinicApiKey, eventType);
                     } else if ("hospitalizations.discharged".equals(eventType)) {
                         result = createMultipleDischarge(parser, clinicApiKey, eventType);
@@ -145,6 +147,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
                         result = createNotesEvent(parser, clinicApiKey, eventType);
                     } else {
                         result = populate(new UnsupportedEvent(), clinicApiKey, eventType);
+                        return result;
                     }
                     break;
                 default:
@@ -152,6 +155,23 @@ public class EventDeserializer extends StdDeserializer<Event> {
             }
         }
         return result;
+    }
+
+
+    /**
+     * Creates an admission event for multiple admissions.
+     *
+     * @param parser       the parser
+     * @param clinicApiKey the clinic API key
+     * @param eventType    the event type
+     * @return a new multiple admission event
+     * @throws IOException for any error
+     */
+    protected Event createMultipleAdmission(JsonParser parser, String clinicApiKey, String eventType)
+            throws IOException {
+        AdmissionEvent event = populate(new AdmissionEvent(), clinicApiKey, eventType);
+        event.setObject(parser.readValueAs(HospitalizationList.class));
+        return event;
     }
 
     /**

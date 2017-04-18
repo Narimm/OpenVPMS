@@ -38,7 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * .
+ * Work List editor.
  *
  * @author Tim Anderson
  */
@@ -69,10 +69,10 @@ public class WorkListEditor extends AbstractIMObjectEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
-        Party location = getLayoutContext().getContext().getLocation();
         Property department = getProperty("defaultFlowSheetDepartment");
         Property treatment = getProperty("defaultFlowSheetTemplate");
-        if (flowSheetServiceFactory.supportsSmartFlowSheet(location)) {
+        Party location = getLayoutContext().getContext().getLocation();
+        if (location != null && flowSheetServiceFactory.isSmartFlowSheetEnabled(location)) {
             ReferenceDataService service = flowSheetServiceFactory.getReferenceDataService(location);
             ComponentState departments = getDepartments(department, service);
             ComponentState treatments = getTreatments(treatment, service);

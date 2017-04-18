@@ -94,7 +94,7 @@ public interface ReferenceData {
      * @return the service bus configuration
      */
     @GET
-    @Path("/sb-credentials")
+    @Path("/account/sb-credentials")
     @Produces({MediaType.APPLICATION_JSON})
     ServiceBusConfig getServiceBusConfig();
 }

@@ -223,7 +223,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         // prompt for a patient weight.
         addTask(new PatientWeightTask(help));
 
-        if (useWorkList && flowSheetServiceFactory.supportsSmartFlowSheet(initial.getLocation())) {
+        if (useWorkList && flowSheetServiceFactory.isSmartFlowSheetEnabled(initial.getLocation())) {
             addTask(new CreateFlowSheetTask());
         }
 
