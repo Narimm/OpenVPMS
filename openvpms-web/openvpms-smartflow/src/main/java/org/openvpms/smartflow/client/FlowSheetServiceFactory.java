@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.smartflow.i18n.FlowSheetMessages;
 
 import java.util.TimeZone;
 
@@ -82,8 +83,23 @@ public class FlowSheetServiceFactory {
      * @param location the practice location
      * @return {@code true} if the location has a key
      */
-    public boolean supportsSmartFlowSheet(Party location) {
+    public boolean isSmartFlowSheetEnabled(Party location) {
         return getClinicAPIKey(location) != null;
+    }
+
+    /**
+     * Returns the clinic API key for the practice.
+     *
+     * @param location the practice location
+     * @return the clinic API key, or {@code null} if none exists
+     */
+    public String getClinicAPIKey(Party location) {
+        String result = null;
+        if (location != null) {
+            IMObjectBean bean = new IMObjectBean(location, service);
+            result = StringUtils.trimToNull(bean.getString("smartFlowSheetKey"));
+        }
+        return result;
     }
 
     /**
@@ -93,10 +109,7 @@ public class FlowSheetServiceFactory {
      * @return a new {@link HospitalizationService}
      */
     public HospitalizationService getHospitalisationService(Party location) {
-        String clinicKey = getClinicAPIKey(location);
-        if (clinicKey == null) {
-            throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
-        }
+        String clinicKey = getRequiredClinicAPIKey(location);
         return new HospitalizationService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service, lookups, handlers);
     }
 
@@ -107,10 +120,7 @@ public class FlowSheetServiceFactory {
      * @return a new {@link ReferenceDataService}
      */
     public ReferenceDataService getReferenceDataService(Party location) {
-        String clinicKey = getClinicAPIKey(location);
-        if (clinicKey == null) {
-            throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
-        }
+        String clinicKey = getRequiredClinicAPIKey(location);
         return new ReferenceDataService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service);
     }
 
@@ -121,21 +131,23 @@ public class FlowSheetServiceFactory {
      * @return a new {@link InventoryService}
      */
     public InventoryService getInventoryService(Party location) {
-        String clinicKey = getClinicAPIKey(location);
-        if (clinicKey == null) {
-            throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
-        }
+        String clinicKey = getRequiredClinicAPIKey(location);
         return new InventoryService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service);
     }
 
     /**
-     * Returns the clinic API key for a practice location.
+     * Returns the clinic API key for the practice, throwing an exception if it doesn't exist
      *
      * @param location the practice location
-     * @return the clinic API key, or {@code null} if none exists
+     * @return the clinic API key
+     * @throws FlowSheetException if the API key does not exist
      */
-    private String getClinicAPIKey(Party location) {
-        IMObjectBean bean = new IMObjectBean(location, service);
-        return StringUtils.trimToNull(bean.getString("smartFlowSheetKey"));
+    protected String getRequiredClinicAPIKey(Party location) {
+        String clinicKey = getClinicAPIKey(location);
+        if (clinicKey == null) {
+            throw new FlowSheetException(FlowSheetMessages.notConfigured(location));
+        }
+        return clinicKey;
     }
+
 }

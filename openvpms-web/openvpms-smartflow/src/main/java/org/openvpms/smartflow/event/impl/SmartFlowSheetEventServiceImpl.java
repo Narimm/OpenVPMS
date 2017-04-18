@@ -16,13 +16,18 @@
 
 package org.openvpms.smartflow.event.impl;
 
-import com.microsoft.windowsazure.services.servicebus.models.BrokeredMessage;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.security.RunAs;
+import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.system.common.event.Listener;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.ReferenceDataService;
@@ -33,9 +38,12 @@ import org.openvpms.smartflow.model.event.Event;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,19 +54,44 @@ import java.util.concurrent.TimeUnit;
 public class SmartFlowSheetEventServiceImpl implements InitializingBean, DisposableBean, SmartFlowSheetEventService {
 
     /**
-     * The practice service.
-     */
-    private final PracticeService practiceService;
-
-    /**
      * The SFS service factory.
      */
     private final FlowSheetServiceFactory factory;
 
     /**
-     * The event dispatcher.
+     * The archetype service.
      */
-    private final EventDispatcher dispatcher;
+    private final IArchetypeService service;
+
+    /**
+     * The practice service.
+     */
+    private final PracticeService practiceService;
+
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
+     * Practice locations keyed on clinic API key.
+     */
+    private Map<String, Set<Party>> locationsByKey = new HashMap<>();
+
+    /**
+     * Clinic API key keyed on location.
+     */
+    private Map<Party, String> keysByLocation = new HashMap<>();
+
+    /**
+     * The queue readers, keyed on clinic API key.
+     */
+    private Map<String, QueueReader> readers = new HashMap<>();
+
+    /**
+     * The event dispatchers, keyed on clinic API key.
+     */
+    private final Map<String, EventDispatcher> dispatchers = new HashMap<>();
 
     /**
      * Used to schedule dispatching.
@@ -66,9 +99,14 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     private final ExecutorService executor;
 
     /**
-     * Listener for practice update events.
+     * Used to handle practice location updates.
      */
-    private final Listener<PracticeService.Update> listener;
+    private final ExecutorService updateService;
+
+    /**
+     * The listener for practice location updates.
+     */
+    private final IArchetypeServiceListener listener;
 
     /**
      * The default interval between polls, in seconds.
@@ -81,26 +119,6 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     private User user;
 
     /**
-     * The SFS Azure Service Bus configuration.
-     */
-    private ServiceBusConfig config;
-
-    /**
-     * Used to indicate that the dispatcher has been shut down.
-     */
-    private volatile boolean shutdown = false;
-
-    /**
-     * Used to restricted the number of tasks that can be scheduled via the executor.
-     */
-    private final Semaphore scheduled = new Semaphore(1);
-
-    /**
-     * Used to wait for scheduling the next poll.
-     */
-    private final Semaphore waiter = new Semaphore(0);
-
-    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(SmartFlowSheetEventServiceImpl.class);
@@ -108,33 +126,46 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     /**
      * Constructs a {@link SmartFlowSheetEventServiceImpl}.
      *
-     * @param practiceService the practice service
      * @param factory         the factory for SFS services
-     */
-    public SmartFlowSheetEventServiceImpl(PracticeService practiceService, FlowSheetServiceFactory factory) {
-        this(practiceService, factory, new DefaultEventDispatcher());
-    }
-
-    /**
-     * Constructs a {@link SmartFlowSheetEventServiceImpl}.
-     *
+     * @param service         the archetype service
      * @param practiceService the practice service
-     * @param factory         the factory for SFS services
-     * @param dispatcher      the event dispatcher
+     * @param handlers        the document handlers
      */
-    protected SmartFlowSheetEventServiceImpl(PracticeService practiceService, FlowSheetServiceFactory factory,
-                                             EventDispatcher dispatcher) {
-        this.practiceService = practiceService;
+    protected SmartFlowSheetEventServiceImpl(FlowSheetServiceFactory factory, IArchetypeService service,
+                                             PracticeService practiceService, DocumentHandlers handlers) {
         this.factory = factory;
-        this.dispatcher = dispatcher;
-        listener = new Listener<PracticeService.Update>() {
+        this.service = service;
+        this.practiceService = practiceService;
+        this.handlers = handlers;
+
+        updateService = Executors.newSingleThreadExecutor();
+        executor = Executors.newSingleThreadExecutor();
+
+        // listen for practice location update events, and schedule a thread to handle them.
+        // This avoids blocking the user thread that updated the location.
+        listener = new AbstractArchetypeServiceListener() {
             @Override
-            public void onEvent(PracticeService.Update event) {
-                practiceChanged();
+            public void saved(final IMObject object) {
+                updateService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        locationSaved((Party) object);
+                    }
+                });
+            }
+
+            @Override
+            public void removed(final IMObject object) {
+
+                updateService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        locationRemoved((Party) object);
+                    }
+                });
             }
         };
-        practiceService.addListener(listener);
-        executor = Executors.newSingleThreadExecutor();
+
     }
 
     /**
@@ -148,7 +179,6 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
             throw new IllegalArgumentException("Argument 'interval' must be > 0");
         }
         this.interval = interval;
-        schedule();
     }
 
     /**
@@ -156,29 +186,45 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      */
     @Override
     public void poll() {
-        schedule();
+        QueueReader[] list;
+        synchronized (this) {
+            list = readers.values().toArray(new QueueReader[readers.size()]);
+        }
+        for (QueueReader reader : list) {
+            reader.poll();
+        }
     }
 
     /**
      * Monitors for a single event with the specified id.
+     * <p/>
+     * The listener is automatically removed, once the event is handled.
      *
+     * @param location the location the event belongs to
      * @param id       the event identifier
      * @param listener the listener
      */
     @Override
-    public void addListener(String id, Listener<Event> listener) {
-        dispatcher.addListener(id, listener);
-        poll();
+    public void addListener(Party location, String id, Listener<Event> listener) {
+        EventDispatcher dispatcher = getDispatcher(location);
+        if (dispatcher != null) {
+            dispatcher.addListener(id, listener);
+            poll();
+        }
     }
 
     /**
      * Removes a listener for an event identifier.
      *
-     * @param id the event identifier
+     * @param location the location the event belongs to
+     * @param id       the event identifier
      */
     @Override
-    public void removeListener(String id) {
-        dispatcher.removeListener(id);
+    public void removeListener(Party location, String id) {
+        EventDispatcher dispatcher = getDispatcher(location);
+        if (dispatcher != null) {
+            dispatcher.removeListener(id);
+        }
     }
 
     /**
@@ -193,6 +239,13 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      */
     @Override
     public void afterPropertiesSet() throws Exception {
+        for (Party location : practiceService.getLocations()) {
+            String key = factory.getClinicAPIKey(location);
+            if (key != null) {
+                addKey(key, location);
+            }
+        }
+        service.addListener(PracticeArchetypes.LOCATION, listener);
         poll();
     }
 
@@ -203,10 +256,9 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      */
     @Override
     public void destroy() throws Exception {
-        practiceService.removeListener(listener);
-        shutdown = true;
+        service.removeListener(PracticeArchetypes.LOCATION, listener);
+        updateService.shutdown();
         executor.shutdown();
-        waiter.release(); // wake from sleep
         try {
             // Wait a while for existing tasks to terminate
             if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -225,88 +277,18 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     }
 
     /**
-     * Schedules a dispatch.
-     */
-    protected void schedule() {
-        waiter.release(); // wakes up dispatch() if it is waiting
-
-        final User user = getServiceUser();
-        if (shutdown) {
-            log.debug("SmartFlowSheetEventServiceImpl shutting down. Schedule request ignored");
-        } else if (user == null) {
-            log.debug("No service user. Schedule request ignored");
-        } else if (scheduled.tryAcquire()) {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    scheduled.release(); // need to release here to enable dispatch() to reschedule
-                    try {
-                        RunAs.run(user, new Runnable() {
-                            @Override
-                            public void run() {
-                                dispatch();
-                            }
-                        });
-                    } catch (Throwable exception) {
-                        log.error(exception.getMessage(), exception);
-                    }
-                }
-            });
-        } else {
-            log.debug("SmartFlowSheetEventServiceImpl already scheduled");
-        }
-    }
-
-    /**
-     * Creates a queue.
+     * Returns the dispatcher for the specified location.
      *
-     * @param connectionString the connection string
-     * @param queueName        the queue name
-     * @return a new queue
+     * @param location the location
+     * @return the dispatcher, or {@code null} if none is found
      */
-    protected Queue createQueue(String connectionString, String queueName) {
-        return new ServiceBusQueue(connectionString, queueName);
-    }
-
-    /**
-     * Dispatches all messages on the queue.
-     */
-    protected void dispatch() {
-        ServiceBusConfig config = getConfig();
-        if (config == null) {
-            log.info("Smart Flow Sheet is not configured");
-        } else {
-            Queue queue = createQueue(config.getConnectionString(), config.getQueueName());
-            boolean done = false;
-            do {
-                try {
-                    BrokeredMessage message = queue.next();
-                    if (message != null) {
-                        dispatcher.dispatch(message);
-                        queue.remove(message);
-                    } else {
-                        done = true;
-                    }
-                } catch (Throwable exception) {
-                    log.error(exception, exception);
-                    done = true;
-                }
-            } while (!done);
-            if (!shutdown) {
-                if (interval > 0) {
-                    log.debug("dispatch() waiting for " + interval + "s");
-                    // wait until the minimum wait time has expired, or a poll() occurs
-                    try {
-                        waiter.drainPermits();
-                        waiter.tryAcquire(interval, TimeUnit.SECONDS);
-                    } catch (InterruptedException ignore) {
-                        // do nothing
-                    }
-                }
-                schedule();
-            }
-            log.debug("dispatch() - end");
+    private synchronized EventDispatcher getDispatcher(Party location) {
+        EventDispatcher result = null;
+        String key = keysByLocation.get(location);
+        if (key != null) {
+            result = dispatchers.get(key);
         }
+        return result;
     }
 
     /**
@@ -328,37 +310,86 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     }
 
     /**
-     * Returns the Azure Service Bus configuration.
+     * Returns the Azure Service Bus configuration for a practice location.
      *
      * @return the configuration, or {@code null} if it is not configured
      */
-    private ServiceBusConfig getConfig() {
-        if (config == null) {
-            synchronized (this) {
-                Party practice = practiceService.getPractice();
-                if (practice != null && factory.supportsSmartFlowSheet(practice)) {
-                    try {
-                        ReferenceDataService referenceData = factory.getReferenceDataService(practice);
-                        config = referenceData.getServiceBusConfig();
-                    } catch (Exception exception) {
-                        log.error("Failed to retrieve SFS Azure Service Bus configuration", exception);
-                    }
-                }
+    private ServiceBusConfig getConfig(Party location) {
+        ReferenceDataService referenceData = factory.getReferenceDataService(location);
+        return referenceData.getServiceBusConfig();
+    }
+
+    private synchronized void locationSaved(Party location) {
+        String existingKey = keysByLocation.get(location);
+        String newKey = (location.isActive()) ? factory.getClinicAPIKey(location) : null;
+        if (!ObjectUtils.equals(existingKey, newKey)) {
+            QueueReader reader;
+            if (existingKey == null) {
+                reader = addKey(newKey, location);
+            } else {
+                removeKey(existingKey, location);
+                reader = addKey(newKey, location);
+            }
+            if (reader != null) {
+                reader.poll();
             }
         }
-        return config;
+    }
+
+    private synchronized void locationRemoved(Party location) {
+        String existingKey = keysByLocation.get(location);
+        if (existingKey != null) {
+            removeKey(existingKey, location);
+        }
     }
 
     /**
-     * Invoked when the practice changes.
+     * Adds an API key for the specified practice location.
      * <p/>
-     * This clears the existing configuration, and reschedules dispatching.
+     * If the key is not already registered, this creates an {@link EventDispatcher} to handle messages read from
+     * the SFS Azure Service Bus queue.
+     *
+     * @param key      the clinic API key
+     * @param location the practice location
+     * @return the queue reader, or {@code null} if none was added
      */
-    private void practiceChanged() {
-        synchronized (this) {
-            user = null;
-            config = null;
+    private QueueReader addKey(String key, Party location) {
+        QueueReader reader = null;
+        try {
+            Set<Party> locations = locationsByKey.get(key);
+            if (locations == null) {
+                locations = new HashSet<>();
+                locationsByKey.put(key, locations);
+                ServiceBusConfig config = getConfig(location);
+                EventDispatcher dispatcher = new DefaultEventDispatcher(service, handlers);
+                dispatchers.put(key, dispatcher);
+                reader = new QueueReader(config, dispatcher, getServiceUser(), executor);
+                readers.put(key, reader);
+            }
+            locations.add(location);
+            keysByLocation.put(location, key);
+        } catch (Exception exception) {
+            log.error("Failed initialise Smart Flow Sheet queue for location=" + location.getName(), exception);
         }
-        schedule();
+        return reader;
     }
+
+    private boolean removeKey(String key, Party location) {
+        boolean reset = false;
+        Set<Party> locations = locationsByKey.get(key);
+        if (locations != null) {
+            locations.remove(location);
+            if (locations.isEmpty()) {
+                reset = true;
+            }
+        }
+        if (reset) {
+            QueueReader reader = readers.remove(key);
+            if (reader != null) {
+                reader.destroy();
+            }
+        }
+        return reset;
+    }
+
 }

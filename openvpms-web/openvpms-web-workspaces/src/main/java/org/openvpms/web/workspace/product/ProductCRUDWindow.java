@@ -33,6 +33,7 @@ import org.openvpms.archetype.rules.product.io.ProductDataFilter;
 import org.openvpms.archetype.rules.product.io.ProductDataSet;
 import org.openvpms.archetype.rules.product.io.ProductImporter;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
@@ -152,7 +153,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
                     onImport();
                 }
             }));
-            if (flowSheetServiceFactory.supportsSmartFlowSheet(getContext().getLocation())) {
+            Party location = getContext().getLocation();
+            if (location != null && flowSheetServiceFactory.isSmartFlowSheetEnabled(location)) {
                 buttons.add(ButtonFactory.create(SYNCH_ID, new ActionListener() {
                     @Override
                     public void onAction(ActionEvent event) {

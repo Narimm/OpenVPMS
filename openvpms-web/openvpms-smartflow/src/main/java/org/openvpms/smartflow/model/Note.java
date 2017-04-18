@@ -52,8 +52,8 @@ public class Note {
     private String text;
 
     /**
-     * This field describes what have happened to the note. Can be one of the following: 1. added, 2. changed,
-     * 3. removed.
+     * This field describes what have happened to the note. Can be one of the following: added, changed,
+     * removed.
      */
     private String status;
 
