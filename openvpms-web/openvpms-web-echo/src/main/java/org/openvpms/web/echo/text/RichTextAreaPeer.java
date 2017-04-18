@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.text;
@@ -52,6 +52,7 @@ import nextapp.echo2.webrender.WebRenderServlet;
 import nextapp.echo2.webrender.servermessage.DomUpdate;
 import nextapp.echo2.webrender.service.JavaScriptService;
 import nextapp.echo2.webrender.util.DomUtil;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -167,7 +168,9 @@ public class RichTextAreaPeer extends AbstractEchoPointPeer implements PropertyU
         String propertyName = propertyElement.getAttribute(PropertyUpdateProcessor.PROPERTY_NAME);
         if (nextapp.echo2.app.text.TextComponent.TEXT_CHANGED_PROPERTY.equals(propertyName)) {
             String propertyValue = DomUtil.getElementText(propertyElement);
-            propertyValue = removeSpellCheckText(propertyValue);
+            if (!StringUtils.isEmpty(propertyValue)) {
+                propertyValue = removeSpellCheckText(propertyValue);
+            }
             ci.getUpdateManager().getClientUpdateManager().setComponentProperty(component, nextapp.echo2.app.text.TextComponent.TEXT_CHANGED_PROPERTY, propertyValue);
         }
     }
