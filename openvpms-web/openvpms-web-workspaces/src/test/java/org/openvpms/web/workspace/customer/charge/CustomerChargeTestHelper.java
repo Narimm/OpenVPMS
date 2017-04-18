@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -118,14 +118,19 @@ public class CustomerChargeTestHelper {
         assertTrue(itemEditor.isValid());
     }
 
-    private static void checkSavePopups(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                                        Product product, EditorQueue queue) {
+    public static void checkSavePopups(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+                                       Product product, EditorQueue queue) {
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             // invoice items have a dispensing node
-            assertFalse(itemEditor.isValid());  // not valid while popup is displayed
+            IMObjectBean bean = new IMObjectBean(product);
+            if (bean.getBoolean("label")) {
+                // dispensing label should be displayed
+                assertFalse("Editor should invalid after setting " + product.getName(), itemEditor.isValid());
+                // not valid while popup is displayed
 
-            checkSavePopup(queue, PatientArchetypes.PATIENT_MEDICATION, true);
-            // save the popup editor - should be a medication
+                checkSavePopup(queue, PatientArchetypes.PATIENT_MEDICATION, true);
+                // save the popup editor - should be a medication
+            }
         }
 
         EntityBean bean = new EntityBean(product);
@@ -238,8 +243,8 @@ public class CustomerChargeTestHelper {
     /**
      * Helper to create a new unit price.
      *
-     * @param cost     the cost price
-     * @param price    the price after markup
+     * @param cost  the cost price
+     * @param price the price after markup
      * @return a new unit price
      */
     public static ProductPrice createUnitPrice(BigDecimal cost, BigDecimal price) {
