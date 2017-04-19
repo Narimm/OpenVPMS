@@ -1,29 +1,39 @@
 #
-# Copy the Smart Flow Sheet API from the location to the practice.
-# This assumes that there is only one key.
+# Create the act_identities table.
 #
 
-INSERT INTO entity_details (entity_id, type, value, name)
-  SELECT *
-  FROM
-    (SELECT
-       practice.entity_id,
-       'string',
-       apikey.value,
-       'smartFlowSheetKey'
-     FROM entities location
-       JOIN entity_details apikey
-         ON location.entity_id = apikey.entity_id
-            AND location.arch_short_name = 'party.organisationLocation'
-            AND apikey.name = 'smartFlowSheetKey'
-            AND location.active = 1
-       JOIN entities practice
-         ON practice.arch_short_name = 'party.organisationPractice' AND practice.active = 1
-     ORDER BY location.entity_id
-     LIMIT 1) apikey
-  WHERE NOT exists(SELECT *
-                   FROM entities practice
-                     JOIN entity_details practice_apikey
-                       ON practice.entity_id = practice_apikey.entity_id
-                          AND practice_apikey.name = 'smartFlowSheetKey'
-                   WHERE practice.entity_id = apikey.entity_id);
+CREATE TABLE IF NOT EXISTS `act_identities` (
+  `id`              BIGINT(20)  NOT NULL AUTO_INCREMENT,
+  `version`         BIGINT(20)  NOT NULL,
+  `linkId`          VARCHAR(36) NOT NULL,
+  `act_id`          BIGINT(20)           DEFAULT NULL,
+  `arch_short_name` VARCHAR(50) NOT NULL,
+  `arch_version`    VARCHAR(20) NOT NULL,
+  `name`            VARCHAR(255)         DEFAULT NULL,
+  `description`     VARCHAR(255)         DEFAULT NULL,
+  `active`          BIT(1)               DEFAULT NULL,
+  `identity`        VARCHAR(100)         DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `act_identity_idx` (`arch_short_name`, `identity`),
+  KEY `FK2EA137A9D8B907FA` (`act_id`),
+  CONSTRAINT `FK2EA137A9D8B907FA` FOREIGN KEY (`act_id`) REFERENCES `acts` (`act_id`)
+    ON DELETE CASCADE
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+#
+# Create the act_identity_details table.
+#
+
+CREATE TABLE IF NOT EXISTS `act_identity_details` (
+  `id`    BIGINT(20)    NOT NULL,
+  `type`  VARCHAR(255)  NOT NULL,
+  `value` VARCHAR(5000) NOT NULL,
+  `name`  VARCHAR(255)  NOT NULL,
+  PRIMARY KEY (`id`, `name`),
+  KEY `FKC3054BCE13C93C8B` (`id`),
+  CONSTRAINT `FKC3054BCE13C93C8B` FOREIGN KEY (`id`) REFERENCES `act_identities` (`id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;

@@ -20,6 +20,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,6 +38,7 @@ import org.openvpms.smartflow.model.ServiceBusConfig;
 import org.openvpms.smartflow.model.event.Event;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +74,16 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      * The document handlers.
      */
     private final DocumentHandlers handlers;
+
+    /**
+     * The transaction manager.
+     */
+    private final PlatformTransactionManager transactionManager;
+
+    /**
+     * The patient rules.
+     */
+    private final PatientRules rules;
 
     /**
      * Practice locations keyed on clinic API key.
@@ -126,17 +138,22 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     /**
      * Constructs a {@link SmartFlowSheetEventServiceImpl}.
      *
-     * @param factory         the factory for SFS services
-     * @param service         the archetype service
-     * @param practiceService the practice service
-     * @param handlers        the document handlers
+     * @param factory            the factory for SFS services
+     * @param service            the archetype service
+     * @param practiceService    the practice service
+     * @param handlers           the document handlers
+     * @param transactionManager the transaction manager
+     * @param rules              the patient rules
      */
     protected SmartFlowSheetEventServiceImpl(FlowSheetServiceFactory factory, IArchetypeService service,
-                                             PracticeService practiceService, DocumentHandlers handlers) {
+                                             PracticeService practiceService, DocumentHandlers handlers,
+                                             PlatformTransactionManager transactionManager, PatientRules rules) {
         this.factory = factory;
         this.service = service;
         this.practiceService = practiceService;
         this.handlers = handlers;
+        this.transactionManager = transactionManager;
+        this.rules = rules;
 
         updateService = Executors.newSingleThreadExecutor();
         executor = Executors.newSingleThreadExecutor();
@@ -301,8 +318,8 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
             synchronized (this) {
                 user = practiceService.getServiceUser();
                 if (user == null) {
-                    log.error("Missing party.organisationPractice serviceUser. Messages cannot be sent until "
-                              + "this is configured");
+                    log.error("Missing party.organisationPractice serviceUser. Messages cannot be processed until " +
+                              "this is configured");
                 }
             }
         }
@@ -361,9 +378,9 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
                 locations = new HashSet<>();
                 locationsByKey.put(key, locations);
                 ServiceBusConfig config = getConfig(location);
-                EventDispatcher dispatcher = new DefaultEventDispatcher(service, handlers);
+                EventDispatcher dispatcher = new DefaultEventDispatcher(location, service, handlers, rules);
                 dispatchers.put(key, dispatcher);
-                reader = new QueueReader(config, dispatcher, getServiceUser(), executor);
+                reader = new QueueReader(config, dispatcher, getServiceUser(), executor, transactionManager, interval);
                 readers.put(key, reader);
             }
             locations.add(location);

@@ -11,10 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.impl;
+package org.openvpms.archetype.rules.finance.order;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-abstract class OrderState {
+public abstract class CustomerOrder {
 
     /**
      * The patient.
@@ -74,7 +74,12 @@ abstract class OrderState {
     private final IArchetypeService service;
 
     /**
-     * Constructs an {@link OrderState}.
+     * The notes node name.
+     */
+    private static final String NOTES = "notes";
+
+    /**
+     * Constructs an {@link CustomerOrder}.
      *
      * @param patient  the patient. May be {@code null}
      * @param customer the customer. May be {@code null}
@@ -82,8 +87,8 @@ abstract class OrderState {
      * @param location the practice location. May be {@code null}
      * @param service  the archetype service
      */
-    public OrderState(Party patient, Party customer, String note, IMObjectReference location,
-                      IArchetypeService service) {
+    public CustomerOrder(Party patient, Party customer, String note, IMObjectReference location,
+                         IArchetypeService service) {
         this.patient = patient;
         this.customer = customer;
         this.note = note;
@@ -91,10 +96,20 @@ abstract class OrderState {
         this.service = service;
     }
 
+    /**
+     * Returns the patient.
+     *
+     * @return the patient. May be {@code null}
+     */
     public Party getPatient() {
         return patient;
     }
 
+    /**
+     * Returns the order, creating it if required.
+     *
+     * @return the order
+     */
     public ActBean getOrder() {
         if (orderBean == null) {
             orderBean = createOrder();
@@ -102,6 +117,11 @@ abstract class OrderState {
         return orderBean;
     }
 
+    /**
+     * Returns the order return, creating it if required.
+     *
+     * @return the order return
+     */
     public ActBean getReturn() {
         if (returnBean == null) {
             returnBean = createReturn();
@@ -109,10 +129,25 @@ abstract class OrderState {
         return returnBean;
     }
 
+    /**
+     * Creates a new order item.
+     *
+     * @return a new order item
+     */
     public abstract ActBean createOrderItem();
 
+    /**
+     * Creates a new order return item.
+     *
+     * @return a new order return item
+     */
     public abstract ActBean createReturnItem();
 
+    /**
+     * Returns the acts.
+     *
+     * @return the acts
+     */
     public List<Act> getActs() {
         return acts;
     }
@@ -124,13 +159,13 @@ abstract class OrderState {
      * @param value the note to add
      */
     public static void addNote(ActBean bean, String value) {
-        String notes = bean.getString("notes");
+        String notes = bean.getString(NOTES);
         if (!StringUtils.isEmpty(notes)) {
             notes += "\n" + value;
         } else {
             notes = value;
         }
-        bean.setValue("notes", notes);
+        bean.setValue(NOTES, StringUtils.abbreviate(notes, bean.getMaxLength(NOTES)));
     }
 
     /**
@@ -141,14 +176,20 @@ abstract class OrderState {
     protected abstract ActBean createOrder();
 
     /**
-     * Creates a new return.
+     * Creates a new order return.
      *
      * @return the return
      */
     protected abstract ActBean createReturn();
 
-    protected ActBean createParent(String shortName) {
-        Act act = (Act) service.create(shortName);
+    /**
+     * Creates the parent act.
+     *
+     * @param archetype the act archetype
+     * @return a new act
+     */
+    protected ActBean createParent(String archetype) {
+        Act act = (Act) service.create(archetype);
         ActBean bean = new ActBean(act, service);
         if (customer != null) {
             bean.addNodeParticipation("customer", customer);
@@ -163,8 +204,15 @@ abstract class OrderState {
         return bean;
     }
 
-    protected ActBean createItem(String shortName, ActBean parent) {
-        Act act = (Act) service.create(shortName);
+    /**
+     * Creates a new item.
+     *
+     * @param archetype the act archetype
+     * @param parent    the parent act
+     * @return a new act
+     */
+    protected ActBean createItem(String archetype, ActBean parent) {
+        Act act = (Act) service.create(archetype);
         ActBean bean = new ActBean(act, service);
         if (patient != null) {
             bean.addNodeParticipation("patient", patient);

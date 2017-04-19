@@ -26,6 +26,21 @@ import java.util.Date;
 public class Note {
 
     /**
+     * Note added status.
+     */
+    public static final String ADDED_STATUS = "added";
+
+    /**
+     * Note changed status.
+     */
+    public static final String CHANGED_STATUS = "changed";
+
+    /**
+     * Note removed status.
+     */
+    public static final String REMOVED_STATUS = "removed";
+
+    /**
      * Describes the type of the object transferred with the SFS events (e.g. notes.entered).
      * Should be assigned note value.
      */
