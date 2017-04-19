@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -43,7 +43,7 @@ public class Act extends IMObject {
     /**
      * The serialization version identifier.
      */
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     /**
      * Represents the title of the act.
@@ -76,6 +76,11 @@ public class Act extends IMObject {
      * A secondary status of the act.
      */
     private String status2;
+
+    /**
+     * The identities of this.
+     */
+    private Set<ActIdentity> identities = new HashSet<>();
 
     /**
      * The {@link Participation}s for this act.
@@ -200,6 +205,36 @@ public class Act extends IMObject {
     }
 
     /**
+     * Adds an identity.
+     *
+     * @param identity the entity identity to add
+     */
+    public void addIdentity(ActIdentity identity) {
+        identity.setAct(this);
+        identities.add(identity);
+    }
+
+    /**
+     * Removes an identity.
+     *
+     * @param identity the identity to remove
+     * @return {@code true} if the identity was removed
+     */
+    public boolean removeIdentity(ActIdentity identity) {
+        identity.setAct(null);
+        return identities.remove(identity);
+    }
+
+    /**
+     * Returns the identities.
+     *
+     * @return the identities
+     */
+    public Set<ActIdentity> getIdentities() {
+        return identities;
+    }
+
+    /**
      * @return Returns the sourceActRelationships.
      */
     public Set<ActRelationship> getSourceActRelationships() {
@@ -276,12 +311,12 @@ public class Act extends IMObject {
      */
     public void addActRelationship(ActRelationship actRel) {
         if ((actRel.getSource().getLinkId().equals(this.getLinkId())) &&
-                (actRel.getSource().getArchetypeId().equals(
-                        this.getArchetypeId()))) {
+            (actRel.getSource().getArchetypeId().equals(
+                    this.getArchetypeId()))) {
             addSourceActRelationship(actRel);
         } else if ((actRel.getTarget().getLinkId().equals(this.getLinkId())) &&
-                (actRel.getTarget().getArchetypeId().equals(
-                        this.getArchetypeId()))) {
+                   (actRel.getTarget().getArchetypeId().equals(
+                           this.getArchetypeId()))) {
             addTargetActRelationship(actRel);
         } else {
             throw new EntityException(
@@ -301,10 +336,10 @@ public class Act extends IMObject {
         IMObjectReference source = actRel.getSource();
         IMObjectReference target = actRel.getTarget();
         if (source.getLinkId().equals(getLinkId())
-                && source.getArchetypeId().equals(getArchetypeId())) {
+            && source.getArchetypeId().equals(getArchetypeId())) {
             removeSourceActRelationship(actRel);
         } else if (target.getLinkId().equals(getLinkId())
-                && target.getArchetypeId().equals(getArchetypeId())) {
+                   && target.getArchetypeId().equals(getArchetypeId())) {
             removeTargetActRelationship(actRel);
         } else {
             throw new EntityException(
@@ -367,11 +402,10 @@ public class Act extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         Act copy = (Act) super.clone();
-        copy.participations = new HashSet<Participation>(participations);
-        copy.sourceActRelationships = new HashSet<ActRelationship>(
-                sourceActRelationships);
-        copy.targetActRelationships = new HashSet<ActRelationship>(
-                targetActRelationships);
+        copy.identities = new HashSet<>(identities);
+        copy.participations = new HashSet<>(participations);
+        copy.sourceActRelationships = new HashSet<>(sourceActRelationships);
+        copy.targetActRelationships = new HashSet<>(targetActRelationships);
         return copy;
     }
 
@@ -388,6 +422,7 @@ public class Act extends IMObject {
                 .append("activityEndTime", activityEndTime)
                 .append("reason", reason)
                 .append("status", status)
+                .append("identities", identities)
                 .append("participations", participations)
                 .append("sourceActRelationships", sourceActRelationships)
                 .append("targetActRelationships", targetActRelationships)

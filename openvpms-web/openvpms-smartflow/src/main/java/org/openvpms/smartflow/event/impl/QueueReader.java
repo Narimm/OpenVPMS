@@ -16,14 +16,23 @@
 
 package org.openvpms.smartflow.event.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoft.windowsazure.services.servicebus.models.BrokeredMessage;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.security.RunAs;
 import org.openvpms.smartflow.event.EventDispatcher;
 import org.openvpms.smartflow.model.ServiceBusConfig;
+import org.openvpms.smartflow.model.event.Event;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +45,9 @@ import java.util.concurrent.TimeUnit;
 public class QueueReader {
 
     /**
-     * The Azure Service Bus configuration.
+     * The queue.
      */
-    private final ServiceBusConfig config;
+    private final Queue queue;
 
     /**
      * The event dispatcher.
@@ -56,14 +65,24 @@ public class QueueReader {
     private final ExecutorService executor;
 
     /**
+     * The transaction manager.
+     */
+    private final PlatformTransactionManager transactionManager;
+
+    /**
+     * The interval between polls, in seconds.
+     */
+    private final int interval;
+
+    /**
+     * The object mapper.
+     */
+    private final ObjectMapper mapper;
+
+    /**
      * Determines if {@link #destroy()} has been invoked.
      */
     private volatile boolean shutdown;
-
-    /**
-     * The default interval between polls, in seconds.
-     */
-    private int interval = 30;
 
     /**
      * Used to restricted the number of tasks that can be scheduled via the executor.
@@ -83,30 +102,22 @@ public class QueueReader {
     /**
      * Constructs a {@link QueueReader}.
      *
-     * @param config     the Azure Service Bus configuration
-     * @param dispatcher the event dispatcher
-     * @param user       the user to process events as
-     * @param executor   the thread pool
+     * @param config             the Azure Service Bus configuration
+     * @param dispatcher         the event dispatcher
+     * @param user               the user to process events as
+     * @param executor           the thread pool
+     * @param transactionManager the transaction manager
+     * @param interval           the poll interval, in seconds
      */
-    public QueueReader(ServiceBusConfig config, EventDispatcher dispatcher, User user,
-                       ExecutorService executor) {
-        this.config = config;
+    public QueueReader(ServiceBusConfig config, EventDispatcher dispatcher, User user, ExecutorService executor,
+                       PlatformTransactionManager transactionManager, int interval) {
         this.dispatcher = dispatcher;
         this.user = user;
         this.executor = executor;
-    }
-
-    /**
-     * Sets the interval between each poll.
-     *
-     * @param interval the interval, in seconds
-     */
-    public void setPollInterval(int interval) {
-        if (interval <= 0) {
-            throw new IllegalArgumentException("Argument 'interval' must be > 0");
-        }
+        this.transactionManager = transactionManager;
         this.interval = interval;
-        schedule();
+        mapper = new ObjectMapper();
+        queue = createQueue(config.getConnectionString(), config.getQueueName());
     }
 
     /**
@@ -169,22 +180,80 @@ public class QueueReader {
     }
 
     /**
-     * Dispatches all messages on the queue.
+     * Dispatches all messages on the queue until there are no messages, an error occurs, or {@link #isShutdown()}
+     * returns {@code true}.
      */
     protected void dispatch() {
-        Queue queue = createQueue(config.getConnectionString(), config.getQueueName());
         while (!isShutdown()) {
             try {
                 BrokeredMessage message = queue.next();
                 if (message != null) {
-                    dispatcher.dispatch(message);
-                    queue.remove(message);
+                    dispatch(message);
                 } else {
                     break;
                 }
             } catch (Throwable exception) {
                 log.error(exception, exception);
                 break;
+            }
+        }
+    }
+
+    /**
+     * Dispatches a message.
+     *
+     * @param message the message
+     * @throws IOException      if the message body can't be read
+     * @throws ServiceException for any Azure Service Bus error
+     */
+    protected void dispatch(BrokeredMessage message) throws IOException, ServiceException {
+        String content = IOUtils.toString(message.getBody());
+        if (log.isDebugEnabled()) {
+            log.debug("messageID=" + message.getMessageId() + ", timeToLive=" + message.getTimeToLive()
+                      + ", sequence=" + message.getSequenceNumber() + ", contentType="
+                      + message.getContentType() + ", content=" + content);
+        }
+        Event event = null;
+        try {
+            event = mapper.readValue(content, Event.class);
+        } catch (Exception exception) {
+            // can't read the message so discard it
+            log.error("Failed to deserialize message, messageID=" + message.getMessageId()
+                      + ", sequence=" + message.getSequenceNumber() + ", timeToLive=" + message.getTimeToLive()
+                      + ", contentType=" + message.getContentType() + ", content=" + content, exception);
+            queue.remove(message);
+        }
+        if (event != null) {
+            dispatch(event, message);
+        }
+    }
+
+    /**
+     * Dispatches an event, removing the message if it is dispatched successfully.
+     *
+     * @param event   the event
+     * @param message the message
+     * @throws ServiceException for any Azure Service Bus error
+     */
+    protected void dispatch(final Event event, final BrokeredMessage message) throws ServiceException {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        try {
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    dispatcher.dispatch(event);
+                    try {
+                        queue.remove(message);
+                    } catch (ServiceException exception) {
+                        throw new RuntimeException(exception);
+                    }
+                }
+            });
+        } catch (RuntimeException exception) {
+            if (exception.getCause() instanceof ServiceException) {
+                throw (ServiceException) exception.getCause();
+            } else {
+                throw exception;
             }
         }
     }

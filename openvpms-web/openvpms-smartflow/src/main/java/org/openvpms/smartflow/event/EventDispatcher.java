@@ -16,7 +16,6 @@
 
 package org.openvpms.smartflow.event;
 
-import com.microsoft.windowsazure.services.servicebus.models.BrokeredMessage;
 import org.openvpms.component.system.common.event.Listener;
 import org.openvpms.smartflow.model.event.Event;
 
@@ -45,9 +44,9 @@ public interface EventDispatcher {
     void removeListener(String id);
 
     /**
-     * Dispatches the event associated with the specified message.
+     * Dispatches an event.
      *
-     * @param message the message
+     * @param event the event
      */
-    void dispatch(BrokeredMessage message);
+    void dispatch(Event event);
 }

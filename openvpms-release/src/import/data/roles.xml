@@ -61,11 +61,21 @@
           description="Authority to Create Identity"
           serviceName="archetypeService" method="create" archetypeShortName="entityIdentity.*"/>
     <data id="SENTIDE" archetype="security.archetypeAuthority" name="Identity Save"
-          description="Authority to Save Act Identity"
+          description="Authority to Save Identity"
           serviceName="archetypeService" method="save" archetypeShortName="entityIdentity.*"/>
     <data id="RENTIDE" archetype="security.archetypeAuthority" name="Identity Remove"
           description="Authority to Remove Identity"
           serviceName="archetypeService" method="remove" archetypeShortName="entityIdentity.*"/>
+    <!-- Act Identity All Authorities -->
+    <data id="CACTIDE" archetype="security.archetypeAuthority" name="Act Identity Create"
+          description="Authority to Create Act Identity"
+          serviceName="archetypeService" method="create" archetypeShortName="actIdentity.*"/>
+    <data id="SACTIDE" archetype="security.archetypeAuthority" name="Act Identity Save"
+          description="Authority to Save Act Identity"
+          serviceName="archetypeService" method="save" archetypeShortName="actIdentity.*"/>
+    <data id="RACTIDE" archetype="security.archetypeAuthority" name="Act Identity Remove"
+          description="Authority to Remove Act Identity"
+          serviceName="archetypeService" method="remove" archetypeShortName="actIdentity.*"/>
     <!-- Document All Authorities -->
     <data id="CDOCUME" archetype="security.archetypeAuthority" name="Document Create"
           description="Authority to Create Document"
@@ -628,6 +638,9 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CENTIDE"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SENTIDE"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RENTIDE"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CACTIDE"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SACTIDE"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RACTIDE"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPARTIC"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPARTIC"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPARTIC"/>

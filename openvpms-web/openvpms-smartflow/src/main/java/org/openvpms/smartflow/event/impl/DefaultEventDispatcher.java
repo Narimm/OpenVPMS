@@ -16,39 +16,18 @@
 
 package org.openvpms.smartflow.event.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.windowsazure.services.servicebus.models.BrokeredMessage;
 import org.apache.commons.collections4.map.ReferenceMap;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.doc.DocumentRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.event.Listener;
-import org.openvpms.component.system.common.i18n.Message;
-import org.openvpms.smartflow.client.FlowSheetException;
-import org.openvpms.smartflow.client.MediaTypeHelper;
 import org.openvpms.smartflow.event.EventDispatcher;
-import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.HospitalizationList;
-import org.openvpms.smartflow.model.Note;
-import org.openvpms.smartflow.model.NotesList;
-import org.openvpms.smartflow.model.Patient;
-import org.openvpms.smartflow.model.Treatment;
 import org.openvpms.smartflow.model.event.AdmissionEvent;
 import org.openvpms.smartflow.model.event.DischargeEvent;
 import org.openvpms.smartflow.model.event.Event;
@@ -57,18 +36,8 @@ import org.openvpms.smartflow.model.event.MedicsImportedEvent;
 import org.openvpms.smartflow.model.event.NotesEvent;
 import org.openvpms.smartflow.model.event.TreatmentEvent;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-
-import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
 
 /**
  * Dispatches Smart Flow Sheet events.
@@ -78,19 +47,19 @@ import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
 public class DefaultEventDispatcher implements EventDispatcher {
 
     /**
-     * The archetype service.
+     * The treatment event processor.
      */
-    private final IArchetypeService service;
+    private final TreatmentEventProcessor treatmentProcessor;
 
     /**
-     * The document handlers.
+     * The notes event processor.
      */
-    private final DocumentHandlers handlers;
+    private final NotesEventProcessor notesProcessor;
 
     /**
-     * The object mapper.
+     * The discharge event processor.
      */
-    private final ObjectMapper mapper;
+    private final DischargeEventProcessor dischargeProcessor;
 
     /**
      * Listeners for specific messages.
@@ -107,52 +76,37 @@ public class DefaultEventDispatcher implements EventDispatcher {
     /**
      * Constructs a {@link DefaultEventDispatcher}.
      *
+     * @param location the practice location. May be {@code null}
      * @param service  the archetype service
      * @param handlers the document handlers
+     * @param rules    the patient rules
      */
-    public DefaultEventDispatcher(IArchetypeService service, DocumentHandlers handlers) {
-        this.service = service;
-        this.handlers = handlers;
-        mapper = new ObjectMapper();
+    public DefaultEventDispatcher(Party location, IArchetypeService service, DocumentHandlers handlers,
+                                  PatientRules rules) {
+        treatmentProcessor = new TreatmentEventProcessor(location, service, rules);
+        notesProcessor = new NotesEventProcessor(service);
+        dischargeProcessor = new DischargeEventProcessor(service, handlers);
     }
 
     /**
-     * Dispatches the event associated with the specified message.
+     * Dispatches an event.
      *
-     * @param message the message
+     * @param event the event
      */
     @Override
-    public void dispatch(BrokeredMessage message) {
-        if (log.isDebugEnabled()) {
-            log.debug("messageID=" + message.getMessageId() + ", timeToLive=" + message.getTimeToLive() + "," +
-                      "contentType=" + message.getContentType());
-        }
-        try {
-            String content = IOUtils.toString(message.getBody());
-            if (log.isDebugEnabled()) {
-                log.debug("content=" + content);
-            }
-            Event event = mapper.readValue(content, Event.class);
-            if (event instanceof AdmissionEvent) {
-                admitted((AdmissionEvent) event);
-            } else if (event instanceof DischargeEvent) {
-                discharged((DischargeEvent) event);
-            } else if (event instanceof TreatmentEvent) {
-                treated((TreatmentEvent) event);
-            } else if (event instanceof NotesEvent) {
-                notesEntered((NotesEvent) event);
-            } else if (event instanceof InventoryImportedEvent) {
-                imported((InventoryImportedEvent) event);
-            } else if (event instanceof MedicsImportedEvent) {
-                imported((MedicsImportedEvent) event);
-            }
-        } catch (FlowSheetException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            Message error = FlowSheetMessages.failedToDeserializeMessage(message.getMessageId(),
-                                                                         message.getContentType(),
-                                                                         exception.getMessage());
-            throw new FlowSheetException(error, exception);
+    public void dispatch(Event event) {
+        if (event instanceof AdmissionEvent) {
+            admitted((AdmissionEvent) event);
+        } else if (event instanceof DischargeEvent) {
+            dischargeProcessor.process((DischargeEvent) event);
+        } else if (event instanceof TreatmentEvent) {
+            treatmentProcessor.process((TreatmentEvent) event);
+        } else if (event instanceof NotesEvent) {
+            notesProcessor.process((NotesEvent) event);
+        } else if (event instanceof InventoryImportedEvent) {
+            imported((InventoryImportedEvent) event);
+        } else if (event instanceof MedicsImportedEvent) {
+            imported((MedicsImportedEvent) event);
         }
     }
 
@@ -193,113 +147,6 @@ public class DefaultEventDispatcher implements EventDispatcher {
         }
     }
 
-    /**
-     * Invoked when one or more patients are discharged.
-     *
-     * @param event the discharge event
-     */
-    protected void discharged(DischargeEvent event) {
-        HospitalizationList list = event.getObject();
-        for (Hospitalization hospitalization : list.getHospitalizations()) {
-            discharged(hospitalization);
-        }
-    }
-
-    /**
-     * Invoked when a patient is discharged.
-     *
-     * @param hospitalization the hospitalization
-     */
-    protected void discharged(Hospitalization hospitalization) {
-        log.debug("Discharged: " + hospitalization.getPatient().getName());
-        try {
-            String reportPath = hospitalization.getReportPath();
-            if (!StringUtils.isEmpty(reportPath)) {
-                Act visit = getVisit(hospitalization);
-                Party patient = getPatient(hospitalization);
-                User clinician = getClinician(hospitalization);
-                Client client = ClientBuilder.newClient();
-                WebTarget target = client.target(reportPath);
-                Response response = target.request("application/pdf").get();
-                if (response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(),
-                                                                MediaTypeHelper.APPLICATION_PDF_TYPE,
-                                                                MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
-                    try (InputStream stream = (InputStream) response.getEntity()) {
-                        String fileName = "Flow Sheet.pdf";
-                        DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
-                        DocumentRules rules = new DocumentRules(service);
-                        Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
-                        DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
-                        ActBean bean = new ActBean(act, service);
-                        ActBean visitBean = new ActBean(visit, service);
-                        visitBean.addNodeRelationship("items", act);
-                        bean.addNodeParticipation("patient", patient);
-                        if (clinician != null) {
-                            bean.addNodeParticipation("clinician", clinician);
-                        }
-                        List<IMObject> objects = rules.addDocument(act, document);
-                        objects.add(act);
-                        service.save(objects);
-                    }
-                } else {
-                    log.error("Failed to get " + reportPath + " for hospitalizationId="
-                              + hospitalization.getHospitalizationId() + ", status="
-                              + response.getStatus() + ", mediaType=" + response.getMediaType());
-                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, reportPath));
-                }
-            }
-        } catch (Exception exception) {
-            log.error(exception, exception);
-        }
-    }
-
-    /**
-     * Invoked when one or more treatments take place.
-     *
-     * @param event the treatment event
-     */
-    protected void treated(TreatmentEvent event) {
-        for (Treatment treatment : event.getObject()) {
-            treated(treatment);
-        }
-    }
-
-    /**
-     * Invoked when a patient is treated.
-     *
-     * @param treatment the treatment
-     */
-    protected void treated(Treatment treatment) {
-        Act visit = getVisit(treatment.getHospitalizationId(), null);
-        treatment.getInventoryId();
-    }
-
-    protected void notesEntered(NotesEvent event) {
-        NotesList notes = event.getObject();
-        if (notes != null && notes.getNotes() != null) {
-            for (Note note : notes.getNotes()) {
-                noteEntered(note);
-            }
-        }
-    }
-
-    protected void noteEntered(Note note) {
-        Act visit = getVisit(note.getHospitalizationId(), null);
-
-        Act act = (Act) service.create(PatientArchetypes.CLINICAL_NOTE);
-        ActBean bean = new ActBean(act, service);
-        Party patient = getPatient(visit);
-        bean.addNodeParticipation("patient", patient);
-        bean.setValue("note", note.getText());
-
-        ActBean visitBean = new ActBean(visit, service);
-        visitBean.addNodeRelationship("items", act);
-
-        List<IMObject> objects = Arrays.<IMObject>asList(visit, act);
-        service.save(objects);
-    }
-
-
     protected void imported(InventoryImportedEvent event) {
         String id = event.getObject().getId();
         handleEvent(id, event);
@@ -321,58 +168,6 @@ public class DefaultEventDispatcher implements EventDispatcher {
                 }
             }
         }
-    }
-
-    private Act getVisit(Hospitalization hospitalization) {
-        String hospitalizationId = hospitalization.getHospitalizationId();
-        Patient patient = hospitalization.getPatient();
-        String name = (patient != null) ? patient.getName() : null;
-        return getVisit(hospitalizationId, name);
-    }
-
-    private Act getVisit(String hospitalizationId, String name) {
-        Act result = (Act) getObject(hospitalizationId, PatientArchetypes.CLINICAL_EVENT);
-        if (result == null) {
-            throw new FlowSheetException(FlowSheetMessages.noVisitForHospitalization(hospitalizationId, name));
-        }
-        return result;
-    }
-
-    private Party getPatient(Hospitalization hospitalization) {
-        Patient patient = hospitalization.getPatient();
-        if (patient == null) {
-            throw new FlowSheetException(FlowSheetMessages.noPatientForHospitalization(
-                    hospitalization.getHospitalizationId(), null, null));
-        }
-        Party result = (Party) getObject(patient.getPatientId(), PatientArchetypes.PATIENT);
-        if (result == null) {
-            throw new FlowSheetException(FlowSheetMessages.noPatientForHospitalization(
-                    hospitalization.getHospitalizationId(), patient.getPatientId(), patient.getName()));
-
-        }
-        return result;
-    }
-
-    private Party getPatient(Act visit) {
-        ActBean bean = new ActBean(visit, service);
-        return (Party) bean.getNodeParticipant("patient");
-    }
-
-    private User getClinician(Hospitalization hospitalization) {
-        return (User) getObject(hospitalization.getMedicId(), UserArchetypes.USER);
-    }
-
-    private IMObject getObject(String id, String archetype) {
-        IMObject result = null;
-        if (!StringUtils.isEmpty(id)) {
-            try {
-                IMObjectReference reference = new IMObjectReference(archetype, Long.valueOf(id));
-                result = service.get(reference);
-            } catch (NumberFormatException ignore) {
-                // do nothing
-            }
-        }
-        return result;
     }
 
 }
