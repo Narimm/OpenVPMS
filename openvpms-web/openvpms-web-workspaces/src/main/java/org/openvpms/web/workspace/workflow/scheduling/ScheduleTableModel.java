@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -21,14 +21,20 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.echo.table.RenderTableModel;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,7 +49,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public abstract class ScheduleTableModel extends AbstractTableModel {
+public abstract class ScheduleTableModel extends AbstractTableModel implements RenderTableModel {
 
     public enum Highlight {
 
@@ -125,6 +131,18 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * The blocking event colours.
      */
     private final ScheduleColours blockingEventColours;
+
+    /**
+     * A caching archetype service, used to improve performance when rendering with expressions.
+     */
+    private CachingReadOnlyArchetypeService service;
+
+    /**
+     * The functions used to evaluate expressions.
+     * <p/>
+     * These use caching to improve performance.
+     */
+    private FunctionLibrary functions;
 
     /**
      * 'Use strike-through' node name.
@@ -773,6 +791,51 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      */
     public ScheduleColours getBlockingEventColours() {
         return blockingEventColours;
+    }
+
+    /**
+     * Evaluates the view's displayExpression expression against the supplied
+     * event. If no displayExpression is present, {@code null} is returned.
+     * <p/>
+     * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
+     * a formatted string named <em>waiting</em> will be added to the set prior
+     * to evaluation of the expression. This indicates the waiting time, and
+     * is the difference between the arrival time and the current time.
+     *
+     * @param event the event
+     * @return the evaluate result. May be {@code null}
+     */
+    public String evaluate(PropertySet event) {
+        String result = null;
+        String expression = getExpression();
+        if (!StringUtils.isEmpty(expression)) {
+            if (functions == null) {
+                service = new CachingReadOnlyArchetypeService(1000, ServiceHelper.getArchetypeService());
+                functions = ServiceHelper.getBean(ArchetypeFunctionsFactory.class).create(service, true);
+            }
+            result = SchedulingHelper.evaluate(expression, event, functions);
+            // result = SchedulingHelper.evaluate(expression, event);
+        }
+        return result;
+    }
+
+    /**
+     * Invoked prior to the table being rendered.
+     */
+    @Override
+    public void preRender() {
+
+    }
+
+    /**
+     * Invoked after the table has been rendered.
+     */
+    @Override
+    public void postRender() {
+        if (service != null) {
+            // Clear the cache, to both limit memory use and ensure stale data is not used in subsequent renders.
+            service.clear();
+        }
     }
 
     /**

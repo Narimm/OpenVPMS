@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -27,7 +27,6 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -280,11 +279,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return the evaluate result. May be {@code null}
      */
     protected String evaluate(PropertySet event) {
-        String expression = model.getExpression();
-        if (!StringUtils.isEmpty(expression)) {
-            return SchedulingHelper.evaluate(expression, event);
-        }
-        return null;
+        return model.evaluate(event);
     }
 
     /**
