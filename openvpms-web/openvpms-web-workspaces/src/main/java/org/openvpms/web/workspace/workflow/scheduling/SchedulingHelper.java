@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
@@ -113,6 +114,23 @@ public class SchedulingHelper {
      * @return the evaluate result. May be {@code null}
      */
     public static String evaluate(String expression, PropertySet event) {
+        return evaluate(expression, event, null);
+    }
+
+    /**
+     * Evaluates an xpath expression against the supplied event.
+     * <p/>
+     * This adds a "waiting" time attribute to the event prior to evaluation as determined by {@link #getWaitingTime}.
+     * <p/>
+     * NOTE: any string sequence containing the characters '\\n' will be treated
+     * as new lines.
+     *
+     * @param expression the expression
+     * @param event      the event
+     * @param functions  the functions. May be {@code null}
+     * @return the evaluate result. May be {@code null}
+     */
+    public static String evaluate(String expression, PropertySet event, FunctionLibrary functions) {
         String text;
         String waiting = getWaitingTime(event);
         if (waiting != null) {
@@ -122,7 +140,8 @@ public class SchedulingHelper {
         }
         event.set("waiting", waiting);
 
-        JXPathContext context = JXPathHelper.newContext(event);
+        JXPathContext context = (functions != null) ? JXPathHelper.newContext(event, functions)
+                                                    : JXPathHelper.newContext(event);
 
         // hack to replace all instances of '\\n' with new lines to
         // enable new lines to be included in the text
