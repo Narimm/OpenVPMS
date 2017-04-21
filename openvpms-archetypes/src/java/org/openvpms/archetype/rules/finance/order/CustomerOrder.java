@@ -16,12 +16,15 @@
 
 package org.openvpms.archetype.rules.finance.order;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,10 +79,10 @@ public abstract class CustomerOrder {
     /**
      * The notes node name.
      */
-    private static final String NOTES = "notes";
+    protected static final String NOTES = "notes";
 
     /**
-     * Constructs an {@link CustomerOrder}.
+     * Constructs a {@link CustomerOrder}.
      *
      * @param patient  the patient. May be {@code null}
      * @param customer the customer. May be {@code null}
@@ -94,6 +97,35 @@ public abstract class CustomerOrder {
         this.note = note;
         this.location = location;
         this.service = service;
+    }
+
+    /**
+     * Constructs a {@link CustomerOrder}.
+     *
+     * @param act     the order/order return act
+     * @param isOrder if {@code true}, the act is an order, otherwise it is an order return
+     * @param service the archetype service
+     */
+    public CustomerOrder(Act act, boolean isOrder, IArchetypeService service) {
+        ActBean bean = new ActBean(act, service);
+        if (isOrder) {
+            orderBean = bean;
+        } else {
+            returnBean = bean;
+        }
+        List<Act> items = bean.getNodeActs("items");
+        customer = (Party) bean.getNodeParticipant("customer");
+        note = bean.getString(NOTES);
+        location = bean.getNodeParticipantRef("location");
+        if (!items.isEmpty()) {
+            ActBean itemBean = new ActBean(items.get(0), service);
+            patient = (Party) itemBean.getNodeParticipant("patient");
+        } else {
+            patient = null;
+        }
+        this.service = service;
+        acts.add(act);
+        acts.addAll(items);
     }
 
     /**
@@ -130,6 +162,15 @@ public abstract class CustomerOrder {
     }
 
     /**
+     * Determines if an order is present.
+     *
+     * @return {@code true} if an order is present, {@code false} if an order return is present
+     */
+    public boolean hasOrder() {
+        return orderBean != null;
+    }
+
+    /**
      * Creates a new order item.
      *
      * @return a new order item
@@ -150,6 +191,25 @@ public abstract class CustomerOrder {
      */
     public List<Act> getActs() {
         return acts;
+    }
+
+    /**
+     * Saves all of the acts associated with the order and/or order return.
+     */
+    public void save() {
+        service.save(acts);
+    }
+
+    /**
+     * Removes the order and/or order return.
+     */
+    public void remove() {
+        if (orderBean != null) {
+            service.remove(orderBean.getObject());
+        }
+        if (returnBean != null) {
+            service.remove(returnBean.getObject());
+        }
     }
 
     /**
@@ -220,6 +280,26 @@ public abstract class CustomerOrder {
         parent.addNodeRelationship("items", act);
         acts.add(act);
         return bean;
+    }
+
+    /**
+     * Returns the first item for a given product.
+     *
+     * @param archetype the item archetype
+     * @param product   the product. May be {@code null}
+     * @return the item, or {@code null} if none is found
+     */
+    protected ActBean getItem(String archetype, Product product) {
+        IMObjectReference reference = (product != null) ? product.getObjectReference() : null;
+        for (Act act : acts) {
+            if (TypeHelper.isA(act, archetype)) {
+                ActBean bean = new ActBean(act, service);
+                if (ObjectUtils.equals(reference, bean.getNodeParticipantRef("product"))) {
+                    return bean;
+                }
+            }
+        }
+        return null;
     }
 
 }

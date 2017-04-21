@@ -19,27 +19,27 @@ package org.openvpms.smartflow.model;
 import java.util.List;
 
 /**
- * List of notes.
+ * List of treatments.
  *
  * @author Tim Anderson
  */
-public class NotesList {
+public class TreatmentList {
 
     /**
-     * Describes the type of the object transferred with the SFS events (e.g. notes.entered). Should be assigned notes
-     * value.
+     * Describes the type of the object transferred with the SFS events (e.g. treatment.record_entered). Should be
+     * assigned treatments value.
      */
-    private String objectType = "notes";
+    private String objectType = "treatments";
 
     /**
-     * Identifier of the object. Will be transferred to EMR with the notes.entered event.
+     * Identifier of the object. Will be transferred to EMR with the treatments.records_entered event.
      */
     private String id;
 
     /**
-     * The notes.
+     * The treatments.
      */
-    private List<Note> notes;
+    private List<Treatment> treatments;
 
     /**
      * Returns the object type.
@@ -78,20 +78,20 @@ public class NotesList {
     }
 
     /**
-     * Returns the notes.
+     * Returns the treatments.
      *
-     * @return the notes
+     * @return the treatments
      */
-    public List<Note> getNotes() {
-        return notes;
+    public List<Treatment> getTreatments() {
+        return treatments;
     }
 
     /**
-     * Sets the notes.
+     * Sets the treatments.
      *
-     * @param notes the notes
+     * @param treatments the treatments
      */
-    public void setNotes(List<Note> notes) {
-        this.notes = notes;
+    public void setTreatments(List<Treatment> treatments) {
+        this.treatments = treatments;
     }
 }

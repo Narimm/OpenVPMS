@@ -100,10 +100,6 @@ public class FlowSheetMessagesTestCase {
               "SFS-0114: Failed to get message from Azure Service Bus with MessageID=1, ContentType=foo: bar");
         check(FlowSheetMessages.notConfigured(location),
               "SFS-0115: Smart Flow Sheet is not configured at Main Clinic.");
-        check(FlowSheetMessages.noVisitForHospitalization("1", "Fido"),
-              "SFS-0116: No patient visit for hospitalization 1 and patient Fido");
-        check(FlowSheetMessages.noPatientForHospitalization("1", "2", "Fido"),
-              "SFS-0117: No patient for hospitalization 1 with identifier=2 and name=Fido");
     }
 
     /**

@@ -20,13 +20,13 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.HospitalizationList;
 import org.openvpms.smartflow.model.InventoryItems;
 import org.openvpms.smartflow.model.Medics;
-import org.openvpms.smartflow.model.NotesList;
+import org.openvpms.smartflow.model.NoteList;
 import org.openvpms.smartflow.model.Treatment;
+import org.openvpms.smartflow.model.TreatmentList;
 import org.openvpms.smartflow.model.event.AdmissionEvent;
 import org.openvpms.smartflow.model.event.DischargeEvent;
 import org.openvpms.smartflow.model.event.Event;
@@ -37,10 +37,6 @@ import org.openvpms.smartflow.model.event.TreatmentEvent;
 import org.openvpms.smartflow.model.event.UnsupportedEvent;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * A deserializer for {@link Event}s.
@@ -235,7 +231,9 @@ public class EventDeserializer extends StdDeserializer<Event> {
     private Event createTreatment(JsonParser parser, String clinicApiKey, String eventType) throws IOException {
         TreatmentEvent event = populate(new TreatmentEvent(), clinicApiKey, eventType);
         Treatment treatment = parser.readValueAs(Treatment.class);
-        event.setObject(Collections.singletonList(treatment));
+        TreatmentList list = new TreatmentList();
+        list.getTreatments().add(treatment);
+        event.setObject(list);
         return event;
     }
 
@@ -251,9 +249,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
     private Event createMultipleTreatments(JsonParser parser, String clinicApiKey, String eventType)
             throws IOException {
         TreatmentEvent event = populate(new TreatmentEvent(), clinicApiKey, eventType);
-        Iterator<Treatment> iterator = parser.readValuesAs(Treatment.class);
-        List<Treatment> treatments = new ArrayList<>();
-        CollectionUtils.<Treatment, Treatment, List<Treatment>>collect(iterator, null, treatments);
+        TreatmentList treatments = parser.readValueAs(TreatmentList.class);
         event.setObject(treatments);
         return event;
     }
@@ -269,7 +265,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
      */
     private Event createNotesEvent(JsonParser parser, String clinicApiKey, String eventType) throws IOException {
         NotesEvent event = populate(new NotesEvent(), clinicApiKey, eventType);
-        NotesList notes = parser.readValueAs(NotesList.class);
+        NoteList notes = parser.readValueAs(NoteList.class);
         event.setObject(notes);
         return event;
     }

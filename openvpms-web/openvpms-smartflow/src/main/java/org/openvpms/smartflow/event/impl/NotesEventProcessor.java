@@ -16,6 +16,8 @@
 
 package org.openvpms.smartflow.event.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -29,7 +31,7 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Note;
-import org.openvpms.smartflow.model.NotesList;
+import org.openvpms.smartflow.model.NoteList;
 import org.openvpms.smartflow.model.event.NotesEvent;
 
 import java.util.ArrayList;
@@ -47,6 +49,11 @@ import static org.openvpms.component.system.common.query.Constraints.shortName;
 public class NotesEventProcessor extends EventProcessor<NotesEvent> {
 
     /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(NotesEventProcessor.class);
+
+    /**
      * Constructs a {@link NotesEventProcessor}.
      *
      * @param service the archetype service
@@ -62,7 +69,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      */
     @Override
     public void process(NotesEvent event) {
-        NotesList notes = event.getObject();
+        NoteList notes = event.getObject();
         if (notes != null && notes.getNotes() != null) {
             for (Note note : notes.getNotes()) {
                 process(note);
@@ -76,8 +83,22 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      * @param event the event
      */
     protected void process(Note event) {
+        Act visit = getVisit(event.getHospitalizationId());
+        if (visit != null) {
+            process(event, visit);
+        } else {
+            log.error("No visit for hospitalization: " + event.getHospitalizationId());
+        }
+    }
+
+    /**
+     * Processes a note event.
+     *
+     * @param event the event
+     * @param visit the visit the event relates to
+     */
+    private void process(Note event, Act visit) {
         IArchetypeService service = getService();
-        Act visit = getVisit(event.getHospitalizationId(), null);
         Act act = getNote(event, visit);
         String status = event.getStatus();
         List<IMObject> toSave = new ArrayList<>();
@@ -99,7 +120,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
 
                 bean = new ActBean(act, service);
                 bean.addNodeParticipation("patient", patient);
-                ActIdentity identity = createIdentity(event, service);
+                ActIdentity identity = createIdentity(event.getNoteGuid());
                 act.addIdentity(identity);
 
                 ActBean visitBean = new ActBean(visit, service);
@@ -120,6 +141,15 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
         }
     }
 
+    /**
+     * Adds an addendum to a note and links it to a visit.
+     *
+     * @param visit   the visit
+     * @param note    the clinical note
+     * @param patient the patient
+     * @param text    the addendum text
+     * @param toSave  the objects to save
+     */
     private void addAddendum(Act visit, Act note, Party patient, String text, List<IMObject> toSave) {
         IArchetypeService service = getService();
         ActBean bean = new ActBean(note, service);
@@ -134,6 +164,13 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
         toSave.add(visit);
     }
 
+    /**
+     * Creates an addendum.
+     *
+     * @param patient the patient
+     * @param note    the note
+     * @return a new addendum
+     */
     private Act createAddendum(Party patient, String note) {
         IArchetypeService service = getService();
         Act addendum = (Act) service.create(PatientArchetypes.CLINICAL_ADDENDUM);
@@ -143,16 +180,17 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
         return addendum;
     }
 
-    private ActIdentity createIdentity(Note event, IArchetypeService service) {
-        ActIdentity identity = (ActIdentity) service.create("actIdentity.smartflowsheet");
-        identity.setIdentity(event.getNoteGuid());
-        return identity;
-    }
-
+    /**
+     * Returns a clinical note associated with an SFS note and visit.
+     *
+     * @param note  the note
+     * @param visit the visit
+     * @return the clinical note, or {@code null} if none is found
+     */
     private Act getNote(Note note, Act visit) {
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_NOTE);
         query.add(join("event").add(eq("source", visit.getObjectReference())));
-        query.add(join("identities", shortName("actIdentity.smartflowsheet")).add(eq("identity", note.getNoteGuid())));
+        query.add(join("identities", shortName(SFS_IDENTITY)).add(eq("identity", note.getNoteGuid())));
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
         IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(getService(), query);

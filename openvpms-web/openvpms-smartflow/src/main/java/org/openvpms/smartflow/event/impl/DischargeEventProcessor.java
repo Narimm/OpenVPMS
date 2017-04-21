@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -105,48 +106,84 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
     protected void discharged(Hospitalization hospitalization) {
         String reportPath = hospitalization.getReportPath();
         if (!StringUtils.isEmpty(reportPath)) {
-            IArchetypeService service = getService();
-            Act visit = getVisit(hospitalization);
-            Party patient = getPatient(hospitalization);
-            User clinician = getClinician(hospitalization);
-            Client client = ClientBuilder.newClient();
-            WebTarget target = client.target(reportPath);
-            Response response = target.request("application/pdf").get();
-            if (response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(),
-                                                            MediaTypeHelper.APPLICATION_PDF_TYPE,
-                                                            MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
-                try (InputStream stream = (InputStream) response.getEntity()) {
-                    String fileName = "Flow Sheet.pdf";
-                    DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
-                    Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
-                    DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
-                    ActBean bean = new ActBean(act, service);
-                    ActBean visitBean = new ActBean(visit, service);
-                    visitBean.addNodeRelationship("items", act);
-                    bean.addNodeParticipation("patient", patient);
-                    if (clinician != null) {
-                        bean.addNodeParticipation("clinician", clinician);
-                    }
-                    List<IMObject> objects = rules.addDocument(act, document);
-                    objects.add(act);
-                    service.save(objects);
-                } catch (IOException exception) {
-                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, reportPath), exception);
+            Act visit = getVisit(hospitalization.getHospitalizationId());
+            if (visit != null) {
+                Party patient = getPatient(visit);
+                if (patient != null) {
+                    downloadFlowSheet(patient, visit, hospitalization);
                 }
             } else {
-                log.error("Failed to get " + reportPath + " for hospitalizationId="
-                          + hospitalization.getHospitalizationId() + ", status="
-                          + response.getStatus() + ", mediaType=" + response.getMediaType());
-                throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, reportPath));
+                log.error("No visit for hospitalization: " + toString(hospitalization));
             }
+        } else {
+            log.error("No reportPath for hospitalization: " + toString(hospitalization));
         }
     }
 
-    private Act getVisit(Hospitalization hospitalization) {
-        String hospitalizationId = hospitalization.getHospitalizationId();
+    /**
+     * Downloads the flow sheet for a patient, attaching it to the visit.
+     *
+     * @param patient         the patient
+     * @param visit           the visit
+     * @param hospitalization the hospitalization
+     */
+    protected void downloadFlowSheet(Party patient, Act visit, Hospitalization hospitalization) {
+        IArchetypeService service = getService();
+        User clinician = getClinician(hospitalization);
+        Client client = ClientBuilder.newClient();
+        String reportPath = hospitalization.getReportPath();
+        WebTarget target = client.target(reportPath);
+        Response response = target.request("application/pdf").get();
+        if (response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(),
+                                                        MediaTypeHelper.APPLICATION_PDF_TYPE,
+                                                        MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
+            try (InputStream stream = (InputStream) response.getEntity()) {
+                String fileName = "Flow Sheet.pdf";
+                DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
+                Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
+                DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
+                ActBean bean = new ActBean(act, service);
+                ActBean visitBean = new ActBean(visit, service);
+                visitBean.addNodeRelationship("items", act);
+                bean.addNodeParticipation("patient", patient);
+                if (clinician != null) {
+                    bean.addNodeParticipation("clinician", clinician);
+                }
+                List<IMObject> objects = rules.addDocument(act, document);
+                objects.add(act);
+                service.save(objects);
+            } catch (IOException exception) {
+                throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, reportPath), exception);
+            }
+        } else {
+            log.error("Failed to get " + reportPath + " for " + toString(hospitalization)
+                      + ", status=" + response.getStatus() + ", mediaType=" + response.getMediaType());
+            throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, reportPath));
+        }
+    }
+
+    /**
+     * Returns the clinician associated with a hospitalization.
+     *
+     * @param hospitalization the hospitalization
+     * @return the clinician. May be {@code null}
+     */
+    protected User getClinician(Hospitalization hospitalization) {
+        return (User) getObject(hospitalization.getMedicId(), UserArchetypes.USER);
+    }
+
+    /**
+     * Helper to generate a string representation of a hospitalization, for error reporting purposes.
+     *
+     * @param hospitalization the hospitalization
+     * @return a string version of the hospitalization
+     */
+    private String toString(Hospitalization hospitalization) {
         Patient patient = hospitalization.getPatient();
-        String name = (patient != null) ? patient.getName() : null;
-        return getVisit(hospitalizationId, name);
+        String patientId = (patient != null) ? patient.getPatientId() : null;
+        String patientName = (patient != null) ? patient.getName() : null;
+        return "hospitalizationId=" + hospitalization.getHospitalizationId()
+               + ", patient=[id=" + patientId + ", name=" + patientName + "]";
     }
 
 }

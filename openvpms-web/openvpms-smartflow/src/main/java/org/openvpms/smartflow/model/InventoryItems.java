@@ -32,7 +32,7 @@ public class InventoryItems {
      * Describes the type of the object transferred with the SFS events (e.g. inventory.imported).
      * Should be assigned iventoryitems value. Optional.
      */
-    private String objectType = "iventoryitems"; // TODO - check spelling
+    private String objectType = "inventoryitems";
 
     /**
      * Identifier of the object. Will be transferred to EMR with the SFS events (e.g. inventory.imported). Optional.

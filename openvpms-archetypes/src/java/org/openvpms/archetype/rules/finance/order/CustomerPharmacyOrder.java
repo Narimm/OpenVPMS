@@ -16,10 +16,13 @@
 
 package org.openvpms.archetype.rules.finance.order;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 /**
  * Manages state when processing customer pharmacy orders and returns.
@@ -40,6 +43,27 @@ public class CustomerPharmacyOrder extends CustomerOrder {
     public CustomerPharmacyOrder(Party patient, Party customer, String note, IMObjectReference location,
                                  IArchetypeService service) {
         super(patient, customer, note, location, service);
+    }
+
+    /**
+     * Constructs a {@link CustomerPharmacyOrder}.
+     *
+     * @param act     the order/order return act
+     * @param service the archetype service
+     */
+    public CustomerPharmacyOrder(Act act, IArchetypeService service) {
+        super(act, TypeHelper.isA(act, OrderArchetypes.PHARMACY_ORDER), service);
+    }
+
+    /**
+     * Returns the first item with the given product.
+     *
+     * @param product the product. May be {@code null}
+     * @return the item. May be {@code null}
+     */
+    public ActBean getItem(Product product) {
+        String archetype = hasOrder() ? OrderArchetypes.PHARMACY_ORDER_ITEM : OrderArchetypes.PHARMACY_RETURN_ITEM;
+        return getItem(archetype, product);
     }
 
     /**
