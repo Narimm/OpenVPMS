@@ -19,37 +19,18 @@ package org.openvpms.smartflow.event.impl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.doc.DocumentRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.smartflow.client.FlowSheetException;
-import org.openvpms.smartflow.client.MediaTypeHelper;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
+import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.HospitalizationList;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.model.event.DischargeEvent;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
 
 /**
  * Processes {@link DischargeEvent} events.
@@ -59,14 +40,9 @@ import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
 public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
 
     /**
-     * The document handlers.
+     * The Smart Flow Sheet service factory.
      */
-    private final DocumentHandlers handlers;
-
-    /**
-     * The document rules.
-     */
-    private final DocumentRules rules;
+    private final FlowSheetServiceFactory factory;
 
     /**
      * The logger.
@@ -76,13 +52,12 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
     /**
      * Constructs an {@link DischargeEventProcessor}.
      *
-     * @param service  the archetype service
-     * @param handlers the document handlers
+     * @param service the archetype service
+     * @param factory the Smart Flow Sheet service factory
      */
-    public DischargeEventProcessor(IArchetypeService service, DocumentHandlers handlers) {
+    public DischargeEventProcessor(IArchetypeService service, FlowSheetServiceFactory factory) {
         super(service);
-        this.handlers = handlers;
-        rules = new DocumentRules(service);
+        this.factory = factory;
     }
 
     /**
@@ -93,8 +68,9 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
     @Override
     public void process(DischargeEvent event) {
         HospitalizationList list = event.getObject();
+        String apiKey = event.getClinicApiKey();
         for (Hospitalization hospitalization : list.getHospitalizations()) {
-            discharged(hospitalization);
+            discharged(hospitalization, apiKey);
         }
     }
 
@@ -102,15 +78,16 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
      * Invoked when a patient is discharged.
      *
      * @param hospitalization the hospitalization
+     * @param apiKey          the clinic API key
      */
-    protected void discharged(Hospitalization hospitalization) {
+    protected void discharged(Hospitalization hospitalization, String apiKey) {
         String reportPath = hospitalization.getReportPath();
         if (!StringUtils.isEmpty(reportPath)) {
             Act visit = getVisit(hospitalization.getHospitalizationId());
             if (visit != null) {
                 Party patient = getPatient(visit);
                 if (patient != null) {
-                    downloadFlowSheet(patient, visit, hospitalization);
+                    downloadFlowSheet(patient, visit, hospitalization, apiKey);
                 }
             } else {
                 log.error("No visit for hospitalization: " + toString(hospitalization));
@@ -121,45 +98,21 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
     }
 
     /**
-     * Downloads the flow sheet for a patient, attaching it to the visit.
+     * Downloads the reports for a patient, attaching it to the visit.
      *
      * @param patient         the patient
      * @param visit           the visit
      * @param hospitalization the hospitalization
+     * @param apiKey          the clinic API key
      */
-    protected void downloadFlowSheet(Party patient, Act visit, Hospitalization hospitalization) {
-        IArchetypeService service = getService();
+    protected void downloadFlowSheet(Party patient, Act visit, Hospitalization hospitalization, String apiKey) {
+        HospitalizationService hospitalizationService = factory.getHospitalizationService(apiKey);
         User clinician = getClinician(hospitalization);
-        Client client = ClientBuilder.newClient();
-        String reportPath = hospitalization.getReportPath();
-        WebTarget target = client.target(reportPath);
-        Response response = target.request("application/pdf").get();
-        if (response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(),
-                                                        MediaTypeHelper.APPLICATION_PDF_TYPE,
-                                                        MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
-            try (InputStream stream = (InputStream) response.getEntity()) {
-                String fileName = "Flow Sheet.pdf";
-                DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
-                Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
-                DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
-                ActBean bean = new ActBean(act, service);
-                ActBean visitBean = new ActBean(visit, service);
-                visitBean.addNodeRelationship("items", act);
-                bean.addNodeParticipation("patient", patient);
-                if (clinician != null) {
-                    bean.addNodeParticipation("clinician", clinician);
-                }
-                List<IMObject> objects = rules.addDocument(act, document);
-                objects.add(act);
-                service.save(objects);
-            } catch (IOException exception) {
-                throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, reportPath), exception);
-            }
-        } else {
-            log.error("Failed to get " + reportPath + " for " + toString(hospitalization)
-                      + ", status=" + response.getStatus() + ", mediaType=" + response.getMediaType());
-            throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, reportPath));
-        }
+        hospitalizationService.saveFlowSheetReport(FlowSheetMessages.flowSheetReportName(), patient, visit, clinician);
+        hospitalizationService.saveMedicalRecordsReport(FlowSheetMessages.medicalRecordsReportName(), patient, visit,
+                                                        clinician);
+        hospitalizationService.saveBillingReport(FlowSheetMessages.billingReportName(), patient, visit,
+                                                 clinician);
     }
 
     /**

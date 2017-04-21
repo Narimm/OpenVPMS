@@ -456,7 +456,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         protected boolean addFlowSheet(String createFlowSheet, IMObjectBean workList,
                                        final PatientContext patientContext, Act appointment, Party location) {
             boolean popup = false;
-            final HospitalizationService service = flowSheetServiceFactory.getHospitalisationService(location);
+            final HospitalizationService service = flowSheetServiceFactory.getHospitalizationService(location);
             if (!service.exists(patientContext)) {
                 int expectedHospitalStay = workList.getInt("expectedHospitalStay");
                 int defaultDepartment = workList.getInt("defaultFlowSheetDepartment", -1);
