@@ -16,14 +16,12 @@
 
 package org.openvpms.smartflow.model.event;
 
-import org.openvpms.smartflow.model.Treatment;
-
-import java.util.List;
+import org.openvpms.smartflow.model.TreatmentList;
 
 /**
  * Event sent when one or more treatments are performed.
  *
  * @author Tim Anderson
  */
-public class TreatmentEvent extends Event<List<Treatment>> {
+public class TreatmentEvent extends Event<TreatmentList> {
 }

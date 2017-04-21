@@ -33,6 +33,8 @@
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="practiceService"/>
         <constructor-arg ref="documentHandlers"/>
+        <constructor-arg ref="txnManager"/>
+        <constructor-arg ref="patientRules"/>
     </bean>
 
 </beans>

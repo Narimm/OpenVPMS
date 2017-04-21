@@ -102,16 +102,16 @@ public class InventoryService extends FlowSheetService {
     /**
      * Updates inventory items.
      *
-     * @param items the items to update
-     * @param uuid  a unique identifier for this update
+     * @param items   the items to update
+     * @param eventId a unique identifier for this update. This will be returned in inventory update events
      */
-    public void update(final List<InventoryItem> items, final UUID uuid) {
+    public void update(final List<InventoryItem> items, final UUID eventId) {
         Call<Void, Inventory> call = new Call<Void, Inventory>() {
             @Override
             public Void call(Inventory service) throws Exception {
                 InventoryItems inventory = new InventoryItems();
                 inventory.setInventoryitems(items);
-                inventory.setId(uuid.toString());
+                inventory.setId(eventId.toString());
                 service.update(inventory);
                 return null;
             }

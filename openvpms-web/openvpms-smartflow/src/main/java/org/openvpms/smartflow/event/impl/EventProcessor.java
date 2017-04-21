@@ -18,18 +18,13 @@ package org.openvpms.smartflow.event.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.smartflow.client.FlowSheetException;
-import org.openvpms.smartflow.i18n.FlowSheetMessages;
-import org.openvpms.smartflow.model.Hospitalization;
-import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.model.event.Event;
 
 /**
@@ -38,6 +33,11 @@ import org.openvpms.smartflow.model.event.Event;
  * @author Tim Anderson
  */
 public abstract class EventProcessor<T extends Event> {
+
+    /**
+     * Archetype to link Smart Flow Sheet ids to acts.
+     */
+    protected static final String SFS_IDENTITY = "actIdentity.smartflowsheet";
 
     /**
      * The archetype service.
@@ -71,42 +71,24 @@ public abstract class EventProcessor<T extends Event> {
     }
 
     /**
-     * Returns a visit for a hospitalization identifier.
+     * Returns a visit given its identifier.
      *
      * @param hospitalizationId the hospitalization identifier
-     * @param name              the patient name, for error reporting. May be {@code null}
-     * @return the visit
+     * @return the visit, or {@code null} if it is not found
      */
-    protected Act getVisit(String hospitalizationId, String name) {
-        Act result = (Act) getObject(hospitalizationId, PatientArchetypes.CLINICAL_EVENT);
-        if (result == null) {
-            throw new FlowSheetException(FlowSheetMessages.noVisitForHospitalization(hospitalizationId, name));
-        }
-        return result;
+    protected Act getVisit(String hospitalizationId) {
+        return (Act) getObject(hospitalizationId, PatientArchetypes.CLINICAL_EVENT);
     }
 
-    protected Party getPatient(Hospitalization hospitalization) {
-        Patient patient = hospitalization.getPatient();
-        if (patient == null) {
-            throw new FlowSheetException(FlowSheetMessages.noPatientForHospitalization(
-                    hospitalization.getHospitalizationId(), null, null));
-        }
-        Party result = (Party) getObject(patient.getPatientId(), PatientArchetypes.PATIENT);
-        if (result == null) {
-            throw new FlowSheetException(FlowSheetMessages.noPatientForHospitalization(
-                    hospitalization.getHospitalizationId(), patient.getPatientId(), patient.getName()));
-
-        }
-        return result;
-    }
-
+    /**
+     * Returns the patient associated with a visit.
+     *
+     * @param visit the visit
+     * @return the patient. May be {@code null}
+     */
     protected Party getPatient(Act visit) {
         ActBean bean = new ActBean(visit, service);
         return (Party) bean.getNodeParticipant("patient");
-    }
-
-    protected User getClinician(Hospitalization hospitalization) {
-        return (User) getObject(hospitalization.getMedicId(), UserArchetypes.USER);
     }
 
     /**
@@ -124,6 +106,18 @@ public abstract class EventProcessor<T extends Event> {
             result = service.get(reference);
         }
         return result;
+    }
+
+    /**
+     * Creates a new identity for a Smart Flow Sheet identifier.
+     *
+     * @param guid the Smart Flow Sheet identifier
+     * @return a new identity
+     */
+    protected ActIdentity createIdentity(String guid) {
+        ActIdentity identity = (ActIdentity) service.create(SFS_IDENTITY);
+        identity.setIdentity(guid);
+        return identity;
     }
 
     /**

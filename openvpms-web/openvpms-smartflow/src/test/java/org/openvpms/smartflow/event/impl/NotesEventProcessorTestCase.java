@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.smartflow.model.Note;
-import org.openvpms.smartflow.model.NotesList;
+import org.openvpms.smartflow.model.NoteList;
 import org.openvpms.smartflow.model.event.NotesEvent;
 
 import java.util.Collections;
@@ -46,12 +46,34 @@ import static org.junit.Assert.assertTrue;
  */
 public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
 
+    /**
+     * The test patient.
+     */
     private Party patient;
-    private NotesEvent event;
+
+    /**
+     * The test visit.
+     */
     private Act visit;
+
+    /**
+     * The test event.
+     */
+    private NotesEvent event;
+
+    /**
+     * The test note.
+     */
     private Note note;
+
+    /**
+     * The event processor.
+     */
     private NotesEventProcessor processor;
 
+    /**
+     * Sets up the test case.
+     */
     @Before
     public void setUp() {
         patient = TestHelper.createPatient();
@@ -62,7 +84,7 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
         note.setStatus(Note.ADDED_STATUS);
         note.setText("a note");
         event = new NotesEvent();
-        NotesList list = new NotesList();
+        NoteList list = new NoteList();
         list.setNotes(Collections.singletonList(note));
         event.setObject(list);
         processor = new NotesEventProcessor(getArchetypeService());
@@ -169,13 +191,19 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
         return bean.getNodeActs("items");
     }
 
-    private void checkAddendum(Act item, String note) {
-        ActBean bean = new ActBean(item);
+    /**
+     * Verifies an addendum is present and matches that expected.
+     *
+     * @param act          the clinical note act
+     * @param expectedNote the expected text
+     */
+    private void checkAddendum(Act act, String expectedNote) {
+        ActBean bean = new ActBean(act);
         List<Act> acts = bean.getNodeActs("addenda");
         assertEquals(1, acts.size());
         ActBean addendum = new ActBean(acts.get(0));
         assertEquals(patient, addendum.getNodeParticipant("patient"));
-        assertEquals(note, addendum.getString("note"));
+        assertEquals(expectedNote, addendum.getString("note"));
         assertEquals(visit, addendum.getNodeSourceObject("event"));
     }
 }

@@ -191,29 +191,6 @@ public class FlowSheetMessages {
     }
 
     /**
-     * Creates a message indicating that there is no visit for a hospitalization.
-     *
-     * @param hospitalizationId the hospitalization identifier
-     * @param patient           the patient name
-     * @return a new message
-     */
-    public static Message noVisitForHospitalization(String hospitalizationId, String patient) {
-        return messages.getMessage(116, hospitalizationId, patient);
-    }
-
-    /**
-     * Creates a message indicating that a patient cannot be found for a hospitalization.
-     *
-     * @param hospitalizationId the hospitalization identifier
-     * @param patientId         the patient identifier
-     * @param name              the patient name
-     * @return a new message
-     */
-    public static Message noPatientForHospitalization(String hospitalizationId, String patientId, String name) {
-        return messages.getMessage(117, hospitalizationId, patientId, name);
-    }
-
-    /**
      * Returns a message indicating that a clinical note cannot be deleted as it has been locked.
      *
      * @return the message
