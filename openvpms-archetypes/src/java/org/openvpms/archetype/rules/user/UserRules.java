@@ -38,8 +38,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -215,6 +217,40 @@ public class UserRules {
      */
     public Party getDefaultLocation(User user) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(user, "locations", service);
+    }
+
+    /**
+     * Returns all users in a list of users and groups.
+     *
+     * @param usersOrGroups the list of users and groups
+     * @return the users in the list
+     */
+    public Set<User> getUsers(List<Entity> usersOrGroups) {
+        Set<User> result = new HashSet<>();
+        Set<Entity> groups = new HashSet<>();
+        for (Entity entity : usersOrGroups) {
+            if (entity instanceof User) {
+                result.add((User) entity);
+            } else if (entity != null) {
+                if (!groups.contains(entity)) {
+                    groups.add(entity);
+                    List<User> users = getUsers(entity);
+                    result.addAll(users);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all users in a group.
+     *
+     * @param group the <em>entity.userGroup</em>.
+     * @return the users
+     */
+    public List<User> getUsers(Entity group) {
+        IMObjectBean bean = new IMObjectBean(group, service);
+        return bean.getNodeTargetObjects("users", User.class);
     }
 
     /**

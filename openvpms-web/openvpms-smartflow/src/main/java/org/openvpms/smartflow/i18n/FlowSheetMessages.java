@@ -191,6 +191,16 @@ public class FlowSheetMessages {
     }
 
     /**
+     * Creates a message when a patient cannot be discharged.
+     *
+     * @param patient the patient
+     * @return a new message
+     */
+    public static Message failedToDischargePatient(Party patient) {
+        return messages.getMessage(116, patient.getName());
+    }
+
+    /**
      * Returns a message indicating that a clinical note cannot be deleted as it has been locked.
      *
      * @return the message
@@ -198,4 +208,41 @@ public class FlowSheetMessages {
     public static String cannotDeleteFinalisedNote() {
         return messages.getMessage(300).getMessage();
     }
+
+    /**
+     * Returns the file name to use for Flow Sheet report attachments.
+     *
+     * @return the file name, minus any extension
+     */
+    public static String flowSheetReportName() {
+        return messages.getMessage(1001).getMessage();
+    }
+
+    /**
+     * Returns the file name to use for Medical Records report attachments.
+     *
+     * @return the file name, minus any extension
+     */
+    public static String medicalRecordsReportName() {
+        return messages.getMessage(1002).getMessage();
+    }
+
+    /**
+     * Returns the file name to use for Billing report attachments.
+     *
+     * @return the file name, minus any extension
+     */
+    public static String billingReportName() {
+        return messages.getMessage(1003).getMessage();
+    }
+
+    /**
+     * Returns the file name to use for Notes report attachments.
+     *
+     * @return the file name, minus any extension
+     */
+    public static String notesReportName() {
+        return messages.getMessage(1004).getMessage();
+    }
+
 }

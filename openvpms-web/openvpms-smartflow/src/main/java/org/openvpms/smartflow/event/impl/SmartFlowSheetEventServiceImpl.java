@@ -19,7 +19,6 @@ package org.openvpms.smartflow.event.impl;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
@@ -69,11 +68,6 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      * The practice service.
      */
     private final PracticeService practiceService;
-
-    /**
-     * The document handlers.
-     */
-    private final DocumentHandlers handlers;
 
     /**
      * The transaction manager.
@@ -141,17 +135,15 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      * @param factory            the factory for SFS services
      * @param service            the archetype service
      * @param practiceService    the practice service
-     * @param handlers           the document handlers
      * @param transactionManager the transaction manager
      * @param rules              the patient rules
      */
     protected SmartFlowSheetEventServiceImpl(FlowSheetServiceFactory factory, IArchetypeService service,
-                                             PracticeService practiceService, DocumentHandlers handlers,
+                                             PracticeService practiceService,
                                              PlatformTransactionManager transactionManager, PatientRules rules) {
         this.factory = factory;
         this.service = service;
         this.practiceService = practiceService;
-        this.handlers = handlers;
         this.transactionManager = transactionManager;
         this.rules = rules;
 
@@ -378,7 +370,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
                 locations = new HashSet<>();
                 locationsByKey.put(key, locations);
                 ServiceBusConfig config = getConfig(location);
-                EventDispatcher dispatcher = new DefaultEventDispatcher(location, service, handlers, rules);
+                EventDispatcher dispatcher = new DefaultEventDispatcher(location, service, factory, rules);
                 dispatchers.put(key, dispatcher);
                 reader = new QueueReader(config, dispatcher, getServiceUser(), executor, transactionManager, interval);
                 readers.put(key, reader);

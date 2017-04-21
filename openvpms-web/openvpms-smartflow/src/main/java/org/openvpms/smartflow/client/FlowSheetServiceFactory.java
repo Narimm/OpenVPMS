@@ -108,9 +108,19 @@ public class FlowSheetServiceFactory {
      * @param location the practice location
      * @return a new {@link HospitalizationService}
      */
-    public HospitalizationService getHospitalisationService(Party location) {
-        String clinicKey = getRequiredClinicAPIKey(location);
-        return new HospitalizationService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service, lookups, handlers);
+    public HospitalizationService getHospitalizationService(Party location) {
+        String apiKey = getRequiredClinicAPIKey(location);
+        return getHospitalizationService(apiKey);
+    }
+
+    /**
+     * Creates a {@link HospitalizationService} for the specified practice location.
+     *
+     * @param apiKey the clinic API key
+     * @return a new {@link HospitalizationService}
+     */
+    public HospitalizationService getHospitalizationService(String apiKey) {
+        return new HospitalizationService(url, emrApiKey, apiKey, TimeZone.getDefault(), service, lookups, handlers);
     }
 
     /**

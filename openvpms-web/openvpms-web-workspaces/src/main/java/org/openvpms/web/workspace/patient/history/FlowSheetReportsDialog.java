@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -125,7 +125,7 @@ public class FlowSheetReportsDialog extends PopupDialog {
     @Override
     protected void onOK() {
         FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-        HospitalizationService service = factory.getHospitalisationService(context.getLocation());
+        HospitalizationService service = factory.getHospitalizationService(context.getLocation());
         if (medicalRecords.isSelected()) {
             service.saveMedicalRecords(getName(MEDICAL), context);
         }

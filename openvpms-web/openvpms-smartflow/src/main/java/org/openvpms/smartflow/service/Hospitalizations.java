@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.service;
@@ -57,6 +57,19 @@ public interface Hospitalizations {
     @Path("/{hospitalizationId}")
     @Produces({MediaType.APPLICATION_JSON})
     Hospitalization get(@PathParam("hospitalizationId") String hospitalizationId);
+
+    /**
+     * Discharges a patient.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     * @param empty             must be an empty string. This is required to force a Content-Length: 0 header to be
+     *                          passed
+     * @return the hospitalization
+     */
+    @POST
+    @Path("/discharge/{hospitalizationId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    Hospitalization discharge(@PathParam("hospitalizationId") String hospitalizationId, String empty);
 
     /**
      * Removes a hospitalization, given its identifier.

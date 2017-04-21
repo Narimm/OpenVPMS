@@ -161,7 +161,7 @@ public class NewFlowSheetTask extends Tasks {
                 context.setLocation(location);
                 context.setPatient(patient);
                 context.addObject(visit);
-                client = factory.getHospitalisationService(location);
+                client = factory.getHospitalizationService(location);
                 patientContext = getPatientContext(visit);
                 if (!client.exists(patientContext)) {
                     Weight weight = patientContext.getWeight();

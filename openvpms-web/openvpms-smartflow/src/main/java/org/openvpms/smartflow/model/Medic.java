@@ -46,6 +46,17 @@ public class Medic {
     private String medicType = "doctor";
 
     /**
+     * The status of the asynchronous operation for the medic object. This will be filled in by SFS when sending the
+     * medics.imported event. Should be: 1. less than 0 - error occured; 2. greater or equal 0 - operation succeed.
+     */
+    private Integer asyncOperationStatus;
+
+    /**
+     * May contain the error message in case the asyncOperationStatus field represents the error (less than 0).
+     */
+    private String asyncOperationMessage;
+
+    /**
      * Returns the object type.
      *
      * @return the object type
@@ -106,6 +117,46 @@ public class Medic {
      */
     public void setMedicType(String medicType) {
         this.medicType = medicType;
+    }
+
+    /**
+     * Returns the status of the asynchronous operation for the inventory item. This will be filled in by SFS when
+     * sending the inventoryitems.imported event. Should be: 1. less than 0 - error occrured; 2. greater or
+     * equal 0 - operation succeed.
+     *
+     * @return the status. May be {@code null}
+     */
+    public Integer getAsyncOperationStatus() {
+        return asyncOperationStatus;
+    }
+
+    /**
+     * Sets the status of the asynchronous operation for the medic. This will be filled in by SFS when
+     * sending the medics.imported event. Should be: 1. less than 0 - error occurred; 2. greater or
+     * equal 0 - operation succeed.
+     *
+     * @param asyncOperationStatus the status. May be {@code null}
+     */
+    public void setAsyncOperationStatus(Integer asyncOperationStatus) {
+        this.asyncOperationStatus = asyncOperationStatus;
+    }
+
+    /**
+     * Returns the error message in case the asyncOperationStatus field represents an error (less than 0).
+     *
+     * @return the error message. May be {@code null}
+     */
+    public String getAsyncOperationMessage() {
+        return asyncOperationMessage;
+    }
+
+    /**
+     * Sets the error message in case the asyncOperationStatus field represents an error (less than 0).
+     *
+     * @param asyncOperationMessage the error message. May be {@code null}
+     */
+    public void setAsyncOperationMessage(String asyncOperationMessage) {
+        this.asyncOperationMessage = asyncOperationMessage;
     }
 
     /**

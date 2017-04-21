@@ -207,6 +207,10 @@ public class CheckOutWorkflow extends WorkflowImpl {
             });
         }
 
+        if (flowSheetServiceFactory.isSmartFlowSheetEnabled(initial.getLocation())) {
+            addTask(new BatchDischargeFromSmartFlowSheetTask(visits, help));
+        }
+
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
         addTask(createChargeTask(visits));
@@ -226,10 +230,6 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // add a follow-up task, if it is configured for the practice location
         if (followUp()) {
             addTask(new FollowUpTask(help));
-        }
-
-        if (flowSheetServiceFactory.isSmartFlowSheetEnabled(initial.getLocation())) {
-            addTask(new BatchImportFlowSheetReportsTask(visits, help));
         }
 
         // update the appointments and events setting their status to COMPLETED and endTime to now.
@@ -531,6 +531,45 @@ public class CheckOutWorkflow extends WorkflowImpl {
         }
     }
 
+    private class BatchDischargeFromSmartFlowSheetTask extends Tasks {
+
+        private final Visits visits;
+
+        public BatchDischargeFromSmartFlowSheetTask(Visits visits, HelpContext help) {
+            super(help);
+            setRequired(false);
+            this.visits = visits;
+        }
+
+        /**
+         * Initialise any tasks.
+         *
+         * @param context the task context
+         */
+        @Override
+        protected void initialise(TaskContext context) {
+            Party location = context.getLocation();
+            boolean completed = true;
+            if (location != null && !visits.isEmpty()) {
+                PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+                HospitalizationService service = flowSheetServiceFactory.getHospitalizationService(location);
+                for (Visit event : visits) {
+                    Act act = event.getEvent();
+                    PatientContext patientContext = factory.createContext(act, location);
+                    if (patientContext != null) {
+                        if (service != null && service.exists(patientContext)) {
+                            completed = false;
+                            addTask(new DischargeFromSmartFlowSheetTask(patientContext, service));
+                        }
+                    }
+                }
+            }
+            if (completed) {
+                notifyCompleted();
+            }
+        }
+    }
+
     /**
      * Task to import flow sheet reports for each Visit, if a patient has a Smart Flow Sheet hospitalisation.
      */
@@ -555,14 +594,16 @@ public class CheckOutWorkflow extends WorkflowImpl {
             boolean completed = true;
             if (location != null && !visits.isEmpty()) {
                 PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
-                HospitalizationService service = flowSheetServiceFactory.getHospitalisationService(location);
+                HospitalizationService service = flowSheetServiceFactory.getHospitalizationService(location);
                 for (Visit event : visits) {
                     Act act = event.getEvent();
                     PatientContext patientContext = factory.createContext(act, location);
                     if (patientContext != null) {
                         if (service != null && service.exists(patientContext)) {
                             completed = false;
-                            addTask(new ImportFlowSheetReportsTask(patientContext));
+                            ConfirmationTask task = new ConfirmationTask("Discharge from Smart Flow Sheet",
+                                                                         "Discharge " + patientContext.getPatient().getName() + " from Smart Flow Sheet", true, getHelpContext());
+                            addTask(new ConditionalTask(task, new DischargeFromSmartFlowSheetTask(patientContext, service)));
                         }
                     }
                 }
@@ -570,6 +611,34 @@ public class CheckOutWorkflow extends WorkflowImpl {
             if (completed) {
                 notifyCompleted();
             }
+        }
+    }
+
+    /**
+     * Task to import flow sheet reports for a patient, if a patient has a Smart Flow Sheet hospitalisation.
+     */
+    private static class DischargeFromSmartFlowSheetTask extends AbstractTask {
+
+        private final PatientContext patientContext;
+
+        private final HospitalizationService service;
+
+        public DischargeFromSmartFlowSheetTask(PatientContext context, HospitalizationService service) {
+            this.patientContext = context;
+            this.service = service;
+        }
+
+        /**
+         * Starts the task.
+         * <p/>
+         * The registered {@link TaskListener} will be notified on completion or failure.
+         *
+         * @param context the task context
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void start(TaskContext context) {
+            service.discharge(patientContext.getPatient(), patientContext.getVisit());
         }
     }
 

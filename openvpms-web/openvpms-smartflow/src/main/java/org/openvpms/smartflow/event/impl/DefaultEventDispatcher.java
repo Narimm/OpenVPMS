@@ -17,14 +17,13 @@
 package org.openvpms.smartflow.event.impl;
 
 import org.apache.commons.collections4.map.ReferenceMap;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.event.Listener;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.event.EventDispatcher;
 import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.HospitalizationList;
@@ -62,6 +61,16 @@ public class DefaultEventDispatcher implements EventDispatcher {
     private final DischargeEventProcessor dischargeProcessor;
 
     /**
+     * The inventory imported event processor.
+     */
+    private final InventoryImportedEventProcessor inventoryImportedProcessor;
+
+    /**
+     * The medics imported event processor.
+     */
+    private final MedicsImportedEventProcessor medicsImportedProcessor;
+
+    /**
      * Listeners for specific messages.
      * These are held on to with soft references, to avoid memory leaks if the client doesn't de-register them.
      */
@@ -78,14 +87,16 @@ public class DefaultEventDispatcher implements EventDispatcher {
      *
      * @param location the practice location. May be {@code null}
      * @param service  the archetype service
-     * @param handlers the document handlers
+     * @param factory  the Smart Flow Sheet service factory
      * @param rules    the patient rules
      */
-    public DefaultEventDispatcher(Party location, IArchetypeService service, DocumentHandlers handlers,
+    public DefaultEventDispatcher(Party location, IArchetypeService service, FlowSheetServiceFactory factory,
                                   PatientRules rules) {
         treatmentProcessor = new TreatmentEventProcessor(location, service, rules);
         notesProcessor = new NotesEventProcessor(service);
-        dischargeProcessor = new DischargeEventProcessor(service, handlers);
+        dischargeProcessor = new DischargeEventProcessor(service, factory);
+        inventoryImportedProcessor = new InventoryImportedEventProcessor(service);
+        medicsImportedProcessor = new MedicsImportedEventProcessor(service);
     }
 
     /**
@@ -104,9 +115,9 @@ public class DefaultEventDispatcher implements EventDispatcher {
         } else if (event instanceof NotesEvent) {
             notesProcessor.process((NotesEvent) event);
         } else if (event instanceof InventoryImportedEvent) {
-            imported((InventoryImportedEvent) event);
+            inventoryImportedProcessor.process((InventoryImportedEvent) event);
         } else if (event instanceof MedicsImportedEvent) {
-            imported((MedicsImportedEvent) event);
+            medicsImportedProcessor.process((MedicsImportedEvent) event);
         }
     }
 
@@ -142,29 +153,6 @@ public class DefaultEventDispatcher implements EventDispatcher {
             if (list != null) {
                 for (Hospitalization hospitalization : list.getHospitalizations()) {
                     log.debug("Admitted: " + hospitalization.getPatient().getName());
-                }
-            }
-        }
-    }
-
-    protected void imported(InventoryImportedEvent event) {
-        String id = event.getObject().getId();
-        handleEvent(id, event);
-    }
-
-    protected void imported(MedicsImportedEvent event) {
-        String id = event.getObject().getId();
-        handleEvent(id, event);
-    }
-
-    private void handleEvent(String id, Event event) {
-        if (!StringUtils.isEmpty(id)) {
-            Listener<Event> listener = listeners.remove(id);
-            if (listener != null) {
-                try {
-                    listener.onEvent(event);
-                } catch (Throwable exception) {
-                    log.error("Failed to invoke listener event=" + event.getEventType(), exception);
                 }
             }
         }

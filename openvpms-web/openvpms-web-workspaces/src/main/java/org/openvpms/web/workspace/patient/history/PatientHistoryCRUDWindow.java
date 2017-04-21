@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -368,7 +368,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             PatientContext context = ServiceHelper.getBean(PatientContextFactory.class).createContext(visit, location);
             if (context != null) {
                 FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-                HospitalizationService service = factory.getHospitalisationService(location);
+                HospitalizationService service = factory.getHospitalizationService(location);
                 if (service.exists(context)) {
                     FlowSheetReportsDialog dialog = new FlowSheetReportsDialog(context);
                     dialog.addWindowPaneListener(new WindowPaneListener() {

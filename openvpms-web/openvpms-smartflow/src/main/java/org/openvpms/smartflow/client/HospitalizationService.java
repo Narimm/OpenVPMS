@@ -204,13 +204,59 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
+     * Discharges the patient associated with a visit.
+     *
+     * @param patient the patient
+     * @param visit   the visit
+     */
+    public void discharge(final Party patient, Act visit) {
+        final String hospitalizationId = Long.toString(visit.getId());
+        Call<Void, Hospitalizations> call = new Call<Void, Hospitalizations>() {
+            @Override
+            public Void call(Hospitalizations resource) throws Exception {
+                resource.discharge(hospitalizationId, "");
+                return null;
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToDischargePatient(patient);
+            }
+        };
+        call(Hospitalizations.class, call);
+    }
+
+    /**
+     * Saves a flow sheet report associated with a patient visit, to the patient visit.
+     *
+     * @param name    the name to use for the file, excluding the extension
+     * @param context the patient context
+     */
+    public void saveFlowSheetReport(String name, PatientContext context) {
+        saveFlowSheetReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    }
+
+    public void saveFlowSheetReport(String name, Party patient, Act visit, User clinician) {
+        saveReport(name, patient, visit, clinician, new ReportRetriever() {
+            @Override
+            public Response getResponse(Hospitalizations service, String id) {
+                return service.getFlowSheetReport(id);
+            }
+        });
+    }
+
+    /**
      * Saves a medical record report associated with a patient visit, to the patient visit.
      *
      * @param name    the name to use for the file, excluding the extension
      * @param context the patient context
      */
     public void saveMedicalRecords(String name, PatientContext context) {
-        saveReport(name, context, new ReportRetriever() {
+        saveMedicalRecordsReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    }
+
+    public void saveMedicalRecordsReport(String name, Party patient, Act visit, User clinician) {
+        saveReport(name, patient, visit, clinician, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
                 return service.getMedicalRecordsReport(id);
@@ -225,7 +271,11 @@ public class HospitalizationService extends FlowSheetService {
      * @param context the patient context
      */
     public void saveBillingReport(String name, PatientContext context) {
-        saveReport(name, context, new ReportRetriever() {
+        saveBillingReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    }
+
+    public void saveBillingReport(String name, Party patient, Act visit, User clinician) {
+        saveReport(name, patient, visit, clinician, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
                 return service.getBillingReport(id);
@@ -240,7 +290,11 @@ public class HospitalizationService extends FlowSheetService {
      * @param context the patient context
      */
     public void saveNotesReport(String name, PatientContext context) {
-        saveReport(name, context, new ReportRetriever() {
+        saveNotesReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    }
+
+    public void saveNotesReport(String name, Party patient, Act visit, User clinician) {
+        saveReport(name, patient, visit, clinician, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
                 return service.getNotesReport(id);
@@ -249,29 +303,17 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
-     * Saves a flow sheet report associated with a patient visit, to the patient visit.
-     *
-     * @param name    the name to use for the file, excluding the extension
-     * @param context the patient context
-     */
-    public void saveFlowSheetReport(String name, PatientContext context) {
-        saveReport(name, context, new ReportRetriever() {
-            @Override
-            public Response getResponse(Hospitalizations service, String id) {
-                return service.getFlowSheetReport(id);
-            }
-        });
-    }
-
-    /**
      * Saves a report to the patient history.
      *
      * @param name      the report name
-     * @param context   the patient context
+     * @param patient   the patient
+     * @param visit     the patient visit
+     * @param clinician the clinician. May be {@code null}
      * @param retriever the report retriever
      */
-    private void saveReport(final String name, final PatientContext context, final ReportRetriever retriever) {
-        final String id = Long.toString(context.getVisitId());
+    private void saveReport(final String name, final Party patient, final Act visit, final User clinician,
+                            final ReportRetriever retriever) {
+        final String id = Long.toString(visit.getId());
         Call<Void, Hospitalizations> call = new Call<Void, Hospitalizations>() {
             @Override
             public Void call(Hospitalizations resource) throws Exception {
@@ -284,13 +326,12 @@ public class HospitalizationService extends FlowSheetService {
                         Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
                         DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
                         ActBean bean = new ActBean(act, service);
-                        if (context.getClinician() != null) {
-                            bean.addNodeParticipation("clinician", context.getClinician());
+                        if (clinician != null) {
+                            bean.addNodeParticipation("clinician", clinician);
                         }
-                        Act visit = context.getVisit();
                         ActBean visitBean = new ActBean(visit, service);
                         visitBean.addNodeRelationship("items", act);
-                        bean.addNodeParticipation("patient", context.getPatient());
+                        bean.addNodeParticipation("patient", patient);
                         List<IMObject> objects = rules.addDocument(act, document);
                         objects.add(act);
                         service.save(objects);
@@ -298,14 +339,14 @@ public class HospitalizationService extends FlowSheetService {
                 } else {
                     log.error("Failed to get " + name + " for hospitalizationId=" + id + ", status="
                               + response.getStatus() + ", mediaType=" + response.getMediaType());
-                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name));
+                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name));
                 }
                 return null;
             }
 
             @Override
             public Message failed(Exception exception) {
-                return FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name);
+                return FlowSheetMessages.failedToDownloadPDF(patient, name);
             }
         };
         call(Hospitalizations.class, call);
