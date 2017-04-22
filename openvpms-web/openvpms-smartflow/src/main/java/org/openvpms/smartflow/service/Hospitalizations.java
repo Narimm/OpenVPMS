@@ -16,6 +16,7 @@
 
 package org.openvpms.smartflow.service;
 
+import org.openvpms.smartflow.model.Anesthetics;
 import org.openvpms.smartflow.model.Hospitalization;
 
 import javax.ws.rs.Consumes;
@@ -57,6 +58,18 @@ public interface Hospitalizations {
     @Path("/{hospitalizationId}")
     @Produces({MediaType.APPLICATION_JSON})
     Hospitalization get(@PathParam("hospitalizationId") String hospitalizationId);
+
+
+    /**
+     * Returns anaesthetics information for a given hospitalization identifier.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     * @return the corresponding hospitalization, or {@code null} if none is found
+     */
+    @GET
+    @Path("/{hospitalizationId}/anesthetics")
+    @Produces({MediaType.APPLICATION_JSON})
+    Anesthetics getAnesthetics(@PathParam("hospitalizationId") String hospitalizationId);
 
     /**
      * Discharges a patient.
@@ -123,4 +136,5 @@ public interface Hospitalizations {
     @Path("/{hospitalizationId}/flowsheetreport")
     @Produces({"application/pdf"})
     Response getFlowSheetReport(@PathParam("hospitalizationId") String hospitalizationId);
+
 }

@@ -20,14 +20,16 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.openvpms.smartflow.model.Anesthetics;
 import org.openvpms.smartflow.model.Hospitalization;
-import org.openvpms.smartflow.model.HospitalizationList;
+import org.openvpms.smartflow.model.Hospitalizations;
 import org.openvpms.smartflow.model.InventoryItems;
 import org.openvpms.smartflow.model.Medics;
-import org.openvpms.smartflow.model.NoteList;
+import org.openvpms.smartflow.model.Notes;
 import org.openvpms.smartflow.model.Treatment;
-import org.openvpms.smartflow.model.TreatmentList;
+import org.openvpms.smartflow.model.Treatments;
 import org.openvpms.smartflow.model.event.AdmissionEvent;
+import org.openvpms.smartflow.model.event.AnestheticsEvent;
 import org.openvpms.smartflow.model.event.DischargeEvent;
 import org.openvpms.smartflow.model.event.Event;
 import org.openvpms.smartflow.model.event.InventoryImportedEvent;
@@ -141,6 +143,8 @@ public class EventDeserializer extends StdDeserializer<Event> {
                         result = createMedicsImported(parser, clinicApiKey, eventType);
                     } else if ("notes.entered".equals(eventType)) {
                         result = createNotesEvent(parser, clinicApiKey, eventType);
+                    } else if ("anesthetics.finalized".equals(eventType)) {
+                        result = createAnestheticsEvent(parser, clinicApiKey, eventType);
                     } else {
                         result = populate(new UnsupportedEvent(), clinicApiKey, eventType);
                         return result;
@@ -152,7 +156,6 @@ public class EventDeserializer extends StdDeserializer<Event> {
         }
         return result;
     }
-
 
     /**
      * Creates an admission event for multiple admissions.
@@ -166,7 +169,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
     protected Event createMultipleAdmission(JsonParser parser, String clinicApiKey, String eventType)
             throws IOException {
         AdmissionEvent event = populate(new AdmissionEvent(), clinicApiKey, eventType);
-        event.setObject(parser.readValueAs(HospitalizationList.class));
+        event.setObject(parser.readValueAs(Hospitalizations.class));
         return event;
     }
 
@@ -181,7 +184,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
      */
     protected Event createAdmission(JsonParser parser, String clinicApiKey, String eventType) throws IOException {
         AdmissionEvent event = populate(new AdmissionEvent(), clinicApiKey, eventType);
-        event.setObject(parser.readValueAs(HospitalizationList.class));
+        event.setObject(parser.readValueAs(Hospitalizations.class));
         return event;
     }
 
@@ -197,7 +200,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
     protected Event createDischarge(JsonParser parser, String clinicApiKey, String eventType) throws IOException {
         DischargeEvent event = populate(new DischargeEvent(), clinicApiKey, eventType);
         Hospitalization hospitalization = parser.readValueAs(Hospitalization.class);
-        HospitalizationList list = new HospitalizationList();
+        Hospitalizations list = new Hospitalizations();
         list.getHospitalizations().add(hospitalization);
         event.setObject(list);
         return event;
@@ -215,7 +218,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
     protected Event createMultipleDischarge(JsonParser parser, String clinicApiKey, String eventType)
             throws IOException {
         DischargeEvent event = populate(new DischargeEvent(), clinicApiKey, eventType);
-        event.setObject(parser.readValueAs(HospitalizationList.class));
+        event.setObject(parser.readValueAs(Hospitalizations.class));
         return event;
     }
 
@@ -231,7 +234,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
     private Event createTreatment(JsonParser parser, String clinicApiKey, String eventType) throws IOException {
         TreatmentEvent event = populate(new TreatmentEvent(), clinicApiKey, eventType);
         Treatment treatment = parser.readValueAs(Treatment.class);
-        TreatmentList list = new TreatmentList();
+        Treatments list = new Treatments();
         list.getTreatments().add(treatment);
         event.setObject(list);
         return event;
@@ -249,7 +252,7 @@ public class EventDeserializer extends StdDeserializer<Event> {
     private Event createMultipleTreatments(JsonParser parser, String clinicApiKey, String eventType)
             throws IOException {
         TreatmentEvent event = populate(new TreatmentEvent(), clinicApiKey, eventType);
-        TreatmentList treatments = parser.readValueAs(TreatmentList.class);
+        Treatments treatments = parser.readValueAs(Treatments.class);
         event.setObject(treatments);
         return event;
     }
@@ -265,8 +268,24 @@ public class EventDeserializer extends StdDeserializer<Event> {
      */
     private Event createNotesEvent(JsonParser parser, String clinicApiKey, String eventType) throws IOException {
         NotesEvent event = populate(new NotesEvent(), clinicApiKey, eventType);
-        NoteList notes = parser.readValueAs(NoteList.class);
+        Notes notes = parser.readValueAs(Notes.class);
         event.setObject(notes);
+        return event;
+    }
+
+    /**
+     * Creates an anesthetics event.
+     *
+     * @param parser       the parser
+     * @param clinicApiKey the clinic API key
+     * @param eventType    the event type
+     * @return a new anesthetics event
+     * @throws IOException for any error
+     */
+    private Event createAnestheticsEvent(JsonParser parser, String clinicApiKey, String eventType) throws IOException {
+        AnestheticsEvent event = populate(new AnestheticsEvent(), clinicApiKey, eventType);
+        Anesthetics anesthetics = parser.readValueAs(Anesthetics.class);
+        event.setObject(anesthetics);
         return event;
     }
 

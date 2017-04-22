@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.smartflow.model.Client;
 import org.openvpms.smartflow.model.Hospitalization;
-import org.openvpms.smartflow.model.HospitalizationList;
+import org.openvpms.smartflow.model.Hospitalizations;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.model.event.DischargeEvent;
 import org.openvpms.smartflow.model.event.Event;
@@ -72,7 +72,7 @@ public class EventDeserializerTestCase {
         Event event = mapper.readValue(json, Event.class);
         assertTrue(event instanceof DischargeEvent);
         DischargeEvent dischargeEvent = (DischargeEvent) event;
-        HospitalizationList list = dischargeEvent.getObject();
+        Hospitalizations list = dischargeEvent.getObject();
         assertNotNull(list);
         assertEquals(1, list.getHospitalizations().size());
         Hospitalization hospitalization = list.getHospitalizations().get(0);

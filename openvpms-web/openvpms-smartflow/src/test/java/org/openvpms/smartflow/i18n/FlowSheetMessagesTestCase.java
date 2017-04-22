@@ -102,6 +102,8 @@ public class FlowSheetMessagesTestCase {
               "SFS-0115: Smart Flow Sheet is not configured at Main Clinic.");
         check(FlowSheetMessages.failedToDischargePatient(patient, "foo"),
               "SFS-0116: Failed to discharge Fido from Smart Flow Sheet: foo");
+        check(FlowSheetMessages.failedToGetAnaesthetics(patient),
+              "SFS-0117: Failed to get anaesthetics for Fido");
     }
 
     /**

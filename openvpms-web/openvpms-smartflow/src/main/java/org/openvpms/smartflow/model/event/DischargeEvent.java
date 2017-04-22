@@ -16,14 +16,14 @@
 
 package org.openvpms.smartflow.model.event;
 
-import org.openvpms.smartflow.model.HospitalizationList;
+import org.openvpms.smartflow.model.Hospitalizations;
 
 /**
  * Hospitalization discharge event.
  *
  * @author Tim Anderson
  */
-public class DischargeEvent extends Event<HospitalizationList> {
+public class DischargeEvent extends Event<Hospitalizations> {
 
 
 }

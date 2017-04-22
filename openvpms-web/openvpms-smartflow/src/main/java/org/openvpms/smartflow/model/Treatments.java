@@ -17,33 +17,32 @@
 package org.openvpms.smartflow.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.List;
 
 /**
- * List of hospitalizations.
+ * List of treatments.
  *
  * @author Tim Anderson
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class HospitalizationList {
+public class Treatments {
 
     /**
-     * Describes the type of the object transferred with the SFS events. Should be assigned hospitalizations value.
+     * Describes the type of the object transferred with the SFS events (e.g. treatment.record_entered). Should be
+     * assigned treatments value.
      */
-    private String objectType = "hospitalizations";
+    private String objectType = "treatments";
 
     /**
-     * Identifier of the object. Will be transferred to EMR with the SFS events.
+     * Identifier of the object. Will be transferred to EMR with the treatments.records_entered event.
      */
     private String id;
 
     /**
-     * The hospitalizations.
+     * The treatments.
      */
-    @JsonDeserialize(contentAs = Hospitalization.class)
-    private List<Hospitalization> hospitalizations;
+    private List<Treatment> treatments;
 
     /**
      * Returns the object type.
@@ -82,20 +81,20 @@ public class HospitalizationList {
     }
 
     /**
-     * Returns the hospitalizations.
+     * Returns the treatments.
      *
-     * @return the hospitalizations
+     * @return the treatments
      */
-    public List<Hospitalization> getHospitalizations() {
-        return hospitalizations;
+    public List<Treatment> getTreatments() {
+        return treatments;
     }
 
     /**
-     * Sets the hospitalizations
+     * Sets the treatments.
      *
-     * @param hospitalizations the hospitalizations
+     * @param treatments the treatments
      */
-    public void setHospitalizations(List<Hospitalization> hospitalizations) {
-        this.hospitalizations = hospitalizations;
+    public void setTreatments(List<Treatment> treatments) {
+        this.treatments = treatments;
     }
 }

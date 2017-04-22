@@ -16,12 +16,12 @@
 
 package org.openvpms.smartflow.model.event;
 
-import org.openvpms.smartflow.model.NoteList;
+import org.openvpms.smartflow.model.Notes;
 
 /**
  * Event sent when one or more notes are entered.
  *
  * @author Tim Anderson
  */
-public class NotesEvent extends Event<NoteList> {
+public class NotesEvent extends Event<Notes> {
 }

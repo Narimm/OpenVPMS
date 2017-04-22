@@ -16,12 +16,10 @@
 
 package org.openvpms.smartflow.event.impl;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -98,14 +96,8 @@ public abstract class EventProcessor<T extends Event> {
      * @param archetype  the archetype
      * @return the corresponding object, or {@code null} if none is found
      */
-    protected IMObject getObject(String identifier, String archetype) {
-        IMObject result = null;
-        long id = getId(identifier);
-        if (id != -1) {
-            IMObjectReference reference = new IMObjectReference(archetype, Long.valueOf(identifier));
-            result = service.get(reference);
-        }
-        return result;
+    public IMObject getObject(String identifier, String archetype) {
+        return SmartFlowSheetHelper.getObject(archetype, identifier, service);
     }
 
     /**
@@ -118,24 +110,6 @@ public abstract class EventProcessor<T extends Event> {
         ActIdentity identity = (ActIdentity) service.create(SFS_IDENTITY);
         identity.setIdentity(guid);
         return identity;
-    }
-
-    /**
-     * Helper to parse an id from a string.
-     *
-     * @param value the value to parse
-     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
-     */
-    protected long getId(String value) {
-        long id = -1;
-        if (!StringUtils.isEmpty(value)) {
-            try {
-                id = Long.valueOf(value);
-            } catch (NumberFormatException ignore) {
-                // do nothing
-            }
-        }
-        return id;
     }
 
 }

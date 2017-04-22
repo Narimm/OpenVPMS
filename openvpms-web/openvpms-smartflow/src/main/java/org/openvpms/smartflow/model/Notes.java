@@ -16,30 +16,33 @@
 
 package org.openvpms.smartflow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
 /**
- * List of treatments.
+ * List of notes.
  *
  * @author Tim Anderson
  */
-public class TreatmentList {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Notes {
 
     /**
-     * Describes the type of the object transferred with the SFS events (e.g. treatment.record_entered). Should be
-     * assigned treatments value.
+     * Describes the type of the object transferred with the SFS events (e.g. notes.entered). Should be assigned notes
+     * value.
      */
-    private String objectType = "treatments";
+    private String objectType = "notes";
 
     /**
-     * Identifier of the object. Will be transferred to EMR with the treatments.records_entered event.
+     * Identifier of the object. Will be transferred to EMR with the notes.entered event.
      */
     private String id;
 
     /**
-     * The treatments.
+     * The notes.
      */
-    private List<Treatment> treatments;
+    private List<Note> notes;
 
     /**
      * Returns the object type.
@@ -78,20 +81,20 @@ public class TreatmentList {
     }
 
     /**
-     * Returns the treatments.
+     * Returns the notes.
      *
-     * @return the treatments
+     * @return the notes
      */
-    public List<Treatment> getTreatments() {
-        return treatments;
+    public List<Note> getNotes() {
+        return notes;
     }
 
     /**
-     * Sets the treatments.
+     * Sets the notes.
      *
-     * @param treatments the treatments
+     * @param notes the notes
      */
-    public void setTreatments(List<Treatment> treatments) {
-        this.treatments = treatments;
+    public void setNotes(List<Note> notes) {
+        this.notes = notes;
     }
 }

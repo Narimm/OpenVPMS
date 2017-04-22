@@ -31,7 +31,7 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Note;
-import org.openvpms.smartflow.model.NoteList;
+import org.openvpms.smartflow.model.Notes;
 import org.openvpms.smartflow.model.event.NotesEvent;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      */
     @Override
     public void process(NotesEvent event) {
-        NoteList notes = event.getObject();
+        Notes notes = event.getObject();
         if (notes != null && notes.getNotes() != null) {
             for (Note note : notes.getNotes()) {
                 process(note);

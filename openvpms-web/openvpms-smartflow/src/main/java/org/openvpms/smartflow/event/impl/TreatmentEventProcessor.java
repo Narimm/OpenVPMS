@@ -34,7 +34,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.smartflow.model.Treatment;
-import org.openvpms.smartflow.model.TreatmentList;
+import org.openvpms.smartflow.model.Treatments;
 import org.openvpms.smartflow.model.event.TreatmentEvent;
 
 import java.math.BigDecimal;
@@ -88,7 +88,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      */
     @Override
     public void process(TreatmentEvent event) {
-        TreatmentList list = event.getObject();
+        Treatments list = event.getObject();
         if (list != null && list.getTreatments() != null) {
             for (Treatment treatment : list.getTreatments()) {
                 treated(treatment);
@@ -353,7 +353,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      */
     private Product getProduct(Treatment treatment) {
         Product result = null;
-        long id = getId(treatment.getInventoryId());
+        long id = SmartFlowSheetHelper.getId(treatment.getInventoryId());
         if (id != -1) {
             ArchetypeQuery query = new ArchetypeQuery("product.*");
             query.getArchetypeConstraint().setAlias("p");

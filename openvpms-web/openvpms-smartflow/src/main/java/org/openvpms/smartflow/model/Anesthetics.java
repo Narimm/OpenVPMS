@@ -16,30 +16,34 @@
 
 package org.openvpms.smartflow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import java.util.List;
 
 /**
- * List of notes.
+ * List of anesthetics.
  *
  * @author Tim Anderson
  */
-public class NoteList {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Anesthetics {
 
     /**
-     * Describes the type of the object transferred with the SFS events (e.g. notes.entered). Should be assigned notes
-     * value.
+     * Describes the type of the object transferred with the SFS events. Should be assigned anesthetics value.
      */
-    private String objectType = "notes";
+    private String objectType = "anesthetics";
 
     /**
-     * Identifier of the object. Will be transferred to EMR with the notes.entered event.
+     * Identifier of the object. Will be transferred to EMR with the SFS events.
      */
     private String id;
 
     /**
-     * The notes.
+     * The anesthetics.
      */
-    private List<Note> notes;
+    @JsonDeserialize(contentAs = Anesthetic.class)
+    private List<Anesthetic> anesthetics;
 
     /**
      * Returns the object type.
@@ -78,20 +82,20 @@ public class NoteList {
     }
 
     /**
-     * Returns the notes.
+     * Returns the anaesthetics.
      *
-     * @return the notes
+     * @return the anaesthetics. May be {@code null}
      */
-    public List<Note> getNotes() {
-        return notes;
+    public List<Anesthetic> getAnesthetics() {
+        return anesthetics;
     }
 
     /**
-     * Sets the notes.
+     * Sets the anaesthetic.
      *
-     * @param notes the notes
+     * @param anesthetics the anaesthetic
      */
-    public void setNotes(List<Note> notes) {
-        this.notes = notes;
+    public void setAnesthetics(List<Anesthetic> anesthetics) {
+        this.anesthetics = anesthetics;
     }
 }

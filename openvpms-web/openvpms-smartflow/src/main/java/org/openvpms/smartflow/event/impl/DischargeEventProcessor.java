@@ -27,7 +27,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.smartflow.model.Hospitalization;
-import org.openvpms.smartflow.model.HospitalizationList;
+import org.openvpms.smartflow.model.Hospitalizations;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.model.event.DischargeEvent;
 
@@ -66,7 +66,7 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
      */
     @Override
     public void process(DischargeEvent event) {
-        HospitalizationList list = event.getObject();
+        Hospitalizations list = event.getObject();
         String apiKey = event.getClinicApiKey();
         for (Hospitalization hospitalization : list.getHospitalizations()) {
             discharged(hospitalization, apiKey);

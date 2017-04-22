@@ -212,7 +212,7 @@ public abstract class FlowSheetService {
          * Returns a message when a call fails.
          *
          * @param exception the cause of the failure
-         * @return a message for th efailure.
+         * @return a message for the failure.
          */
         Message failed(Exception exception);
     }
