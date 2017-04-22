@@ -113,6 +113,7 @@ public class HospitalizationService extends FlowSheetService {
      *
      * @param context the patient context
      * @return {@code true} if it exists
+     * @throws FlowSheetException for any error
      */
     public boolean exists(PatientContext context) {
         return getHospitalization(context) != null;
@@ -123,6 +124,7 @@ public class HospitalizationService extends FlowSheetService {
      *
      * @param context the patient context
      * @return the hospitalization, or {@code null} if none exists
+     * @throws FlowSheetException for any error
      */
     public Hospitalization getHospitalization(final PatientContext context) {
         Call<Hospitalization, Hospitalizations> call = new Call<Hospitalization, Hospitalizations>() {
@@ -154,6 +156,7 @@ public class HospitalizationService extends FlowSheetService {
      * @param stayDuration the estimated days of stay
      * @param departmentId the department identifier, or {@code -1} to use the default department
      * @param template     the treatment template name. May be {@code null}
+     * @throws FlowSheetException if the patient cannot be added
      */
     public void add(final PatientContext context, int stayDuration, int departmentId, String template) {
         final Hospitalization hospitalization = new Hospitalization();
@@ -208,6 +211,7 @@ public class HospitalizationService extends FlowSheetService {
      *
      * @param patient the patient
      * @param visit   the visit
+     * @throws FlowSheetException if the patient cannot be discharged
      */
     public void discharge(final Party patient, Act visit) {
         final String hospitalizationId = Long.toString(visit.getId());
@@ -220,7 +224,7 @@ public class HospitalizationService extends FlowSheetService {
 
             @Override
             public Message failed(Exception exception) {
-                return FlowSheetMessages.failedToDischargePatient(patient);
+                return FlowSheetMessages.failedToDischargePatient(patient, exception.getMessage());
             }
         };
         call(Hospitalizations.class, call);
@@ -229,14 +233,23 @@ public class HospitalizationService extends FlowSheetService {
     /**
      * Saves a flow sheet report associated with a patient visit, to the patient visit.
      *
-     * @param name    the name to use for the file, excluding the extension
      * @param context the patient context
+     * @throws FlowSheetException for any error
      */
-    public void saveFlowSheetReport(String name, PatientContext context) {
-        saveFlowSheetReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    public void saveFlowSheetReport(PatientContext context) {
+        saveFlowSheetReport(context.getPatient(), context.getVisit(), context.getClinician());
     }
 
-    public void saveFlowSheetReport(String name, Party patient, Act visit, User clinician) {
+    /**
+     * Saves a flow sheet report associated with a patient visit, to the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician. May be {@code null}
+     * @throws FlowSheetException for any error
+     */
+    public void saveFlowSheetReport(Party patient, Act visit, User clinician) {
+        String name = FlowSheetMessages.reportFileName(FlowSheetMessages.flowSheetReportName());
         saveReport(name, patient, visit, clinician, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
@@ -248,14 +261,23 @@ public class HospitalizationService extends FlowSheetService {
     /**
      * Saves a medical record report associated with a patient visit, to the patient visit.
      *
-     * @param name    the name to use for the file, excluding the extension
      * @param context the patient context
+     * @throws FlowSheetException for any error
      */
-    public void saveMedicalRecords(String name, PatientContext context) {
-        saveMedicalRecordsReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    public void saveMedicalRecords(PatientContext context) {
+        saveMedicalRecordsReport(context.getPatient(), context.getVisit(), context.getClinician());
     }
 
-    public void saveMedicalRecordsReport(String name, Party patient, Act visit, User clinician) {
+    /**
+     * Saves a medical record report associated with a patient visit, to the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician. May be {@code null}
+     * @throws FlowSheetException for any error
+     */
+    public void saveMedicalRecordsReport(Party patient, Act visit, User clinician) {
+        String name = FlowSheetMessages.reportFileName(FlowSheetMessages.medicalRecordsReportName());
         saveReport(name, patient, visit, clinician, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
@@ -267,14 +289,23 @@ public class HospitalizationService extends FlowSheetService {
     /**
      * Saves a billing report associated with a patient visit, to the patient visit.
      *
-     * @param name    the name to use for the file, excluding the extension
      * @param context the patient context
+     * @throws FlowSheetException for any error
      */
-    public void saveBillingReport(String name, PatientContext context) {
-        saveBillingReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    public void saveBillingReport(PatientContext context) {
+        saveBillingReport(context.getPatient(), context.getVisit(), context.getClinician());
     }
 
-    public void saveBillingReport(String name, Party patient, Act visit, User clinician) {
+    /**
+     * Saves a billing report associated with a patient visit, to the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician. May be {@code null}
+     * @throws FlowSheetException for any error
+     */
+    public void saveBillingReport(Party patient, Act visit, User clinician) {
+        String name = FlowSheetMessages.reportFileName(FlowSheetMessages.billingReportName());
         saveReport(name, patient, visit, clinician, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
@@ -286,14 +317,23 @@ public class HospitalizationService extends FlowSheetService {
     /**
      * Saves a notes report associated with a patient visit, to the patient visit.
      *
-     * @param name    the name to use for the file, excluding the extension
      * @param context the patient context
+     * @throws FlowSheetException for any error
      */
-    public void saveNotesReport(String name, PatientContext context) {
-        saveNotesReport(name, context.getPatient(), context.getVisit(), context.getClinician());
+    public void saveNotesReport(PatientContext context) {
+        saveNotesReport(context.getPatient(), context.getVisit(), context.getClinician());
     }
 
-    public void saveNotesReport(String name, Party patient, Act visit, User clinician) {
+    /**
+     * Saves a notes report associated with a patient visit, to the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician. May be {@code null}
+     * @throws FlowSheetException for any error
+     */
+    public void saveNotesReport(Party patient, Act visit, User clinician) {
+        String name = FlowSheetMessages.reportFileName(FlowSheetMessages.notesReportName());
         saveReport(name, patient, visit, clinician, new ReportRetriever() {
             @Override
             public Response getResponse(Hospitalizations service, String id) {
@@ -310,6 +350,7 @@ public class HospitalizationService extends FlowSheetService {
      * @param visit     the patient visit
      * @param clinician the clinician. May be {@code null}
      * @param retriever the report retriever
+     * @throws FlowSheetException for any error
      */
     private void saveReport(final String name, final Party patient, final Act visit, final User clinician,
                             final ReportRetriever retriever) {

@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
-import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.HospitalizationList;
 import org.openvpms.smartflow.model.Patient;
@@ -108,11 +107,10 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
     protected void downloadFlowSheet(Party patient, Act visit, Hospitalization hospitalization, String apiKey) {
         HospitalizationService hospitalizationService = factory.getHospitalizationService(apiKey);
         User clinician = getClinician(hospitalization);
-        hospitalizationService.saveFlowSheetReport(FlowSheetMessages.flowSheetReportName(), patient, visit, clinician);
-        hospitalizationService.saveMedicalRecordsReport(FlowSheetMessages.medicalRecordsReportName(), patient, visit,
-                                                        clinician);
-        hospitalizationService.saveBillingReport(FlowSheetMessages.billingReportName(), patient, visit,
-                                                 clinician);
+        hospitalizationService.saveFlowSheetReport(patient, visit, clinician);
+        hospitalizationService.saveMedicalRecordsReport(patient, visit, clinician);
+        hospitalizationService.saveBillingReport(patient, visit, clinician);
+        hospitalizationService.saveNotesReport(patient, visit, clinician);
     }
 
     /**

@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
+import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -67,26 +68,6 @@ public class FlowSheetReportsDialog extends PopupDialog {
     private final CheckBox flowSheet;
 
     /**
-     * Medical records report label.
-     */
-    private static final String MEDICAL = "patient.record.flowsheet.import.medical";
-
-    /**
-     * Billing report label.
-     */
-    private static final String BILLING = "patient.record.flowsheet.import.billing";
-
-    /**
-     * Notes report label.
-     */
-    private static final String NOTES = "patient.record.flowsheet.import.notes";
-
-    /**
-     * Flow sheet report label.
-     */
-    private static final String FLOW_SHEET = "patient.record.flowsheet.import.flowsheet";
-
-    /**
      * Constructs a {@link FlowSheetReportsDialog}.
      *
      * @param context the patient context
@@ -112,10 +93,10 @@ public class FlowSheetReportsDialog extends PopupDialog {
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
-        medicalRecords = CheckBoxFactory.create(MEDICAL, true, listener);
-        billing = CheckBoxFactory.create(BILLING, true, listener);
-        notes = CheckBoxFactory.create(NOTES, true, listener);
-        flowSheet = CheckBoxFactory.create(FLOW_SHEET, true, listener);
+        medicalRecords = CheckBoxFactory.create(FlowSheetMessages.medicalRecordsReportName(), true, listener);
+        billing = CheckBoxFactory.create(FlowSheetMessages.billingReportName(), true, listener);
+        notes = CheckBoxFactory.create(FlowSheetMessages.notesReportName(), true, listener);
+        flowSheet = CheckBoxFactory.create(FlowSheetMessages.flowSheetReportName(), true, listener);
     }
 
     /**
@@ -127,16 +108,16 @@ public class FlowSheetReportsDialog extends PopupDialog {
         FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
         HospitalizationService service = factory.getHospitalizationService(context.getLocation());
         if (medicalRecords.isSelected()) {
-            service.saveMedicalRecords(getName(MEDICAL), context);
+            service.saveMedicalRecords(context);
         }
         if (billing.isSelected()) {
-            service.saveBillingReport(getName(BILLING), context);
+            service.saveBillingReport(context);
         }
         if (notes.isSelected()) {
-            service.saveNotesReport(getName(NOTES), context);
+            service.saveNotesReport(context);
         }
         if (flowSheet.isSelected()) {
-            service.saveFlowSheetReport(getName(FLOW_SHEET), context);
+            service.saveFlowSheetReport(context);
         }
         super.onOK();
     }
@@ -152,16 +133,6 @@ public class FlowSheetReportsDialog extends PopupDialog {
         Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, billing, notes,
                                              flowSheet);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
-    }
-
-    /**
-     * Formats a report name.
-     *
-     * @param key the resource bundle key for the report name
-     * @return the report name
-     */
-    private String getName(String key) {
-        return Messages.format("patient.record.flowsheet.import.name", Messages.get(key));
     }
 
 }
