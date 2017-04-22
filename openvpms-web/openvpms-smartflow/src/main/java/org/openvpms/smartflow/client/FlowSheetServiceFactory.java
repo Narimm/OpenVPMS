@@ -18,6 +18,7 @@ package org.openvpms.smartflow.client;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -58,6 +59,10 @@ public class FlowSheetServiceFactory {
      */
     private final DocumentHandlers handlers;
 
+    /**
+     * The medical record rules.
+     */
+    private final MedicalRecordRules rules;
 
     /**
      * Constructs an {@link FlowSheetServiceFactory}.
@@ -67,14 +72,16 @@ public class FlowSheetServiceFactory {
      * @param service   the archetype service
      * @param lookups   the lookup service
      * @param handlers  the document handlers
+     * @param rules     the medical record rules
      */
     public FlowSheetServiceFactory(String url, String emrApiKey, IArchetypeService service, ILookupService lookups,
-                                   DocumentHandlers handlers) {
+                                   DocumentHandlers handlers, MedicalRecordRules rules) {
         this.url = url;
         this.emrApiKey = emrApiKey;
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
+        this.rules = rules;
     }
 
     /**
@@ -120,7 +127,8 @@ public class FlowSheetServiceFactory {
      * @return a new {@link HospitalizationService}
      */
     public HospitalizationService getHospitalizationService(String apiKey) {
-        return new HospitalizationService(url, emrApiKey, apiKey, TimeZone.getDefault(), service, lookups, handlers);
+        return new HospitalizationService(url, emrApiKey, apiKey, TimeZone.getDefault(), service, lookups, handlers,
+                                          rules);
     }
 
     /**

@@ -447,9 +447,22 @@ public class PatientTestHelper {
      * @return a new document act
      */
     public static DocumentAct createDocumentAttachment(Date startTime, Party patient) {
-        Act act = createAct(PatientArchetypes.DOCUMENT_ATTACHMENT, startTime, patient, null);
+        return createDocumentAttachment(startTime, patient, null);
+    }
+
+    /**
+     * Creates an attachment document act.
+     *
+     * @param patient   the patient
+     * @param startTime the act start time
+     * @param fileName  the document file name. May be {@code null}
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentAttachment(Date startTime, Party patient, String fileName) {
+        DocumentAct act = (DocumentAct) createAct(PatientArchetypes.DOCUMENT_ATTACHMENT, startTime, patient, null);
+        act.setFileName(fileName);
         save(act);
-        return (DocumentAct) act;
+        return act;
     }
 
     /**

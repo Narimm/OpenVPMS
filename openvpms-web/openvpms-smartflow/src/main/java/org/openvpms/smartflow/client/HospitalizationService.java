@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -47,6 +48,7 @@ import org.openvpms.smartflow.service.Hospitalizations;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -78,6 +80,11 @@ public class HospitalizationService extends FlowSheetService {
     private final DocumentHandlers handlers;
 
     /**
+     * The medical record rules.
+     */
+    private final MedicalRecordRules rules;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(HospitalizationService.class);
@@ -98,14 +105,16 @@ public class HospitalizationService extends FlowSheetService {
      * @param service      the archetype service
      * @param lookups      the lookup service
      * @param handlers     the document handlers
+     * @param rules        the medical record rules
      */
     public HospitalizationService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone,
                                   IArchetypeService service, ILookupService lookups,
-                                  DocumentHandlers handlers) {
+                                  DocumentHandlers handlers, MedicalRecordRules rules) {
         super(url, emrApiKey, clinicApiKey, timeZone, log);
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
+        this.rules = rules;
     }
 
     /**
@@ -344,6 +353,8 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Saves a report to the patient history.
+     * <p/>
+     * If an instance of the report is already present, it will be versioned.
      *
      * @param name      the report name
      * @param patient   the patient
@@ -362,19 +373,17 @@ public class HospitalizationService extends FlowSheetService {
                 if (response.hasEntity() && MediaTypeHelper.isPDF(response.getMediaType())) {
                     try (InputStream stream = (InputStream) response.getEntity()) {
                         String fileName = name + ".pdf";
+                        List<IMObject> objects = new ArrayList<>();
+                        DocumentAct act = getAttachment(fileName, patient, visit, clinician);
                         DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
                         DocumentRules rules = new DocumentRules(service);
                         Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
-                        DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
-                        ActBean bean = new ActBean(act, service);
-                        if (clinician != null) {
-                            bean.addNodeParticipation("clinician", clinician);
+                        if (act.isNew()) {
+                            ActBean visitBean = new ActBean(visit, service);
+                            visitBean.addNodeRelationship("items", act);
+                            objects.add(visit);
                         }
-                        ActBean visitBean = new ActBean(visit, service);
-                        visitBean.addNodeRelationship("items", act);
-                        bean.addNodeParticipation("patient", patient);
-                        List<IMObject> objects = rules.addDocument(act, document);
-                        objects.add(act);
+                        objects.addAll(rules.addDocument(act, document));
                         service.save(objects);
                     }
                 } else {
@@ -391,6 +400,26 @@ public class HospitalizationService extends FlowSheetService {
             }
         };
         call(Hospitalizations.class, call);
+    }
+
+    /**
+     * Returns the most recent attachment with the specified, name, or creates a new one if none exists.
+     *
+     * @param name      the file name
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician. May be {@code null}
+     * @return an attachment
+     */
+    private DocumentAct getAttachment(String name, Party patient, Act visit, User clinician) {
+        DocumentAct act = rules.getAttachment(name, visit);
+        if (act == null) {
+            act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
+            ActBean bean = new ActBean(act, service);
+            bean.setNodeParticipant("patient", patient);
+            bean.setNodeParticipant("clinician", clinician);
+        }
+        return act;
     }
 
     /**
