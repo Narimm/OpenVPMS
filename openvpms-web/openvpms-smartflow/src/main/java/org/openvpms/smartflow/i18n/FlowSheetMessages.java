@@ -194,10 +194,11 @@ public class FlowSheetMessages {
      * Creates a message when a patient cannot be discharged.
      *
      * @param patient the patient
+     * @param reason  the reason
      * @return a new message
      */
-    public static Message failedToDischargePatient(Party patient) {
-        return messages.getMessage(116, patient.getName());
+    public static Message failedToDischargePatient(Party patient, String reason) {
+        return messages.getMessage(116, patient.getName(), reason);
     }
 
     /**
@@ -210,36 +211,45 @@ public class FlowSheetMessages {
     }
 
     /**
-     * Returns the file name to use for Flow Sheet report attachments.
+     * Returns the file name to use for Smart Flow Flow Sheet report attachments.
      *
      * @return the file name, minus any extension
+     */
+    public static String reportFileName(String name) {
+        return messages.getMessage(1000, name).getMessage();
+    }
+
+    /**
+     * Returns the name to use for Flow Sheet report attachments.
+     *
+     * @return the name, minus any extension
      */
     public static String flowSheetReportName() {
         return messages.getMessage(1001).getMessage();
     }
 
     /**
-     * Returns the file name to use for Medical Records report attachments.
+     * Returns the name to use for Medical Records report attachments.
      *
-     * @return the file name, minus any extension
+     * @return the name, minus any extension
      */
     public static String medicalRecordsReportName() {
         return messages.getMessage(1002).getMessage();
     }
 
     /**
-     * Returns the file name to use for Billing report attachments.
+     * Returns the name to use for Billing report attachments.
      *
-     * @return the file name, minus any extension
+     * @return the name, minus any extension
      */
     public static String billingReportName() {
         return messages.getMessage(1003).getMessage();
     }
 
     /**
-     * Returns the file name to use for Notes report attachments.
+     * Returns the name to use for Notes report attachments.
      *
-     * @return the file name, minus any extension
+     * @return the name, minus any extension
      */
     public static String notesReportName() {
         return messages.getMessage(1004).getMessage();

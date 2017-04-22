@@ -17,7 +17,8 @@
 
 package org.openvpms.web.workspace.workflow.checkout;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -38,6 +39,8 @@ import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
+import org.openvpms.smartflow.event.SmartFlowSheetEventService;
+import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -65,13 +68,13 @@ import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderChecker;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderDialog;
-import org.openvpms.web.workspace.patient.history.FlowSheetReportsDialog;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
@@ -118,6 +121,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * The collected events.
      */
     private final Visits visits;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(CheckOutWorkflow.class);
 
 
     /**
@@ -556,55 +564,16 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 for (Visit event : visits) {
                     Act act = event.getEvent();
                     PatientContext patientContext = factory.createContext(act, location);
-                    if (patientContext != null) {
-                        if (service != null && service.exists(patientContext)) {
-                            completed = false;
-                            addTask(new DischargeFromSmartFlowSheetTask(patientContext, service));
-                        }
-                    }
-                }
-            }
-            if (completed) {
-                notifyCompleted();
-            }
-        }
-    }
-
-    /**
-     * Task to import flow sheet reports for each Visit, if a patient has a Smart Flow Sheet hospitalisation.
-     */
-    private class BatchImportFlowSheetReportsTask extends Tasks {
-
-        private final Visits visits;
-
-        public BatchImportFlowSheetReportsTask(Visits visits, HelpContext help) {
-            super(help);
-            setRequired(false);
-            this.visits = visits;
-        }
-
-        /**
-         * Initialise any tasks.
-         *
-         * @param context the task context
-         */
-        @Override
-        protected void initialise(TaskContext context) {
-            Party location = context.getLocation();
-            boolean completed = true;
-            if (location != null && !visits.isEmpty()) {
-                PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
-                HospitalizationService service = flowSheetServiceFactory.getHospitalizationService(location);
-                for (Visit event : visits) {
-                    Act act = event.getEvent();
-                    PatientContext patientContext = factory.createContext(act, location);
-                    if (patientContext != null) {
-                        if (service != null && service.exists(patientContext)) {
-                            completed = false;
-                            ConfirmationTask task = new ConfirmationTask("Discharge from Smart Flow Sheet",
-                                                                         "Discharge " + patientContext.getPatient().getName() + " from Smart Flow Sheet", true, getHelpContext());
-                            addTask(new ConditionalTask(task, new DischargeFromSmartFlowSheetTask(patientContext, service)));
-                        }
+                    Hospitalization hospitalization = service.getHospitalization(patientContext);
+                    if (hospitalization != null && Hospitalization.ACTIVE_STATUS.equals(hospitalization.getStatus())) {
+                        completed = false;
+                        String title = Messages.get("workflow.checkout.flowsheet.discharge.title");
+                        String message = Messages.format("workflow.checkout.flowsheet.discharge.message",
+                                                         patientContext.getPatientFirstName());
+                        ConfirmationTask confirm = new ConfirmationTask(title, message, true, getHelpContext());
+                        DischargeFromSmartFlowSheetTask discharge
+                                = new DischargeFromSmartFlowSheetTask(patientContext, service);
+                        addTask(new ConditionalTask(confirm, discharge));
                     }
                 }
             }
@@ -637,40 +606,39 @@ public class CheckOutWorkflow extends WorkflowImpl {
          * @throws OpenVPMSException for any error
          */
         @Override
-        public void start(TaskContext context) {
-            service.discharge(patientContext.getPatient(), patientContext.getVisit());
-        }
-    }
+        public void start(final TaskContext context) {
+            SmartFlowSheetEventService eventService = ServiceHelper.getBean(SmartFlowSheetEventService.class);
+            try {
+                service.discharge(patientContext.getPatient(), patientContext.getVisit());
+                eventService.poll();                    // wake up the event service if it is inactive
+                notifyCompleted();
+            } catch (Exception exception) {
+                log.error(exception, exception);
+                String title = Messages.get("workflow.checkout.flowsheet.discharge.title");
+                String message = Messages.format("workflow.checkout.flowsheet.discharge.error", exception.getMessage());
+                PopupDialogListener listener = new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        start(context);
+                    }
 
-    /**
-     * Task to import flow sheet reports for a patient, if a patient has a Smart Flow Sheet hospitalisation.
-     */
-    private static class ImportFlowSheetReportsTask extends AbstractTask {
+                    /**
+                     * Invoked when the 'no' button is pressed.
+                     * <p/>
+                     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
+                     */
+                    @Override
+                    public void onNo() {
+                        notifyCompleted();
+                    }
 
-        private final PatientContext patientContext;
-
-        public ImportFlowSheetReportsTask(PatientContext context) {
-            this.patientContext = context;
-        }
-
-        /**
-         * Starts the task.
-         * <p/>
-         * The registered {@link TaskListener} will be notified on completion or failure.
-         *
-         * @param context the task context
-         * @throws OpenVPMSException for any error
-         */
-        @Override
-        public void start(TaskContext context) {
-            FlowSheetReportsDialog dialog = new FlowSheetReportsDialog(patientContext, true);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                @Override
-                public void onClose(WindowPaneEvent event) {
-                    notifyCompleted();
-                }
-            });
-            dialog.show();
+                    @Override
+                    public void onCancel() {
+                        notifyCancelled();
+                    }
+                };
+                ErrorDialog.show(title, message, ErrorDialog.YES_NO_CANCEL, context.getHelpContext(), listener);
+            }
         }
     }
 
