@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -50,6 +51,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.createDocumentAttachment;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
@@ -731,6 +733,31 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
                 assertTrue(shortName, status.isReadOnly());
             }
         }
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#getAttachment(String, Act)}.
+     */
+    @Test
+    public void testGetAttachment() {
+        Act event = createEvent();
+        ActBean bean = new ActBean(event);
+
+        assertNull(rules.getAttachment("notes.pdf", event));
+        DocumentAct act1 = createDocumentAttachment(getDatetime("2017-04-22 10:00:00"), patient, "notes.pdf");
+        DocumentAct act2 = createDocumentAttachment(getDatetime("2017-04-22 11:00:00"), patient, "billing.pdf");
+        bean.addNodeRelationship("items", act1);
+        bean.addNodeRelationship("items", act2);
+        bean.save();
+
+        assertEquals(act1, rules.getAttachment("notes.pdf", event));
+        assertEquals(act2, rules.getAttachment("billing.pdf", event));
+
+        DocumentAct act3 = createDocumentAttachment(getDatetime("2017-04-22 12:00:00"), patient, "notes.pdf");
+        bean.addNodeRelationship("items", act3);
+        bean.save();
+
+        assertEquals(act3, rules.getAttachment("notes.pdf", event));
     }
 
     /**

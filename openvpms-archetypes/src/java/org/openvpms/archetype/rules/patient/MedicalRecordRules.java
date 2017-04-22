@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -55,6 +56,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.sort;
 
 
 /**
@@ -502,6 +507,24 @@ public class MedicalRecordRules {
             lockableRecords = items.toArray(new String[items.size()]);
         }
         return lockableRecords;
+    }
+
+    /**
+     * Returns the most recent attachment with the specified file name associated with a patient clinical event.
+     *
+     * @param fileName the file name
+     * @param event    the <em>act.patientClinicalEvent</em>
+     * @return the attachment, or {@code null} if none is found
+     */
+    public DocumentAct getAttachment(String fileName, Act event) {
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.DOCUMENT_ATTACHMENT);
+        query.add(join("event").add(eq("source", event)));
+        query.add(eq("fileName", fileName));
+        query.add(sort("startTime", false));
+        query.add(sort("id", false));
+        query.setMaxResults(1);
+        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**

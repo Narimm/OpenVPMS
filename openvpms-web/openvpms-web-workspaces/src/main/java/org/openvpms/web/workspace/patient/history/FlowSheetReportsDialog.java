@@ -93,10 +93,10 @@ public class FlowSheetReportsDialog extends PopupDialog {
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
-        medicalRecords = CheckBoxFactory.create(FlowSheetMessages.medicalRecordsReportName(), true, listener);
-        billing = CheckBoxFactory.create(FlowSheetMessages.billingReportName(), true, listener);
-        notes = CheckBoxFactory.create(FlowSheetMessages.notesReportName(), true, listener);
-        flowSheet = CheckBoxFactory.create(FlowSheetMessages.flowSheetReportName(), true, listener);
+        medicalRecords = createCheckBox(FlowSheetMessages.medicalRecordsReportName(), listener);
+        billing = createCheckBox(FlowSheetMessages.billingReportName(), listener);
+        notes = createCheckBox(FlowSheetMessages.notesReportName(), listener);
+        flowSheet = createCheckBox(FlowSheetMessages.flowSheetReportName(), listener);
     }
 
     /**
@@ -133,6 +133,20 @@ public class FlowSheetReportsDialog extends PopupDialog {
         Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, billing, notes,
                                              flowSheet);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
+    }
+
+    /**
+     * Creates a new check box, initially selected.
+     *
+     * @param text     the text
+     * @param listener the listener
+     * @return a new check box
+     */
+    private CheckBox createCheckBox(String text, ActionListener listener) {
+        CheckBox checkBox = CheckBoxFactory.create(true);
+        checkBox.setText(text);
+        checkBox.addActionListener(listener);
+        return checkBox;
     }
 
 }

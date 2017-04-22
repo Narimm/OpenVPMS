@@ -26,6 +26,7 @@
         <constructor-arg name="service" ref="archetypeRuleService"/>
         <constructor-arg name="lookups" ref="lookupService"/>
         <constructor-arg name="handlers" ref="documentHandlers"/>
+        <constructor-arg name="rules" ref="medicalRecordRules"/>
     </bean>
 
     <bean class="org.openvpms.smartflow.event.impl.SmartFlowSheetEventServiceImpl">
