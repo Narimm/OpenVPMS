@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.smartflow.model.Note;
-import org.openvpms.smartflow.model.NoteList;
+import org.openvpms.smartflow.model.Notes;
 import org.openvpms.smartflow.model.event.NotesEvent;
 
 import java.util.Collections;
@@ -84,7 +84,7 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
         note.setStatus(Note.ADDED_STATUS);
         note.setText("a note");
         event = new NotesEvent();
-        NoteList list = new NoteList();
+        Notes list = new Notes();
         list.setNotes(Collections.singletonList(note));
         event.setObject(list);
         processor = new NotesEventProcessor(getArchetypeService());

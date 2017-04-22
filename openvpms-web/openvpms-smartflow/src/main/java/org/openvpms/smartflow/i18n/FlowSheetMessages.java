@@ -40,7 +40,6 @@ public class FlowSheetMessages {
      */
     public static Message failedToGetHospitalization(Party patient) {
         return messages.getMessage(100, patient.getName());
-
     }
 
     /**
@@ -202,6 +201,16 @@ public class FlowSheetMessages {
     }
 
     /**
+     * Creates a message indicating that anaesthetics couldn't be retrieved for a patient.
+     *
+     * @param patient the patient
+     * @return a new message
+     */
+    public static Message failedToGetAnaesthetics(Party patient) {
+        return messages.getMessage(117, patient.getName());
+    }
+
+    /**
      * Returns a message indicating that a clinical note cannot be deleted as it has been locked.
      *
      * @return the message
@@ -255,4 +264,21 @@ public class FlowSheetMessages {
         return messages.getMessage(1004).getMessage();
     }
 
+    /**
+     * Returns the name to use for Anaesthetic report attachments.
+     *
+     * @return the name, minus any extension
+     */
+    public static String anaestheticReportName() {
+        return messages.getMessage(1005).getMessage();
+    }
+
+    /**
+     * Returns the name to use for Anaesthetic Records report attachments.
+     *
+     * @return the name, minus any extension
+     */
+    public static String anaestheticRecordsReportName() {
+        return messages.getMessage(1006).getMessage();
+    }
 }

@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -40,13 +41,19 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.i18n.Message;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
+import org.openvpms.smartflow.model.Anesthetic;
+import org.openvpms.smartflow.model.Anesthetics;
 import org.openvpms.smartflow.model.Client;
 import org.openvpms.smartflow.model.Hospitalization;
+import org.openvpms.smartflow.model.Medic;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.service.Hospitalizations;
 
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,7 +62,10 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
+import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF_TYPE;
+import static org.openvpms.smartflow.event.impl.SmartFlowSheetHelper.getObject;
 
 /**
  * Smart Flow Sheet hospitalisations client.
@@ -216,6 +226,30 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
+     * Returns the anaesthetics for a patient.
+     *
+     * @param patient the patient
+     * @param visit   the patient visit
+     * @return the anaesthetics
+     * @throws FlowSheetException if the sheet cannot be retrieved
+     */
+    public Anesthetics getAnesthetics(final Party patient, Act visit) {
+        final String hospitalizationId = Long.toString(visit.getId());
+        Call<Anesthetics, Hospitalizations> call = new Call<Anesthetics, Hospitalizations>() {
+            @Override
+            public Anesthetics call(Hospitalizations resource) throws Exception {
+                return resource.getAnesthetics(hospitalizationId);
+            }
+
+            @Override
+            public Message failed(Exception exception) {
+                return FlowSheetMessages.failedToGetAnaesthetics(patient);
+            }
+        };
+        return call(Hospitalizations.class, call);
+    }
+
+    /**
      * Discharges the patient associated with a visit.
      *
      * @param patient the patient
@@ -352,6 +386,75 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
+     * Saves an anaesthetic sheet report for a patient.
+     *
+     * @param context    the patient context
+     * @param anesthetic the anaesthetic sheet
+     */
+    public void saveAnestheticReport(PatientContext context, Anesthetic anesthetic) {
+        saveAnestheticReport(context.getPatient(), context.getVisit(), anesthetic);
+    }
+
+    /**
+     * Saves an anaesthetic report and an anaesthetic record report associated with a patient visit, to the patient
+     * visit.
+     *
+     * @param patient the patient
+     * @param visit   the patient visit
+     */
+    public void saveAnestheticReport(Party patient, Act visit, Anesthetic anesthetic) {
+        javax.ws.rs.client.Client client = null;
+        try {
+            client = getClient();
+            String reportPath = anesthetic.getReportPath();
+            String recordsReportPath = anesthetic.getRecordsReportPath();
+            boolean haveReport = !StringUtils.isEmpty(reportPath);
+            boolean haveRecordsReport = !StringUtils.isEmpty(recordsReportPath);
+            if (haveReport || haveRecordsReport) {
+                User clinician = getClinician(anesthetic);
+                if (haveReport) {
+                    String name = FlowSheetMessages.reportFileName(FlowSheetMessages.anaestheticReportName());
+                    saveAnaestheticReport(name, patient, visit, clinician, reportPath, client);
+                }
+                if (haveRecordsReport) {
+                    String name = FlowSheetMessages.reportFileName(FlowSheetMessages.anaestheticRecordsReportName());
+                    saveAnaestheticReport(name, patient, visit, clinician, recordsReportPath, client);
+                }
+            }
+        } finally {
+            if (client != null) {
+                client.close();
+            }
+        }
+    }
+
+    /**
+     * Saves an anaesthetic report.
+     *
+     * @param name      the report name
+     * @param patient   the patient
+     * @param visit     the patient visit
+     * @param clinician the clinician. May be {@code null}
+     * @param path      the report path
+     * @param client    the client
+     */
+    private void saveAnaestheticReport(String name, Party patient, Act visit, User clinician, String path,
+                                       javax.ws.rs.client.Client client) {
+        try {
+            WebTarget target = client.target(path);
+            Response response = target.request().headers(getHeaders()).get();
+            saveReport(response, name, patient, visit, clinician);
+        } catch (FlowSheetException exception) {
+            throw exception;
+        } catch (NotAuthorizedException exception) {
+            notAuthorised(exception);
+        } catch (Exception exception) {
+            checkSSL(exception);
+            throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name), exception);
+        }
+    }
+
+    /**
      * Saves a report to the patient history.
      * <p/>
      * If an instance of the report is already present, it will be versioned.
@@ -365,32 +468,12 @@ public class HospitalizationService extends FlowSheetService {
      */
     private void saveReport(final String name, final Party patient, final Act visit, final User clinician,
                             final ReportRetriever retriever) {
-        final String id = Long.toString(visit.getId());
         Call<Void, Hospitalizations> call = new Call<Void, Hospitalizations>() {
             @Override
             public Void call(Hospitalizations resource) throws Exception {
+                final String id = Long.toString(visit.getId());
                 Response response = retriever.getResponse(resource, id);
-                if (response.hasEntity() && MediaTypeHelper.isPDF(response.getMediaType())) {
-                    try (InputStream stream = (InputStream) response.getEntity()) {
-                        String fileName = name + ".pdf";
-                        List<IMObject> objects = new ArrayList<>();
-                        DocumentAct act = getAttachment(fileName, patient, visit, clinician);
-                        DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
-                        DocumentRules rules = new DocumentRules(service);
-                        Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
-                        if (act.isNew()) {
-                            ActBean visitBean = new ActBean(visit, service);
-                            visitBean.addNodeRelationship("items", act);
-                            objects.add(visit);
-                        }
-                        objects.addAll(rules.addDocument(act, document));
-                        service.save(objects);
-                    }
-                } else {
-                    log.error("Failed to get " + name + " for hospitalizationId=" + id + ", status="
-                              + response.getStatus() + ", mediaType=" + response.getMediaType());
-                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name));
-                }
+                saveReport(response, name, patient, visit, clinician);
                 return null;
             }
 
@@ -400,6 +483,46 @@ public class HospitalizationService extends FlowSheetService {
             }
         };
         call(Hospitalizations.class, call);
+    }
+
+    /**
+     * Saves a report to the patient history.
+     * <p/>
+     * If an instance of the report is already present, it will be versioned.
+     *
+     * @param response  the HTTP response
+     * @param name      the report name
+     * @param patient   the patient
+     * @param visit     the patient visit
+     * @param clinician the clinician. May be {@code null}
+     * @throws FlowSheetException if the response is not a PDF
+     * @throws IOException        for any I/O error
+     */
+    private void saveReport(Response response, String name, Party patient, Act visit, User clinician)
+            throws IOException {
+        if (response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(), APPLICATION_PDF_TYPE,
+                                                        APPLICATION_OCTET_STREAM_TYPE)) {
+            // some SFS pdfs are incorrectly classified as application/octet-stream
+            try (InputStream stream = (InputStream) response.getEntity()) {
+                String fileName = name + ".pdf";
+                List<IMObject> objects = new ArrayList<>();
+                DocumentAct act = getAttachment(fileName, patient, visit, clinician);
+                DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
+                DocumentRules rules = new DocumentRules(service);
+                Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
+                if (act.isNew()) {
+                    ActBean visitBean = new ActBean(visit, service);
+                    visitBean.addNodeRelationship("items", act);
+                    objects.add(visit);
+                }
+                objects.addAll(rules.addDocument(act, document));
+                service.save(objects);
+            }
+        } else {
+            log.error("Failed to get " + name + " for hospitalizationId=" + visit.getId() + ", status="
+                      + response.getStatus() + ", mediaType=" + response.getMediaType());
+            throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name));
+        }
     }
 
     /**
@@ -500,6 +623,17 @@ public class HospitalizationService extends FlowSheetService {
         result.setHomePhone(context.getHomePhone());
         result.setWorkPhone(context.getWorkPhone());
         return result;
+    }
+
+    /**
+     * Returns the clinician associated with an anesthetic sheet.
+     *
+     * @param anesthetic the anesthetic
+     * @return the clinician. May be {@code null}
+     */
+    private User getClinician(Anesthetic anesthetic) {
+        Medic surgeon = anesthetic.getSurgeon();
+        return (surgeon != null) ? (User) getObject(surgeon.getMedicId(), UserArchetypes.USER, service) : null;
     }
 
     /**

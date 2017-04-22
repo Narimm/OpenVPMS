@@ -23,6 +23,8 @@ import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
+import org.openvpms.smartflow.model.Anesthetic;
+import org.openvpms.smartflow.model.Anesthetics;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -32,6 +34,9 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Flow Sheets Reports Import dialog.
@@ -48,24 +53,39 @@ public class FlowSheetReportsDialog extends PopupDialog {
     private final PatientContext context;
 
     /**
+     * The hospitalization service.
+     */
+    private HospitalizationService service;
+
+    /**
+     * The anesthetics.
+     */
+    private final List<Anesthetic> anesthetics;
+
+    /**
      * Determines if the medical records report is imported.
      */
-    private final CheckBox medicalRecords;
+    private final CheckBox medicalRecordsCheckBox;
 
     /**
      * Determines if the billing report is imported.
      */
-    private final CheckBox billing;
+    private final CheckBox billingCheckBox;
 
     /**
      * Determines if the notes report is imported.
      */
-    private final CheckBox notes;
+    private final CheckBox notesCheckBox;
 
     /**
      * Determines if the flow sheet report is imported.
      */
-    private final CheckBox flowSheet;
+    private final CheckBox flowSheetCheckBox;
+
+    /**
+     * Determines if the anesthetics report is imported.
+     */
+    private final CheckBox anestheticsCheckBox;
 
     /**
      * Constructs a {@link FlowSheetReportsDialog}.
@@ -84,19 +104,38 @@ public class FlowSheetReportsDialog extends PopupDialog {
      */
     public FlowSheetReportsDialog(PatientContext context, boolean skip) {
         super(Messages.get("patient.record.flowsheet.import.title"), "MessageDialog", (skip) ? OK_SKIP : OK_CANCEL);
+        setModal(true);
         this.context = context;
+        FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
+        service = factory.getHospitalizationService(context.getLocation());
+        anesthetics = getAnesthetics(context);
         ActionListener listener = new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                boolean enable = medicalRecords.isSelected() || billing.isSelected() || notes.isSelected()
-                                 || flowSheet.isSelected();
+                boolean enable = medicalRecordsCheckBox.isSelected() || billingCheckBox.isSelected()
+                                 || notesCheckBox.isSelected() || flowSheetCheckBox.isSelected()
+                                 || anestheticsCheckBox.isSelected();
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
-        medicalRecords = createCheckBox(FlowSheetMessages.medicalRecordsReportName(), listener);
-        billing = createCheckBox(FlowSheetMessages.billingReportName(), listener);
-        notes = createCheckBox(FlowSheetMessages.notesReportName(), listener);
-        flowSheet = createCheckBox(FlowSheetMessages.flowSheetReportName(), listener);
+        medicalRecordsCheckBox = createCheckBox(FlowSheetMessages.medicalRecordsReportName(), listener);
+        billingCheckBox = createCheckBox(FlowSheetMessages.billingReportName(), listener);
+        notesCheckBox = createCheckBox(FlowSheetMessages.notesReportName(), listener);
+        flowSheetCheckBox = createCheckBox(FlowSheetMessages.flowSheetReportName(), listener);
+        anestheticsCheckBox = createCheckBox(FlowSheetMessages.anaestheticReportName(), listener);
+        if (anesthetics.isEmpty()) {
+            anestheticsCheckBox.setSelected(false);
+            anestheticsCheckBox.setEnabled(false);
+        }
+    }
+
+    private List<Anesthetic> getAnesthetics(PatientContext context) {
+        List<Anesthetic> result = Collections.emptyList();
+        Anesthetics anesthetics = service.getAnesthetics(context.getPatient(), context.getVisit());
+        if (anesthetics.getAnesthetics() != null) {
+            result = anesthetics.getAnesthetics();
+        }
+        return result;
     }
 
     /**
@@ -105,19 +144,22 @@ public class FlowSheetReportsDialog extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-        HospitalizationService service = factory.getHospitalizationService(context.getLocation());
-        if (medicalRecords.isSelected()) {
+        if (medicalRecordsCheckBox.isSelected()) {
             service.saveMedicalRecords(context);
         }
-        if (billing.isSelected()) {
+        if (billingCheckBox.isSelected()) {
             service.saveBillingReport(context);
         }
-        if (notes.isSelected()) {
+        if (notesCheckBox.isSelected()) {
             service.saveNotesReport(context);
         }
-        if (flowSheet.isSelected()) {
+        if (flowSheetCheckBox.isSelected()) {
             service.saveFlowSheetReport(context);
+        }
+        if (anestheticsCheckBox.isSelected()) {
+            for (Anesthetic anesthetic : anesthetics) {
+                service.saveAnestheticReport(context, anesthetic);
+            }
         }
         super.onOK();
     }
@@ -130,8 +172,8 @@ public class FlowSheetReportsDialog extends PopupDialog {
     @Override
     protected void doLayout() {
         Label label = LabelFactory.create("patient.record.flowsheet.import.message", Styles.BOLD);
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, billing, notes,
-                                             flowSheet);
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecordsCheckBox, billingCheckBox, notesCheckBox,
+                                             flowSheetCheckBox, anestheticsCheckBox);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
     }
 

@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.smartflow.model.Treatment;
-import org.openvpms.smartflow.model.TreatmentList;
+import org.openvpms.smartflow.model.Treatments;
 import org.openvpms.smartflow.model.event.TreatmentEvent;
 
 import java.math.BigDecimal;
@@ -434,7 +434,7 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         treatment.setQty(quantity);
         treatment.setStatus(status);
         TreatmentEvent event = new TreatmentEvent();
-        TreatmentList list = new TreatmentList();
+        Treatments list = new Treatments();
         list.setTreatments(Collections.singletonList(treatment));
         event.setObject(list);
         return event;

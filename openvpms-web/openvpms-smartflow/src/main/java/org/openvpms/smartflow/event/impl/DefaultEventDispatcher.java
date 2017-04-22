@@ -26,8 +26,9 @@ import org.openvpms.component.system.common.event.Listener;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.event.EventDispatcher;
 import org.openvpms.smartflow.model.Hospitalization;
-import org.openvpms.smartflow.model.HospitalizationList;
+import org.openvpms.smartflow.model.Hospitalizations;
 import org.openvpms.smartflow.model.event.AdmissionEvent;
+import org.openvpms.smartflow.model.event.AnestheticsEvent;
 import org.openvpms.smartflow.model.event.DischargeEvent;
 import org.openvpms.smartflow.model.event.Event;
 import org.openvpms.smartflow.model.event.InventoryImportedEvent;
@@ -54,6 +55,11 @@ public class DefaultEventDispatcher implements EventDispatcher {
      * The notes event processor.
      */
     private final NotesEventProcessor notesProcessor;
+
+    /**
+     * The anesthetics event processor.
+     */
+    private final AnestheticsEventProcessor anestheticsProcessor;
 
     /**
      * The discharge event processor.
@@ -94,6 +100,7 @@ public class DefaultEventDispatcher implements EventDispatcher {
                                   PatientRules rules) {
         treatmentProcessor = new TreatmentEventProcessor(location, service, rules);
         notesProcessor = new NotesEventProcessor(service);
+        anestheticsProcessor = new AnestheticsEventProcessor(service, factory);
         dischargeProcessor = new DischargeEventProcessor(service, factory);
         inventoryImportedProcessor = new InventoryImportedEventProcessor(service);
         medicsImportedProcessor = new MedicsImportedEventProcessor(service);
@@ -106,14 +113,16 @@ public class DefaultEventDispatcher implements EventDispatcher {
      */
     @Override
     public void dispatch(Event event) {
-        if (event instanceof AdmissionEvent) {
+        if (event instanceof NotesEvent) {
+            notesProcessor.process((NotesEvent) event);
+        } else if (event instanceof TreatmentEvent) {
+            treatmentProcessor.process((TreatmentEvent) event);
+        } else if (event instanceof AdmissionEvent) {
             admitted((AdmissionEvent) event);
         } else if (event instanceof DischargeEvent) {
             dischargeProcessor.process((DischargeEvent) event);
-        } else if (event instanceof TreatmentEvent) {
-            treatmentProcessor.process((TreatmentEvent) event);
-        } else if (event instanceof NotesEvent) {
-            notesProcessor.process((NotesEvent) event);
+        } else if (event instanceof AnestheticsEvent) {
+            anestheticsProcessor.process((AnestheticsEvent) event);
         } else if (event instanceof InventoryImportedEvent) {
             inventoryImportedProcessor.process((InventoryImportedEvent) event);
         } else if (event instanceof MedicsImportedEvent) {
@@ -149,7 +158,7 @@ public class DefaultEventDispatcher implements EventDispatcher {
      */
     protected void admitted(AdmissionEvent event) {
         if (log.isDebugEnabled()) {
-            HospitalizationList list = event.getObject();
+            Hospitalizations list = event.getObject();
             if (list != null) {
                 for (Hospitalization hospitalization : list.getHospitalizations()) {
                     log.debug("Admitted: " + hospitalization.getPatient().getName());

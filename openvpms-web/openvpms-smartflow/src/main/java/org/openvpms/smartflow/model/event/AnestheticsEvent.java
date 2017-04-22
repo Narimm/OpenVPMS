@@ -16,12 +16,12 @@
 
 package org.openvpms.smartflow.model.event;
 
-import org.openvpms.smartflow.model.Hospitalizations;
+import org.openvpms.smartflow.model.Anesthetics;
 
 /**
- * Hospitalization admission event.
+ * Anesthetics finalized event.
  *
  * @author Tim Anderson
  */
-public class AdmissionEvent extends Event<Hospitalizations> {
+public class AnestheticsEvent extends Event<Anesthetics> {
 }

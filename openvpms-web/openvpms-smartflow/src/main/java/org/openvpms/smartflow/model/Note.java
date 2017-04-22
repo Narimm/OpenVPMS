@@ -16,6 +16,8 @@
 
 package org.openvpms.smartflow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Date;
 
 /**
@@ -23,6 +25,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Note {
 
     /**

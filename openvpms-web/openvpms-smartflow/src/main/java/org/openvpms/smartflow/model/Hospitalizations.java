@@ -17,32 +17,33 @@
 package org.openvpms.smartflow.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.List;
 
 /**
- * Smart Flow Sheet medics.
+ * List of hospitalizations.
  *
  * @author Tim Anderson
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Medics {
+public class Hospitalizations {
 
     /**
-     * Describes the type of the object transferred with the SFS events (e.g. medics.imported).
-     * Should be assigned medics value. Optional.
+     * Describes the type of the object transferred with the SFS events. Should be assigned hospitalizations value.
      */
-    private String objectType = "medics";
+    private String objectType = "hospitalizations";
 
     /**
-     * Identifier of the object. Will be transferred to EMR with the SFS events (e.g. medics.imported). Optional.
+     * Identifier of the object. Will be transferred to EMR with the SFS events.
      */
     private String id;
 
     /**
-     * The medics.
+     * The hospitalizations.
      */
-    private List<Medic> medics;
+    @JsonDeserialize(contentAs = Hospitalization.class)
+    private List<Hospitalization> hospitalizations;
 
     /**
      * Returns the object type.
@@ -54,39 +55,47 @@ public class Medics {
     }
 
     /**
-     * Returns the identifier of the object. Will be transferred to EMR with the SFS events (e.g. medics.imported).
+     * Sets the object type.
      *
-     * @return the identifier. May beb {@code null}
+     * @param objectType the object type
+     */
+    public void setObjectType(String objectType) {
+        this.objectType = objectType;
+    }
+
+    /**
+     * Returns the object identifier.
+     *
+     * @return the object identifier
      */
     public String getId() {
         return id;
     }
 
     /**
-     * Sets the identifier of the object. Will be transferred to EMR with the SFS events (e.g. inventory.imported).
+     * Sets the object identifier.
      *
-     * @param id the identifier. May beb {@code null}
+     * @param id the object identifier
      */
     public void setId(String id) {
         this.id = id;
     }
 
     /**
-     * Returns the medics.
+     * Returns the hospitalizations.
      *
-     * @return the medics
+     * @return the hospitalizations
      */
-    public List<Medic> getMedics() {
-        return medics;
+    public List<Hospitalization> getHospitalizations() {
+        return hospitalizations;
     }
 
     /**
-     * Sets the medics.
+     * Sets the hospitalizations
      *
-     * @param medics the medics
+     * @param hospitalizations the hospitalizations
      */
-    public void setMedics(List<Medic> medics) {
-        this.medics = medics;
+    public void setHospitalizations(List<Hospitalization> hospitalizations) {
+        this.hospitalizations = hospitalizations;
     }
-
 }
