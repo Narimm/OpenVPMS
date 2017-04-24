@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -410,7 +410,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param workList  the work list
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party workList) {
+    public static Act createTask(Date startTime, Date endTime, Entity workList) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         return createTask(startTime, endTime, workList, customer, patient);
@@ -421,14 +421,13 @@ public class ScheduleTestHelper extends TestHelper {
      *
      * @param startTime the act start time
      * @param endTime   the act end time
-     * @param schedule  the schedule
+     * @param workList  the work list
      * @param customer  the customer
      * @param patient   the patient. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party schedule,
-                                 Party customer, Party patient) {
-        return createTask(startTime, endTime, schedule, customer, patient, null, null);
+    public static Act createTask(Date startTime, Date endTime, Entity workList, Party customer, Party patient) {
+        return createTask(startTime, endTime, workList, customer, patient, null, null);
     }
 
     /**
@@ -443,7 +442,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author    the author. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party worklist, Party customer, Party patient,
+    public static Act createTask(Date startTime, Date endTime, Entity worklist, Party customer, Party patient,
                                  User clinician, User author) {
         return createTask(startTime, endTime, worklist, customer, patient, createTaskType(), clinician, author);
     }
@@ -461,7 +460,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author    the author. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party worklist, Party customer, Party patient,
+    public static Act createTask(Date startTime, Date endTime, Entity worklist, Party customer, Party patient,
                                  Entity taskType, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.TASK);
 

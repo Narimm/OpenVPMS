@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.i18n;
 
@@ -88,6 +88,27 @@ public class ESCIAdapterMessages {
      */
     public static Message connectionFailed(Party supplier, String serviceURL) {
         return messages.getMessage(5, supplier.getId(), supplier.getName(), serviceURL);
+    }
+
+    /**
+     * Creates a new message when a supplier web service does not respond in time.
+     *
+     * @param serviceURL the service URL
+     * @return a new message
+     */
+    public static Message connectionTimedOut(String serviceURL) {
+        return messages.getMessage(6, serviceURL);
+    }
+
+    /**
+     * Creates a new message when a supplier web service does not respond in time.
+     *
+     * @param supplier   the supplier
+     * @param serviceURL the service URL
+     * @return a new message
+     */
+    public static Message connectionTimedOut(Party supplier, String serviceURL) {
+        return messages.getMessage(7, supplier.getId(), supplier.getName(), serviceURL);
     }
 
     /**
