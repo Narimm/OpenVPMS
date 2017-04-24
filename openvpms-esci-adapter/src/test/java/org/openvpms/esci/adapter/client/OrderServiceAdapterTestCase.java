@@ -11,29 +11,35 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.client;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.FutureValue;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.impl.OrderServiceAdapterImpl;
 import org.openvpms.esci.adapter.map.order.OrderMapper;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.DelegatingOrderService;
 import org.openvpms.esci.service.DelegatingRegistryService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
-import org.openvpms.esci.ubl.order.OrderType;
 import org.openvpms.esci.ubl.order.Order;
+import org.openvpms.esci.ubl.order.OrderType;
 import org.springframework.test.context.ContextConfiguration;
 
 import javax.annotation.Resource;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -74,27 +80,18 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
     @Resource
     private ServiceLocatorFactory serviceLocatorFactory;
 
-
     /**
-     * Verifies that the order service adapter can map an OpenVPMS <em>act.supplierOrder</em> to an UBL Order,
-     * and submit it the the Order Service.
-     *
-     * @throws Exception for any error
+     * Sets up the test case.
      */
-    @Test
-    public void testOrderServiceAdapter() throws Exception {
-        applicationContext.getBean("registryService"); // force registation of the registry dispatcher
-        applicationContext.getBean("orderService");    // force registation of the order dispatcher
+    @Before
+    public void setUp() {
+        super.setUp();
+        applicationContext.getBean("registryService"); // force registration of the registry dispatcher
+        applicationContext.getBean("orderService");    // force registration of the order dispatcher
 
         // add a supplier/stock location relationship for ESCI
         String wsdl = getWSDL("wsdl/RegistryService.wsdl");
         addESCIConfiguration(getSupplier(), getStockLocation(), wsdl);
-
-        InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator();
-        OrderServiceAdapterImpl adapter = new OrderServiceAdapterImpl();
-        adapter.setFactory(factory);
-        adapter.setOrderMapper(mapper);
-        adapter.setSupplierServiceLocator(vmLocator);
 
         delegatingRegistryService.setRegistry(new RegistryService() {
             public String getInboxService() {
@@ -105,8 +102,23 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
                 return getWSDL("wsdl/OrderService.wsdl");
             }
         });
+    }
 
-        final FutureValue<OrderType> future = new FutureValue<OrderType>();
+    /**
+     * Verifies that the order service adapter can map an OpenVPMS <em>act.supplierOrder</em> to an UBL Order,
+     * and submit it the the Order Service.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testOrderServiceAdapter() throws Exception {
+        InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator(0);
+        OrderServiceAdapterImpl adapter = new OrderServiceAdapterImpl();
+        adapter.setFactory(factory);
+        adapter.setOrderMapper(mapper);
+        adapter.setSupplierServiceLocator(vmLocator);
+
+        final FutureValue<OrderType> future = new FutureValue<>();
         delegatingOrderService.setOrderService(new OrderService() {
             public void submitOrder(Order order) {
                 future.set(order);
@@ -121,12 +133,46 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
     }
 
     /**
-     * Helper to create a new <tt>InVMSupplierServiceLocator</tt>.
-     *
-     * @return a new <tt>InVMSupplierServiceLocator</tt>
+     * Verifies an {@link ESCIAdapterException} is thrown if a connection times out.
      */
-    private InVMSupplierServiceLocator createSupplierServiceLocator() {
-        InVMSupplierServiceLocator vmLocator = new InVMSupplierServiceLocator();
+    @Test
+    public void testConnectionTimeout() {
+        InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator(1);
+        OrderServiceAdapterImpl adapter = new OrderServiceAdapterImpl();
+        adapter.setFactory(factory);
+        adapter.setOrderMapper(mapper);
+        adapter.setSupplierServiceLocator(vmLocator);
+
+        delegatingOrderService.setOrderService(new OrderService() {
+            public void submitOrder(Order order) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ignore) {
+                    // do nothing
+                }
+            }
+        });
+
+        FinancialAct order = createOrder();
+        try {
+            adapter.submitOrder(order);
+            fail("expected call to time out");
+        } catch (ESCIAdapterException expected) {
+            String wsdl = getWSDL("wsdl/RegistryService.wsdl");
+            Party supplier = getSupplier();
+            assertEquals("ESCIA-0007: Web service did not respond in time " + wsdl + " for supplier "
+                         + supplier.getName() + " (" + supplier.getId() + ")", expected.getMessage());
+        }
+    }
+
+    /**
+     * Helper to create a new {@link InVMSupplierServiceLocator}.
+     *
+     * @param timeout the timeout for making calls to web services in seconds, or {@code 0} to not time out
+     * @return a new {@code InVMSupplierServiceLocator}
+     */
+    private InVMSupplierServiceLocator createSupplierServiceLocator(int timeout) {
+        InVMSupplierServiceLocator vmLocator = new InVMSupplierServiceLocator(timeout);
         vmLocator.setSupplierRules(new SupplierRules(getArchetypeService()));
         vmLocator.setBeanFactory(factory);
         vmLocator.setServiceLocatorFactory(serviceLocatorFactory);

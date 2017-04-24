@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.client;
 
@@ -26,10 +24,25 @@ import org.openvpms.esci.service.OrderService;
 /**
  * Helper to look up an OrderService in the current VM.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InVMSupplierServiceLocator extends SupplierWebServiceLocator {
+
+    /**
+     * Constructs an {@link InVMSupplierServiceLocator}.
+     */
+    public InVMSupplierServiceLocator() {
+        super();
+    }
+
+    /**
+     * Constructs a {@link InVMSupplierServiceLocator}.
+     *
+     * @param timeout the timeout for making calls to web services in seconds, or {@code 0} to not time out
+     */
+    public InVMSupplierServiceLocator(int timeout) {
+        super(timeout);
+    }
 
     /**
      * Returns a proxy for a supplier's {@link OrderService}.
