@@ -84,7 +84,7 @@ public class AnestheticsEventProcessor extends EventProcessor<AnestheticsEvent> 
             if (visit != null) {
                 Party patient = getPatient(visit);
                 if (patient != null) {
-                    service.saveAnestheticReport(patient, visit, anesthetic);
+                    service.saveAnestheticReports(patient, visit, anesthetic);
                 }
             } else {
                 log.error("No visit for anesthetic: " + toString(anesthetic));

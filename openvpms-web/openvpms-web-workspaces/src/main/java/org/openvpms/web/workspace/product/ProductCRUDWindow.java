@@ -35,6 +35,7 @@ import org.openvpms.archetype.rules.product.io.ProductImporter;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.InventoryService;
@@ -244,8 +245,13 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * Synchronises products.
      */
     private void synchroniseProducts() {
-        InventoryService service = flowSheetServiceFactory.getInventoryService(getContext().getLocation());
-        SyncState sync = service.synchronise();
+        Party location = getContext().getLocation();
+        Party stockLocation = getContext().getStockLocation();
+        Party practice = getContext().getPractice();
+        boolean useLocationProducts = (practice != null)
+                                      && new IMObjectBean(practice).getBoolean("useLocationProducts");
+        InventoryService service = flowSheetServiceFactory.getInventoryService(location);
+        SyncState sync = service.synchronise(useLocationProducts, location, stockLocation);
         String title = Messages.get("product.information.sync.title");
         String message = sync.changed() ? Messages.get("product.information.sync.updated")
                                         : Messages.get("product.information.sync.noupdate");

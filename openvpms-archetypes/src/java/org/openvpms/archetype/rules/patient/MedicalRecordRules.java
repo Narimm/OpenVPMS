@@ -59,6 +59,7 @@ import java.util.Set;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.shortName;
 import static org.openvpms.component.system.common.query.Constraints.sort;
 
 
@@ -517,12 +518,24 @@ public class MedicalRecordRules {
      * @return the attachment, or {@code null} if none is found
      */
     public DocumentAct getAttachment(String fileName, Act event) {
-        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.DOCUMENT_ATTACHMENT);
-        query.add(join("event").add(eq("source", event)));
-        query.add(eq("fileName", fileName));
-        query.add(sort("startTime", false));
-        query.add(sort("id", false));
-        query.setMaxResults(1);
+        ArchetypeQuery query = createAttachmentQuery(fileName, event);
+        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
+    }
+
+    /**
+     * Returns the most recent attachment with the specified file name and identity, associated with a patient clinical
+     * event.
+     *
+     * @param fileName the file name
+     * @param event    the <em>act.patientClinicalEvent</em>
+     *                 @param identityArchetype the identity archetype
+     *                                          @param identity the identity
+     * @return the attachment, or {@code null} if none is found
+     */
+    public DocumentAct getAttachment(String fileName, Act event, String identityArchetype, String identity) {
+        ArchetypeQuery query = createAttachmentQuery(fileName, event);
+        query.add(Constraints.join("identities", shortName(identityArchetype)).add(eq("identity", identity)));
         IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
         return iterator.hasNext() ? iterator.next() : null;
     }
@@ -903,6 +916,23 @@ public class MedicalRecordRules {
             changed.add(item);
             changed.add(addendum);
         }
+    }
+
+    /**
+     * Creates a query to locate attachments with the specified file name, associated with an event.
+     *
+     * @param fileName the file name
+     * @param event the <em>act.patientClinicalEvent</em>
+     * @return a new query
+     */
+    private ArchetypeQuery createAttachmentQuery(String fileName, Act event) {
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.DOCUMENT_ATTACHMENT);
+        query.add(join("event").add(eq("source", event)));
+        query.add(eq("fileName", fileName));
+        query.add(sort("startTime", false));
+        query.add(sort("id", false));
+        query.setMaxResults(1);
+        return query;
     }
 
 }

@@ -158,7 +158,7 @@ public class FlowSheetReportsDialog extends PopupDialog {
         }
         if (anestheticsCheckBox.isSelected()) {
             for (Anesthetic anesthetic : anesthetics) {
-                service.saveAnestheticReport(context, anesthetic);
+                service.saveAnestheticReports(context, anesthetic);
             }
         }
         super.onOK();

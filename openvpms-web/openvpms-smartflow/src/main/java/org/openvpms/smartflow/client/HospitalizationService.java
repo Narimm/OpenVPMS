@@ -28,6 +28,7 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -104,6 +105,10 @@ public class HospitalizationService extends FlowSheetService {
      */
     private static final String COLOUR = "colour";
 
+    /**
+     * Smart Flow Sheet identity archetype.
+     */
+    private static final String IDENTITY_ARCHETYPE = "actIdentity.smartflowsheet";
 
     /**
      * Constructs a {@link HospitalizationService}.
@@ -386,26 +391,34 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
-     * Saves an anaesthetic sheet report for a patient.
+     * Saves an anaesthetic sheet report and associated anaesthetic records report for a patient.
+     * <p/>
+     * If there are existing reports with the same surgery identifier associated with the patient visit, they will
+     * be versioned.
      *
      * @param context    the patient context
      * @param anesthetic the anaesthetic sheet
+     * @throws FlowSheetException for any error
      */
-    public void saveAnestheticReport(PatientContext context, Anesthetic anesthetic) {
-        saveAnestheticReport(context.getPatient(), context.getVisit(), anesthetic);
+    public void saveAnestheticReports(PatientContext context, Anesthetic anesthetic) {
+        saveAnestheticReports(context.getPatient(), context.getVisit(), anesthetic);
     }
 
     /**
-     * Saves an anaesthetic report and an anaesthetic record report associated with a patient visit, to the patient
-     * visit.
+     * Saves an anaesthetic sheet report and associated anaesthetic records report for a patient.
+     * <p/>
+     * If there are existing reports with the same surgery identifier associated with the patient visit, they will
+     * be versioned.
      *
      * @param patient the patient
      * @param visit   the patient visit
+     * @throws FlowSheetException for any error
      */
-    public void saveAnestheticReport(Party patient, Act visit, Anesthetic anesthetic) {
+    public void saveAnestheticReports(Party patient, Act visit, Anesthetic anesthetic) {
         javax.ws.rs.client.Client client = null;
         try {
             client = getClient();
+            String identity = anesthetic.getSurgeryGuid();
             String reportPath = anesthetic.getReportPath();
             String recordsReportPath = anesthetic.getRecordsReportPath();
             boolean haveReport = !StringUtils.isEmpty(reportPath);
@@ -414,11 +427,11 @@ public class HospitalizationService extends FlowSheetService {
                 User clinician = getClinician(anesthetic);
                 if (haveReport) {
                     String name = FlowSheetMessages.reportFileName(FlowSheetMessages.anaestheticReportName());
-                    saveAnaestheticReport(name, patient, visit, clinician, reportPath, client);
+                    saveAnaestheticReport(name, identity, patient, visit, clinician, reportPath, client);
                 }
                 if (haveRecordsReport) {
                     String name = FlowSheetMessages.reportFileName(FlowSheetMessages.anaestheticRecordsReportName());
-                    saveAnaestheticReport(name, patient, visit, clinician, recordsReportPath, client);
+                    saveAnaestheticReport(name, identity, patient, visit, clinician, recordsReportPath, client);
                 }
             }
         } finally {
@@ -432,18 +445,20 @@ public class HospitalizationService extends FlowSheetService {
      * Saves an anaesthetic report.
      *
      * @param name      the report name
+     * @param identity  the Smart Flow Sheet identity to add to the report. May be {@code null}
      * @param patient   the patient
      * @param visit     the patient visit
      * @param clinician the clinician. May be {@code null}
      * @param path      the report path
      * @param client    the client
+     * @throws FlowSheetException for any error
      */
-    private void saveAnaestheticReport(String name, Party patient, Act visit, User clinician, String path,
+    private void saveAnaestheticReport(String name, String identity, Party patient, Act visit, User clinician, String path,
                                        javax.ws.rs.client.Client client) {
         try {
             WebTarget target = client.target(path);
             Response response = target.request().headers(getHeaders()).get();
-            saveReport(response, name, patient, visit, clinician);
+            saveReport(response, identity, name, patient, visit, clinician);
         } catch (FlowSheetException exception) {
             throw exception;
         } catch (NotAuthorizedException exception) {
@@ -473,7 +488,7 @@ public class HospitalizationService extends FlowSheetService {
             public Void call(Hospitalizations resource) throws Exception {
                 final String id = Long.toString(visit.getId());
                 Response response = retriever.getResponse(resource, id);
-                saveReport(response, name, patient, visit, clinician);
+                saveReport(response, null, name, patient, visit, clinician);
                 return null;
             }
 
@@ -491,14 +506,14 @@ public class HospitalizationService extends FlowSheetService {
      * If an instance of the report is already present, it will be versioned.
      *
      * @param response  the HTTP response
+     * @param identity  the Smart Flow Sheet identity to add to the report. May be {@code null}
      * @param name      the report name
      * @param patient   the patient
      * @param visit     the patient visit
-     * @param clinician the clinician. May be {@code null}
-     * @throws FlowSheetException if the response is not a PDF
-     * @throws IOException        for any I/O error
+     * @param clinician the clinician. May be {@code null}     @throws FlowSheetException if the response is not a PDF
+     * @throws IOException for any I/O error
      */
-    private void saveReport(Response response, String name, Party patient, Act visit, User clinician)
+    private void saveReport(Response response, String identity, String name, Party patient, Act visit, User clinician)
             throws IOException {
         if (response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(), APPLICATION_PDF_TYPE,
                                                         APPLICATION_OCTET_STREAM_TYPE)) {
@@ -506,7 +521,7 @@ public class HospitalizationService extends FlowSheetService {
             try (InputStream stream = (InputStream) response.getEntity()) {
                 String fileName = name + ".pdf";
                 List<IMObject> objects = new ArrayList<>();
-                DocumentAct act = getAttachment(fileName, patient, visit, clinician);
+                DocumentAct act = getAttachment(fileName, identity, patient, visit, clinician);
                 DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
                 DocumentRules rules = new DocumentRules(service);
                 Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
@@ -526,18 +541,30 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
-     * Returns the most recent attachment with the specified, name, or creates a new one if none exists.
+     * Returns the most recent attachment with the specified name and identity, or creates a new one if none exists.
      *
      * @param name      the file name
+     * @param identity  the act identity
      * @param patient   the patient
      * @param visit     the visit
-     * @param clinician the clinician. May be {@code null}
-     * @return an attachment
+     * @param clinician the clinician. May be {@code null}    @return an attachment
      */
-    private DocumentAct getAttachment(String name, Party patient, Act visit, User clinician) {
-        DocumentAct act = rules.getAttachment(name, visit);
+    private DocumentAct getAttachment(String name, String identity, Party patient, Act visit, User clinician) {
+
+        DocumentAct act;
+        identity = StringUtils.trimToNull(identity);
+        if (identity != null) {
+            act = rules.getAttachment(name, visit, IDENTITY_ARCHETYPE, identity);
+        } else {
+            act = rules.getAttachment(name, visit);
+        }
         if (act == null) {
             act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
+            if (identity != null) {
+                ActIdentity id = (ActIdentity) service.create(IDENTITY_ARCHETYPE);
+                id.setIdentity(identity);
+                act.addIdentity(id);
+            }
             ActBean bean = new ActBean(act, service);
             bean.setNodeParticipant("patient", patient);
             bean.setNodeParticipant("clinician", clinician);

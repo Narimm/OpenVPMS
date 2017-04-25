@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -43,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -761,6 +763,39 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link MedicalRecordRules#getAttachment(String, Act, String, String)} method.
+     */
+    @Test
+    public void testGetAttachmentWithIdentity() {
+        Act event = createEvent();
+        ActBean bean = new ActBean(event);
+
+        // Smart Flow Sheet supplies the same surgery UID for both anaesthetic and anaesthetic records reports.
+        String archetype = "actIdentity.smartflowsheet";
+        String surgeryUid = UUID.randomUUID().toString();
+        ActIdentity identity1a = createIdentity(archetype, surgeryUid);
+        ActIdentity identity1b = createIdentity(archetype, surgeryUid);
+        ActIdentity identity2 = createIdentity(archetype, UUID.randomUUID().toString());
+        assertNull(rules.getAttachment("anaesthetic.pdf", event, archetype, identity1a.getIdentity()));
+
+        DocumentAct act1a = createDocumentAttachment(getDatetime("2017-04-22 10:00:00"), patient, "anaesthetic.pdf",
+                                                     identity1a);
+        DocumentAct act1b = createDocumentAttachment(getDatetime("2017-04-22 10:00:00"), patient,
+                                                     "anaesthetic records.pdf", identity1b);
+        DocumentAct act2 = createDocumentAttachment(getDatetime("2017-04-22 11:00:00"), patient, "anaesthetic.pdf",
+                                                    identity2);
+
+        bean.addNodeRelationship("items", act1a);
+        bean.addNodeRelationship("items", act1b);
+        bean.addNodeRelationship("items", act2);
+        bean.save();
+
+        assertEquals(act1a, rules.getAttachment("anaesthetic.pdf", event, archetype, surgeryUid));
+        assertEquals(act1b, rules.getAttachment("anaesthetic records.pdf", event, archetype, surgeryUid));
+        assertEquals(act2, rules.getAttachment("anaesthetic.pdf", event, archetype, identity2.getIdentity()));
+    }
+
+    /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
      *
      * @return a new act
@@ -841,6 +876,19 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("patient", patient);
         return act;
+    }
+
+    /**
+     * Creates an act identity.
+     *
+     * @param archetype the identity archetype
+     * @param identity  the identity
+     * @return a new identity
+     */
+    private ActIdentity createIdentity(String archetype, String identity) {
+        ActIdentity result = (ActIdentity) create(archetype);
+        result.setIdentity(identity);
+        return result;
     }
 
     /**
