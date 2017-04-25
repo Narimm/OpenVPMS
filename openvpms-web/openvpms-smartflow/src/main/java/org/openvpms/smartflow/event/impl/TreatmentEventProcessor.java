@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.order.CustomerPharmacyOrder;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -63,6 +64,11 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      */
     private final PatientRules rules;
 
+    /**
+     * Supported product archetypes.
+     */
+    private static final String[] PRODUCT_ARCHETYPES = {ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE,
+                                                        ProductArchetypes.SERVICE};
     /**
      * The logger.
      */
@@ -193,7 +199,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
     /**
      * Updates the orders associated with a treatment.
      * <p/>
-     * This handles takes into account existing IN_PROGRESS and POSTED orders and order returns.
+     * This takes into account existing IN_PROGRESS and POSTED orders and order returns.
      * <p/>
      * If the total POSTED quantity is:
      * <ul>
@@ -355,8 +361,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         Product result = null;
         long id = SmartFlowSheetHelper.getId(treatment.getInventoryId());
         if (id != -1) {
-            ArchetypeQuery query = new ArchetypeQuery("product.*");
-            query.getArchetypeConstraint().setAlias("p");
+            ArchetypeQuery query = new ArchetypeQuery(PRODUCT_ARCHETYPES, true, true);
             query.add(Constraints.eq("id", id));
             IMObjectQueryIterator<Product> iterator = new IMObjectQueryIterator<>(getService(), query);
             result = (iterator.hasNext()) ? iterator.next() : null;

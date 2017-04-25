@@ -21,9 +21,11 @@ import org.apache.commons.collections4.iterators.FilterIterator;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductQueryFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
@@ -150,15 +152,22 @@ public class InventoryService extends FlowSheetService {
      * <p/>
      * This updates existing inventory items and removes those no longer in use.
      *
+     * @param useLocationProducts if {@code true}, products should be restricted to those available at the location or
+     *                            stock location
+     * @param location            the location used to exclude service products. May be {@code null}.
+     *                            Only relevant when {@code useLocationProducts == true}
+     * @param stockLocation       if {@code useLocationProducts == false}, products must either have the stock location,
+     *                            or no stock location. If {@code useLocationProducts == true}, products must have the
+     *                            stock location
      * @return the result of the synchronisation
      */
-    public SyncState synchronise() {
+    public SyncState synchronise(boolean useLocationProducts, Party location, Party stockLocation) {
         int added = 0;
         int updated = 0;
         int removed = 0;
         Map<String, InventoryItem> inventoryItems = getInventoryItems();
         List<InventoryItem> add = new ArrayList<>();
-        Iterator<Product> products = getProducts();
+        Iterator<Product> products = getProducts(useLocationProducts, location, stockLocation);
         while (products.hasNext()) {
             Product product = products.next();
             String id = Long.toString(product.getId());
@@ -200,11 +209,15 @@ public class InventoryService extends FlowSheetService {
     /**
      * Returns all active products.
      *
+     * @param useLocationProducts if {@code true}, only return products available at the location/stock location
+     * @param location            the practice location
+     * @param stockLocation       the stock location
      * @return the active products
      */
-    private Iterator<Product> getProducts() {
-        String[] shortNames = {ProductArchetypes.MEDICATION, ProductArchetypes.SERVICE, ProductArchetypes.MERCHANDISE};
-        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+    private Iterator<Product> getProducts(boolean useLocationProducts, Party location, Party stockLocation) {
+        String[] archetypes = {ProductArchetypes.MEDICATION, ProductArchetypes.SERVICE, ProductArchetypes.MERCHANDISE};
+        ArchetypeQuery query = ProductQueryFactory.create(archetypes, null, null, useLocationProducts, location,
+                                                          stockLocation);
         query.add(Constraints.sort("id"));
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         IMObjectQueryIterator<Product> iterator = new IMObjectQueryIterator<>(service, query);
