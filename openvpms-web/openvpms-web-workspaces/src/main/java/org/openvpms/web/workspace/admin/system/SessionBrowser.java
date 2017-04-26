@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system;
@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -181,7 +182,18 @@ public class SessionBrowser extends AbstractTabComponent {
      */
     private ResultSet<SessionMonitor.Session> getSessions() {
         List<SessionMonitor.Session> sessions = ServiceHelper.getBean(SessionMonitor.class).getSessions();
-        ResultSet<SessionMonitor.Session> set = new ListResultSet<>(sessions, 20);
+        ResultSet<SessionMonitor.Session> set = new ListResultSet<SessionMonitor.Session>(sessions, 20) {
+            @Override
+            public void sort(SortConstraint[] sort) {
+                super.sort(sort);
+                IMObjectSorter.sort(getObjects(), sort, new Transformer() {
+                    @Override
+                    public Object transform(Object input) {
+                        return input;
+                    }
+                });
+            }
+        };
         final String query = search.getString();
         if (!StringUtils.isEmpty(query)) {
             set = new FilteredResultSet<SessionMonitor.Session>(set) {
@@ -315,6 +327,22 @@ public class SessionBrowser extends AbstractTabComponent {
                         @Override
                         public Object transform(Object input) {
                             return ((SessionMonitor.Session) input).getHost();
+                        }
+                    });
+                    break;
+                case LOGGED_IN_INDEX:
+                    sort = new VirtualNodeSortConstraint("loggedIn", ascending, new Transformer() {
+                        @Override
+                        public Object transform(Object input) {
+                            return ((SessionMonitor.Session) input).getLoggedIn();
+                        }
+                    });
+                    break;
+                case LAST_ACCESSED_INDEX:
+                    sort = new VirtualNodeSortConstraint("lastAccessed", ascending, new Transformer() {
+                        @Override
+                        public Object transform(Object input) {
+                            return ((SessionMonitor.Session) input).getLastAccessed();
                         }
                     });
                     break;
