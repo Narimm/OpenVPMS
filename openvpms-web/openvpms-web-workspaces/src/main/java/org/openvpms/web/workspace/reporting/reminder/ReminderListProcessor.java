@@ -138,7 +138,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      */
     @Override
     public boolean isAsynchronous() {
-        return false;
+        return true;
     }
 
     /**

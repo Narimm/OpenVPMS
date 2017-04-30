@@ -20,6 +20,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
@@ -35,6 +37,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -184,6 +187,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * If {@code true}, enable medication editing to be cancelled when it is being dispensed from a prescription.
      */
     private boolean cancelPrescription;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(CustomerChargeActItemEditor.class);
 
     /**
      * Dispensing node name.
@@ -789,40 +797,64 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         Property unitPrice = getProperty(UNIT_PRICE);
         Property fixedCost = getProperty(FIXED_COST);
         Property unitCost = getProperty(UNIT_COST);
+        ProductPrice fixedProductPrice = null;
+        ProductPrice unitProductPrice = null;
+        BigDecimal fixedPriceValue = BigDecimal.ZERO;
+        BigDecimal fixedCostValue = BigDecimal.ZERO;
+        BigDecimal unitPriceValue = BigDecimal.ZERO;
+        BigDecimal unitCostValue = BigDecimal.ZERO;
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            fixedPrice.setValue(ZERO);
-            unitPrice.setValue(ZERO);
-            fixedCost.setValue(ZERO);
-            unitCost.setValue(ZERO);
+            fixedPrice.setValue(fixedPriceValue);
+            unitPrice.setValue(unitPriceValue);
+            fixedCost.setValue(fixedCostValue);
+            unitCost.setValue(unitCostValue);
             updateSellingUnits(null);
         } else {
-            ProductPrice fixedProductPrice = null;
-            ProductPrice unitProductPrice = null;
             if (product != null) {
                 fixedProductPrice = getDefaultFixedProductPrice(product);
                 unitProductPrice = getDefaultUnitProductPrice(product);
             }
 
             if (fixedProductPrice != null) {
-                fixedPrice.setValue(getPrice(product, fixedProductPrice));
-                fixedCost.setValue(getCost(fixedProductPrice));
-            } else {
-                fixedPrice.setValue(ZERO);
-                fixedCost.setValue(ZERO);
+                fixedPriceValue = getPrice(product, fixedProductPrice);
+                fixedCostValue = getCost(fixedProductPrice);
             }
+            fixedPrice.setValue(fixedPriceValue);
+            fixedCost.setValue(fixedCostValue);
+
             if (unitProductPrice != null) {
-                unitPrice.setValue(getPrice(product, unitProductPrice));
-                unitCost.setValue(getCost(unitProductPrice));
-            } else {
-                unitPrice.setValue(ZERO);
-                unitCost.setValue(ZERO);
+                unitPriceValue = getPrice(product, unitProductPrice);
+                unitCostValue = getCost(unitProductPrice);
             }
+            unitPrice.setValue(unitPriceValue);
+            unitCost.setValue(unitCostValue);
+
             IMObjectReference stockLocation = updateStockLocation(product);
             updateSellingUnits(product);
             updateBatch(product, stockLocation);
             updateDiscount();
         }
         updateTaxAmount();
+
+        if (log.isDebugEnabled()) {
+            String productStr = product != null ? "id=" + product.getId() + ", name=" + product.getName() : null;
+            String fixedStr = fixedProductPrice != null ? "id=" + fixedProductPrice.getId()
+                                                          + ", price=" + fixedProductPrice.getPrice() : null;
+            String unitStr = unitProductPrice != null ? "id=" + unitProductPrice.getId()
+                                                        + ", price=" + unitProductPrice.getPrice() : null;
+            User user = getLayoutContext().getContext().getUser();
+            User clinician = getClinician();
+            log.debug("productModified: product=[" + productStr + "]"
+                      + ", fixedProductPrice=[" + fixedStr + "]"
+                      + ", unitProductPrice=[" + unitStr + "]"
+                      + ", fixedCost=" + fixedCostValue + ", fixedPrice=" + fixedPriceValue
+                      + ", unitCost=" + unitCostValue + ", unitPrice=" + unitPriceValue
+                      + ", quantity=" + getQuantity() + ", discount=" + getProperty(DISCOUNT).getBigDecimal()
+                      + ", tax=" + getProperty(TAX).getBigDecimal() + ", total=" + getTotal()
+                      + ", clinician=" + (clinician != null ? clinician.getUsername() : null)
+                      + ", user=" + (user != null ? user.getUsername() : null)
+                      + ", act=" + getObject().getObjectReference());
+        }
 
         updatePatientMedication(product);
         updateInvestigations(product);

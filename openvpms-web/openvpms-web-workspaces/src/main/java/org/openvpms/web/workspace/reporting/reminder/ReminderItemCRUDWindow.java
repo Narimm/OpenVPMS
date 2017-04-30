@@ -18,6 +18,8 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.PagedReminderIterator;
@@ -73,6 +75,12 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private final ReminderItemBrowser browser;
 
     /**
+     * Determines if this is used to resend reminders. If {@code true}, due dates are ignored and reminders are not
+     * updated.
+     */
+    private final boolean resend;
+
+    /**
      * The rules.
      */
     private final ReminderRules rules;
@@ -106,12 +114,15 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * Constructs a {@link ReminderItemCRUDWindow}.
      *
      * @param browser the browser
+     * @param resend  determines if this is used to resend reminders. If {@code true}, due dates are ignored and
+     *                reminders are not updated
      * @param context the context
      * @param help    the help context
      */
-    public ReminderItemCRUDWindow(ReminderItemBrowser browser, Context context, HelpContext help) {
+    public ReminderItemCRUDWindow(ReminderItemBrowser browser, boolean resend, Context context, HelpContext help) {
         super(Archetypes.create(ReminderArchetypes.REMINDER_ITEMS, Act.class), Actions.INSTANCE, context, help);
         this.browser = browser;
+        this.resend = resend;
         this.rules = ServiceHelper.getBean(ReminderRules.class);
     }
 
@@ -353,6 +364,26 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private void onSend() {
         Act object = getObject();
         final Act item = IMObjectHelper.reload(object);
+        if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
+            ConfirmationDialog.show(Messages.get("reporting.reminder.send.title"),
+                                    Messages.format("reporting.reminder.send.sendcancelled"),
+                                    ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                        @Override
+                        public void onYes() {
+                            send(item);
+                        }
+                    });
+        } else {
+            send(item);
+        }
+    }
+
+    /**
+     * Sends a reminder item.
+     *
+     * @param item the reminder item to send
+     */
+    private void send(final Act item) {
         if (item != null) {
             try {
                 HelpContext help = getHelpContext().subtopic("send");
@@ -361,17 +392,21 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 Party location = context.getLocation();
                 Party practice = context.getPractice();
                 ReminderGenerator generator = factory.create(item, location, practice, help);
+                generator.setResend(resend);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {
-                        if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
-                            InformationDialog.show(Messages.get("reporting.reminder.send.title"),
-                                                   Messages.get("reporting.reminder.send.cancelled"));
-                        } else if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
+                        if (!resend) {
+                            // if the reminder is being resent, the status/error apply to when it was sent originally
                             String error = new ActBean(item).getString("error");
-                            InformationDialog.show(Messages.get("reporting.reminder.send.title"),
-                                                   error);
+                            if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
+                                String message = !StringUtils.isEmpty(error)
+                                                 ? error : Messages.get("reporting.reminder.send.cancelled");
+                                InformationDialog.show(Messages.get("reporting.reminder.send.title"), message);
+                            } else if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
+                                InformationDialog.show(Messages.get("reporting.reminder.send.title"), error);
+                            }
+                            onRefresh(getObject());
                         }
-                        onRefresh(getObject());
                     }
 
                     public void error(Throwable exception) {
@@ -390,16 +425,22 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     private void onSendAll() {
         String title = Messages.get("reporting.reminder.run.title");
-        String message = Messages.get("reporting.reminder.run.message");
-        HelpContext help = getHelpContext().subtopic("confirmsend");
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO, help);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onYes() {
-                generateReminders();
-            }
-        });
-        dialog.show();
+        ReminderItemQueryFactory queryFactory = getQueryFactory();
+        String[] statuses = queryFactory.getStatuses();
+        if (statuses == null || statuses.length == 0 || ArrayUtils.contains(statuses, ReminderItemStatus.CANCELLED)) {
+            InformationDialog.show(title, Messages.get("reporting.reminder.run.nocancelled"));
+        } else {
+            String message = Messages.get("reporting.reminder.run.message");
+            HelpContext help = getHelpContext().subtopic("confirmsend");
+            final ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO, help);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    generateReminders();
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -504,31 +545,21 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
             Party location = context.getLocation();
             Party practice = context.getPractice();
             ReminderGenerator generator = factory.create(queryFactory, location, practice, help);
-            generateReminders(generator);
+            generator.setResend(resend);
+            generator.setListener(new BatchProcessorListener() {
+                public void completed() {
+                    onRefresh(getObject());
+                }
+
+                public void error(Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
+            });
+            generator.process();
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
     }
-
-    /**
-     * Generates reminders using the specified generator.
-     * Updates the browser on completion.
-     *
-     * @param generator the generator
-     */
-    private void generateReminders(ReminderGenerator generator) {
-        generator.setListener(new BatchProcessorListener() {
-            public void completed() {
-                onRefresh(getObject());
-            }
-
-            public void error(Throwable exception) {
-                ErrorHelper.show(exception);
-            }
-        });
-        generator.process();
-    }
-
 
     private static final class Actions extends ActActions<Act> {
 
