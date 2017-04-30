@@ -27,6 +27,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -124,8 +125,11 @@ public class ReminderTestHelper extends TestHelper {
             bean.addNodeTarget("template", template);
         }
 
+        int sequence = 0;
         for (Entity rule : rules) {
-            bean.addNodeTarget("rules", rule);
+            IMObjectRelationship relationship = bean.addNodeTarget("rules", rule);
+            IMObjectBean relationshipBean = new IMObjectBean(relationship);
+            relationshipBean.setValue("sequence", sequence++);
         }
         bean.save();
         return entity;

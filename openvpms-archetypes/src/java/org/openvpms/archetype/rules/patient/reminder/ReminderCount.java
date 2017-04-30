@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.ArrayList;
@@ -134,7 +135,7 @@ public class ReminderCount {
      */
     public List<ReminderRule> getRules() {
         if (rules.isEmpty()) {
-            for (IMObject rule : bean.getNodeTargetObjects("rules")) {
+            for (IMObject rule : bean.getNodeTargetObjects("rules", SequenceComparator.INSTANCE)) {
                 rules.add(new ReminderRule(rule, service));
             }
         }

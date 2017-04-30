@@ -1286,6 +1286,7 @@ EPRTA.prototype.setMacroExpansion = function (macro) {
         selection.removeAllRanges();
         selection.addRange(range);
     }
+    this.saveState();
 
 };
 // end tima

@@ -16,6 +16,8 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
@@ -91,6 +93,10 @@ public class ReminderProcessor {
      */
     private final ReminderTypes reminderTypes;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ReminderProcessor.class);
 
     /**
      * Constructs a {@link ReminderProcessor}.
@@ -217,7 +223,6 @@ public class ReminderProcessor {
         return getReminderType(new ActBean(reminder, service));
     }
 
-
     protected Date now() {
         return new Date();
     }
@@ -247,7 +252,7 @@ public class ReminderProcessor {
             } else {
                 ReminderCount count = reminderType.getReminderCount(reminderCount);
                 if (count != null) {
-                    result = generate(patient, reminder, count);
+                    result = generate(patient, reminder, count, reminderType);
                 } else if (reminderCount == 0) {
                     // no reminder count, so list the reminder
                     result = new ArrayList<>();
@@ -266,14 +271,15 @@ public class ReminderProcessor {
     /**
      * Generates reminder items for a reminder based on the reminder count rules and available customer contacts.
      *
-     * @param patient  the patient
-     * @param reminder the reminder
-     * @param count    the reminder count
+     * @param patient      the patient
+     * @param reminder     the reminder
+     * @param count        the reminder count
+     * @param reminderType the reminder type
      * @return the acts to save
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected List<Act> generate(Party patient, Act reminder, ReminderCount count) {
+    protected List<Act> generate(Party patient, Act reminder, ReminderCount count, ReminderType reminderType) {
         Party customer = getCustomer(patient);
         List<Contact> list = customer != null
                              ? Contacts.sort(customer.getContacts()) : Collections.<Contact>emptyList();
@@ -282,7 +288,7 @@ public class ReminderProcessor {
         ReminderRule matchingRule = null;
         for (ReminderRule rule : count.getRules()) {
             Set<Contact> matches = new HashSet<>();
-            if (getContacts(rule, list, matches, template)) {
+            if (getContacts(rule, list, matches, template, count, reminderType)) {
                 found = matches;
                 matchingRule = rule;
                 break;
@@ -292,6 +298,11 @@ public class ReminderProcessor {
         List<Act> toSave = new ArrayList<>();
         Date dueDate = reminder.getActivityStartTime();
         if (matchingRule != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Found matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
+                          + ", reminderType=" + reminderType.getName() + ", count=" + count.getCount() + ", rule="
+                          + matchingRule + ", contacts=" + toString(found));
+            }
             ReminderRule.SendTo sendTo = matchingRule.getSendTo();
             if (sendTo == ReminderRule.SendTo.ALL || sendTo == ReminderRule.SendTo.ANY) {
                 if (matchingRule.canEmail()) {
@@ -321,6 +332,11 @@ public class ReminderProcessor {
                 generateList(bean, dueDate, count.getCount(), null, toSave);
             }
         } else {
+            if (log.isDebugEnabled()) {
+                log.debug("NO matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
+                          + ", reminderType=" + reminderType.getName() + ", count" + count.getCount()
+                          + ". Reminder will be Listed");
+            }
             String message = new ReminderProcessorException(NoContactsForRules).getMessage();
             generateList(bean, dueDate, count.getCount(), message, toSave);
         }
@@ -358,6 +374,8 @@ public class ReminderProcessor {
             createItem(ReminderArchetypes.EMAIL_REMINDER, config.getEmailSendDate(dueDate), reminder, count,
                        null, toSave);
             result = true;
+        } else if (log.isDebugEnabled()) {
+            log.debug("NOT generating email reminder - customer has no email contact");
         }
         return result;
     }
@@ -378,6 +396,8 @@ public class ReminderProcessor {
             createItem(ReminderArchetypes.SMS_REMINDER, config.getSMSSendDate(dueDate), reminder, count, null,
                        toSave);
             result = true;
+        } else if (log.isDebugEnabled()) {
+            log.debug("NOT generating email reminder - customer has no SMS contact");
         }
         return result;
     }
@@ -398,6 +418,8 @@ public class ReminderProcessor {
             createItem(ReminderArchetypes.PRINT_REMINDER, config.getPrintSendDate(dueDate), reminder, count,
                        null, toSave);
             result = true;
+        } else if (log.isDebugEnabled()) {
+            log.debug("NOT generating print reminder - customer has no location contact");
         }
         return result;
     }
@@ -418,6 +440,8 @@ public class ReminderProcessor {
             createItem(ReminderArchetypes.EXPORT_REMINDER, config.getExportSendDate(dueDate), reminder, count,
                        null, toSave);
             result = true;
+        } else if (log.isDebugEnabled()) {
+            log.debug("NOT generating export reminder - customer has no location contact");
         }
         return result;
     }
@@ -484,37 +508,59 @@ public class ReminderProcessor {
     /**
      * Adds contacts matching the rule.
      *
-     * @param rule     the rule
-     * @param contacts the available contacts
-     * @param matches  the matches to add to
-     * @param template the document template
+     * @param rule         the rule
+     * @param contacts     the available contacts
+     * @param matches      the matches to add to
+     * @param template     the document template
+     * @param count        the reminder count
+     * @param reminderType the reminder type
      * @return {@code true} if the rule matched, otherwise {@code false}
      */
     private boolean getContacts(ReminderRule rule, List<Contact> contacts, Set<Contact> matches,
-                                DocumentTemplate template) {
+                                DocumentTemplate template, ReminderCount count, ReminderType reminderType) {
         ReminderRule.SendTo sendTo = rule.getSendTo();
         boolean isAll = sendTo == ReminderRule.SendTo.ALL;
         if (!contacts.isEmpty()) {
             if (rule.isContact()) {
-                if (!addReminderContacts(contacts, matches, template) && isAll) {
+                if (!addReminderContacts(contacts, matches, template, count, reminderType) && isAll) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Rule not matched. There are no REMINDER contacts for reminderType="
+                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                    }
                     return false;
                 }
             }
             if (rule.isEmail()) {
-                if (!addEmailContact(contacts, matches, template) && isAll) {
+                if (!addEmailContact(contacts, matches, template, count, reminderType) && isAll) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Rule not matched. There are no email contacts for reminderType="
+                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                    }
                     return false;
                 }
             }
             if (rule.isSMS()) {
                 if (isAll && disableSMS) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Rule not matched. SMS has been disabled for reminderType="
+                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                    }
                     return false;
                 }
-                if (!addSMSContact(contacts, matches, template) && isAll) {
+                if (!addSMSContact(contacts, matches, template, count, reminderType) && isAll) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Rule not matched. There are no SMS contacts for reminderType="
+                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                    }
                     return false;
                 }
             }
             if (rule.isPrint()) {
-                if (!addLocationContact(contacts, matches, template) && isAll) {
+                if (!addLocationContact(contacts, matches, template, count, reminderType) && isAll) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Rule not matched. There are no location contacts for reminderType="
+                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                    }
                     return false;
                 }
             }
@@ -523,7 +569,12 @@ public class ReminderProcessor {
             addContact(LOCATION, contacts, matches);
         }
 
-        return !matches.isEmpty();
+        boolean result = !matches.isEmpty();
+        if (!result && log.isDebugEnabled()) {
+            log.debug("Rule not matched. No contacts match reminderType="
+                      + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+        }
+        return result;
     }
 
     /**
@@ -565,20 +616,43 @@ public class ReminderProcessor {
     /**
      * Adds contacts with <em>REMINDER</em> purpose.
      *
-     * @param contacts the customer's contacts
-     * @param matches  the matches to add to
-     * @param template the reminder template. If {@code null}, no contacts will be added
+     * @param contacts     the customer's contacts
+     * @param matches      the matches to add to
+     * @param template     the reminder template. If {@code null}, no contacts will be added
+     * @param count        the reminder count
+     * @param reminderType the reminder type
      * @return {@code true} if any contacts were added
      */
-    private boolean addReminderContacts(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
+    private boolean addReminderContacts(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template,
+                                        ReminderCount count, ReminderType reminderType) {
         int size = matches.size();
         if (template != null) {
             if (!disableSMS && template.getSMSTemplate() != null) {
                 matches.addAll(Contacts.findAll(contacts, new SMSMatcher(REMINDER_PURPOSE, true, service)));
+            } else {
+                if (log.isDebugEnabled()) {
+                    if (disableSMS) {
+                        log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+                                  + ", reminderCount=" + count.getCount() + ". SMS is disabled");
+                    } else {
+                        log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+                                  + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
+                                  + " has no SMS template");
+                    }
+                }
             }
             matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(LOCATION, REMINDER_PURPOSE, true, service)));
             if (template.getEmailTemplate() != null) {
                 matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(EMAIL, REMINDER_PURPOSE, true, service)));
+            } else {
+                log.debug("NOT adding email contacts for reminderType=" + reminderType.getName()
+                          + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
+                          + " has no email template");
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("NOT adding REMINDER contacts for reminderType=" + reminderType.getName()
+                          + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
             }
         }
         return size != matches.size();
@@ -587,39 +661,80 @@ public class ReminderProcessor {
     /**
      * Adds the customer's email contact, if any.
      *
-     * @param contacts the customer's contacts
-     * @param matches  the matches to add to
-     * @param template the reminder template. If {@code null} no contact will be added
+     * @param contacts     the customer's contacts
+     * @param matches      the matches to add to
+     * @param template     the reminder template. If {@code null} no contact will be added
+     * @param count        the reminder count
+     * @param reminderType the reminder type
      * @return {@code true} if any contacts were added
      */
-    private boolean addEmailContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
-        return template != null && template.getEmailTemplate() != null
-               && addContact(ContactArchetypes.EMAIL, contacts, matches);
+    private boolean addEmailContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template,
+                                    ReminderCount count, ReminderType reminderType) {
+        boolean result = false;
+        if (template != null) {
+            if (template.getEmailTemplate() != null) {
+                result = addContact(ContactArchetypes.EMAIL, contacts, matches);
+            } else if (log.isDebugEnabled()) {
+                log.debug("NOT adding email contacts for reminderType=" + reminderType.getName()
+                          + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
+                          + " has no email template");
+            }
+        } else if (log.isDebugEnabled()) {
+            log.debug("NOT adding email contacts for reminderType=" + reminderType.getName()
+                      + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
+
+        }
+        return result;
     }
 
     /**
      * Adds the customer's SMS contact, if any.
      *
-     * @param contacts the customer's contacts
-     * @param matches  the matches to add to
-     * @param template the reminder template. If {@code null} no contact will be added
+     * @param contacts     the customer's contacts
+     * @param matches      the matches to add to
+     * @param template     the reminder template. If {@code null} no contact will be added
+     * @param count        the reminder count
+     * @param reminderType the reminder type
      * @return {@code true} if any contacts were added
      */
-    private boolean addSMSContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
-        return template != null && template.getSMSTemplate() != null
-               && addContact(contacts, matches, new SMSMatcher(REMINDER_PURPOSE, false, service));
+    private boolean addSMSContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template,
+                                  ReminderCount count, ReminderType reminderType) {
+        boolean result = false;
+        if (template != null) {
+            if (template.getSMSTemplate() != null) {
+                result = addContact(contacts, matches, new SMSMatcher(REMINDER_PURPOSE, false, service));
+            } else if (log.isDebugEnabled()) {
+                log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+                          + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
+                          + " has no SMS template");
+            }
+        } else if (log.isDebugEnabled()) {
+            log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+                      + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
+        }
+        return result;
     }
 
     /**
      * Adds the customer's location contact, if any.
      *
-     * @param contacts the customer's contacts
-     * @param matches  the matches to add to
-     * @param template the reminder template. If {@code null} no contact will be added
+     * @param contacts     the customer's contacts
+     * @param matches      the matches to add to
+     * @param template     the reminder template. If {@code null} no contact will be added
+     * @param count        the reminder count
+     * @param reminderType the reminder type
      * @return {@code true} if any contacts were added
      */
-    private boolean addLocationContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template) {
-        return (template != null) && addContact(LOCATION, contacts, matches);
+    private boolean addLocationContact(List<Contact> contacts, Set<Contact> matches, DocumentTemplate template,
+                                       ReminderCount count, ReminderType reminderType) {
+        boolean result = false;
+        if (template != null) {
+            result = addContact(LOCATION, contacts, matches);
+        } else if (log.isDebugEnabled()) {
+            log.debug("NOT adding location contacts for reminderType=" + reminderType.getName()
+                      + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
+        }
+        return result;
     }
 
     /**
@@ -652,4 +767,30 @@ public class ReminderProcessor {
         return false;
     }
 
+    /**
+     * Helper to generate a debug string for a party.
+     *
+     * @param party the party. May be {@code null}
+     * @return a string, or {@code null} if the party is null
+     */
+    private String toString(Party party) {
+        return (party != null) ? party.getName() + " (" + party.getId() + ")" : null;
+    }
+
+    /**
+     * Helper to generate a debug string for a set of contacts.
+     *
+     * @param contacts the contacts
+     * @return a string
+     */
+    private String toString(Set<Contact> contacts) {
+        StringBuilder result = new StringBuilder();
+        for (Contact contact : contacts) {
+            if (result.length() != 0) {
+                result.append(", ");
+            }
+            result.append(contact.getDescription());
+        }
+        return result.toString();
+    }
 }

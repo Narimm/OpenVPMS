@@ -22,6 +22,7 @@ import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;
 import org.flywaydb.core.api.MigrationVersion;
+import org.flywaydb.core.api.callback.FlywayCallback;
 import org.flywaydb.core.internal.dbsupport.DbSupport;
 import org.flywaydb.core.internal.dbsupport.DbSupportFactory;
 import org.flywaydb.core.internal.dbsupport.Schema;
@@ -79,9 +80,10 @@ public class DatabaseServiceImpl implements DatabaseService {
      * @param url      the driver url
      * @param user     the database user name
      * @param password the database password
+     * @param listener the listener to notify of Flyway events. May be {@code null}
      */
-    public DatabaseServiceImpl(String driver, String url, String user, String password) {
-        this(driver, url, createDataSource(driver, url, user, password));
+    public DatabaseServiceImpl(String driver, String url, String user, String password, FlywayCallback listener) {
+        this(driver, url, createDataSource(driver, url, user, password), listener);
     }
 
     /**
@@ -92,6 +94,18 @@ public class DatabaseServiceImpl implements DatabaseService {
      * @param dataSource the data source
      */
     public DatabaseServiceImpl(String driver, String url, DataSource dataSource) {
+        this(driver, url, dataSource, null);
+    }
+
+    /**
+     * Constructs a {@link DatabaseServiceImpl}.
+     *
+     * @param driver     the driver class name
+     * @param url        the driver url
+     * @param dataSource the data source
+     * @param listener   the listener to notify of Flyway events. May be {@code null}
+     */
+    public DatabaseServiceImpl(String driver, String url, DataSource dataSource, final FlywayCallback listener) {
         this.driver = driver;
         int index = url.lastIndexOf('/');
         if (index == -1) {
@@ -104,6 +118,9 @@ public class DatabaseServiceImpl implements DatabaseService {
         flyway = new Flyway();
         flyway.setDataSource(dataSource);
         flyway.setLocations("org/openvpms/db/migration");
+        if (listener != null) {
+            flyway.setCallbacks(listener);
+        }
     }
 
     /**
@@ -120,10 +137,11 @@ public class DatabaseServiceImpl implements DatabaseService {
      *
      * @param adminUser     the database administrator user name
      * @param adminPassword the database administrator password
+     * @param createTables  if {@code true}, create the tables, and base-line
      * @throws SQLException for any SQL error
      */
     @Override
-    public void create(String adminUser, String adminPassword) throws SQLException {
+    public void create(String adminUser, String adminPassword, boolean createTables) throws SQLException {
         DataSource admin = createDataSource(driver, rootURL, adminUser, adminPassword);
         try (Connection connection = admin.getConnection()) {
             boolean found = false;
@@ -143,23 +161,27 @@ public class DatabaseServiceImpl implements DatabaseService {
                 Map<String, String> placeholders = new HashMap<>();
                 placeholders.put("db.name", schemaName);
                 SqlScript script = new SqlScript(support, resource, new PlaceholderReplacer(placeholders, "${", "}"),
-                                                 "UTF-8");
+                                                 "UTF-8", false);
                 script.execute(support.getJdbcTemplate());
+            } else if (!createTables) {
+                throw new SQLException("Cannot create " + schemaName + " as it already exists");
             }
         }
-        try (Connection connection = dataSource.getConnection()) {
-            DbSupport support = DbSupportFactory.createDbSupport(connection, true);
-            Schema schema = support.getOriginalSchema();
-            if (schema.allTables().length == 0) {
-                Resource resource = getResource("org/openvpms/db/schema/schema.sql");
-                SqlScript script = new SqlScript(resource.loadAsString("UTF-8"), support);
-                script.execute(support.getJdbcTemplate());
-                MigrationInfo version = getNewestVersion();
-                if (version != null) {
-                    baseline(version.getVersion(), version.getDescription());
+        if (createTables) {
+            try (Connection connection = dataSource.getConnection()) {
+                DbSupport support = DbSupportFactory.createDbSupport(connection, true);
+                Schema schema = support.getOriginalSchema();
+                if (schema.allTables().length == 0) {
+                    Resource resource = getResource("org/openvpms/db/schema/schema.sql");
+                    SqlScript script = new SqlScript(resource.loadAsString("UTF-8"), support);
+                    script.execute(support.getJdbcTemplate());
+                    MigrationInfo version = getNewestVersion();
+                    if (version != null) {
+                        baseline(version.getVersion(), version.getDescription());
+                    }
+                } else {
+                    throw new SQLException("Cannot create " + schemaName + " as there are tables already present");
                 }
-            } else {
-                throw new SQLException("Cannot create " + schemaName + " as there are tables already present");
             }
         }
     }

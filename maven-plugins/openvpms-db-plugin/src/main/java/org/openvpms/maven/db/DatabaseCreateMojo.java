@@ -204,7 +204,7 @@ public class DatabaseCreateMojo extends AbstractHibernateMojo {
         dataSource.setUsername(getAdminUsername());
         dataSource.setPassword(getAdminPassword());
         dataSource.setUrl(getUrl());
-        DBTool tool = new DBTool(getDriver(), getUrl(), getUsername(), getPassword());
+        DBTool tool = new DBTool(getDriver(), getUrl(), getUsername(), getPassword(), null);
 
         try (Connection connection = dataSource.getConnection()) {
             DbSupport dbSupport = DbSupportFactory.createDbSupport(connection, true);
@@ -218,7 +218,7 @@ public class DatabaseCreateMojo extends AbstractHibernateMojo {
         }
         try {
             getLog().info("Creating database " + tool.getSchemaName());
-            tool.create(getAdminUsername(), getAdminPassword());
+            tool.create(getAdminUsername(), getAdminPassword(), true);
         } catch (SQLException exception) {
             throw new MojoExecutionException("Failed to create database " + tool.getSchemaName(), exception);
         }

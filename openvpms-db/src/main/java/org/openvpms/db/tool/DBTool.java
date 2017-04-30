@@ -24,16 +24,24 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.flywaydb.core.api.MigrationInfo;
+import org.flywaydb.core.api.callback.BaseFlywayCallback;
+import org.flywaydb.core.api.callback.FlywayCallback;
 import org.flywaydb.core.internal.info.MigrationInfoDumper;
+import org.flywaydb.core.internal.util.TimeFormat;
 import org.openvpms.db.service.impl.DatabaseServiceImpl;
 
 import java.io.Console;
 import java.io.FileInputStream;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -43,6 +51,9 @@ import java.util.Properties;
  */
 public class DBTool {
 
+    /**
+     * The database service.
+     */
     private final DatabaseServiceImpl service;
 
     /**
@@ -57,9 +68,10 @@ public class DBTool {
      * @param url      the driver url
      * @param user     the database user name
      * @param password the database password
+     * @param listener the listener to notify of Flyway events. May be {@code null}
      */
-    public DBTool(String driver, String url, String user, String password) {
-        service = new DatabaseServiceImpl(driver, url, user, password);
+    public DBTool(String driver, String url, String user, String password, FlywayCallback listener) {
+        service = new DatabaseServiceImpl(driver, url, user, password, listener);
     }
 
     /**
@@ -76,10 +88,12 @@ public class DBTool {
      *
      * @param adminUser     the admin user
      * @param adminPassword the admin password
+     * @param createTables  if {@code true}, create the tables, and base-line
      * @throws SQLException for any SQL error
      */
-    public void create(String adminUser, String adminPassword) throws SQLException {
-        service.create(adminUser, adminPassword);
+    public void create(String adminUser, String adminPassword, boolean createTables) throws SQLException {
+        service.create(adminUser, adminPassword, createTables);
+        System.out.println("Created " + service.getSchemaName());
     }
 
     /**
@@ -161,24 +175,31 @@ public class DBTool {
                 String user = getRequired("hibernate.connection.username", properties);
                 String password = getRequired("hibernate.connection.password", properties);
 
-                DBTool tool = new DBTool(driver, url, user, password);
-                if (config.getBoolean("create") && (user = config.getString("user")) != null) {
-                    password = config.getString("password");
-                    if (StringUtils.isEmpty(password)) {
-                        Console console = System.console();
-                        if (console == null) {
-                            System.err.println("This command must be executed in a console");
-                            System.exit(1);
-                        }
-                        console.printf("Enter password: ");
-                        char[] pass;
-                        while ((pass = console.readPassword()) == null || pass.length == 0) {
+                DBTool tool = new DBTool(driver, url, user, password, new FlywayLogger());
+                String create = config.getString("create");
+                if (create != null && (user = config.getString("user")) != null) {
+                    boolean install = "install".equals(create);
+                    boolean restore = "restore".equals(create);
+                    if (install || restore) {
+                        password = config.getString("password");
+                        if (StringUtils.isEmpty(password)) {
+                            Console console = System.console();
+                            if (console == null) {
+                                System.err.println("This command must be executed in a console");
+                                System.exit(1);
+                            }
                             console.printf("Enter password: ");
+                            char[] pass;
+                            while ((pass = console.readPassword()) == null || pass.length == 0) {
+                                console.printf("Enter password: ");
+                            }
+                            password = new String(pass);
+                            Arrays.fill(pass, ' ');
                         }
-                        password = new String(pass);
-                        Arrays.fill(pass, ' ');
+                        tool.create(user, password, install);
+                    } else {
+                        displayUsage(config);
                     }
-                    tool.create(user, password);
                 } else if (config.getBoolean("info")) {
                     tool.info();
                 } else if (config.getBoolean("update")) {
@@ -202,8 +223,8 @@ public class DBTool {
                                     System.exit(1);
                                 }
                             }
-                            tool.update();
                         }
+                        tool.update();
                     } else {
                         System.out.println("Database is up to date");
                     }
@@ -242,7 +263,7 @@ public class DBTool {
      */
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
-        parser.registerParameter(new Switch("create").setLongFlag("create").setDefault("false").setHelp(
+        parser.registerParameter(new FlaggedOption("create").setLongFlag("create").setDefault("false").setHelp(
                 "Create the OpenVPMS database."));
         parser.registerParameter(new FlaggedOption("user").setShortFlag('u').setHelp("Admin user to create database"));
         parser.registerParameter(new FlaggedOption("password").setShortFlag('p')
@@ -277,8 +298,13 @@ public class DBTool {
         System.err.println();
         System.err.println("Usage: dbtool [options]");
         System.err.println();
-        System.err.println("  --create -u <user> [-p <password>]");
-        System.err.println("    Creates the database");
+        System.err.println("  --create <install | restore> -u <user> [-p <password>]");
+        System.err.println("    Creates the database. When:");
+        System.err.println("    . install is specified, the database and tables will be created and version " +
+                           "information added.");
+        System.err.println("      Use this for new installations.");
+        System.err.println("    . restore is specified, an empty database will be created.");
+        System.err.println("      Use this when restoring backups to a new server");
         System.err.println();
         System.err.println("  --update");
         System.err.println("    Updates the database to the latest version");
@@ -297,4 +323,27 @@ public class DBTool {
         System.exit(1);
     }
 
+    private static class FlywayLogger extends BaseFlywayCallback {
+
+        private final Map<MigrationInfo, StopWatch> state = new HashMap<>();
+
+        @Override
+        public void beforeEachMigrate(Connection connection, MigrationInfo info) {
+            StopWatch watch = new StopWatch();
+            state.put(info, watch);
+            System.out.print("Updating to " + info.getVersion() + " - " + info.getDescription() + " ... ");
+            watch.start();
+        }
+
+        @Override
+        public void afterEachMigrate(Connection connection, MigrationInfo info) {
+            String time = "";
+            StopWatch watch = state.get(info);
+            if (watch != null) {
+                watch.stop();
+                time = TimeFormat.format(watch.getTime());
+                System.out.println(time);
+            }
+        }
+    }
 }
