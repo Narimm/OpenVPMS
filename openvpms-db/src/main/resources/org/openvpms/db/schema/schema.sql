@@ -34,6 +34,49 @@ CREATE TABLE `act_details` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `act_identities`
+--
+
+DROP TABLE IF EXISTS `act_identities`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `act_identities` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `version` bigint(20) NOT NULL,
+  `linkId` varchar(36) NOT NULL,
+  `act_id` bigint(20) DEFAULT NULL,
+  `arch_short_name` varchar(50) NOT NULL,
+  `arch_version` varchar(20) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `active` bit(1) DEFAULT NULL,
+  `identity` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `act_identity_idx` (`arch_short_name`,`identity`),
+  KEY `FK2EA137A9D8B907FA` (`act_id`),
+  CONSTRAINT `FK2EA137A9D8B907FA` FOREIGN KEY (`act_id`) REFERENCES `acts` (`act_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `act_identity_details`
+--
+
+DROP TABLE IF EXISTS `act_identity_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `act_identity_details` (
+  `id` bigint(20) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `value` varchar(5000) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`,`name`),
+  KEY `FKC3054BCE13C93C8B` (`id`),
+  CONSTRAINT `FKC3054BCE13C93C8B` FOREIGN KEY (`id`) REFERENCES `act_identities` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `act_relationship_details`
 --
 
@@ -73,7 +116,7 @@ CREATE TABLE `act_relationships` (
   KEY `FK70AA344EC84DFFD1` (`source_id`),
   CONSTRAINT `FK70AA344EC84DFFD1` FOREIGN KEY (`source_id`) REFERENCES `acts` (`act_id`) ON DELETE CASCADE,
   CONSTRAINT `FK70AA344EFCECFA9B` FOREIGN KEY (`target_id`) REFERENCES `acts` (`act_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=148 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -97,7 +140,7 @@ CREATE TABLE `action_type_descriptors` (
   PRIMARY KEY (`action_type_desc_id`),
   KEY `FK7974D848936158C3` (`assertion_type_desc_id`),
   CONSTRAINT `FK7974D848936158C3` FOREIGN KEY (`assertion_type_desc_id`) REFERENCES `assertion_type_descriptors` (`assertion_type_desc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -127,7 +170,7 @@ CREATE TABLE `acts` (
   KEY `act_start_time_idx` (`activity_start_time`),
   KEY `act_short_name_status2_idx` (`arch_short_name`,`status2`),
   KEY `act_end_time_idx` (`activity_end_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=392 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -152,7 +195,7 @@ CREATE TABLE `archetype_descriptors` (
   `is_primary` bit(1) DEFAULT NULL,
   PRIMARY KEY (`archetype_desc_id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=437 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -176,7 +219,7 @@ CREATE TABLE `assertion_descriptors` (
   PRIMARY KEY (`assertion_desc_id`),
   KEY `FKA1159D27273C243C` (`node_desc_id`),
   CONSTRAINT `FKA1159D27273C243C` FOREIGN KEY (`node_desc_id`) REFERENCES `node_descriptors` (`node_desc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=882 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -196,7 +239,7 @@ CREATE TABLE `assertion_type_descriptors` (
   `active` bit(1) DEFAULT NULL,
   `property_archetype` varchar(255) NOT NULL,
   PRIMARY KEY (`assertion_type_desc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -278,7 +321,7 @@ CREATE TABLE `contacts` (
   PRIMARY KEY (`contact_id`),
   KEY `FKDE2D60537649DB4E` (`party_id`),
   CONSTRAINT `FKDE2D60537649DB4E` FOREIGN KEY (`party_id`) REFERENCES `parties` (`party_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -341,7 +384,7 @@ CREATE TABLE `documents` (
   `checksum` bigint(20) DEFAULT NULL,
   `contents` longblob,
   PRIMARY KEY (`document_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -364,7 +407,7 @@ CREATE TABLE `entities` (
   KEY `entity_arch_sn_name_idx` (`arch_short_name`,`name`),
   KEY `entity_name_idx` (`name`),
   KEY `entity_short_name_idx` (`arch_short_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1279 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -425,7 +468,7 @@ CREATE TABLE `entity_identities` (
   KEY `entity_identity_name_idx` (`name`),
   KEY `FKB1D93FB84372B7A1` (`entity_id`),
   CONSTRAINT `FKB1D93FB84372B7A1` FOREIGN KEY (`entity_id`) REFERENCES `entities` (`entity_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=871 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -489,7 +532,7 @@ CREATE TABLE `entity_links` (
   KEY `FK3FCDE05DA5B2869` (`source_id`),
   CONSTRAINT `FK3FCDE05D3EFA2333` FOREIGN KEY (`target_id`) REFERENCES `entities` (`entity_id`),
   CONSTRAINT `FK3FCDE05DA5B2869` FOREIGN KEY (`source_id`) REFERENCES `entities` (`entity_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1251 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -538,7 +581,7 @@ CREATE TABLE `entity_relationships` (
   CONSTRAINT `FK861BFDDF3EFA2333` FOREIGN KEY (`target_id`) REFERENCES `entities` (`entity_id`) ON DELETE CASCADE,
   CONSTRAINT `FK861BFDDF529A044` FOREIGN KEY (`identity_id`) REFERENCES `entity_identities` (`entity_identity_id`),
   CONSTRAINT `FK861BFDDFA5B2869` FOREIGN KEY (`source_id`) REFERENCES `entities` (`entity_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=444 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -608,7 +651,7 @@ CREATE TABLE `granted_authorities` (
   `method` varchar(255) DEFAULT NULL,
   `archetype` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`granted_authority_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=172 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -668,7 +711,7 @@ CREATE TABLE `lookup_relationships` (
   KEY `FK2C88AF36C11A6889` (`source_id`),
   CONSTRAINT `FK2C88AF36C11A6889` FOREIGN KEY (`source_id`) REFERENCES `lookups` (`lookup_id`) ON DELETE CASCADE,
   CONSTRAINT `FK2C88AF36F5B96353` FOREIGN KEY (`target_id`) REFERENCES `lookups` (`lookup_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=224 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -692,7 +735,7 @@ CREATE TABLE `lookups` (
   PRIMARY KEY (`lookup_id`),
   UNIQUE KEY `arch_short_name` (`arch_short_name`,`code`),
   KEY `lookup_short_name_index` (`arch_short_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3220 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -732,7 +775,7 @@ CREATE TABLE `node_descriptors` (
   KEY `FKAB46B42775928C22` (`archetype_desc_id`),
   CONSTRAINT `FKAB46B42775928C22` FOREIGN KEY (`archetype_desc_id`) REFERENCES `archetype_descriptors` (`archetype_desc_id`) ON DELETE CASCADE,
   CONSTRAINT `FKAB46B427F01904C0` FOREIGN KEY (`parent_id`) REFERENCES `node_descriptors` (`node_desc_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3763 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -783,7 +826,7 @@ CREATE TABLE `participations` (
   KEY `FKA301B524372B7A1` (`entity_id`),
   CONSTRAINT `FKA301B524372B7A1` FOREIGN KEY (`entity_id`) REFERENCES `entities` (`entity_id`),
   CONSTRAINT `FKA301B52D8B907FA` FOREIGN KEY (`act_id`) REFERENCES `acts` (`act_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=703 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -861,7 +904,7 @@ CREATE TABLE `product_prices` (
   PRIMARY KEY (`product_price_id`),
   KEY `FKFBD40D9AE51F1FB7` (`product_id`),
   CONSTRAINT `FKFBD40D9AE51F1FB7` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1111 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -914,7 +957,7 @@ CREATE TABLE `security_roles` (
   `description` varchar(255) DEFAULT NULL,
   `active` bit(1) DEFAULT NULL,
   PRIMARY KEY (`security_role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -962,4 +1005,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-11-12  7:14:05
+-- Dump completed on 2017-04-30  3:10:04

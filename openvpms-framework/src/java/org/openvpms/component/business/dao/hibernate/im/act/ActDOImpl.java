@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -59,6 +60,11 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
      * The secondary status of the act.
      */
     private String status2;
+
+    /**
+     * The identities of this.
+     */
+    private Set<ActIdentityDO> identities = new HashSet<>();
 
     /**
      * The relationships to other acts where this is the source.
@@ -192,6 +198,37 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
     }
 
     /**
+     * Adds an identity.
+     *
+     * @param identity the entity identity to add
+     */
+    @Override
+    public void addIdentity(ActIdentityDO identity) {
+        identities.add(identity);
+    }
+
+    /**
+     * Removes an identity.
+     *
+     * @param identity the identity to remove
+     * @return {@code true} if the identity was removed
+     */
+    @Override
+    public boolean removeIdentity(ActIdentity identity) {
+        return identities.remove(identity);
+    }
+
+    /**
+     * Returns the identities.
+     *
+     * @return the identities
+     */
+    @Override
+    public Set<ActIdentityDO> getIdentities() {
+        return identities;
+    }
+
+    /**
      * Returns the relationships to other acts where this is the source.
      *
      * @return the source relationships
@@ -273,6 +310,15 @@ public class ActDOImpl extends IMObjectDOImpl implements ActDO {
      */
     public void removeParticipation(ParticipationDO participation) {
         participations.remove(participation);
+    }
+
+    /**
+     * Sets the identities.
+     *
+     * @param identities the identities
+     */
+    protected void setIdentities(Set<ActIdentityDO> identities) {
+        this.identities = identities;
     }
 
     /**

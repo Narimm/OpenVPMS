@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -153,7 +153,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
 
     /**
      * Invoked when the object needs to be refreshed.
-     * <p>
+     * <p/>
      * This implementation updates the object and notifies any registered listener.
      *
      * @param object the object
@@ -286,7 +286,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     private void onNewFlowSheet() {
         final Act object = IMObjectHelper.reload(getObject());
         Party location = getContext().getLocation();
-        if (object != null && flowSheetServiceFactory.supportsSmartFlowSheet(location)) {
+        if (object != null && flowSheetServiceFactory.isSmartFlowSheetEnabled(location)) {
             NewFlowSheetTask task = new NewFlowSheetTask(object, location, flowSheetServiceFactory, getHelpContext());
             task.addTaskListener(new DefaultTaskListener() {
                 @Override
@@ -336,7 +336,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
          */
         public boolean canCreateFlowSheet(Act act, Party location, FlowSheetServiceFactory factory) {
             if (location != null && TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT, ScheduleArchetypes.TASK)
-                && factory.supportsSmartFlowSheet(location)) {
+                && factory.isSmartFlowSheetEnabled(location)) {
                 ActBean bean = new ActBean(act);
                 return bean.getNodeParticipantRef("patient") != null;
             }

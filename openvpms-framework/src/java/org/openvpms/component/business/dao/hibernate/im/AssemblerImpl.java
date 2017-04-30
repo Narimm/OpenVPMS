@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im;
 
 import org.openvpms.component.business.dao.hibernate.im.act.ActAssembler;
+import org.openvpms.component.business.dao.hibernate.im.act.ActIdentityAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.DocumentActAssembler;
 import org.openvpms.component.business.dao.hibernate.im.act.FinancialActAssembler;
@@ -61,6 +62,7 @@ public class AssemblerImpl extends CompoundAssembler {
         addAssembler(new ActRelationshipAssembler());
         addAssembler(new DocumentActAssembler());
         addAssembler(new FinancialActAssembler());
+        addAssembler(new ActIdentityAssembler());
 
         addAssembler(new ActionTypeDescriptorAssembler());
         addAssembler(new ArchetypeDescriptorAssembler());

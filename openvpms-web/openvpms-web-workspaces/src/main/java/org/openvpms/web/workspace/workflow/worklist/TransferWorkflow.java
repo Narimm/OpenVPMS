@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -99,7 +99,7 @@ public class TransferWorkflow extends WorkflowImpl {
         addTask(new UpdateWorkListTask(task));
 
         FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-        if (location != null && factory.supportsSmartFlowSheet(location)) {
+        if (factory.isSmartFlowSheetEnabled(location)) {
             addTask(new AddFlowSheetTask(task, factory, help));
         }
 

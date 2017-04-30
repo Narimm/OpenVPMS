@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -127,7 +127,7 @@ public class TransferWorkflow extends WorkflowImpl {
         // add a Flow Sheet for ADMITTED/IN_PROGRESS appointments, if required by the work list
         if (IN_PROGRESS.equals(status) || ADMITTED.equals(status)) {
             FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-            if (factory.supportsSmartFlowSheet(location)) {
+            if (factory.isSmartFlowSheetEnabled(location)) {
                 addTask(new AddFlowSheetTask(factory, help));
             }
         }

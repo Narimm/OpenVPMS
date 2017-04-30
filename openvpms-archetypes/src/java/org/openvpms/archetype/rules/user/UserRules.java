@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -38,8 +39,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -218,6 +221,40 @@ public class UserRules {
     }
 
     /**
+     * Returns all users in a list of users and groups.
+     *
+     * @param usersOrGroups the list of users and groups
+     * @return the users in the list
+     */
+    public Set<User> getUsers(List<Entity> usersOrGroups) {
+        Set<User> result = new HashSet<>();
+        Set<Entity> groups = new HashSet<>();
+        for (Entity entity : usersOrGroups) {
+            if (entity instanceof User) {
+                result.add((User) entity);
+            } else if (entity != null) {
+                if (!groups.contains(entity)) {
+                    groups.add(entity);
+                    List<User> users = getUsers(entity);
+                    result.addAll(users);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all users in a group.
+     *
+     * @param group the <em>entity.userGroup</em>.
+     * @return the users
+     */
+    public List<User> getUsers(Entity group) {
+        IMObjectBean bean = new IMObjectBean(group, service);
+        return bean.getNodeTargetObjects("users", User.class);
+    }
+
+    /**
      * Returns the follow-up work lists associated with a user.
      *
      * @param user the user
@@ -225,6 +262,22 @@ public class UserRules {
      */
     public List<Entity> getFollowupWorkLists(User user) {
         return new EntityBean(user, service).getNodeTargetEntities("followupWorkLists", SequenceComparator.INSTANCE);
+    }
+
+    /**
+     * Returns all active users available at a practice location.
+     * <p/>
+     * These are the users that have a link to the location, or no links to any location.
+     *
+     * @param location the practice location
+     * @return the active users available at the location
+     */
+    @SuppressWarnings("unchecked")
+    public List<User> getClinicians(Party location) {
+        IArchetypeQuery query = ClinicianQueryFactory.create(location);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List results = service.get(query).getResults();
+        return (List<User>) results;
     }
 
     /**

@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 
 import java.util.Date;
 import java.util.Set;
@@ -113,6 +114,28 @@ public interface ActDO extends IMObjectDO {
      * @param status the secondary act status. May be {@code null}
      */
     void setStatus2(String status);
+
+    /**
+     * Adds an identity.
+     *
+     * @param identity the entity identity to add
+     */
+    void addIdentity(ActIdentityDO identity);
+
+    /**
+     * Removes an identity.
+     *
+     * @param identity the identity to remove
+     * @return {@code true} if the identity was removed
+     */
+    boolean removeIdentity(ActIdentity identity);
+
+    /**
+     * Returns the identities.
+     *
+     * @return the identities
+     */
+    Set<ActIdentityDO> getIdentities();
 
     /**
      * Returns the relationships to other acts where this is the source.
