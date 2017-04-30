@@ -5,8 +5,8 @@ The OpenVPMS schema is located in src/main/resources/org/openvpms/db/schema/sche
 This is currently generated manually by:
 
 1. dropping the existing schema, and re-creating it in mysql:
-   > drop schema `openvpms-1_8`;
-   > create schema `openvpms-1_8`;
+   drop schema `openvpms-1_8`;
+   create schema `openvpms-1_8`;
 
 2. Running hibernate3:hbm2ddl in openvpms-release
    This is required as it includes the etl_log table from openvpms-etl-load

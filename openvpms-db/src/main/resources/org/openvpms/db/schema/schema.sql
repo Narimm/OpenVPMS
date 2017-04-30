@@ -46,11 +46,11 @@ CREATE TABLE `act_identities` (
   `linkId` varchar(36) NOT NULL,
   `act_id` bigint(20) DEFAULT NULL,
   `arch_short_name` varchar(50) NOT NULL,
-  `arch_version` varchar(50) NOT NULL,
+  `arch_version` varchar(20) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `active` bit(1) DEFAULT NULL,
-  `identity` varchar(255) DEFAULT NULL,
+  `identity` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `act_identity_idx` (`arch_short_name`,`identity`),
   KEY `FK2EA137A9D8B907FA` (`act_id`),
@@ -1005,4 +1005,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-04-18 13:27:13
+-- Dump completed on 2017-04-30  3:10:04
