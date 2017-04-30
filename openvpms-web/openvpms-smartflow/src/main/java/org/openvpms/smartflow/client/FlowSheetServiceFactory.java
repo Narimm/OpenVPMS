@@ -139,7 +139,7 @@ public class FlowSheetServiceFactory {
      */
     public ReferenceDataService getReferenceDataService(Party location) {
         String clinicKey = getRequiredClinicAPIKey(location);
-        return new ReferenceDataService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service);
+        return new ReferenceDataService(url, emrApiKey, clinicKey, TimeZone.getDefault(), location, service);
     }
 
     /**

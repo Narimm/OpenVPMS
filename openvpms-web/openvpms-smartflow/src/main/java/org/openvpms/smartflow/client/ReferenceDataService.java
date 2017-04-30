@@ -18,12 +18,12 @@ package org.openvpms.smartflow.client;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.user.ClinicianQueryFactory;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.i18n.Message;
-import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Department;
@@ -41,9 +41,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import static org.openvpms.component.system.common.query.Constraints.eq;
-import static org.openvpms.component.system.common.query.Constraints.join;
-
 /**
  * Smart Flow Sheet reference data service.
  *
@@ -51,6 +48,11 @@ import static org.openvpms.component.system.common.query.Constraints.join;
  * @author Tim Anderson
  */
 public class ReferenceDataService extends FlowSheetService {
+
+    /**
+     * The practice location.
+     */
+    private final Party location;
 
     /**
      * The archetype service.
@@ -64,11 +66,13 @@ public class ReferenceDataService extends FlowSheetService {
      * @param emrApiKey    the EMR API key
      * @param clinicApiKey the clinic API key
      * @param timeZone     the timezone. This determines how dates are serialized
+     * @param location     the practice location
      * @param service      the archetype service
      */
     public ReferenceDataService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone,
-                                IArchetypeService service) {
+                                Party location, IArchetypeService service) {
         super(url, emrApiKey, clinicApiKey, timeZone, LogFactory.getLog(ReferenceDataService.class));
+        this.location = location;
         this.service = service;
     }
 
@@ -161,7 +165,7 @@ public class ReferenceDataService extends FlowSheetService {
     }
 
     /**
-     * Synchronise medics.
+     * Synchronises medics.
      *
      * @return the synchronisation state
      */
@@ -266,8 +270,7 @@ public class ReferenceDataService extends FlowSheetService {
      * @return the clinicians
      */
     private Iterator<User> getClinicians() {
-        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
-        query.add(join("classifications", new ArchetypeIdConstraint("lookup.userType")).add(eq("code", "CLINICIAN")));
+        IArchetypeQuery query = ClinicianQueryFactory.create(location);
         return new IMObjectQueryIterator<>(service, query);
     }
 
