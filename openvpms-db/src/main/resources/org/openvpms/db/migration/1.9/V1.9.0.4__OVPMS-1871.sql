@@ -37,3 +37,51 @@ CREATE TABLE IF NOT EXISTS `act_identity_details` (
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
+
+
+#
+# Create a 'mg' lookup.uom
+#
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.uom',
+    1,
+    '1.0',
+    'MG',
+    'Mg',
+    NULL,
+    0
+  FROM dual
+  WHERE NOT exists(SELECT *
+                   FROM lookups e
+                   WHERE e.arch_short_name = 'lookup.uom' AND e.code = 'MG');
+
+INSERT INTO lookup_details (lookup_id, type, value, name)
+  SELECT
+    l.lookup_id,
+    'string',
+    'mg',
+    'printedName'
+  FROM lookups l
+  where l.arch_short_name = 'lookup.uom'
+	and l.code = 'MG'
+    and NOT exists(SELECT *
+                        FROM lookup_details d
+                        WHERE d.lookup_id = l.lookup_id
+                              AND d.name = 'printedName');
+
+INSERT INTO lookup_details (lookup_id, type, value, name)
+  SELECT
+    l.lookup_id,
+    'string',
+    'MGM',
+    'unitCode'
+  FROM lookups l
+  where l.arch_short_name = 'lookup.uom'
+	and l.code = 'MG'
+    and NOT exists(SELECT *
+                        FROM lookup_details d
+                        WHERE d.lookup_id = l.lookup_id
+                              AND d.name = 'unitCode');
