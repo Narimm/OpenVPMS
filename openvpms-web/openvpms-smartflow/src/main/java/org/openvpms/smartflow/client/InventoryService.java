@@ -20,15 +20,12 @@ import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.iterators.FilterIterator;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductQueryFactory;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.i18n.Message;
@@ -245,35 +242,27 @@ public class InventoryService extends FlowSheetService {
         InventoryItem result = null;
 
         String name = product.getName();
-        Double concentration = null;
+        BigDecimal concentration = null;
+        String concentrationUnits = null;
         String dispensingUnits = null;
-        String weightUnits = null;
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             IMObjectBean bean = new IMObjectBean(product, service);
-            BigDecimal value = bean.getBigDecimal("concentration");
-            if (value != null) {
-                concentration = value.doubleValue();
-                dispensingUnits = bean.getString("dispensingUnits");
+            concentration = bean.getBigDecimal("concentration");
+            concentrationUnits = bean.getString("concentrationUnits");
+            dispensingUnits = bean.getString("dispensingUnits");
 
-                List<SequencedRelationship> relationships = bean.getValues("doses", SequencedRelationship.class);
-                if (relationships.size() > 1) {
-                    Collections.sort(relationships, SequenceComparator.INSTANCE);
-                }
-                if (!relationships.isEmpty()) {
-                    IMObjectReference reference = relationships.get(0).getTarget();
-                    IMObject dose = (reference != null) ? service.get(reference) : null;
-                    if (dose != null) {
-                        IMObjectBean doseBean = new IMObjectBean(dose, service);
-                        weightUnits = doseBean.getString("weightUnits");
-                    }
-                }
+            if (concentration == null || concentrationUnits == null || dispensingUnits == null) {
+                // need all three values when specifying SFS concentration
+                concentration = null;
+                concentrationUnits = null;
+                dispensingUnits = null;
             }
         }
         if (item == null || !ObjectUtils.equals(name, item.getName())
-            || !ObjectUtils.equals(concentration, item.getConcentration())
-            || !ObjectUtils.equals(dispensingUnits, item.getConcentrationUnits())
-            || !ObjectUtils.equals(weightUnits, item.getConcentrationVolume())) {
-            result = createItem(id, name, concentration, dispensingUnits, weightUnits);
+            || !MathRules.equals(concentration, item.getConcentration())
+            || !ObjectUtils.equals(concentrationUnits, item.getConcentrationUnits())
+            || !ObjectUtils.equals(dispensingUnits, item.getConcentrationVolume())) {
+            result = createItem(id, name, concentration, concentrationUnits, dispensingUnits);
         }
         return result;
     }
@@ -288,7 +277,7 @@ public class InventoryService extends FlowSheetService {
      * @param weightUnits     the weight units. May be {@code null}
      * @return a new inventory item
      */
-    private InventoryItem createItem(String id, String name, Double concentration, String dispensingUnits,
+    private InventoryItem createItem(String id, String name, BigDecimal concentration, String dispensingUnits,
                                      String weightUnits) {
         InventoryItem item = new InventoryItem();
         item.setId(id);

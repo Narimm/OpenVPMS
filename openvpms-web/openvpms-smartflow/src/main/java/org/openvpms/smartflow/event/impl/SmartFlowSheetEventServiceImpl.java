@@ -367,10 +367,10 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
         try {
             Set<Party> locations = locationsByKey.get(key);
             if (locations == null) {
-                locations = new HashSet<>();
-                locationsByKey.put(key, locations);
                 ServiceBusConfig config = getConfig(location);
                 EventDispatcher dispatcher = new DefaultEventDispatcher(location, service, factory, rules);
+                locations = new HashSet<>();
+                locationsByKey.put(key, locations);
                 dispatchers.put(key, dispatcher);
                 reader = new QueueReader(config, dispatcher, getServiceUser(), executor, transactionManager, interval);
                 readers.put(key, reader);

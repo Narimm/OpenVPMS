@@ -18,6 +18,8 @@ package org.openvpms.smartflow.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.math.BigDecimal;
+
 /**
  * Smart Flow Sheet inventory item.
  *
@@ -46,7 +48,7 @@ public class InventoryItem {
      * The concentration value for the given medication. This value should not be specified if the inventory item is not
      * a medication. Optional.
      */
-    private Double concentration;
+    private BigDecimal concentration;
 
     /**
      * Units that define the amount of drug. There is no limitation on what data will be transferred.
@@ -125,7 +127,7 @@ public class InventoryItem {
      *
      * @return the concentration. May be {@code null}
      */
-    public Double getConcentration() {
+    public BigDecimal getConcentration() {
         return concentration;
     }
 
@@ -134,7 +136,7 @@ public class InventoryItem {
      *
      * @param concentration the concentration. May be {@code null}
      */
-    public void setConcentration(Double concentration) {
+    public void setConcentration(BigDecimal concentration) {
         this.concentration = concentration;
     }
 
