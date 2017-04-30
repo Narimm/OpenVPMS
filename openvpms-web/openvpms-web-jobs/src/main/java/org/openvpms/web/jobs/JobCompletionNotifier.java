@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -27,7 +28,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.web.workspace.workflow.messaging.MessageHelper;
 
 import java.util.Set;
 
@@ -53,6 +53,11 @@ public class JobCompletionNotifier {
      */
     private final int messageLength;
 
+    /**
+     * The user rules.
+     */
+    private final UserRules rules;
+
 
     /**
      * Constructs a {@link JobCompletionNotifier}.
@@ -61,6 +66,7 @@ public class JobCompletionNotifier {
      */
     public JobCompletionNotifier(IArchetypeService service) {
         this.service = service;
+        rules = new UserRules(service);
         ArchetypeDescriptor descriptor = DescriptorHelper.getArchetypeDescriptor(MessageArchetypes.SYSTEM, service);
         subjectLength = getMaxLength(descriptor, "description");
         messageLength = getMaxLength(descriptor, "message");
@@ -74,7 +80,7 @@ public class JobCompletionNotifier {
      */
     public Set<User> getUsers(Entity configuration) {
         EntityBean bean = new EntityBean(configuration, service);
-        return MessageHelper.getUsers(bean.getNodeTargetEntities("notify"), service);
+        return rules.getUsers(bean.getNodeTargetEntities("notify"));
     }
 
     /**

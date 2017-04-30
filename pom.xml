@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -583,7 +583,7 @@
                 <release.jdbc.url>${build.jdbc.url}</release.jdbc.url>
                 <release.jdbc.username>${build.jdbc.username}</release.jdbc.username>
                 <release.jdbc.password>${build.jdbc.password}</release.jdbc.password>
-                <smartflow.url>https://sfs-public.azurewebsites.net/api/v3</smartflow.url>
+                <smartflow.url>https://sandbox.smartflowsheet.com/api/v3</smartflow.url>
                 <smartflow.emrApiKey>873af17b2163255a3eb70a7d7413be152657bfab</smartflow.emrApiKey>
             </properties>
         </profile>
@@ -592,7 +592,7 @@
             <properties>
                 <release.jdbc.url>jdbc:mysql://localhost:3306/openvpms</release.jdbc.url>
                 <smartflow.url>https://www.smartflowsheet.com/api/v3</smartflow.url>
-                <smartflow.emrApiKey>534bf0dae63b8755b2206daf33955c79c1362ef2</smartflow.emrApiKey>
+                <smartflow.emrApiKey>7d6e3ef29d9f4be3bf08aab328f89483894d6e3a</smartflow.emrApiKey>
             </properties>
         </profile>
     </profiles>

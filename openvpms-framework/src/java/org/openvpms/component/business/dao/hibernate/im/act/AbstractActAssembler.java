@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.act;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
 
@@ -35,6 +36,12 @@ import org.openvpms.component.business.domain.im.common.Participation;
  */
 public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         extends IMObjectAssembler<T, DO> {
+
+    /**
+     * Assembles sets of identities.
+     */
+    private static final SetAssembler<ActIdentity, ActIdentityDO> IDENTITIES
+            = SetAssembler.create(ActIdentity.class, ActIdentityDO.class);
 
     /**
      * Assembles sets of participations.
@@ -80,6 +87,7 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         target.setReason(source.getReason());
         target.setStatus(source.getStatus());
         target.setStatus2(source.getStatus2());
+        IDENTITIES.assembleDO(target.getIdentities(), source.getIdentities(), state, context);
         RELATIONSHIPS.assembleDO(target.getSourceActRelationships(),
                                  source.getSourceActRelationships(),
                                  state, context);
@@ -113,6 +121,7 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         target.setReason(source.getReason());
         target.setStatus(source.getStatus());
         target.setStatus2(source.getStatus2());
+        IDENTITIES.assembleObject(target.getIdentities(), source.getIdentities(), context);
         RELATIONSHIPS.assembleObject(target.getSourceActRelationships(),
                                      source.getSourceActRelationships(),
                                      context);

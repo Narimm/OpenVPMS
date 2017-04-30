@@ -169,7 +169,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                             .withBody(expected)));
 
         HospitalizationService client = createService();
-        client.add(context, 2, null);
+        client.add(context, 2, -1, null);
 
         List<LoggedRequest> requests = WireMock.findAll(postRequestedFor(urlEqualTo("/hospitalization")));
         assertEquals(1, requests.size());
@@ -193,7 +193,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
 
         HospitalizationService client = createService();
         try {
-            client.add(context, 2, null);
+            client.add(context, 2, -1, null);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
             assertEquals("SFS-0101: Failed to create Flow Sheet for Fido", exception.getMessage());
@@ -216,7 +216,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                             .withBody(body)));
         HospitalizationService client = createService();
         try {
-            client.add(context, 2, null);
+            client.add(context, 2, -1, null);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
             assertEquals("SFS-0103: Failed to connect to Smart Flow Sheet.\n\n"
@@ -306,7 +306,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         String url = "http://localhost:" + wireMockRule.port() + "/";
         return new HospitalizationService(url, "foo", "bar", TimeZone.getTimeZone("Australia/Sydney"),
                                           getArchetypeService(), getLookupService(),
-                                          new DocumentHandlers(getArchetypeService()));
+                                          new DocumentHandlers(getArchetypeService()),
+                                          new MedicalRecordRules(getArchetypeService()));
     }
 
 }

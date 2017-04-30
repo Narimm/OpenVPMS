@@ -176,6 +176,18 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the maximum length of a node.
+     *
+     * @param name the node name
+     * @return the maximum length
+     * @throws IMObjectBeanException if the node doesn't exist
+     */
+    public int getMaxLength(String name) {
+        NodeDescriptor node = getNode(name);
+        return node.getMaxLength();
+    }
+
+    /**
      * Returns the archetype range associated with a node, expanding any wildcards.
      *
      * @param name the node name

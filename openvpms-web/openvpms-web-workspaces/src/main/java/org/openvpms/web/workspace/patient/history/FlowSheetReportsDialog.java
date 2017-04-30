@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -22,6 +22,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
+import org.openvpms.smartflow.i18n.FlowSheetMessages;
+import org.openvpms.smartflow.model.Anesthetic;
+import org.openvpms.smartflow.model.Anesthetics;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -31,6 +34,9 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Flow Sheets Reports Import dialog.
@@ -47,44 +53,39 @@ public class FlowSheetReportsDialog extends PopupDialog {
     private final PatientContext context;
 
     /**
+     * The hospitalization service.
+     */
+    private HospitalizationService service;
+
+    /**
+     * The anesthetics.
+     */
+    private final List<Anesthetic> anesthetics;
+
+    /**
      * Determines if the medical records report is imported.
      */
-    private final CheckBox medicalRecords;
+    private final CheckBox medicalRecordsCheckBox;
 
     /**
      * Determines if the billing report is imported.
      */
-    private final CheckBox billing;
+    private final CheckBox billingCheckBox;
 
     /**
      * Determines if the notes report is imported.
      */
-    private final CheckBox notes;
+    private final CheckBox notesCheckBox;
 
     /**
      * Determines if the flow sheet report is imported.
      */
-    private final CheckBox flowSheet;
+    private final CheckBox flowSheetCheckBox;
 
     /**
-     * Medical records report label.
+     * Determines if the anesthetics report is imported.
      */
-    private static final String MEDICAL = "patient.record.flowsheet.import.medical";
-
-    /**
-     * Billing report label.
-     */
-    private static final String BILLING = "patient.record.flowsheet.import.billing";
-
-    /**
-     * Notes report label.
-     */
-    private static final String NOTES = "patient.record.flowsheet.import.notes";
-
-    /**
-     * Flow sheet report label.
-     */
-    private static final String FLOW_SHEET = "patient.record.flowsheet.import.flowsheet";
+    private final CheckBox anestheticsCheckBox;
 
     /**
      * Constructs a {@link FlowSheetReportsDialog}.
@@ -103,19 +104,38 @@ public class FlowSheetReportsDialog extends PopupDialog {
      */
     public FlowSheetReportsDialog(PatientContext context, boolean skip) {
         super(Messages.get("patient.record.flowsheet.import.title"), "MessageDialog", (skip) ? OK_SKIP : OK_CANCEL);
+        setModal(true);
         this.context = context;
+        FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
+        service = factory.getHospitalizationService(context.getLocation());
+        anesthetics = getAnesthetics(context);
         ActionListener listener = new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                boolean enable = medicalRecords.isSelected() || billing.isSelected() || notes.isSelected()
-                                 || flowSheet.isSelected();
+                boolean enable = medicalRecordsCheckBox.isSelected() || billingCheckBox.isSelected()
+                                 || notesCheckBox.isSelected() || flowSheetCheckBox.isSelected()
+                                 || anestheticsCheckBox.isSelected();
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
-        medicalRecords = CheckBoxFactory.create(MEDICAL, true, listener);
-        billing = CheckBoxFactory.create(BILLING, true, listener);
-        notes = CheckBoxFactory.create(NOTES, true, listener);
-        flowSheet = CheckBoxFactory.create(FLOW_SHEET, true, listener);
+        medicalRecordsCheckBox = createCheckBox(FlowSheetMessages.medicalRecordsReportName(), listener);
+        billingCheckBox = createCheckBox(FlowSheetMessages.billingReportName(), listener);
+        notesCheckBox = createCheckBox(FlowSheetMessages.notesReportName(), listener);
+        flowSheetCheckBox = createCheckBox(FlowSheetMessages.flowSheetReportName(), listener);
+        anestheticsCheckBox = createCheckBox(FlowSheetMessages.anaestheticReportName(), listener);
+        if (anesthetics.isEmpty()) {
+            anestheticsCheckBox.setSelected(false);
+            anestheticsCheckBox.setEnabled(false);
+        }
+    }
+
+    private List<Anesthetic> getAnesthetics(PatientContext context) {
+        List<Anesthetic> result = Collections.emptyList();
+        Anesthetics anesthetics = service.getAnesthetics(context.getPatient(), context.getVisit());
+        if (anesthetics.getAnesthetics() != null) {
+            result = anesthetics.getAnesthetics();
+        }
+        return result;
     }
 
     /**
@@ -124,19 +144,22 @@ public class FlowSheetReportsDialog extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-        HospitalizationService service = factory.getHospitalisationService(context.getLocation());
-        if (medicalRecords.isSelected()) {
-            service.saveMedicalRecords(getName(MEDICAL), context);
+        if (medicalRecordsCheckBox.isSelected()) {
+            service.saveMedicalRecords(context);
         }
-        if (billing.isSelected()) {
-            service.saveBillingReport(getName(BILLING), context);
+        if (billingCheckBox.isSelected()) {
+            service.saveBillingReport(context);
         }
-        if (notes.isSelected()) {
-            service.saveNotesReport(getName(NOTES), context);
+        if (notesCheckBox.isSelected()) {
+            service.saveNotesReport(context);
         }
-        if (flowSheet.isSelected()) {
-            service.saveFlowSheetReport(getName(FLOW_SHEET), context);
+        if (flowSheetCheckBox.isSelected()) {
+            service.saveFlowSheetReport(context);
+        }
+        if (anestheticsCheckBox.isSelected()) {
+            for (Anesthetic anesthetic : anesthetics) {
+                service.saveAnestheticReports(context, anesthetic);
+            }
         }
         super.onOK();
     }
@@ -149,19 +172,23 @@ public class FlowSheetReportsDialog extends PopupDialog {
     @Override
     protected void doLayout() {
         Label label = LabelFactory.create("patient.record.flowsheet.import.message", Styles.BOLD);
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, billing, notes,
-                                             flowSheet);
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecordsCheckBox, billingCheckBox, notesCheckBox,
+                                             flowSheetCheckBox, anestheticsCheckBox);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
     }
 
     /**
-     * Formats a report name.
+     * Creates a new check box, initially selected.
      *
-     * @param key the resource bundle key for the report name
-     * @return the report name
+     * @param text     the text
+     * @param listener the listener
+     * @return a new check box
      */
-    private String getName(String key) {
-        return Messages.format("patient.record.flowsheet.import.name", Messages.get(key));
+    private CheckBox createCheckBox(String text, ActionListener listener) {
+        CheckBox checkBox = CheckBoxFactory.create(true);
+        checkBox.setText(text);
+        checkBox.addActionListener(listener);
+        return checkBox;
     }
 
 }

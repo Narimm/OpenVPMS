@@ -11,24 +11,28 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
 
 import org.apache.commons.logging.Log;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.openvpms.component.system.common.i18n.Message;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.Collections;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -130,6 +134,19 @@ public abstract class FlowSheetService {
     }
 
     /**
+     * Returns a proxy for the specified type.
+     *
+     * @param type   the type
+     * @param client the client
+     * @return a proxy for the type
+     */
+    protected <T> T getResource(Class<T> type, javax.ws.rs.client.Client client) {
+        WebTarget target = getWebTarget(client);
+        return WebResourceFactory.newResource(type, target, false, getHeaders(), Collections.<Cookie>emptyList(),
+                                              EMPTY_FORM);
+    }
+
+    /**
      * Returns a {@code WebTarget} for the SFS url.
      *
      * @param client the client
@@ -150,6 +167,54 @@ public abstract class FlowSheetService {
         header.add("clinicApiKey", clinicApiKey);
         header.add("timezoneName", timeZone.getID());
         return header;
+    }
+
+    /**
+     * Makes a call to a resource, handling common exceptions.
+     *
+     * @param resource the resource type
+     * @param call the call to make on the resource
+     * @return the result of the call
+     * @throws FlowSheetException for any error
+     */
+    protected  <T, R> T call(Class<R> resource, Call<T, R> call) {
+        T result = null;
+        javax.ws.rs.client.Client client = getClient();
+        try {
+            R instance = getResource(resource, client);
+            result = call.call(instance);
+        } catch (FlowSheetException exception) {
+            throw exception;
+        } catch (NotAuthorizedException exception) {
+            notAuthorised(exception);
+        } catch (Exception exception) {
+            checkSSL(exception);
+            Message message = call.failed(exception);
+            throw new FlowSheetException(message, exception);
+        } finally {
+            client.close();
+        }
+        return result;
+    }
+
+    protected interface Call<T, R>  {
+
+        /**
+         * Makes a call to a resource.
+         *
+         * @param resource the resource
+         * @return the result of the call
+         * @throws Exception for any error
+         */
+        T call(R resource) throws Exception;
+
+        /**
+         * Returns a message when a call fails.
+         *
+         * @param exception the cause of the failure
+         * @return a message for the failure.
+         */
+        Message failed(Exception exception);
     }
 
     /**

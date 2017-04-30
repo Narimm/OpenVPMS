@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -23,6 +23,7 @@ import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.PID;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.finance.order.CustomerOrder;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -36,7 +37,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
-import static org.openvpms.hl7.impl.OrderState.addNote;
+import static org.openvpms.archetype.rules.finance.order.CustomerOrder.addNote;
 
 /**
  * Base class for order message processors.
@@ -81,7 +82,7 @@ abstract class OrderMessageProcessor {
      * @param state          the state
      * @return the original order
      */
-    protected Act getOrder(String orderShortName, ORC orc, ActBean bean, OrderState state) {
+    protected Act getOrder(String orderShortName, ORC orc, ActBean bean, CustomerOrder state) {
         Act result = null;
         EI placerOrderNumber = orc.getPlacerOrderNumber();
         String entityIdentifier = placerOrderNumber.getEntityIdentifier().getValue();
@@ -144,14 +145,14 @@ abstract class OrderMessageProcessor {
     }
 
     /**
-     * Creates a new {@link OrderState} using the PID segment.
+     * Creates a new {@link CustomerOrder} using the PID segment.
      *
      * @param pid      the pid
      * @param location the practice location reference
      * @return a new state
      * @throws HL7Exception if the patient does not exist
      */
-    protected OrderState createState(PID pid, IMObjectReference location) throws HL7Exception {
+    protected CustomerOrder createState(PID pid, IMObjectReference location) throws HL7Exception {
         Party patient = null;
         Party customer = null;
         long id;
@@ -194,9 +195,9 @@ abstract class OrderMessageProcessor {
      * @param note     the note. May be {@code null}
      * @param location the practice location. May be {@code null}
      * @param service  the archetype service
-     * @return a new {@link OrderState}
+     * @return a new {@link CustomerOrder}
      */
-    protected abstract OrderState createState(Party patient, Party customer, String note,
+    protected abstract CustomerOrder createState(Party patient, Party customer, String note,
                                               IMObjectReference location, IArchetypeService service);
 
     /**
