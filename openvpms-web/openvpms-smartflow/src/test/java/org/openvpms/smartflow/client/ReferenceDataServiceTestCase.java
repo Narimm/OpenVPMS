@@ -22,6 +22,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.smartflow.model.Department;
 
 import java.util.List;
@@ -91,6 +92,6 @@ public class ReferenceDataServiceTestCase extends ArchetypeServiceTest {
     private ReferenceDataService createService() {
         String url = "http://localhost:" + wireMockRule.port() + "/";
         return new ReferenceDataService(url, "foo", "bar", TimeZone.getTimeZone("Australia/Sydney"),
-                                        getArchetypeService());
+                                        TestHelper.createLocation(), getArchetypeService());
     }
 }

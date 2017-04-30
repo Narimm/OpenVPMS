@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -261,6 +262,22 @@ public class UserRules {
      */
     public List<Entity> getFollowupWorkLists(User user) {
         return new EntityBean(user, service).getNodeTargetEntities("followupWorkLists", SequenceComparator.INSTANCE);
+    }
+
+    /**
+     * Returns all active users available at a practice location.
+     * <p/>
+     * These are the users that have a link to the location, or no links to any location.
+     *
+     * @param location the practice location
+     * @return the active users available at the location
+     */
+    @SuppressWarnings("unchecked")
+    public List<User> getClinicians(Party location) {
+        IArchetypeQuery query = ClinicianQueryFactory.create(location);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List results = service.get(query).getResults();
+        return (List<User>) results;
     }
 
     /**
