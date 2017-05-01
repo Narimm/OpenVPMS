@@ -19,6 +19,7 @@ package org.openvpms.smartflow.client;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.iterators.FilterIterator;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -59,6 +60,11 @@ public class InventoryService extends FlowSheetService {
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(InventoryService.class);
 
     /**
      * Constructs a {@link InventoryService}.
@@ -146,7 +152,7 @@ public class InventoryService extends FlowSheetService {
 
     /**
      * Synchronises products with inventory items.
-     * <p/>
+     * <p>
      * This updates existing inventory items and removes those no longer in use.
      *
      * @param useLocationProducts if {@code true}, products should be restricted to those available at the location or
@@ -180,11 +186,20 @@ public class InventoryService extends FlowSheetService {
             }
         }
         if (!add.isEmpty()) {
+            log.info("synchronise: adding " + added + " new products, updating " + updated + " existing products");
             update(add, UUID.randomUUID());
+        } else {
+            log.info("synchronise: there are no products to add/update");
         }
-        for (InventoryItem item : inventoryItems.values()) {
-            remove(item);
-            removed++;
+
+        if (!inventoryItems.isEmpty()) {
+            log.info("synchronise: removing " + inventoryItems.size() + " products");
+            for (InventoryItem item : inventoryItems.values()) {
+                remove(item);
+                removed++;
+            }
+        } else {
+            log.info("synchronise: there are no products to remove");
         }
         return new SyncState(added, updated, removed);
     }

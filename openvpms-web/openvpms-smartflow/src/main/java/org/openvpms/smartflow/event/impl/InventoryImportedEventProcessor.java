@@ -67,7 +67,7 @@ public class InventoryImportedEventProcessor extends EventProcessor<InventoryImp
     private void imported(List<InventoryItem> items) {
         for (InventoryItem item : items) {
             if (item.getAsyncOperationStatus() != null && item.getAsyncOperationStatus() < 0) {
-                log.error("Failed to synchronized product=[id=" + item.getId() + ", name=" + item.getName() + "]: " +
+                log.error("Failed to synchronize product=[id=" + item.getId() + ", name=" + item.getName() + "]: " +
                           item.getAsyncOperationMessage());
             } else {
                 log.info("Synchronized product=[id=" + item.getId() + ", name=" + item.getName() + "]");
