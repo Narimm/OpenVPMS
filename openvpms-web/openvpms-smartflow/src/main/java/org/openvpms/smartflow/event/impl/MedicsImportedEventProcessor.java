@@ -67,10 +67,10 @@ public class MedicsImportedEventProcessor extends EventProcessor<MedicsImportedE
     private void imported(List<Medic> medics) {
         for (Medic medic : medics) {
             if (medic.getAsyncOperationStatus() != null && medic.getAsyncOperationStatus() < 0) {
-                log.error("Failed to synchronized medic=[id=" + medic.getMedicId() + ", name=" + medic.getName()
+                log.error("Failed to synchronise medic=[id=" + medic.getMedicId() + ", name=" + medic.getName()
                           + "]: " + medic.getAsyncOperationMessage());
             } else {
-                log.info("Synchronized medic=[id=" + medic.getMedicId() + ", name=" + medic.getName() + "]");
+                log.info("Synchronised medic=[id=" + medic.getMedicId() + ", name=" + medic.getName() + "]");
             }
         }
     }
