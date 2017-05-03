@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -43,6 +43,7 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -65,6 +66,7 @@ import org.openvpms.web.workspace.customer.communication.CustomerAlertQuery;
 import org.openvpms.web.workspace.summary.PartySummary;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -230,6 +232,7 @@ public class CustomerSummary extends PartySummary {
      * @param party the party
      * @return the party's alerts
      */
+    @Override
     protected List<Alert> getAlerts(Party party) {
         List<Alert> result = queryAlerts(party);
         Lookup accountTypeLookup = partyRules.getAccountType(party);
@@ -238,6 +241,26 @@ public class CustomerSummary extends PartySummary {
             Lookup alertLookup = accountType.getAlert();
             if (alertLookup != null) {
                 result.add(new Alert(alertLookup));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the alerts for a party.
+     *
+     * @param party the party
+     * @return the party's alerts
+     */
+    protected List<Alert> queryAlerts(Party party) {
+        List<Alert> result = new ArrayList<>();
+        ResultSet<Act> set = createAlertsResultSet(party, 20);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
+        while (iterator.hasNext()) {
+            Act act = iterator.next();
+            Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");
+            if (lookup != null) {
+                result.add(new Alert(lookup, act));
             }
         }
         return result;

@@ -11,25 +11,30 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.StockOnHand;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -137,6 +142,23 @@ public class CustomerChargeEditContext extends ChargeEditContext {
      */
     public Date getReminderDueDate(Date startTime, EntityRelationship relationship) {
         return reminderRules.calculateProductReminderDueDate(startTime, relationship);
+    }
+
+    /**
+     * Returns the alert types associated with a product.
+     *
+     * @param product the product
+     * @return the alert types
+     */
+    public List<Entity> getAlertTypes(Product product) {
+        List<Entity> result;
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            EntityBean bean = new EntityBean(product);
+            result = bean.getNodeTargetEntities("alerts");
+        } else {
+            result = Collections.emptyList();
+        }
+        return result;
     }
 
 }

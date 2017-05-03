@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -19,13 +19,8 @@ package org.openvpms.web.workspace.patient.mr;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.hl7.patient.PatientContext;
-import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -35,22 +30,14 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 
 
 /**
- * CRUD Window for Reminders and Alerts.
+ * CRUD Window for patient reminders.
  *
  * @author Tim Anderson
  */
 public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
-
-    /**
-     * Reminder and alert shortnames supported by the workspace.
-     */
-    private static final String[] SHORT_NAMES = {ReminderArchetypes.REMINDER, PatientArchetypes.ALERT};
 
     /**
      * Resend button identifier.
@@ -65,8 +52,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      * @param help    the help context
      */
     public ReminderCRUDWindow(Context context, HelpContext help) {
-        super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.reminder.createtype")),
-              ReminderActions.getInstance(), context, help);
+        super(Archetypes.create(ReminderArchetypes.REMINDER, Act.class), ReminderActions.getInstance(), context, help);
     }
 
     /**
@@ -112,32 +98,6 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
-     * Invoked when the object has been saved.
-     * <p/>
-     * If the object is an allergy alert, registered listeners will be notified via the
-     * {@link PatientInformationService}.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(Act object, boolean isNew) {
-        super.onSaved(object, isNew);
-        checkAllergyUpdate(object);
-    }
-
-    /**
-     * Invoked when the object has been deleted.
-     *
-     * @param object the object
-     */
-    @Override
-    protected void onDeleted(Act object) {
-        super.onDeleted(object);
-        checkAllergyUpdate(object);
-    }
-
-    /**
      * Invoked to resend a reminder.
      */
     private void onResend() {
@@ -154,26 +114,6 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
             }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Invoked when an object is saved or deleted.
-     * <p/>
-     * If the object is an allergy alert, registered listeners are notified via the {@link PatientInformationService}.
-     *
-     * @param object the object
-     */
-    private void checkAllergyUpdate(Act object) {
-        if (TypeHelper.isA(object, PatientArchetypes.ALERT)) {
-            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-            if (rules.isAllergy(object)) {
-                PatientContext context = PatientContextHelper.getPatientContext(object, getContext());
-                if (context != null) {
-                    PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-                    service.updated(context, getContext().getUser());
-                }
-            }
         }
     }
 

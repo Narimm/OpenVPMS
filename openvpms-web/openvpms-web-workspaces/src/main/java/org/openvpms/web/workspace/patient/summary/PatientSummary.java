@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
@@ -38,6 +38,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -490,8 +491,20 @@ public class PatientSummary extends PartySummary {
      * @param party the party
      * @return the party's alerts
      */
+    @Override
     protected List<Alert> getAlerts(Party party) {
-        return queryAlerts(party);
+        List<Alert> result = new ArrayList<>();
+        ResultSet<Act> set = createAlertsResultSet(party, 20);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
+        while (iterator.hasNext()) {
+            Act act = iterator.next();
+            ActBean bean = new ActBean(act);
+            Entity alertType = bean.getNodeParticipant("alertType");
+            if (alertType != null) {
+                result.add(new Alert(alertType, act));
+            }
+        }
+        return result;
     }
 
     /**

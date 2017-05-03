@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -21,13 +21,12 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.text.TextField;
@@ -47,17 +46,18 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
      * The field to display the alert priority and colour.
      */
     private TextField priority;
+    private Alert alert;
 
 
     /**
-     * Constructs a <tt>AlertLayoutStrategy</tt>.
+     * Constructs a {@link AlertLayoutStrategy}.
      */
     public AlertLayoutStrategy() {
         this(TextComponentFactory.create());
     }
 
     /**
-     * Constructs a <tt>AlertLayoutStrategy</tt>.
+     * Constructs a {@link AlertLayoutStrategy}.
      *
      * @param priority the field to display the priority and colour
      */
@@ -68,60 +68,71 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Creates a set of components to be rendered from the supplied descriptors.
+     * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a {@code Component}, using a factory to create the child components.
      *
-     * @param object     the parent object
-     * @param properties the properties
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param parent     the parent object. May be {@code null}
      * @param context    the layout context
-     * @return the components
+     * @return the component containing the rendered {@code object}
      */
     @Override
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+        alert = Alert.create((Act) object);
+        if (alert != null) {
+            addComponent(createAlert(alert, object, properties, context));
+        }
+        return super.apply(object, properties, parent, context);
+    }
+
     protected ComponentSet createComponentSet(IMObject object, List<Property> properties, LayoutContext context) {
         ComponentSet set = super.createComponentSet(object, properties, context);
-
-        Lookup lookup = AlertHelper.getAlertType((Act) object);
-
-        ComponentState alertType = set.get("alertType");
-        if (lookup != null && alertType != null) {
-            initAlertType(lookup, alertType.getComponent());
-        }
-
-        ComponentState priority = getPriority(lookup);
-        int index = set.indexOf("alertType");
-        if (index >= 0) {
-            set.add(index + 1, priority);
-        } else {
-            set.add(priority);
+        if (alert != null) {
+            ComponentState priority = getPriority(alert);
+            int index = set.indexOf("alertType");
+            if (index >= 0) {
+                set.add(index + 1, priority);
+            } else {
+                set.add(priority);
+            }
         }
         return set;
     }
 
+    protected ComponentState createAlert(Alert alert, IMObject object, PropertySet properties, LayoutContext context) {
+        ComponentState alertType = createComponent(properties.get("alertType"), object, context);
+        initAlertType(alert, alertType.getComponent());
+        return alertType;
+    }
+
+
     /**
      * Sets the background/foreground of the alert type field, if it is a text field.
      *
-     * @param alertType the alert type
+     * @param alert     the alert type
      * @param component the component to display the alert type
      */
-    private void initAlertType(Lookup alertType, Component component) {
+    private void initAlertType(Alert alert, Component component) {
         if (component instanceof TextField) {
-            Color background = AlertHelper.getColour(alertType);
-            Color foreground = ColourHelper.getTextColour(background);
-            component.setBackground(background);
-            component.setForeground(foreground);
+            Color background = alert.getColour();
+            if (background != null) {
+                Color foreground = ColourHelper.getTextColour(background);
+                component.setBackground(background);
+                component.setForeground(foreground);
+            }
         }
     }
 
     /**
      * Returns the component state of the priority field.
      *
-     * @param alertType the alert type lookup. May be <tt>null</tt>
+     * @param alert the alert. May be {@code null}
      * @return the priority field, populated with the alert type
      */
-    private ComponentState getPriority(Lookup alertType) {
-        String displayName = DescriptorHelper.getDisplayName("lookup.customerAlertType", "priority");
-        if (alertType != null) {
-            priority.setText(AlertHelper.getPriorityName(alertType));
-        }
-        return new ComponentState(priority, null, null, displayName);
+    private ComponentState getPriority(Alert alert) {
+        priority.setText(alert.getPriority().getName());
+        return new ComponentState(priority, null, null, alert.getPriority().getDisplayName());
     }
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -34,7 +34,6 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.text.TextField;
 
@@ -100,11 +99,12 @@ public abstract class AbstractAlertActEditor extends AbstractActEditor {
         int index = alertType.getSelectedIndex();
         Lookup lookup = (index != -1) ? model.getLookup(index) : null;
         if (lookup != null) {
-            Color background = AlertHelper.getColour(lookup);
-            Color foreground = ColourHelper.getTextColour(background);
+            Alert alert = new Alert(lookup);
+            Color background = alert.getColour();
+            Color foreground = alert.getTextColour();
             alertType.setBackground(background);
             alertType.setForeground(foreground);
-            priority.setText(AlertHelper.getPriorityName(lookup));
+            priority.setText(alert.getPriority().getName());
         } else {
             priority.setText("");
         }
@@ -128,8 +128,9 @@ public abstract class AbstractAlertActEditor extends AbstractActEditor {
             AbstractListComponent l = (AbstractListComponent) list;
             LookupListModel model = (LookupListModel) l.getModel();
             Lookup lookup = model.getLookup(index);
-            Color background = AlertHelper.getColour(lookup);
-            Color foreground = ColourHelper.getTextColour(background);
+            Alert alert = new Alert(lookup);
+            Color background = alert.getColour();
+            Color foreground = alert.getTextColour();
             return new StyledListCell(lookup.getName(), background, foreground);
         }
     }
