@@ -24,11 +24,13 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductQueryFactory;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.i18n.Message;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -62,6 +64,11 @@ public class InventoryService extends FlowSheetService {
     private final IArchetypeService service;
 
     /**
+     * The lookups.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(InventoryService.class);
@@ -73,11 +80,14 @@ public class InventoryService extends FlowSheetService {
      * @param emrApiKey    the EMR API key
      * @param clinicApiKey the clinic API key
      * @param timeZone     the timezone. This determines how dates are serialized
+     * @param service      the archetype service
+     * @param lookups      the lookup service
      */
     public InventoryService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone,
-                            IArchetypeService service) {
+                            IArchetypeService service, ILookupService lookups) {
         super(url, emrApiKey, clinicApiKey, timeZone, LogFactory.getLog(InventoryService.class));
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -171,11 +181,12 @@ public class InventoryService extends FlowSheetService {
         Map<String, InventoryItem> inventoryItems = getInventoryItems();
         List<InventoryItem> add = new ArrayList<>();
         Iterator<Product> products = getProducts(useLocationProducts, location, stockLocation);
+        Map<String, String> units = getUnits();
         while (products.hasNext()) {
             Product product = products.next();
             String id = Long.toString(product.getId());
             InventoryItem currentItem = inventoryItems.remove(id);
-            InventoryItem updatedItem = synchronise(product, currentItem, id);
+            InventoryItem updatedItem = synchronise(product, currentItem, id, units);
             if (updatedItem != null) {
                 add.add(updatedItem);
                 if (currentItem == null) {
@@ -251,9 +262,10 @@ public class InventoryService extends FlowSheetService {
      * @param product the product
      * @param item    the item, or {@code null} if it doesn't exist
      * @param id      the item identifier
+     * @param units   the unit of measure cache
      * @return the synchronised item, or {@code null} if no synchronisation is required
      */
-    private InventoryItem synchronise(Product product, InventoryItem item, String id) {
+    private InventoryItem synchronise(Product product, InventoryItem item, String id, Map<String, String> units) {
         InventoryItem result = null;
 
         String name = product.getName();
@@ -263,8 +275,8 @@ public class InventoryService extends FlowSheetService {
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             IMObjectBean bean = new IMObjectBean(product, service);
             concentration = bean.getBigDecimal("concentration");
-            concentrationUnits = bean.getString("concentrationUnits");
-            dispensingUnits = bean.getString("dispensingUnits");
+            concentrationUnits = getUnit(bean.getString("concentrationUnits"), units);
+            dispensingUnits = getUnit(bean.getString("dispensingUnits"), units);
 
             if (concentration == null || concentrationUnits == null || dispensingUnits == null) {
                 // need all three values when specifying SFS concentration
@@ -301,6 +313,31 @@ public class InventoryService extends FlowSheetService {
         item.setConcentrationUnits(dispensingUnits);
         item.setConcentrationVolume(weightUnits);
         return item;
+    }
+
+    /**
+     * Returns the unit of measure name given its code.
+     *
+     * @param code  the code. May be {@code null}
+     * @param units the unit names, keyed on code
+     * @return the name, or {@code code} if not found
+     */
+    private String getUnit(String code, Map<String, String> units) {
+        String name = units.get(code);
+        return name != null ? name.toLowerCase() : code;
+    }
+
+    /**
+     * Returns the unit of measure names.
+     *
+     * @return the unit of measure names, keyed on code
+     */
+    private Map<String, String> getUnits() {
+        Map<String, String> result = new HashMap<>();
+        for (Lookup lookup : lookups.getLookups("lookup.uom")) {
+            result.put(lookup.getCode(), lookup.getName());
+        }
+        return result;
     }
 
 }
