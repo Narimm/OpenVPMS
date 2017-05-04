@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
+import org.openvpms.archetype.component.processor.AsynchronousBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
@@ -47,9 +48,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private List<ReminderBatchProcessor> processors = new ArrayList<>();
 
     /**
-     * If {@code true}, pop up a dialog to perform generation.
+     * If {@code true}, multiple reminders are being processed.
      */
-    private boolean popup = true;
+    private boolean multipleReminders = true;
 
     /**
      * The help context.
@@ -71,7 +72,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         ReminderItemSource query = new SingleReminderItemSource(item, reminder);
         ReminderBatchProcessor processor = processorFactory.createBatchProcessor(query);
         processors.add(processor);
-        popup = false;
+        multipleReminders = false;
     }
 
     /**
@@ -99,29 +100,32 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     public void process() {
         if (!processors.isEmpty()) {
-            if (popup) {
-                ReminderGenerationDialog dialog = new ReminderGenerationDialog(processors, help);
-                dialog.show();
-                dialog.addWindowPaneListener(new WindowPaneListener() {
-                    @Override
-                    public void onClose(WindowPaneEvent event) {
-                        onCompletion();
+            if (multipleReminders) {
+                boolean popup = true;
+                if (processors.size() == 1) {
+                    // if there is only a single processor and it is synchronous, don't display the dialog
+                    ReminderBatchProcessor processor = processors.get(0);
+                    if (!(processor instanceof AsynchronousBatchProcessor)) {
+                        popup = false;
                     }
-                });
-            } else {
-                // only processing a single reminder
-                for (BatchProcessor processor : processors) {
-                    processor.setListener(new BatchProcessorListener() {
-                        public void completed() {
+                }
+                if (popup) {
+                    ReminderGenerationDialog dialog = new ReminderGenerationDialog(processors, help);
+                    dialog.show();
+                    dialog.addWindowPaneListener(new WindowPaneListener() {
+                        @Override
+                        public void onClose(WindowPaneEvent event) {
                             onCompletion();
                         }
-
-                        public void error(Throwable exception) {
-                            onError(exception);
-                        }
                     });
-                    processor.process();
+                } else {
+                    ReminderBatchProcessor processor = processors.get(0);
+                    process(processor);
                 }
+            } else {
+                // only processing a single reminder
+                ReminderBatchProcessor processor = processors.get(0);
+                process(processor);
             }
         } else {
             InformationDialog.show(Messages.get("reporting.reminder.none.title"),
@@ -131,13 +135,13 @@ public class ReminderGenerator extends AbstractBatchProcessor {
 
     /**
      * Indicates if reminders are being reprocessed.
-     * <p/>
+     * <p>
      * If set:
      * <ul>
      * <li>due dates are ignored</li>
      * <li>the reminder last sent date is not updated</li>
      * </ul>
-     * <p/>
+     * <p>
      * Defaults to {@code false}.
      *
      * @param resend if {@code true} reminders are being reprocessed
@@ -146,6 +150,26 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         for (ReminderBatchProcessor processor : processors) {
             processor.setResend(resend);
         }
+    }
+
+    /**
+     * Processes reminders for a single processor.
+     *
+     * @param processor the processor
+     */
+    private void process(ReminderBatchProcessor processor) {
+        processor.setListener(new BatchProcessorListener() {
+            @Override
+            public void completed() {
+                onCompletion();
+            }
+
+            @Override
+            public void error(Throwable exception) {
+                onError(exception);
+            }
+        });
+        processor.process();
     }
 
     /**
