@@ -150,7 +150,7 @@ public class FlowSheetServiceFactory {
      */
     public InventoryService getInventoryService(Party location) {
         String clinicKey = getRequiredClinicAPIKey(location);
-        return new InventoryService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service);
+        return new InventoryService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service, lookups);
     }
 
     /**

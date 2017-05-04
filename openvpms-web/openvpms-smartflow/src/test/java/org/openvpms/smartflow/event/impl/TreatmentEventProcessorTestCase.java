@@ -92,7 +92,7 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         product = TestHelper.createProduct();
         visit = PatientTestHelper.createEvent(new Date(), patient);
         PatientRules rules = applicationContext.getBean(PatientRules.class);
-        processor = new TreatmentEventProcessor(location, getArchetypeService(), rules);
+        processor = new TreatmentEventProcessor(location, getArchetypeService(), getLookupService(), rules);
     }
 
     /**
