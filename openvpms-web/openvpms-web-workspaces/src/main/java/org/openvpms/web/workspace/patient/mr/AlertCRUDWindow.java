@@ -49,16 +49,6 @@ public class AlertCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
-     * Returns the actions that may be performed on the selected object.
-     *
-     * @return the actions
-     */
-    @Override
-    protected ReminderActions getActions() {
-        return (ReminderActions) super.getActions();
-    }
-
-    /**
      * Invoked when the object has been saved.
      * <p/>
      * If the object is an allergy alert, registered listeners will be notified via the

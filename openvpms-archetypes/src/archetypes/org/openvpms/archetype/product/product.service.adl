@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -77,6 +77,12 @@
               filter="entityRelationship.productReminder">
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active product reminder relationship</errorMessage>
+            </assertion>
+        </node>
+        <node name="alerts" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="*" filter="entityLink.productAlert">
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product alert relationship</errorMessage>
             </assertion>
         </node>
         <node name="documents" path="/entityRelationships"

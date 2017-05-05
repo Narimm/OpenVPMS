@@ -16,11 +16,22 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.util.ErrorHelper;
+
+import java.util.Date;
 
 
 /**
@@ -61,6 +72,24 @@ public class PatientAlertEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets the product.
+     *
+     * @param product the product. May be {@code null}
+     */
+    public void setProduct(Product product) {
+        setParticipant("product", product);
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product. May be {@code null}
+     */
+    public Product getProduct() {
+        return (Product) getParticipant("product");
+    }
+
+    /**
      * Sets the alert type.
      *
      * @param alertType the alert type. May be {@code null}
@@ -76,6 +105,53 @@ public class PatientAlertEditor extends AbstractActEditor {
      */
     public Entity getAlertType() {
         return (Entity) getParticipant("alertType");
+    }
+
+    /**
+     * Invoked when layout has completed. All editors have been created.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        Editor alertType = getEditor("alertType");
+
+        if (alertType != null) {
+            // add a listener to update the due date when the reminder type is modified
+            ModifiableListener listener = new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onAlertTypeChanged();
+                }
+            };
+            alertType.addModifiableListener(listener);
+        }
+    }
+
+    /**
+     * Invoked when the alert type changes. Updates the reason, and calculates the end time based on the alert type
+     * duration, if any.
+     */
+    private void onAlertTypeChanged() {
+        try {
+            Entity alertType = getAlertType();
+            if (alertType != null) {
+                IMObjectBean bean = new IMObjectBean(alertType);
+                String reason = bean.getString("reason");
+                getProperty("reason").setValue(reason);
+
+                Date startTime = getStartTime();
+                if (startTime != null) {
+                    Date endTime = null;
+                    int duration = bean.getInt("duration");
+                    String units = bean.getString("durationUnits");
+                    if (duration > 0 && units != null) {
+                        endTime = DateRules.getDate(startTime, duration, DateUnits.valueOf(units));
+                    }
+                    setEndTime(endTime);
+                }
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
 }
