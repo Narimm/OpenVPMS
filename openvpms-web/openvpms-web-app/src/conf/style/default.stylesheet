@@ -1388,7 +1388,7 @@
     <style name="ExportPrintDialog" base-name="PrintDialog"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="${dialog.medium.width}"/>
+            <property name="width" value="${ExportPrintDialog.width}"/>
             <property name="height" value="${dialog.small.height}"/>
         </properties>
     </style>

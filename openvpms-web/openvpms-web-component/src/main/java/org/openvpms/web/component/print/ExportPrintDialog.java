@@ -31,12 +31,12 @@ public abstract class ExportPrintDialog extends PrintDialog {
     /**
      * The export button identifier.
      */
-    private static final String EXPORT_ID = "export";
+    public static final String EXPORT_ID = "export";
 
     /**
      * The export mail button identifier.
      */
-    private static final String EXPORT_MAIL_ID = "exportMail";
+    public static final String EXPORT_MAIL_ID = "exportMail";
 
 
     /**
