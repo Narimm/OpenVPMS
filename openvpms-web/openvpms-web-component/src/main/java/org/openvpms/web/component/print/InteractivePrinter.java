@@ -383,22 +383,7 @@ public class InteractivePrinter implements Printer {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 try {
-                    String action = dialog.getAction();
-                    if (PrintDialog.OK_ID.equals(action)) {
-                        String printerName = dialog.getPrinter();
-                        if (printerName == null) {
-                            doPrintPreview();
-                        } else {
-                            printer.setCopies(dialog.getCopies());
-                            doPrint(printerName);
-                        }
-                    } else if (PrintDialog.SKIP_ID.equals(action)) {
-                        skipped();
-                    } else if (MailDialog.SEND_ID.equals(action)) {
-                        mailed();
-                    } else {
-                        cancelled();
-                    }
+                    handleAction(dialog);
                 } finally {
                     dialog = null;
                 }
@@ -415,6 +400,30 @@ public class InteractivePrinter implements Printer {
      */
     protected void printDirect(String printer) {
         doPrint(printer);
+    }
+
+    /**
+     * Handles a print dialog action.
+     *
+     * @param dialog the dialog
+     */
+    protected void handleAction(PrintDialog dialog) {
+        String action = dialog.getAction();
+        if (PrintDialog.OK_ID.equals(action)) {
+            String printerName = dialog.getPrinter();
+            if (printerName == null) {
+                doPrintPreview();
+            } else {
+                printer.setCopies(dialog.getCopies());
+                doPrint(printerName);
+            }
+        } else if (PrintDialog.SKIP_ID.equals(action)) {
+            skipped();
+        } else if (MailDialog.SEND_ID.equals(action)) {
+            mailed();
+        } else {
+            cancelled();
+        }
     }
 
     /**
@@ -445,7 +454,7 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Generates a document and pops up a mail document with it as an attachment.
-     * <p/>
+     * <p>
      * If emailed, then the print dialog is closed.
      *
      * @param parent the parent print dialog
@@ -518,7 +527,7 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Mails a document as an attachment.
-     * <p/>
+     * <p>
      * If emailed, then the print dialog is closed.
      *
      * @param document the document to mail
@@ -544,7 +553,7 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Creates a dialog to email a document as an attachment.
-     * <p/>
+     * <p>
      * If emailed, then the print dialog is closed.
      *
      * @param document      the document to mail
