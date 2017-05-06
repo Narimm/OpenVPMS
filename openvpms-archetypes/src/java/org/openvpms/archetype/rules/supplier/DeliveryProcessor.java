@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -470,7 +470,6 @@ public class DeliveryProcessor {
         BigDecimal nettPrice = deliveryItemBean.getBigDecimal("unitPrice");
         ProductSupplier ps = rules.getProductSupplier(product, supplier, reorderCode, size, units);
         boolean save = true;
-        boolean skipUpdate = false;
         if (ps == null) {
             // no product-supplier relationship, so create a new one
             ps = rules.createProductSupplier(product, supplier);
@@ -488,10 +487,6 @@ public class DeliveryProcessor {
                    || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
                    || !ObjectUtils.equals(ps.getReorderDescription(), reorderDesc)) {
             // properties are different to an existing relationship
-            if (ignoreListPriceDecreases && listPrice != null && ps.getListPrice() != null
-                && listPrice.compareTo(ps.getListPrice()) < 0) {
-                skipUpdate = true;
-            }
             ps.setPackageSize(size);
             ps.setPackageUnits(units);
             ps.setReorderCode(reorderCode);
@@ -501,7 +496,7 @@ public class DeliveryProcessor {
         } else {
             save = false;
         }
-        if (!skipUpdate && ps.isAutoPriceUpdate() && supplier.isActive()) {
+        if (ps.isAutoPriceUpdate() && supplier.isActive()) {
             // only update prices if the supplier is active
             updateUnitPrices(product, ps);
         }
@@ -512,14 +507,13 @@ public class DeliveryProcessor {
     }
 
     /**
-     * Recalculates the cost node of any <em>productPrice.unitPrice</em>
-     * associated with the product.
+     * Recalculates the cost node of any <em>productPrice.unitPrice</em> associated with the product.
      *
      * @param product         the product
      * @param productSupplier the product supplier
      */
     private void updateUnitPrices(Product product, ProductSupplier productSupplier) {
-        List<ProductPrice> prices = priceUpdater.update(product, productSupplier, false);
+        List<ProductPrice> prices = priceUpdater.update(product, productSupplier, ignoreListPriceDecreases, false);
         toSave.addAll(prices);
     }
 
