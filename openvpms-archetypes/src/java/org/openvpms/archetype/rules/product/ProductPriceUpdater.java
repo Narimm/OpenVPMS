@@ -177,12 +177,31 @@ public class ProductPriceUpdater {
      *                                      relationship
      */
     public List<ProductPrice> update(Product product, ProductSupplier productSupplier, boolean save) {
+        return update(product, productSupplier, false, save);
+    }
+
+    /**
+     * Updates any <em>productPrice.unitPrice</em> product prices associated with a product.
+     *
+     * @param product            the product
+     * @param productSupplier    the product-supplier relationship
+     * @param ignoreCostDecrease if {@code true}, don't update any unit price if the new cost price would be less than
+     *                           the existing cost price
+     * @param save               if {@code true}, save updated prices
+     * @return a list of updated prices
+     * @throws ArchetypeServiceException    for any archetype service error
+     * @throws ProductPriceUpdaterException if there is no practice
+     * @throws IllegalArgumentException     if the product is not that referred to by the product-supplier
+     *                                      relationship
+     */
+    public List<ProductPrice> update(Product product, ProductSupplier productSupplier, boolean ignoreCostDecrease,
+                                     boolean save) {
         if (!product.getObjectReference().equals(productSupplier.getRelationship().getSource())) {
             throw new IllegalArgumentException("Argument 'product' is not that referred to by 'productSupplier'");
         }
         List<ProductPrice> result;
         if (canUpdate(productSupplier)) {
-            result = doUpdate(productSupplier, product, save);
+            result = doUpdate(productSupplier, product, ignoreCostDecrease, save);
         } else {
             result = Collections.emptyList();
         }
@@ -203,7 +222,7 @@ public class ProductPriceUpdater {
         if (canUpdate(productSupplier)) {
             Product product = productSupplier.getProduct();
             if (product != null) {
-                result = doUpdate(productSupplier, product, save);
+                result = doUpdate(productSupplier, product, false, save);
             }
         }
         return result;
@@ -288,8 +307,7 @@ public class ProductPriceUpdater {
      * Prices can be updated if:
      * <ul>
      * <li>autoPriceUpdate is {@code true}; and</li>
-     * <li>listPrice &lt;&gt; 0; and</li>
-     * <li>packageSize &lt;&gt; 0; and</li>
+     * <li>costPrice &lt;&gt; 0; and</li>
      * <li>the supplier is active</li>
      * </ul>
      *
@@ -297,28 +315,26 @@ public class ProductPriceUpdater {
      * @return {@code true} if prices can be updated
      */
     private boolean canUpdate(ProductSupplier productSupplier) {
-        BigDecimal listPrice = productSupplier.getListPrice();
-        int packageSize = productSupplier.getPackageSize();
         return productSupplier.isAutoPriceUpdate()
-               && (listPrice != null && !MathRules.equals(listPrice, BigDecimal.ZERO))
-               && packageSize != 0
+               && !MathRules.isZero(productSupplier.getCostPrice())
                && isActive(productSupplier.getSupplierRef());
     }
 
     /**
      * Updates prices.
      *
-     * @param productSupplier the product-supplier relationship
-     * @param product         the product
-     * @param save            if {@code true}, save updated prices, otherwise derive values
+     * @param productSupplier    the product-supplier relationship
+     * @param product            the product
+     * @param ignoreCostDecrease if {@code true}, don't update any unit price if the new cost price would be less than
+     *                           the existing cost price
+     * @param save               if {@code true}, save updated prices, otherwise derive values
      * @return a list of updated prices
      */
-    private List<ProductPrice> doUpdate(ProductSupplier productSupplier, Product product, boolean save) {
+    private List<ProductPrice> doUpdate(ProductSupplier productSupplier, Product product,
+                                        boolean ignoreCostDecrease, boolean save) {
         List<ProductPrice> result;
-        BigDecimal listPrice = productSupplier.getListPrice();
-        int packageSize = productSupplier.getPackageSize();
-        BigDecimal cost = MathRules.divide(listPrice, packageSize, 3);
-        result = rules.updateUnitPrices(product, cost, getCurrency());
+        BigDecimal cost = productSupplier.getCostPrice();
+        result = rules.updateUnitPrices(product, cost, ignoreCostDecrease, getCurrency());
         if (!result.isEmpty()) {
             if (save) {
                 service.save(result);

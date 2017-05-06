@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -394,27 +394,50 @@ public class ProductPriceRules {
      * @return the list of any updated prices
      */
     public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Currency currency) {
+        return updateUnitPrices(product, cost, false, currency);
+    }
+
+    /**
+     * Updates the cost node of any <em>productPrice.unitPrice</em> associated with a product active at the current
+     * time, and recalculates its price.
+     * <p/>
+     * Returns a list of unit prices whose cost and price have changed.
+     *
+     * @param product            the product
+     * @param cost               the new cost
+     * @param ignoreCostDecrease if {@code true}, don't update any unit price if the new cost price would be less than
+     *                           the existing cost price
+     * @param currency           the currency, for rounding conventions
+     * @return the list of any updated prices
+     */
+    public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, final boolean ignoreCostDecrease,
+                                               Currency currency) {
         List<ProductPrice> result = null;
         IMObjectBean bean = new IMObjectBean(product, service);
         final Date now = new Date();
+        final BigDecimal roundedCost = currency.round(cost);
         Predicate predicate = new Predicate() {
             @Override
             public boolean evaluate(Object object) {
                 ProductPrice price = (ProductPrice) object;
-                return price.isActive() && DateRules.between(now, price.getFromDate(), price.getToDate());
+                boolean result = price.isActive() && TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)
+                                 && DateRules.between(now, price.getFromDate(), price.getToDate());
+                if (result && ignoreCostDecrease) {
+                    IMObjectBean bean = new IMObjectBean(price, service);
+                    BigDecimal currentCost = bean.getBigDecimal("cost", BigDecimal.ZERO);
+                    result = currentCost.compareTo(roundedCost) < 0;
+                }
+                return result;
             }
         };
         List<ProductPrice> prices = bean.getValues("prices", predicate, ProductPrice.class);
         if (!prices.isEmpty()) {
-            cost = currency.round(cost);
             for (ProductPrice price : prices) {
-                if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
-                    if (updateUnitPrice(price, cost)) {
-                        if (result == null) {
-                            result = new ArrayList<>();
-                        }
-                        result.add(price);
+                if (updateUnitPrice(price, roundedCost)) {
+                    if (result == null) {
+                        result = new ArrayList<>();
                     }
+                    result.add(price);
                 }
             }
         }
