@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -44,6 +44,7 @@ import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.button.ShortcutHelper;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -676,7 +677,7 @@ public class VisitEditor {
     protected void addTab(String button, ObjectTabPaneModel<VisitEditorTab> model, VisitEditorTab tab, int id) {
         int index = model.size();
         int shortcut = index + 1;
-        String text = "&" + shortcut + " " + Messages.get(button);
+        String text = "&" + shortcut + " " + ShortcutHelper.getText(Messages.get(button));
         model.addTab(tab, text, tab.getComponent());
         tab.setId(id);
     }
