@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.order;
@@ -21,6 +21,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserState;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.mail.MailContext;
@@ -75,5 +78,68 @@ public class CustomerOrderWorkspace extends ResultSetCRUDWorkspace<FinancialAct>
         QueryBrowser<FinancialAct> browser = getBrowser();
         return new CustomerOrderCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getContext(),
                                            getHelpContext());
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(FinancialAct object, boolean isNew) {
+        QueryBrowser<FinancialAct> browser = getBrowser();
+        BrowserState state = browser.getBrowserState();
+        super.onSaved(object, isNew);
+        if (state != null) {
+            browser.setBrowserState(state);
+        }
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(FinancialAct object) {
+        QueryBrowser<FinancialAct> browser = getBrowser();
+        BrowserState state = browser.getBrowserState();
+        super.onDeleted(object);
+        if (state != null) {
+            browser.setBrowserState(state);
+        }
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onRefresh(FinancialAct object) {
+        QueryBrowser<FinancialAct> browser = getBrowser();
+        BrowserState state = browser.getBrowserState();
+        super.onRefresh(object);
+        if (state != null) {
+            browser.setBrowserState(state);
+        }
+    }
+
+    /**
+     * Creates a new browser.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    @Override
+    protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
+        DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
+        return new DefaultIMObjectTableBrowser<FinancialAct>(query, context) {
+            @Override
+            public BrowserState getBrowserState() {
+                return new Memento<>(this);
+            }
+        };
     }
 }
