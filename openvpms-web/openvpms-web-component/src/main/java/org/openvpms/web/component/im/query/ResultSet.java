@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -27,8 +25,7 @@ import java.util.ListIterator;
 /**
  * Paged query result set.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
 
@@ -40,7 +37,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
+     * @param sort the sort criteria. May be {@code null}
      */
     void sort(SortConstraint[] sort);
 
@@ -48,7 +45,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
      * Determines if a page exists.
      *
      * @param page the page no.
-     * @return <tt>true</tt> if the page exists
+     * @return {@code true} if the page exists
      */
     boolean hasPage(int page);
 
@@ -58,7 +55,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
      * This moves the cursor.
      *
      * @param page the page no.
-     * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
+     * @return the page corresponding to {@code page}. May be {@code null}
      */
     IPage<T> getPage(int page);
 
@@ -82,7 +79,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
      * Returns the number of results returned per page.
      *
      * @return the maximum no. of results returned in each page, or {@link
-     *         org.openvpms.component.system.common.query.ArchetypeQuery#ALL_RESULTS} for all results.
+     * org.openvpms.component.system.common.query.ArchetypeQuery#ALL_RESULTS} for all results.
      */
     int getPageSize();
 
@@ -109,17 +106,15 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
      * {@link #getResults()}, and {@link #getEstimatedPages()} would return
      * the same as {@link #getPages()}.
      *
-     * @return <tt>true</tt> if the estimated results equals the actual no.
-     *         of results
+     * @return {@code true} if the estimated results equals the actual no. of results
      */
     boolean isEstimatedActual();
 
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <tt>true</tt> if the node is sorted ascending or no sort
-     *         constraint was specified; <tt>false</tt> if it is sorted
-     *         descending
+     * @return {@code true} if the node is sorted ascending or no sort constraint was specified; {@code false} if it is
+     * sorted descending
      */
     boolean isSortedAscending();
 
@@ -140,8 +135,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
     /**
      * Determines if duplicate results should be filtered.
      *
-     * @return <tt>true</tt> if duplicate results should be removed;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if duplicate results should be removed otherwise {@code false}
      */
     boolean isDistinct();
 
@@ -155,7 +149,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>>, Cloneable {
     /**
      * Returns the index of the last returned page.
      *
-     * @return the index of the last returned page, or <tt>-1</tt> if no page has been returned
+     * @return the index of the last returned page, or {@code -1} if no page has been returned
      */
     int lastIndex();
 

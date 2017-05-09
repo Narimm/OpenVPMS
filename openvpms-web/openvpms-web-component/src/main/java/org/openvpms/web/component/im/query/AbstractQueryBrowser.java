@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -25,6 +25,7 @@ import nextapp.echo2.app.event.TableModelListener;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
@@ -34,6 +35,8 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
+
+import java.util.List;
 
 
 /**
@@ -149,7 +152,8 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
         if (memento.getQueryState() != null) {
             getQuery().setQueryState(memento.getQueryState());
         }
-        if (memento.getPage() != -1) {
+        int page = memento.getPage();
+        if (page != -1) {
             query();
 
             // TODO - not ideal. Need to query first before any sorting or page setting can take place.
@@ -162,10 +166,25 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
                 model.sort(sortColumn, ascending);
             }
 
-            if (model.setPage(memento.page)) {
-                int row = memento.getSelectedRow();
-                if (row != -1) {
-                    pagedTable.getTable().getSelectionModel().setSelectedIndex(row, true);
+            // set the page position, or as close to it as possible
+            while (page >= 0) {
+                if (model.setPage(page)) {
+                    int row = memento.getSelectedRow();
+                    if (row >= 0) {
+                        IMTable<T> table = pagedTable.getTable();
+                        List<T> objects = table.getObjects();
+                        if (page != memento.getPage()) {
+                            row = objects.size() - 1;
+                        } else if (row >= objects.size()) {
+                            row = objects.size() - 1;
+                        }
+                        if (row >= 0 && row < objects.size()) {
+                            table.getSelectionModel().setSelectedIndex(row, true);
+                        }
+                    }
+                    break;
+                } else {
+                    --page;
                 }
             }
         }
