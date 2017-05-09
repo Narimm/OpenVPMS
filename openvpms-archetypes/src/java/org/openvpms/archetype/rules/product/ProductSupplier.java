@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -363,6 +364,23 @@ public class ProductSupplier {
      */
     public void setAutoPriceUpdate(boolean autoUpdate) {
         bean.setValue("autoPriceUpdate", autoUpdate);
+    }
+
+    /**
+     * Returns the cost price.
+     * <p/>
+     * This is the {@link #getListPrice() list price}/{@link #getPackageSize() package size}.
+     *
+     * @return the cost price, or {@code 0} if the list price is unset/0 or the package size {@code <= 0}
+     */
+    public BigDecimal getCostPrice() {
+        BigDecimal result = BigDecimal.ZERO;
+        BigDecimal listPrice = getListPrice();
+        int packageSize = getPackageSize();
+        if (listPrice != null && !MathRules.isZero(listPrice) && packageSize > 0) {
+            result = MathRules.divide(listPrice, packageSize, 3);
+        }
+        return result;
     }
 
     /**

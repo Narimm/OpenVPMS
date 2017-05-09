@@ -338,7 +338,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         // add a listener to update the discount amount when the quantity, fixed or unit price changes
         discountListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateDiscount();
+                updateDiscount(modifiable);
             }
         };
         getProperty(FIXED_PRICE).addModifiableListener(discountListener);
@@ -673,6 +673,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected void doSave() {
+        if (log.isDebugEnabled()) {
+            log.debug("doSave: state=" + debugString());
+        }
         if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
             ChargeSaveContext saveContext = getSaveContext();
             if (saveContext.getHistoryChanges() == null) {
@@ -837,23 +840,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateTaxAmount();
 
         if (log.isDebugEnabled()) {
-            String productStr = product != null ? "id=" + product.getId() + ", name=" + product.getName() : null;
-            String fixedStr = fixedProductPrice != null ? "id=" + fixedProductPrice.getId()
-                                                          + ", price=" + fixedProductPrice.getPrice() : null;
-            String unitStr = unitProductPrice != null ? "id=" + unitProductPrice.getId()
-                                                        + ", price=" + unitProductPrice.getPrice() : null;
-            User user = getLayoutContext().getContext().getUser();
-            User clinician = getClinician();
-            log.debug("productModified: product=[" + productStr + "]"
-                      + ", fixedProductPrice=[" + fixedStr + "]"
-                      + ", unitProductPrice=[" + unitStr + "]"
-                      + ", fixedCost=" + fixedCostValue + ", fixedPrice=" + fixedPriceValue
-                      + ", unitCost=" + unitCostValue + ", unitPrice=" + unitPriceValue
-                      + ", quantity=" + getQuantity() + ", discount=" + getProperty(DISCOUNT).getBigDecimal()
-                      + ", tax=" + getProperty(TAX).getBigDecimal() + ", total=" + getTotal()
-                      + ", clinician=" + (clinician != null ? clinician.getUsername() : null)
-                      + ", user=" + (user != null ? user.getUsername() : null)
-                      + ", act=" + getObject().getObjectReference());
+            log.debug("productModified: " + debugString(true, fixedProductPrice, unitProductPrice));
         }
 
         updatePatientMedication(product);
@@ -892,6 +879,22 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 Property property = getProperty("tax");
                 property.refresh();
             }
+        }
+    }
+
+    /**
+     * Updates the discount when a property changes.
+     *
+     * @param modifiable the property
+     */
+    private void updateDiscount(Modifiable modifiable) {
+        if (log.isDebugEnabled() && modifiable instanceof Property) {
+            Property property = (Property) modifiable;
+            Object value = property.getValue();
+            updateDiscount();
+            log.debug("Property updated, name=" + property.getName() + ", value=" + value + ", state=" + debugString());
+        } else {
+            updateDiscount();
         }
     }
 
@@ -1815,4 +1818,52 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             return super.apply(object, properties, parent, context);
         }
     }
+
+    /**
+     * Returns a string containing the current state, for debugging purposes.
+     *
+     * @return a debug string
+     */
+    private String debugString() {
+        return debugString(false, null, null);
+    }
+
+    /**
+     * Returns a string containing the current state, for debugging purposes.
+     *
+     * @param includePrices     if {@code true}, include the fixed and unit product price details
+     * @param fixedProductPrice the fixed product price. May be {@code null}
+     * @param unitProductPrice  the unit product price. May be {@code null}
+     * @return a debug string
+     */
+    private String debugString(boolean includePrices, ProductPrice fixedProductPrice, ProductPrice unitProductPrice) {
+        String priceStr = null;
+        if (includePrices) {
+            String fixedStr = fixedProductPrice != null ? "id=" + fixedProductPrice.getId()
+                                                          + ", price=" + fixedProductPrice.getPrice() : null;
+            String unitStr = unitProductPrice != null ? "id=" + unitProductPrice.getId()
+                                                        + ", price=" + unitProductPrice.getPrice() : null;
+            priceStr = ", fixedProductPrice=[" + fixedStr + "]"
+                       + ", unitProductPrice=[" + unitStr + "]";
+        }
+
+        Product product = getProduct();
+        Party patient = getPatient();
+        String productStr = product != null ? "id=" + product.getId() + ", name=" + product.getName() : null;
+        User user = getLayoutContext().getContext().getUser();
+        String patientStr = (patient != null) ? "id=" + patient.getId() + ", name=" + patient.getName() : null;
+        User clinician = getClinician();
+        return "product=[" + productStr + "]"
+               + ((includePrices) ? priceStr : "")
+               + ", fixedCost=" + getFixedCost() + ", fixedPrice=" + getFixedPrice()
+               + ", unitCost=" + getUnitCost() + ", unitPrice=" + getUnitPrice()
+               + ", quantity=" + getQuantity() + ", discount=" + getProperty(DISCOUNT).getBigDecimal()
+               + ", tax=" + getProperty(TAX).getBigDecimal() + ", total=" + getTotal()
+               + ", clinician=" + (clinician != null ? clinician.getUsername() : null)
+               + ", patient=[" + patientStr + "]"
+               + ", user=" + (user != null ? user.getUsername() : null)
+               + ", act=" + getObject().getObjectReference()
+               + ", parent=" + ((getParent() != null) ? getParent().getObjectReference() : null);
+    }
+
 }
