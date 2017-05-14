@@ -35,9 +35,9 @@ import java.util.List;
 public abstract class AbstractReminderBatchProcessor extends AbstractBatchProcessor implements ReminderBatchProcessor {
 
     /**
-     * The reminders.
+     * The reminder query.
      */
-    private final List<ReminderEvent> reminders;
+    private final ReminderItemSource query;
 
     /**
      * The processor.
@@ -67,13 +67,13 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * Constructs an {@link AbstractReminderBatchProcessor}.
      *
-     * @param query        the query
-     * @param processor    the processor
-     * @param titleKey     the title localisation key
+     * @param query     the query
+     * @param processor the processor
+     * @param titleKey  the title localisation key
      */
     public AbstractReminderBatchProcessor(ReminderItemSource query, PatientReminderProcessor processor,
                                           String titleKey) {
-        reminders = query.all();
+        this.query = query;
         this.processor = processor;
         this.titleKey = titleKey;
     }
@@ -90,13 +90,13 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
 
     /**
      * Indicates if reminders are being reprocessed.
-     * <p/>
+     * <p>
      * If set:
      * <ul>
      * <li>due dates are ignored</li>
      * <li>the reminder last sent date is not updated</li>
      * </ul>
-     * <p/>
+     * <p>
      * Defaults to {@code false}.
      *
      * @param resend if {@code true} reminders are being resent
@@ -124,15 +124,6 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
-     * Returns the reminders.
-     *
-     * @return the reminders
-     */
-    public List<ReminderEvent> getReminders() {
-        return reminders;
-    }
-
-    /**
      * Returns the processor title.
      *
      * @return the processor title
@@ -156,7 +147,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     public void process() {
         state = null;
-        List<ReminderEvent> reminders = getReminders();
+        List<ReminderEvent> reminders = query.all();
         if (!reminders.isEmpty()) {
             try {
                 state = processor.prepare(reminders, ReminderType.GroupBy.NONE, new Date(), getResend());
@@ -194,7 +185,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     protected void updateReminders() {
         if (state != null) {
-            setProcessed(reminders.size());
+            setProcessed(state.getProcessed());
             processor.complete(state);
             if (statistics != null) {
                 processor.addStatistics(state, statistics);
@@ -210,13 +201,15 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     @Override
     protected void notifyError(Throwable exception) {
-        for (ReminderEvent event : reminders) {
-            if (!resend) {
-                Act item = event.getItem();
-                ReminderHelper.setError(item, exception);
-            }
-            if (statistics != null) {
-                statistics.incErrors();
+        if (state != null) {
+            for (ReminderEvent event : state.getReminders()) {
+                if (!resend) {
+                    Act item = event.getItem();
+                    ReminderHelper.setError(item, exception);
+                }
+                if (statistics != null) {
+                    statistics.incErrors();
+                }
             }
         }
         super.notifyError(exception);
