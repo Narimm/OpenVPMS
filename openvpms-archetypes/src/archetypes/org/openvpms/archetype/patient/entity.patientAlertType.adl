@@ -45,6 +45,8 @@
             </assertion>
         </node>
         <node name="interactive" path="/details/interactive" type="java.lang.Boolean" defaultValue="false()"/>
-        <node name="extend" path="/details/extend" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="type" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
+              filter="lookup.patientAlertType"/>
     </archetype>
 </archetypes>

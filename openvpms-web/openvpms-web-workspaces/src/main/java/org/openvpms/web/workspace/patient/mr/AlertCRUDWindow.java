@@ -16,8 +16,8 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.patient.PatientContext;
@@ -83,7 +83,7 @@ public class AlertCRUDWindow extends ActCRUDWindow<Act> {
      */
     private void checkAllergyUpdate(Act object) {
         if (TypeHelper.isA(object, PatientArchetypes.ALERT)) {
-            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+            PatientRules rules = ServiceHelper.getBean(PatientRules.class);
             if (rules.isAllergy(object)) {
                 PatientContext context = PatientContextHelper.getPatientContext(object, getContext());
                 if (context != null) {

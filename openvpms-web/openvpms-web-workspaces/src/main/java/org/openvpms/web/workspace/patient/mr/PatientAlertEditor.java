@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -30,6 +31,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 
@@ -42,6 +44,17 @@ import java.util.Date;
 public class PatientAlertEditor extends AbstractActEditor {
 
     /**
+     * Determines if matching alerts should be marked completed on save.
+     */
+    private boolean markCompleted = true;
+
+    /**
+     * The reminder rules.
+     */
+    private final ReminderRules rules;
+
+
+    /**
      * Constructs a {@link PatientAlertEditor}.
      *
      * @param act     the act to edit
@@ -51,6 +64,8 @@ public class PatientAlertEditor extends AbstractActEditor {
     public PatientAlertEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         initParticipant("patient", context.getContext().getPatient());
+        addStartEndTimeListeners();
+        rules = ServiceHelper.getBean(ReminderRules.class);
     }
 
     /**
@@ -105,6 +120,32 @@ public class PatientAlertEditor extends AbstractActEditor {
      */
     public Entity getAlertType() {
         return (Entity) getParticipant("alertType");
+    }
+
+    /**
+     * Determines if matching alerts should be marked completed, if the reminder is new and IN_PROGRESS when it is
+     * saved.
+     * <p/>
+     * Defaults to {@code true}.
+     *
+     * @param markCompleted if {@code true}, mark matching reminders as completed
+     */
+    public void setMarkMatchingAlertsCompleted(boolean markCompleted) {
+        this.markCompleted = markCompleted;
+    }
+
+    /**
+     * Save any edits.
+     *
+     * @throws OpenVPMSException if the save fails
+     */
+    @Override
+    protected void doSave() {
+        boolean isNew = getObject().isNew();
+        super.doSave();
+        if (markCompleted && isNew) {
+            rules.markMatchingAlertsCompleted(getObject());
+        }
     }
 
     /**

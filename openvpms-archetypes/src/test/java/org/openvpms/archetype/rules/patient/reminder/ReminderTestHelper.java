@@ -157,6 +157,7 @@ public class ReminderTestHelper extends TestHelper {
 
     /**
      * Creates an <em>entity.reminderRule</em> for contacts.
+     *
      * @return a new rule
      */
     public static Entity createContactRule() {
@@ -557,6 +558,48 @@ public class ReminderTestHelper extends TestHelper {
         bean.setValue("content", expression);
         bean.save();
         return template;
+    }
+
+    /**
+     * Helper to create and save a new alert type.
+     *
+     * @param name the alert name
+     * @return a new alert type
+     */
+    public static Entity createAlertType(String name) {
+        return createAlertType(name, null);
+    }
+
+    /**
+     * Helper to create and save a new alert type.
+     *
+     * @param name the alert name
+     * @param type the alert type code. May be {@code null}
+     * @return a new alert type
+     */
+    public static Entity createAlertType(String name, String type) {
+        Entity entity = (Entity) create(PatientArchetypes.ALERT_TYPE);
+        entity.setName(name);
+        if (type != null) {
+            entity.addClassification(TestHelper.getLookup("lookup.patientAlertType", type));
+        }
+        save(entity);
+        return entity;
+    }
+
+    /**
+     * Helper to create and save an <em>act.patientAlert</tt> for a patient.
+     *
+     * @param patient the patient
+     * @return a new alert
+     */
+    public static Act createAlert(Party patient, Entity alertType) {
+        Act act = (Act) create(PatientArchetypes.ALERT);
+        ActBean bean = new ActBean(act);
+        bean.setNodeParticipant("patient", patient);
+        bean.setNodeParticipant("alertType", alertType);
+        bean.save();
+        return act;
     }
 
     /**

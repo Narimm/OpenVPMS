@@ -293,7 +293,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
-        alerts = createCollectionEditor(ALERTS, act);
+        alerts = createAlertsCollectionEditor();
 
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -1171,30 +1171,39 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param product the product. May be {@code null}
      */
     private void updateAlerts(Product product) {
+        Alerts allAlerts = getEditContext().getAlerts();
         if (alerts != null) {
             for (Act act : alerts.getCurrentActs()) {
                 alerts.remove(act);
+                allAlerts.remove(act);
             }
             if (product != null) {
-                List<Entity> alertTypes = getEditContext().getAlertTypes(product);
+                List<Entity> alertTypes = allAlerts.getAlertTypes(product);
                 for (Entity alertType : alertTypes) {
-                    Act act = (Act) alerts.create();
-                    if (act != null) {
-                        IMObjectEditor editor = createEditor(act, alerts);
-                        if (editor instanceof PatientAlertEditor) {
-                            PatientAlertEditor alert = (PatientAlertEditor) editor;
-                            Date startTime = getStartTime();
-                            alert.setStartTime(startTime);
-                            alert.setPatient(getPatient());
-                            alert.setAlertType(alertType);
-                            alert.setProduct(product);
-                        }
-                        alerts.addEdited(editor);
-                        IMObjectBean bean = new IMObjectBean(alertType);
-                        boolean interactive = bean.getBoolean("interactive");
-                        if (interactive) {
-                            // queue editing of the act
-                            queuePatientActEditor(editor, true, false, alerts);
+                    Party patient = getPatient();
+                    if (patient != null && !allAlerts.hasAlert(patient, alertType)) {
+                        Act act = (Act) alerts.create();
+                        if (act != null) {
+                            IMObjectEditor editor = createEditor(act, alerts);
+                            if (editor instanceof PatientAlertEditor) {
+                                PatientAlertEditor alert = (PatientAlertEditor) editor;
+                                Date startTime = getStartTime();
+                                alert.setStartTime(startTime);
+                                alert.setPatient(patient);
+                                alert.setAlertType(alertType);
+                                alert.setProduct(product);
+
+                                // marking matching alerts completed are handled via CustomerChargeActEditor.
+                                // Need to disable it here to avoid the rule updating other alerts in the invoice.
+                                alert.setMarkMatchingAlertsCompleted(false);
+                            }
+                            alerts.addEdited(editor);
+                            IMObjectBean bean = new IMObjectBean(alertType);
+                            boolean interactive = bean.getBoolean("interactive");
+                            if (interactive) {
+                                // queue editing of the act
+                                queuePatientActEditor(editor, true, false, alerts);
+                            }
                         }
                     }
                 }
@@ -1801,6 +1810,22 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         CollectionProperty collection = (CollectionProperty) getProperty("dispensing");
         if (collection != null && !collection.isHidden()) {
             editor = new DispensingActRelationshipCollectionEditor(collection, getObject(), getLayoutContext());
+            getEditors().add(editor);
+        }
+        return editor;
+    }
+
+    /**
+     * Creates an editor for the "alerts" node.
+     *
+     * @return a new editor
+     */
+    private ActRelationshipCollectionEditor createAlertsCollectionEditor() {
+        AlertActRelationshipCollectionEditor editor = null;
+        CollectionProperty collection = (CollectionProperty) getProperty(ALERTS);
+        if (collection != null && !collection.isHidden()) {
+            editor = new AlertActRelationshipCollectionEditor(collection, getObject(), getLayoutContext());
+            editor.setAlerts(getEditContext().getAlerts());
             getEditors().add(editor);
         }
         return editor;

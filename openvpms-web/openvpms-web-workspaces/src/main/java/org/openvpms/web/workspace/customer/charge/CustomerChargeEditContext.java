@@ -23,16 +23,13 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.StockOnHand;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -47,6 +44,11 @@ public class CustomerChargeEditContext extends ChargeEditContext {
      * The save context.
      */
     private final ChargeSaveContext saveContext;
+
+    /**
+     * The alerts.
+     */
+    private final Alerts alerts;
 
     /**
      * The stock on hand.
@@ -75,6 +77,7 @@ public class CustomerChargeEditContext extends ChargeEditContext {
         saveContext = new ChargeSaveContext();
         reminderRules = new ReminderRules(getCachingArchetypeService(), ServiceHelper.getBean(PatientRules.class));
         stock = new StockOnHand(getStockRules());
+        alerts = new Alerts();
     }
 
     /**
@@ -114,6 +117,15 @@ public class CustomerChargeEditContext extends ChargeEditContext {
     }
 
     /**
+     * Returns the alerts.
+     *
+     * @return the alerts
+     */
+    public Alerts getAlerts() {
+        return alerts;
+    }
+
+    /**
      * Helper to return the reminder types and their relationships for a product.
      * <p/>
      * If there are multiple reminder types, these will be sorted on name.
@@ -140,23 +152,6 @@ public class CustomerChargeEditContext extends ChargeEditContext {
      */
     public Date getReminderDueDate(Date startTime, EntityRelationship relationship) {
         return reminderRules.calculateProductReminderDueDate(startTime, relationship);
-    }
-
-    /**
-     * Returns the alert types associated with a product.
-     *
-     * @param product the product
-     * @return the alert types
-     */
-    public List<Entity> getAlertTypes(Product product) {
-        List<Entity> result;
-        EntityBean bean = new EntityBean(product);
-        if (bean.hasNode("alerts")) {
-            result = bean.getNodeTargetEntities("alerts");
-        } else {
-            result = Collections.emptyList();
-        }
-        return result;
     }
 
 }

@@ -1,5 +1,6 @@
 #
 # Migrate lookup.patientAlertType to entity.patientAlertType.
+# All but the ALLERGY and AGGRESSION lookup.patientAlertTypes are retained; these are used for
 #
 
 
@@ -23,6 +24,18 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, acti
         AND NOT exists(SELECT *
                        FROM entities e
                        WHERE e.linkId = l.linkId AND e.arch_short_name = 'entity.patientAlertType');
+
+INSERT INTO entity_classifications (entity_id, lookup_id)
+  SELECT
+    entity_id,
+    lookup_id
+  FROM tmp_alerts a
+    JOIN lookups l
+      ON l.lookup_id = a.lookup_id
+         AND l.code IN ('AGGRESSION', 'ALLERGY')
+         AND NOT exists(SELECT *
+                        FROM entity_classifications ec
+                        WHERE ec.entity_id = a.entity_id AND ec.lookup_id = a.lookup_id);
 
 INSERT INTO tmp_alerts (lookup_id, entity_id)
   SELECT
@@ -85,10 +98,13 @@ DELETE d
 FROM lookup_details d
   JOIN lookups l
     ON d.lookup_id = l.lookup_id
-       AND l.arch_short_name = 'lookup.patientAlertType';
+       AND l.arch_short_name = 'lookup.patientAlertType'
+       AND l.code NOT IN ('AGGRESSION', 'ALLERGY');
+
 
 DELETE l
 FROM lookups l
-WHERE l.arch_short_name = 'lookup.patientAlertType';
+WHERE l.arch_short_name = 'lookup.patientAlertType'
+      AND l.code NOT IN ('AGGRESSION', 'ALLERGY');
 
 DROP TABLE tmp_alerts;

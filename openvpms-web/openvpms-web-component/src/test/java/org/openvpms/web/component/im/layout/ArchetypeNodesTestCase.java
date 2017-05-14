@@ -67,8 +67,8 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
                     "locations");
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
-                     "reminders", "documents", "discounts", "species", "updates", "classifications", "identities",
-                     "equivalents", "taxes", "sourceRelationships");
+                     "reminders", "alerts", "documents", "discounts", "species", "updates", "classifications",
+                     "identities", "equivalents", "taxes", "sourceRelationships");
     }
 
     /**
@@ -92,8 +92,8 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         ArchetypeNodes nodes = new ArchetypeNodes(false, true);
         checkSimple(archetype, nodes);
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
-                     "reminders", "documents", "discounts", "species", "updates", "classifications", "identities",
-                     "equivalents", "taxes", "sourceRelationships");
+                     "reminders", "alerts", "documents", "discounts", "species", "updates", "classifications",
+                     "identities", "equivalents", "taxes", "sourceRelationships");
     }
 
     /**
@@ -107,7 +107,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
                     "locations", "species");
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
-                     "reminders", "documents", "discounts", "updates", "classifications", "identities",
+                     "reminders", "alerts", "documents", "discounts", "updates", "classifications", "identities",
                      "equivalents", "taxes", "sourceRelationships");
     }
 
@@ -126,8 +126,8 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
 
         // verify prices are excluded from complex nodes
         checkComplex(archetype, nodes, product, "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
-                     "reminders", "documents", "discounts", "species", "updates", "classifications", "identities",
-                     "equivalents", "taxes", "sourceRelationships");
+                     "reminders", "alerts", "documents", "discounts", "species", "updates", "classifications",
+                     "identities", "equivalents", "taxes", "sourceRelationships");
     }
 
     /**
@@ -151,8 +151,8 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
 
         // verify prices are excluded from complex nodes
         checkComplex(archetype, nodes, product, "doses", "linked", "investigationTypes", "suppliers",
-                     "stockLocations", "reminders", "documents", "discounts", "species", "updates", "classifications",
-                     "identities", "equivalents", "taxes", "sourceRelationships");
+                     "stockLocations", "reminders", "alerts", "documents", "discounts", "species", "updates",
+                     "classifications", "identities", "equivalents", "taxes", "sourceRelationships");
 
         // populate the nodes and verify they are now returned
         bean.setValue("label", true);
@@ -165,8 +165,8 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
                     "dispensingVerb", "label", "dispInstructions", "type", "pharmacy", "templateOnly",
                     "patientIdentity", "active", "usageNotes", "locations");
         checkComplex(archetype, nodes, product, "prices", "doses", "linked", "investigationTypes", "suppliers",
-                     "stockLocations", "reminders", "documents", "discounts", "species", "updates", "classifications",
-                     "identities", "equivalents", "taxes", "sourceRelationships");
+                     "stockLocations", "reminders", "alerts", "documents", "discounts", "species", "updates",
+                     "classifications", "identities", "equivalents", "taxes", "sourceRelationships");
     }
 
     /**

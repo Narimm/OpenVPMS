@@ -13,6 +13,7 @@
  *
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.alert;
 
 import nextapp.echo2.app.Color;
@@ -112,8 +113,14 @@ public class Alert implements Comparable<Alert> {
      */
     private String priorityCode;
 
+    /**
+     * The alert colour.
+     */
     private Color colour;
 
+    /**
+     * The alert type bean.
+     */
     private IMObjectBean bean;
 
     /**
@@ -175,18 +182,21 @@ public class Alert implements Comparable<Alert> {
         return colour;
     }
 
+    /**
+     * Returns the alert text colour.
+     *
+     * @return the alert text colour. May be {@code null}
+     */
     public Color getTextColour() {
         Color color = getColour();
         return (color != null) ? ColourHelper.getTextColour(color) : null;
     }
 
-    private IMObjectBean getBean() {
-        if (bean == null) {
-            bean = new IMObjectBean(alertType);
-        }
-        return bean;
-    }
-
+    /**
+     * Returns the alert priority.
+     *
+     * @return the alert priority
+     */
     public Priority getPriority() {
         if (priority == null) {
             priority = new Priority(getPriorityCode());
@@ -194,6 +204,11 @@ public class Alert implements Comparable<Alert> {
         return priority;
     }
 
+    /**
+     * Returns the alert priority code.
+     *
+     * @return the alert priority code
+     */
     public String getPriorityCode() {
         if (priorityCode == null) {
             priorityCode = getBean().getString("priority");
@@ -230,6 +245,12 @@ public class Alert implements Comparable<Alert> {
         return result;
     }
 
+    /**
+     * Creates an alert from an act.
+     *
+     * @param act the act. Must be an <em>act.patientAlert</em> or <em>act.customerAlert</em>
+     * @return the alert, or {@code null} if the act is of the wrong type or the alert type cannot be determined
+     */
     public static Alert create(Act act) {
         ActBean bean = new ActBean(act);
         IMObject alertType = null;
@@ -240,4 +261,17 @@ public class Alert implements Comparable<Alert> {
         }
         return (alertType != null) ? new Alert(alertType, act) : null;
     }
+
+    /**
+     * Wraps the alert type in a bean.
+     *
+     * @return the bean
+     */
+    private IMObjectBean getBean() {
+        if (bean == null) {
+            bean = new IMObjectBean(alertType);
+        }
+        return bean;
+    }
+
 }
