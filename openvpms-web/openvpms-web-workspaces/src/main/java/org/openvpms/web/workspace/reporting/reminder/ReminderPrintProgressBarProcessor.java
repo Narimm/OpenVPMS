@@ -76,14 +76,22 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
 
     /**
      * Constructs a {@link ReminderPrintProgressBarProcessor}.
-     *  @param query      the query
-     * @param processor  the email processor
-     * @param help       the help context
+     *
+     * @param query     the query
+     * @param processor the email processor
+     * @param help      the help context
      */
     public ReminderPrintProgressBarProcessor(ReminderItemSource query, ReminderPrintProcessor processor,
                                              HelpContext help) {
         super(query, processor, Messages.get("reporting.reminder.run.print"));
         this.help = help;
+        // if a single reminder is being printed, always display the print dialog, otherwise display it if there is
+        // no default printer
+        if (query instanceof SingleReminderItemSource) {
+            processor.setInteractiveAlways(true);
+        } else {
+            processor.setInteractiveAlways(false);
+        }
 
         PrinterListener listener = new PrinterListener() {
             public void printed(String printer) {
