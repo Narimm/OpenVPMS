@@ -56,11 +56,11 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      * Formats an address.
      *
      * @param location   the location contact
-     * @param address    the address
-     * @param suburb     the suburb
-     * @param stateCode  the state code
-     * @param stateName  the state name
-     * @param postcode   the postcode
+     * @param address    the address. May be {@code null}
+     * @param suburb     the suburb. May be {@code null}
+     * @param stateCode  the state code. May be {@code null}
+     * @param stateName  the state name. May be {@code null}
+     * @param postcode   the postcode. May be {@code null}
      * @param singleLine if {@code true} formats the address on a single line
      * @return the formatted address
      */
@@ -72,10 +72,10 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
     /**
      * Formats using the default format.
      *
-     * @param address    the address
-     * @param suburb     the suburb
-     * @param state      the state
-     * @param postcode   the postcode
+     * @param address    the address. May be {@code null}
+     * @param suburb     the suburb. May be {@code null}
+     * @param state      the state. May be {@code null}
+     * @param postcode   the postcode. May be {@code null}
      * @param singleLine if {@code true} formats the address on a single line
      * @return the formatted address
      */
