@@ -34,10 +34,10 @@
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="singleLineFormat" path="/details/singleLineFormat" type="java.lang.String" minCardinality="1"
               maxLength="5000"
-              defaultValue="&quot;concat(expr:concatIf($address, $nl),expr:concatIf($suburb, ' '),expr:concatIf($state.code, ' '),$postcode)&quot;"/>
+              defaultValue="&quot;concat(expr:concatIf($address, ', '),expr:concatIf(toUpperCase($suburb), ' '),expr:concatIf($state.code, ' '),$postcode)&quot;"/>
         <node name="multiLineFormat" displayName="Multi-line Format" path="/details/multiLineFormat"
               type="java.lang.String" minCardinality="1"
               maxLength="5000"
-              defaultValue="&quot;concat(expr:concatIf($address, ', '),expr:concatIf($suburb, ' '),expr:concatIf($state.code, ' '),$postcode)&quot;"/>
+              defaultValue="&quot;concat(expr:concatIf($address, $nl),expr:concatIf(toUpperCase($suburb), ' '),expr:concatIf($state.code, ' '),$postcode)&quot;"/>
     </archetype>
 </archetypes>
