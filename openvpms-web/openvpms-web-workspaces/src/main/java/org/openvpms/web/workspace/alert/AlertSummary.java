@@ -26,7 +26,6 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -144,7 +143,7 @@ public class AlertSummary {
         Color colour = alert.getColour();
         if (colour != null) {
             result.setBackground(colour);
-            result.setForeground(ColourHelper.getTextColour(colour));
+            result.setForeground(alert.getTextColour());
         }
 
         result.addActionListener(new ActionListener() {

@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -91,9 +92,14 @@ public class AlertTypeParticipationEditor extends ParticipationEditor<Entity> {
         }
     }
 
+    /**
+     * Returns the alert types.
+     *
+     * @return the alert types
+     */
     @SuppressWarnings("unchecked")
     private List<Entity> getAlertTypes() {
-        ArchetypeQuery query = new ArchetypeQuery("entity.patientAlertType", true, true);
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.ALERT_TYPE, true, true);
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         return (List<Entity>) (List) ServiceHelper.getArchetypeService().get(query).getResults();
     }

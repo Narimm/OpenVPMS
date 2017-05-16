@@ -19,15 +19,16 @@ package org.openvpms.web.workspace.alert;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.text.TextField;
 
@@ -46,6 +47,10 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
      * The field to display the alert priority and colour.
      */
     private TextField priority;
+
+    /**
+     * The alert.
+     */
     private Alert alert;
 
 
@@ -101,12 +106,25 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
         return set;
     }
 
+    /**
+     * Creates a component for the alert type.
+     *
+     * @param alert      the alert
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param context    the layout context
+     * @return the component
+     */
     protected ComponentState createAlert(Alert alert, IMObject object, PropertySet properties, LayoutContext context) {
-        ComponentState alertType = createComponent(properties.get("alertType"), object, context);
-        initAlertType(alert, alertType.getComponent());
+        ComponentState alertType;
+        if (TypeHelper.isA(alert.getAlertType(), PatientArchetypes.ALERT)) {
+            alertType = createComponent(properties.get("alertType"), object, context);
+        } else {
+            alertType = createComponent(properties.get("alertType"), object, context);
+        }
+        setAlertColour(alert, alertType.getComponent());
         return alertType;
     }
-
 
     /**
      * Sets the background/foreground of the alert type field, if it is a text field.
@@ -114,11 +132,11 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
      * @param alert     the alert type
      * @param component the component to display the alert type
      */
-    private void initAlertType(Alert alert, Component component) {
+    protected void setAlertColour(Alert alert, Component component) {
         if (component instanceof TextField) {
             Color background = alert.getColour();
             if (background != null) {
-                Color foreground = ColourHelper.getTextColour(background);
+                Color foreground = alert.getTextColour();
                 component.setBackground(background);
                 component.setForeground(foreground);
             }

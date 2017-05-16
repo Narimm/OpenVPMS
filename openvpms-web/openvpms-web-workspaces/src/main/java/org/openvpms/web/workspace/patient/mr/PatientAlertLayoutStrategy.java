@@ -16,7 +16,14 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertLayoutStrategy;
 
 
@@ -29,11 +36,6 @@ import org.openvpms.web.workspace.alert.AlertLayoutStrategy;
 public class PatientAlertLayoutStrategy extends AlertLayoutStrategy {
 
     /**
-     * The field to display the alert priority and colour.
-     */
-    private TextField priority;
-
-    /**
      * Constructs a {@link PatientAlertLayoutStrategy}.
      */
     public PatientAlertLayoutStrategy() {
@@ -41,12 +43,26 @@ public class PatientAlertLayoutStrategy extends AlertLayoutStrategy {
     }
 
     /**
-     * Constructs a {@link PatientAlertLayoutStrategy}.
+     * Creates a component for the alert type.
      *
-     * @param priority the field to display the priority and colour
+     * @param alert      the alert
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param context    the layout context
+     * @return the component
      */
-    public PatientAlertLayoutStrategy(TextField priority) {
-        super(priority);
+    @Override
+    protected ComponentState createAlert(Alert alert, IMObject object, PropertySet properties, LayoutContext context) {
+        ComponentState result;
+        if (context.isEdit()) {
+            result = super.createAlert(alert, object, properties, context);
+        } else {
+            TextField field = TextComponentFactory.create(20);
+            field.setText(alert.getAlertType().getName());
+            setAlertColour(alert, field);
+            Property property = properties.get("alertType");
+            result = new ComponentState(field, property);
+        }
+        return result;
     }
-
 }

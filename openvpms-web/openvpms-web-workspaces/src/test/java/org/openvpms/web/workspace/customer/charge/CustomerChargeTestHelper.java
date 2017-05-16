@@ -142,6 +142,10 @@ public class CustomerChargeTestHelper {
             assertFalse(editor.isValid()); // not valid while popup is displayed
             checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
         }
+        for (int i = 0; i < bean.getNodeTargetEntityRefs("alerts").size(); ++i) {
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(queue, PatientArchetypes.ALERT, false);
+        }
     }
 
     /**

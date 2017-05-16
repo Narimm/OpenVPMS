@@ -24,7 +24,7 @@
               derivedValue="' '"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
         <node name="parentChild" path="/parentChildRelationship" type="java.lang.Boolean" readOnly="true" hidden="true"
-              defaultValue="true()"/>
+              defaultValue="false()"/>
         <node name="source" displayName="Invoice Item" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               filter="act.customerAccountInvoiceItem"/>

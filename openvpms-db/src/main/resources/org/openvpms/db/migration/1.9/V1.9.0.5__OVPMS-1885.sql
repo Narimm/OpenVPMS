@@ -1,6 +1,6 @@
 #
 # Migrate lookup.patientAlertType to entity.patientAlertType.
-# All but the ALLERGY and AGGRESSION lookup.patientAlertTypes are retained; these are used for
+# All but the ALLERGY and AGGRESSION lookup.patientAlertTypes are retained; these are used for HL7 and SmartFlow
 #
 
 
@@ -27,8 +27,8 @@ INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, acti
 
 INSERT INTO entity_classifications (entity_id, lookup_id)
   SELECT
-    entity_id,
-    lookup_id
+    a.entity_id,
+    a.lookup_id
   FROM tmp_alerts a
     JOIN lookups l
       ON l.lookup_id = a.lookup_id

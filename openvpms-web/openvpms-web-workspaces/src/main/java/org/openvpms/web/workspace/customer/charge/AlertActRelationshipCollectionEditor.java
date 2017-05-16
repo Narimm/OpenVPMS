@@ -63,16 +63,18 @@ public class AlertActRelationshipCollectionEditor extends ActRelationshipCollect
     }
 
     /**
-     * Adds an object to the collection.
+     * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
     @Override
-    public void add(IMObject object) {
-        super.add(object);
+    public boolean add(IMObject object) {
+        boolean result = super.add(object);
         if (alerts != null) {
-            alerts.remove((Act) object);
+            alerts.add((Act) object);
         }
+        return result;
     }
 
     /**

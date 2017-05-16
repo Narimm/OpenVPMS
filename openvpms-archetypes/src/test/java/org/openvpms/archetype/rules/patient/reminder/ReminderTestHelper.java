@@ -578,8 +578,22 @@ public class ReminderTestHelper extends TestHelper {
      * @return a new alert type
      */
     public static Entity createAlertType(String name, String type) {
+        return createAlertType(name, type, false);
+    }
+
+    /**
+     * Helper to create and save a new alert type.
+     *
+     * @param name        the alert name
+     * @param type        the alert type code. May be {@code null}
+     * @param interactive if {@code true}, the alert is interactive
+     * @return a new alert type
+     */
+    public static Entity createAlertType(String name, String type, boolean interactive) {
         Entity entity = (Entity) create(PatientArchetypes.ALERT_TYPE);
         entity.setName(name);
+        IMObjectBean bean = new IMObjectBean(entity);
+        bean.setValue("interactive", interactive);
         if (type != null) {
             entity.addClassification(TestHelper.getLookup("lookup.patientAlertType", type));
         }
