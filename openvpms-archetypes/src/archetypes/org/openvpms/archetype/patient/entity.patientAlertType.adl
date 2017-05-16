@@ -21,7 +21,6 @@
         <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="reason" path="/details/reason" type="java.lang.String" maxLength="100" minCardinality="0"/>
-        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="priority" path="/details/priority" type="java.lang.String" defaultValue="'HIGH'" minCardinality="1">
             <assertion name="lookup.local">
                 <propertyList name="entries">
@@ -48,5 +47,6 @@
         <node name="type" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
               filter="lookup.patientAlertType"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>
