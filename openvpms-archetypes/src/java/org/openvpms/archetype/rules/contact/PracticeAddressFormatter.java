@@ -1,7 +1,24 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.archetype.rules.contact;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Variables;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.practice.PracticeService;
@@ -65,11 +82,11 @@ public class PracticeAddressFormatter extends AbstractAddressFormatter {
      * Formats an address.
      *
      * @param location   the location contact
-     * @param address    the address
-     * @param suburb     the suburb
-     * @param stateCode  the state code
-     * @param stateName  the state name
-     * @param postcode   the postcode
+     * @param address    the address. May be {@code null}
+     * @param suburb     the suburb. May be {@code null}
+     * @param stateCode  the state code. May be {@code null}
+     * @param stateName  the state name. May be {@code null}
+     * @param postcode   the postcode. May be {@code null}
      * @param singleLine if {@code true} formats the address on a single line
      * @return the formatted address
      */
@@ -85,11 +102,11 @@ public class PracticeAddressFormatter extends AbstractAddressFormatter {
                 if (format != null) {
                     JXPathContext context = JXPathHelper.newContext(location);
                     Variables variables = context.getVariables();
-                    variables.declareVariable("address", address);
-                    variables.declareVariable("suburb", suburb);
-                    variables.declareVariable("state.code", stateCode);
-                    variables.declareVariable("state", stateName);
-                    variables.declareVariable("postcode", postcode);
+                    variables.declareVariable("address", StringUtils.trimToEmpty(address));
+                    variables.declareVariable("suburb", StringUtils.trimToEmpty(suburb));
+                    variables.declareVariable("state.code", StringUtils.trimToEmpty(stateCode));
+                    variables.declareVariable("state", StringUtils.trimToEmpty(stateName));
+                    variables.declareVariable("postcode", StringUtils.trimToEmpty(postcode));
                     variables.declareVariable("nl", "\n");
                     Object value = context.getValue(format);
                     result = (value != null) ? value.toString() : null;

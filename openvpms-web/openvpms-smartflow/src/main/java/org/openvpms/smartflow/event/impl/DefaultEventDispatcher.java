@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.event.Listener;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.event.EventDispatcher;
@@ -93,12 +94,13 @@ public class DefaultEventDispatcher implements EventDispatcher {
      *
      * @param location the practice location. May be {@code null}
      * @param service  the archetype service
+     * @param lookups  the lookups
      * @param factory  the Smart Flow Sheet service factory
      * @param rules    the patient rules
      */
-    public DefaultEventDispatcher(Party location, IArchetypeService service, FlowSheetServiceFactory factory,
-                                  PatientRules rules) {
-        treatmentProcessor = new TreatmentEventProcessor(location, service, rules);
+    public DefaultEventDispatcher(Party location, IArchetypeService service, ILookupService lookups,
+                                  FlowSheetServiceFactory factory, PatientRules rules) {
+        treatmentProcessor = new TreatmentEventProcessor(location, service, lookups, rules);
         notesProcessor = new NotesEventProcessor(service);
         anestheticsProcessor = new AnestheticsEventProcessor(service, factory);
         dischargeProcessor = new DischargeEventProcessor(service, factory);

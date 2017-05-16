@@ -77,11 +77,15 @@ class ReminderGenerationDialog extends PopupDialog {
      * @param help       the help context
      */
     public ReminderGenerationDialog(List<ReminderBatchProcessor> processors, HelpContext help) {
-        super(Messages.get("reporting.reminder.run.title"), "ReminderSendDialog", OK_CANCEL, help);
+        super(Messages.get("reporting.reminder.run.title"), "ReminderGenerationDialog.Large", OK_CANCEL, help);
         setModal(true);
         workflow = new WorkflowImpl(help);
         workflow.setBreakOnCancel(false);
         ComponentGrid grid = new ComponentGrid();
+        if (processors.size() == 1) {
+            // if there is only one dialog, use the small layout
+            setStyleName("ReminderGenerationDialog.Small");
+        }
         for (ReminderBatchProcessor processor : sort(processors)) {
             ReminderBatchProcessorTask task = new ReminderBatchProcessorTask(processor);
             task.setTerminateOnError(false);

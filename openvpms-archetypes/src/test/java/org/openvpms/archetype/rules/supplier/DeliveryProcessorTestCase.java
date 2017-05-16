@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.supplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
@@ -291,7 +292,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         BigDecimal initialPrice = BigDecimal.ONE;
 
         // add a new price
-        ProductPrice price = (ProductPrice) create("productPrice.unitPrice");
+        ProductPrice price = (ProductPrice) create(ProductArchetypes.UNIT_PRICE);
         IMObjectBean priceBean = new IMObjectBean(price);
         priceBean.setValue("cost", initialCost);
         priceBean.setValue("markup", BigDecimal.valueOf(100));
@@ -383,7 +384,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         BigDecimal initialPrice = BigDecimal.ONE;
 
         // add a new price
-        ProductPrice price = (ProductPrice) create("productPrice.unitPrice");
+        ProductPrice price = (ProductPrice) create(ProductArchetypes.UNIT_PRICE);
         IMObjectBean priceBean = new IMObjectBean(price);
         priceBean.setValue("cost", initialCost);
         priceBean.setValue("markup", BigDecimal.valueOf(100));
@@ -441,6 +442,63 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
         // verify that the price has updated
         checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+    }
+
+    /**
+     * Verifies that when the party.organisationPractice ignoreListPriceDecreases node is {@code true}, auto-price
+     * updates are disabled if the calculated cost price is less than the existing cost price.
+     */
+    @Test
+    public void testIgnoreListPriceDecreasesIgnoresLowerCostPrice() {
+        Product product = getProduct();
+
+        // add a new price
+        ProductPrice price = (ProductPrice) create(ProductArchetypes.UNIT_PRICE);
+        IMObjectBean priceBean = new IMObjectBean(price);
+        priceBean.setValue("cost", BigDecimal.ONE);
+        priceBean.setValue("markup", BigDecimal.valueOf(100));
+        priceBean.setValue("price", BigDecimal.valueOf(2));
+        product.addProductPrice(price);
+        save(product);
+
+        // create a product-supplier relationship.
+        int packageSize = 20;
+        ProductSupplier ps = createProductSupplier();
+        ps.setPackageSize(packageSize);
+        ps.setAutoPriceUpdate(true);
+        ps.save();
+
+        // post a delivery, and verify prices update
+        BigDecimal unitPrice1 = new BigDecimal("10.00");
+        BigDecimal quantity = BigDecimal.ONE;
+        BigDecimal listPrice1 = new BigDecimal("15.00");
+
+        Act delivery1 = createDelivery(quantity, packageSize, unitPrice1, listPrice1);
+        delivery1.setStatus(ActStatus.POSTED);
+        save(delivery1);
+
+        checkPrice(product, new BigDecimal("0.75"), new BigDecimal("1.50"));
+
+        // now disable price updates for decreases in list price
+        setIgnoreListPriceDecreases(true);
+
+        // post another delivery, with a higher list price but greater package size.
+        BigDecimal listPrice2 = new BigDecimal("20.00");
+        Act delivery2 = createDelivery(quantity, 50, BigDecimal.TEN, listPrice2);
+        delivery2.setStatus(ActStatus.POSTED);
+        save(delivery2);
+
+        // verify that the price hasn't updated
+        checkPrice(product, new BigDecimal("0.75"), new BigDecimal("1.50"));
+
+        // post another delivery, increasing the list price
+        BigDecimal listPrice3 = new BigDecimal("30.00");
+        Act delivery3 = createDelivery(quantity, packageSize, BigDecimal.TEN, listPrice3);
+        delivery3.setStatus(ActStatus.POSTED);
+        save(delivery3);
+
+        // verify that the price has updated
+        checkPrice(product, new BigDecimal("1.50"), new BigDecimal("3.00"));
     }
 
     /**

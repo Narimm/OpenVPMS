@@ -27,10 +27,13 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -60,6 +63,11 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
     private final Party location;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The patient rules.
      */
     private final PatientRules rules;
@@ -79,11 +87,14 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      *
      * @param location the practice location. May be {@code null}
      * @param service  the archetype service
+     * @param lookups  the lookup service
      * @param rules    the patient rules
      */
-    public TreatmentEventProcessor(Party location, IArchetypeService service, PatientRules rules) {
+    public TreatmentEventProcessor(Party location, IArchetypeService service, ILookupService lookups,
+                                   PatientRules rules) {
         super(service);
         this.location = location;
+        this.lookups = lookups;
         this.rules = rules;
     }
 
@@ -198,9 +209,9 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
 
     /**
      * Updates the orders associated with a treatment.
-     * <p/>
+     * <p>
      * This takes into account existing IN_PROGRESS and POSTED orders and order returns.
-     * <p/>
+     * <p>
      * If the total POSTED quantity is:
      * <ul>
      * <li>the same as the new treatment quantity, any IN_PROGRESS order or return is removed</li>
@@ -234,7 +245,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
                 if (item == null) {
                     item = inProgress.createOrderItem();
                 }
-                populateItem(item, treatment, product, diff);
+                populateItem(inProgress.getOrder(), item, treatment, product, diff);
                 inProgress.save();
             } else {
                 // remove the existing return, and add a new order
@@ -255,7 +266,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
                 if (item == null) {
                     item = inProgress.createReturnItem();
                 }
-                populateItem(item, treatment, product, diff);
+                populateItem(inProgress.getReturn(), item, treatment, product, diff);
                 inProgress.save();
             }
         }
@@ -278,7 +289,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         CustomerPharmacyOrder order = new CustomerPharmacyOrder(
                 patient, customer, null, location != null ? location.getObjectReference() : null, service);
         populate(order.getOrder(), treatment, visit, patient, customer, note);
-        populateItem(order.createOrderItem(), treatment, product, quantity);
+        populateItem(order.getOrder(), order.createOrderItem(), treatment, product, quantity);
         service.save(order.getActs());
     }
 
@@ -299,7 +310,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         CustomerPharmacyOrder orderReturn = new CustomerPharmacyOrder(
                 patient, customer, null, location != null ? location.getObjectReference() : null, service);
         populate(orderReturn.getReturn(), treatment, visit, patient, customer, note);
-        populateItem(orderReturn.createReturnItem(), treatment, product, quantity);
+        populateItem(orderReturn.getReturn(), orderReturn.createReturnItem(), treatment, product, quantity);
         service.save(orderReturn.getActs());
     }
 
@@ -336,18 +347,41 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
     /**
      * Populates an order/order return item.
      *
+     * @param order     the order/order return
      * @param item      the order/order return item
      * @param treatment the treatment
      * @param product   the product. May be {@code null}
      * @param quantity  the quantity
      */
-    private void populateItem(ActBean item, Treatment treatment, Product product, BigDecimal quantity) {
+    private void populateItem(ActBean order, ActBean item, Treatment treatment, Product product, BigDecimal quantity) {
         item.setValue("quantity", quantity);
         if (product != null) {
             item.setNodeParticipant("product", product);
+
+            String units = treatment.getUnits();
+            IMObjectBean productBean = new IMObjectBean(product, getService());
+            String sellingUnits = productBean.getString("sellingUnits");
+            if (!StringUtils.isEmpty(units) && !StringUtils.isEmpty(sellingUnits)) {
+                boolean match = true;
+                if (!units.equalsIgnoreCase(sellingUnits)) {
+                    Lookup uom = lookups.getLookup("lookup.uom", sellingUnits);
+                    if (uom != null && !StringUtils.isEmpty(uom.getName())) {
+                        if (!units.equalsIgnoreCase(uom.getName())) {
+                            sellingUnits = uom.getName();
+                            match = false;
+                        }
+                    } else {
+                        match = false;
+                    }
+                }
+                if (!match) {
+                    addNote(order, "Dispensing units ('" + units + "')" + " do not match selling units ('"
+                                   + sellingUnits + "')");
+                }
+            }
         } else {
-            addNote(item, "Unknown Treatment, Id='" + treatment.getInventoryId()
-                          + "', name='" + treatment.getName() + "'");
+            addNote(order, "Unknown Treatment, Id='" + treatment.getInventoryId()
+                           + "', name='" + treatment.getName() + "'");
         }
     }
 

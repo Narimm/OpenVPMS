@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -31,12 +31,12 @@ public abstract class ExportPrintDialog extends PrintDialog {
     /**
      * The export button identifier.
      */
-    private static final String EXPORT_ID = "export";
+    public static final String EXPORT_ID = "export";
 
     /**
      * The export mail button identifier.
      */
-    private static final String EXPORT_MAIL_ID = "exportMail";
+    public static final String EXPORT_MAIL_ID = "exportMail";
 
 
     /**

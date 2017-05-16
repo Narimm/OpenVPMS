@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.event.Listener;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.ReferenceDataService;
@@ -63,6 +64,11 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
 
     /**
      * The practice service.
@@ -134,15 +140,17 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      *
      * @param factory            the factory for SFS services
      * @param service            the archetype service
+     * @param lookups            the lookup service
      * @param practiceService    the practice service
      * @param transactionManager the transaction manager
      * @param rules              the patient rules
      */
     protected SmartFlowSheetEventServiceImpl(FlowSheetServiceFactory factory, IArchetypeService service,
-                                             PracticeService practiceService,
+                                             ILookupService lookups, PracticeService practiceService,
                                              PlatformTransactionManager transactionManager, PatientRules rules) {
         this.factory = factory;
         this.service = service;
+        this.lookups = lookups;
         this.practiceService = practiceService;
         this.transactionManager = transactionManager;
         this.rules = rules;
@@ -206,7 +214,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
 
     /**
      * Monitors for a single event with the specified id.
-     * <p/>
+     * <p>
      * The listener is automatically removed, once the event is handled.
      *
      * @param location the location the event belongs to
@@ -354,7 +362,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
 
     /**
      * Adds an API key for the specified practice location.
-     * <p/>
+     * <p>
      * If the key is not already registered, this creates an {@link EventDispatcher} to handle messages read from
      * the SFS Azure Service Bus queue.
      *
@@ -368,7 +376,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
             Set<Party> locations = locationsByKey.get(key);
             if (locations == null) {
                 ServiceBusConfig config = getConfig(location);
-                EventDispatcher dispatcher = new DefaultEventDispatcher(location, service, factory, rules);
+                EventDispatcher dispatcher = new DefaultEventDispatcher(location, service, lookups, factory, rules);
                 locations = new HashSet<>();
                 locationsByKey.put(key, locations);
                 dispatchers.put(key, dispatcher);

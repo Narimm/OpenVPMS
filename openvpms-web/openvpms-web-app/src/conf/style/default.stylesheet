@@ -1210,10 +1210,18 @@
         </properties>
     </style>
 
-    <style name="ReminderSendDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+    <style name="ReminderGenerationDialog.Large" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="${dialog.medium.width}"/>
-            <property name="height" value="${dialog.large.height}"/>
+            <property name="width" value="${ReminderGenerationDialog.width}"/>
+            <property name="height" value="${ReminderGenerationDialog.large.height}"/>
+            <property name="resizable" value="true"/>
+        </properties>
+    </style>
+
+    <style name="ReminderGenerationDialog.Small" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${ReminderGenerationDialog.width}"/>
+            <property name="height" value="${ReminderGenerationDialog.small.height}"/>
             <property name="resizable" value="true"/>
         </properties>
     </style>
@@ -1380,7 +1388,7 @@
     <style name="ExportPrintDialog" base-name="PrintDialog"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="${dialog.medium.width}"/>
+            <property name="width" value="${ExportPrintDialog.width}"/>
             <property name="height" value="${dialog.small.height}"/>
         </properties>
     </style>
