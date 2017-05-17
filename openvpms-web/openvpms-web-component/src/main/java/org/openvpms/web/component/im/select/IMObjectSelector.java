@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.dialog.DialogManager;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.DocumentListener;
@@ -289,9 +290,10 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Pops up a dialog to select an object.
      * <p/>
-     * Only pops up a dialog if one isn't already visible, and no error dialog is being displayed.
+     * Only pops up a dialog if one isn't already visible, no error dialog is being displayed, and there are
+     * no modal dialogs displayed above the button.
      * <p/>
-     * This last requirement avoids the following event sequence:
+     * The error dialog requirement avoids the following event sequence:
      * <ol>
      * <li>text is entered in the field, and enter pressed</li>
      * <li>echo invokes document listener (i.e. {@link #onTextChanged()})</li>
@@ -299,9 +301,16 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * occur if a product template fails to expand</li>
      * <li>echo invokes the action listener (i.e. {@link #onSelect()})</li>
      * </ol>
+     * The modal dialog requirement avoids the following event sequence:
+     * <ol>
+     * <li>text is entered into the field that resolves to a single object, but <em>enter is not pressed</em></li>
+     * <li>the button is pressed</li>
+     * <li>echo invokes {@link #onTextChanged()}, which locates the object, and triggers the selector listener</li>
+     * <li>echo invokes the action listener (i.e. {@link #onSelect()})</li>
+     * </ol>
      */
     protected void onSelect() {
-        if (!inSelect && !inError()) {
+        if (canSelect()) {
             onSelect(createQuery(), false);
         }
     }
@@ -453,7 +462,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
                             T object = rows.get(0);
                             setObject(object);
                             notifySelected();
-                        } else {
+                        } else if (canSelect()) {
                             onSelect(query, true);
                         }
                     }
@@ -485,6 +494,18 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
         if (listener != null) {
             listener.selected(getObject());
         }
+    }
+
+    /**
+     * Determines if a browser can be shown.
+     * <p/>
+     * A browser can be shown if no browser is already visible, no error dialog is being displayed, and there are
+     * no modal dialogs displayed above the button.
+     *
+     * @return {@code true} if a browser can be shown
+     */
+    private boolean canSelect() {
+        return !inSelect && !inError() && !DialogManager.isHidden(getComponent());
     }
 
     /**
