@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
@@ -188,4 +189,14 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
         return strategy;
     }
 
+    /**
+     * Determines if an editor should be disposed on layout change.
+     *
+     * @param editor the editor
+     * @return {@code true}
+     */
+    @Override
+    protected boolean disposeOnChangeLayout(Editor editor) {
+        return editor != this.editor;
+    }
 }

@@ -84,7 +84,6 @@ public class DialogManager {
             ApplicationInstance active = ApplicationInstance.getActive();
             if (active != null) {
                 Window root = active.getDefaultWindow();
-                int zIndex = 0;
                 for (Component c : root.getContent().getComponents()) {
                     if (c instanceof WindowPane) {
                         WindowPane pane = (WindowPane) c;
