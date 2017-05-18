@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.mr;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductRules;
@@ -152,6 +153,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
         expiryDate = getLayoutContext().getComponentFactory().create(getProperty("endTime"), act);
 
         ActBean medBean = new ActBean(act);
+        showProductReadOnly = medBean.hasRelationship(CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP);
         prescription = medBean.hasRelationship(PatientArchetypes.PRESCRIPTION_MEDICATION);
 
         batchListener = new ModifiableListener() {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -86,9 +86,10 @@ public class PatientHistoryActions extends ActActions<Act> {
         } else if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
             return false;
         } else if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT, PatientArchetypes.CLINICAL_PROBLEM,
-                                  PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
+                                  PatientArchetypes.CLINICAL_NOTE)) {
             return act.getSourceActRelationships().isEmpty();
         } else {
+            // reject deletion if the item is linked to an invoice
             for (ActRelationship rel : act.getTargetActRelationships()) {
                 if (TypeHelper.isA(rel.getSource(), CustomerAccountArchetypes.INVOICE_ITEM)) {
                     return false;
