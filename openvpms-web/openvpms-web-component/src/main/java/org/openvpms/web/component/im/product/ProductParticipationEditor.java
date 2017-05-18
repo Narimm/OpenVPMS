@@ -11,26 +11,33 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.ReadOnlyProperty;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -87,6 +94,16 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     private String[] shortNames;
 
     /**
+     * Container for the component. This allows the product to be made read-only if required.
+     */
+    private final Column container = new Column();
+
+    /**
+     * Determines if the product can be changed by the user.
+     */
+    private boolean readOnly;
+
+    /**
      * Constructs a {@link ProductParticipationEditor}.
      *
      * @param participation the object to edit
@@ -112,6 +129,19 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the rendered object.
+     *
+     * @return the rendered object
+     */
+    @Override
+    public Component getComponent() {
+        if (container.getComponentCount() == 0) {
+            container.add(super.getComponent());
+        }
+        return container;
     }
 
     /**
@@ -280,6 +310,53 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      */
     public boolean useLocationProducts() {
         return useLocationProducts;
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        IMObjectLayoutStrategy strategy;
+        if (readOnly) {
+            LayoutContext context = getLayoutContext();
+            IMObjectLayoutStrategyFactory layoutStrategy = context.getLayoutStrategyFactory();
+            IMObject object = getObject();
+            strategy = layoutStrategy.create(object, getParent());
+            Property property = new ReadOnlyProperty(getEntityProperty());
+            ComponentState state = context.getComponentFactory().create(property, object);
+            strategy.addComponent(state);
+        } else {
+            strategy = super.createLayoutStrategy();
+        }
+        return strategy;
+    }
+
+    /**
+     * Determines if the product should be read-only.
+     * <p/>
+     * Note that this only affects the user interface presentation.
+     *
+     * @param readOnly if {@code true}, prevent the user from changing the product
+     */
+    public void setReadOnly(boolean readOnly) {
+        boolean current = this.readOnly;
+        this.readOnly = readOnly;
+        if (readOnly != current) {
+            onLayout();
+        }
+    }
+
+    /**
+     * Change the layout.
+     */
+    @Override
+    protected void onLayout() {
+        container.removeAll();
+        super.onLayout();
+        container.add(super.getComponent());
     }
 
     /**
