@@ -124,7 +124,7 @@ where e.active = true
 	(e.arch_short_name = "product.medication" and $P{IncMedications}) or
 	(e.arch_short_name = "product.merchandise" and $P{IncMerchandise}))
  and (round(d1.value,2) >=  $P{Low Markup} and round(d1.value,2) <=  $P{High Markup})
-group by e.entity_id, pricingGroup.lookup_id
+group by e.entity_id, p1.product_price_id
 order by pt.name, e.name,   p1.arch_short_name, p1.start_time, pricingGroup.name]]>
 	</queryString>
 	<field name="pid" class="java.lang.Long"/>
