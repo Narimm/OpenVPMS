@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2017-02-10T15:26:44 -->
+<!-- 2017-05-19T03:54:32 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Product List report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="f2f2a9da-9b68-485a-9a68-babbf927a71c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -126,7 +126,7 @@ where e.active = true
 	(e.arch_short_name = "product.medication" and $P{IncMedications}) or
 	(e.arch_short_name = "product.merchandise" and $P{IncMerchandise}))
  and (round(d1.value,2) >=  $P{Low Markup} and round(d1.value,2) <=  $P{High Markup})
-group by e.entity_id, pricingGroup.lookup_id
+group by e.entity_id, p1.product_price_id
 order by pt.name, e.name,   p1.arch_short_name, p1.start_time, pricingGroup.name]]>
 	</queryString>
 	<field name="pid" class="java.lang.Long"/>
