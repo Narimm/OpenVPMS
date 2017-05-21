@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
@@ -382,10 +383,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 setUnitPrice(ZERO);
                 setDiscount(ZERO);
             }
-            if (needsReadOnlyProduct()) {
-                // need to re-layout if the product has been marked read-only by setting the minimum quantity
-                updateLayout(product.getProduct(), updatePrint(product.getProduct()));
-            }
         } else {
             setProduct(null);
         }
@@ -501,6 +498,13 @@ public class EstimateItemEditor extends PriceActItemEditor {
             updateSellingUnits(product);
         }
 
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            // check if the product has been marked read-only by setting the minimum quantity
+            boolean readOnly = needsReadOnlyProduct();
+            productEditor.setReadOnly(readOnly);
+        }
+
         setPrint(true);
         updateLayout(product, showPrint);
 
@@ -584,7 +588,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
     private void updateLayout(Product product, boolean showPrint) {
         ArchetypeNodes currentNodes = getArchetypeNodes();
         ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
-        if (!ObjectUtils.equals(currentNodes, expectedFilter) || needsReadOnlyProduct()) {
+        if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
             Component focus = FocusHelper.getFocus();
             Property focusProperty = null;
             if (focus instanceof BoundProperty) {

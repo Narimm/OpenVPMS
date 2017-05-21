@@ -127,6 +127,10 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     private boolean currentTemplate;
 
+    /**
+     * Listener for product change events.
+     */
+    private final ModifiableListener productListener;
 
     /**
      * Print node name.
@@ -151,6 +155,12 @@ public abstract class ActItemEditor extends AbstractActEditor {
         }
         location = getLocation(parent, context);
         pricingGroup = getPricingGroup(location);
+        productListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                productModified();
+            }
+        };
     }
 
     /**
@@ -452,6 +462,22 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Invoked when the product changes.
+     * <p/>
+     * This delegates to {@link #productModified(Participation)} if there is a current participation.
+     */
+    protected void productModified() {
+        Participation participation = null;
+        ProductParticipationEditor editor = getProductEditor();
+        if (editor != null) {
+            participation = editor.getParticipation();
+        }
+        if (participation != null) {
+            productModified(participation);
+        }
+    }
+
+    /**
      * Invoked when the participation product is changed.
      * <p/>
      * This delegates to {@link #productModified(Product)}.
@@ -631,15 +657,12 @@ public abstract class ActItemEditor extends AbstractActEditor {
         final ProductParticipationEditor product = getProductEditor();
         final PatientParticipationEditor patient = getPatientEditor();
         if (product != null) {
-            final Participation participant = product.getParticipation();
-            product.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    productModified(participant);
-                }
-            });
+            product.addModifiableListener(productListener);
         }
         if (patient != null && product != null) {
             product.setPatient(patient.getEntity());
+            // NOTE: if layout is called multiple times and the patient editor is not recreated, multiple listeners
+            // will be registered
             patient.getEditor().addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     product.setPatient(patient.getEntity());

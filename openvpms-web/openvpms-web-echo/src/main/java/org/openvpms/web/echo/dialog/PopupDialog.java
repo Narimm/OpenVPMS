@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -491,14 +491,20 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Invokes {@link #onButton(String)}, catching exceptions.
+     * <p/>
+     * Note that this ignores any event if there are other modal dialogs displayed above the dialog. This is to handle
+     * the case where an echo ChangeEvent is processed that generates dialogs, before the button action listener is
+     * triggered.
      *
      * @param id the button identifier
      */
     private void onButtonProtected(String id) {
-        try {
-            onButton(id);
-        } catch (Throwable exception) {
-            ErrorHandler.getInstance().error(exception);
+        if (!DialogManager.isHidden(this)) {
+            try {
+                onButton(id);
+            } catch (Throwable exception) {
+                ErrorHandler.getInstance().error(exception);
+            }
         }
     }
 
