@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -196,7 +196,6 @@ public class EstimateInvoicer extends AbstractInvoicer {
             ActBean itemBean = new ActBean(item);
             CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
             itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
-            itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
             itemEditor.setPrint(itemBean.getBoolean("print", true));
 
             // NOTE: setting the product can trigger popups - want the popups to get the correct
@@ -205,6 +204,7 @@ public class EstimateInvoicer extends AbstractInvoicer {
             IMObjectReference templateRef = itemBean.getNodeParticipantRef("template");
             IMObjectReference product = itemBean.getNodeParticipantRef("product");
             setProduct(itemEditor, product, templateRef);
+            itemEditor.setQuantity(itemBean.getBigDecimal("highQty")); // replaces any doses
 
             itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
             itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
