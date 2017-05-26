@@ -53,6 +53,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.edit.act.TemplateProduct;
 import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
@@ -64,6 +65,7 @@ import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.product.BatchParticipationEditor;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -118,6 +120,14 @@ import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
  * @author Tim Anderson
  */
 public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
+
+    /**
+     * The product participation editor.
+     * <p/>
+     * This needs to be created outside of the automatic layout, in order to ensure events
+     * aren't lost when the layout changes.
+     */
+    private final ParticipationCollectionEditor productCollectionEditor;
 
     /**
      * Dispensing act editor. May be {@code null}
@@ -289,6 +299,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         Property quantityProperty = getProperty(QUANTITY);
         quantity = new Quantity(quantityProperty, act, getLayoutContext());
         stockQuantity = new StockQuantity(act, context.getStock(), getLayoutContext());
+        productCollectionEditor = new ParticipationCollectionEditor(getCollectionProperty(PRODUCT), act, getLayoutContext());
+        getEditors().add(productCollectionEditor);
 
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
@@ -389,10 +401,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (product != null) {
             if (!product.getPrint() && MathRules.isZero(getTotal())) {
                 setPrint(false);
-
-            }
-            if (needsReadOnlyProduct()) {
-                updateLayout(product.getProduct());
             }
         }
     }
@@ -607,7 +615,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * nodes if required.
      */
     public void ordered() {
-        updateLayout(getProduct());
+        Product product = getProduct();
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            productEditor.setReadOnly(true);
+        }
+        updateLayout(product, updatePrint(product), true); // need to force redisplay in order to make patient read-only
     }
 
     /**
@@ -749,7 +762,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected boolean disposeOnChangeLayout(Editor editor) {
-        return editor != dispensing && editor != investigations && editor != reminders && editor != alerts;
+        return editor != productCollectionEditor && editor != dispensing && editor != investigations 
+               && editor != reminders && editor != alerts;
     }
 
     /**
@@ -867,10 +881,16 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             addPatientIdentity(product);
         }
 
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            boolean readOnly = needsReadOnlyProduct();
+            productEditor.setReadOnly(readOnly);
+        }
+
         boolean showPrint = updatePrint(product);
 
         // update the layout if nodes require filtering
-        updateLayout(product, showPrint);
+        updateLayout(product, showPrint, false);
 
         notifyProductListener(product);
         getProperty(FIXED_PRICE).addModifiableListener(discountListener);
@@ -921,7 +941,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateTaxAmount();
         Product product = getProduct();
         boolean showPrint = updatePrint(product);
-        updateLayout(product, showPrint);
+        updateLayout(product, showPrint, false);
     }
 
     /**
@@ -1239,23 +1259,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Invoked when the product changes to update the layout, if required.
      *
-     * @param product the product. May be {@code null}
-     */
-    private void updateLayout(Product product) {
-        updateLayout(product, updatePrint(product));
-    }
-
-    /**
-     * Invoked when the product changes to update the layout, if required.
-     *
      * @param product   the product. May be {@code null}
      * @param showPrint if {@code true}, show the print node
+     * @param force     if {@code true}, force a refresh of the display
      */
-    private void updateLayout(Product product, boolean showPrint) {
+    private void updateLayout(Product product, boolean showPrint, boolean force) {
         ArchetypeNodes currentNodes = getArchetypeNodes();
         ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
-        EditorQueue queue = getEditorQueue();
-        if (!ObjectUtils.equals(currentNodes, expectedFilter) || needsReadOnlyProduct()) {
+        if (force || !ObjectUtils.equals(currentNodes, expectedFilter)) {
+            EditorQueue queue = getEditorQueue();
             Component popupFocus = null;
             Component focus = FocusHelper.getFocus();
             Property focusProperty = null;
@@ -1889,6 +1901,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                                            stockQuantity.getComponent().getComponent());
             Row row = RowFactory.create(WIDE_CELL_SPACING,
                                         RowFactory.create(CELL_SPACING, quantity.getComponent(), sellingUnits), onHand);
+            addComponent(new ComponentState(productCollectionEditor));
             addComponent(new ComponentState(row, quantity.getProperty()));
             if (dispensing != null) {
                 addComponent(new ComponentState(dispensing));

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -22,11 +22,13 @@ import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -89,6 +91,9 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
 
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient(customer);
+
+        // add a weight for the patient, for dose purposes
+        PatientTestHelper.createWeight(patient, BigDecimal.TEN, WeightUnits.KILOGRAMS);
     }
 
     /**
@@ -107,10 +112,10 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         context.getContext().setCustomer(customer);
         context.getContext().setPatient(patient);
 
-        Product product1 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
-        Product product2 = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
-        Product product3 = TestHelper.createProduct(ProductArchetypes.MERCHANDISE, null);
-        Product product4 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+        Product product1 = createMedicationWithDose();
+        Product product2 = ProductTestHelper.createService();
+        Product product3 = ProductTestHelper.createMerchandise();
+        Product product4 = ProductTestHelper.createMedication();
         Product template1 = createTemplate("template1", "Template1 Invoice Note", "Template1 Visit Note");
         Product template2 = createTemplate("template2", null, "Template2 Visit Note");
 
@@ -281,6 +286,24 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
                 fireDialogButton(dialog, PopupDialog.OK_ID);
             }
         };
+    }
+
+    /**
+     * Creates a medication with doses.
+     *
+     * @return a new medication product
+     */
+    protected Product createMedicationWithDose() {
+        Product product1 = ProductTestHelper.createMedication();
+        IMObjectBean bean = new IMObjectBean(product1);
+        bean.setValue("concentration", BigDecimal.ONE);
+        Entity dose1 = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.valueOf(5), BigDecimal.ONE,
+                                                    BigDecimal.ONE);
+        Entity dose2 = ProductTestHelper.createDose(null, BigDecimal.valueOf(5), BigDecimal.valueOf(15),
+                                                    BigDecimal.valueOf(2), BigDecimal.valueOf(2));
+        ProductTestHelper.addDose(product1, dose1);
+        ProductTestHelper.addDose(product1, dose2);
+        return product1;
     }
 
     /**
