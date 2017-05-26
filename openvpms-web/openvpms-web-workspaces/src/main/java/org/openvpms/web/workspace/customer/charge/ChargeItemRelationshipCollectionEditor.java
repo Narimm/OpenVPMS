@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -106,13 +106,13 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                   CollectionResultSetFactory factory) {
         super(property, act, context, factory, createEditContext(act, context));
-        Prescriptions prescriptions;
+        Prescriptions prescriptions = null;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
-            prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
-        } else {
-            prescriptions = null;
+            List<Act> items = getCurrentActs();
+            prescriptions = new Prescriptions(items, ServiceHelper.getBean(PrescriptionRules.class));
         }
-        getEditContext().setPrescriptions(prescriptions);
+        CustomerChargeEditContext editContext = getEditContext();
+        editContext.setPrescriptions(prescriptions);
     }
 
     /**
@@ -157,6 +157,8 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         if (prescriptions != null) {
             prescriptions.removeItem(act);
         }
+        Alerts alerts = editContext.getAlerts();
+        alerts.removeItem(act);
     }
 
     /**

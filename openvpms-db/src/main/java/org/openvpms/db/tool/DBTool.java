@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.db.tool;
@@ -94,6 +94,13 @@ public class DBTool {
     public void create(String adminUser, String adminPassword, boolean createTables) throws SQLException {
         service.create(adminUser, adminPassword, createTables);
         System.out.println("Created " + service.getSchemaName());
+    }
+
+    /**
+     * Repair database version meta-data.
+     */
+    public void repair() {
+        service.repair();
     }
 
     /**
@@ -230,6 +237,8 @@ public class DBTool {
                     }
                 } else if (config.getBoolean("version")) {
                     tool.version();
+                } else if (config.getBoolean("repair")) {
+                    tool.repair();
                 } else {
                     displayUsage(config);
                 }
@@ -282,6 +291,8 @@ public class DBTool {
                                          .setHelp("If specified, disables backup prompting when updating the database"));
         parser.registerParameter(new FlaggedOption("properties").setLongFlag("properties")
                                          .setHelp("Database connection properties"));
+        parser.registerParameter(new Switch("repair").setLongFlag("repair").setDefault("false").setHelp(
+                "Repair version meta data."));
         return parser;
     }
 

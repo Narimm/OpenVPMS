@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -24,12 +24,13 @@ import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -171,10 +172,9 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
      * @param notes   the allergy notes
      */
     private void createAllergy(Party patient, String reason, String notes) {
-        Act alert = (Act) create(PatientArchetypes.ALERT);
+        Entity alertType =  ReminderTestHelper.createAlertType("Allergy", "ALLERGY");
+        Act alert = ReminderTestHelper.createAlert(patient, alertType);
         ActBean bean = new ActBean(alert);
-        bean.setValue("alertType", TestHelper.getLookup("lookup.patientAlertType", "ALLERGY").getCode());
-        bean.addNodeParticipation("patient", patient);
         bean.setValue("reason", reason);
         bean.setValue("notes", notes);
         bean.save();

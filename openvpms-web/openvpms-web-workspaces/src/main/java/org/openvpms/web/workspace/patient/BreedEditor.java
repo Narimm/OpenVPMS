@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -149,12 +149,10 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
          * Sets the objects.
          *
          * @param objects the objects to populate the list with.
-         * @param all     if {@code true}, add a localised "All"
-         * @param none    if {@code true}, add a localised "None"
          */
         @Override
-        protected void initObjects(List<? extends Lookup> objects, boolean all, boolean none) {
-            super.initObjects(objects, all, none);
+        protected void initObjects(List<? extends Lookup> objects) {
+            super.initObjects(objects);
             Lookup newBreed = new Lookup(null, null, BreedLookupListCellRenderer.NEW_BREED);
             List<Lookup> lookups = getObjects();
             newBreedIndex = Collections.binarySearch(lookups, newBreed, new Comparator<Lookup>() {

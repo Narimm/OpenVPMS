@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -103,6 +103,11 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
     private CustomerChargeDocuments unprintedDocuments;
 
     /**
+     * The reminder rules.
+     */
+    private final ReminderRules reminderRules;
+
+    /**
      * Constructs an {@link CustomerChargeActEditor}.
      *
      * @param act     the act to edit
@@ -127,6 +132,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
         Party customer = context.getContext().getCustomer();
         initParticipant("customer", customer);
         this.addDefaultItem = addDefaultItem;
+        reminderRules = ServiceHelper.getBean(ReminderRules.class);
         initialise();
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             getItems().setTemplateProductListener(new TemplateProductListener() {
@@ -373,9 +379,12 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      */
     @Override
     protected void doSave() {
-        List<Act> reminders = getNewReminders();
         ChargeSaveContext chargeContext = null;
         try {
+            ChargeItemRelationshipCollectionEditor items = getItems();
+            List<Act> reminders = getNewReminders();
+            List<Act> alerts  = getNewAlerts();
+
             boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
             PatientHistoryChanges changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
                                                                       getLayoutContext().getContext().getLocation(),
@@ -390,7 +399,6 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
                 }
             }
 
-            ChargeItemRelationshipCollectionEditor items = getItems();
             chargeContext = items.getSaveContext();
             chargeContext.setHistoryChanges(changes);
 
@@ -407,8 +415,12 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
 
             // mark reminders that match the new reminders completed
             if (!reminders.isEmpty()) {
-                ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
-                rules.markMatchingRemindersCompleted(reminders);
+                reminderRules.markMatchingRemindersCompleted(reminders);
+            }
+
+            // mark alerts that match the new alerts completed
+            if (!alerts.isEmpty()) {
+                reminderRules.markMatchingAlertsCompleted(alerts);
             }
 
             if (invoice) {
@@ -646,6 +658,15 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             }
         }
         return reminders;
+    }
+
+    /**
+     * Returns new alerts from each of the charge items.
+     *
+     * @return a list of new alerts
+     */
+    private List<Act> getNewAlerts() {
+        return getItems().getEditContext().getAlerts().getNewAlerts();
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.communication.CustomerAlertTableModel;
 import org.openvpms.web.workspace.patient.communication.PatientCommunicationCRUDWindow;
 import org.openvpms.web.workspace.patient.communication.PatientCommunicationQuery;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
@@ -106,6 +107,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private int remindersIndex;
 
     /**
+     * Alert browser tab index.
+     */
+    private int alertsIndex;
+
+    /**
      * Document browser tab index.
      */
     private int documentsIndex;
@@ -145,6 +151,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private static final ActStatuses REMINDER_STATUSES = new ActStatuses(ReminderArchetypes.REMINDER);
 
     /**
+     * The alert statuses to query.
+     */
+    private static final ActStatuses ALERT_STATUSES = new ActStatuses(PatientArchetypes.ALERT);
+
+    /**
      * The problem statuses to query.
      */
     private static final ActStatuses PROBLEM_STATUSES;
@@ -182,7 +193,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         historyIndex = addBrowser(Messages.get("button.summary"), history);
         problems = createProblemBrowser(patient, layout);
         problemIndex = addBrowser(Messages.get("button.problem"), problems);
-        remindersIndex = addBrowser(Messages.get("button.reminder"), createReminderAlertBrowser(patient, layout));
+        remindersIndex = addBrowser(Messages.get("button.reminder"), createReminderBrowser(patient, layout));
+        alertsIndex = addBrowser(Messages.get("button.alert"), createAlertBrowser(patient, layout));
         documentsIndex = addBrowser(Messages.get("button.document"), createDocumentBrowser(patient, layout));
         chargesIndex = addBrowser(Messages.get("button.charges"), createChargeBrowser(patient, layout));
         prescriptionIndex = addBrowser(Messages.get("button.prescriptions"),
@@ -218,7 +230,9 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         if (index == problemIndex) {
             result = createProblemRecordCRUDWindow(context, help);
         } else if (index == remindersIndex) {
-            result = createReminderAlertCRUDWindow(context, help);
+            result = createReminderCRUDWindow(context, help);
+        } else if (index == alertsIndex) {
+            result = createAlertCRUDWindow(context, help);
         } else if (index == documentsIndex) {
             result = createDocumentCRUDWindow(context, help);
         } else if (index == chargesIndex) {
@@ -330,18 +344,16 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Creates a patient reminder/alert browser.
+     * Creates a patient reminder browser.
      *
      * @param patient the patient
      * @param layout  the layout context
      * @return a new browser
      */
-    protected Browser<Act> createReminderAlertBrowser(Party patient, LayoutContext layout) {
+    protected Browser<Act> createReminderBrowser(Party patient, LayoutContext layout) {
         // todo - should be able to register ReminderActTableModel in IMObjectTableFactory.properties for
-        // act.patientReminder and act.patientAlert
-        String[] shortNames = {ReminderArchetypes.REMINDER, PatientArchetypes.ALERT};
-        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
-                                                           REMINDER_STATUSES);
+        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION,
+                                                           ReminderArchetypes.REMINDER, REMINDER_STATUSES);
         query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         IMObjectTableModel<Act> model = new ReminderActTableModel(query.getShortNames(), layout);
@@ -349,14 +361,41 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Creates a {@link CRUDWindow} for the reminder/alert browser.
+     * Creates a {@link CRUDWindow} for the reminder browser.
      *
      * @param context the context
      * @param help    the help context
      * @return a new {@link CRUDWindow}
      */
-    protected CRUDWindow<Act> createReminderAlertCRUDWindow(Context context, HelpContext help) {
+    protected CRUDWindow<Act> createReminderCRUDWindow(Context context, HelpContext help) {
         return new ReminderCRUDWindow(context, help);
+    }
+
+    /**
+     * Creates a patient alert browser.
+     *
+     * @param patient the patient
+     * @param layout  the layout context
+     * @return a new browser
+     */
+    protected Browser<Act> createAlertBrowser(Party patient, LayoutContext layout) {
+        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION,
+                                                           PatientArchetypes.ALERT, ALERT_STATUSES);
+        query.setStatus(ActStatus.IN_PROGRESS);
+        query.setDefaultSortConstraint(DEFAULT_SORT);
+        IMObjectTableModel<Act> model = new CustomerAlertTableModel(query.getShortNames(), layout);
+        return new DefaultIMObjectTableBrowser<>(query, model, layout);
+    }
+
+    /**
+     * Creates a {@link CRUDWindow} for the alert browser.
+     *
+     * @param context the context
+     * @param help    the help context
+     * @return a new {@link CRUDWindow}
+     */
+    protected CRUDWindow<Act> createAlertCRUDWindow(Context context, HelpContext help) {
+        return new AlertCRUDWindow(context, help);
     }
 
     /**

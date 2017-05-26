@@ -100,11 +100,6 @@ public class MedicalRecordRules {
      */
     private static final String END_TIME = "endTime";
 
-    /**
-     * Allergy alert type code.
-     */
-    private static final String ALLERGY = "ALLERGY";
-
 
     /**
      * Creates a {@link MedicalRecordRules}.
@@ -451,17 +446,6 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Determines if an alert is for an allergy.
-     *
-     * @param alert the alert
-     * @return {@code true} if the alert is for an allergy
-     */
-    public boolean isAllergy(Act alert) {
-        ActBean bean = new ActBean(alert, service);
-        return ALLERGY.equals(bean.getString("alertType"));
-    }
-
-    /**
      * Determines if a medical record needs to be locked, given a period relative to the current time.
      *
      * @param act    the record act
@@ -527,10 +511,10 @@ public class MedicalRecordRules {
      * Returns the most recent attachment with the specified file name and identity, associated with a patient clinical
      * event.
      *
-     * @param fileName the file name
-     * @param event    the <em>act.patientClinicalEvent</em>
-     *                 @param identityArchetype the identity archetype
-     *                                          @param identity the identity
+     * @param fileName          the file name
+     * @param event             the <em>act.patientClinicalEvent</em>
+     * @param identityArchetype the identity archetype
+     * @param identity          the identity
      * @return the attachment, or {@code null} if none is found
      */
     public DocumentAct getAttachment(String fileName, Act event, String identityArchetype, String identity) {
@@ -922,7 +906,7 @@ public class MedicalRecordRules {
      * Creates a query to locate attachments with the specified file name, associated with an event.
      *
      * @param fileName the file name
-     * @param event the <em>act.patientClinicalEvent</em>
+     * @param event    the <em>act.patientClinicalEvent</em>
      * @return a new query
      */
     private ArchetypeQuery createAttachmentQuery(String fileName, Act event) {

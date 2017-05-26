@@ -11,46 +11,65 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.list;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * * List model for {@link IMObject}s.
+ * List model that optionally contains items for 'All' or 'None', backed by a list.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractIMObjectListModel<T extends IMObject> extends AllNoneListModel {
+public class SimpleListModel<T> extends AllNoneListModel {
 
     /**
      * The objects.
      */
     private List<T> objects;
 
+    /**
+     * If {@code true}, add a localised "All".
+     */
+    private final boolean all;
 
     /**
-     * Constructs an empty {@code AbstractIMObjectListModel}.
+     * If {@code true}, add a localised "None".
      */
-    public AbstractIMObjectListModel() {
-        objects = new ArrayList<T>();
+    private final boolean none;
+
+    /**
+     * Constructs an empty {@link SimpleListModel}.
+     */
+    public SimpleListModel() {
+        this(false, false);
     }
 
     /**
-     * Constructs an {@code AbstractIMObjectListModel}.
+     * Constructs a {@link SimpleListModel}.
+     *
+     * @param all  if {@code true}, add a localised "All"
+     * @param none if {@code true}, add a localised "None"
+     */
+    public SimpleListModel(boolean all, boolean none) {
+        this(new ArrayList<T>(), all, none);
+    }
+
+    /**
+     * Constructs a {@link SimpleListModel}.
      *
      * @param objects the objects to populate the list with.
      * @param all     if {@code true}, add a localised "All"
      * @param none    if {@code true}, add a localised "None"
      */
-    public AbstractIMObjectListModel(List<? extends T> objects, boolean all, boolean none) {
-        setObjects(objects, all, none);
+    public SimpleListModel(List<? extends T> objects, boolean all, boolean none) {
+        this.all = all;
+        this.none = none;
+        setObjects(objects);
     }
 
     /**
@@ -58,7 +77,7 @@ public abstract class AbstractIMObjectListModel<T extends IMObject> extends AllN
      *
      * @param index the index
      * @return the object, or {@code null} if the index represents 'All' or
-     *         'None'
+     * 'None'
      */
     public T getObject(int index) {
         return objects.get(index);
@@ -75,15 +94,6 @@ public abstract class AbstractIMObjectListModel<T extends IMObject> extends AllN
     }
 
     /**
-     * Returns the size of the list.
-     *
-     * @return the size
-     */
-    public int size() {
-        return objects.size();
-    }
-
-    /**
      * Returns the objects in the list.
      * <p/>
      * Any index representing 'All' or 'None' will be {@code null}.
@@ -96,40 +106,53 @@ public abstract class AbstractIMObjectListModel<T extends IMObject> extends AllN
 
     /**
      * Sets the objects.
-     * <p/>
-     * This invokes {@link #initObjects(List, boolean, boolean)} before {@link #fireContentsChanged(int, int)}.
      *
-     * @param objects the objects to populate the list with.
-     * @param all     if {@code true}, add a localised "All"
-     * @param none    if {@code true}, add a localised "None"
+     * @param objects the objects to populate the list with
      */
-    protected void setObjects(List<? extends T> objects, boolean all, boolean none) {
-        initObjects(objects, all, none);
+    public void setObjects(List<? extends T> objects) {
+        initObjects(objects);
         fireContentsChanged(0, objects.size());
+    }
+
+    /**
+     * Returns the size of the list.
+     *
+     * @return the size
+     */
+    @Override
+    public int size() {
+        return objects.size();
+    }
+
+    /**
+     * Returns the value at the specified index in the list.
+     *
+     * @param index the index
+     * @return the value
+     */
+    @Override
+    public Object get(int index) {
+        return getObject(index);
     }
 
     /**
      * Initialises the objects.
      *
      * @param objects the objects to populate the list with.
-     * @param all     if {@code true}, add a localised "All"
-     * @param none    if {@code true}, add a localised "None"
      */
-    protected void initObjects(List<? extends T> objects, boolean all, boolean none) {
+    protected void initObjects(List<? extends T> objects) {
         int index = 0;
-        this.objects = new ArrayList<T>();
+        this.objects = new ArrayList<>();
         if (all) {
             this.objects.add(null);
             setAll(index++);
         }
         if (none) {
             this.objects.add(null);
-            setNone(index++);
+            setNone(index);
         }
 
-        for (int i = 0; i < objects.size(); ++i, ++index) {
-            this.objects.add(objects.get(i));
-        }
+        this.objects.addAll(objects);
     }
 
 }

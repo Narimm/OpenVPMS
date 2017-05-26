@@ -19,7 +19,9 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.NotPredicate;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -44,14 +46,10 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
-import org.openvpms.component.system.common.query.NamedQuery;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +58,7 @@ import static org.openvpms.component.system.common.query.Constraints.join;
 
 
 /**
- * Reminder rules.
+ * Reminder and alert rules.
  *
  * @author Tim Anderson
  */
@@ -184,6 +182,69 @@ public class ReminderRules {
     }
 
     /**
+     * Sets any IN_PROGRESS alert that have the same patient and matching alert type as that in the supplied reminder to
+     * COMPLETED.
+     * <p/>
+     * This only has effect if the alert is new and has IN_PROGRESS status.
+     *
+     * @param alert the alert
+     * @throws ArchetypeServiceException for any archetype service exception
+     */
+    public void markMatchingAlertsCompleted(Act alert) {
+        if (ReminderStatus.IN_PROGRESS.equals(alert.getStatus())) {
+            ActBean bean = new ActBean(alert, service);
+            IMObjectReference patient = bean.getNodeParticipantRef("patient");
+            IMObjectReference alertType = bean.getNodeParticipantRef("alertType");
+            if (alertType != null && patient != null) {
+                markMatchingAlertsCompleted(alert, patient, alertType);
+            }
+        }
+    }
+
+    /**
+     * Sets any IN_PROGRESS alerts that have the same patient and matching alert type as that in the supplied alerts
+     * to COMPLETED.
+     * <p/>
+     * This only has effect if the alerts have IN_PROGRESS status.
+     * <p/>
+     * This method should be used in preference to {@link #markMatchingAlertsCompleted(Act)} if multiple alerts
+     * are being saved which may contain duplicates. The former won't mark duplicates completed if they are all saved
+     * within the same transaction.
+     * <p/>
+     * Alerts are processed in the order they appear in the list. If later alerts match earlier ones, the later
+     * ones will be marked COMPLETED.
+     *
+     * @param alerts the reminders
+     * @throws ArchetypeServiceException for any archetype service exception
+     */
+    public void markMatchingAlertsCompleted(List<Act> alerts) {
+        if (!alerts.isEmpty()) {
+            alerts = new ArrayList<>(alerts);  // copy it so it can be modified
+            while (!alerts.isEmpty()) {
+                Act alert = alerts.remove(0);
+                if (ActStatus.IN_PROGRESS.equals(alert.getStatus())) {
+                    ActBean bean = new ActBean(alert, service);
+                    IMObjectReference alertType = bean.getNodeParticipantRef("alertType");
+                    IMObjectReference patient = bean.getNodeParticipantRef("patient");
+                    if (alertType != null && patient != null) {
+                        // compare this alert with the others, to handle matching instances of these first
+                        for (Act other : alerts.toArray(new Act[alerts.size()])) {
+                            ActBean otherBean = new ActBean(other, service);
+                            if (ObjectUtils.equals(patient, otherBean.getNodeParticipantRef("patient"))
+                                && ObjectUtils.equals(alertType, otherBean.getNodeParticipantRef("alertType"))) {
+                                markAlertCompleted(other);
+                                alerts.remove(other);
+                            }
+                        }
+                    }
+                    // now mark any persistent matching reminders completed
+                    markMatchingAlertsCompleted(alert, patient, alertType);
+                }
+            }
+        }
+    }
+
+    /**
      * Calculates the due date for a reminder.
      *
      * @param date         the date to calculate the due date from
@@ -209,35 +270,6 @@ public class ReminderRules {
         int period = bean.getInt("period");
         String uom = bean.getString("periodUom", "YEARS");
         return DateRules.getDate(date, period, DateUnits.valueOf(uom));
-    }
-
-    /**
-     * Returns a count of IN_PROGRESS reminders for a patient.
-     *
-     * @param patient the patient
-     * @return the no. of IN_PROGRESS reminders for {@code patient}
-     * @throws ArchetypeServiceException for any error
-     */
-    public int countReminders(Party patient) {
-        NamedQuery query = new NamedQuery("act.patientReminder-count", Collections.singletonList("count"));
-        query.setParameter("patientId", patient.getId());
-        return count(query);
-    }
-
-    /**
-     * Returns a count of IN_PROGRESS alerts whose endTime is greater than
-     * the specified date/time.
-     *
-     * @param patient the patient
-     * @param date    the date/time
-     * @return the no. of IN_PROGRESS alerts for {@code patient}
-     * @throws ArchetypeServiceException for any error
-     */
-    public int countAlerts(Party patient, Date date) {
-        NamedQuery query = new NamedQuery("act.patientAlert-count", Collections.singletonList("count"));
-        query.setParameter("patientId", patient.getId());
-        query.setParameter("date", date);
-        return count(query);
     }
 
     /**
@@ -545,7 +577,7 @@ public class ReminderRules {
      * @return {@code true} if the reminder has a matching type or group
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected boolean hasMatchingTypeOrGroup(Act reminder, ReminderType reminderType) {
+    private boolean hasMatchingTypeOrGroup(Act reminder, ReminderType reminderType) {
         boolean result = false;
         ReminderType otherType = getReminderType(reminder);
         if (otherType != null) {
@@ -571,7 +603,7 @@ public class ReminderRules {
      * @return the associated reminder type, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected ReminderType getReminderType(Act act) {
+    private ReminderType getReminderType(Act act) {
         return getReminderType(new ActBean(act, service));
     }
 
@@ -582,7 +614,7 @@ public class ReminderRules {
      * @return the associated reminder type, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected ReminderType getReminderType(ActBean bean) {
+    private ReminderType getReminderType(ActBean bean) {
         ReminderType reminderType = null;
         if (reminderTypes != null) {
             reminderType = reminderTypes.get(bean.getNodeParticipantRef("reminderType"));
@@ -602,7 +634,7 @@ public class ReminderRules {
      * @param reminder the reminder
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected void markCompleted(Act reminder) {
+    private void markCompleted(Act reminder) {
         ActBean bean = new ActBean(reminder, service);
         bean.setStatus(ReminderStatus.COMPLETED);
         bean.setValue("completedDate", new Date());
@@ -666,20 +698,43 @@ public class ReminderRules {
     }
 
     /**
-     * Helper to return a count from a named query.
+     * Marks alerts with the same patient and alert type as that supplied, COMPLETED.
+     * <p/>
+     * If the alert has expired, it is also marked COMPLETED.
      *
-     * @param query the query
-     * @return the count
-     * @throws ArchetypeServiceException for any error
+     * @param alert     the alert
+     * @param patient   the patient
+     * @param alertType the alert type
      */
-    private int count(NamedQuery query) {
-        Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service, query);
-        if (iter.hasNext()) {
-            ObjectSet set = iter.next();
-            Number count = (Number) set.get("count");
-            return count != null ? count.intValue() : 0;
+    private void markMatchingAlertsCompleted(Act alert, IMObjectReference patient, IMObjectReference alertType) {
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.ALERT, false, true);
+        query.add(eq("status", ActStatus.IN_PROGRESS));
+        query.add(join("patient").add(eq("entity", patient)));
+        query.add(join("alertType").add(eq("entity", alertType)));
+        if (!alert.isNew()) {
+            query.add(Constraints.ne("id", alert.getId()));
         }
-        return 0;
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS); // must query all, otherwise the iteration would change
+        IMObjectQueryIterator<Act> alerts = new IMObjectQueryIterator<>(service, query);
+        while (alerts.hasNext()) {
+            Act next = alerts.next();
+            markAlertCompleted(next);
+        }
+        Date endTime = alert.getActivityEndTime();
+        if (endTime != null && DateRules.compareTo(endTime, new Date()) < 0) {
+            markAlertCompleted(alert);
+        }
+    }
+
+    /**
+     * Marks an alert as {@link ActStatus#COMPLETED}, setting the end time to the current time.
+     *
+     * @param alert the alert
+     */
+    private void markAlertCompleted(Act alert) {
+        alert.setStatus(ActStatus.COMPLETED);
+        alert.setActivityEndTime(new Date());
+        service.save(alert);
     }
 
     /**
