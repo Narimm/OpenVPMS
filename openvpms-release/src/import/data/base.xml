@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -62,7 +62,6 @@
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" taxScheme="GST" taxCategory="S"/>
     <data archetype="lookup.patientAlertType" code="ALLLERGY" priority="HIGH" colour="0xFF0000"/>
     <data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="OTHER" priority="HIGH" colour="0xFF0000" defaultLookup="true"/>
     <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
     <data archetype="lookup.customerCommunicationReason" code="AD_HOC_EMAIL" name="Ad hoc Email"/>
     <data archetype="lookup.customerCommunicationReason" code="AD_HOC_SMS" name="Ad hoc SMS"/>

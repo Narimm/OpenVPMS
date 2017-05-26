@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.db.service.impl;
@@ -233,6 +233,18 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     /**
+     * Repairs the Flyway metadata table. This will perform the following actions:
+     * <ul>
+     * <li>Remove any failed migrations on databases without DDL transactions (User objects left behind must still be
+     * cleaned up manually)</li>
+     * <li>Correct wrong checksums</li>
+     * </ul>
+     */
+    public void repair() {
+        flyway.repair();
+    }
+
+    /**
      * Returns the migration info.
      *
      * @return the migration info
@@ -333,4 +345,5 @@ public class DatabaseServiceImpl implements DatabaseService {
         MigrationInfo[] info = getInfo().pending();
         return info.length > 0 ? info[info.length - 1] : null;
     }
+
 }

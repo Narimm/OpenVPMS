@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -135,7 +135,11 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
-        save(item.getAct(), reminder);
+        // add an alert
+        Act alert = createAlert();
+        item.addNodeRelationship("alerts", alert);
+
+        save(item.getAct(), reminder, alert);
 
         item = get(item); // reload to ensure the item has saved correctly
 
@@ -155,6 +159,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         // verify the reminder has been removed
         assertNull(get(reminder));
 
+        // verify the alert has been removed
+        assertNull(get(alert));
+
         // verify the documents have been removed
         for (Act document : documents) {
             assertNull(get(document));
@@ -162,8 +169,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that reminders and documents that have status 'Completed' or 'Posted' aren't removed when an invoice
-     * item is deleted.
+     * Verifies that reminders, alerts and documents that have status 'Completed' or 'Posted' aren't removed when an
+     * invoice item is deleted.
      */
     @Test
     public void testRemoveInvoiceItemCompleteActs() {
@@ -187,11 +194,18 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
-        save(item.getAct(), reminder);
+        // add an alert
+        Act alert = createAlert();
+        item.addNodeRelationship("alerts", alert);
+        save(item.getAct(), reminder, alert);
+
         item = get(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
+
+        List<Act> alerts = item.getNodeActs("alerts");
+        assertEquals(1, alerts.size());
 
         List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
@@ -206,6 +220,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         reminder.setStatus(COMPLETED);
         save(reminder);
 
+        // set the alert status to 'Completed'
+        alert.setStatus(COMPLETED);
+        save(alert);
+
         // set the document status to 'Posted'
         Act document = documents.get(0);
         document.setStatus(POSTED);
@@ -218,17 +236,18 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         remove(item.getAct());
         assertNull(get(actRef));
 
-        // verify the investigations, reminder and document haven't been removed
+        // verify the investigations, reminder, alert and document haven't been removed
         for (Act investigation : investigations) {
             assertNotNull(get(investigation));
         }
         assertNotNull(get(reminder));
+        assertNotNull(get(alert));
         assertNotNull(get(document));
     }
 
     /**
-     * Verifies that reminders and documents that don't have status 'Completed'
-     * are removed when an invoice is deleted.
+     * Verifies that reminders, alerts and documents that don't have status 'Completed' are removed when an invoice is
+     * deleted.
      */
     @Test
     public void testRemoveInvoiceIncompleteActs() {
@@ -256,12 +275,18 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
-        save(item.getAct(), reminder);
+        // add an alert
+        Act alert = createAlert();
+        item.addNodeRelationship("alerts", alert);
 
+        save(item.getAct(), reminder, alert);
         item = get(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
+
+        List<Act> alerts = item.getNodeActs("alerts");
+        assertEquals(1, alerts.size());
 
         List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
@@ -278,6 +303,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         // verify the reminders have been removed
         assertNull(get(reminder));
 
+        // verify the alerts have been removed
+        assertNull(get(alert));
+
         // verify the documents have been removed
         for (Act document : documents) {
             assertNull(get(document));
@@ -285,7 +313,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that investigations with POSTED status, and reminders and documents that have status
+     * Verifies that investigations with POSTED status, and reminders, alerts and documents that have status
      * COMPLETED are not removed when an invoice is deleted.
      */
     @Test
@@ -314,12 +342,19 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
-        save(item.getAct(), reminder);
+        // add an alert
+        Act alert = createAlert();
+        item.addNodeRelationship("alerts", alert);
+
+        save(item.getAct(), reminder, alert);
 
         item = get(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
+
+        List<Act> alerts = item.getNodeActs("alerts");
+        assertEquals(1, alerts.size());
 
         List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
@@ -336,6 +371,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         reminder.setStatus(COMPLETED);
         save(reminder);
 
+        // set the alert status to 'Completed'
+        alert.setStatus(COMPLETED);
+        save(alert);
+
         // set the document status to 'Completed'
         Act document = documents.get(0);
         document.setStatus(COMPLETED);
@@ -351,6 +390,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
             assertNotNull(get(investigation));
         }
         assertNotNull(get(reminder));
+        assertNotNull(get(alert));
         assertNotNull(get(document));
     }
 
@@ -453,6 +493,16 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private Act createReminder() {
         Entity reminderType = ReminderTestHelper.createReminderType();
         return ReminderTestHelper.createReminderWithDueDate(patient, reminderType, new Date());
+    }
+
+    /**
+     * Helper to create an alert.
+     *
+     * @return a new alert
+     */
+    private Act createAlert() {
+        Entity alertType = ReminderTestHelper.createAlertType("Z Test Alert");
+        return ReminderTestHelper.createAlert(patient, alertType);
     }
 
     /**

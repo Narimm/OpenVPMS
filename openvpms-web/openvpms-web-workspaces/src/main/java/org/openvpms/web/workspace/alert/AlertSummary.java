@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -25,10 +25,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -141,14 +138,12 @@ public class AlertSummary {
      * @return a new button
      */
     protected Button getButton(final Alert alert) {
-        Lookup lookup = alert.getAlertType();
         Button result = ButtonFactory.create(null, "small");
-        result.setText(lookup.getName());
-        IMObjectBean bean = new IMObjectBean(lookup);
-        Color value = ColourHelper.getColor(bean.getString("colour"));
-        if (value != null) {
-            result.setBackground(value);
-            result.setForeground(ColourHelper.getTextColour(value));
+        result.setText(alert.getName());
+        Color colour = alert.getColour();
+        if (colour != null) {
+            result.setBackground(colour);
+            result.setForeground(alert.getTextColour());
         }
 
         result.addActionListener(new ActionListener() {

@@ -86,6 +86,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import org.openvpms.web.workspace.patient.PatientIdentityEditor;
+import org.openvpms.web.workspace.patient.mr.PatientAlertEditor;
 import org.openvpms.web.workspace.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.workspace.patient.mr.PrescriptionMedicationActEditor;
@@ -142,6 +143,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Reminders act editor. May be {@code null}
      */
     private ActRelationshipCollectionEditor reminders;
+
+    /**
+     * Alerts act editor. May be {@code null}
+     */
+    private ActRelationshipCollectionEditor alerts;
 
     /**
      * Listener for changes to the quantity.
@@ -214,6 +220,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String REMINDERS = "reminders";
 
     /**
+     * Alerts node name.
+     */
+    private static final String ALERTS = "alerts";
+
+    /**
      * Returned quantity node name.
      */
     private static final String RETURNED_QUANTITY = "returnedQuantity";
@@ -263,7 +274,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
             QUANTITY, FIXED_PRICE, UNIT_PRICE, DISCOUNT, CLINICIAN, TOTAL, DISPENSING, INVESTIGATIONS,
-            REMINDERS, "batch");
+            REMINDERS, ALERTS, "batch");
 
 
     /**
@@ -294,6 +305,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
+        alerts = createAlertsCollectionEditor();
 
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -321,6 +333,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         if (reminders != null) {
             reminders.getEditor().setRemoveHandler(saveContext);
+        }
+        if (alerts != null) {
+            alerts.getEditor().setRemoveHandler(saveContext);
         }
 
         sellingUnits = LabelFactory.create();
@@ -747,8 +762,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected boolean disposeOnChangeLayout(Editor editor) {
-        return editor != productCollectionEditor && editor != dispensing && editor != investigations
-               && editor != reminders;
+        return editor != productCollectionEditor && editor != dispensing && editor != investigations 
+               && editor != reminders && editor != alerts;
     }
 
     /**
@@ -860,6 +875,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updatePatientMedication(product);
         updateInvestigations(product);
         updateReminders(product);
+        updateAlerts(product);
         updateOnHandQuantity();
         if (product != null) {
             addPatientIdentity(product);
@@ -963,6 +979,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         if (reminders != null) {
             reminders.refresh();
+        }
+        if (alerts != null) {
+            alerts.refresh();
         }
     }
 
@@ -1160,6 +1179,54 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                         if (interactive) {
                             // queue editing of the act
                             queuePatientActEditor(editor, true, false, reminders);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Invoked when the product changes, to update alert acts.
+     * <p/>
+     * This removes any existing alerts, and creates new ones, if required.
+     *
+     * @param product the product. May be {@code null}
+     */
+    private void updateAlerts(Product product) {
+        Alerts allAlerts = getEditContext().getAlerts();
+        if (alerts != null) {
+            for (Act act : alerts.getCurrentActs()) {
+                alerts.remove(act);
+                allAlerts.remove(act);
+            }
+            if (product != null) {
+                List<Entity> alertTypes = allAlerts.getAlertTypes(product);
+                for (Entity alertType : alertTypes) {
+                    Party patient = getPatient();
+                    if (patient != null && !allAlerts.hasAlert(patient, alertType)) {
+                        Act act = (Act) alerts.create();
+                        if (act != null) {
+                            IMObjectEditor editor = createEditor(act, alerts);
+                            if (editor instanceof PatientAlertEditor) {
+                                PatientAlertEditor alert = (PatientAlertEditor) editor;
+                                Date startTime = getStartTime();
+                                alert.setStartTime(startTime);
+                                alert.setPatient(patient);
+                                alert.setAlertType(alertType);
+                                alert.setProduct(product);
+
+                                // marking matching alerts completed are handled via CustomerChargeActEditor.
+                                // Need to disable it here to avoid the rule updating other alerts in the invoice.
+                                alert.setMarkMatchingAlertsCompleted(false);
+                            }
+                            alerts.addEdited(editor);
+                            IMObjectBean bean = new IMObjectBean(alertType);
+                            boolean interactive = bean.getBoolean("interactive");
+                            if (interactive) {
+                                // queue editing of the act
+                                queuePatientActEditor(editor, true, false, alerts);
+                            }
                         }
                     }
                 }
@@ -1638,6 +1705,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <li>the investigations node if the product isn't a <em>product.medication</em>, <em>product.merchandise</em>,
      * or <em>product.service</em>
      * <li>the reminders node is excluded if there are no reminders present.
+     * <li>the alerts node is excluded if there are no alerts present.
      * <li>the discount node, if discounts are disabled</li>
      * </ul>
      *
@@ -1654,6 +1722,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             filter.add(DISPENSING);
             filter.add(INVESTIGATIONS);
             filter.add(REMINDERS);
+            filter.add(ALERTS);
             if (disableDiscounts()) {
                 filter.add(DISCOUNT);
             }
@@ -1664,8 +1733,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (medication || TypeHelper.isA(product, MERCHANDISE, SERVICE)) {
                 filter.remove(INVESTIGATIONS);
             }
-            if (reminders != null && reminders.getCollection().size() > 0) {
+            if (reminders != null && !reminders.getCollection().isEmpty()) {
                 filter.remove(REMINDERS);
+            }
+            if (alerts != null && alerts.getCollection().isEmpty()) {
+                filter.remove(ALERTS);
             }
             if (!filter.isEmpty()) {
                 result = new ArchetypeNodes().exclude(filter);
@@ -1759,6 +1831,22 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Creates an editor for the "alerts" node.
+     *
+     * @return a new editor
+     */
+    private ActRelationshipCollectionEditor createAlertsCollectionEditor() {
+        AlertActRelationshipCollectionEditor editor = null;
+        CollectionProperty collection = (CollectionProperty) getProperty(ALERTS);
+        if (collection != null && !collection.isHidden()) {
+            editor = new AlertActRelationshipCollectionEditor(collection, getObject(), getLayoutContext());
+            editor.setAlerts(getEditContext().getAlerts());
+            getEditors().add(editor);
+        }
+        return editor;
+    }
+
+    /**
      * Returns the product batch participation editor.
      *
      * @return the product batch participation, or {@code null}  if none exists
@@ -1823,6 +1911,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             if (reminders != null) {
                 addComponent(new ComponentState(reminders));
+            }
+            if (alerts != null) {
+                addComponent(new ComponentState(alerts));
             }
             if (isOrdered()) {
                 // the item has been ordered via an HL7 service, the patient cannot be changed
