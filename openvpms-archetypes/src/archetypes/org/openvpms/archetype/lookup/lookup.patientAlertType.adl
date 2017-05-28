@@ -17,7 +17,7 @@
 <archetypes>
     <archetype name="lookup.patientAlertType.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
-               displayName="Patient Alert Type">
+               displayName="Patient Alert Class">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String" hidden="true" minCardinality="1" maxLength="100">
             <assertion name="regularExpression">
