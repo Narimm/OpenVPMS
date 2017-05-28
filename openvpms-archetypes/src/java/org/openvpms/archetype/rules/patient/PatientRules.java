@@ -714,7 +714,7 @@ public class PatientRules {
         Entity alertType = bean.getNodeParticipant("alertType");
         if (alertType != null) {
             IMObjectBean alertBean = new IMObjectBean(alertType, service);
-            IMObject lookup = alertBean.getValue("type", new Predicate() {
+            IMObject lookup = alertBean.getValue("class", new Predicate() {
                 @Override
                 public boolean evaluate(Object object) {
                     return (object instanceof Lookup) && ALLERGY_ALERT_TYPE.equals(((Lookup) object).getCode());
@@ -794,7 +794,7 @@ public class PatientRules {
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.ALERT);
         query.add(eq("status", ActStatus.IN_PROGRESS));
         query.add(join("patient").add(eq("entity", patient)));
-        query.add(join("alertType").add(join("entity").add(join("type").add(eq("code", code)))));
+        query.add(join("alertType").add(join("entity").add(join("class", "clazz").add(eq("code", code)))));
         query.add(and(lte("startTime", date), or(Constraints.gt("endTime", date), isNull("endTime"))));
         query.add(sort("startTime"));
         query.add(sort("id"));

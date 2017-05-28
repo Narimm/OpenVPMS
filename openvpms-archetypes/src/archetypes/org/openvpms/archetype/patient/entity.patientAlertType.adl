@@ -44,7 +44,7 @@
             </assertion>
         </node>
         <node name="interactive" path="/details/interactive" type="java.lang.Boolean" defaultValue="false()"/>
-        <node name="type" path="/classifications" parentChild="false"
+        <node name="class" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
               filter="lookup.patientAlertType"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
