@@ -28,7 +28,9 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.smartflow.model.Medic;
 import org.openvpms.smartflow.model.Treatment;
 import org.openvpms.smartflow.model.Treatments;
 import org.openvpms.smartflow.model.event.TreatmentEvent;
@@ -77,6 +79,11 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     private Product product;
 
     /**
+     * Test clinician.
+     */
+    private User clinician;
+
+    /**
      * The event processor.
      */
     private TreatmentEventProcessor processor;
@@ -90,6 +97,7 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient(customer);
         product = TestHelper.createProduct();
+        clinician = TestHelper.createClinician();
         visit = PatientTestHelper.createEvent(new Date(), patient);
         PatientRules rules = applicationContext.getBean(PatientRules.class);
         processor = new TreatmentEventProcessor(location, getArchetypeService(), getLookupService(), rules);
@@ -102,30 +110,31 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     public void testTreatment() {
         // create a treatment event and process it
         String treatmentGuid = UUID.randomUUID().toString();
-        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE, Treatment.ADDED_STATUS);
+        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE, Treatment.ADDED_STATUS,
+                                                clinician);
 
         // verify an order has been created
         List<CustomerPharmacyOrder> order1 = process(event1);
         assertEquals(1, order1.size());
-        checkOrder(order1.get(0), customer, patient, product, BigDecimal.ONE, location);
+        checkOrder(order1.get(0), customer, patient, product, BigDecimal.ONE, location, clinician);
 
         // now amend the treatment for a larger quantity
         TreatmentEvent event2 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order2 = process(event2);
         assertEquals(1, order2.size());
-        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location);
+        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);
 
         // now amend the treatment to a lesser quantity
         TreatmentEvent event3 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order3 = process(event3);
         assertEquals(1, order3.size());
-        checkOrder(order3.get(0), customer, patient, product, BigDecimal.ONE, location);
+        checkOrder(order3.get(0), customer, patient, product, BigDecimal.ONE, location, clinician);
 
         // now remove the treatment
         TreatmentEvent event4 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE,
-                                                Treatment.REMOVED_STATUS);
+                                                Treatment.REMOVED_STATUS, clinician);
         List<CustomerPharmacyOrder> order4 = process(event4);
         assertEquals(0, order4.size());
     }
@@ -133,100 +142,100 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that a new order is created if a treatment is amended with a greater quantity and the original order
      * is POSTED.
-     * <p/>
+     * <p>
      * The new order has the difference in quantity.
      */
     @Test
     public void testIncreaseQuantityForPostedOrder() {
         // create a treatment event and process it
         String treatmentGuid = UUID.randomUUID().toString();
-        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE, Treatment.ADDED_STATUS);
+        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE, Treatment.ADDED_STATUS, clinician);
 
         // verify an order has been created and post it.
         List<CustomerPharmacyOrder> order1 = process(event1);
         assertEquals(1, order1.size());
-        checkOrder(order1.get(0), customer, patient, product, BigDecimal.ONE, location);
+        checkOrder(order1.get(0), customer, patient, product, BigDecimal.ONE, location, clinician);
         post(order1.get(0));
 
         TreatmentEvent event2 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order2 = process(event2);
         assertEquals(2, order2.size());
-        checkOrder(order2.get(0), customer, patient, product, BigDecimal.ONE, location);        // the original order
-        checkOrder(order2.get(1), customer, patient, product, BigDecimal.valueOf(9), location); // the new order
+        checkOrder(order2.get(0), customer, patient, product, BigDecimal.ONE, location, clinician);        // the original order
+        checkOrder(order2.get(1), customer, patient, product, BigDecimal.valueOf(9), location, clinician); // the new order
 
         // increase the quantity. The new order should be updated
         TreatmentEvent event3 = createTreatment(treatmentGuid, visit, product, BigDecimal.valueOf(11),
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order3 = process(event3);
         assertEquals(2, order3.size());
-        checkOrder(order3.get(0), customer, patient, product, BigDecimal.ONE, location); // the original order
-        checkOrder(order3.get(1), customer, patient, product, BigDecimal.TEN, location); // the new order
+        checkOrder(order3.get(0), customer, patient, product, BigDecimal.ONE, location, clinician); // the original order
+        checkOrder(order3.get(1), customer, patient, product, BigDecimal.TEN, location, clinician); // the new order
 
         // reduce the quantity. The new order should be updated
         TreatmentEvent event4 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order4 = process(event4);
         assertEquals(2, order4.size());
-        checkOrder(order4.get(0), customer, patient, product, BigDecimal.ONE, location);        // the original order
-        checkOrder(order4.get(1), customer, patient, product, BigDecimal.valueOf(9), location); // the new order
+        checkOrder(order4.get(0), customer, patient, product, BigDecimal.ONE, location, clinician);        // the original order
+        checkOrder(order4.get(1), customer, patient, product, BigDecimal.valueOf(9), location, clinician); // the new order
 
         // now reduce the quantity to that of the POSTED order. The IN_PROGRESS order should be removed
         TreatmentEvent event5 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order5 = process(event5);
         assertEquals(1, order5.size());
-        checkOrder(order4.get(0), customer, patient, product, BigDecimal.ONE, location);        // the original order
+        checkOrder(order4.get(0), customer, patient, product, BigDecimal.ONE, location, clinician);        // the original order
     }
 
     /**
      * Verifies that a new order return is created if a treatment is amended with a lesser quantity and the original
      * order is POSTED.
-     * <p/>
+     * <p>
      * The order return has the difference in quantity.
      */
     @Test
     public void testReduceQuantityForPostedOrder() {
         // create a treatment event and process it
         String treatmentGuid = UUID.randomUUID().toString();
-        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS);
+        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS, clinician);
 
         // verify an order has been created and post it.
         List<CustomerPharmacyOrder> order1 = process(event1);
         assertEquals(1, order1.size());
-        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location);
+        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);
         post(order1.get(0));
 
         // now reduce the quantity
         TreatmentEvent event2 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order2 = process(event2);
         assertEquals(2, order2.size());
-        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location);         // the original order
+        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);         // the original order
         checkReturn(order2.get(1), customer, patient, product, BigDecimal.valueOf(9), location); // the new order return
 
         // now increase the quantity, but still less than that of the original order. The return should be updated
         TreatmentEvent event3 = createTreatment(treatmentGuid, visit, product, BigDecimal.valueOf(2),
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order3 = process(event3);
         assertEquals(2, order3.size());
-        checkOrder(order3.get(0), customer, patient, product, BigDecimal.TEN, location);         // the original order
+        checkOrder(order3.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);         // the original order
         checkReturn(order3.get(1), customer, patient, product, BigDecimal.valueOf(8), location); // the new order return
 
         // now increase the quantity, greater than that of the original order. The return should be deleted, and
         // a new order created containing the difference
         TreatmentEvent event4 = createTreatment(treatmentGuid, visit, product, BigDecimal.valueOf(11),
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order4 = process(event4);
         assertEquals(2, order4.size());
-        checkOrder(order4.get(0), customer, patient, product, BigDecimal.TEN, location);  // the original order
-        checkOrder(order4.get(1), customer, patient, product, BigDecimal.ONE, location);  // the new order
+        checkOrder(order4.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);  // the original order
+        checkOrder(order4.get(1), customer, patient, product, BigDecimal.ONE, location, clinician);  // the new order
     }
 
     /**
      * Verifies that an IN_PROGRESS order is removed and a new order return is created if a treatment is amended with a
      * lesser quantity and the original order is POSTED.
-     * <p/>
+     * <p>
      * The order return has the difference in quantity.
      */
     @Test
@@ -234,29 +243,29 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         // create a treatment event and process it
         String treatmentGuid = UUID.randomUUID().toString();
         BigDecimal four = BigDecimal.valueOf(4);
-        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, four, Treatment.ADDED_STATUS);
+        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, four, Treatment.ADDED_STATUS, clinician);
 
         // verify an order has been created and post it.
         List<CustomerPharmacyOrder> order1 = process(event1);
         assertEquals(1, order1.size());
-        checkOrder(order1.get(0), customer, patient, product, four, location);
+        checkOrder(order1.get(0), customer, patient, product, four, location, clinician);
         post(order1.get(0));
 
         // now increase the quantity
         TreatmentEvent event2 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order2 = process(event2);
         assertEquals(2, order2.size());
-        checkOrder(order2.get(0), customer, patient, product, four, location);                  // the original order
-        checkOrder(order2.get(1), customer, patient, product, BigDecimal.valueOf(6), location); // the new order
+        checkOrder(order2.get(0), customer, patient, product, four, location, clinician);                  // the original order
+        checkOrder(order2.get(1), customer, patient, product, BigDecimal.valueOf(6), location, clinician); // the new order
 
         // now reduce the quantity, to less than that of the original order. The IN_PROGRESS order should be deleted
         // and a return created
         TreatmentEvent event3 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order3 = process(event3);
         assertEquals(2, order3.size());
-        checkOrder(order3.get(0), customer, patient, product, four, location);         // the original order
+        checkOrder(order3.get(0), customer, patient, product, four, location, clinician);         // the original order
         checkReturn(order3.get(1), customer, patient, product, BigDecimal.valueOf(3), location); // the new order return
     }
 
@@ -268,20 +277,20 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     public void testTreatmentChangedForPostedReturn() {
         // create a treatment event and process it
         String treatmentGuid = UUID.randomUUID().toString();
-        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS);
+        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS, clinician);
 
         // verify an order has been created and post it.
         List<CustomerPharmacyOrder> order1 = process(event1);
         assertEquals(1, order1.size());
-        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location);
+        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);
         post(order1.get(0));
 
         // now reduce the quantity, and verify a return is created
         TreatmentEvent event2 = createTreatment(treatmentGuid, visit, product, BigDecimal.ONE,
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order2 = process(event2);
         assertEquals(2, order2.size());
-        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location);         // the original order
+        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);         // the original order
 
         ActBean returnItem = checkReturn(order2.get(1), customer, patient, product, BigDecimal.valueOf(9), location);
         // the new order return
@@ -292,12 +301,12 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         post(order2.get(1));
 
         TreatmentEvent event3 = createTreatment(treatmentGuid, visit, product, BigDecimal.valueOf(3),
-                                                Treatment.CHANGED_STATUS);
+                                                Treatment.CHANGED_STATUS, clinician);
         List<CustomerPharmacyOrder> order3 = process(event3);
         assertEquals(3, order3.size());
-        checkOrder(order3.get(0), customer, patient, product, BigDecimal.TEN, location);  // the original order
+        checkOrder(order3.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);  // the original order
         checkReturn(order3.get(1), customer, patient, product, BigDecimal.valueOf(8), location); // the changed return
-        checkOrder(order3.get(2), customer, patient, product, BigDecimal.ONE, location);  // the new order
+        checkOrder(order3.get(2), customer, patient, product, BigDecimal.ONE, location, clinician);  // the new order
     }
 
     /**
@@ -307,16 +316,17 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     public void testTreatmentRemovedForInProgressOrder() {
         // create a treatment event and process it
         String treatmentGuid = UUID.randomUUID().toString();
-        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS);
+        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS,
+                                                clinician);
 
         // verify an order has been created.
         List<CustomerPharmacyOrder> order1 = process(event1);
         assertEquals(1, order1.size());
-        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location);
+        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);
 
         // now remove the treatment and verify the order is also removed
         TreatmentEvent event2 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN,
-                                                Treatment.REMOVED_STATUS);
+                                                Treatment.REMOVED_STATUS, clinician);
         List<CustomerPharmacyOrder> order2 = process(event2);
         assertEquals(0, order2.size());
     }
@@ -328,20 +338,37 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     public void testTreatmentRemovedForPostedOrder() {
         // create a treatment event and process it
         String treatmentGuid = UUID.randomUUID().toString();
-        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS);
+        TreatmentEvent event1 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS,
+                                                clinician);
 
         // verify an order has been created and post it.
         List<CustomerPharmacyOrder> order1 = process(event1);
         assertEquals(1, order1.size());
-        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location);
+        checkOrder(order1.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);
         post(order1.get(0));
 
         TreatmentEvent event2 = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN,
-                                                Treatment.REMOVED_STATUS);
+                                                Treatment.REMOVED_STATUS, clinician);
         List<CustomerPharmacyOrder> order2 = process(event2);
         assertEquals(2, order2.size());
-        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location);
+        checkOrder(order2.get(0), customer, patient, product, BigDecimal.TEN, location, clinician);
         checkReturn(order2.get(1), customer, patient, product, BigDecimal.TEN, location);
+    }
+
+    /**
+     * Verifies that an unbilled treatment doesn't generate an order.
+     */
+    @Test
+    public void testUnbilledTreatment() {
+        // create an unbilled treatment event and process it
+        String treatmentGuid = UUID.randomUUID().toString();
+        TreatmentEvent event = createTreatment(treatmentGuid, visit, product, BigDecimal.TEN, Treatment.ADDED_STATUS,
+                                               clinician);
+        event.getObject().getTreatments().get(0).setBilled(false);
+        List<CustomerPharmacyOrder> order1 = process(event);
+
+        // verify no order has been created
+        assertEquals(0, order1.size());
     }
 
     /**
@@ -370,15 +397,16 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     /**
      * Verifies an order matches that expected.
      *
-     * @param order    the order
-     * @param customer the expected customer
-     * @param patient  the expected patient
-     * @param product  the expected product
-     * @param quantity the expected quantity
-     * @param location the expected practice location
+     * @param order     the order
+     * @param customer  the expected customer
+     * @param patient   the expected patient
+     * @param product   the expected product
+     * @param quantity  the expected quantity
+     * @param location  the expected practice location
+     * @param clinician the expected clinician
      */
     private void checkOrder(CustomerPharmacyOrder order, Party customer, Party patient, Product product,
-                            BigDecimal quantity, Party location) {
+                            BigDecimal quantity, Party location, User clinician) {
         assertTrue(order.hasOrder());
         ActBean act = order.getOrder();
         assertEquals(customer, act.getNodeParticipant("customer"));
@@ -387,7 +415,9 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         assertTrue(item.isA(OrderArchetypes.PHARMACY_ORDER_ITEM));
         assertEquals(patient, item.getNodeParticipant("patient"));
         checkEquals(quantity, item.getBigDecimal("quantity"));
+        assertEquals(clinician, item.getNodeParticipant("clinician"));
         assertEquals(location, act.getNodeParticipant("location"));
+        assertEquals(clinician, act.getNodeParticipant("clinician"));
     }
 
     /**
@@ -411,7 +441,9 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         assertTrue(item.isA(OrderArchetypes.PHARMACY_RETURN_ITEM));
         assertEquals(patient, item.getNodeParticipant("patient"));
         checkEquals(quantity, item.getBigDecimal("quantity"));
+        assertEquals(clinician, item.getNodeParticipant("clinician"));
         assertEquals(location, act.getNodeParticipant("location"));
+        assertEquals(clinician, act.getNodeParticipant("clinician"));
         return item;
     }
 
@@ -423,16 +455,23 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
      * @param product       the product
      * @param quantity      the quantity
      * @param status        the status
+     * @param clinician     the clinician. May be {@code null}
      * @return a new event
      */
     private TreatmentEvent createTreatment(String treatmentGuid, Act visit, Product product, BigDecimal quantity,
-                                           String status) {
+                                           String status, User clinician) {
         Treatment treatment = new Treatment();
         treatment.setTreatmentGuid(treatmentGuid);
         treatment.setHospitalizationId(Long.toString(visit.getId()));
         treatment.setInventoryId(Long.toString(product.getId()));
         treatment.setQty(quantity);
         treatment.setStatus(status);
+        treatment.setBilled(true);
+        if (clinician != null) {
+            Medic medic = new Medic();
+            medic.setMedicId(Long.toString(clinician.getId()));
+            treatment.setDoctor(medic);
+        }
         TreatmentEvent event = new TreatmentEvent();
         Treatments list = new Treatments();
         list.setTreatments(Collections.singletonList(treatment));

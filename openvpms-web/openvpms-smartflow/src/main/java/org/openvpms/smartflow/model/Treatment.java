@@ -135,6 +135,11 @@ public class Treatment {
     private int type;
 
     /**
+     * Determines if the treatment should be included in the billing.
+     */
+    private boolean billed;
+
+    /**
      * Returns the object type.
      *
      * @return the object type
@@ -416,5 +421,23 @@ public class Treatment {
      */
     public void setType(int type) {
         this.type = type;
+    }
+
+    /**
+     * Determines if the treatment should be billed.
+     *
+     * @return {@code true }if the treatment should be billed
+     */
+    public boolean getBilled() {
+        return billed;
+    }
+
+    /**
+     * Determines if the treatment should be billed.
+     *
+     * @param billed if {@code true}, the treatment should be billed
+     */
+    public void setBilled(boolean billed) {
+        this.billed = billed;
     }
 }

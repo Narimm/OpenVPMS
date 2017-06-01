@@ -49,4 +49,14 @@ public class UserArchetypes {
      * Author participation.
      */
     public static final String AUTHOR_PARTICIPATION = "participation.author";
+
+    /**
+     * Classification code for <em>lookup.userType</em> indicating that a user is an administrator.
+     */
+    public static final String ADMINISTRATOR_USER_TYPE = "ADMINISTRATOR";
+
+    /**
+     * Classification code for <em>lookup.userType</em> indicating that a user is a clinician.
+     */
+    public static final String CLINICIAN_USER_TYPE = "CLINICIAN";
 }
