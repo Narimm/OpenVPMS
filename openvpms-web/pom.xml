@@ -29,6 +29,10 @@
     <artifactId>openvpms-web</artifactId>
     <packaging>pom</packaging>
 
+    <properties>
+        <webdav.launcher.version>1.9.2</webdav.launcher.version>
+    </properties>
+
     <build>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
     </build>
