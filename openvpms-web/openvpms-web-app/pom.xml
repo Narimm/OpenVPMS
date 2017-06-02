@@ -267,7 +267,6 @@
     </dependencies>
 
     <properties>
-        <webdav.launcher.version>1.0</webdav.launcher.version>
         <jetty.port>8080</jetty.port>
         <jetty.sslport>8443</jetty.sslport>
     </properties>
