@@ -30,6 +30,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -527,6 +528,14 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     protected Act checkAlert(Act item, Party patient, Product product, Entity alertType, User author, User clinician) {
         Act alert = getAlert(item, alertType);
         ActBean bean = new ActBean(alert);
+        assertEquals(item.getActivityStartTime(), alert.getActivityStartTime());
+        IMObjectBean alertBean = new IMObjectBean(alertType);
+        if (alertBean.getString("durationUnits") != null) {
+            int duration = alertBean.getInt("duration");
+            DateUnits units = DateUnits.fromString(alertBean.getString("durationUnits"));
+            Date endTime = DateRules.getDate(item.getActivityStartTime(), duration, units);
+            assertEquals(endTime, alert.getActivityEndTime());
+        }
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         assertEquals(alertType.getObjectReference(), bean.getNodeParticipantRef("alertType"));
@@ -767,7 +776,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return the alert type
      */
     protected Entity addAlertType(Product product) {
-        Entity alertType = ReminderTestHelper.createAlertType("Z Test Alert", null, true);
+        Entity alertType = ReminderTestHelper.createAlertType("Z Test Alert", null, 1, DateUnits.YEARS, true);
         addAlertType(product, alertType);
         return alertType;
     }

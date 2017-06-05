@@ -1210,6 +1210,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             IMObjectEditor editor = createEditor(act, alerts);
                             if (editor instanceof PatientAlertEditor) {
                                 PatientAlertEditor alert = (PatientAlertEditor) editor;
+                                alert.getComponent();
                                 Date startTime = getStartTime();
                                 alert.setStartTime(startTime);
                                 alert.setPatient(patient);
