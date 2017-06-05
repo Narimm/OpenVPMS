@@ -66,7 +66,7 @@ public class ReminderTestHelper extends TestHelper {
 
     /**
      * Creates and saves a new <em>entity.reminderType</em>.
-     * <p/>
+     * <p>
      * The cancelInterval will be set to {@code 2 * defaultInterval}.
      *
      * @param defaultInterval the default reminder interval
@@ -598,6 +598,25 @@ public class ReminderTestHelper extends TestHelper {
             entity.addClassification(TestHelper.getLookup("lookup.patientAlertType", type));
         }
         save(entity);
+        return entity;
+    }
+
+    /**
+     * Helper to create and save a new alert type.
+     *
+     * @param name        the alert name
+     * @param type        the alert type code. May be {@code null}
+     * @param duration    the alert duration
+     * @param units       the alert duration units
+     * @param interactive if {@code true}, the alert is interactive
+     * @return a new alert type
+     */
+    public static Entity createAlertType(String name, String type, int duration, DateUnits units, boolean interactive) {
+        Entity entity = createAlertType(name, type, interactive);
+        IMObjectBean bean = new IMObjectBean(entity);
+        bean.setValue("duration", duration);
+        bean.setValue("durationUnits", units.toString());
+        bean.save();
         return entity;
     }
 
