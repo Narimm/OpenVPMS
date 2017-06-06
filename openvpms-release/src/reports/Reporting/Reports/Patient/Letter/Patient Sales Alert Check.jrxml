@@ -90,7 +90,7 @@ order by cd1.value asc, cust.entity_id asc, pat.name asc, alert.name asc, e.name
 		<groupExpression><![CDATA[$F{alert}]]></groupExpression>
 		<groupHeader>
 			<band height="15">
-				<textField evaluationTime="Group" evaluationGroup="alertGroup" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="textField-14" isPrintRepeatedValues="false" x="0" y="2" width="148" height="12" uuid="7ffe8f93-9bb9-4277-8ef8-a344f90dbc1a">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
@@ -102,14 +102,14 @@ order by cd1.value asc, cust.entity_id asc, pat.name asc, alert.name asc, e.name
 					</box>
 					<textFieldExpression><![CDATA[$F{patientName}+" "+$F{lastName}+" ("+$F{patientID}.toString()+")"]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="alertGroup">
+				<textField isStretchWithOverflow="true">
 					<reportElement x="154" y="2" width="112" height="12" isRemoveLineWhenBlank="true" uuid="1a656bf4-c12e-47b2-8f7c-12175b6788c1">
 						<printWhenExpression><![CDATA[!$P{showDetail}]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Left"/>
 					<textFieldExpression><![CDATA[$F{alert}]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="alertGroup" pattern="" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 					<reportElement key="textField-17" x="269" y="2" width="205" height="12" uuid="804f9304-f28d-414b-bc50-5fbc13cbb1b7">
 						<printWhenExpression><![CDATA[!$P{showDetail}]]></printWhenExpression>
 					</reportElement>
@@ -289,7 +289,7 @@ order by cd1.value asc, cust.entity_id asc, pat.name asc, alert.name asc, e.name
 	<detail>
 		<band height="15" splitType="Stretch">
 			<printWhenExpression><![CDATA[$P{showDetail}]]></printWhenExpression>
-			<textField pattern="" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-17" x="269" y="2" width="205" height="12" uuid="43fda995-7e63-4775-b525-5a75aac9e4d2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -320,7 +320,7 @@ order by cd1.value asc, cust.entity_id asc, pat.name asc, alert.name asc, e.name
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<summary>
-		<band height="170" splitType="Stretch">
+		<band height="179" splitType="Stretch">
 			<staticText>
 				<reportElement x="0" y="5" width="550" height="42" uuid="ecbafba2-d985-4515-9185-9c5a4c03f76b">
 					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
@@ -331,7 +331,7 @@ order by cd1.value asc, cust.entity_id asc, pat.name asc, alert.name asc, e.name
 				<text><![CDATA[All OK - all patients who should have the selected alerts from product sales in the specified preceding days already have them set]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="2" y="49" width="547" height="111" uuid="91f6814d-50cd-440c-b75d-48671c17e13c">
+				<reportElement x="2" y="49" width="547" height="130" uuid="91f6814d-50cd-440c-b75d-48671c17e13c">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Top"/>
@@ -339,7 +339,8 @@ order by cd1.value asc, cust.entity_id asc, pat.name asc, alert.name asc, e.name
 
 Leaving the 'Alert type' parameter blank will check all, or you can limit the Product Alerts to check by entering say 'blood t' which will look only for Products with alerts starting 'blood t'. The selection is case insensitive.
 Checking the 'Show sales detail' box will list each sale; leaving it unchecked will only the most recent sale for each Product Alert for each Patient.
-The output is ordered by Customer last name, Patient name, Alert, Product name, Date sold (descending).]]></text>
+The output is ordered by Customer last name, Patient name, Alert, Product name, Date sold (descending).
+The Patient column shows Patient-name Customer-last-name (Patient-ID).]]></text>
 			</staticText>
 		</band>
 	</summary>
