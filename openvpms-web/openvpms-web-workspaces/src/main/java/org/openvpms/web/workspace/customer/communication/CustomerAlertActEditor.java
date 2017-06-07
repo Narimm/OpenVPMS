@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
@@ -25,16 +25,15 @@ import org.openvpms.web.workspace.alert.AbstractAlertActEditor;
 /**
  * An editor for <em>act.customerAlert</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class CustomerAlertActEditor extends AbstractAlertActEditor {
 
     /**
-     * Constructs a <tt>CustomerAlertActEditor</tt>.
+     * Constructs a {@link CustomerAlertActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
     public CustomerAlertActEditor(Act act, IMObject parent, LayoutContext context) {

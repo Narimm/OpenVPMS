@@ -679,20 +679,6 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link MedicalRecordRules#isAllergy(Act)} method.
-     */
-    @Test
-    public void testIsAllergy() {
-        Act act = (Act) create(PatientArchetypes.ALERT);
-        assertFalse(rules.isAllergy(act));
-        ActBean bean = new ActBean(act);
-        bean.setValue("alertType", "ALLERGY");
-        assertTrue(rules.isAllergy(act));
-        bean.setValue("alertType", "AGGRESSION");
-        assertFalse(rules.isAllergy(act));
-    }
-
-    /**
      * Tests the {@link MedicalRecordRules#getLockableRecords()} method.
      */
     @Test

@@ -110,9 +110,10 @@ public class ReminderTypeEditor extends AbstractIMObjectEditor {
          * @param object the object to add
          */
         @Override
-        public void add(IMObject object) {
-            super.add(object);
+        public boolean add(IMObject object) {
+            boolean result = super.add(object);
             resequence();
+            return result;
         }
 
         /**
@@ -128,7 +129,7 @@ public class ReminderTypeEditor extends AbstractIMObjectEditor {
 
         /**
          * Invoked when two objects are swapped.
-         * <p>
+         * <p/>
          *
          * @param object1 the first object
          * @param object2 the second object
@@ -140,7 +141,7 @@ public class ReminderTypeEditor extends AbstractIMObjectEditor {
 
         /**
          * Validates the object.
-         * <p>
+         * <p/>
          * This validates the current object being edited, and if valid, the collection.
          *
          * @param validator the validator

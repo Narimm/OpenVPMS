@@ -984,7 +984,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         User clinician1 = TestHelper.createUser();
         User clinician2 = TestHelper.createUser();
 
-        // create product1 with reminder and investigation type
+        // create product1 with reminder, investigation type and alert type
         BigDecimal quantity1 = BigDecimal.valueOf(2);
         BigDecimal unitCost1 = BigDecimal.valueOf(5);
         BigDecimal unitPrice1 = new BigDecimal("9.09");
@@ -999,6 +999,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Entity reminderType = addReminder(product1);
         Entity investigationType = addInvestigation(product1);
         Entity template = addTemplate(product1);
+        Entity alertType = addAlertType(product1);
 
         // create  product2 with no reminder no investigation type, and a service ratio that doubles the unit and
         // fixed prices
@@ -1054,6 +1055,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
             assertFalse(editor.isValid()); // not valid while popup is displayed
             checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
+
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(queue, PatientArchetypes.ALERT, false);
         }
 
         // editor should now be valid
@@ -1082,16 +1086,19 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             assertEquals(1, itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).size());
             assertEquals(1, itemBean.getActs(ReminderArchetypes.REMINDER).size());
             assertEquals(1, itemBean.getActs("act.patientDocument*").size());
+            assertEquals(1, itemBean.getActs(PatientArchetypes.ALERT).size());
 
             checkInvestigation(item, patient1, investigationType, author1, clinician1);
             checkReminder(item, patient1, product1, reminderType, author1, clinician1);
             checkDocument(item, patient1, product1, template, author1, clinician1);
+            checkAlert(item, patient1, product1, alertType, author1, clinician1);
         } else {
             // verify there are no medication, investigation, reminder nor document acts
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
             assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
             assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
+            assertTrue(itemBean.getActs(PatientArchetypes.ALERT).isEmpty());
         }
 
         // now replace the patient, product, author and clinician
@@ -1132,6 +1139,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
         assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
         assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
+        assertTrue(itemBean.getActs(PatientArchetypes.ALERT).isEmpty());
 
         // make sure that clinicians can be set to null, as a test for OVPMS-1104
         if (itemBean.hasNode("clinician")) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -46,6 +46,11 @@ public class CustomerChargeEditContext extends ChargeEditContext {
     private final ChargeSaveContext saveContext;
 
     /**
+     * The alerts.
+     */
+    private final Alerts alerts;
+
+    /**
      * The stock on hand.
      */
     private final StockOnHand stock;
@@ -72,6 +77,7 @@ public class CustomerChargeEditContext extends ChargeEditContext {
         saveContext = new ChargeSaveContext();
         reminderRules = new ReminderRules(getCachingArchetypeService(), ServiceHelper.getBean(PatientRules.class));
         stock = new StockOnHand(getStockRules());
+        alerts = new Alerts();
     }
 
     /**
@@ -108,6 +114,15 @@ public class CustomerChargeEditContext extends ChargeEditContext {
      */
     public Prescriptions getPrescriptions() {
         return prescriptions;
+    }
+
+    /**
+     * Returns the alerts.
+     *
+     * @return the alerts
+     */
+    public Alerts getAlerts() {
+        return alerts;
     }
 
     /**

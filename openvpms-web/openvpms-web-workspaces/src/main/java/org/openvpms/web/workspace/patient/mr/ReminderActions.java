@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -23,7 +23,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.ActActions;
 
 /**
- * Determines the actions that may be performed on <em>act.patientReminder</em> and <em>act.patientAlert</em> acts.
+ * Determines the actions that may be performed on <em>act.patientReminder</em> acts.
  *
  * @author Tim Anderson
  */
