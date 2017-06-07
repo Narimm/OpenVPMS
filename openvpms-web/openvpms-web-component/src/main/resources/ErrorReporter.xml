@@ -48,6 +48,9 @@
         <className>org.openvpms.esci.adapter.util.ESCIAdapterException</className>
     </exclude-exception>
     <exclude-exception>
+        <className>org.openvpms.pos.api.POSException</className>
+    </exclude-exception>
+    <exclude-exception>
         <className>org.openvpms.smartflow.client.FlowSheetException</className>
     </exclude-exception>
     <exclude-exception>

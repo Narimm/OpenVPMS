@@ -265,6 +265,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.tyro</groupId>
+            <artifactId>tyro-openvpms</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>webstart-jnlp-servlet</artifactId>
             <version>1.0-beta-6</version>
