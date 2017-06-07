@@ -131,7 +131,7 @@ public class UserRules {
      * otherwise {@code false}
      */
     public boolean isClinician(User user) {
-        return isA(user, "CLINICIAN");
+        return isA(user, UserArchetypes.CLINICIAN_USER_TYPE);
     }
 
     /**
@@ -142,7 +142,7 @@ public class UserRules {
      * @return {@code true} if the user is an administrator
      */
     public boolean isAdministrator(User user) {
-        boolean result = isA(user, "ADMINISTRATOR");
+        boolean result = isA(user, UserArchetypes.ADMINISTRATOR_USER_TYPE);
         if (!result) {
             result = TypeHelper.isA(user, UserArchetypes.USER) && "admin".equals(user.getUsername());
         }

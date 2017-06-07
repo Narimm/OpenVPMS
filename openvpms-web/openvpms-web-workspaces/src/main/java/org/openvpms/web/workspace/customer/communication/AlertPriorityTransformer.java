@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
@@ -52,7 +52,7 @@ class AlertPriorityTransformer implements Transformer {
         if (lookup != null) {
             IMObjectBean bean = new IMObjectBean(lookup);
             String priority = bean.getString("priority");
-            return priority != null ? Alert.Priority.valueOf(priority) : null;
+            return priority != null ? Alert.Rank.valueOf(priority) : null;
         }
         return null;
     }

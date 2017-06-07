@@ -46,8 +46,8 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.admin.hl7.PharmacyGroupEditor;
-import org.openvpms.web.workspace.admin.lookup.AlertTypeEditor;
 import org.openvpms.web.workspace.admin.lookup.CurrencyEditor;
+import org.openvpms.web.workspace.admin.lookup.CustomerAlertTypeEditor;
 import org.openvpms.web.workspace.admin.lookup.LookupEditor;
 import org.openvpms.web.workspace.admin.lookup.MacroEditor;
 import org.openvpms.web.workspace.admin.lookup.SpeciesLookupEditor;
@@ -499,14 +499,11 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link AlertTypeEditor} is created for <em>lookup.customerAlertType</em> and
-     * <em>lookup.patientAlertType</em>.
+     * Verifies that a {@link CustomerAlertTypeEditor} is created for <em>lookup.customerAlertType</em>
      */
     @Test
     public void testCreateAlertTypeEditor() {
-        checkCreate("lookup.customerAlertType", AlertTypeEditor.class);
-        checkCreate("lookup.patientAlertType", AlertTypeEditor.class);
-
+        checkCreate("lookup.customerAlertType", CustomerAlertTypeEditor.class);
     }
 
     /**

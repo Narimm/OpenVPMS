@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.customer.communication;
 
@@ -23,16 +23,13 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
-import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.workspace.alert.AlertHelper;
+import org.openvpms.web.workspace.alert.Alert;
 
 import java.util.List;
 import java.util.Map;
@@ -60,9 +57,13 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
      */
     private Map<String, String> priorities;
 
+    /**
+     * The alert being rendered.
+     */
+    private Alert alert;
 
     /**
-     * Constructs a {@code CustomerAlertTableModel}.
+     * Constructs a {@link CustomerAlertTableModel}.
      *
      * @param shortNames the act archetype short names
      * @param context    the layout context
@@ -100,13 +101,21 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
      */
     @Override
     protected Object getValue(Act object, TableColumn column, int row) {
+        Alert alert = getAlert(object);
         int index = column.getModelIndex();
         if (index == priorityIndex) {
-            return getPriority(object);
+            return getPriority(alert);
         } else if (index == alertIndex) {
-            return getAlert(object);
+            return getAlertName(alert);
         }
         return super.getValue(object, column, row);
+    }
+
+    private Alert getAlert(Act object) {
+        if (alert == null || alert.getAlert() != object) {
+            alert = Alert.create(object);
+        }
+        return alert;
     }
 
     /**
@@ -145,17 +154,18 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
     }
 
     /**
-     * Returns the priority of the act.
+     * Returns the priority of the alert.
      *
-     * @param act the act
-     * @return a label representing the act's priority
+     * @param alert the alert
+     * @return a label representing the alert's priority
      */
-    private Label getPriority(Act act) {
+    private Label getPriority(Alert alert) {
         Label result = LabelFactory.create();
-        Lookup lookup = AlertHelper.getAlertType(act);
-        if (lookup != null) {
-            IMObjectBean bean = new IMObjectBean(lookup);
-            result.setText(getPriorityName(bean.getString("priority")));
+        if (alert != null) {
+            String code = alert.getPriorityCode();
+            if (code != null) {
+                result.setText(getPriorityName(code));
+            }
         }
         return result;
     }
@@ -163,20 +173,19 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
     /**
      * Returns the alert name.
      *
-     * @param act the act
+     * @param alert the alert
      * @return a label containing the alert name
      */
-    private Label getAlert(Act act) {
+    private Label getAlertName(Alert alert) {
         Label result = LabelFactory.create();
-        Lookup lookup = AlertHelper.getAlertType(act);
-        if (lookup != null) {
-            result.setText(lookup.getName());
-            Color value = AlertHelper.getColour(lookup);
-            if (value != null) {
+        if (alert != null) {
+            result.setText(alert.getName());
+            Color colour = alert.getColour();
+            if (colour != null) {
                 TableLayoutData layout = new TableLayoutData();
                 result.setLayoutData(layout);
-                layout.setBackground(value);
-                result.setForeground(ColourHelper.getTextColour(value));
+                layout.setBackground(colour);
+                result.setForeground(alert.getTextColour());
             }
         }
         return result;

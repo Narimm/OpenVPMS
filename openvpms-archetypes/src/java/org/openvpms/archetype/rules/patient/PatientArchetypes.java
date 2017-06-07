@@ -157,6 +157,11 @@ public class PatientArchetypes {
     public static final String ALERT = "act.patientAlert";
 
     /**
+     * Patient alert type archetype.
+     */
+    public static final String ALERT_TYPE = "entity.patientAlertType";
+
+    /**
      * Patient prescription act short name.
      */
     public static final String PRESCRIPTION = "act.patientPrescription";

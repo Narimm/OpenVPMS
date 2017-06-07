@@ -60,6 +60,12 @@
         </testResources>
         <plugins>
             <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkMode>never</forkMode>
+                </configuration>
+            </plugin>
+            <plugin>
                 <!-- generates a jar of the test classes.-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

@@ -25,8 +25,10 @@ import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -37,6 +39,11 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.hl7.impl.HL7MessageHelper;
+import org.openvpms.smartflow.model.Medic;
 import org.openvpms.smartflow.model.Treatment;
 import org.openvpms.smartflow.model.Treatments;
 import org.openvpms.smartflow.model.event.TreatmentEvent;
@@ -115,33 +122,38 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
 
     /**
      * Invoked when a patient is treated.
+     * <p/>
+     * If a treatment is billed, a customer order/return will be created.
      *
      * @param treatment the treatment
      */
     protected void treated(Treatment treatment) {
-        Act visit = getVisit(treatment.getHospitalizationId());
-        Party patient = null;
-        Party customer = null;
-        if (visit != null) {
-            patient = getPatient(visit);
-            if (patient != null) {
-                customer = rules.getOwner(patient);
-            }
-        }
-        Product product = getProduct(treatment);
-
         if (log.isDebugEnabled()) {
             log.debug("Treatment=" + treatment.getTreatmentGuid() + ", product=[id="
                       + treatment.getInventoryId() + ", name=" + treatment.getName() + "], "
-                      + "quantity=" + treatment.getQty() + " status=" + treatment.getStatus());
+                      + "quantity=" + treatment.getQty() + " status=" + treatment.getStatus() + ", billed="
+                      + treatment.getBilled());
         }
+        if (treatment.getBilled()) {
+            Act visit = getVisit(treatment.getHospitalizationId());
+            Party patient = null;
+            Party customer = null;
+            if (visit != null) {
+                patient = getPatient(visit);
+                if (patient != null) {
+                    customer = rules.getOwner(patient);
+                }
+            }
+            Product product = getProduct(treatment);
+            IMObjectReference clinician = getClinician(treatment);
 
-        if (Treatment.ADDED_STATUS.equals(treatment.getStatus())) {
-            treatmentAdded(treatment, visit, patient, customer, product, null);
-        } else if (Treatment.CHANGED_STATUS.equals(treatment.getStatus())) {
-            treatmentChanged(treatment, visit, patient, customer, product);
-        } else if (Treatment.REMOVED_STATUS.equals(treatment.getStatus())) {
-            treatmentRemoved(treatment, visit, patient, customer, product);
+            if (Treatment.ADDED_STATUS.equals(treatment.getStatus())) {
+                treatmentAdded(treatment, visit, patient, customer, product, null, clinician);
+            } else if (Treatment.CHANGED_STATUS.equals(treatment.getStatus())) {
+                treatmentChanged(treatment, visit, patient, customer, product, clinician);
+            } else if (Treatment.REMOVED_STATUS.equals(treatment.getStatus())) {
+                treatmentRemoved(treatment, visit, patient, customer, product, clinician);
+            }
         }
     }
 
@@ -154,12 +166,13 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param customer  the customer. May be {@code null}
      * @param product   the product. May be {@code null}
      * @param note      a note to add to the order. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      */
     private void treatmentAdded(Treatment treatment, Act visit, Party patient, Party customer, Product product,
-                                String note) {
+                                String note, IMObjectReference clinician) {
         BigDecimal quantity = getQuantity(treatment);
         if (!MathRules.isZero(quantity)) {
-            createOrder(treatment, visit, patient, customer, product, quantity, note);
+            createOrder(treatment, visit, patient, customer, product, quantity, note, clinician);
         }
     }
 
@@ -172,15 +185,17 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param patient   the patient. May be {@code null}
      * @param customer  the customer. May be {@code null}
      * @param product   the product. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      */
-    private void treatmentChanged(Treatment treatment, Act visit, Party patient, Party customer, Product product) {
+    private void treatmentChanged(Treatment treatment, Act visit, Party patient, Party customer, Product product,
+                                  IMObjectReference clinician) {
         List<CustomerPharmacyOrder> orders = getOrders(treatment);
         if (orders.isEmpty()) {
             treatmentAdded(treatment, visit, patient, customer, product,
-                           "WARNING: Treatment changed, but original order not found");
+                           "WARNING: Treatment changed, but original order not found", clinician);
         } else {
             BigDecimal quantity = getQuantity(treatment);
-            update(orders, treatment, visit, patient, customer, product, quantity);
+            update(orders, treatment, visit, patient, customer, product, quantity, clinician);
         }
     }
 
@@ -192,8 +207,10 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param patient   the patient. May be {@code null}
      * @param customer  the customer. May be {@code null}
      * @param product   the product. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      */
-    private void treatmentRemoved(Treatment treatment, Act visit, Party patient, Party customer, Product product) {
+    private void treatmentRemoved(Treatment treatment, Act visit, Party patient, Party customer, Product product,
+                                  IMObjectReference clinician) {
         if (log.isDebugEnabled()) {
             log.debug("Treatment=" + treatment.getTreatmentGuid() + ", for product=[id="
                       + treatment.getInventoryId() + ", name=" + treatment.getName() + "], "
@@ -203,7 +220,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         if (orders.isEmpty()) {
             log.error("Treatment=" + treatment.getTreatmentGuid() + " removed, but no order found");
         } else {
-            update(orders, treatment, visit, patient, customer, product, BigDecimal.ZERO);
+            update(orders, treatment, visit, patient, customer, product, BigDecimal.ZERO, clinician);
         }
     }
 
@@ -226,9 +243,10 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param customer    the customer. May be {@code null}
      * @param product     the product. May be {@code null}
      * @param newQuantity the new treatment quantity
+     * @param clinician   the clinician. May be {@code null}
      */
     private void update(List<CustomerPharmacyOrder> orders, Treatment treatment, Act visit, Party patient,
-                        Party customer, Product product, BigDecimal newQuantity) {
+                        Party customer, Product product, BigDecimal newQuantity, IMObjectReference clinician) {
         ChargedState state = new ChargedState(orders, product);
         BigDecimal postedQuantity = state.getPostedQuantity();
         CustomerPharmacyOrder inProgress = state.getInProgress();
@@ -239,34 +257,34 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         } else if (postedQuantity.compareTo(newQuantity) < 0) {
             BigDecimal diff = newQuantity.subtract(postedQuantity);
             if (inProgress == null) {
-                createOrder(treatment, visit, patient, customer, product, diff, null);
+                createOrder(treatment, visit, patient, customer, product, diff, null, clinician);
             } else if (inProgress.hasOrder()) {
                 ActBean item = inProgress.getItem(product);
                 if (item == null) {
                     item = inProgress.createOrderItem();
                 }
-                populateItem(inProgress.getOrder(), item, treatment, product, diff);
+                populateItem(inProgress.getOrder(), item, treatment, product, diff, clinician);
                 inProgress.save();
             } else {
                 // remove the existing return, and add a new order
                 inProgress.remove();
-                createOrder(treatment, visit, patient, customer, product, diff, null);
+                createOrder(treatment, visit, patient, customer, product, diff, null, clinician);
             }
         } else {
             // the ordered quantity is greater than the treatment quantity
             BigDecimal diff = postedQuantity.subtract(newQuantity);
             if (inProgress == null) {
-                createReturn(treatment, visit, patient, customer, product, diff, null);
+                createReturn(treatment, visit, patient, customer, product, diff, null, clinician);
             } else if (inProgress.hasOrder()) {
                 // remove the existing order, and add a new return
                 inProgress.remove();
-                createReturn(treatment, visit, patient, customer, product, diff, null);
+                createReturn(treatment, visit, patient, customer, product, diff, null, clinician);
             } else {
                 ActBean item = inProgress.getItem(product);
                 if (item == null) {
                     item = inProgress.createReturnItem();
                 }
-                populateItem(inProgress.getReturn(), item, treatment, product, diff);
+                populateItem(inProgress.getReturn(), item, treatment, product, diff, clinician);
                 inProgress.save();
             }
         }
@@ -282,14 +300,15 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param product   the product. May be {@code null}
      * @param quantity  the quantity
      * @param note      a note. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      */
     private void createOrder(Treatment treatment, Act visit, Party patient, Party customer, Product product,
-                             BigDecimal quantity, String note) {
+                             BigDecimal quantity, String note, IMObjectReference clinician) {
         IArchetypeService service = getService();
         CustomerPharmacyOrder order = new CustomerPharmacyOrder(
                 patient, customer, null, location != null ? location.getObjectReference() : null, service);
-        populate(order.getOrder(), treatment, visit, patient, customer, note);
-        populateItem(order.getOrder(), order.createOrderItem(), treatment, product, quantity);
+        populate(order.getOrder(), treatment, visit, patient, customer, note, clinician);
+        populateItem(order.getOrder(), order.createOrderItem(), treatment, product, quantity, clinician);
         service.save(order.getActs());
     }
 
@@ -303,14 +322,15 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param product   the product. May be {@code null}
      * @param quantity  the quantity
      * @param note      a note. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      */
     private void createReturn(Treatment treatment, Act visit, Party patient, Party customer, Product product,
-                              BigDecimal quantity, String note) {
+                              BigDecimal quantity, String note, IMObjectReference clinician) {
         IArchetypeService service = getService();
         CustomerPharmacyOrder orderReturn = new CustomerPharmacyOrder(
                 patient, customer, null, location != null ? location.getObjectReference() : null, service);
-        populate(orderReturn.getReturn(), treatment, visit, patient, customer, note);
-        populateItem(orderReturn.getReturn(), orderReturn.createReturnItem(), treatment, product, quantity);
+        populate(orderReturn.getReturn(), treatment, visit, patient, customer, note, clinician);
+        populateItem(orderReturn.getReturn(), orderReturn.createReturnItem(), treatment, product, quantity, clinician);
         service.save(orderReturn.getActs());
     }
 
@@ -323,8 +343,10 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param patient   the patient. May be {@code null}
      * @param customer  the customer. May be {@code null}
      * @param note      a note. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      */
-    private void populate(ActBean act, Treatment treatment, Act visit, Party patient, Party customer, String note) {
+    private void populate(ActBean act, Treatment treatment, Act visit, Party patient, Party customer, String note,
+                          IMObjectReference clinician) {
         ActIdentity identity = createIdentity(treatment.getTreatmentGuid());
         act.getAct().addIdentity(identity);
 
@@ -342,6 +364,10 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         } else if (customer == null) {
             addNote(act, "Cannot determine customer for patient");
         }
+
+        if (clinician != null) {
+            act.setNodeParticipant("clinician", clinician);
+        }
     }
 
     /**
@@ -352,8 +378,10 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param treatment the treatment
      * @param product   the product. May be {@code null}
      * @param quantity  the quantity
+     * @param clinician the clinician. May be {@code null}
      */
-    private void populateItem(ActBean order, ActBean item, Treatment treatment, Product product, BigDecimal quantity) {
+    private void populateItem(ActBean order, ActBean item, Treatment treatment, Product product, BigDecimal quantity,
+                              IMObjectReference clinician) {
         item.setValue("quantity", quantity);
         if (product != null) {
             item.setNodeParticipant("product", product);
@@ -383,6 +411,9 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
             addNote(order, "Unknown Treatment, Id='" + treatment.getInventoryId()
                            + "', name='" + treatment.getName() + "'");
         }
+        if (clinician != null) {
+            item.setNodeParticipant("clinician", clinician);
+        }
     }
 
     /**
@@ -396,7 +427,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         long id = SmartFlowSheetHelper.getId(treatment.getInventoryId());
         if (id != -1) {
             ArchetypeQuery query = new ArchetypeQuery(PRODUCT_ARCHETYPES, true, true);
-            query.add(Constraints.eq("id", id));
+            query.add(eq("id", id));
             IMObjectQueryIterator<Product> iterator = new IMObjectQueryIterator<>(getService(), query);
             result = (iterator.hasNext()) ? iterator.next() : null;
         }
@@ -449,6 +480,36 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
             qty = MathRules.round(qty, 3);
         }
         return qty;
+    }
+
+    /**
+     * Returns the clinician associated with a treatment.
+     *
+     * @param treatment the treatment
+     * @return the clinician reference, or {@code null} if none is found
+     */
+    private IMObjectReference getClinician(Treatment treatment) {
+        IMObjectReference result = null;
+        Medic doctor = treatment.getDoctor();
+        if (doctor != null) {
+            long id = HL7MessageHelper.getId(doctor.getMedicId());
+            if (id != -1) {
+                ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER);
+                query.getArchetypeConstraint().setAlias("user");
+                query.add(new ObjectRefSelectConstraint("user"));
+                query.add(join("classifications").add(eq("code", UserArchetypes.CLINICIAN_USER_TYPE)));
+                query.add(eq("id", id));
+                ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(getService(), query);
+                if (iterator.hasNext()) {
+                    ObjectSet set = iterator.next();
+                    result = set.getReference("user.reference");
+                }
+                if (result == null) {
+                    log.warn("No clinician found for id=" + doctor.getMedicId() + ", name=" + doctor.getName());
+                }
+            }
+        }
+        return result;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -136,9 +136,9 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Creates a new object.
-     * <p>
+     * <p/>
      * The object is not automatically added to the collection.
-     * <p>
+     * <p/>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
@@ -150,12 +150,14 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     }
 
     /**
-     * Adds an object to the collection.
+     * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
-    public void add(IMObject object) {
-        editor.add(object);
+    @Override
+    public boolean add(IMObject object) {
+        return editor.add(object);
     }
 
     /**
@@ -369,7 +371,7 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Returns editors for items in the collection.
-     * <p>
+     * <p/>
      * These include any editors that have been created for objects in the
      * collection, and the current editor, which may be for an uncommitted object.
      *
@@ -382,7 +384,7 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Returns the objects in the collection.
-     * <p>
+     * <p/>
      * This includes the object of the current editor, which may be uncommitted.
      *
      * @return the objects

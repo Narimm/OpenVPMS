@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -61,12 +61,13 @@ public class MultipleRelationshipCollectionTargetEditor extends IMObjectTableCol
     }
 
     /**
-     * Adds an object to the collection.
+     * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
-    public void add(IMObject object) {
-        getEditor().add(object);
+    public boolean add(IMObject object) {
+        return getEditor().add(object);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
@@ -52,7 +52,7 @@ public abstract class AbstractPropertyEditor extends AbstractModifiable implemen
         listener = new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
-                resetValid();
+                AbstractPropertyEditor.this.modified();
             }
         };
         property.addModifiableListener(listener);
@@ -181,4 +181,12 @@ public abstract class AbstractPropertyEditor extends AbstractModifiable implemen
         getProperty().resetValid();
     }
 
+    /**
+     * Invoked when the property is modified.
+     * <p/>
+     * This calls {@link #resetValid()}.
+     */
+    protected void modified() {
+        resetValid();
+    }
 }

@@ -142,6 +142,12 @@
                 <errorMessage>Duplicate active product reminder relationship</errorMessage>
             </assertion>
         </node>
+        <node name="alerts" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="*" filter="entityLink.productAlert">
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product alert relationship</errorMessage>
+            </assertion>
+        </node>
         <node name="documents" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.productDocument">

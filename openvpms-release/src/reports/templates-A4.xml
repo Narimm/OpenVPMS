@@ -295,6 +295,10 @@
 			  description="Lists owner and patient details with DOB, species and breed selection"
               path="Reporting/Reports/Patient/A4/Patient List Report.jrxml" mimeType="text/xml"
               docType="document.other"/>
+    <template name="Patient Sales Alert Check" archetype="REPORT" reportType="PATIENT"
+              description="List patients who do not have product related sales alerts set"
+              path="Reporting/Reports/Patient/A4/Patient Sales Alert Check.jrxml" mimeType="text/xml"
+              docType="document.other"/>
     <template name="Patient Sterilisation Report" archetype="REPORT" reportType="PATIENT"
               description="Lists desexed patients with DOB in specified range"
               path="Reporting/Reports/Patient/A4/Patient Sterilisation Report.jrxml" mimeType="text/xml"
@@ -304,7 +308,7 @@
 			  path="Reporting/Reports/Product/A4/Product Batch Use Report.jrxml"
               mimeType="text/xml" docType="document.other"/>
     <template name="Product List Report" archetype="REPORT" reportType="PRODUCT" 
-			  description="Lists products with selection by name, product type, classification and pricing group"
+			  description="Lists products with selection by name, product type, classification, alert and pricing group"
               path="Reporting/Reports/Product/A4/Product List Report.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Product Price List Report" archetype="REPORT" reportType="PRODUCT"
