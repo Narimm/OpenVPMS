@@ -605,6 +605,7 @@
         <module>openvpms-sms</module>
         <module>openvpms-esci-adapter</module>
         <module>openvpms-db</module>
+        <module>openvpms-pos</module>
         <module>openvpms-booking</module>
         <module>openvpms-web</module>
         <module>openvpms-etl</module>

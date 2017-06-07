@@ -42,7 +42,7 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
     public OrganisationWorkspace(Context context) {
         super("admin.organisation", context);
         setArchetypes(Entity.class, "party.organisation*", "entity.organisation*", "entity.SMSConfig*",
-                      "entity.mailServer");
+                      "entity.mailServer", "entity.POSTerminal*");
     }
 
     /**
