@@ -17,8 +17,10 @@
 package org.openvpms.web.component.im.edit;
 
 import org.junit.Test;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,6 +32,7 @@ import org.openvpms.web.component.im.contact.LocationEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
+import org.openvpms.web.component.im.edit.payment.EFTPaymentItemEditor;
 import org.openvpms.web.component.im.edit.payment.PaymentItemEditor;
 import org.openvpms.web.component.im.edit.payment.SupplierPaymentEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -262,36 +265,22 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreatePaymentItemEditor() {
-        checkCreate("act.customerAccountPaymentCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundEFT",
-                    PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CASH, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CHEQUE, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CREDIT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_EFT, EFTPaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CASH, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CHEQUE, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CREDIT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_EFT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CASH, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CHEQUE, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CREDIT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_EFT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CASH, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CHEQUE, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CREDIT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_EFT, PaymentItemEditor.class);
     }
 
     /**
