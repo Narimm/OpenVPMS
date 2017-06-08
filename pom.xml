@@ -33,7 +33,7 @@
     </description>
 
     <prerequisites>
-        <maven>2.2.1</maven>
+        <maven>3.1.1</maven>
     </prerequisites>
 
     <scm>
@@ -110,7 +110,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.14.1</version>
+                <version>2.20</version>
                 <configuration>
                     <includes>
                         <include>**/*TestCase.java</include>
@@ -127,7 +127,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
+                <version>3.3.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <obrRepository>NONE</obrRepository>
@@ -457,6 +457,12 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -605,6 +611,7 @@
         <module>openvpms-sms</module>
         <module>openvpms-esci-adapter</module>
         <module>openvpms-db</module>
+        <module>openvpms-plugins</module>
         <module>openvpms-pos</module>
         <module>openvpms-booking</module>
         <module>openvpms-web</module>
@@ -750,7 +757,7 @@
         <commons.io.version>2.4</commons.io.version>
         <commons.jxpath.version>1.3</commons.jxpath.version>
         <commons.lang.version>2.6</commons.lang.version>
-        <commons.logging.version>1.1.1</commons.logging.version>
+        <commons.logging.version>1.2</commons.logging.version>
         <commons.pool.version>2.3</commons.pool.version>
         <commons.resources.version>1.0-dev</commons.resources.version>
         <dom4j.version>1.6.1</dom4j.version>
@@ -771,11 +778,11 @@
         <jta.version>1.1</jta.version>
         <jug.version>2.0rc4</jug.version>
         <junit.version>4.11</junit.version>
-        <log4j.version>1.2.16</log4j.version>
+        <log4j.version>1.2.17</log4j.version>
         <oro.version>2.0.8</oro.version>
         <stax.api.version>1.0</stax.api.version>
         <stax.version>1.1.2-dev</stax.version>
-        <slf4j.version>1.6.0</slf4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <spring.version>3.2.14.RELEASE</spring.version>
         <spring.security.version>3.2.7.RELEASE</spring.security.version>
         <springmodules.version>0.2</springmodules.version>
