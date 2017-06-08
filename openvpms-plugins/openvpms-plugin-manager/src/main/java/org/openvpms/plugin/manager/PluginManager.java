@@ -23,8 +23,11 @@ import org.apache.felix.framework.util.StringMap;
 import org.apache.felix.framework.util.manifestparser.ManifestParser;
 import org.apache.felix.main.AutoProcessor;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.BundleCapability;
@@ -42,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -88,6 +92,55 @@ public class PluginManager implements InitializingBean, DisposableBean {
     }
 
     /**
+     * Returns the first service implementing the specified interface.
+     *
+     * @param type the interface
+     * @return the first service implementing the interface, or {@code null} if none was found
+     */
+    public <T> T getService(Class<T> type) {
+        T result = null;
+        BundleContext context = felix.getBundleContext();
+        ServiceReference<T> reference = context.getServiceReference(type);
+        if (reference != null) {
+            result = getService(reference, context);
+        }
+        return result;
+    }
+
+    /**
+     * Returns all services implementing the specified interface.
+     *
+     * @param type the interface
+     * @return the services implementing the interface
+     */
+    public <T> List<T> getServices(Class<T> type) {
+        List<T> result = new ArrayList<>();
+        BundleContext context = felix.getBundleContext();
+        try {
+            Collection<ServiceReference<T>> references = context.getServiceReferences(type, null);
+            for (ServiceReference<T> reference : references) {
+                T service = getService(reference, context);
+                if (service != null) {
+                    result.add(service);
+                }
+            }
+        } catch (InvalidSyntaxException ignore) {
+            // do nothing
+        }
+        return result;
+    }
+
+    private <T> T getService(ServiceReference<T> reference, BundleContext context) {
+        T result = null;
+        try {
+            result = context.getService(reference);
+        } catch (Exception exception) {
+
+        }
+        return result;
+    }
+
+    /**
      * Starts the plugin manager.
      *
      * @throws BundleException for any error
@@ -111,7 +164,7 @@ public class PluginManager implements InitializingBean, DisposableBean {
         config.put(FelixConstants.SYSTEMBUNDLE_ACTIVATORS_PROP, list);
         config.put(FelixConstants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
         config.put(AutoProcessor.AUTO_DEPLOY_ACTION_PROPERTY,
-                AutoProcessor.AUTO_DEPLOY_INSTALL_VALUE + ", " + AutoProcessor.AUTO_DEPLOY_START_VALUE);
+                   AutoProcessor.AUTO_DEPLOY_INSTALL_VALUE + ", " + AutoProcessor.AUTO_DEPLOY_START_VALUE);
         config.put(AutoProcessor.AUTO_DEPLOY_STARTLEVEL_PROPERTY, 5);
         config.put(AutoProcessor.AUTO_DEPLOY_DIR_PROPERTY, deploy.getAbsolutePath());
         config.put(FelixConstants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, exports);
@@ -334,10 +387,10 @@ public class PluginManager implements InitializingBean, DisposableBean {
         // At this point, we found a stop delimiter without a start,
         // so throw an exception.
         else if (((startDelim < 0) || (startDelim > stopDelim))
-                && (stopDelim >= 0)) {
+                 && (stopDelim >= 0)) {
             throw new IllegalArgumentException(
                     "stop delimiter with no start delimiter: "
-                            + val);
+                    + val);
         }
 
         // At this point, we have found a variable placeholder so
@@ -370,8 +423,8 @@ public class PluginManager implements InitializingBean, DisposableBean {
         // the variable, and the trailing characters to get the new
         // value.
         val = val.substring(0, startDelim)
-                + substValue
-                + val.substring(stopDelim + DELIM_STOP.length(), val.length());
+              + substValue
+              + val.substring(stopDelim + DELIM_STOP.length(), val.length());
 
         // Now perform substitution again, since there could still
         // be substitutions to make.

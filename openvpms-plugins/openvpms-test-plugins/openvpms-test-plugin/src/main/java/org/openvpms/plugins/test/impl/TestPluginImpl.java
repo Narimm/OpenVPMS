@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugins.test;
+package org.openvpms.plugins.test.impl;
 
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -22,6 +22,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.plugin.test.service.TestService;
+import org.openvpms.plugins.test.api.TestPlugin;
 
 import java.util.Iterator;
 
@@ -31,7 +32,7 @@ import java.util.Iterator;
  *
  * @author Tim Anderson
  */
-public class TestPlugin {
+public class TestPluginImpl implements TestPlugin {
 
     /**
      * Constructs a {@code TestPlugin}.
@@ -39,10 +40,10 @@ public class TestPlugin {
      * @param archetypeService the archetype service
      * @param service          the test service
      */
-    public TestPlugin(IArchetypeService archetypeService, TestService service) {
+    public TestPluginImpl(IArchetypeService archetypeService, TestService service) {
         ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true);
         query.setMaxResults(1);
-        Iterator<Party> iterator = new IMObjectQueryIterator<Party>(archetypeService, query);
+        Iterator<Party> iterator = new IMObjectQueryIterator<>(archetypeService, query);
         while (iterator.hasNext()) {
             Party practice = iterator.next();
             service.setValue(practice.getName());
