@@ -23,7 +23,8 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.plugin.test.service.TestService;
 import org.openvpms.plugin.test.service.impl.TestServiceImpl;
-import org.openvpms.plugins.test.TestPlugin;
+import org.openvpms.plugins.test.api.TestPlugin;
+import org.openvpms.plugins.test.impl.TestPluginImpl;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
@@ -46,7 +47,7 @@ public class PluginManagerTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that services can be provided to a plugin, and that the plugin can call them.
      * <p>
-     * This provides an {@link TestService} and {@link IArchetypeService} to the {@link TestPlugin} plugin,
+     * This provides an {@link TestService} and {@link IArchetypeService} to the {@link TestPluginImpl} plugin,
      * which calls the {@link TestService} with the value of the practice name, as determined from
      * the {@link IArchetypeService}.
      *
@@ -77,14 +78,27 @@ public class PluginManagerTestCase extends ArchetypeServiceTest {
         manager.start();
         for (int i = 0; i < 20; ++i) {
             if (StringUtils.equals(name, service.getValue())) {
-                Thread.sleep(1000);
                 break;
+            } else {
+                Thread.sleep(1000);
             }
         }
-        manager.destroy();
 
         // verify the service was called by the plugin, with the practice name
         assertEquals(name, service.getValue());
+
+        for (int i = 0; i < 20; ++i) {
+            if (manager.getService(TestPlugin.class) != null) {
+                break;
+            } else {
+                Thread.sleep(1000);
+            }
+        }
+
+        // now verify the plugin was exported
+        assertNotNull(manager.getService(TestPlugin.class));
+
+        manager.destroy();
     }
 
 }

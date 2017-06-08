@@ -19,7 +19,7 @@ package org.openvpms.plugin.manager;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.plugin.test.service.impl.TestServiceImpl;
-import org.openvpms.plugins.test.TestPlugin;
+import org.openvpms.plugins.test.impl.TestPluginImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
@@ -51,7 +51,7 @@ public class SpringPluginManagerTestCase extends AbstractJUnit4SpringContextTest
 
 
     /**
-     * Verifies that the {@link TestServiceImpl} defined in the Spring context is exposed to the {@link TestPlugin}.
+     * Verifies that the {@link TestServiceImpl} defined in the Spring context is exposed to the {@link TestPluginImpl}.
      *
      * @throws Exception for any error
      */
