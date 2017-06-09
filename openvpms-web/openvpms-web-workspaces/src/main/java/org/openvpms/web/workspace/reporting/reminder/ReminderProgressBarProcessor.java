@@ -73,6 +73,11 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
     private Reminders currentReminders;
 
     /**
+     * Determines if the current reminders are in error.
+     */
+    private boolean currentError = false;
+
+    /**
      * The current reminder state.
      */
     private PatientReminders currentState;
@@ -160,8 +165,9 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      */
     @Override
     protected void process(Reminders reminders) {
-        this.currentReminders = reminders;
-        this.currentState = null;
+        currentReminders = reminders;
+        currentState = null;
+        currentError = false;
         try {
             currentState = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), new Date(), resend);
             if (!currentState.getReminders().isEmpty()) {
@@ -203,9 +209,12 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      */
     protected void processCompleted() {
         if (currentState != null) {
-            processor.complete(currentState);
-            if (statistics != null) {
-                processor.addStatistics(currentState, statistics);
+            if (!currentError) {
+                // only complete the reminders if processError() hasn't been invoked on them
+                processor.complete(currentState);
+                if (statistics != null) {
+                    processor.addStatistics(currentState, statistics);
+                }
             }
             super.processCompleted(currentReminders);
         } else {
@@ -221,13 +230,14 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      * <li>updates the error node of each reminder if they aren't being resent</li>
      * <li>updates statistics</li>
      * <li>notifies any listeners of the error</li>
-     * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing</li>
+     * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing if this is asynchronous</li>
      * </ul>
      *
      * @param exception the cause
      */
     protected void processError(Throwable exception) {
         if (currentReminders != null) {
+            currentError = true;
             for (ReminderEvent event : currentReminders.getReminders()) {
                 if (!resend) {
                     ReminderHelper.setError(event.getItem(), exception);
@@ -237,7 +247,6 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
                 }
             }
             notifyError(exception);
-            super.processCompleted(currentReminders);
         } else {
             log.error("ReminderProgressBarProcess.processError() invoked with no current reminders", exception);
         }
