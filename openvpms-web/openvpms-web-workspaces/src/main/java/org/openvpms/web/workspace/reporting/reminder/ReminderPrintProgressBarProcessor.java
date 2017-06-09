@@ -81,7 +81,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      * @param processor the email processor
      * @param help      the help context
      */
-    public ReminderPrintProgressBarProcessor(ReminderItemSource query, ReminderPrintProcessor processor,
+    public ReminderPrintProgressBarProcessor(ReminderItemSource query, final ReminderPrintProcessor processor,
                                              HelpContext help) {
         super(query, processor, Messages.get("reporting.reminder.run.print"));
         this.help = help;
@@ -97,9 +97,14 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
             public void printed(String printer) {
                 try {
                     setSuspend(false);
-                    processCompleted();
+                    if (processor.isAsynchronous()) {
+                        processCompleted();
+                    }
                 } catch (OpenVPMSException exception) {
                     processError(exception);
+                    if (processor.isAsynchronous()) {
+                        processCompleted();
+                    }
                 }
             }
 
@@ -114,6 +119,9 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
 
             public void failed(Throwable cause) {
                 processError(cause);
+                if (processor.isAsynchronous()) {
+                    processCompleted();
+                }
             }
         };
         processor.setListener(listener);
