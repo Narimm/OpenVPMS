@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2017-01-10T15:20:02 -->
+<!-- 2017-06-09T08:05:56 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Customer List Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="f402c6a6-4eb6-42f3-8d38-84883e7ac956">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -91,8 +91,8 @@ where
 		<groupExpression><![CDATA[$F{accountType}]]></groupExpression>
 		<groupHeader>
 			<band height="19">
-				<textField>
-					<reportElement x="0" y="0" width="310" height="17" uuid="2fce9345-fff8-4df8-adc3-55a5471a65c6">
+				<textField isStretchWithOverflow="true">
+					<reportElement x="0" y="0" width="355" height="17" uuid="2fce9345-fff8-4df8-adc3-55a5471a65c6">
 						<property name="local_mesure_unitheight" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
@@ -103,7 +103,7 @@ where
 					<textFieldExpression><![CDATA[$F{location}+" / "+$F{accountType}+(($V{acType1}==null)?"":" (cont)")]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement key="staticText-12" x="320" y="0" width="50" height="17" uuid="3f203b8b-7a0b-40a8-a2ea-a015c684a4ce">
+					<reportElement key="staticText-12" x="360" y="0" width="50" height="17" uuid="3f203b8b-7a0b-40a8-a2ea-a015c684a4ce">
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -119,7 +119,8 @@ where
 					<text><![CDATA[Counts:]]></text>
 				</staticText>
 				<textField evaluationTime="Group" evaluationGroup="Location">
-					<reportElement x="378" y="0" width="42" height="17" uuid="0c90b156-c2df-4aab-be95-3856fe00f27f">
+					<reportElement x="413" y="0" width="50" height="17" uuid="0c90b156-c2df-4aab-be95-3856fe00f27f">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -129,7 +130,8 @@ where
 					<textFieldExpression><![CDATA[$V{Location_COUNT}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="acType">
-					<reportElement x="427" y="0" width="100" height="17" uuid="d8e3650c-837d-40bc-a529-2ec6b74b6524">
+					<reportElement x="470" y="0" width="50" height="17" uuid="d8e3650c-837d-40bc-a529-2ec6b74b6524">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -139,7 +141,7 @@ where
 					<textFieldExpression><![CDATA[$V{acType_COUNT}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement key="staticText-12" x="420" y="0" width="7" height="17" uuid="36c17248-bffa-4239-badc-323c684d0d38">
+					<reportElement key="staticText-12" x="463" y="0" width="7" height="17" uuid="36c17248-bffa-4239-badc-323c684d0d38">
 						<property name="local_mesure_unitwidth" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
