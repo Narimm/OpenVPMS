@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
- * Tests the {@link PluginManager} when the plugin services and {@link PluginServiceProvider} are bootstrapped from
+ * Tests the {@link PluginManagerImpl} when the plugin services and {@link PluginServiceProvider} are bootstrapped from
  * a Spring context.
  *
  * @author Tim Anderson
@@ -62,10 +62,10 @@ public class SpringPluginManagerTestCase extends AbstractJUnit4SpringContextTest
         assertNotNull(name);
         String path = FelixHelper.getFelixDir();
 
-        PluginManager pluginManager = new PluginManager(path, provider);
+        PluginManagerImpl pluginManager = new PluginManagerImpl(path, provider);
         pluginManager.start();
         Thread.sleep(10000);
-        pluginManager.destroy();
+        pluginManager.stop();
         assertEquals(name, testService.getValue());
     }
 }

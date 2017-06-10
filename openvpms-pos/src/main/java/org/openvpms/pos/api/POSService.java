@@ -10,12 +10,19 @@ import org.openvpms.component.business.domain.im.common.Entity;
 public interface POSService {
 
     /**
+     * Returns the terminal configuration archetype that this service supports.
+     *
+     * @return the terminal configuration archetype
+     */
+    String getConfigurationType();
+
+    /**
      * Returns a POS terminal given its configuration.
      *
-     * @param terminal the terminal configuration.
+     * @param configuration the terminal configuration
      * @return the POS terminal
      * @throws POSException for any error
      */
-    Terminal getTerminal(Entity terminal);
+    Terminal getTerminal(Entity configuration);
 
 }
