@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.plugin.manager.PluginManager;
 import org.openvpms.pos.api.POSService;
 import org.openvpms.pos.api.Terminal;
 import org.openvpms.pos.api.Transaction;
@@ -111,13 +112,18 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
      * Invoked when the 'pay' button is pressed.
      */
     private void onPay() {
-        POSService service = ServiceHelper.getBean(POSService.class);
-        Terminal posTerminal = service.getTerminal(terminal);
-        BigDecimal amount = getProperty("amount").getBigDecimal(BigDecimal.ZERO);
-        BigDecimal cashout = getProperty("cashout").getBigDecimal(BigDecimal.ZERO);
-        Transaction transaction = posTerminal.pay(customer, amount, cashout);
-        EFTPaymentDialog dialog = new EFTPaymentDialog(posTerminal, transaction);
-        dialog.show();
+        PluginManager manager = ServiceHelper.getBean(PluginManager.class);
+        List<POSService> services = manager.getServices(POSService.class);
+        for (POSService service : services) {
+            if (terminal.getArchetypeId().getShortName().equals(service.getConfigurationType())) {
+                Terminal posTerminal = service.getTerminal(terminal);
+                BigDecimal amount = getProperty("amount").getBigDecimal(BigDecimal.ZERO);
+                BigDecimal cashout = getProperty("cashout").getBigDecimal(BigDecimal.ZERO);
+                Transaction transaction = posTerminal.pay(customer, amount, cashout);
+                EFTPaymentDialog dialog = new EFTPaymentDialog(posTerminal, transaction);
+                dialog.show();
+            }
+        }
     }
 
 }

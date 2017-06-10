@@ -38,7 +38,7 @@ import static org.junit.Assert.assertNull;
 
 
 /**
- * Tests the {@link PluginManager}.
+ * Tests the {@link PluginManagerImpl}.
  *
  * @author Tim Anderson
  */
@@ -74,7 +74,7 @@ public class PluginManagerTestCase extends ArchetypeServiceTest {
         };
 
         // start the plugin manager
-        PluginManager manager = new PluginManager(FelixHelper.getFelixDir(), provider);
+        PluginManagerImpl manager = new PluginManagerImpl(FelixHelper.getFelixDir(), provider);
         manager.start();
         for (int i = 0; i < 20; ++i) {
             if (StringUtils.equals(name, service.getValue())) {
@@ -98,7 +98,7 @@ public class PluginManagerTestCase extends ArchetypeServiceTest {
         // now verify the plugin was exported
         assertNotNull(manager.getService(TestPlugin.class));
 
-        manager.destroy();
+        manager.stop();
     }
 
 }

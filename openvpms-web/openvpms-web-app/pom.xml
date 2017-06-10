@@ -236,6 +236,11 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-plugin-manager</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-web-workspaces</artifactId>
         </dependency>
         <dependency>
@@ -263,12 +268,6 @@
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-booking-service</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tyro</groupId>
-            <artifactId>tyro-openvpms</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.codehaus.mojo</groupId>

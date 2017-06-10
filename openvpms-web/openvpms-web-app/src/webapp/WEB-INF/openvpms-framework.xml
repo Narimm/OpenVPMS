@@ -17,7 +17,9 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:plugin="http://openvpms.org/schema/plugin/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://openvpms.org/schema/plugin/spring http://openvpms.org/schema/plugin/spring/plugin.xsd">
 
     <!-- ================================================================== -->
     <!--                         GENERAL DEFINITIONS                        -->
@@ -179,6 +181,7 @@
     <!--  The Archetype Rule service -->
     <bean id="archetypeRuleService"
           class="org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService">
+        <plugin:service/>
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="ruleEngine"/>
         <constructor-arg ref="txnManager"/>
@@ -198,6 +201,12 @@
         <constructor-arg ref="archetypeDescriptorCache"/>
         <property name="dao" ref="imObjectDao"/>
         <property name="ruleEngine" ref="ruleEngine"/>
+    </bean>
+
+    <bean id="archetypeInstaller" class="org.openvpms.component.business.service.archetype.ArchetypeInstallerImpl">
+        <plugin:service/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 
     <!--  The Audit Service -->

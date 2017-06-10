@@ -31,7 +31,7 @@
     <import resource="openvpms-authentication.xml"/>
     <import resource="openvpms-webdav.xml"/>
     <import resource="openvpms-booking.xml"/>
-    <import resource="openvpms-pos.xml"/>
+    <import resource="openvpms-plugins.xml"/>
     <import resource="openvpms-web-app.xml"/>
 
 </beans>
