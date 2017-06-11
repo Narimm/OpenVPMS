@@ -1,4 +1,4 @@
-package org.openvpms.component.business.service.archetype;
+package org.openvpms.plugin.service.archetype;
 
 import java.io.InputStream;
 

@@ -1,9 +1,11 @@
-package org.openvpms.component.business.service.archetype;
+package org.openvpms.plugin.service.internal.archetype;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.plugin.service.archetype.ArchetypeInstaller;
+import org.openvpms.plugin.service.archetype.PluginArchetypeService;
 import org.openvpms.tools.archetype.comparator.ArchetypeComparator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -28,7 +30,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final PluginArchetypeService service;
 
     /**
      * The transaction manager.
@@ -46,7 +48,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
      * @param service    the archetype service
      * @param txnManager the transaction manager
      */
-    public ArchetypeInstallerImpl(IArchetypeService service, PlatformTransactionManager txnManager) {
+    public ArchetypeInstallerImpl(PluginArchetypeService service, PlatformTransactionManager txnManager) {
         this.service = service;
         this.txnManager = txnManager;
     }
@@ -116,7 +118,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
 
     private List<ArchetypeDescriptor> validateAll(ArchetypeDescriptors descriptors, List<ArchetypeDescriptor> list) {
         for (ArchetypeDescriptor descriptor : descriptors.getArchetypeDescriptorsAsArray()) {
-            service.validateObject(descriptor);
+            service.validate(descriptor);
             list.add(descriptor);
         }
         return list;
