@@ -17,13 +17,27 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+       xmlns:plugin="http://openvpms.org/schema/plugin/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://openvpms.org/schema/plugin/spring http://openvpms.org/schema/plugin/spring/plugin.xsd">
 
     <bean name="pluginServiceProvider" class="org.openvpms.plugin.manager.spring.PluginServiceProviderFactoryBean"/>
 
     <bean id="pluginManager" class="org.openvpms.plugin.manager.ConfigurablePluginManager">
         <constructor-arg ref="pluginServiceProvider"/>
         <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="pluginArchetypeService" class="org.openvpms.plugin.service.internal.archetype.PluginArchetypeServiceImpl">
+        <plugin:service/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
+
+    <bean id="archetypeInstaller" class="org.openvpms.plugin.service.internal.archetype.ArchetypeInstallerImpl">
+        <plugin:service/>
+        <constructor-arg ref="pluginArchetypeService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 
 </beans>

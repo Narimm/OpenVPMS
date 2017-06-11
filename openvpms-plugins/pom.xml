@@ -78,6 +78,7 @@
         <module>openvpms-test-plugins</module>
         <module>openvpms-felix</module>
         <module>openvpms-plugin-manager</module>
+        <module>openvpms-plugin-services</module>
     </modules>
 
 </project>

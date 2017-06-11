@@ -217,7 +217,7 @@ public class PluginManagerImpl implements PluginManager {
                 if (BundleRevision.PACKAGE_NAMESPACE.equals(capability.getNamespace())) {
                     Map<String, Object> attributes = capability.getAttributes();
                     String pkg = getString(PackageNamespace.PACKAGE_NAMESPACE, attributes);
-                    if (pkg != null && !pkg.startsWith("org.osgi.") && !pkg.startsWith("java")) {
+                    if (pkg != null && !pkg.startsWith("org.osgi.") && !pkg.startsWith("java.")) {
                         String version = getString(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, attributes);
                         if (version != null) {
                             packages.put(pkg, version);
