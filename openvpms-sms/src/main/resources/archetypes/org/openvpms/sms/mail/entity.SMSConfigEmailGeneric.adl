@@ -33,5 +33,7 @@
         <node name="subjectExpression" path="/details/subjectExpression" type="java.lang.String" minCardinality="0" defaultValue="'$subject'"/>
         <node name="text" path="/details/text" type="java.lang.String" minCardinality="0"/>
         <node name="textExpression" path="/details/textExpression" type="java.lang.String" minCardinality="0" defaultValue="'$message'" maxLength="256"/>
+        <node name="parts" displayName="Maximum Parts" path="/details/parts" type="java.lang.Integer"
+              minCardinality="0" defaultValue="1"/>
     </archetype>
 </archetypes>

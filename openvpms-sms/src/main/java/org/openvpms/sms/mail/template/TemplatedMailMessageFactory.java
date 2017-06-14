@@ -119,6 +119,16 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
     }
 
     /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    @Override
+    public int getMaxParts() {
+        return config.getTemplate().getMaxParts();
+    }
+
+    /**
      * Massages the phone number to:
      * <ul>
      * <li>remove any spaces
