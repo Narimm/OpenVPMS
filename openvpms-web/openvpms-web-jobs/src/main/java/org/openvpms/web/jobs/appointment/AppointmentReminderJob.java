@@ -42,6 +42,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.sms.SMSException;
+import org.openvpms.sms.util.SMSLengthCalculator;
 import org.openvpms.web.component.service.SMSService;
 import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
@@ -161,6 +162,11 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     private int sent;
 
     /**
+     * The maximum no. of message parts supported by the provider.
+     */
+    private final int maxParts;
+
+    /**
      * Schedules that failed to have reminders sent, and the corresponding dates, ordered on schedule name.
      */
     private Map<Entity, Set<Date>> errors = new TreeMap<>(new Comparator<Entity>() {
@@ -205,6 +211,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
         this.practiceService = practiceService;
         this.locationRules = locationRules;
         this.evaluator = evaluator;
+        maxParts = service.getMaxParts();
         IMObjectBean bean = new IMObjectBean(configuration, archetypeService);
         fromPeriod = getPeriod(bean, "smsFrom", "smsFromUnits", DateUnits.WEEKS);
         toPeriod = getPeriod(bean, "smsTo", "smsToUnits", DateUnits.DAYS);
@@ -355,7 +362,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
                             String message = evaluator.evaluate(template, bean.getAct(), location, practice);
                             if (StringUtils.isEmpty(message)) {
                                 addError(bean, Messages.get("sms.appointment.empty"));
-                            } else if (message.length() > 160) {
+                            } else if (SMSLengthCalculator.getParts(message) > maxParts) {
                                 addError(bean, Messages.format("sms.appointment.toolong", message));
                             } else {
                                 service.send(message, contact, customer, subject, REASON, location);

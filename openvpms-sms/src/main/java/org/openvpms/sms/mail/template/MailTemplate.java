@@ -92,6 +92,10 @@ public class MailTemplate {
      */
     private Map<String, Object> variables = new HashMap<>();
 
+    /**
+     * The maximum number of message parts supported.
+     */
+    private int maxParts;
 
     /**
      * Constructs a {@link MailTemplate}.
@@ -120,9 +124,9 @@ public class MailTemplate {
 
     /**
      * Sets the area prefix.
-     * <p/>
+     * <p>
      * In Australia this is the '0' prior to the area code.
-     * <p/>
+     * <p>
      * If specified, this will be removed from the front of phone numbers, when the country prefix is provided.
      *
      * @param prefix the area prefix
@@ -321,6 +325,24 @@ public class MailTemplate {
     }
 
     /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    public int getMaxParts() {
+        return maxParts;
+    }
+
+    /**
+     * Sets the maximum number of message parts supported by the SMS provider.
+     *
+     * @param maxParts the maximum number of message parts
+     */
+    public void setMaxParts(int maxParts) {
+        this.maxParts = maxParts;
+    }
+
+    /**
      * Adds a variable.
      *
      * @param name  the variable name
@@ -332,7 +354,7 @@ public class MailTemplate {
 
     /**
      * Returns the variables to use in the template.
-     * <p/>
+     * <p>
      * Each entry in the returned map is a variable name/value pair.
      *
      * @return the variables
