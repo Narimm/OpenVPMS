@@ -76,9 +76,8 @@ public class MailTemplateFactory {
         result.setText(getString(configBean, "text"));
         result.setTextExpression(getString(configBean, "textExpression"));
         int maxParts = 1;
-        if (configBean.hasNode("maxParts")) {
-            result.setMaxParts(maxParts);
-            maxParts = configBean.getInt("maxParts", 1);
+        if (configBean.hasNode("parts")) {
+            maxParts = configBean.getInt("parts", 1);
             if (maxParts < 1) {
                 maxParts = 1;
             }
