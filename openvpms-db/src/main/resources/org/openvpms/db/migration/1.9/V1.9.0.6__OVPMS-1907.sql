@@ -1,5 +1,5 @@
 #
-# Insert parts = 1 for every enttiy.SMSConfigEmail* that doesn't have one.
+# Insert parts = 1 for every entity.SMSConfigEmail* that doesn't have one.
 #
 
 INSERT INTO entity_details (entity_id, type, value, name)
