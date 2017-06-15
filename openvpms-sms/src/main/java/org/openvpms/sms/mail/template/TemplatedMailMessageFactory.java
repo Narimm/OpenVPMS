@@ -125,7 +125,14 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      */
     @Override
     public int getMaxParts() {
-        return config.getTemplate().getMaxParts();
+        int maxParts = 1;
+        try {
+            MailTemplate template = config.getTemplate();
+            maxParts = template.getMaxParts();
+        } catch (Exception ignore) {
+            // SMS template not configured.
+        }
+        return maxParts;
     }
 
     /**
@@ -137,23 +144,25 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      * first
      * </ul>
      *
-     * @param phone    the phone number
+     * @param phone    the phone number. May be {@code null}
      * @param template the template
-     * @return the updated number
+     * @return the updated number. May be {@code null}
      */
     protected String getPhone(String phone, MailTemplate template) {
-        phone = StringUtils.remove(phone, ' ');
-        if (phone.startsWith("+")) {
-            phone = phone.substring(1);
-        } else {
-            String prefix = template.getCountryPrefix();
-            if (prefix != null && !phone.startsWith(prefix)) {
-                String areaPrefix = template.getAreaPrefix();
-                if (areaPrefix != null && phone.startsWith(areaPrefix)) {
-                    // strip off the area prefix before adding the country prefix
-                    phone = phone.substring(areaPrefix.length());
+        if (phone != null) {
+            phone = StringUtils.remove(phone, ' ');
+            if (phone.startsWith("+")) {
+                phone = phone.substring(1);
+            } else {
+                String prefix = template.getCountryPrefix();
+                if (prefix != null && !phone.startsWith(prefix)) {
+                    String areaPrefix = template.getAreaPrefix();
+                    if (areaPrefix != null && phone.startsWith(areaPrefix)) {
+                        // strip off the area prefix before adding the country prefix
+                        phone = phone.substring(areaPrefix.length());
+                    }
+                    phone = prefix + phone;
                 }
-                phone = prefix + phone;
             }
         }
         return phone;
