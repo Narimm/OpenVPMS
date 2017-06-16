@@ -31,11 +31,17 @@ import org.openvpms.pos.api.Transaction;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -50,9 +56,9 @@ import java.util.List;
 public class EFTPaymentItemEditor extends PaymentItemEditor {
 
     /**
-     * The POS terminal.
+     * The POS terminal configuration.
      */
-    private final Entity terminal;
+    private final Entity terminalConfig;
 
     /**
      * The customer.
@@ -69,8 +75,26 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
     public EFTPaymentItemEditor(FinancialAct act, FinancialAct parent, LayoutContext context) {
         super(act, parent, context);
         Entity till = context.getContext().getTill();
-        terminal = (till != null) ? (Entity) new IMObjectBean(till).getNodeTargetObject("terminal") : null;
+        terminalConfig = (till != null) ? (Entity) new IMObjectBean(till).getNodeTargetObject("terminal") : null;
         customer = context.getContext().getCustomer();
+    }
+
+    /**
+     * Returns the payment amount.
+     *
+     * @return the payment amount
+     */
+    public BigDecimal getAmount() {
+        return getProperty("amount").getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Returns the cash out amount.
+     *
+     * @return the cash out amount
+     */
+    public BigDecimal getCashout() {
+        return getProperty("cashout").getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -95,7 +119,7 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
                                           Component container, LayoutContext context) {
                 Row row = RowFactory.create(Styles.CELL_SPACING);
                 super.doSimpleLayout(object, parent, properties, row, context);
-                if (terminal != null) {
+                if (terminalConfig != null) {
                     row.add(ButtonFactory.create("button.pay", new ActionListener() {
                         @Override
                         public void onAction(ActionEvent event) {
@@ -112,18 +136,46 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
      * Invoked when the 'pay' button is pressed.
      */
     private void onPay() {
+        Validator validator = new DefaultValidator();
+        if (validate(validator)) {
+            try {
+                Terminal terminal = getTerminal();
+                if (terminal == null) {
+                    ErrorDialog.show(Messages.get("customer.payment.eft.title"),
+                                     Messages.get("customer.payment.eft.noterminal"));
+                } else if (!terminal.isAvailable()) {
+                    ErrorDialog.show(Messages.get("customer.payment.eft.title"),
+                                     Messages.format("customer.payment.eft.terminalunavailable",
+                                                     terminalConfig.getName()));
+                } else {
+                    BigDecimal amount = getAmount();
+                    BigDecimal cashout = getCashout();
+                    Transaction transaction = terminal.pay(customer, amount, cashout);
+                    EFTPaymentDialog dialog = new EFTPaymentDialog(terminal, transaction);
+                    dialog.show();
+                }
+            } catch (Exception exception) {
+                ErrorHelper.show(Messages.get("customer.payment.eft.title"), exception);
+            }
+        } else {
+            ValidationHelper.showError(validator);
+        }
+    }
+
+    /**
+     * Returns the POS terminal.
+     *
+     * @return the POS terminal, or {@code null} if none can be found
+     */
+    private Terminal getTerminal() {
         PluginManager manager = ServiceHelper.getBean(PluginManager.class);
         List<POSService> services = manager.getServices(POSService.class);
         for (POSService service : services) {
-            if (terminal.getArchetypeId().getShortName().equals(service.getConfigurationType())) {
-                Terminal posTerminal = service.getTerminal(terminal);
-                BigDecimal amount = getProperty("amount").getBigDecimal(BigDecimal.ZERO);
-                BigDecimal cashout = getProperty("cashout").getBigDecimal(BigDecimal.ZERO);
-                Transaction transaction = posTerminal.pay(customer, amount, cashout);
-                EFTPaymentDialog dialog = new EFTPaymentDialog(posTerminal, transaction);
-                dialog.show();
+            if (terminalConfig.getArchetypeId().getShortName().equals(service.getConfigurationType())) {
+                return service.getTerminal(terminalConfig);
             }
         }
+        return null;
     }
 
 }
