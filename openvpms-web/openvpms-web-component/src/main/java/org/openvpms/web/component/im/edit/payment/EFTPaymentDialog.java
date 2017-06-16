@@ -1,6 +1,11 @@
 package org.openvpms.web.component.im.edit.payment;
 
-import nextapp.echo2.app.*;
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.RadioButton;
+import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
@@ -20,6 +25,7 @@ import org.openvpms.web.echo.dialog.ModalDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
 
@@ -54,7 +60,7 @@ class EFTPaymentDialog extends ModalDialog {
      * Constructs a {@link EFTPaymentDialog}.
      */
     public EFTPaymentDialog(Terminal terminal, Transaction transaction) {
-        super("EFT", "MessageDialog", OK_CANCEL);
+        super(Messages.get("customer.payment.eft.title"), "MessageDialog", OK_CANCEL);
         this.terminal = terminal;
         this.transaction = transaction;
         getButtons().setEnabled(OK_ID, false);
