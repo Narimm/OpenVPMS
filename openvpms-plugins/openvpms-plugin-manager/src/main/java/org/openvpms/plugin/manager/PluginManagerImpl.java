@@ -1,4 +1,20 @@
 
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.plugin.manager;
 
 import org.apache.commons.io.IOUtils;
@@ -47,15 +63,33 @@ import java.util.jar.Manifest;
  */
 public class PluginManagerImpl implements PluginManager {
 
+    /**
+     * The plugins path.
+     */
     private final String path;
+
+    /**
+     * The plugin service provider.
+     */
     private final PluginServiceProvider provider;
 
+    /**
+     * Apache Felix.
+     */
     private Felix felix;
 
+    /**
+     * The logger.
+     */
     private final Logger logger = new Logger();
 
     private static final BundleRevision BUNDLE_REVISION = new MockBundleRevision();
 
+    /**
+     * Constructs a {@link PluginManagerImpl}.
+     * @param path
+     * @param provider
+     */
     public PluginManagerImpl(String path, PluginServiceProvider provider) {
         this.path = path;
         this.provider = provider;
@@ -70,7 +104,7 @@ public class PluginManagerImpl implements PluginManager {
     @Override
     public <T> T getService(Class<T> type) {
         T result = null;
-        BundleContext context = felix.getBundleContext();
+        BundleContext context = getBundleContext();
         ServiceReference<T> reference = context.getServiceReference(type);
         if (reference != null) {
             result = getService(reference, context);
@@ -87,29 +121,32 @@ public class PluginManagerImpl implements PluginManager {
     @Override
     public <T> List<T> getServices(Class<T> type) {
         List<T> result = new ArrayList<>();
-        BundleContext context = felix.getBundleContext();
-        try {
-            Collection<ServiceReference<T>> references = context.getServiceReferences(type, null);
-            for (ServiceReference<T> reference : references) {
-                T service = getService(reference, context);
-                if (service != null) {
-                    result.add(service);
+        BundleContext context = getBundleContext();
+        if (context != null) {
+            try {
+                Collection<ServiceReference<T>> references = context.getServiceReferences(type, null);
+                for (ServiceReference<T> reference : references) {
+                    T service = getService(reference, context);
+                    if (service != null) {
+                        result.add(service);
+                    }
                 }
+            } catch (InvalidSyntaxException ignore) {
+                // do nothing
             }
-        } catch (InvalidSyntaxException ignore) {
-            // do nothing
         }
         return result;
     }
 
-    private <T> T getService(ServiceReference<T> reference, BundleContext context) {
-        T result = null;
-        try {
-            result = context.getService(reference);
-        } catch (Exception exception) {
-
-        }
-        return result;
+    /**
+     * Returns a list of all installed bundles.
+     *
+     * @return the installed bundles
+     */
+    @Override
+    public Bundle[] getBundles() {
+        BundleContext context = getBundleContext();
+        return context != null ? context.getBundles() : new Bundle[0];
     }
 
     /**
@@ -177,13 +214,32 @@ public class PluginManagerImpl implements PluginManager {
     }
 
     /**
+     * Returns the bundle context, or {@code null} if Felix is not running.
+     *
+     * @return the bundle context. May be {@code null}
+     */
+    private synchronized BundleContext getBundleContext() {
+        return (felix != null) ? felix.getBundleContext() : null;
+    }
+
+    private <T> T getService(ServiceReference<T> reference, BundleContext context) {
+        T result = null;
+        try {
+            result = context.getService(reference);
+        } catch (Exception exception) {
+
+        }
+        return result;
+    }
+
+    /**
      * Parses OSGi manifest entries to determine the packages that need to be added to the
      * <em>org.osgi.framework.system.packages.extra</em> property to expose them to plugins.
      *
      * @return the extra system packages
      */
     private String getExtraSystemPackages() {
-        Map<String, String> packages = new TreeMap<String, String>();
+        Map<String, String> packages = new TreeMap<>();
         try {
             Enumeration<URL> resources = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
             while (resources.hasMoreElements()) {
