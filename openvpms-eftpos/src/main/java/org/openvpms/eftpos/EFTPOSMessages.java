@@ -1,4 +1,4 @@
-package org.openvpms.pos.i18n;
+package org.openvpms.eftpos;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.i18n.Message;
@@ -9,12 +9,12 @@ import org.openvpms.component.system.common.i18n.Messages;
  *
  * @author Tim Anderson
  */
-public class POSMessages {
+public class EFTPOSMessages {
 
     /**
      * The messages.
      */
-    private static Messages messages = new Messages("POS", POSMessages.class.getName());
+    private static Messages messages = new Messages("EFTPOS", EFTPOSMessages.class.getName());
 
     /**
      * Creates a message indicating that a terminal was not found.

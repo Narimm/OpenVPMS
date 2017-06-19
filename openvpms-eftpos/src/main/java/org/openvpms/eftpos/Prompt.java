@@ -1,9 +1,9 @@
-package org.openvpms.pos.api;
+package org.openvpms.eftpos;
 
 import java.util.List;
 
 /**
- * POS terminal prompt.
+ * EFTPOS terminal prompt.
  *
  * @author Tim Anderson
  */
@@ -27,7 +27,7 @@ public interface Prompt {
      * Sends the selected option.
      *
      * @param option the option
-     * @throws POSException for any POS error
+     * @throws EFTPOSException for any POS error
      */
     void send(String option);
 }

@@ -96,6 +96,10 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
         for (ArchetypeDescriptor descriptor : descriptors) {
             ArchetypeDescriptor existing = service.getArchetypeDescriptor(descriptor.getShortName());
             if (existing != null) {
+                // make sure it is the latest instance and not a cached copy
+                existing = (ArchetypeDescriptor) service.get(existing.getObjectReference());
+            }
+            if (existing != null) {
                 ArchetypeComparator comparator = new ArchetypeComparator();
                 if (comparator.compare(existing, descriptor) != null) {
                     service.remove(existing);

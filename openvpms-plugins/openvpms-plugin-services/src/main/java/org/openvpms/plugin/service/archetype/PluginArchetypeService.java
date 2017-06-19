@@ -4,6 +4,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -84,4 +85,12 @@ public interface PluginArchetypeService {
      * @param object the object to validate
      */
     void validate(IMObject object);
+
+    /**
+     * Returns an object given its reference.
+     *
+     * @param reference the reference
+     * @return the object, or {@code null} if none is found
+     */
+    IMObject get(IMObjectReference reference);
 }

@@ -1,7 +1,7 @@
-package org.openvpms.pos.api;
+package org.openvpms.eftpos;
 
 /**
- * POS receipt.
+ * EFTPOS receipt.
  *
  * @author Tim Anderson
  */

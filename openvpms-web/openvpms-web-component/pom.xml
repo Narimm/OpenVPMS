@@ -99,7 +99,7 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-pos</artifactId>
+            <artifactId>openvpms-eftpos</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

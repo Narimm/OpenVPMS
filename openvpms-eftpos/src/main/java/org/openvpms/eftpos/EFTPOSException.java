@@ -1,31 +1,31 @@
-package org.openvpms.pos.api;
+package org.openvpms.eftpos;
 
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.i18n.Message;
 
 /**
- * POS exception.
+ * EFTPOS exception.
  *
  * @author Tim Anderson
  */
-public class POSException extends OpenVPMSException {
+public class EFTPOSException extends OpenVPMSException {
 
     /**
-     * Constructs a {@link POSException}.
+     * Constructs a {@link EFTPOSException}.
      *
      * @param message the message
      */
-    public POSException(Message message) {
+    public EFTPOSException(Message message) {
         super(message.toString());
     }
 
     /**
-     * Constructs a {@link POSException}.
+     * Constructs a {@link EFTPOSException}.
      *
      * @param message the message
      * @param cause   the root cause
      */
-    public POSException(Message message, Throwable cause) {
+    public EFTPOSException(Message message, Throwable cause) {
         super(message.toString(), cause);
     }
 

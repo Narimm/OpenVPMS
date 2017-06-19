@@ -5,6 +5,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.DelegatingArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -153,6 +154,17 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
     @Override
     public void validate(IMObject object) {
         service.validateObject(object);
+    }
+
+    /**
+     * Returns an object given its reference.
+     *
+     * @param reference the reference
+     * @return the object, or {@code null} if none is found
+     */
+    @Override
+    public IMObject get(IMObjectReference reference) {
+        return service.get(reference);
     }
 
     private void run(Runnable runnable) {
