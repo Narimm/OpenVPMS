@@ -15,18 +15,18 @@
   -->
 
 <archetypes>
-    <archetype name="entityLink.tillPOSTerminal.1.0" latest="true"
+    <archetype name="entityLink.tillEFTPOSTerminal.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
-               displayName="Till POS Terminal">
+               displayName="Till EFTPOS Terminal">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Till POS Terminal'"/>
+              derivedValue="'Till EFTPOS Terminal'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
         <node name="source" displayName="Practice" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1"
               filter="party.organisationTill"/>
         <node name="target" displayName="Letterhead" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1"
-              filter="entity.POSTerminal*"/>
+              filter="entity.EFTPOSTerminal*"/>
     </archetype>
 </archetypes>

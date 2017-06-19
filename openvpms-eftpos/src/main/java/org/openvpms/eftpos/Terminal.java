@@ -1,11 +1,11 @@
-package org.openvpms.pos.api;
+package org.openvpms.eftpos;
 
 import org.openvpms.component.business.domain.im.party.Party;
 
 import java.math.BigDecimal;
 
 /**
- * POS terminal.
+ * EFTPOS terminal.
  *
  * @author Tim Anderson
  */
@@ -25,7 +25,7 @@ public interface Terminal {
      * @param amount   the amount
      * @param cashout  the cash-out amount
      * @return the transaction corresponding to the payment
-     * @throws POSException for any POS error
+     * @throws EFTPOSException for any POS error
      */
     Transaction pay(Party customer, BigDecimal amount, BigDecimal cashout);
 
@@ -34,7 +34,7 @@ public interface Terminal {
      *
      * @param id the transaction identifier
      * @return the transaction
-     * @throws POSException for any POS error
+     * @throws EFTPOSException for any POS error
      */
     Transaction get(String id);
 

@@ -1,11 +1,11 @@
-package org.openvpms.pos.api;
+package org.openvpms.eftpos;
 
 import org.openvpms.component.business.domain.im.act.Act;
 
 import java.util.List;
 
 /**
- * POS transaction.
+ * EFTPOS transaction.
  *
  * @author Tim Anderson
  */
@@ -62,7 +62,7 @@ public interface Transaction {
     /**
      * Cancels the transaction.
      *
-     * @throws POSException if the transaction cannot be cancelled
+     * @throws EFTPOSException if the transaction cannot be cancelled
      */
     void cancel();
 

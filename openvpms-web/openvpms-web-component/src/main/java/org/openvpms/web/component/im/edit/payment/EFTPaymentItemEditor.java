@@ -24,10 +24,10 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.eftpos.EFTPOSService;
+import org.openvpms.eftpos.Terminal;
+import org.openvpms.eftpos.Transaction;
 import org.openvpms.plugin.manager.PluginManager;
-import org.openvpms.pos.api.POSService;
-import org.openvpms.pos.api.Terminal;
-import org.openvpms.pos.api.Transaction;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -169,8 +169,8 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
      */
     private Terminal getTerminal() {
         PluginManager manager = ServiceHelper.getBean(PluginManager.class);
-        List<POSService> services = manager.getServices(POSService.class);
-        for (POSService service : services) {
+        List<EFTPOSService> services = manager.getServices(EFTPOSService.class);
+        for (EFTPOSService service : services) {
             if (terminalConfig.getArchetypeId().getShortName().equals(service.getConfigurationType())) {
                 return service.getTerminal(terminalConfig);
             }

@@ -1,13 +1,13 @@
-package org.openvpms.pos.api;
+package org.openvpms.eftpos;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 
 /**
- * POS service.
+ * EFTPOS service.
  *
  * @author Tim Anderson
  */
-public interface POSService {
+public interface EFTPOSService {
 
     /**
      * Returns the terminal configuration archetype that this service supports.
@@ -21,7 +21,7 @@ public interface POSService {
      *
      * @param configuration the terminal configuration
      * @return the POS terminal
-     * @throws POSException for any error
+     * @throws EFTPOSException for any error
      */
     Terminal getTerminal(Entity configuration);
 
