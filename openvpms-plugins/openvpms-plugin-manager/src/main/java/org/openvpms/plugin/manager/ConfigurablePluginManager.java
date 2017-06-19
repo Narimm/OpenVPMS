@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.plugin.manager;
 
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -6,6 +22,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,7 +50,7 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
     /**
      * The plugin manager.
      */
-    private PluginManager manager;
+    private volatile PluginManager manager;
 
     /**
      * Constructs a {@link ConfigurablePluginManager}.
@@ -71,12 +88,24 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
     }
 
     /**
+     * Returns a list of all installed bundles.
+     *
+     * @return the installed bundles
+     */
+    @Override
+    public Bundle[] getBundles() {
+        PluginManager manager = this.manager;
+        return (manager != null) ? manager.getBundles() : new Bundle[0];
+    }
+
+    /**
      * Determines if the plugin manager is started.
      *
      * @return {@code true} if the plugin manager is started
      */
     @Override
-    public synchronized boolean isStarted() {
+    public boolean isStarted() {
+        PluginManager manager = this.manager;
         return manager != null && manager.isStarted();
     }
 
