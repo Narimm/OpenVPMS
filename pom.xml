@@ -782,6 +782,7 @@
         <xerces.version>2.11.0_1</xerces.version>
         <xmlapis.version>1.4.01</xmlapis.version>
         <xstream.version>1.3.1</xstream.version>
+        <webdav.launcher.version>1.9.2</webdav.launcher.version>
     </properties>
 
 </project>
