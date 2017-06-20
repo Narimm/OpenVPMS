@@ -295,9 +295,10 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
             Reminders reminders = iterator.next();
-            PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(),
-                                                       date, false);
-            processor.process(state);
+            PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), date, false);
+            if (!state.getReminders().isEmpty()) {
+                processor.process(state);
+            }
             int cancelled = state.getCancelled().size();
             int errors = state.getErrors().size();
             processor.complete(state);
