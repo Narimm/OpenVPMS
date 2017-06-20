@@ -276,7 +276,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the document template updates.
-     * <p/>
+     * <p>
      * If the template is different to the prior instance, and there is a document node, the template will be used
      * to generate a new document.
      */
@@ -293,7 +293,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Generates the document.
-     * <p/>
+     * <p>
      * If the act supports versioning, any existing saved document will be copied to new version act.
      */
     private void generateDoc() {
@@ -305,7 +305,8 @@ public class DocumentActEditor extends AbstractActEditor {
                 docEditor.setDocument(document);
             }
         };
-        final DocumentGenerator generator = new DocumentGenerator(act, context, help, listener);
+        DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+        DocumentGenerator generator = factory.create(act, context, help, listener);
         generator.generate();
     }
 

@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.customer.communication;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.practice.PracticeService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.mail.DefaultMailer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.Mailer;
@@ -46,19 +47,27 @@ public class LoggingMailerFactory implements MailerFactory {
     /**
      * The practice service.
      */
-    private final PracticeService service;
+    private final PracticeService practiceService;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * Constructs a {@link LoggingMailerFactory}.
      *
+     * @param handlers        the document handlers
      * @param logger          the communication logger
      * @param practiceService the practice service
+     * @param service         the archetype service
      */
     public LoggingMailerFactory(DocumentHandlers handlers, CommunicationLogger logger,
-                                PracticeService practiceService) {
+                                PracticeService practiceService, IArchetypeService service) {
         this.handlers = handlers;
         this.logger = logger;
-        this.service = practiceService;
+        this.practiceService = practiceService;
+        this.service = service;
     }
 
     /**
@@ -70,7 +79,7 @@ public class LoggingMailerFactory implements MailerFactory {
     @Override
     public Mailer create(MailContext context) {
         Mailer result;
-        if (CommunicationHelper.isLoggingEnabled(service)) {
+        if (CommunicationHelper.isLoggingEnabled(practiceService, service)) {
             result = createLoggingMailer(context, logger);
         } else {
             result = createMailer(context);
@@ -86,7 +95,7 @@ public class LoggingMailerFactory implements MailerFactory {
      * @return a new {@link LoggingMailer}
      */
     protected LoggingMailer createLoggingMailer(MailContext context, CommunicationLogger logger) {
-        // need to lazily access the mail service, as it is
+        // need to lazily access the mail service, as it is bound to the user session
         return new LoggingMailer(context, getMailService(), getDocumentHandlers(), logger);
     }
 

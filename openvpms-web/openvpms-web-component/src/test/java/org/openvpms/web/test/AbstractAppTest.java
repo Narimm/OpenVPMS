@@ -18,6 +18,7 @@ package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Window;
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.math.Currencies;
@@ -40,6 +41,8 @@ import org.openvpms.web.component.prefs.UserPreferences;
  */
 public abstract class AbstractAppTest extends ArchetypeServiceTest {
 
+    private PracticeService practiceService;
+
     /**
      * Sets up the test case.
      */
@@ -49,7 +52,7 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         LocationRules locationRules = new LocationRules(getArchetypeService());
         UserRules userRules = new UserRules(getArchetypeService());
         PreferenceService preferences = getPreferenceService();
-        PracticeService practiceService = new PracticeService(getArchetypeService(), rules, null);
+        practiceService = new PracticeService(getArchetypeService(), rules, null);
         UserPreferences userPreferences = new UserPreferences(preferences, practiceService);
         ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext(), rules, locationRules,
                                                                         userRules, userPreferences) {
@@ -87,6 +90,17 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         app.setApplicationContext(applicationContext);
         ApplicationInstance.setActive(app);
         app.doInit();
+    }
+
+    @After
+    public void tearDown() {
+        if (practiceService != null) {
+            practiceService.dispose();
+        }
+        ApplicationInstance instance = ApplicationInstance.getActive();
+        if (instance != null) {
+            instance.dispose();
+        }
     }
 
     /**

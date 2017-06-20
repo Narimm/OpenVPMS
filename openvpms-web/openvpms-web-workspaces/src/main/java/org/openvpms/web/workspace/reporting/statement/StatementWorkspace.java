@@ -29,9 +29,10 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -42,6 +43,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
 
@@ -306,8 +308,10 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      */
     private void onReport() {
         try {
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
-                    query.getObjects(), "CUSTOMER_BALANCE", getContext());
+            IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+            Context context = getContext();
+            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator("CUSTOMER_BALANCE", context);
+            IMPrinter<ObjectSet> printer = factory.createObjectSetReportPrinter(query.getObjects(), locator, context);
             String type;
             if (query.queryAllBalances()) {
                 type = Messages.get("reporting.statements.print.all");
@@ -318,7 +322,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             }
             String title = Messages.format("imobject.print.title", type);
             HelpContext help = getHelpContext().subtopic("report");
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(title, printer, getContext(), help);
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

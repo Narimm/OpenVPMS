@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.doc.DocumentGeneratorFactory;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -176,17 +177,17 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
             documentActions.externalEdit(act);
         } else {
             // the act has no document attached. Try and generate it first.
-            DocumentGenerator generator = new DocumentGenerator(
-                    act, getContext(), getHelpContext(),
-                    new DocumentGenerator.AbstractListener() {
-                        @Override
-                        public void generated(Document document) {
-                            onSaved(act, false);
-                            if (documentActions.canExternalEdit(act)) {
-                                documentActions.externalEdit(act);
-                            }
-                        }
-                    });
+            DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+            DocumentGenerator generator = factory.create(act, getContext(), getHelpContext(),
+                                                         new DocumentGenerator.AbstractListener() {
+                                                             @Override
+                                                             public void generated(Document document) {
+                                                                 onSaved(act, false);
+                                                                 if (documentActions.canExternalEdit(act)) {
+                                                                     documentActions.externalEdit(act);
+                                                                 }
+                                                             }
+                                                         });
             generator.generate(true, false);
         }
     }

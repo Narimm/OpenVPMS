@@ -785,7 +785,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     protected IMPrinter<T> createPrinter(T object) {
         ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-        IMPrinter<T> printer = IMPrinterFactory.create(object, locator, context);
+        IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+        IMPrinter<T> printer = factory.create(object, locator, context);
         HelpContext help = createPrintTopic(object);
         InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<>(printer, context, help);
         interactive.setMailContext(getMailContext());
@@ -802,8 +803,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
         } else {
             try {
-                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, getContext());
-                IMPrinter<T> printer = IMPrinterFactory.create(object, locator, getContext());
+                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+                IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+                IMPrinter<T> printer = factory.create(object, locator, context);
                 Document document = printer.getDocument(DocFormats.PDF_TYPE, false);
                 DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {

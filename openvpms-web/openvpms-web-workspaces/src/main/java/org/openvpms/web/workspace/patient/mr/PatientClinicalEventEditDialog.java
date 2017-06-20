@@ -27,7 +27,9 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,8 +90,9 @@ public class PatientClinicalEventEditDialog extends EditDialog {
                 Iterable<Act> acts = new ActHierarchyIterator<Act>(objects);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                                      context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
-                IMPrinter<Act> interactive = new InteractiveIMPrinter<Act>(printer, context, getHelpContext());
+                ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context, factory);
+                IMPrinter<Act> interactive = new InteractiveIMPrinter<>(printer, context, getHelpContext());
                 interactive.print();
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

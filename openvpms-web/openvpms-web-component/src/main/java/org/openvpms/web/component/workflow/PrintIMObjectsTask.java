@@ -22,7 +22,9 @@ import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collection;
 
@@ -69,8 +71,9 @@ public class PrintIMObjectsTask<T extends IMObject> extends AbstractTask {
         boolean skip = !isRequired();
         if (!objects.isEmpty()) {
             try {
+                ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(shortName, context);
-                IMObjectReportPrinter<T> printer = new IMObjectReportPrinter<T>(objects, locator, context);
+                IMObjectReportPrinter<T> printer = new IMObjectReportPrinter<T>(objects, locator, context, factory);
                 InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, skip, context,
                                                                                context.getHelpContext());
 

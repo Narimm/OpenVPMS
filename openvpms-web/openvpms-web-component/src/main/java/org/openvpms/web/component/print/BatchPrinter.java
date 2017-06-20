@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Iterator;
 import java.util.List;
@@ -165,7 +166,8 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
                     locator = createDocumentTemplateLocator(object, context);
                 }
 
-                IMPrinter<T> printer = IMPrinterFactory.create(object, locator, context);
+                IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+                IMPrinter<T> printer = factory.create(object, locator, context);
                 InteractiveIMPrinter<T> iPrinter = createInteractivePrinter(printer);
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
