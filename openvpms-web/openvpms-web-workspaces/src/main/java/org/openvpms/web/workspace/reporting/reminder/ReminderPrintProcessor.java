@@ -28,10 +28,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
 import org.openvpms.web.component.print.PrinterListener;
@@ -49,6 +48,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class ReminderPrintProcessor extends GroupedReminderProcessor {
+
+    /**
+     * The printer factory.
+     */
+    private final IMPrinterFactory factory;
 
     /**
      * Determines if a print dialog is being displayed.
@@ -84,12 +88,14 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
+     * @param factory       the printer factory
      * @param logger        the communication logger. May be {@code null}
      */
     public ReminderPrintProcessor(HelpContext help, ReminderTypes reminderTypes, ReminderRules rules,
                                   Party practice, IArchetypeService service, ReminderConfiguration config,
-                                  CommunicationLogger logger) {
+                                  IMPrinterFactory factory, CommunicationLogger logger) {
         super(reminderTypes, rules, practice, service, config, logger);
+        this.factory = factory;
         this.help = help;
     }
 
@@ -105,7 +111,7 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
 
     /**
      * Registers a listener for printer events.
-     * <p/>
+     * <p>
      * This must be registered prior to processing any reminders.
      *
      * @param listener the listener
@@ -147,11 +153,11 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
         Context context = reminders.createContext(getPractice());
         if (events.size() > 1) {
             List<ObjectSet> sets = reminders.getObjectSets(events);
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator, context);
+            IMPrinter<ObjectSet> printer = factory.createObjectSetReportPrinter(sets, locator, context);
             print(printer, context);
         } else {
             Act reminder = events.get(0).getReminder();
-            IMPrinter<Act> printer = new IMObjectReportPrinter<>(reminder, locator, context);
+            IMPrinter<Act> printer = factory.createIMObjectReportPrinter(reminder, locator, context);
             print(printer, context);
         }
     }
@@ -230,7 +236,7 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
 
     /**
      * Performs a print.
-     * <p/>
+     * <p>
      * If a printer is configured, the print will occur in the background, otherwise a print dialog will be popped up.
      *
      * @param printer the printer

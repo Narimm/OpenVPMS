@@ -49,6 +49,11 @@
         <property name="password" value="${hibernate.reportingconnection.password}"/>
     </bean>
 
+    <bean id="documentConverter" class="org.openvpms.report.openoffice.Converter">
+        <constructor-arg ref="openOfficeConnectionPool"/>
+        <constructor-arg ref="documentHandlers"/>
+    </bean>
+
     <!-- ====================================================================================================== -->
     <!-- OpenOffice Services                                                                                    -->
     <!-- ====================================================================================================== -->

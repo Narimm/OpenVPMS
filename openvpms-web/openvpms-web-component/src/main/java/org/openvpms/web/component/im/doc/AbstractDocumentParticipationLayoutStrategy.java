@@ -27,6 +27,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Layout strategy for <em>participation.document</em> and <em>participation.logo</em> participation relationships.
@@ -79,8 +80,9 @@ public abstract class AbstractDocumentParticipationLayoutStrategy implements IMO
         final DocumentAct act = (DocumentAct) context.getCache().get(ref);
         Component component;
         if (act != null && act.getDocument() != null) {
+            FileNameFormatter formatter = ServiceHelper.getBean(FileNameFormatter.class);
             DocumentActDownloader downloader = new DocumentActDownloader(act, false, showDescription,
-                                                                         context.getContext());
+                                                                         context.getContext(), formatter);
 
             // wrap in a row to left justify
             component = RowFactory.create(downloader.getComponent());

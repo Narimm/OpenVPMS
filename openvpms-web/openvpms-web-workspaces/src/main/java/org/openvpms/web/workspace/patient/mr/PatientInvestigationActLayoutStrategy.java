@@ -39,6 +39,7 @@ import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.Property;
@@ -51,6 +52,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -218,7 +220,8 @@ public class PatientInvestigationActLayoutStrategy extends PatientDocumentActLay
     private void onPrint(IMObject object, Context context, HelpContext help) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-            IMObjectReportPrinter<IMObject> printer = new IMObjectReportPrinter<>(object, locator, context);
+            ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+            IMObjectReportPrinter<IMObject> printer = new IMObjectReportPrinter<>(object, locator, context, factory);
             InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {

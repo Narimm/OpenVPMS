@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
@@ -84,12 +85,13 @@ public class SQLReportPrinter extends AbstractPrinter {
      *
      * @param template the template
      * @param context  the context
+     * @param service  the archetype service
      * @throws SQLReportException        for any report error
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document template can't be found
      */
-    public SQLReportPrinter(DocumentTemplate template, Context context) {
-        this(template, template.getDocument(), context);
+    public SQLReportPrinter(DocumentTemplate template, Context context, IArchetypeService service) {
+        this(template, template.getDocument(), context, service);
     }
 
     /**
@@ -98,11 +100,14 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @param template the template
      * @param document the document
      * @param context  the context
+     * @param service  the archetype service
      * @throws SQLReportException        for any report error
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document template can't be found
      */
-    protected SQLReportPrinter(DocumentTemplate template, Document document, Context context) {
+    protected SQLReportPrinter(DocumentTemplate template, Document document, Context context,
+                               IArchetypeService service) {
+        super(service);
         if (document == null) {
             throw new DocumentException(TemplateHasNoDocument, template.getName());
         }
@@ -171,7 +176,7 @@ public class SQLReportPrinter extends AbstractPrinter {
      * Returns the default printer for the object.
      *
      * @return the default printer for the object, or {@code null} if none
-     *         is defined
+     * is defined
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
@@ -204,7 +209,8 @@ public class SQLReportPrinter extends AbstractPrinter {
             connection = getConnection();
             params.put(connectionName, connection);
             Document document = report.generate(params, ReportContextFactory.create(context), mimeType);
-            String fileName = new FileNameFormatter().format(template.getName(), null, template);
+            FileNameFormatter formatter = ServiceHelper.getBean(FileNameFormatter.class);
+            String fileName = formatter.format(template.getName(), null, template);
             String extension = FilenameUtils.getExtension(document.getName());
             document.setName(fileName + "." + extension);
             return document;

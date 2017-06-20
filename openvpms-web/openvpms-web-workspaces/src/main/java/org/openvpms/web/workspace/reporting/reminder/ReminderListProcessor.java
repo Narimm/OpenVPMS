@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
@@ -46,7 +47,7 @@ import java.util.List;
 
 /**
  * Processor for <em>act.patientReminderItemList</em> reminders.
- * <p/>
+ * <p>
  * Prints all of the reminders to a report.
  *
  * @author Tim Anderson
@@ -64,6 +65,11 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     private final HelpContext help;
 
     /**
+     * The printer factory.
+     */
+    private final IMPrinterFactory factory;
+
+    /**
      * The printer listener.
      */
     private PrinterListener listener;
@@ -78,15 +84,17 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
+     * @param factory       the printer factory
      * @param logger        the communication logger. May be {@code null}
      * @param help          the help context
      */
     public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party location, Party practice,
-                                 IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger,
-                                 HelpContext help) {
+                                 IArchetypeService service, ReminderConfiguration config, IMPrinterFactory factory,
+                                 CommunicationLogger logger, HelpContext help) {
         super(reminderTypes, rules, practice, service, config, logger);
         this.location = location;
         this.help = help;
+        this.factory = factory;
     }
 
     /**
@@ -101,7 +109,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
 
     /**
      * Registers a listener for printer events.
-     * <p/>
+     * <p>
      * This must be registered prior to processing any reminders.
      *
      * @param listener the listener
@@ -125,7 +133,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
         context.setLocation(location);
         context.setPractice(getPractice());
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER, context);
-        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
+        IMObjectReportPrinter<Act> printer = factory.createIMObjectReportPrinter(acts, locator, context);
         InteractivePrinter iPrinter = createPrinter(printer, context);
         iPrinter.setListener(listener);
         iPrinter.print();
@@ -143,7 +151,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
 
     /**
      * Prepares reminders for processing.
-     * <p/>
+     * <p>
      * This:
      * <ul>
      * <li>filters out any reminders that can't be processed due to missing data</li>

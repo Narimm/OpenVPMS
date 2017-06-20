@@ -19,7 +19,11 @@ package org.openvpms.web.component.print;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.PrintProperties;
@@ -36,6 +40,11 @@ import org.openvpms.web.echo.servlet.DownloadServlet;
 public abstract class AbstractPrinter implements Printer {
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * Determines if printing should be interactive.
      */
     private boolean interactive = true;
@@ -47,9 +56,12 @@ public abstract class AbstractPrinter implements Printer {
 
 
     /**
-     * Constructs an {@code AbstractPrinter}.
+     * Constructs an {@link AbstractPrinter}.
+     *
+     * @param service the archetype service
      */
-    public AbstractPrinter() {
+    public AbstractPrinter(IArchetypeService service) {
+        this.service = service;
     }
 
     /**
@@ -65,7 +77,7 @@ public abstract class AbstractPrinter implements Printer {
      * Determines if printing should occur interactively.
      *
      * @return {@code true} if printing should occur interactively,
-     *         {@code false} if it can be performed non-interactively
+     * {@code false} if it can be performed non-interactively
      */
     public boolean getInteractive() {
         return interactive;
@@ -159,8 +171,37 @@ public abstract class AbstractPrinter implements Printer {
      * @return the default printer
      */
     protected String getDefaultPrinter(DocumentTemplate template, Context context) {
-        return PrintHelper.getDefaultPrinter(template, context);
+        String result;
+        DocumentTemplatePrinter printer = getDocumentTemplatePrinter(template, context);
+        if (printer != null) {
+            result = printer.getPrinterName();
+        } else {
+            result = getDefaultLocationPrinter(context.getLocation());
+        }
+        return result;
     }
+
+    /**
+     * Helper to return the default printer for a location.
+     * If no default printer set than returns system default printer.
+     *
+     * @param location the location. May be {@code null}
+     * @return the printer name. May be {@code null} if none is defined
+     */
+    protected String getDefaultLocationPrinter(Party location) {
+        String result = null;
+        if (location != null) {
+            IMObjectBean bean = new IMObjectBean(location, service);
+            if (bean.hasNode("defaultPrinter")) {
+                result = bean.getString("defaultPrinter");
+            }
+        }
+        if (result == null) {
+            result = PrintHelper.getDefaultPrinter();
+        }
+        return result;
+    }
+
 
     /**
      * Helper to return the document template printer relationship for a template and printer and current
@@ -173,7 +214,7 @@ public abstract class AbstractPrinter implements Printer {
      */
     protected DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, String printer,
                                                                  Context context) {
-        DocumentTemplatePrinter relationship = PrintHelper.getDocumentTemplatePrinter(template, context);
+        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, context);
         if (relationship != null) {
             // make sure the relationship is for the same printer
             if (ObjectUtils.equals(printer, relationship.getPrinterName())) {
@@ -181,6 +222,29 @@ public abstract class AbstractPrinter implements Printer {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the <em>entityRelationship.documentTemplatePrinter</em>
+     * associated with an <em>entity.documentTemplate</em> for the context practice or location.
+     * <p>
+     * The location relationship will be returned if present, otherwise the practice relationship will be returned.
+     *
+     * @param template the document template
+     * @param context  the context
+     * @return the corresponding document template printer relationship, or {@code null} if none is found
+     */
+    protected DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, Context context) {
+        DocumentTemplatePrinter printer = null;
+        Party location = context.getLocation();
+        Party practice = context.getPractice();
+        if (location != null) {
+            printer = template.getPrinter(location);
+        }
+        if (printer == null && practice != null) {
+            printer = template.getPrinter(practice);
+        }
+        return printer;
     }
 
     /**
@@ -198,5 +262,23 @@ public abstract class AbstractPrinter implements Printer {
         return relationship == null || relationship.getInteractive();
     }
 
+    /**
+     * Returns a document given its reference.
+     *
+     * @param reference the reference. May be {@code null}
+     * @return the corresponding document, or {@code null} if none is found
+     */
+    protected Document getDocument(IMObjectReference reference) {
+        return reference != null ? (Document) service.get(reference) : null;
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
 
 }

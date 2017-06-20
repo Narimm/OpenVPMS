@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,7 +62,8 @@ public class SQLReportPrinterTestCase extends AbstractAppTest {
         Document document = DocumentTestHelper.createDocument("/sqlreport.jrxml");
         DocumentTemplate template = new DocumentTemplate((Entity) create("entity.documentTemplate"),
                                                          getArchetypeService());
-        SQLReportPrinter printer = new SQLReportPrinter(template, document, context);
+        SQLReportPrinter printer = new SQLReportPrinter(template, document, context,
+                                                        ServiceHelper.getArchetypeService());
 
         // pass the customer id as a parameter
         Party customer = TestHelper.createCustomer("Foo", "Bar", true);

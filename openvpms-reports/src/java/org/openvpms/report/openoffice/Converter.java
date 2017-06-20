@@ -30,9 +30,9 @@ import org.openvpms.report.DocFormats;
 public class Converter {
 
     /**
-     * The the connection to the OpenOffice service.
+     * The OpenOffice connection pool.
      */
-    private final OOConnection connection;
+    private final OOConnectionPool pool;
 
     /**
      * The document handlers
@@ -61,12 +61,11 @@ public class Converter {
     /**
      * Constructs a {@link Converter}.
      *
-     * @param connection the connection to the OpenOffice service
-     * @param handlers   the document handlers
+     * @param pool     the OpenOffice connection pool
+     * @param handlers the document handlers
      */
-    public Converter(OOConnection connection,
-                     DocumentHandlers handlers) {
-        this.connection = connection;
+    public Converter(OOConnectionPool pool, DocumentHandlers handlers) {
+        this.pool = pool;
         this.handlers = handlers;
     }
 
@@ -77,7 +76,7 @@ public class Converter {
      * @param mimeType the target mime type
      * @return {@code true} if the document can be converted, otherwise {@code false}
      */
-    public static boolean canConvert(Document document, String mimeType) {
+    public boolean canConvert(Document document, String mimeType) {
         return canConvert(document.getName(), document.getMimeType(), mimeType);
     }
 
@@ -89,8 +88,7 @@ public class Converter {
      * @param targetMimeType the target mime type
      * @return {@code true} if the document can be converted, otherwise {@code false}
      */
-    public static boolean canConvert(String fileName, String sourceMimeType,
-                                     String targetMimeType) {
+    public boolean canConvert(String fileName, String sourceMimeType, String targetMimeType) {
         for (String[] map : MIME_MAP) {
             if (map[0].equals(sourceMimeType)
                 && map[1].equals(targetMimeType)) {
@@ -118,12 +116,14 @@ public class Converter {
      * @throws OpenOfficeException if the document cannot be converted
      */
     public Document convert(Document document, String mimeType) {
-        OpenOfficeDocument doc = createDocument(document);
-        try {
-            String name = FilenameUtils.getBaseName(document.getName());
-            return doc.export(mimeType, name);
-        } finally {
-            doc.close();
+        try (OOConnection connection = pool.getConnection()) {
+            OpenOfficeDocument doc = createDocument(document, connection);
+            try {
+                String name = FilenameUtils.getBaseName(document.getName());
+                return doc.export(mimeType, name);
+            } finally {
+                doc.close();
+            }
         }
     }
 
@@ -135,21 +135,24 @@ public class Converter {
      * @throws OpenOfficeException if the document cannot be exported
      */
     public byte[] export(Document document, String mimeType) {
-        OpenOfficeDocument doc = createDocument(document);
-        try {
-            return doc.export(mimeType);
-        } finally {
-            doc.close();
+        try (OOConnection connection = pool.getConnection()) {
+            OpenOfficeDocument doc = createDocument(document, connection);
+            try {
+                return doc.export(mimeType);
+            } finally {
+                doc.close();
+            }
         }
     }
 
     /**
      * Creates an OpenOffice document.
      *
-     * @param document the document
+     * @param document   the document
+     * @param connection the connection
      * @return a new OpenOffice document
      */
-    protected OpenOfficeDocument createDocument(Document document) {
+    protected OpenOfficeDocument createDocument(Document document, OOConnection connection) {
         OpenOfficeDocument doc = new OpenOfficeDocument(document, connection, handlers);
         doc.refresh();
         // workaround to avoid corruption of generated doc

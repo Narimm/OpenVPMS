@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -41,6 +42,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.FinancialActCRUDWindow;
 
 import static org.openvpms.archetype.rules.finance.deposit.DepositArchetypes.BANK_DEPOSIT;
@@ -146,7 +148,8 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
             try {
                 IPage<ObjectSet> set = new DepositQuery(object).query();
                 Context context = getContext();
-                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context);
+                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context,
+                                                                          ServiceHelper.getBean(ReporterFactory.class));
                 String title = Messages.format("imobject.print.title", getArchetypes().getDisplayName());
                 InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(
                         title, printer, context, getHelpContext().subtopic("print"));
@@ -168,7 +171,8 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
             try {
                 IPage<ObjectSet> set = new DepositQuery(object).query();
                 Context context = getContext();
-                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context);
+                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context,
+                                                                          ServiceHelper.getBean(ReporterFactory.class));
                 Document document = printer.getDocument();
                 DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {

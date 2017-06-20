@@ -75,6 +75,11 @@ public class DocumentActDownloader extends Downloader {
     private DocumentTemplate template;
 
     /**
+     * The file name formatter.
+     */
+    private final FileNameFormatter formatter;
+
+    /**
      * PDF button style name.
      */
     private static final String PDF_STYLE_NAME = "download.pdf";
@@ -83,11 +88,12 @@ public class DocumentActDownloader extends Downloader {
     /**
      * Constructs a {@link DocumentActDownloader}.
      *
-     * @param act     the act
-     * @param context the context
+     * @param act       the act
+     * @param context   the context
+     * @param formatter the file name formatter
      */
-    public DocumentActDownloader(DocumentAct act, Context context) {
-        this(act, false, context);
+    public DocumentActDownloader(DocumentAct act, Context context, FileNameFormatter formatter) {
+        this(act, false, context, formatter);
     }
 
     /**
@@ -96,9 +102,10 @@ public class DocumentActDownloader extends Downloader {
      * @param act        the act
      * @param asTemplate determines if the document should be downloaded as a template
      * @param context    the context
+     * @param formatter  the file name formatter
      */
-    public DocumentActDownloader(DocumentAct act, boolean asTemplate, Context context) {
-        this(act, asTemplate, false, context);
+    public DocumentActDownloader(DocumentAct act, boolean asTemplate, Context context, FileNameFormatter formatter) {
+        this(act, asTemplate, false, context, formatter);
     }
 
     /**
@@ -108,12 +115,15 @@ public class DocumentActDownloader extends Downloader {
      * @param asTemplate      determines if the document should be downloaded as a template
      * @param showDescription determines if the description should be displayed. If not, just the name is displayed
      * @param context         the context
+     * @param formatter       the file name formatter
      */
-    public DocumentActDownloader(DocumentAct act, boolean asTemplate, boolean showDescription, Context context) {
+    public DocumentActDownloader(DocumentAct act, boolean asTemplate, boolean showDescription, Context context,
+                                 FileNameFormatter formatter) {
         this.act = act;
         this.context = context;
         this.asTemplate = asTemplate;
         this.showDescription = showDescription;
+        this.formatter = formatter;
     }
 
     /**
@@ -168,7 +178,8 @@ public class DocumentActDownloader extends Downloader {
             }
         }
 
-        if (!generated && Converter.canConvert(name, act.getMimeType(), DocFormats.PDF_TYPE)) {
+        Converter converter = ServiceHelper.getBean(Converter.class);
+        if (!generated && converter.canConvert(name, act.getMimeType(), DocFormats.PDF_TYPE)) {
             Button asPDF = ButtonFactory.create(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     selected(DocFormats.PDF_TYPE);
@@ -201,7 +212,9 @@ public class DocumentActDownloader extends Downloader {
             } else {
                 DocumentTemplate template = getTemplate();
                 if (template != null) {
-                    DocumentActReporter reporter = new DocumentActReporter(act, template);
+                    DocumentActReporter reporter = new DocumentActReporter(act, template, formatter,
+                                                                           ServiceHelper.getArchetypeService(),
+                                                                           ServiceHelper.getLookupService());
                     reporter.setFields(ReportContextFactory.create(context));
                     if (mimeType == null) {
                         document = reporter.getDocument();
@@ -218,7 +231,8 @@ public class DocumentActDownloader extends Downloader {
                     throw new DocumentException(DocumentException.ErrorCode.TemplateHasNoDocument, template.getName());
                 }
                 if (mimeType != null && !mimeType.equals(document.getMimeType())) {
-                    document = DocumentHelper.convert(document, mimeType);
+                    Converter converter = ServiceHelper.getBean(Converter.class);
+                    document = converter.convert(document, mimeType);
                 }
             }
         }

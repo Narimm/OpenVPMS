@@ -19,6 +19,7 @@ package org.openvpms.web.component.mail;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.doc.DefaultDocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.test.TestHelper;
@@ -31,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.report.jasper.JRXMLDocumentHandler;
+import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
@@ -56,8 +58,9 @@ public class EmailTemplateEvaluatorTestCase extends AbstractAppTest {
     @Before
     public void setUp() {
         super.setUp();
+        Converter converter = Mockito.mock(Converter.class);
         evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(), ServiceHelper.getMacros(),
-                                               ServiceHelper.getBean(ReportFactory.class));
+                                               ServiceHelper.getBean(ReportFactory.class), converter);
     }
 
     /**

@@ -157,4 +157,12 @@ public class SMSService {
         }
     }
 
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
 }
