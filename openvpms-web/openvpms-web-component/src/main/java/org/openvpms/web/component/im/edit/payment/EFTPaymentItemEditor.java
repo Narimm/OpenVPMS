@@ -11,19 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.payment;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.eftpos.EFTPOSService;
 import org.openvpms.eftpos.Terminal;
 import org.openvpms.eftpos.Transaction;
@@ -31,6 +32,8 @@ import org.openvpms.plugin.manager.PluginManager;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.ValidationHelper;
@@ -39,12 +42,15 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -56,14 +62,19 @@ import java.util.List;
 public class EFTPaymentItemEditor extends PaymentItemEditor {
 
     /**
-     * The POS terminal configuration.
+     * The POS terminal configurations.
      */
-    private final Entity terminalConfig;
+    private final List<Entity> terminalConfigs;
 
     /**
      * The customer.
      */
     private final Party customer;
+
+    /**
+     * EFTPOS terminal selector.
+     */
+    private SelectField terminalSelector;
 
     /**
      * Constructs {@link PaymentItemEditor}.
@@ -75,7 +86,8 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
     public EFTPaymentItemEditor(FinancialAct act, FinancialAct parent, LayoutContext context) {
         super(act, parent, context);
         Entity till = context.getContext().getTill();
-        terminalConfig = (till != null) ? (Entity) new IMObjectBean(till).getNodeTargetObject("terminal") : null;
+        terminalConfigs = (till != null) ? new EntityBean(till).getNodeTargetEntities("terminals")
+                                         : Collections.<Entity>emptyList();
         customer = context.getContext().getCustomer();
     }
 
@@ -119,7 +131,13 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
                                           Component container, LayoutContext context) {
                 Row row = RowFactory.create(Styles.CELL_SPACING);
                 super.doSimpleLayout(object, parent, properties, row, context);
-                if (terminalConfig != null) {
+                if (!terminalConfigs.isEmpty()) {
+                    IMObjectListModel model = new IMObjectListModel(terminalConfigs, false, false);
+                    terminalSelector = SelectFieldFactory.create(model);
+                    terminalSelector.setCellRenderer(IMObjectListCellRenderer.NAME);
+                    terminalSelector.setSelectedIndex(0);
+                    row.add(LabelFactory.create("customer.payment.eft.terminal"));
+                    row.add(terminalSelector);
                     row.add(ButtonFactory.create("button.pay", new ActionListener() {
                         @Override
                         public void onAction(ActionEvent event) {
@@ -139,20 +157,24 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
         Validator validator = new DefaultValidator();
         if (validate(validator)) {
             try {
-                Terminal terminal = getTerminal();
-                if (terminal == null) {
-                    ErrorDialog.show(Messages.get("customer.payment.eft.title"),
-                                     Messages.get("customer.payment.eft.noterminal"));
-                } else if (!terminal.isAvailable()) {
-                    ErrorDialog.show(Messages.get("customer.payment.eft.title"),
-                                     Messages.format("customer.payment.eft.terminalunavailable",
-                                                     terminalConfig.getName()));
-                } else {
-                    BigDecimal amount = getAmount();
-                    BigDecimal cashout = getCashout();
-                    Transaction transaction = terminal.pay(customer, amount, cashout);
-                    EFTPaymentDialog dialog = new EFTPaymentDialog(terminal, transaction);
-                    dialog.show();
+                Entity config = (Entity) terminalSelector.getSelectedItem();
+                if (config != null) {
+                    Terminal terminal = getTerminal(config);
+                    if (terminal == null) {
+                        ErrorDialog.show(Messages.get("customer.payment.eft.title"),
+                                         Messages.get("customer.payment.eft.noterminal"));
+                    } else if (!terminal.isAvailable()) {
+                        ErrorDialog.show(Messages.get("customer.payment.eft.title"),
+                                         Messages.format("customer.payment.eft.terminalunavailable",
+                                                         config.getName()));
+                    } else {
+                        BigDecimal amount = getAmount();
+                        BigDecimal cashout = getCashout();
+                        Transaction transaction = terminal.pay(customer, amount, cashout);
+                        EFTPaymentDialog dialog = new EFTPaymentDialog(terminal, transaction);
+                        dialog.show();
+
+                    }
                 }
             } catch (Exception exception) {
                 ErrorHelper.show(Messages.get("customer.payment.eft.title"), exception);
@@ -167,12 +189,14 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
      *
      * @return the POS terminal, or {@code null} if none can be found
      */
-    private Terminal getTerminal() {
-        PluginManager manager = ServiceHelper.getBean(PluginManager.class);
-        List<EFTPOSService> services = manager.getServices(EFTPOSService.class);
-        for (EFTPOSService service : services) {
-            if (terminalConfig.getArchetypeId().getShortName().equals(service.getConfigurationType())) {
-                return service.getTerminal(terminalConfig);
+    private Terminal getTerminal(Entity config) {
+        if (config != null) {
+            PluginManager manager = ServiceHelper.getBean(PluginManager.class);
+            List<EFTPOSService> services = manager.getServices(EFTPOSService.class);
+            for (EFTPOSService service : services) {
+                if (config.getArchetypeId().getShortName().equals(service.getConfigurationType())) {
+                    return service.getTerminal(config);
+                }
             }
         }
         return null;
