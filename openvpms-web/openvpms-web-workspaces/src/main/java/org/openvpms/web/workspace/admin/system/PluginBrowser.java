@@ -97,6 +97,12 @@ public class PluginBrowser extends AbstractTabComponent {
                                          ColumnFactory.create(Styles.WIDE_CELL_SPACING, status,
                                                               plugins.getComponent()));
         manager = ServiceHelper.getBean(PluginManager.class);
+        getButtonSet().add("button.install", new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+
+            }
+        });
         getButtonSet().add("button.configure", new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
