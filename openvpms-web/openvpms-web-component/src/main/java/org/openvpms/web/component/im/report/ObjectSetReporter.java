@@ -20,11 +20,13 @@ import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
 
 
 /**
@@ -35,23 +37,40 @@ import org.openvpms.web.system.ServiceHelper;
 public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
 
     /**
+     * The report factory.
+     */
+    private final ReportFactory factory;
+
+    /**
      * Constructs an {@link ObjectSetReporter} for a collection of objects.
      *
-     * @param objects  the objects to print
-     * @param template the document template to use
+     * @param objects   the objects to print
+     * @param template  the document template to use
+     * @param factory   the report factory
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public ObjectSetReporter(Iterable<ObjectSet> objects, DocumentTemplate template) {
-        super(objects, template);
+    public ObjectSetReporter(Iterable<ObjectSet> objects, DocumentTemplate template, ReportFactory factory,
+                             FileNameFormatter formatter, IArchetypeService service, ILookupService lookups) {
+        super(objects, template, formatter, service, lookups);
+        this.factory = factory;
     }
 
     /**
      * Constructs an {@link ObjectSetReporter} for a collection of objects.
      *
-     * @param objects the objects to print
-     * @param locator the document template locator
+     * @param objects   the objects to print
+     * @param locator   the document template locator
+     * @param factory   the report factory
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public ObjectSetReporter(Iterable<ObjectSet> objects, DocumentTemplateLocator locator) {
-        super(objects, locator);
+    public ObjectSetReporter(Iterable<ObjectSet> objects, DocumentTemplateLocator locator, ReportFactory factory,
+                             FileNameFormatter formatter, IArchetypeService service, ILookupService lookups) {
+        super(objects, locator, formatter, service, lookups);
+        this.factory = factory;
     }
 
     /**
@@ -64,7 +83,6 @@ public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
      */
     public IMReport<ObjectSet> getReport() {
         Document document = getTemplateDocument();
-        ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
         return factory.createObjectSetReport(document);
     }
 

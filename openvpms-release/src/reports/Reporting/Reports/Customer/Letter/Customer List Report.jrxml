@@ -89,8 +89,8 @@ where
 		<groupExpression><![CDATA[$F{accountType}]]></groupExpression>
 		<groupHeader>
 			<band height="18">
-				<textField>
-					<reportElement x="0" y="0" width="319" height="16" uuid="2fce9345-fff8-4df8-adc3-55a5471a65c6">
+				<textField isStretchWithOverflow="true">
+					<reportElement x="0" y="0" width="365" height="16" uuid="2fce9345-fff8-4df8-adc3-55a5471a65c6">
 						<property name="local_mesure_unitheight" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
@@ -101,7 +101,7 @@ where
 					<textFieldExpression><![CDATA[$F{location}+" / "+$F{accountType}+(($V{acType1}==null)?"":" (cont)")]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement key="staticText-12" x="329" y="0" width="52" height="16" uuid="3f203b8b-7a0b-40a8-a2ea-a015c684a4ce">
+					<reportElement key="staticText-12" x="370" y="0" width="52" height="16" uuid="3f203b8b-7a0b-40a8-a2ea-a015c684a4ce">
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -117,7 +117,8 @@ where
 					<text><![CDATA[Counts:]]></text>
 				</staticText>
 				<textField evaluationTime="Group" evaluationGroup="Location">
-					<reportElement x="389" y="0" width="43" height="16" uuid="0c90b156-c2df-4aab-be95-3856fe00f27f">
+					<reportElement x="425" y="0" width="51" height="16" uuid="0c90b156-c2df-4aab-be95-3856fe00f27f">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -127,7 +128,8 @@ where
 					<textFieldExpression><![CDATA[$V{Location_COUNT}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="acType">
-					<reportElement x="439" y="0" width="103" height="16" uuid="d8e3650c-837d-40bc-a529-2ec6b74b6524">
+					<reportElement x="483" y="0" width="52" height="16" uuid="d8e3650c-837d-40bc-a529-2ec6b74b6524">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -137,7 +139,7 @@ where
 					<textFieldExpression><![CDATA[$V{acType_COUNT}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement key="staticText-12" x="432" y="0" width="7" height="16" uuid="36c17248-bffa-4239-badc-323c684d0d38">
+					<reportElement key="staticText-12" x="476" y="0" width="7" height="16" uuid="36c17248-bffa-4239-badc-323c684d0d38">
 						<property name="local_mesure_unitwidth" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>

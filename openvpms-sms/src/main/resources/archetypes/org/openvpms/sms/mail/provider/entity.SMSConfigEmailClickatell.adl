@@ -40,5 +40,7 @@
         <node name="textExpression" path="/details/textExpression" type="java.lang.String" minCardinality="1"
               hidden="true" maxLength="5000"
               defaultValue="'concat(&quot;user:&quot;, $user, $nl, &quot;password:&quot;, $password, $nl, &quot;api_id:&quot;, $apiId, $nl, &quot;to:&quot;, $phone, $nl, &quot;reply:&quot;, $replyTo, expr:if(boolean($senderId), concat($nl, &quot;from:&quot;, $senderId), &quot;&quot;), expr:if($twoWaySMS, concat($nl, &quot;mo: 1&quot;), &quot;&quot;), $nl, &quot;text:&quot;, replace($message, $nl, concat($nl, &quot;text:&quot;)))'"/>
+        <node name="parts" displayName="Maximum Parts" path="/details/parts" type="java.lang.Integer"
+              minCardinality="0" defaultValue="1"/>
     </archetype>
 </archetypes>

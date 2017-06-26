@@ -468,6 +468,16 @@
         <property name="password" value="${jdbc.password}"/>
     </bean>
 
+    <bean id="fileNameFormatter" class="org.openvpms.web.component.im.doc.FileNameFormatter">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="patientRules"/>
+    </bean>
+
+    <bean id="converter" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.report.openoffice.Converter"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                        MACROS                                      -->
     <!-- ================================================================== -->
@@ -485,6 +495,23 @@
     <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
     <bean class="org.openvpms.web.workspace.patient.summary.DefaultCustomerPatientSummaryFactory"/>
+    <bean class="org.openvpms.web.component.im.doc.DocumentGeneratorFactory">
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="reporterFactory" class="org.openvpms.web.component.im.report.ReporterFactory">
+        <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="converter"/>
+    </bean>
+
+    <bean class="org.openvpms.web.component.im.print.IMPrinterFactory">
+        <constructor-arg ref="reporterFactory"/>
+    </bean>
 
     <!-- =========================================================================================================== -->
     <!-- Medical Record Locking                                                                                      -->

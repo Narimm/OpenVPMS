@@ -20,38 +20,47 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 
 /**
  * A factory for {@link IMPrinter} instances. The factory is configured to return
  * specific {@link IMPrinter} implementations based on the supplied criteria, with
  * {@link IMObjectReportPrinter} returned if no implementation matches.
- * <p/>
+ * <p>
  * The factory is configured using a <em>IMObjectPrinterFactory.properties</em> file,
  * located in the class path. The file contains pairs of archetype short names
  * and their corresponding printer implementations. Short names may be wildcarded
  * e.g:
- * <p/>
+ * <p>
  * <table>
  * <tr><td>party.*</td><td>org.openvpms.web.component.im.print.APrinter</td></tr>
  * <tr><td>lookup.*</td><td>org.openvpms.web.component.im.print.BPrinter</td></tr>
  * <tr><td>act.customerAccountChargesInvoice.*</td><td>org.openvpms.web.component.im.print.CPrinter</td></tr>
  * </table>
- * <p/>
+ * <p>
  * Multiple <em>IMPrinterFactory.properties</em> may be used.
  *
  * @author Tim Anderson
  */
-public final class IMPrinterFactory {
+public class IMPrinterFactory {
+
+    /**
+     * The reporter factory.
+     */
+    private final ReporterFactory factory;
 
     /**
      * IMPrinter implementations.
      */
-    private static ArchetypeHandlers<IMPrinter> printers;
+    private final ArchetypeHandlers<IMPrinter> printers;
 
     /**
      * The logger.
@@ -60,14 +69,18 @@ public final class IMPrinterFactory {
 
 
     /**
-     * Prevent construction.
+     * Constructs an {@link IMPrinterFactory}.
+     *
+     * @param factory the reporter factory
      */
-    private IMPrinterFactory() {
+    public IMPrinterFactory(ReporterFactory factory) {
+        this.factory = factory;
+        printers = new ArchetypeHandlers<>("IMPrinterFactory.properties", IMPrinter.class);
     }
 
     /**
      * Construct a new {@link IMPrinter}.
-     * <p/>
+     * <p>
      * IMPrinter implementations must provide a public constructor accepting the object to print, and optionally a
      * document locator.
      *
@@ -77,39 +90,73 @@ public final class IMPrinterFactory {
      * @return a new printer
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMPrinter<T> create(T object, DocumentTemplateLocator locator,
-                                                           Context context) {
+    public <T extends IMObject> IMPrinter<T> create(T object, DocumentTemplateLocator locator, Context context) {
         String[] shortNames = {object.getArchetypeId().getShortName()};
         shortNames = DescriptorHelper.getShortNames(shortNames);
-        ArchetypeHandler<IMPrinter> handler = getPrinters().getHandler(shortNames);
+        ArchetypeHandler<IMPrinter> handler = printers.getHandler(shortNames);
         IMPrinter<T> result = null;
         if (handler != null) {
             try {
-                try {
-                    result = handler.create(new Object[]{object, locator, context});
-                } catch (NoSuchMethodException throwable) {
-                    result = handler.create(new Object[]{object});
+                DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+                beanFactory.registerSingleton("object", object);
+                beanFactory.registerSingleton("locator", locator);
+                beanFactory.registerSingleton("context", context);
+                beanFactory.registerSingleton("factory", factory);
+                Object printer = beanFactory.createBean(handler.getType(),
+                                                        AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
+                if (!IMPrinter.class.isAssignableFrom(printer.getClass())) {
+                    log.error("Class of type " + printer.getClass().getName()
+                              + " is not an instance of " + IMPrinter.class.getName());
+                    result = null;
+                } else {
+                    result = (IMPrinter<T>) printer;
                 }
             } catch (Throwable exception) {
                 log.error(exception, exception);
             }
         }
         if (result == null) {
-            result = new IMObjectReportPrinter<T>(object, locator, context);
+            result = createIMObjectReportPrinter(object, locator, context);
         }
         return result;
     }
 
     /**
-     * Returns the printer implementations.
+     * Creates an {@link IMObjectReportPrinter}.
      *
-     * @return the printers
+     * @param object  the object to print
+     * @param locator the template locator
+     * @param context the context
+     * @return a new printer
      */
-    private static ArchetypeHandlers<IMPrinter> getPrinters() {
-        if (printers == null) {
-            printers = new ArchetypeHandlers<IMPrinter>("IMPrinterFactory.properties", IMPrinter.class);
-        }
-        return printers;
+    public <T extends IMObject> IMObjectReportPrinter<T> createIMObjectReportPrinter(
+            T object, DocumentTemplateLocator locator, Context context) {
+        return new IMObjectReportPrinter<T>(object, locator, context, factory);
+    }
+
+    /**
+     * Creates an {@link IMObjectReportPrinter}.
+     *
+     * @param objects the object to print
+     * @param locator the template locator
+     * @param context the context
+     * @return a new printer
+     */
+    public <T extends IMObject> IMObjectReportPrinter<T> createIMObjectReportPrinter(
+            Iterable<T> objects, DocumentTemplateLocator locator, Context context) {
+        return new IMObjectReportPrinter<T>(objects, locator, context, factory);
+    }
+
+    /**
+     * Creates an {@link ObjectSetReportPrinter}.
+     *
+     * @param set     the set to print
+     * @param locator the template locator
+     * @param context the context
+     */
+    public ObjectSetReportPrinter createObjectSetReportPrinter(Iterable<ObjectSet> set, DocumentTemplateLocator locator,
+                                                               Context context) {
+        return new ObjectSetReportPrinter(set, locator, context, factory);
     }
 
 }

@@ -28,5 +28,7 @@
         <node name="toExpression" path="/details/toExpression" type="java.lang.String" minCardinality="1" 
               defaultValue="'concat($phone, &quot;@email.smsglobal.com&quot;)'" hidden="true"/>
         <node name="textExpression" path="/details/textExpression" type="java.lang.String" minCardinality="1" defaultValue="'$message'" hidden="true"/>
+        <node name="parts" displayName="Maximum Parts" path="/details/parts" type="java.lang.Integer"
+              minCardinality="0" defaultValue="1"/>
     </archetype>
 </archetypes>

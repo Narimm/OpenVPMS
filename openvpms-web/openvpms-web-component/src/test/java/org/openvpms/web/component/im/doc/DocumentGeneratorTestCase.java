@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.doc;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.TestHelper;
@@ -83,7 +84,10 @@ public class DocumentGeneratorTestCase extends AbstractAppTest {
             public void error() {
             }
         };
-        DocumentGenerator generator = new DocumentGenerator(act, context, new HelpContext("foo", null), listener) {
+        FileNameFormatter formatter = Mockito.mock(FileNameFormatter.class);
+        DocumentGenerator generator = new DocumentGenerator(act, context, new HelpContext("foo", null),
+                                                            formatter, getArchetypeService(), getLookupService(),
+                                                            listener) {
             @Override
             protected Document generate(DocumentActReporter reporter) {
                 // generate the document has a CSV to allow comparison

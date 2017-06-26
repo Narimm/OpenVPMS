@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.Macros;
 import org.openvpms.sms.SMSException;
+import org.openvpms.sms.util.SMSLengthCalculator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
@@ -68,11 +69,6 @@ import java.util.List;
 public class SMSEditor extends AbstractModifiable {
 
     /**
-     * Maximum SMS length.
-     */
-    public static final int MAX_LENGTH = 160;
-
-    /**
      * The context.
      */
     private final Context context;
@@ -95,27 +91,32 @@ public class SMSEditor extends AbstractModifiable {
     /**
      * The text message.
      */
-    private CountedTextArea message;
+    private final CountedTextArea message;
 
     /**
      * The text property. Used to support macro expansion.
      */
-    private SimpleProperty messageProperty;
+    private final SimpleProperty messageProperty;
 
     /**
      * The phone property.
      */
-    private SimpleProperty phoneProperty;
+    private final SimpleProperty phoneProperty;
 
     /**
      * Focus group.
      */
-    private FocusGroup focus;
+    private final FocusGroup focus;
 
     /**
      * Used to track property modification, and perform validation.
      */
-    private Editors editors;
+    private final Editors editors;
+
+    /**
+     * The maximum message length.
+     */
+    private final int maxLength;
 
     /**
      * Ad hoc SMS reason code.
@@ -170,9 +171,13 @@ public class SMSEditor extends AbstractModifiable {
             phoneSelector.setSelectedIndex(0);
         }
 
+        int maxParts = ServiceHelper.getSMSConnectionFactory().getMaxParts();
+        maxLength = SMSLengthCalculator.getMaxLength(maxParts, true);
+        // TODO - this doesn't take into account unicode characters or multi-byte GSM characters
+
         messageProperty = new SimpleProperty("message", null, String.class, Messages.get("sms.message"));
         messageProperty.setRequired(true);
-        messageProperty.setMaxLength(MAX_LENGTH);
+        messageProperty.setMaxLength(maxLength);
         Macros macros = ServiceHelper.getMacros();
         messageProperty.setTransformer(new StringPropertyTransformer(messageProperty, false, macros, null, variables));
 
@@ -237,11 +242,21 @@ public class SMSEditor extends AbstractModifiable {
      * @param message the message
      */
     public void setMessage(String message) {
-        if (message != null && message.length() > MAX_LENGTH) {
-            message = message.substring(0, MAX_LENGTH);
+        if (message != null && message.length() > maxLength) {
+            message = message.substring(0, maxLength);
             InformationDialog.show(Messages.get("sms.truncated"));
         }
         messageProperty.setValue(message);
+    }
+
+    /**
+     * Sets the maximum length of the message.
+     *
+     * @param maxLength the maximum length
+     */
+    public void setMaxLength(int maxLength) {
+        messageProperty.setMaxLength(maxLength);
+        message.setMaximumLength(maxLength);
     }
 
     /**

@@ -28,6 +28,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.sms.ConnectionFactory;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.DefaultMailerFactory;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.MailerFactory;
@@ -86,6 +88,16 @@ public class PatientReminderProcessorFactory {
     private ConnectionFactory smsFactory;
 
     /**
+     * The printer factory.
+     */
+    private IMPrinterFactory printerFactory;
+
+    /**
+     * The reporter factory.
+     */
+    private ReporterFactory reporterFactory;
+
+    /**
      * The communication logger, if communications logging is enabled.
      */
     private CommunicationLogger logger;
@@ -116,7 +128,7 @@ public class PatientReminderProcessorFactory {
         this.practice = practice;
         config = getReminderConfig(practice);
         this.help = help;
-        if (CommunicationHelper.isLoggingEnabled(practice)) {
+        if (CommunicationHelper.isLoggingEnabled(practice, service)) {
             logger = ServiceHelper.getBean(CommunicationLogger.class);
         }
         reminderTypes = new ReminderTypes(service);
@@ -230,8 +242,8 @@ public class PatientReminderProcessorFactory {
      */
     protected ReminderEmailProcessor createEmailProcessor() {
         EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
-        return new ReminderEmailProcessor(getMailerFactory(), evaluator, reminderTypes, practice, reminderRules,
-                                          practiceRules, service, config, logger);
+        return new ReminderEmailProcessor(getMailerFactory(), evaluator, getReporterFactory(), reminderTypes, practice,
+                                          reminderRules, practiceRules, service, config, logger);
     }
 
     /**
@@ -253,7 +265,7 @@ public class PatientReminderProcessorFactory {
      */
     protected ReminderBatchProcessor createBatchPrintProcessor(ReminderItemSource query) {
         ReminderPrintProcessor processor = createPrintProcessor();
-        return new ReminderPrintProgressBarProcessor(query, processor, help);
+        return new ReminderPrintProgressBarProcessor(query, processor, getPrinterFactory(), help);
     }
 
     /**
@@ -285,7 +297,7 @@ public class PatientReminderProcessorFactory {
      */
     protected ReminderPrintProcessor createPrintProcessor() {
         ReminderPrintProcessor processor = new ReminderPrintProcessor(help, reminderTypes, reminderRules, practice,
-                                                                      service, config, logger);
+                                                                      service, config, getPrinterFactory(), logger);
         processor.setInteractiveAlways(true);
         return processor;
     }
@@ -315,8 +327,8 @@ public class PatientReminderProcessorFactory {
      * @return a new list processor
      */
     protected ReminderListProcessor createListProcessor() {
-        return new ReminderListProcessor(reminderTypes, reminderRules, location, practice, service, config, logger,
-                                         help);
+        return new ReminderListProcessor(reminderTypes, reminderRules, location, practice, service, config,
+                                         getPrinterFactory(), logger, help);
     }
 
     /**
@@ -355,6 +367,30 @@ public class PatientReminderProcessorFactory {
             smsFactory = ServiceHelper.getBean(ConnectionFactory.class);
         }
         return smsFactory;
+    }
+
+    /**
+     * Returns the printer factory.
+     *
+     * @return the printer factory
+     */
+    protected IMPrinterFactory getPrinterFactory() {
+        if (printerFactory == null) {
+            printerFactory = ServiceHelper.getBean(IMPrinterFactory.class);
+        }
+        return printerFactory;
+    }
+
+    /**
+     * Returns the reporter factory.
+     *
+     * @return the reporter factory
+     */
+    protected ReporterFactory getReporterFactory() {
+        if (reporterFactory == null) {
+            reporterFactory = ServiceHelper.getBean(ReporterFactory.class);
+        }
+        return reporterFactory;
     }
 
     /**

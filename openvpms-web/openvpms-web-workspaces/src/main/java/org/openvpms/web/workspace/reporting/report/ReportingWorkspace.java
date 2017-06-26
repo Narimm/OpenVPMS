@@ -174,7 +174,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 ILookupService lookups = ServiceHelper.getLookupService();
                 DocumentTemplate template = new DocumentTemplate(entity, service);
                 Context context = getContext();
-                SQLReportPrinter printer = new SQLReportPrinter(template, context);
+                SQLReportPrinter printer = new SQLReportPrinter(template, context, service);
                 HelpContext help = getHelpContext().subtopic("run");
                 Variables variables = new MacroVariables(new ReloadingContext(context), service, lookups);
                 InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(

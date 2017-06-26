@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.sms.mail;
@@ -26,8 +24,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 /**
  * Factory for {@link MailConnection} connections.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MailConnectionFactory implements ConnectionFactory {
 
@@ -42,7 +39,7 @@ public class MailConnectionFactory implements ConnectionFactory {
     private final MailMessageFactory factory;
 
     /**
-     * Constructs a <tt>MailConnectionFactory</tt>.
+     * Constructs a {@link MailConnectionFactory}.
      *
      * @param sender  the mail sender
      * @param factory the message factory
@@ -60,4 +57,15 @@ public class MailConnectionFactory implements ConnectionFactory {
     public Connection createConnection() {
         return new MailConnection(sender, factory);
     }
+
+    /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    @Override
+    public int getMaxParts() {
+        return factory.getMaxParts();
+    }
+
 }

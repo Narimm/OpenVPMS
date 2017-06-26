@@ -46,7 +46,6 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundRichTextArea;
-import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
 import org.openvpms.web.component.im.doc.DownloaderListener;
@@ -179,7 +178,7 @@ public class MailEditor extends AbstractModifiable {
 
     /**
      * Constructs a {@link MailEditor}.
-     * <p/>
+     * <p>
      * If no 'to' addresses are supplied the address will be editable, otherwise it will be read-only.
      * If there are multiple addresses, they will be displayed in a dropdown, and the preferred contact selected
      *
@@ -321,7 +320,7 @@ public class MailEditor extends AbstractModifiable {
 
     /**
      * Sets the mail subject and message from a template.
-     * <p/>
+     * <p>
      * The template will be evaluated against the object set via {@link #setObject(Object)}.
      *
      * @param template the template
@@ -332,7 +331,7 @@ public class MailEditor extends AbstractModifiable {
 
     /**
      * Sets the mail subject and message from a template.
-     * <p/>
+     * <p>
      * The template will be evaluated against the object set via {@link #setObject(Object)}.
      *
      * @param template the template
@@ -369,7 +368,7 @@ public class MailEditor extends AbstractModifiable {
 
     /**
      * Adds an attachment.
-     * <p/>
+     * <p>
      * If the document is unsaved, it will be saved and deleted on {@link #dispose()}.
      *
      * @param document the document to add
@@ -381,9 +380,10 @@ public class MailEditor extends AbstractModifiable {
 
         boolean delete = false;
 
+        Converter converter = ServiceHelper.getBean(Converter.class);
         if (document.getMimeType() != null && !DocFormats.PDF_TYPE.equals(document.getMimeType()) &&
-            Converter.canConvert(document.getName(), document.getMimeType(), DocFormats.PDF_TYPE)) {
-            document = DocumentHelper.convert(document, DocFormats.PDF_TYPE);
+            converter.canConvert(document.getName(), document.getMimeType(), DocFormats.PDF_TYPE)) {
+            document = converter.convert(document, DocFormats.PDF_TYPE);
         }
 
         if (document.isNew()) {

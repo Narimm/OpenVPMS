@@ -21,9 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
-import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 
@@ -36,63 +34,61 @@ import org.openvpms.web.component.im.report.TemplatedReporter;
 public class IMObjectReportPrinter<T extends IMObject> extends TemplatedIMPrinter<T> {
 
     /**
-     * Constructs an {@code IMObjectReportPrinter}.
+     * Constructs an {@link IMObjectReportPrinter}.
      *
      * @param object  the object to print
      * @param locator the document template locator
      * @param context the context
+     * @param factory the reporter factory
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(T object, DocumentTemplateLocator locator, Context context) {
-        super(ReporterFactory.<T, TemplatedReporter<T>>create(object, locator, TemplatedReporter.class), context);
+    public IMObjectReportPrinter(T object, DocumentTemplateLocator locator, Context context, ReporterFactory factory) {
+        super(factory.<T, TemplatedReporter<T>>create(object, locator, TemplatedReporter.class), context,
+              factory.getService());
     }
 
     /**
-     * Constructs an {@code IMObjectReportPrinter}.
+     * Constructs an {@link IMObjectReportPrinter}.
      *
      * @param object   the object to print
      * @param template the document template to use
      * @param context  the context
+     * @param factory  the reporter factory
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(T object, DocumentTemplate template, Context context) {
-        super(ReporterFactory.<T, TemplatedReporter<T>>create(object, template, TemplatedReporter.class), context);
+    public IMObjectReportPrinter(T object, DocumentTemplate template, Context context, ReporterFactory factory) {
+        super(factory.<T, TemplatedReporter<T>>create(object, template, TemplatedReporter.class), context,
+              factory.getService());
     }
 
     /**
-     * Constructs an {@code IMObjectReportPrinter} to print a collection of objects.
+     * Constructs an {@link IMObjectReportPrinter} to print a collection of objects.
      *
      * @param objects  the objects to print
      * @param template the document template to use
      * @param context  the context
+     * @param factory  the reporter factory
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplate template, Context context) {
-        super(ReporterFactory.<T, TemplatedReporter<T>>create(objects, template, TemplatedReporter.class), context);
+    public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplate template, Context context,
+                                 ReporterFactory factory) {
+        super(factory.<T, TemplatedReporter<T>>create(objects, template, TemplatedReporter.class), context,
+              factory.getService());
     }
 
     /**
-     * Constructs an {@code IMObjectReportPrinter} to print a collection of objects.
+     * Constructs an {@link IMObjectReportPrinter} to print a collection of objects.
      *
      * @param objects the objects to print
      * @param locator the document template locator
      * @param context the context
+     * @param factory the reporter factory
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplateLocator locator, Context context) {
-        super(ReporterFactory.<T, TemplatedReporter<T>>create(objects, locator, TemplatedReporter.class), context);
-    }
-
-    /**
-     * Constructs an {@code IMObjectReportPrinter} to print a collection of objects.
-     *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to use
-     * @param context   the context
-     * @throws OpenVPMSException for any error
-     */
-    public IMObjectReportPrinter(Iterable<T> objects, String shortName, Context context) {
-        super(new IMObjectReporter<T>(objects, new ContextDocumentTemplateLocator(shortName, context)), context);
+    public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplateLocator locator, Context context,
+                                 ReporterFactory factory) {
+        super(factory.<T, TemplatedReporter<T>>create(objects, locator, TemplatedReporter.class), context,
+              factory.getService());
     }
 
 }

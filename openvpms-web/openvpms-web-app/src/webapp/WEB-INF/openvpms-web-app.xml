@@ -140,6 +140,12 @@
         -->
     </bean>
 
+    <bean id="fileNameFormatter" class="org.openvpms.web.component.im.doc.FileNameFormatter">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="patientRules"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
@@ -154,6 +160,25 @@
         <constructor-arg ref="documentHandlers"/>
         <constructor-arg ref="communicationLogger"/>
         <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="reporterFactory" class="org.openvpms.web.component.im.report.ReporterFactory">
+        <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="documentConverter"/>
+    </bean>
+
+    <bean id="imPrinterFactory" class="org.openvpms.web.component.im.print.IMPrinterFactory">
+        <constructor-arg ref="reporterFactory"/>
+    </bean>
+
+    <bean id="documentGeneratorFactory" class="org.openvpms.web.component.im.doc.DocumentGeneratorFactory">
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <!-- ================================================================== -->
@@ -195,6 +220,7 @@
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="macros"/>
         <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="documentConverter"/>
     </bean>
 
     <!-- =========================================================================================================== -->

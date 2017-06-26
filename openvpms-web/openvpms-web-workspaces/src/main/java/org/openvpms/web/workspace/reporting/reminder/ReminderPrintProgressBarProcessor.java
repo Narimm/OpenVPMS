@@ -27,8 +27,11 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.app.PracticeMailContext;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.event.ActionListener;
@@ -52,6 +55,11 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProcessor {
+
+    /**
+     * The printer factory.
+     */
+    private final IMPrinterFactory factory;
 
     /**
      * Customer contact identifiers collected during processing. Only the identifiers are collected to limit
@@ -79,11 +87,13 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      *
      * @param query     the query
      * @param processor the email processor
+     * @param factory the printer factory
      * @param help      the help context
      */
-    public ReminderPrintProgressBarProcessor(ReminderItemSource query, ReminderPrintProcessor processor,
-                                             HelpContext help) {
+    public ReminderPrintProgressBarProcessor(ReminderItemSource query, final ReminderPrintProcessor processor,
+                                             IMPrinterFactory factory, HelpContext help) {
         super(query, processor, Messages.get("reporting.reminder.run.print"));
+        this.factory = factory;
         this.help = help;
         // if a single reminder is being printed, always display the print dialog, otherwise display it if there is
         // no default printer
@@ -97,9 +107,14 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
             public void printed(String printer) {
                 try {
                     setSuspend(false);
-                    processCompleted();
+                    if (processor.isAsynchronous()) {
+                        processCompleted();
+                    }
                 } catch (OpenVPMSException exception) {
                     processError(exception);
+                    if (processor.isAsynchronous()) {
+                        processCompleted();
+                    }
                 }
             }
 
@@ -114,6 +129,9 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
 
             public void failed(Throwable cause) {
                 processError(cause);
+                if (processor.isAsynchronous()) {
+                    processCompleted();
+                }
             }
         };
         processor.setListener(listener);
@@ -178,8 +196,9 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
         Party practice = processor.getPractice();
         LocalContext context = new LocalContext();
         context.setPractice(practice);
-        ObjectSetReportPrinter printer = new ObjectSetReportPrinter(new MailingLabelCollection(contactIds),
-                                                                    "PATIENT_MAILING_LABELS", context);
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator("PATIENT_MAILING_LABELS", context);
+        ObjectSetReportPrinter printer = factory.createObjectSetReportPrinter(new MailingLabelCollection(contactIds),
+                                                                              locator, context);
         String title = Messages.format("imobject.print.title", Messages.get("reporting.reminder.mailinglabels"));
         InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(
                 title, printer, context, help.subtopic("print"));

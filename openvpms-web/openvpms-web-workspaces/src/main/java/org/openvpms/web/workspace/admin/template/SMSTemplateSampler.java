@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.sms.util.SMSLengthCalculator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.customer.CustomerReferenceEditor;
@@ -33,7 +34,6 @@ import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.sms.BoundCountedTextArea;
-import org.openvpms.web.component.im.sms.SMSEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -43,6 +43,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import static org.openvpms.archetype.rules.workflow.ScheduleArchetypes.APPOINTMENT;
 
@@ -57,6 +58,11 @@ public abstract class SMSTemplateSampler {
      * The template.
      */
     private final Entity template;
+
+    /**
+     * The maximum message length.
+     */
+    private final int maxLength;
 
     /**
      * The layout context.
@@ -100,6 +106,10 @@ public abstract class SMSTemplateSampler {
     public SMSTemplateSampler(Entity template, LayoutContext layoutContext) {
         this.template = template;
 
+        int maxParts = ServiceHelper.getSMSConnectionFactory().getMaxParts();
+        maxLength = SMSLengthCalculator.getMaxLength(maxParts, true);
+        // TODO - this doesn't take into account unicode characters or multi-byte GSM characters
+
         // create a local context so changes aren't propagated
         Context local = new LocalContext(layoutContext.getContext());
         this.layoutContext = new DefaultLayoutContext(true, local, layoutContext.getHelpContext());
@@ -124,8 +134,8 @@ public abstract class SMSTemplateSampler {
         String value;
         try {
             value = evaluate(template, layoutContext.getContext());
-            if (value != null && value.length() > SMSEditor.MAX_LENGTH) {
-                value = value.substring(0, SMSEditor.MAX_LENGTH);
+            if (value != null && value.length() > maxLength) {
+                value = value.substring(0, maxLength);
                 status.setText(Messages.get("sms.truncated"));
             } else {
                 status.setText(null);
@@ -156,7 +166,7 @@ public abstract class SMSTemplateSampler {
     public Component getComponent() {
         FocusGroup group = getFocusGroup();
         BoundCountedTextArea message = new BoundCountedTextArea(this.message, 40, 15);
-        message.setMaximumLength(SMSEditor.MAX_LENGTH);
+        message.setMaximumLength(maxLength);
         message.setStyleName(Styles.DEFAULT);
         message.setEnabled(false);
 

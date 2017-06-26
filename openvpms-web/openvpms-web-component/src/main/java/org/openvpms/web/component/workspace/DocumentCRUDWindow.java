@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.doc.DocumentGeneratorFactory;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -200,15 +201,16 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * @param version if {@code true} version the document
      */
     private void refresh(final DocumentAct act, final boolean print, boolean version) {
-        DocumentGenerator generator = new DocumentGenerator(
+        DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+        DocumentGenerator generator = factory.create(
                 act, getContext(), getHelpContext(), new DocumentGenerator.AbstractListener() {
-            public void generated(Document document) {
-                onSaved(act, false);
-                if (print) {
-                    print(act);
-                }
-            }
-        });
+                    public void generated(Document document) {
+                        onSaved(act, false);
+                        if (print) {
+                            print(act);
+                        }
+                    }
+                });
         generator.generate(true, version);
     }
 
@@ -224,17 +226,18 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
             getActions().externalEdit(act);
         } else {
             // the act has no document attached. Try and generate it first.
-            DocumentGenerator generator = new DocumentGenerator(act, getContext(), getHelpContext(),
-                                                                new DocumentGenerator.AbstractListener() {
-                                                                    @Override
-                                                                    public void generated(Document document) {
-                                                                        onSaved(act, false);
-                                                                        DocumentActActions actions = getActions();
-                                                                        if (actions.canExternalEdit(act)) {
-                                                                            actions.externalEdit(act);
-                                                                        }
-                                                                    }
-                                                                });
+            DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+            DocumentGenerator generator = factory.create(act, getContext(), getHelpContext(),
+                                                         new DocumentGenerator.AbstractListener() {
+                                                             @Override
+                                                             public void generated(Document document) {
+                                                                 onSaved(act, false);
+                                                                 DocumentActActions actions = getActions();
+                                                                 if (actions.canExternalEdit(act)) {
+                                                                     actions.externalEdit(act);
+                                                                 }
+                                                             }
+                                                         });
             generator.generate(true, true);
         }
     }

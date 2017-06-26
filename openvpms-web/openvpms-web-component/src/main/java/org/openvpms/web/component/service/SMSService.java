@@ -62,6 +62,15 @@ public class SMSService {
     }
 
     /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    public int getMaxParts() {
+        return factory.getMaxParts();
+    }
+
+    /**
      * Sends an SMS.
      *
      * @param message  the SMS text
@@ -148,4 +157,12 @@ public class SMSService {
         }
     }
 
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
 }

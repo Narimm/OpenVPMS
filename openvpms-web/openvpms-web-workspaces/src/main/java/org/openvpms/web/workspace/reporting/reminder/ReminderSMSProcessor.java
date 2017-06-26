@@ -35,6 +35,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
+import org.openvpms.sms.util.SMSLengthCalculator;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
@@ -134,9 +135,13 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
                 String text = reminders.getText(practice);
                 if (StringUtils.isEmpty(text)) {
                     throw new ReportingException(SMSMessageEmpty, reminders.getSMSTemplate().getName());
-                } else if (text.length() > 160) {
-                    throw new ReportingException(SMSMessageTooLong, reminders.getSMSTemplate().getName(),
-                                                 text.length());
+                } else {
+                    int parts = SMSLengthCalculator.getParts(text);
+                    int maxParts = factory.getMaxParts();
+                    if (parts > maxParts) {
+                        throw new ReportingException(SMSMessageTooLong, reminders.getSMSTemplate().getName(),
+                                                     parts, maxParts);
+                    }
                 }
                 Connection connection = factory.createConnection();
                 try {

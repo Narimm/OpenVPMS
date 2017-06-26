@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -155,7 +156,8 @@ public class PrintIMObjectTask extends AbstractTask {
     protected void print(final IMObject object, final TaskContext context) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
+            IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+            IMPrinter<IMObject> printer = factory.create(object, locator, context);
             boolean skip = !isRequired() && enableSkip;
             HelpContext help = context.getHelpContext().topic(object, "print");
             InteractiveIMPrinter<IMObject> iPrinter = createPrinter(printer, skip, context, help);

@@ -39,7 +39,6 @@ import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.macro.MacroVariables;
@@ -98,6 +97,11 @@ public class EmailTemplateEvaluator {
     private final ReportFactory factory;
 
     /**
+     * The document converter
+     */
+    private final Converter converter;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(EmailTemplateEvaluator.class);
@@ -105,17 +109,19 @@ public class EmailTemplateEvaluator {
     /**
      * Constructs an {@link EmailTemplateEvaluator}.
      *
-     * @param service the service
-     * @param lookups the lookups
-     * @param macros  the macros
-     * @param factory the report factory
+     * @param service   the service
+     * @param lookups   the lookups
+     * @param macros    the macros
+     * @param factory   the report factory
+     * @param converter the document converter
      */
     public EmailTemplateEvaluator(IArchetypeService service, ILookupService lookups, Macros macros,
-                                  ReportFactory factory) {
+                                  ReportFactory factory, Converter converter) {
         this.service = service;
         this.lookups = lookups;
         this.macros = macros;
         this.factory = factory;
+        this.converter = converter;
     }
 
     /**
@@ -363,8 +369,8 @@ public class EmailTemplateEvaluator {
             } else if (contextBean instanceof IMObject && factory.isIMObjectReport(document)) {
                 Reporter<IMObject> reporter = createReporter((IMObject) contextBean, document, context);
                 result = getMessage(reporter);
-            } else if (Converter.canConvert(document, DocFormats.HTML_TYPE)) {
-                byte[] converted = DocumentHelper.export(document, DocFormats.HTML_TYPE);
+            } else if (converter.canConvert(document, DocFormats.HTML_TYPE)) {
+                byte[] converted = converter.export(document, DocFormats.HTML_TYPE);
                 result = new String(converted, StandardCharsets.UTF_8);
             }
         }
@@ -385,7 +391,7 @@ public class EmailTemplateEvaluator {
 
     /**
      * Returns the bean to supply to macros, xpath expressions and documents.
-     * <p/>
+     * <p>
      * If the expression is non-null, it will be evaluated against the object and context, and the result
      * returned, otherwise the object will be returned.
      *

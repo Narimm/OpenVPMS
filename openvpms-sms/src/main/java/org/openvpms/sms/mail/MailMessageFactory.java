@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.sms.mail;
@@ -24,8 +22,7 @@ import org.openvpms.sms.SMSException;
 /**
  * Factory for messages to send to email-to-SMS providers.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public interface MailMessageFactory {
 
@@ -38,4 +35,12 @@ public interface MailMessageFactory {
      * @throws SMSException if the message cannot be created
      */
     MailMessage createMessage(String phone, String text);
+
+    /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    int getMaxParts();
+
 }
