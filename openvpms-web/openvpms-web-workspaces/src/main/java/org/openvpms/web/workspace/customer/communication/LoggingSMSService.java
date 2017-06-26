@@ -109,7 +109,7 @@ public class LoggingSMSService extends SMSService {
      */
     protected boolean log(Party party) {
         return TypeHelper.isA(party, CustomerArchetypes.PERSON)
-               && CommunicationHelper.isLoggingEnabled(practiceService);
+               && CommunicationHelper.isLoggingEnabled(practiceService, getService());
     }
 
 }

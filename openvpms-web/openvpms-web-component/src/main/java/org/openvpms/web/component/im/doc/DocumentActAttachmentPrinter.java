@@ -29,12 +29,11 @@ import org.openvpms.web.component.im.print.TemplatedIMPrinter;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
  * A printer for attachments associated with {@link DocumentAct}s.
- * <p/>
+ * <p>
  * If the document has no attachments, but does have a document template (<em>entity.documentTemplate</em>),
  * then this will be used to generate the document to print.
  *
@@ -43,22 +42,30 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
-     * Constructs a {@code DocumentActAttachmentPrinter}.
+     * The document converter.
+     */
+    private final Converter converter;
+
+    /**
+     * Constructs a {@link DocumentActAttachmentPrinter}.
      *
      * @param object  the object to print
      * @param locator the document template locator
      * @param context the context
+     * @param factory the reporter factory
      * @throws ArchetypeServiceException for any archetype service error
      */
     @SuppressWarnings("unchecked")
-    public DocumentActAttachmentPrinter(DocumentAct object, DocumentTemplateLocator locator, Context context) {
-        super(ReporterFactory.<IMObject, TemplatedReporter<IMObject>>create(object, locator, TemplatedReporter.class),
-              context);
+    public DocumentActAttachmentPrinter(DocumentAct object, DocumentTemplateLocator locator, Context context,
+                                        ReporterFactory factory) {
+        super(factory.<IMObject, TemplatedReporter>create(object, locator, TemplatedReporter.class), context,
+              factory.getService());
+        converter = factory.getConverter();
     }
 
     /**
      * Returns a display name for the objects being printed.
-     * <p/>
+     * <p>
      * This implementation returns the document file name, if one is present.
      * If not, it delegates to the parent implementation.
      *
@@ -92,7 +99,7 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
         DocumentAct act = (DocumentAct) getObject();
-        Document document = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
+        Document document = getDocument(act.getDocument());
         if (document != null) {
             print(document, printer);
         } else {
@@ -102,7 +109,7 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
      * Returns a document corresponding to that which would be printed.
-     * <p/>
+     * <p>
      * If a {@link Document} is associated with the {@link DocumentAct}, this will be returned.<br/>
      * If not, and a document template is associated with the {@link DocumentAct}
      * archetype, then this will be used to generate the document.
@@ -117,11 +124,11 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
      * Returns a document corresponding to that which would be printed.
-     * <p/>
+     * <p>
      * If a {@link Document} is associated with the {@link DocumentAct}, this will be returned.<br/>
      * If not, and a document template is associated with the {@link DocumentAct}
      * archetype, then this will be used to generate the document.
-     * <p/>
+     * <p>
      * If the document cannot be converted to the specified mime-type, it will be returned unchanged.
      *
      * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
@@ -133,10 +140,10 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
     @Override
     public Document getDocument(String mimeType, boolean email) {
         DocumentAct act = (DocumentAct) getObject();
-        Document result = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
+        Document result = getDocument(act.getDocument());
         if (result != null && mimeType != null && !mimeType.equals(result.getMimeType())
-            && Converter.canConvert(result, mimeType)) {
-            result = DocumentHelper.convert(result, mimeType);
+            && converter.canConvert(result, mimeType)) {
+            result = converter.convert(result, mimeType);
         }
         if (result == null) {
             result = super.getDocument(mimeType, email);

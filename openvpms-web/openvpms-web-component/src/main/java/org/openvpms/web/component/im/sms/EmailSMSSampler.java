@@ -37,6 +37,7 @@ import org.openvpms.sms.mail.MailMessageFactory;
 import org.openvpms.sms.mail.template.MailTemplate;
 import org.openvpms.sms.mail.template.MailTemplateFactory;
 import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
+import org.openvpms.sms.util.SMSLengthCalculator;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
@@ -140,6 +141,7 @@ class EmailSMSSampler extends AbstractModifiable {
         this.config = config;
         IMObjectBean bean = new IMObjectBean(config);
         sms = new SMSEditor(new LocalContext());
+        sms.setMaxLength(getMaxLength(bean));
         sms.setMessage(Messages.get("sms.sample.message"));
         sms.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -332,6 +334,7 @@ class EmailSMSSampler extends AbstractModifiable {
                 replyToStr = mail.getReplyTo();
                 textStr = mail.getText();
                 subjectStr = mail.getSubject();
+                sms.setMaxLength(getMaxLength(template.getMaxParts()));
                 valid = isValid();
             }
         } catch (SMSException exception) {
@@ -394,6 +397,30 @@ class EmailSMSSampler extends AbstractModifiable {
      */
     private List<ValidatorError> validateConfig() {
         return ValidationHelper.validate(config, ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the maximum length of SMS messages.
+     *
+     * @param config the configuration
+     * @return the maximum length
+     */
+    private int getMaxLength(IMObjectBean config) {
+        int maxParts = config.hasNode("parts") ? config.getInt("parts", 1) : 1;
+        return getMaxLength(maxParts);
+    }
+
+    /**
+     * Returns the maximum length of SMS messages.
+     *
+     * @param parts the maximum number of parts
+     * @return the maximum length
+     */
+    private int getMaxLength(int parts) {
+        if (parts <= 0) {
+            parts = 1;
+        }
+        return SMSLengthCalculator.getMaxLength(parts, true);
     }
 
 }

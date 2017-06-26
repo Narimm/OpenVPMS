@@ -37,6 +37,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -55,7 +56,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
 
 
     /**
-     * Constructs a new <tt>PrintObjectLayoutStrategy</tt>.
+     * Constructs a {@link PrintObjectLayoutStrategy}.
      *
      * @param buttonId the button identifier
      */
@@ -66,7 +67,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Determines if the button should be enabled.
      *
-     * @param enable if <tt>true</tt>, enable the button
+     * @param enable if {@code true}, enable the button
      */
     public void setEnableButton(boolean enable) {
         this.enableButton = enable;
@@ -77,7 +78,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param container  the container to use
      * @param context    the layout context
      */
@@ -102,7 +103,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      * Lays out child components in a grid.
      *
      * @param object     the object to lay out
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param properties the properties
      * @param container  the container to use
      * @param context    the layout context
@@ -135,8 +136,9 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     protected void onPrint(IMObject object, Context context, HelpContext help) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
-            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, context, help);
+            IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+            IMPrinter<IMObject> printer = factory.create(object, locator, context);
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

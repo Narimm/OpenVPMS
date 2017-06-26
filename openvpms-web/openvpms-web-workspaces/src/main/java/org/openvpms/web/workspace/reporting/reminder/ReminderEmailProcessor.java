@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.Mailer;
@@ -73,24 +74,32 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
     private final EmailTemplateEvaluator evaluator;
 
     /**
+     * The reporter factory.
+     */
+    private final ReporterFactory reporterFactory;
+
+    /**
      * Constructs a {@link ReminderEmailProcessor}.
      *
-     * @param factory       the mailer factory
-     * @param evaluator     the email template evaluator
-     * @param reminderTypes the reminder types
-     * @param practice      the practice
-     * @param rules         the reminder rules
-     * @param practiceRules the practice rules
-     * @param service       the archetype service
-     * @param config        the reminder configuration
-     * @param logger        the communication logger. May be {@code null}
+     * @param factory         the mailer factory
+     * @param evaluator       the email template evaluator
+     * @param reporterFactory the reporter factory
+     * @param reminderTypes   the reminder types
+     * @param practice        the practice
+     * @param rules           the reminder rules
+     * @param practiceRules   the practice rules
+     * @param service         the archetype service
+     * @param config          the reminder configuration
+     * @param logger          the communication logger. May be {@code null}
      */
-    public ReminderEmailProcessor(MailerFactory factory, EmailTemplateEvaluator evaluator, ReminderTypes reminderTypes,
+    public ReminderEmailProcessor(MailerFactory factory, EmailTemplateEvaluator evaluator,
+                                  ReporterFactory reporterFactory, ReminderTypes reminderTypes,
                                   Party practice, ReminderRules rules, PracticeRules practiceRules,
                                   IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger) {
         super(reminderTypes, rules, practice, service, config, logger);
         this.factory = factory;
         this.evaluator = evaluator;
+        this.reporterFactory = reporterFactory;
         addresses = new PracticeEmailAddresses(practice, "REMINDER", practiceRules, service);
     }
 
@@ -179,7 +188,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
             }
         }
         return new EmailReminders(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location,
-                                  template, emailTemplate, evaluator);
+                                  template, emailTemplate, evaluator, reporterFactory);
     }
 
     /**

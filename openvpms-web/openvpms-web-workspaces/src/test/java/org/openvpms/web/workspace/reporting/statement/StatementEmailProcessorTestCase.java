@@ -21,7 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.component.processor.ProcessorListener;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -40,8 +42,11 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.ReportFactory;
+import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.OpenVPMSApp;
@@ -139,10 +144,17 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         });
         processor.process(customer);
         assertEquals(1, statements.size());
+        Converter converter = Mockito.mock(Converter.class);
         EmailTemplateEvaluator evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(),
                                                                       ServiceHelper.getMacros(),
-                                                                      ServiceHelper.getBean(ReportFactory.class));
-        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, evaluator, practice,
+                                                                      ServiceHelper.getBean(ReportFactory.class), converter);
+        FileNameFormatter formatter = Mockito.mock(FileNameFormatter.class);
+        DocumentHandlers handlers = ServiceHelper.getBean(DocumentHandlers.class);
+        ReportFactory factory = new ReportFactory(getArchetypeService(), getLookupService(), handlers,
+                                                  ServiceHelper.getBean(ArchetypeFunctionsFactory.class));
+        ReporterFactory reporterFactory = new ReporterFactory(factory, formatter, getArchetypeService(),
+                                                              getLookupService(), converter);
+        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, evaluator, reporterFactory, practice,
                                                                              new LocalContext());
         emailProcessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);

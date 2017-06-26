@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.sms;
@@ -22,8 +20,7 @@ package org.openvpms.sms;
 /**
  * Creates connections to an SMS provider.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public interface ConnectionFactory {
 
@@ -34,4 +31,12 @@ public interface ConnectionFactory {
      * @throws SMSException if the connection cannot be created
      */
     Connection createConnection();
+
+    /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    int getMaxParts();
+
 }

@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.communication;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.List;
@@ -33,23 +34,25 @@ public class CommunicationHelper {
     /**
      * Determines if communication logging is enabled.
      *
-     * @param service the practice service
+     * @param practiceService the practice service
+     * @param service         the archetype service
      * @return {@code true} if communication logging is enabled
      */
-    public static boolean isLoggingEnabled(PracticeService service) {
-        return isLoggingEnabled(service.getPractice());
+    public static boolean isLoggingEnabled(PracticeService practiceService, IArchetypeService service) {
+        return isLoggingEnabled(practiceService.getPractice(), service);
     }
 
     /**
      * Determines if communication logging is enabled.
      *
      * @param practice the practice. May be {@code null}
+     * @param service  the archetype service
      * @return {@code true} if communication logging is enabled
      */
-    public static boolean isLoggingEnabled(Party practice) {
+    public static boolean isLoggingEnabled(Party practice, IArchetypeService service) {
         boolean result = false;
         if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice);
+            IMObjectBean bean = new IMObjectBean(practice, service);
             result = bean.getBoolean("logCommunication");
         }
         return result;

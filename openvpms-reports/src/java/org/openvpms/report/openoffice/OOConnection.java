@@ -18,13 +18,15 @@ package org.openvpms.report.openoffice;
 
 import com.sun.star.frame.XComponentLoader;
 
+import java.io.Closeable;
+
 
 /**
  * Manages the connection to a remote OpenOffice service.
  *
  * Tim Anderson
  */
-public interface OOConnection {
+public interface OOConnection extends Closeable {
 
     /**
      * Returns the component loader.

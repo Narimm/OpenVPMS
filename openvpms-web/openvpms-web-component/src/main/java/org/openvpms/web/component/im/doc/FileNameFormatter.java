@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Formats file names based on a document template's {@link DocumentTemplate#getFileNameExpression()}.
@@ -44,12 +43,17 @@ public class FileNameFormatter {
     /**
      * The archetype service.
      */
-    private final IArchetypeService archetypeService;
+    private final IArchetypeService service;
 
     /**
      * The lookup service.
      */
     private final ILookupService lookups;
+
+    /**
+     * The patient rules.
+     */
+    private final PatientRules rules;
 
     /**
      * Characters to exclude from file names.
@@ -63,15 +67,20 @@ public class FileNameFormatter {
 
     /**
      * Constructs an {@link FileNameFormatter}.
+     *
+     * @param service the archetype service
+     * @param lookups the lookup service
+     * @param rules   the patient rules
      */
-    public FileNameFormatter() {
-        archetypeService = ServiceHelper.getArchetypeService();
-        lookups = ServiceHelper.getLookupService();
+    public FileNameFormatter(IArchetypeService service, ILookupService lookups, PatientRules rules) {
+        this.service = service;
+        this.lookups = lookups;
+        this.rules = rules;
     }
 
     /**
      * Formats a file name using the jxpath expression returned by {@link DocumentTemplate#getFileNameExpression()}.
-     * <p/>
+     * <p>
      * Any extension is removed from the original file name.
      *
      * @param name     the original file name. The base name of this is passed to the expression in the {@code $file}
@@ -80,7 +89,7 @@ public class FileNameFormatter {
      *                 the variables $customer, $patient, and $supplier respectively. May be {@code null}
      * @param template the document template
      * @return the formatted name, or the base name of {@code name} if the template doesn't specify a format or
-     *         generation fails
+     * generation fails
      */
     public String format(String name, IMObject object, DocumentTemplate template) {
         String result;
@@ -88,14 +97,14 @@ public class FileNameFormatter {
         String expression = template.getFileNameExpression();
         if (!StringUtils.isEmpty(expression)) {
             JXPathContext context = JXPathHelper.newContext(object != null ? object : new Object());
-            FileNameVariables variables = new FileNameVariables(archetypeService, lookups);
+            FileNameVariables variables = new FileNameVariables(service, lookups);
             context.setVariables(variables);
             Party patient = null;
             Party customer = null;
             Party supplier = null;
             if (object instanceof Act) {
                 Act act = (Act) object;
-                ActBean bean = new ActBean(act);
+                ActBean bean = new ActBean(act, service);
 
                 if (bean.hasNode("patient")) {
                     patient = (Party) bean.getNodeParticipant("patient");
@@ -103,7 +112,6 @@ public class FileNameFormatter {
                 if (bean.hasNode("customer")) {
                     customer = (Party) bean.getNodeParticipant("customer");
                 } else if (patient != null) {
-                    PatientRules rules = ServiceHelper.getBean(PatientRules.class);
                     customer = rules.getOwner(patient, act.getActivityStartTime(), false);
                 }
                 if (bean.hasNode("supplier")) {

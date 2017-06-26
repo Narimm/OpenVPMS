@@ -242,11 +242,12 @@ class PrintDocumentsTask extends AbstractTask {
             HelpContext email = context.getHelpContext().subtopic("email");
             MailContext mailContext = new CustomerMailContext(context, email);
             MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
+            ReporterFactory reporterFactory = ServiceHelper.getBean(ReporterFactory.class);
             MailDialog dialog = factory.create(mailContext, new DefaultLayoutContext(context, email));
             MailEditor editor = dialog.getMailEditor();
             for (IMObject object : list) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-                Reporter<IMObject> reporter = ReporterFactory.create(object, locator, Reporter.class);
+                Reporter<IMObject> reporter = reporterFactory.create(object, locator, Reporter.class);
                 reporter.setFields(ReportContextFactory.create(context));
                 Document document = reporter.getDocument(Reporter.DEFAULT_MIME_TYPE, true);
                 editor.addAttachment(document);

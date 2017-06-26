@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.doc.DocumentGeneratorFactory;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -271,7 +272,7 @@ public class MailDialog extends PopupDialog {
 
     /**
      * Displays a popup of available email templates.
-     * <p/>
+     * <p>
      * If there is already text presents, displays a  warning before proceeding.
      */
     private void newFromTemplate() {
@@ -290,7 +291,7 @@ public class MailDialog extends PopupDialog {
 
     /**
      * Registers any dialog keyboard shortcuts directly on the mail editor.
-     * <p/>
+     * <p>
      * This is required as the events would otherwise be swallowed by the editor.
      */
     protected void registerShortcuts() {
@@ -453,7 +454,8 @@ public class MailDialog extends PopupDialog {
                     editor.addAttachment(document);
                 }
             };
-            DocumentGenerator generator = new DocumentGenerator(act, context.getContext(), help, listener);
+            DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+            DocumentGenerator generator = factory.create(act, context.getContext(), help, listener);
             generator.generate();
         }
     }

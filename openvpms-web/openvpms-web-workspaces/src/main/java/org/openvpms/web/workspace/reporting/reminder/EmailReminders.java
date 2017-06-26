@@ -30,10 +30,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.report.IMObjectReporter;
-import org.openvpms.web.component.im.report.ObjectSetReporter;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
@@ -60,6 +59,11 @@ public class EmailReminders extends GroupedReminders {
     private final EmailTemplateEvaluator evaluator;
 
     /**
+     * The reporter factory.
+     */
+    private final ReporterFactory factory;
+
+    /**
      * Constructs a {@link EmailReminders}.
      *
      * @param reminders     the reminders to send
@@ -75,14 +79,16 @@ public class EmailReminders extends GroupedReminders {
      * @param template      the document template to use. May be {@code null} if there are no reminders to send
      * @param emailTemplate the email template to use. May be {@code null} if there are no reminders to send
      * @param evaluator     the template evaluator
+     * @param factory       the reporter factory
      */
     public EmailReminders(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy, List<ReminderEvent> cancelled,
                           List<ReminderEvent> errors, List<Act> updated, boolean resend, Party customer,
                           Contact contact, Party location, DocumentTemplate template, Entity emailTemplate,
-                          EmailTemplateEvaluator evaluator) {
+                          EmailTemplateEvaluator evaluator, ReporterFactory factory) {
         super(reminders, groupBy, cancelled, errors, updated, resend, customer, contact, location, template);
         this.emailTemplate = emailTemplate;
         this.evaluator = evaluator;
+        this.factory = factory;
     }
 
     /**
@@ -157,13 +163,13 @@ public class EmailReminders extends GroupedReminders {
         List<ReminderEvent> reminders = getReminders();
         DocumentTemplate template = getTemplate();
         if (reminders.size() > 1) {
-            result = getDocument(new ObjectSetReporter(getObjectSets(reminders), template), context);
+            result = getDocument(factory.createObjectSetReporter(getObjectSets(reminders), template), context);
         } else {
             List<Act> acts = new ArrayList<>();
             for (ReminderEvent event : reminders) {
                 acts.add(event.getReminder());
             }
-            result = getDocument(new IMObjectReporter<>(acts, template), context);
+            result = getDocument(factory.createIMObjectReporter(acts, template), context);
         }
         return result;
     }

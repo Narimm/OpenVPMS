@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -355,7 +356,8 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                              context);
-        return new IMObjectReportPrinter<>(summary, locator, context);
+        ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+        return new IMObjectReportPrinter<>(summary, locator, context, factory);
     }
 
     /**

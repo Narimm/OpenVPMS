@@ -38,6 +38,7 @@ import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.retry.Retryer;
@@ -55,6 +56,7 @@ import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
@@ -342,7 +344,8 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
                                                                              context);
-        return new IMObjectReportPrinter<>(summary, locator, context);
+        ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+        return new IMObjectReportPrinter<>(summary, locator, context, factory);
     }
 
     /**

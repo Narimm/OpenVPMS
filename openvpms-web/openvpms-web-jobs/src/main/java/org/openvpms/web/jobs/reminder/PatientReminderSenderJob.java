@@ -38,6 +38,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.sms.ConnectionFactory;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.DefaultMailerFactory;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.MailerFactory;
@@ -103,6 +104,11 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     private final EmailTemplateEvaluator emailTemplateEvaluator;
 
     /**
+     * The reporter factory.
+     */
+    private final ReporterFactory reporterFactory;
+
+    /**
      * The SMS connection factory.
      */
     private final ConnectionFactory connectionFactory;
@@ -142,6 +148,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * @param mailService            the mail service
      * @param handlers               the document handlers
      * @param emailTemplateEvaluator the email template evaluator
+     * @param reporterFactory        the reporter factory
      * @param connectionFactory      the connection factory
      * @param smsEvaluator           the SMS template evaluator
      * @param communicationLogger    the communication logger
@@ -150,8 +157,8 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
                                     PracticeService practiceService, ReminderRules reminderRules,
                                     PracticeRules practiceRules, PracticeMailService mailService,
                                     DocumentHandlers handlers, EmailTemplateEvaluator emailTemplateEvaluator,
-                                    ConnectionFactory connectionFactory, ReminderSMSEvaluator smsEvaluator,
-                                    CommunicationLogger communicationLogger) {
+                                    ReporterFactory reporterFactory, ConnectionFactory connectionFactory,
+                                    ReminderSMSEvaluator smsEvaluator, CommunicationLogger communicationLogger) {
         this.configuration = configuration;
         this.service = service;
         this.practiceService = practiceService;
@@ -159,6 +166,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         this.practiceRules = practiceRules;
         this.mailerFactory = new DefaultMailerFactory(mailService, handlers);
         this.emailTemplateEvaluator = emailTemplateEvaluator;
+        this.reporterFactory = reporterFactory;
         this.connectionFactory = connectionFactory;
         this.smsEvaluator = smsEvaluator;
         this.communicationLogger = communicationLogger;
@@ -188,7 +196,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
             if (practice == null) {
                 throw new IllegalStateException("Practice is not configured");
             }
-            CommunicationLogger logger = (CommunicationHelper.isLoggingEnabled(practiceService.getPractice()))
+            CommunicationLogger logger = (CommunicationHelper.isLoggingEnabled(practice, service))
                                          ? communicationLogger : null;
             ReminderTypes reminderTypes = new ReminderTypes(service);
             ReminderConfiguration config = getReminderConfig(practice);
@@ -221,8 +229,9 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     protected Stats sendEmailReminders(Date date, ReminderTypes reminderTypes, Party practice,
                                        ReminderConfiguration config, CommunicationLogger logger) {
         ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, emailTemplateEvaluator,
-                                                                      reminderTypes, practice, reminderRules,
-                                                                      practiceRules, service, config, logger);
+                                                                      reporterFactory, reminderTypes, practice,
+                                                                      reminderRules, practiceRules, service, config,
+                                                                      logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.EMAIL_REMINDER, reminderTypes, date,
                                                            config);
         return send(date, processor, iterator);
@@ -286,9 +295,10 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
             Reminders reminders = iterator.next();
-            PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(),
-                                                       date, false);
-            processor.process(state);
+            PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), date, false);
+            if (!state.getReminders().isEmpty()) {
+                processor.process(state);
+            }
             int cancelled = state.getCancelled().size();
             int errors = state.getErrors().size();
             processor.complete(state);

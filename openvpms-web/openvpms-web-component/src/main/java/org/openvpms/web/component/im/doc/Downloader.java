@@ -24,11 +24,12 @@ import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -56,7 +57,7 @@ public abstract class Downloader {
 
     /**
      * Registers a listener to be notified when the link is clicked.
-     * <p/>
+     * <p>
      * When registered, this overrides the default behaviour of downloading documents.
      *
      * @param listener the listener. May be <tt>null</tt>
@@ -146,20 +147,21 @@ public abstract class Downloader {
      * @throws OpenOfficeException       if the document cannot be converted
      */
     protected Document getDocumentByRef(IMObjectReference reference, String mimeType) {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
         Document result = (Document) service.get(reference);
         if (result == null) {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
         if (mimeType != null && !mimeType.equals(result.getMimeType())) {
-            result = DocumentHelper.convert(result, mimeType);
+            Converter converter = ServiceHelper.getBean(Converter.class);
+            result = converter.convert(result, mimeType);
         }
         return result;
     }
 
     /**
      * Helper to set the button style and name.
-     * <p/>
+     * <p>
      * Long names will be shortened if {@link #nameLength} is > 0}
      *
      * @param button      the button
@@ -175,7 +177,7 @@ public abstract class Downloader {
 
     /**
      * Helper to set the button style.
-     * <p/>
+     * <p>
      * Long names will be shortened if {@link #nameLength} is > 0}
      *
      * @param button      the button
