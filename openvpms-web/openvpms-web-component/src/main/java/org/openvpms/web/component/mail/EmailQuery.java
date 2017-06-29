@@ -72,14 +72,6 @@ class EmailQuery extends AbstractArchetypeQuery<Contact> {
     }
 
     /**
-     * Invoked when the short name is selected.
-     */
-    @Override
-    protected void onShortNameChanged() {
-        onQuery();
-    }
-
-    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be {@code null}

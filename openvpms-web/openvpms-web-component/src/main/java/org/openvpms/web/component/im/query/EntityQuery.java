@@ -41,6 +41,7 @@ public class EntityQuery<T extends Entity> extends QueryAdapter<ObjectSet, T> {
      * Constructs an {@link EntityQuery} that queries entities with the specified short names.
      *
      * @param shortNames the short names
+     * @param context    the context
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public EntityQuery(String[] shortNames, Context context) {

@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.reporting.report;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.im.doc.ReportParameters;
@@ -47,10 +48,12 @@ public class SQLReportDialog extends ExportPrintDialog {
      * @param title      the dialog title
      * @param parameters the report parameter types
      * @param variables  variables for macro expansion
+     * @param location   the practice location. May be {@code null}
      * @param help       the help context
      */
-    public SQLReportDialog(String title, Set<ParameterType> parameters, Variables variables, HelpContext help) {
-        super(title, help);
+    public SQLReportDialog(String title, Set<ParameterType> parameters, Variables variables, Party location,
+                           HelpContext help) {
+        super(title, location, help);
         setStyleName("SQLReportDialog");
         this.parameters = new ReportParameters(parameters, variables, 2);
         getFocusGroup().add(0, this.parameters.getFocusGroup());

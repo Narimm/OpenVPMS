@@ -461,6 +461,12 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
                     return Messages.get(value.toString());
                 }
             });
+            activeSelector.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onQuery();
+                }
+            });
         }
         return activeSelector;
     }
@@ -488,11 +494,10 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Invoked when the short name is selected.
-     * <p/>
-     * This implementation is a no-op.
+     * Invoked when the short name is selected. Invokes {@link #onQuery}
      */
     protected void onShortNameChanged() {
+        onQuery();
     }
 
     /**

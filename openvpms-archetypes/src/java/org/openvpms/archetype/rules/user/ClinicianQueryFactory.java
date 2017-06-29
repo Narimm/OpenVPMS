@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.user;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 
@@ -46,14 +47,47 @@ public class ClinicianQueryFactory {
      */
     public static IArchetypeQuery create(Party location) {
         ArchetypeQuery query = new ArchetypeQuery(USER, true, true);
-        query.getArchetypeConstraint().setAlias("u");
+        addClinicianConstraint(query);
+        addLocationConstraint(location, query);
+        return query;
+    }
+
+    /**
+     * Adds a clinician constraint to a query.
+     * <p>
+     * The primary query must be on <em>security.user</em> archetypes.
+     *
+     * @param query the query
+     * @return the query
+     */
+    public static ArchetypeQuery addClinicianConstraint(ArchetypeQuery query) {
         query.add(join("classifications", new ArchetypeIdConstraint("lookup.userType")).add(eq("code", "CLINICIAN")));
+        return query;
+    }
+
+    /**
+     * Adds a clinician location constraint to a query.
+     * <p>
+     * The primary query must be on <em>security.user</em> archetypes.
+     *
+     * @param location the practice location. May be {@code null}
+     * @param query    the query
+     * @return the query
+     */
+    public static ArchetypeQuery addLocationConstraint(Party location, ArchetypeQuery query) {
         if (location != null) {
+            BaseArchetypeConstraint archetype = query.getArchetypeConstraint();
+            String alias = archetype.getAlias();
+            if (alias == null) {
+                alias = "u";
+                archetype.setAlias(alias);
+            }
             query.add(leftJoin("locations", "l"));
             query.add(or(eq("l.target", location),
-                         notExists(subQuery(USER, "u2").add(join("locations", "l2").add(idEq("u", "u2"))))));
+                         notExists(subQuery(USER, "u2").add(join("locations", "l2").add(idEq(alias, "u2"))))));
             query.add(Constraints.sort("id"));
         }
         return query;
     }
+
 }
