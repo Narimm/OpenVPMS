@@ -26,11 +26,16 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 
 
@@ -46,6 +51,14 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
      */
     private LocationRules rules;
 
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        rules = new LocationRules(getArchetypeService());
+    }
 
     /**
      * Tests the {@link LocationRules#getPractice} method.
@@ -180,13 +193,27 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Sets up the test case.
+     * Tests the {@link LocationRules#getPrinterNames(Party)} method.
      */
-    @Before
-    public void setUp() {
-        rules = new LocationRules(getArchetypeService());
-    }
+    @Test
+    public void testGetPrinters() {
+        Party location = TestHelper.createLocation();
+        assertEquals(0, rules.getPrinterNames(location).size());
+        IMObject printer1 = create("entity.printer");
+        IMObject printer2 = create("entity.printer");
+        printer1.setName("printer1");
+        printer2.setName("printer2");
+        save(printer1, printer2);
+        IMObjectBean bean = new IMObjectBean(location);
+        bean.addNodeTarget("printers", printer1);
+        bean.addNodeTarget("printers", printer2);
+        bean.save();
 
+        Collection<String> names = rules.getPrinterNames(location);
+        assertEquals(2, names.size());
+        assertTrue(names.contains("printer1"));
+        assertTrue(names.contains("printer2"));
+    }
     /**
      * Helper to create a till.
      *

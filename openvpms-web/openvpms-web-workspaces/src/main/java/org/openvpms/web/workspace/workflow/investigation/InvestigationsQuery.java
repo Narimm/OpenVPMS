@@ -237,15 +237,6 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Invoked when a status is selected.
-     */
-    @Override
-    protected void onStatusChanged() {
-        super.onStatusChanged();
-        onQuery();
-    }
-
-    /**
      * Adds a result status selector to the container.
      *
      * @param container the container

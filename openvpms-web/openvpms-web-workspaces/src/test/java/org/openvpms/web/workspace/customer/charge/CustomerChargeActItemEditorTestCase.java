@@ -248,7 +248,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -312,7 +312,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -374,7 +374,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -981,8 +981,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Party patient2 = TestHelper.createPatient();
         User author1 = TestHelper.createUser();
         User author2 = TestHelper.createUser();
-        User clinician1 = TestHelper.createUser();
-        User clinician2 = TestHelper.createUser();
+        User clinician1 = TestHelper.createClinician();
+        User clinician2 = TestHelper.createClinician();
 
         // create product1 with reminder, investigation type and alert type
         BigDecimal quantity1 = BigDecimal.valueOf(2);
@@ -1185,7 +1185,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Product product = createProduct(ProductArchetypes.TEMPLATE, fixedCost, fixedPrice, unitCost, unitPrice);
         // costs and prices should be ignored
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
         context.getContext().setUser(author); // to propagate to acts
         context.getContext().setClinician(clinician);
 
@@ -1296,7 +1296,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Party patient = TestHelper.createPatient();
         PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);

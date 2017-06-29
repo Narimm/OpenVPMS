@@ -172,21 +172,4 @@ public abstract class ReminderItemObjectSetQuery extends ActQuery<ObjectSet> {
         factory.setLocation(getLocation());
     }
 
-    /**
-     * Invoked when the short name is selected.
-     */
-    @Override
-    protected void onShortNameChanged() {
-        super.onShortNameChanged();
-        onQuery();
-    }
-
-    /**
-     * Invoked when a status is selected.
-     */
-    @Override
-    protected void onStatusChanged() {
-        super.onStatusChanged();
-        onQuery();
-    }
 }

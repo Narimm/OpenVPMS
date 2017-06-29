@@ -16,14 +16,18 @@
 
 package org.openvpms.web.workspace.workflow.worklist;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
@@ -33,6 +37,9 @@ import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.EntityObjectSetQuery;
 import org.openvpms.web.component.im.query.EntityObjectSetResultSet;
 import org.openvpms.web.component.im.query.EntityQuery;
@@ -46,12 +53,22 @@ import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.echo.button.CheckBox;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.CheckBoxFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.workflow.checkin.AbstractPrintPatientDocumentsTask;
 import org.openvpms.web.workspace.workflow.checkin.AddFlowSheetTask;
 import org.openvpms.web.workspace.workflow.checkin.PrintPatientActTask;
+
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.exists;
+import static org.openvpms.component.system.common.query.Constraints.idEq;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 
 /**
@@ -93,9 +110,15 @@ public class TransferWorkflow extends WorkflowImpl {
         initial = new DefaultTaskContext(context, help);
 
         // exclude the work list being transferred from
-        Query<Party> query = new EntityQuery<>(new WorkListQuery(workList), initial);
+        WorkListQuery workListQuery = new WorkListQuery(workList, context.getLocation(), context.getPractice());
+        Query<Party> query = new EntityQuery<>(workListQuery, initial);
 
-        addTask(new SelectIMObjectTask<>(query, help.topic("worklist")));
+        addTask(new SelectIMObjectTask<Party>(query, help.topic("worklist")) {
+            @Override
+            protected Browser<Party> createBrowser(Query<Party> query, LayoutContext layout) {
+                return new DefaultIMObjectTableBrowser<>(query, layout);
+            }
+        });
         addTask(new UpdateWorkListTask(task));
 
         FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
@@ -237,17 +260,52 @@ public class TransferWorkflow extends WorkflowImpl {
 
         private static final String[] SHORT_NAMES = new String[]{ScheduleArchetypes.ORGANISATION_WORKLIST};
 
-        private IMObjectReference exclude;
+        private final IMObjectReference exclude;
+
+        private final Party location;
+
+        private final CheckBox allLocations;
 
         /**
          * Constructs a {@link WorkListQuery}.
          *
-         * @param exclude the work list to exclude from results. May be {@code null}
+         * @param exclude  the work list to exclude from results. May be {@code null}
+         * @param location the practice location
+         * @param practice the practice
          */
-        public WorkListQuery(IMObjectReference exclude) {
+        public WorkListQuery(IMObjectReference exclude, Party location, Party practice) {
             super(SHORT_NAMES);
             this.exclude = exclude;
             setAuto(true);
+            IMObjectBean bean = new IMObjectBean(practice);
+            if (location != null && bean.getNodeTargetObjectRefs("locations").size() > 1) {
+                this.location = location;
+                allLocations = CheckBoxFactory.create();
+                allLocations.addActionListener(new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        onQuery();
+                    }
+                });
+            } else {
+                this.location = null;
+                allLocations = null;
+            }
+        }
+
+        /**
+         * Lays out the component in a container, and sets focus on the instance
+         * name.
+         *
+         * @param container the container
+         */
+        @Override
+        protected void doLayout(Component container) {
+            super.doLayout(container);
+            if (allLocations != null) {
+                container.add(LabelFactory.create("location.all"));
+                container.add(allLocations);
+            }
         }
 
         /**
@@ -266,9 +324,30 @@ public class TransferWorkflow extends WorkflowImpl {
                     if (exclude != null) {
                         query.add(Constraints.not(new ObjectRefConstraint("entity", exclude)));
                     }
+                    Party restrictToLocation = getLocation();
+                    if (restrictToLocation != null) {
+                        query.add(exists(subQuery(PracticeArchetypes.LOCATION, "location")
+                                                 .add(eq("id", restrictToLocation.getId()))
+                                                 .add(join("workListViews").add(join("target", "workListView").add(
+                                                         join("workListView.workLists", "w")
+                                                                 .add(idEq("entity", "w.target")))))));
+                    }
                     return query;
                 }
             };
+        }
+
+        /**
+         * Returns the location to restrict work-lists to.
+         *
+         * @return the location to restrict work-lists to, or {@code null} if work-lists areb't being restricted
+         */
+        private Party getLocation() {
+            Party result = null;
+            if (allLocations != null && !allLocations.isSelected()) {
+                result = location;
+            }
+            return result;
         }
     }
 

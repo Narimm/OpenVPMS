@@ -22,6 +22,8 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.list.DefaultListModel;
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -31,7 +33,13 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -73,58 +81,20 @@ public class PrintDialog extends PopupDialog {
 
 
     /**
-     * Constructs a {@code PrintDialog}.
-     */
-    public PrintDialog() {
-        this(Messages.get("printdialog.title"));
-    }
-
-    /**
-     * Constructs a {@code PrintDialog}.
+     * Constructs a {@link PrintDialog}.
      *
-     * @param title the window title
+     * @param title    the window title
+     * @param preview  if {@code true} add a 'preview' button
+     * @param mail     if {@code true} add a 'mail' button
+     * @param skip     if {@code true} display a 'skip' button that simply closes the dialog
+     * @param location the current practice location. May be {@code null}
+     * @param help     the help context. May be {@code null}
      */
-    public PrintDialog(String title) {
-        this(title, true);
-    }
-
-    /**
-     * Constructs a {@code PrintDialog}.
-     *
-     * @param title   the window title
-     * @param preview if {@code true} add a 'preview' button
-     */
-    public PrintDialog(String title, boolean preview) {
-        this(title, preview, true, false);
-    }
-
-    /**
-     * Constructs a {@code PrintDialog}.
-     *
-     * @param title   the window title
-     * @param preview if {@code true} add a 'preview' button
-     * @param mail    if {@code true} add a 'mail' button
-     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
-     */
-    public PrintDialog(String title, boolean preview, boolean mail, boolean skip) {
-        this(title, preview, mail, skip, null);
-    }
-
-    /**
-     * Constructs a {@code PrintDialog}.
-     *
-     * @param title   the window title
-     * @param preview if {@code true} add a 'preview' button
-     * @param mail    if {@code true} add a 'mail' button
-     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
-     * @param help    the help context. May be {@code null}
-     */
-    public PrintDialog(String title, boolean preview, boolean mail, boolean skip, HelpContext help) {
+    public PrintDialog(String title, boolean preview, boolean mail, boolean skip, Party location, HelpContext help) {
         super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL, help);
         setModal(true);
         copies = new SpinBox(1, 99);
-        DefaultListModel model = new DefaultListModel(
-            PrintHelper.getPrinters());
+        DefaultListModel model = new DefaultListModel(getPrinters(location));
         printers = SelectFieldFactory.create(model);
         this.preview = preview;
         this.mail = mail;
@@ -230,6 +200,37 @@ public class PrintDialog extends PopupDialog {
      * This implementation does nothing.
      */
     protected void onMail() {
+    }
+
+    /**
+     * Returns the printers available at a practice location.
+     *
+     * @param location the practice location. May be {@code null}
+     * @return the printers
+     */
+    protected String[] getPrinters(Party location) {
+        String[] available = PrintHelper.getPrinters();
+        String[] result;
+        if (location != null) {
+            LocationRules rules = ServiceHelper.getBean(LocationRules.class);
+            Collection<String> printerNames = rules.getPrinterNames(location);
+            if (!printerNames.isEmpty()) {
+                Set<String> set = new HashSet<>(Arrays.asList(available));
+                String defaultPrinter = rules.getDefaultPrinter(location);
+                if (defaultPrinter != null) {
+                    // add the default printer, if one is defined, but not listed as an available printer
+                    printerNames = new ArrayList<>(printerNames);
+                    printerNames.add(defaultPrinter);
+                }
+                set.retainAll(printerNames);
+                result = set.toArray(new String[set.size()]);
+            } else {
+                result = available;
+            }
+        } else {
+            result = available;
+        }
+        return result;
     }
 
 }
