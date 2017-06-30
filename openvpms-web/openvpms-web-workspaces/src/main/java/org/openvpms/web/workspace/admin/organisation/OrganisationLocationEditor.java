@@ -19,6 +19,8 @@ package org.openvpms.web.workspace.admin.organisation;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,7 +39,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.relationship.EntityLinkCollectionTargetPropertyEditor;
 import org.openvpms.web.component.im.relationship.MultipleRelationshipCollectionTargetEditor;
-import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
+import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -165,7 +167,7 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
          */
         @Override
         protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
-            return new DefaultIMObjectTableModel<>(true, false);
+            return new PrinterTableModel();
         }
 
         /**
@@ -261,6 +263,47 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
             IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
             strategy.addComponent(new ComponentState(printer));
             return strategy;
+        }
+    }
+
+    private class PrinterTableModel extends BaseIMObjectTableModel<IMObject> {
+
+        private final int statusIndex;
+
+        /**
+         * Constructs a new {@code BaseIMObjectTableModel}, using
+         * a new column model created by {@link #createTableColumnModel}.
+         */
+        public PrinterTableModel() {
+            super(null);
+            DefaultTableColumnModel model = (DefaultTableColumnModel) createTableColumnModel(false, false, true, false,
+                                                                                             false);
+            statusIndex = getNextModelIndex(model);
+            model.addColumn(createTableColumn(statusIndex, "printer.status"));
+            setTableColumnModel(model);
+        }
+
+        /**
+         * Returns the value found at the given coordinate within the table.
+         *
+         * @param object the object
+         * @param column the column
+         * @param row    the row
+         * @return the value at the given coordinate
+         */
+        @Override
+        protected Object getValue(IMObject object, TableColumn column, int row) {
+            Object result;
+            if (column.getModelIndex() == statusIndex) {
+                if (printerNames.contains(object.getName())) {
+                    result = Messages.get("printer.status.available");
+                } else {
+                    result = Messages.get("printer.status.unknown");
+                }
+            } else {
+                result = super.getValue(object, column, row);
+            }
+            return result;
         }
     }
 
