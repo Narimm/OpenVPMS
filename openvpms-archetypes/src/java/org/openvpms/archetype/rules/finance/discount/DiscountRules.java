@@ -404,8 +404,7 @@ public class DiscountRules {
     }
 
     /**
-     * Returns discounts associated with an <em>entity.productType</em>,
-     * active for the specified date.
+     * Returns discounts associated with an <em>entity.productType</em>, active for the specified date.
      *
      * @param ref            the product type reference
      * @param date           the date
@@ -413,10 +412,10 @@ public class DiscountRules {
      * @return the discounts associated with the reference
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Set<IMObjectReference> getProductTypeDiscounts(
-            IMObjectReference ref, Date date, DiscountGroups discountGroups) {
+    private Set<IMObjectReference> getProductTypeDiscounts(IMObjectReference ref, Date date,
+                                                           DiscountGroups discountGroups) {
         List<IMObjectReference> discounts = getRelatedEntityReferences(
-                ref, "entityRelationship.discountProductType", "discounts", date);
+                ref, "entityLink.productTypeDiscount", "discounts", date);
         return expandGroups(discounts, discountGroups);
     }
 
@@ -481,7 +480,7 @@ public class DiscountRules {
         public List<IMObjectReference> getDiscountTypes(IMObjectReference ref) {
             List<IMObjectReference> result = groups.get(ref);
             if (result == null) {
-                result = getRelatedEntityReferences(ref, "entityRelationship.discountType", "discounts", date);
+                result = getRelatedEntityReferences(ref, "entityLink.discountType", "discounts", date);
                 groups.put(ref, result);
             }
             return result;

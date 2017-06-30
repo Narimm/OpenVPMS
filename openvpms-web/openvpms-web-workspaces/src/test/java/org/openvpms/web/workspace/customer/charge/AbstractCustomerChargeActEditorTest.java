@@ -813,8 +813,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param discount the discount
      */
     protected void addDiscount(Entity entity, Entity discount) {
-        EntityBean bean = new EntityBean(entity);
-        bean.addNodeRelationship("discounts", discount);
+        IMObjectBean bean = new IMObjectBean(entity);
+        bean.addNodeTarget("discounts", discount);
         bean.save();
     }
 
