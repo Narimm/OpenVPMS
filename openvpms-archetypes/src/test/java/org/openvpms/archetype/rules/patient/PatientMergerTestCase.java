@@ -29,11 +29,12 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -170,13 +171,15 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
         Party to = TestHelper.createPatient();
         Entity discount = createDiscount();
 
-        EntityBean bean = new EntityBean(from);
-        bean.addRelationship("entityRelationship.discountPatient", discount);
+        IMObjectBean bean = new IMObjectBean(from);
+        bean.addNodeTarget("discounts", discount);
         bean.save();
 
         Party merged = checkMerge(from, to);
-        bean = new EntityBean(merged);
-        assertNotNull(bean.getRelationship(discount));
+        bean = new IMObjectBean(merged);
+        List<IMObject> discounts = bean.getNodeTargetObjects("discounts");
+        assertEquals(1, discounts.size());
+        assertEquals(discount, discounts.get(0));
     }
 
     /**

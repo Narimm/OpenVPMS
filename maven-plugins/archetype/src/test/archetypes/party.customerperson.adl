@@ -118,12 +118,12 @@
         </node>
         <node name="discounts" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.discountCustomer">
+              filter="entityLink.customerDiscount">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityRelationship.discountCustomer"/>
+                                  value="entityLink.customerDiscount"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

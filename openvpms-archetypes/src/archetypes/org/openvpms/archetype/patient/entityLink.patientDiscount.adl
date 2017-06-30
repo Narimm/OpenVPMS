@@ -14,10 +14,8 @@
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
-    <archetype name="entityRelationship.discountPatient.1.0"
-               latest="true"
-               type="org.openvpms.component.business.domain.im.common.EntityRelationship"
-               displayName="Patient Discount">
+    <archetype name="entityLink.patientDiscount.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityLink" displayName="Patient Discount">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
@@ -28,38 +26,24 @@
               derivedValue="concat(/name, ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
         <node name="source" displayName="Patient" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
-              minCardinality="1">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="party.patientpet"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              minCardinality="1" filter="party.patientpet"/>
         <node name="target" displayName="Discount" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entity.discountType"/>
+                        <property name="shortName" value="entity.discountType"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entity.discountGroupType"/>
+                        <property name="shortName" value="entity.discountGroupType"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node displayName="From Date" name="activeStartTime" path="/activeStartTime"
-              type="java.util.Date" minCardinality="1"
-              defaultValue="java.util.Date.new()"/>
-        <node displayName="To Date" name="activeEndTime" path="/activeEndTime"
-              type="java.util.Date" minCardinality="0"/>
+        <node displayName="From Date" name="activeStartTime" path="/activeStartTime" type="java.util.Date"
+              minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node displayName="To Date" name="activeEndTime" path="/activeEndTime" type="java.util.Date"
+              minCardinality="0"/>
     </archetype>
 </archetypes>

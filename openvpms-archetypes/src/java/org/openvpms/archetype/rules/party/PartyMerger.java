@@ -20,10 +20,12 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -78,17 +80,17 @@ public abstract class PartyMerger {
     public PartyMerger(String type, IArchetypeService service) {
         this.type = type;
         this.service = service;
-        relationshipCopier = new IMObjectCopier(new EntityRelationshipCopyHandler(), service);
+        relationshipCopier = new IMObjectCopier(new IMObjectRelationshipCopyHandler(), service);
         contactCopier = new IMObjectCopier(new ContactCopyHandler(), service);
     }
 
     /**
      * Merges one {@link Party} with another.
-     * <p/>
+     * <p>
      * On completion, the 'to' party will contain all of the 'from' party's contacts, identities, classifications and
      * relationships, any act participations will be changed to reference the 'to'
      * party. The 'from' party will be deleted.
-     * <p/>
+     * <p>
      * This operation should be invoked within a transaction.
      *
      * @param from the party to merge from
@@ -109,7 +111,7 @@ public abstract class PartyMerger {
 
     /**
      * Merges one {@link Party} with another.
-     * <p/>
+     * <p>
      * On completion, the 'to' party will contain all of the 'from' party's contacts, identities, classifications and
      * relationships, any act participations will be changed to reference the 'to'
      * party.
@@ -122,6 +124,7 @@ public abstract class PartyMerger {
         copyContacts(from, to);
         copyClassifications(from, to);
         copyEntityRelationships(from, to);
+        copyEntityLinks(from, to);
         copyIdentities(from, to);
 
         List<IMObject> participations = moveParticipations(from, to);
@@ -177,8 +180,25 @@ public abstract class PartyMerger {
     protected void copyEntityRelationships(Party from, Party to) {
         for (EntityRelationship relationship : from.getEntityRelationships()) {
             EntityRelationship copy = copyEntityRelationship(relationship, from, to);
-            if (!exists(copy, to)) {
+            if (!exists(copy, to.getEntityRelationships())) {
                 to.addEntityRelationship(copy);
+            }
+        }
+    }
+
+    /**
+     * Copies entity links from one party to another, excluding any link which would duplicate an existing
+     * relationship in the 'to' party.
+     *
+     * @param from the party to copy from
+     * @param to   the party to copy to
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected void copyEntityLinks(Party from, Party to) {
+        for (EntityLink relationship : from.getEntityLinks()) {
+            EntityLink copy = copyEntityLink(relationship, from, to);
+            if (!exists(copy, to.getEntityLinks())) {
+                to.addEntityLink(copy);
             }
         }
     }
@@ -201,6 +221,31 @@ public abstract class PartyMerger {
 
         List<IMObject> objects = relationshipCopier.apply(relationship);
         EntityRelationship copy = (EntityRelationship) objects.get(0);
+        if (ObjectUtils.equals(copy.getSource(), fromRef)) {
+            copy.setSource(toRef);
+        } else {
+            copy.setTarget(toRef);
+        }
+        return copy;
+    }
+
+    /**
+     * Copies entity links from one party to another.
+     * If the source of the link refers to the 'from' party, it will be replaced with the 'to' party; otherwise the
+     * target of the relationship will be replaced with the 'to' party.
+     *
+     * @param relationship the relationship to copy
+     * @param from         the party to copy from
+     * @param to           the party to copy to
+     * @return the copied relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected EntityLink copyEntityLink(EntityLink relationship, Party from, Party to) {
+        IMObjectReference fromRef = from.getObjectReference();
+        IMObjectReference toRef = to.getObjectReference();
+
+        List<IMObject> objects = relationshipCopier.apply(relationship);
+        EntityLink copy = (EntityLink) objects.get(0);
         if (ObjectUtils.equals(copy.getSource(), fromRef)) {
             copy.setSource(toRef);
         } else {
@@ -286,16 +331,15 @@ public abstract class PartyMerger {
     /**
      * Determines if a party already has an entity relationship.
      *
-     * @param relationship the relationship
-     * @param party        the party to check against
-     * @return {@code true} if a relationship exists that has the same
-     * archetype id, source, and target, and is still active;
-     * otherwise {@code false}
+     * @param relationship  the relationship
+     * @param relationships the relationships to check against
+     * @return {@code true} if a relationship exists that has the same archetype id, source, and target, and is
+     * still active; otherwise {@code false}
      */
-    protected boolean exists(EntityRelationship relationship, Party party) {
+    protected boolean exists(PeriodRelationship relationship, Set<? extends PeriodRelationship> relationships) {
         boolean result = false;
         ArchetypeId id = relationship.getArchetypeId();
-        for (EntityRelationship r : party.getEntityRelationships()) {
+        for (PeriodRelationship r : relationships) {
             if (ObjectUtils.equals(r.getSource(), relationship.getSource())
                 && ObjectUtils.equals(r.getTarget(), relationship.getTarget())
                 && r.getArchetypeId().equals(id)
