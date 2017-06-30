@@ -49,6 +49,7 @@ public class ClinicianQueryFactory {
         ArchetypeQuery query = new ArchetypeQuery(USER, true, true);
         addClinicianConstraint(query);
         addLocationConstraint(location, query);
+        query.add(Constraints.sort("id"));
         return query;
     }
 
@@ -85,7 +86,6 @@ public class ClinicianQueryFactory {
             query.add(leftJoin("locations", "l"));
             query.add(or(eq("l.target", location),
                          notExists(subQuery(USER, "u2").add(join("locations", "l2").add(idEq(alias, "u2"))))));
-            query.add(Constraints.sort("id"));
         }
         return query;
     }
