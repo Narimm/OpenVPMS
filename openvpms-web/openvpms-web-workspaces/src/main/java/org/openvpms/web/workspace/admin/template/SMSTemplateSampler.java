@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.edit.PatientReferenceEditor;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.sms.BoundCountedTextArea;
+import org.openvpms.web.component.im.sms.BoundSMSTextArea;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -60,9 +60,9 @@ public abstract class SMSTemplateSampler {
     private final Entity template;
 
     /**
-     * The maximum message length.
+     * The maximum no. of parts in SMS messages.
      */
-    private final int maxLength;
+    private final int maxParts;
 
     /**
      * The layout context.
@@ -105,10 +105,8 @@ public abstract class SMSTemplateSampler {
      */
     public SMSTemplateSampler(Entity template, LayoutContext layoutContext) {
         this.template = template;
-
-        int maxParts = ServiceHelper.getSMSConnectionFactory().getMaxParts();
-        maxLength = SMSLengthCalculator.getMaxLength(maxParts, true);
-        // TODO - this doesn't take into account unicode characters or multi-byte GSM characters
+        maxParts = ServiceHelper.getSMSConnectionFactory().getMaxParts();
+        message.setMaxLength(-1); // don't limit message length
 
         // create a local context so changes aren't propagated
         Context local = new LocalContext(layoutContext.getContext());
@@ -132,21 +130,23 @@ public abstract class SMSTemplateSampler {
      */
     public void evaluate() {
         String value;
+        String statusText = null;
         try {
             value = evaluate(template, layoutContext.getContext());
-            if (value != null && value.length() > maxLength) {
-                value = value.substring(0, maxLength);
-                status.setText(Messages.get("sms.truncated"));
-            } else {
-                status.setText(null);
+            if (value != null) {
+                int maxLength = SMSLengthCalculator.getMaxLength(maxParts, value);
+                if (value.length() > maxLength) {
+                    value = value.substring(0, maxLength);
+                    statusText = Messages.get("sms.truncated");
+                }
             }
         } catch (Throwable exception) {
             value = null;
-            String message = (exception.getCause() != null) ? exception.getCause().getMessage()
-                                                            : exception.getMessage();
-            status.setText(message);
+            statusText = (exception.getCause() != null) ? exception.getCause().getMessage()
+                                                        : exception.getMessage();
         }
         message.setValue(value);
+        status.setText(statusText);
     }
 
     /**
@@ -165,8 +165,8 @@ public abstract class SMSTemplateSampler {
      */
     public Component getComponent() {
         FocusGroup group = getFocusGroup();
-        BoundCountedTextArea message = new BoundCountedTextArea(this.message, 40, 15);
-        message.setMaximumLength(maxLength);
+        BoundSMSTextArea message = new BoundSMSTextArea(this.message, 40, 15);
+        message.setMaxParts(maxParts);
         message.setStyleName(Styles.DEFAULT);
         message.setEnabled(false);
 
