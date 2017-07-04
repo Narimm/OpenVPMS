@@ -92,4 +92,23 @@ public abstract class AbstractValidator implements Validator {
     public List<ValidatorError> getErrors(Modifiable modifiable) {
         return errors.get(modifiable);
     }
+
+    /**
+     * Returns the first validation error.
+     *
+     * @return the first error, or {@code null} if none are found
+     */
+    @Override
+    public ValidatorError getFirstError() {
+        ValidatorError error = null;
+        Collection<Modifiable> invalid = getInvalid();
+        if (!invalid.isEmpty()) {
+            Modifiable modifiable = invalid.iterator().next();
+            List<ValidatorError> errors = getErrors(modifiable);
+            if (!errors.isEmpty()) {
+                error = errors.get(0);
+            }
+        }
+        return error;
+    }
 }

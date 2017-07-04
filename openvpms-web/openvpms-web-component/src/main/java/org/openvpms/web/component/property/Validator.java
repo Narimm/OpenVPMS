@@ -68,4 +68,11 @@ public interface Validator {
      */
     List<ValidatorError> getErrors(Modifiable modifiable);
 
+    /**
+     * Returns the first validation error.
+     *
+     * @return the first error, or {@code null} if none are found
+     */
+    ValidatorError getFirstError();
+
 }
