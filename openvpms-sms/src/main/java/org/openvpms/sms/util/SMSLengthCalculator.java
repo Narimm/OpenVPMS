@@ -251,6 +251,17 @@ public class SMSLengthCalculator {
     }
 
     /**
+     * Calculates the maximum length for a message.
+     *
+     * @param maxParts the maximum parts supported
+     * @param message  the message
+     * @return the maximum length
+     */
+    public static int getMaxLength(int maxParts, String message) {
+        return getMaxLength(maxParts, getGSMLength(message) != -1);
+    }
+
+    /**
      * Returns the maximum number of characters a message may contain.
      *
      * @param parts the number of parts

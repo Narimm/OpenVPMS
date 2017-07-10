@@ -189,7 +189,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * Creates a new object, subject to a short name being selected, and
      * current collection cardinality. This must be registered with the
      * collection.
-     * <p/>
+     * <p>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
@@ -202,7 +202,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     /**
      * Creates a new object, subject to a short name being selected, and current collection cardinality. This must be
      * registered with the collection.
-     * <p/>
+     * <p>
      * If an {@link IMObjectCreationListener} is registered, it will be notified on successful creation of an object.
      *
      * @param shortName the archetype short name. May be {@code null}
@@ -345,10 +345,10 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Returns the target of a selection.
-     * <p/>
+     * <p>
      * This is to support situations where a selection path from a viewer uses a related object to that used by the
      * editor.
-     * <p/>
+     * <p>
      * This implementation returns {@code object}.
      *
      * @param object the selected object
@@ -492,7 +492,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Adds the object being edited to the collection, if it doesn't exist.
-     * <p/>
+     * <p>
      * The object will be selected if visible in the table.
      *
      * @param editor the editor
@@ -679,7 +679,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Sets the current editor.
-     * <p/>
+     * <p>
      * This registers a listener so that {@link #onCurrentEditorModified()} is invoked when the editor changes.
      * If there is an existing editor, its listener is removed.
      *
@@ -740,7 +740,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Enable/disables the buttons.
-     * <p/>
+     * <p>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
@@ -751,9 +751,9 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Enable/disables the buttons.
-     * <p/>
+     * <p>
      * This allows the Add button to be enabled independently of the other buttons.
-     * <p/>
+     * <p>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable    if {@code true}, enable buttons (subject to criteria), otherwise disable them
@@ -765,15 +765,15 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             boolean delete = getCurrentEditor() != null || getSelected() != null;
             boolean previous = enable;
             boolean next = enable;
-            if (enable || add) {
+            if (enable) {
+                TableNavigator navigator = getTable().getNavigator();
+                previous = navigator.hasPreviousRow();
+                next = navigator.hasNextRow();
+            }
+            if (add) {
                 CollectionProperty property = getCollection();
                 int maxSize = property.getMaxCardinality();
                 add = (maxSize == -1 || property.size() < maxSize);
-                if (enable) {
-                    TableNavigator navigator = getTable().getNavigator();
-                    previous = navigator.hasPreviousRow();
-                    next = navigator.hasNextRow();
-                }
             }
             buttons.getButtons().setEnabled(ADD_ID, add);
             buttons.getButtons().setEnabled(DELETE_ID, delete);
@@ -784,7 +784,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Changes the focus group to that belonging to the specified editor.
-     * <p/>
+     * <p>
      * The focus is moved to the default focus component for the editor.
      *
      * @param editor the editor

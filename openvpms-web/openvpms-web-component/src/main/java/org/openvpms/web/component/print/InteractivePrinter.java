@@ -353,7 +353,7 @@ public class InteractivePrinter implements Printer {
             title = Messages.get("printdialog.title");
         }
         boolean mail = mailContext != null;
-        return new PrintDialog(title, true, mail, skip, help) {
+        return new PrintDialog(title, true, mail, skip, context.getLocation(), help) {
             @Override
             protected void onPreview() {
                 doPrintPreview();

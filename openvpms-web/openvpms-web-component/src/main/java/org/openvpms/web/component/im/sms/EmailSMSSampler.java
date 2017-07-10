@@ -37,9 +37,9 @@ import org.openvpms.sms.mail.MailMessageFactory;
 import org.openvpms.sms.mail.template.MailTemplate;
 import org.openvpms.sms.mail.template.MailTemplateFactory;
 import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
-import org.openvpms.sms.util.SMSLengthCalculator;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -141,7 +141,6 @@ class EmailSMSSampler extends AbstractModifiable {
         this.config = config;
         IMObjectBean bean = new IMObjectBean(config);
         sms = new SMSEditor(new LocalContext());
-        sms.setMaxLength(getMaxLength(bean));
         sms.setMessage(Messages.get("sms.sample.message"));
         sms.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -316,6 +315,7 @@ class EmailSMSSampler extends AbstractModifiable {
      * Refreshes the display based on the updated configuration.
      */
     public void refresh() {
+        resetValid();
         String errorMessage = null;
         boolean valid = false;
         String fromStr = null;
@@ -324,8 +324,9 @@ class EmailSMSSampler extends AbstractModifiable {
         String subjectStr = null;
         String textStr = null;
 
+        Validator validator = new DefaultValidator();
         try {
-            if (validateConfig() == null) {
+            if (validateConfig(validator)) {
                 MailTemplate template = templateFactory.getTemplate(config);
                 MailMessageFactory factory = new TemplatedMailMessageFactory(template);
                 MailMessage mail = factory.createMessage(sms.getPhone(), sms.getMessage());
@@ -334,8 +335,8 @@ class EmailSMSSampler extends AbstractModifiable {
                 replyToStr = mail.getReplyTo();
                 textStr = mail.getText();
                 subjectStr = mail.getSubject();
-                sms.setMaxLength(getMaxLength(template.getMaxParts()));
-                valid = isValid();
+                sms.setMaxParts(template.getMaxParts());
+                valid = validate(validator);
             }
         } catch (SMSException exception) {
             errorMessage = exception.getI18nMessage().getMessage();
@@ -357,7 +358,12 @@ class EmailSMSSampler extends AbstractModifiable {
         } else if (errorMessage != null) {
             status.setText(errorMessage);
         } else {
-            status.setText(Messages.get("sms.email.status.incomplete"));
+            ValidatorError error = validator.getFirstError();
+            if (error != null) {
+                status.setText(error.getMessage());
+            } else {
+                status.setText(Messages.get("sms.email.status.incomplete"));
+            }
         }
     }
 
@@ -369,10 +375,7 @@ class EmailSMSSampler extends AbstractModifiable {
      */
     protected boolean doValidation(Validator validator) {
         boolean result = false;
-        List<ValidatorError> errors = validateConfig();
-        if (errors != null) {
-            validator.add(this, errors);
-        } else if (validator.validate(sms)) {
+        if (validateConfig(validator) && validator.validate(sms)) {
             MailTemplate template = templateFactory.getTemplate(config);
             MailMessageFactory factory = new TemplatedMailMessageFactory(template);
             try {
@@ -395,32 +398,14 @@ class EmailSMSSampler extends AbstractModifiable {
      *
      * @return validation errors, or {@code null} if there are none
      */
-    private List<ValidatorError> validateConfig() {
-        return ValidationHelper.validate(config, ServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Returns the maximum length of SMS messages.
-     *
-     * @param config the configuration
-     * @return the maximum length
-     */
-    private int getMaxLength(IMObjectBean config) {
-        int maxParts = config.hasNode("parts") ? config.getInt("parts", 1) : 1;
-        return getMaxLength(maxParts);
-    }
-
-    /**
-     * Returns the maximum length of SMS messages.
-     *
-     * @param parts the maximum number of parts
-     * @return the maximum length
-     */
-    private int getMaxLength(int parts) {
-        if (parts <= 0) {
-            parts = 1;
+    private boolean validateConfig(Validator validator) {
+        boolean valid = true;
+        List<ValidatorError> errors = ValidationHelper.validate(config, ServiceHelper.getArchetypeService());
+        if (errors != null) {
+            validator.add(this, errors);
+            valid = false;
         }
-        return SMSLengthCalculator.getMaxLength(parts, true);
+        return valid;
     }
 
 }

@@ -71,11 +71,15 @@ class NameLoader extends AbstractLoader {
     @Override
     protected boolean load(File file, boolean overwrite) {
         boolean result = false;
-        DocumentAct act = getAct(file, overwrite);
-        if (act != null) {
-            result = load(act, file, overwrite, context);
-        } else {
-            context.missingAct(file);
+        try {
+            DocumentAct act = getAct(file, overwrite);
+            if (act != null) {
+                result = load(act, file, overwrite, context);
+            } else {
+                context.missingAct(file);
+            }
+        } catch (Exception exception) {
+            context.error(file, exception);
         }
         return result;
     }

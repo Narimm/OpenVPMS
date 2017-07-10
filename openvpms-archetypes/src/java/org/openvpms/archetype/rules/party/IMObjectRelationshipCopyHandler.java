@@ -12,32 +12,29 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.party;
 
 import org.openvpms.archetype.rules.util.MappingCopyHandler;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 
 
 /**
- * An {@link IMObjectCopyHandler} for copying {@link EntityRelationship}s.
- * This copies the relationship, and references the existing source and target
- * objects.
+ * An {@link IMObjectCopyHandler} for copying {@link EntityRelationship}s and {@link EntityLink}s.
+ * This copies the relationship, and references the existing source and target objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class EntityRelationshipCopyHandler extends MappingCopyHandler {
+public class IMObjectRelationshipCopyHandler extends MappingCopyHandler {
 
     /**
-     * Creates a new <tt>EntityRelationshipCopyHandler</tt>.
+     * Constructs an {@link IMObjectRelationshipCopyHandler}.
      */
-    public EntityRelationshipCopyHandler() {
-        setCopy(EntityRelationship.class);
+    public IMObjectRelationshipCopyHandler() {
+        setCopy(EntityRelationship.class, EntityLink.class);
         setDefaultTreatment(Treatment.REFERENCE);
     }
 

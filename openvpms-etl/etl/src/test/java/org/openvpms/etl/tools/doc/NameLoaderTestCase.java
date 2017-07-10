@@ -120,7 +120,7 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
      * Verifies that when overwrite is {@code false}, files are skipped if they are already loaded.
      * Note that for the {@link NameLoader}, such documents are flagged as having missing acts, to avoid a full table
      * scan.
-     * <p/>
+     * <p>
      * This is because there is no index on the fileName column.
      *
      * @throws Exception for any error
@@ -152,9 +152,9 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
 
     /**
      * Verifies that document templates cannot be loaded to.
-     * <p/>
+     * <p>
      * Note that the documents are flagged as having missing acts, to avoid a full table scan.
-     * <p/>
+     * <p>
      * This is because there is no index on the fileName column.
      */
     @Test
@@ -265,6 +265,27 @@ public class NameLoaderTestCase extends AbstractBasicLoaderTest {
 
         // there should a single version and reference the first document,
         checkVersions(act, firstDoc);
+    }
+
+    /**
+     * Verifies that an error is logged if two acts have the same file name.
+     */
+    @Test
+    public void testActsWithDuplicateFileNames() throws IOException {
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
+
+        File file = createFile(source, System.nanoTime() + ".gif", "A");
+        createPatientDocAct(file.getName());
+        createPatientDocAct(file.getName());
+
+        LoaderListener listener1 = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, null, true, false, listener1);
+        assertEquals(0, listener1.getLoaded());
+        assertEquals(1, listener1.getErrors());
+        assertEquals(1, listener1.getProcessed());
+        assertEquals(0, listener1.getMissingAct());
+        assertEquals(0, listener1.getAlreadyLoaded());
     }
 
     /**

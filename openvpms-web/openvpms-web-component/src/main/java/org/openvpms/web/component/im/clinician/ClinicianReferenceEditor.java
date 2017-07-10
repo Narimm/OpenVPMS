@@ -17,13 +17,9 @@
 package org.openvpms.web.component.im.clinician;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
@@ -31,7 +27,7 @@ import org.openvpms.web.component.property.Property;
 
 /**
  * Editor for <em>security.user</em> references with clinician classifications.
- * <p/>
+ * <p>
  * This adds the selected clinician to the context.
  *
  * @author Tim Anderson
@@ -71,23 +67,19 @@ public class ClinicianReferenceEditor extends AbstractIMObjectReferenceEditor<Us
      */
     @Override
     protected Query<User> createQuery(String name) {
-        Query<User> query = super.createQuery(name);
-        addConstraints(query);
-        return query;
+        return new ClinicianQuery(getProperty().getArchetypeRange(), getContext());
     }
 
     /**
-     * Adds constraints to the query to restrict it to return users with a 'Clinician' classification.
+     * Determines if a reference is valid.
      *
-     * @param query the query
+     * @param reference the reference to check
+     * @return {@code true} if the query selects the reference
      */
-    private void addConstraints(Query query) {
-        IConstraint hasClinicianClassification = new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.userType");
-
-        IConstraint isClinician = new NodeConstraint("code", RelationalOp.EQ, "CLINICIAN");
-        CollectionNodeConstraint constraint = new CollectionNodeConstraint("classifications", true);
-        constraint.add(hasClinicianClassification);
-        constraint.add(isClinician);
-        query.setConstraints(constraint);
+    @Override
+    protected boolean isValidReference(IMObjectReference reference) {
+        ClinicianQuery query = new ClinicianQuery(getContext());
+        query.setAllLocations(true); // don't restrict the clinician to a particular location after is has been entered
+        return query.selects(reference);
     }
 }
