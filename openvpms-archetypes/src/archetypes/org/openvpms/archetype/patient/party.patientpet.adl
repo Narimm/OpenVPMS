@@ -110,8 +110,8 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="discounts" path="/entityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="*" filter="entityRelationship.discountPatient"/>
+        <node name="discounts" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="*" filter="entityLink.patientDiscount"/>
         <node name="customFields" path="/entityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="1" filter="entityRelationship.customPatientFields"/>
     </archetype>

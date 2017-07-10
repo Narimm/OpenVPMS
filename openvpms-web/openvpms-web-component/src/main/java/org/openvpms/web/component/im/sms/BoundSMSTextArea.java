@@ -21,16 +21,16 @@ import org.openvpms.web.component.bound.Binder;
 import org.openvpms.web.component.bound.TextAreaComponentBinder;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.StringPropertyTransformer;
-import org.openvpms.web.echo.text.CountedTextArea;
+import org.openvpms.web.echo.text.SMSTextArea;
 import org.openvpms.web.echo.text.TextDocument;
 
 
 /**
- * Binds a {@link Property} to an {@link CountedTextArea}.
+ * Binds a {@link Property} to an {@link SMSTextArea}.
  *
  * @author Tim Anderson
  */
-public class BoundCountedTextArea extends CountedTextArea {
+public class BoundSMSTextArea extends SMSTextArea {
 
     /**
      * The binder.
@@ -40,21 +40,20 @@ public class BoundCountedTextArea extends CountedTextArea {
 
     /**
      * Constructs a new {@code BoundTextArea}.
-     * <p/>
+     * <p>
      * If not already present, the property is associated with an {@link StringPropertyTransformer}
      * that doesn't trim leading and trailing spaces or new lines.
      *
      * @param property the property to bind
      */
-    public BoundCountedTextArea(Property property) {
+    public BoundSMSTextArea(Property property) {
         super(new TextDocument());
-        setMaximumLength(property.getMaxLength());
         binder = new TextAreaComponentBinder(this, property);
     }
 
     /**
      * Constructs a new {@code BoundTextArea}.
-     * <p/>
+     * <p>
      * If not already present, the property is associated with an {@link StringPropertyTransformer}
      * that doesn't trim leading and trailing spaces or new lines.
      *
@@ -62,7 +61,7 @@ public class BoundCountedTextArea extends CountedTextArea {
      * @param columns  the no. of columns to display
      * @param rows     the no. of rows to display
      */
-    public BoundCountedTextArea(Property property, int columns, int rows) {
+    public BoundSMSTextArea(Property property, int columns, int rows) {
         this(property);
         setWidth(new Extent(columns, Extent.EX));
         setHeight(new Extent(rows, Extent.EM));

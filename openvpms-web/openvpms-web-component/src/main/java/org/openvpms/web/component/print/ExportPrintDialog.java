@@ -18,6 +18,7 @@ package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -42,11 +43,12 @@ public abstract class ExportPrintDialog extends PrintDialog {
     /**
      * Constructs a {@link ExportPrintDialog}.
      *
-     * @param title the window title
-     * @param help  the help context. May be {@code null}
+     * @param title    the window title
+     * @param location the current practice location. May be {@code null}
+     * @param help     the help context. May be {@code null}
      */
-    public ExportPrintDialog(String title, HelpContext help) {
-        super(title, true, true, false, help);
+    public ExportPrintDialog(String title, Party location, HelpContext help) {
+        super(title, true, true, false, location, help);
         setStyleName("ExportPrintDialog");
     }
 

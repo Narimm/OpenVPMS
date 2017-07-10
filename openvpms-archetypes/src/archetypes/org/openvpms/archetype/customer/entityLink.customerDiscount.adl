@@ -12,52 +12,38 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
 -->
 <archetypes>
-    <archetype name="entityRelationship.discountProductType.1.0"
-               latest="true"
-               type="org.openvpms.component.business.domain.im.common.EntityRelationship"
-               displayName="Product Type Discount">
+    <archetype name="entityLink.customerDiscount.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityLink" displayName="Customer Discount">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Product Discount'"/>
+              derivedValue="'Customer Discount'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name, ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
-        <node name="source" displayName="Product Type" path="/source"
+        <node name="source" displayName="Customer" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
-              minCardinality="1">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entity.productType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              minCardinality="1" filter="party.customerperson"/>
         <node name="target" displayName="Discount" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entity.discountType"/>
+                        <property name="shortName" value="entity.discountType"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.discountGroupType"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node displayName="From Date" name="activeStartTime"
-              path="/activeStartTime" type="java.util.Date" minCardinality="1"
-              defaultValue="java.util.Date.new()"/>
-        <node displayName="To Date" name="activeEndTime" path="/activeEndTime"
-              type="java.util.Date" minCardinality="0"/>
+        <node displayName="From Date" name="activeStartTime" path="/activeStartTime" type="java.util.Date"
+              minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node displayName="To Date" name="activeEndTime" path="/activeEndTime" type="java.util.Date"
+              minCardinality="0"/>
     </archetype>
 </archetypes>

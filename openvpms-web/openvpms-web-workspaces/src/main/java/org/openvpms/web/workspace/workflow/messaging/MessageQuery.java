@@ -137,15 +137,6 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Invoked when a status is selected.
-     */
-    @Override
-    protected void onStatusChanged() {
-        super.onStatusChanged();
-        onQuery();
-    }
-
-    /**
      * Creates a container component to lay out the query component in.
      *
      * @return a new container

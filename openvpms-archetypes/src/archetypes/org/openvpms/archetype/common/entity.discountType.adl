@@ -23,10 +23,8 @@
         <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100">
             <assertion name="propercase"/>
         </node>
-        <node name="description" type="java.lang.String" path="/description"
-              minCardinality="0"/>
-        <node name="type" displayName="Discount Type" path="/details/type"
-              type="java.lang.String" minCardinality="0"
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="type" displayName="Discount Type" path="/details/type" type="java.lang.String" minCardinality="0"
               defaultValue="'PERCENTAGE'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
@@ -36,12 +34,9 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="rate" path="/details/rate"
-              type="java.math.BigDecimal" minCardinality="1"/>
-        <node name="discountFixed" displayName="Include Fixed Amount"
-              path="/details/discountFixed" type="java.lang.Boolean"
-              defaultValue="true()"/>
-        <node name="active" path="/active" type="java.lang.Boolean"
-              defaultValue="true()"/>
+        <node name="rate" path="/details/rate" type="java.math.BigDecimal" minCardinality="1"/>
+        <node name="discountFixed" displayName="Include Fixed Amount" path="/details/discountFixed"
+              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>
