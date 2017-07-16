@@ -49,17 +49,17 @@ public class SMSHelper {
      * @return {@code true} if the customer can receive SMS messages
      */
     public static boolean canSMS(Party customer) {
-        return new Contacts(ServiceHelper.getArchetypeService()).canSMS(customer);
+        return customer != null && new Contacts(ServiceHelper.getArchetypeService()).canSMS(customer);
     }
 
     /**
      * Returns the phone number from a contact, extracting any formatting.
      *
-     * @param contact the phone contact
+     * @param contact the phone contact. May be {@code null}
      * @return the phone number. May be {@code null}
      */
     public static String getPhone(Contact contact) {
-        return new Contacts(ServiceHelper.getArchetypeService()).getPhone(contact);
+        return contact != null ? new Contacts(ServiceHelper.getArchetypeService()).getPhone(contact) : null;
     }
 
     /**
