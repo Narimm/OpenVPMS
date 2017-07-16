@@ -39,6 +39,10 @@
             <message>Printer is not accepting job.</message>
             <message>No printer found.</message>
         </cause>
+        <cause>
+            <className>net.sf.jasperreports.engine.JRException</className>
+            <message>No suitable print service found.</message>
+        </cause>
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.archetype.rules.finance.statement.StatementProcessorException</className>
