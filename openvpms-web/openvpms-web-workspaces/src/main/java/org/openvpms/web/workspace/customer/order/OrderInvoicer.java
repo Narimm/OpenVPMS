@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -47,6 +47,7 @@ import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditDi
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -411,6 +412,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
     protected class Item {
 
+        private final Date startTime;
         private final IMObjectReference patient;
         private final BigDecimal quantity;
         private final IMObjectReference product;
@@ -425,6 +427,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         public Item(FinancialAct orderItem, FinancialAct invoiceItem, FinancialAct invoice) {
             ActBean bean = new ActBean(orderItem);
+            this.startTime = orderItem.getActivityStartTime();
             this.patient = bean.getNodeParticipantRef("patient");
             this.product = bean.getNodeParticipantRef("product");
             this.clinician = bean.getNodeParticipantRef("clinician");
@@ -536,6 +539,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         public void charge(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
             FinancialAct object = (FinancialAct) itemEditor.getObject();
+            itemEditor.setStartTime(startTime);
             itemEditor.setPatientRef(patient);
             itemEditor.setProductRef(product); // TODO - protect against product change
             if (TypeHelper.isA(object, CustomerAccountArchetypes.INVOICE_ITEM)) {
