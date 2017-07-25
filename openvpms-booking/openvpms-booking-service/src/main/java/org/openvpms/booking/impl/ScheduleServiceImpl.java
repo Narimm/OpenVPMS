@@ -41,7 +41,6 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,7 +52,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 @Component
-@Path("schedules")
 public class ScheduleServiceImpl implements ScheduleService {
 
     /**

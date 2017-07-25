@@ -15,8 +15,13 @@
   -->
 
 <enunciate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:noNamespaceSchemaLocation="http://enunciate.webcohesion.com/schemas/enunciate-2.3.0.xsd">
+           xsi:noNamespaceSchemaLocation="http://enunciate.webcohesion.com/schemas/enunciate-2.9.0.xsd">
+    <api-classes>
+        <include pattern="org.openvpms.booking.api.*"/>
+        <include pattern="org.openvpms.booking.domain.*"/>
+    </api-classes>
     <modules>
         <jackson dateFormat="string"/>
+        <jackson1 disabled="true"/>
     </modules>
 </enunciate>

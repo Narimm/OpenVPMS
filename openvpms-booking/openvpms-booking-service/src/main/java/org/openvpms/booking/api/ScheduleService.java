@@ -33,6 +33,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
+@Path("schedules")
 public interface ScheduleService {
 
     /**

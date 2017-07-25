@@ -56,7 +56,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -70,7 +69,6 @@ import java.util.Iterator;
  * @author Tim Anderson
  */
 @Component
-@Path("bookings")
 public class BookingServiceImpl implements BookingService {
 
     /**
