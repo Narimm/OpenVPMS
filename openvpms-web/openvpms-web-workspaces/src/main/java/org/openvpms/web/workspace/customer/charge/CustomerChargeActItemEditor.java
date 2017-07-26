@@ -792,6 +792,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             });
         }
         updateBatch(getProduct(), getStockLocationRef());
+
+        Prescriptions prescriptions = getPrescriptions();
+        PatientMedicationActEditor medicationEditor = getMedicationActEditor();
+        if (prescriptions != null && medicationEditor != null) {
+            medicationEditor.setPrescriptions(prescriptions);
+        }
     }
 
     /**
@@ -1095,7 +1101,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         boolean dispensingLabel = hasDispensingLabel(product);
         IMObjectEditor editor = createEditor(act, dispensing);
         if (editor instanceof PatientMedicationActEditor) {
-            ((PatientMedicationActEditor) editor).setQuantity(quantity);
+            PatientMedicationActEditor medicationEditor = (PatientMedicationActEditor) editor;
+            medicationEditor.setQuantity(quantity);
+            medicationEditor.setPrescriptions(getPrescriptions());
         }
         dispensing.addEdited(editor);
         if (dispensingLabel) {
