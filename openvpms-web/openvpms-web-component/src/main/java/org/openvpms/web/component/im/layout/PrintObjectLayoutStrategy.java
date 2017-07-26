@@ -31,12 +31,14 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.button.ButtonColumn;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
@@ -112,18 +114,26 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties,
                                   Component container, LayoutContext context) {
         if (button != null) {
-            RowLayoutData rowLayout = new RowLayoutData();
-            Alignment topRight = new Alignment(Alignment.RIGHT, Alignment.TOP);
-            rowLayout.setAlignment(topRight);
-            button.setLayoutData(rowLayout);
             ComponentGrid grid = createGrid(object, properties, context);
-            Row row = RowFactory.create("WideCellSpacing", createGrid(grid));
-            ButtonSet set = new ButtonSet(row);
-            set.add(button);
-            container.add(ColumnFactory.create("Inset.Small", row));
+            ButtonColumn column = new ButtonColumn(getFocusGroup());
+            RowLayoutData layoutData = new RowLayoutData();
+            layoutData.setAlignment(Alignment.ALIGN_TOP);
+            column.setLayoutData(layoutData);
+            addButton(column.getButtons());
+            Row row = RowFactory.create(Styles.WIDE_CELL_SPACING, createGrid(grid), column);
+            container.add(ColumnFactory.create(Styles.SMALL_INSET, row));
         } else {
             super.doSimpleLayout(object, parent, properties, container, context);
         }
+    }
+
+    /**
+     * Adds the print button.
+     *
+     * @param set the button set
+     */
+    protected void addButton(ButtonSet set) {
+        set.add(button);
     }
 
     /**
