@@ -46,6 +46,7 @@ import java.util.Set;
 
 import static org.openvpms.archetype.rules.party.ContactArchetypes.EMAIL;
 import static org.openvpms.archetype.rules.party.ContactArchetypes.LOCATION;
+import static org.openvpms.archetype.rules.party.ContactArchetypes.PHONE;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoContactsForRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderCount;
@@ -103,7 +104,7 @@ public class ReminderProcessor {
      * Constructs a {@link ReminderProcessor}.
      *
      * @param date       the date to use to determine if reminders should be cancelled. Any reminder with a
-     *                   first due date + cancel interval &lt;= this will be cancelled
+     *                   due date + cancel interval <= this will be cancelled
      * @param config     the reminder configuration
      * @param disableSMS if {@code true}, ignore any reminder templates with {@code sms = true}
      * @param service    the archetype service
@@ -248,9 +249,9 @@ public class ReminderProcessor {
         if (!ignoreDueDate && reminderType.shouldCancel(dueDate, processingDate)) {
             if (log.isDebugEnabled()) {
                 log.debug("Cancelling reminder=" + reminder.getId() + ", patient=" + getPatientId(bean)
-                          + ", reminderType=" + toString(reminderType) + ", firstDueDate=" + dueDate
-                          + ", processingDate=" + processingDate
-                          + ", cancelDate=" + reminderType.getCancelDate(dueDate)
+                          + ", reminderType=" + toString(reminderType) + ", firstDueDate=" + toString(dueDate)
+                          + ", processingDate=" + toString(processingDate)
+                          + ", cancelDate=" + toString(reminderType.getCancelDate(dueDate))
                           + ": firstDueDate <= cancelDate");
             }
             result = cancel(reminder);
@@ -358,7 +359,7 @@ public class ReminderProcessor {
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("NO matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
-                          + ", reminderType=" + reminderType.getName() + ", count" + count.getCount()
+                          + ", reminderType=" + reminderType.getName() + ", count=" + count.getCount()
                           + ". Reminder will be Listed");
             }
             String message = new ReminderProcessorException(NoContactsForRules).getMessage();
@@ -598,8 +599,10 @@ public class ReminderProcessor {
                 }
             }
         }
-        if ((rule.isExport() || rule.isList())) {
+        if (rule.isExport()) {
             addContact(LOCATION, contacts, matches);
+        } else if (rule.isList()) {
+            addContact(PHONE, contacts, matches);
         }
 
         boolean result = !matches.isEmpty();
@@ -818,6 +821,16 @@ public class ReminderProcessor {
      */
     private String toString(Entity entity) {
         return (entity != null) ? entity.getName() + " (" + entity.getId() + ")" : null;
+    }
+
+    /**
+     * Helper to generate a debug string for a date.
+     *
+     * @param date the date
+     * @return a string
+     */
+    private String toString(Date date) {
+        return new java.sql.Timestamp(date.getTime()).toString();
     }
 
     /**
