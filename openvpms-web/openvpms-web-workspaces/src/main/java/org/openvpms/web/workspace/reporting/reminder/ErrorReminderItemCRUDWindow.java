@@ -18,7 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.archetype.rules.patient.reminder.PagedReminderIterator;
+import org.openvpms.archetype.rules.patient.reminder.PagedReminderItemIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -129,7 +129,7 @@ class ErrorReminderItemCRUDWindow extends ReminderItemCRUDWindow {
     private void onResolveAllConfirmed() {
         ReminderItemQueryFactory factory = getQueryFactory();
         if (factory != null) {
-            PagedReminderIterator iterator = new PagedReminderIterator(factory, 1000,
+            PagedReminderItemIterator iterator = new PagedReminderItemIterator(factory, 1000,
                                                                        ServiceHelper.getArchetypeService());
             while (iterator.hasNext()) {
                 ObjectSet set = iterator.next();

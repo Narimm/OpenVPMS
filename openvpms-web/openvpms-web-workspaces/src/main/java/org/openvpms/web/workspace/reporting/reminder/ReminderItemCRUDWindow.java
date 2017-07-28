@@ -22,7 +22,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
-import org.openvpms.archetype.rules.patient.reminder.PagedReminderIterator;
+import org.openvpms.archetype.rules.patient.reminder.PagedReminderItemIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
@@ -496,7 +496,7 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private void onCompleteAllConfirmed() {
         ReminderItemQueryFactory factory = getQueryFactory();
         if (factory != null) {
-            PagedReminderIterator iterator = new PagedReminderIterator(factory, 1000,
+            PagedReminderItemIterator iterator = new PagedReminderItemIterator(factory, 1000,
                                                                        ServiceHelper.getArchetypeService());
             while (iterator.hasNext()) {
                 ObjectSet set = iterator.next();
