@@ -16,11 +16,10 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,11 +27,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
- * An iterator over items returned queries created by {@link ReminderItemQueryFactory}.
+ * Iterator for the results of an {@link IArchetypeQuery}. This uses paging to limit the no. of results retrieved,
+ * and can be reset if results are updated. <p/>
+ * If reset, any items that have been returned previously will be excluded.
  *
  * @author Tim Anderson
  */
-public class PagedReminderIterator implements Iterator<ObjectSet> {
+public abstract class UpdatableQueryIterator<T> implements Iterator<T> {
 
     /**
      * The query.
@@ -42,7 +43,7 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
     /**
      * The current page.
      */
-    private IPage<ObjectSet> page;
+    private IPage<T> page;
 
     /**
      * Determines if the underlying results have updated.
@@ -52,7 +53,7 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
     /**
      * The iterator over the page.
      */
-    private ReminderIterator iterator;
+    private PageIterator iterator;
 
     /**
      * The archetype service.
@@ -60,17 +61,16 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
     private final IArchetypeService service;
 
     /**
-     * Constructs a {@link PagedReminderIterator}.
+     * Constructs a {@link UpdatableQueryIterator}.
      *
-     * @param factory  the reminder item query factory
+     * @param query    the query
      * @param pageSize the page size
      * @param service  the archetype service
      */
-    public PagedReminderIterator(ReminderItemQueryFactory factory, int pageSize, IArchetypeService service) {
-        ArchetypeQuery query = factory.createQuery();
+    public UpdatableQueryIterator(ArchetypeQuery query, int pageSize, IArchetypeService service) {
         query.setMaxResults(pageSize);
         this.query = query;
-        iterator = new ReminderIterator();
+        iterator = new PageIterator();
         this.service = service;
     }
 
@@ -94,7 +94,7 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
      * @throws NoSuchElementException if the iteration has no more elements
      */
     @Override
-    public ObjectSet next() {
+    public T next() {
         advance();
         return iterator.next();
     }
@@ -105,29 +105,48 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
     }
 
     /**
+     * Indicates to the iterator that the underlying result set has been updated.
+     * <p>
+     * This will force the next database access to start from the beginning, to ensure objects are not skipped.
+     * Any objects that have been returned by the iterator previously will be discarded.
+     * <p>
+     * Note that iteration over the current page will complete before any query is issued.
+     */
+    public void updated() {
+        updated = true;
+    }
+
+    /**
+     * Returns the next page.
+     *
+     * @param query   the query
+     * @param service the archetype service
+     * @return the next page
+     */
+    protected abstract IPage<T> getNext(ArchetypeQuery query, IArchetypeService service);
+
+    /**
+     * Returns a unique identifier for the object.
+     *
+     * @param object the object
+     * @return a unique identifier for the object
+     */
+    protected abstract long getId(T object);
+
+    /**
      * Returns the next page.
      *
      * @param reset    if {@code true}, reset the query to the start, otherwise goes from the next page
      * @param lastPage the last page. May be {@code null}
      * @return the next page
      */
-    protected IPage<ObjectSet> getNextPage(boolean reset, IPage<ObjectSet> lastPage) {
+    protected IPage<T> getNextPage(boolean reset, IPage<T> lastPage) {
         if (reset) {
             query.setFirstResult(0);
         } else if (lastPage != null) {
             query.setFirstResult(lastPage.getFirstResult() + lastPage.getResults().size());
         }
-        return service.getObjects(query);
-    }
-
-    /**
-     * Indicates to the iterator that the underlying result set has been updated.
-     * <p>
-     * This will force the next database access to start from the beginning, to ensure items are not skipped.
-     * Any items that have been returned by the iterator previously will be discarded.
-     */
-    public void updated() {
-        updated = true;
+        return getNext(query, service);
     }
 
     /**
@@ -148,32 +167,32 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
     }
 
     /**
-     * An iterator the excludes reminders that it has already seen.
+     * An iterator the excludes items that it has already seen.
      * <p>
      * This is necessary as paging is altered by reminder updates, and some reminders may seen more than once if
      * they fail to be updated.
      */
-    private class ReminderIterator implements Iterator<ObjectSet> {
+    private class PageIterator implements Iterator<T> {
 
         /**
-         * Seen reminder item identifiers.
+         * Seen identifiers.
          */
         private Set<Long> ids = new HashSet<>();
 
         /**
          * The underlying iterator.
          */
-        private Iterator<ObjectSet> iterator;
+        private Iterator<T> iterator;
 
         /**
          * The next object.
          */
-        private ObjectSet next;
+        private T next;
 
         /**
          * Default constructor.
          */
-        public ReminderIterator() {
+        public PageIterator() {
         }
 
         /**
@@ -181,7 +200,7 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
          *
          * @param page the page
          */
-        public void setPage(IPage<ObjectSet> page) {
+        public void setPage(IPage<T> page) {
             this.iterator = page.getResults().iterator();
         }
 
@@ -196,12 +215,10 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
         public boolean hasNext() {
             if (iterator != null && next == null) {
                 while (iterator.hasNext()) {
-                    ObjectSet set = iterator.next();
-                    Act item = (Act) set.get("item");
-                    long id = item.getId();
-                    if (!ids.contains(id)) {
-                        next = set;
-                        ids.add(id);
+                    T object = iterator.next();
+                    long id = getId(object);
+                    if (ids.add(id)) {
+                        next = object;
                         break;
                     }
                 }
@@ -216,14 +233,14 @@ public class PagedReminderIterator implements Iterator<ObjectSet> {
          * @throws NoSuchElementException if the iteration has no more elements
          */
         @Override
-        public ObjectSet next() {
+        public T next() {
             if (next == null) {
                 hasNext();
             }
             if (next == null) {
                 throw new NoSuchElementException();
             }
-            ObjectSet result = next;
+            T result = next;
             next = null;
             return result;
         }

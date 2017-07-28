@@ -60,7 +60,7 @@ public class GroupingReminderIterator implements Iterator<Reminders> {
     /**
      * The underlying iterator over the reminders.
      */
-    private PagedReminderIterator pagedIterator;
+    private PagedReminderItemIterator pagedIterator;
 
     /**
      * Wraps the pagedIterator.
@@ -104,7 +104,7 @@ public class GroupingReminderIterator implements Iterator<Reminders> {
         this.reminderTypes = reminderTypes;
         this.groupByCustomer = groupByCustomer;
         this.groupByPatient = groupByPatient;
-        pagedIterator = new PagedReminderIterator(factory, pageSize, service);
+        pagedIterator = new PagedReminderItemIterator(factory, pageSize, service);
         pushbackIterator = new PushbackIterator<>(pagedIterator);
     }
 
