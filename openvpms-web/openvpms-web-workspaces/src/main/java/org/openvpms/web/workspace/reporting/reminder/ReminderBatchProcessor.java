@@ -36,13 +36,13 @@ public interface ReminderBatchProcessor extends BatchProcessorComponent {
 
     /**
      * Indicates if reminders are being resent.
-     * <p/>
+     * <p>
      * If set:
      * <ul>
      * <li>due dates are ignored</li>
      * <li>the reminder last sent date is not updated</li>
      * </ul>
-     * <p/>
+     * <p>
      * Defaults to {@code false}.
      *
      * @param resend if {@code true} reminders are being resent
@@ -55,6 +55,13 @@ public interface ReminderBatchProcessor extends BatchProcessorComponent {
      * @param statistics the statistics
      */
     void setStatistics(Statistics statistics);
+
+    /**
+     * Determines if there are more reminders available on completion of processing.
+     *
+     * @return {@code true} if there are more reminders available
+     */
+    boolean hasMoreReminders();
 
     /**
      * Returns the component.

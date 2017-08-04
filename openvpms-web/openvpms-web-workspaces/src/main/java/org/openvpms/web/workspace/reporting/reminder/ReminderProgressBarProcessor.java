@@ -145,6 +145,16 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
     }
 
     /**
+     * Determines if there are more reminders available on completion of processing.
+     *
+     * @return {@code true} if there are more reminders available
+     */
+    @Override
+    public boolean hasMoreReminders() {
+        return getIterator().hasNext();
+    }
+
+    /**
      * Processes the batch.
      */
     @Override

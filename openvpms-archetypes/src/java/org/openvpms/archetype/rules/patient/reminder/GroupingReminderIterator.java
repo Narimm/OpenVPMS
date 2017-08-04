@@ -98,8 +98,8 @@ public class GroupingReminderIterator implements Iterator<Reminders> {
      * @param service         the archetype service
      */
     public GroupingReminderIterator(ReminderItemQueryFactory factory, ReminderTypes reminderTypes,
-                                    int pageSize, ReminderGroupingPolicy groupByCustomer, ReminderGroupingPolicy groupByPatient,
-                                    IArchetypeService service) {
+                                    int pageSize, ReminderGroupingPolicy groupByCustomer,
+                                    ReminderGroupingPolicy groupByPatient, IArchetypeService service) {
         this.service = service;
         this.reminderTypes = reminderTypes;
         this.groupByCustomer = groupByCustomer;
