@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
+import org.openvpms.archetype.rules.patient.reminder.PagedReminderItemIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderGroupingPolicy;
@@ -27,14 +28,11 @@ import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * A {@link ReminderItemSource} that uses an {@link ReminderItemQueryFactory}.
@@ -63,6 +61,10 @@ public class ReminderItemQuerySource implements ReminderItemSource {
      */
     private final ReminderGroupingPolicy groupByPatient;
 
+    /**
+     * The maximum no. of reminders to query at once.
+     */
+    private static final int PAGE_SIZE = 100;
 
     /**
      * Constructs a {@link ReminderItemQuerySource}.
@@ -94,15 +96,9 @@ public class ReminderItemQuerySource implements ReminderItemSource {
      * @return all items that match the query
      */
     @Override
-    public List<ReminderEvent> all() {
-        List<ReminderEvent> result = new ArrayList<>();
-        ArchetypeQuery query = factory.createQuery();
-        query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
-        List<ObjectSet> sets = ServiceHelper.getArchetypeService().getObjects(query).getResults();
-        for (ObjectSet set : sets) {
-            result.add(new ReminderEvent(set));
-        }
-        return result;
+    public Iterator<ReminderEvent> all() {
+        return new ObjectSetToReminderEventIterator(new PagedReminderItemIterator(factory, PAGE_SIZE,
+                                                                                  ServiceHelper.getArchetypeService()));
     }
 
     /**
@@ -114,7 +110,7 @@ public class ReminderItemQuerySource implements ReminderItemSource {
         return new Iterable<Reminders>() {
             @Override
             public Iterator<Reminders> iterator() {
-                return new GroupingReminderIterator(factory, reminderTypes, 1000, groupByCustomer, groupByPatient,
+                return new GroupingReminderIterator(factory, reminderTypes, PAGE_SIZE, groupByCustomer, groupByPatient,
                                                     ServiceHelper.getArchetypeService());
             }
         };
@@ -131,5 +127,43 @@ public class ReminderItemQuerySource implements ReminderItemSource {
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         IPage<ObjectSet> results = service.getObjects(query);
         return results.getTotalResults();
+    }
+
+    private static class ObjectSetToReminderEventIterator implements Iterator<ReminderEvent> {
+        private final Iterator<ObjectSet> iterator;
+
+        public ObjectSetToReminderEventIterator(Iterator<ObjectSet> iterator) {
+            this.iterator = iterator;
+        }
+
+        /**
+         * Returns {@code true} if the iteration has more elements.
+         *
+         * @return {@code true} if the iteration has more elements
+         */
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        /**
+         * Returns the next element in the iteration.
+         *
+         * @return the next element in the iteration
+         */
+        @Override
+        public ReminderEvent next() {
+            return new ReminderEvent(iterator.next());
+        }
+
+        /**
+         * Removes from the underlying collection the last element returned by this iterator (optional operation).
+         *
+         * @throws UnsupportedOperationException if the {@code remove} operation is not supported by this iterator
+         */
+        @Override
+        public void remove() {
+            iterator.remove();
+        }
     }
 }

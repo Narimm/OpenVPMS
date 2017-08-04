@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.component.processor;
 
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 
@@ -27,8 +26,7 @@ import java.util.Iterator;
  * Abstract implementation of the {@link BatchProcessor} interface that
  * iterates over the batch, processing each item.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class IteratingBatchProcessor<Type>
         extends AbstractBatchProcessor {
@@ -40,7 +38,7 @@ public abstract class IteratingBatchProcessor<Type>
 
 
     /**
-     * Creates a new <tt>AbstractBatchProcessor</tt>.
+     * Constructs an {@link AbstractBatchProcessor}.
      *
      * @param iterator the iterator
      */
@@ -49,10 +47,11 @@ public abstract class IteratingBatchProcessor<Type>
     }
 
     /**
-     * Creates a new <tt>AbstractBatchProcessor</tt>.
+     * Constructs an {@link AbstractBatchProcessor}.
      * The iterator must be set using {@link #setIterator}.
      */
     public IteratingBatchProcessor() {
+        setIterator(Collections.<Type>emptyIterator());
     }
 
     /**
@@ -120,8 +119,8 @@ public abstract class IteratingBatchProcessor<Type>
 
     /**
      * Increments the count of processed objects.
-     * <p/>
-     * This implementation increments it by <tt>1</tt>.
+     * <p>
+     * This implementation increments it by {@code 1}.
      *
      * @param object the processed object
      */

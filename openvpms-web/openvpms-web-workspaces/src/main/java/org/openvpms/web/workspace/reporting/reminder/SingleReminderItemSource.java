@@ -27,6 +27,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -80,8 +81,9 @@ public class SingleReminderItemSource implements ReminderItemSource {
      *
      * @return all items that match the query
      */
-    public List<ReminderEvent> all() {
-        return event == null ? Collections.<ReminderEvent>emptyList() : Collections.singletonList(event);
+    @Override
+    public Iterator<ReminderEvent> all() {
+        return event == null ? Collections.<ReminderEvent>emptyList().iterator() : Collections.singletonList(event).iterator();
     }
 
     /**
@@ -89,6 +91,7 @@ public class SingleReminderItemSource implements ReminderItemSource {
      *
      * @return the items matching the query
      */
+    @Override
     public Iterable<Reminders> query() {
         List<ReminderEvent> reminders = new ArrayList<>();
         if (event != null) {

@@ -24,7 +24,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -60,9 +62,19 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     private boolean resend = false;
 
     /**
+     * Determines if more reminders are available on completion.
+     */
+    private boolean moreAvailable = false;
+
+    /**
      * The statistics.
      */
     private Statistics statistics;
+
+    /**
+     * The maximum number of reminders to process.
+     */
+    private static final int BATCH_SIZE = 1000;
 
     /**
      * Constructs an {@link AbstractReminderBatchProcessor}.
@@ -134,6 +146,15 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
+     * Determines if there are more reminders available on completion of processing.
+     *
+     * @return {@code true} if there are more reminders available
+     */
+    public boolean hasMoreReminders() {
+        return moreAvailable;
+    }
+
+    /**
      * Registers the statistics.
      *
      * @param statistics the statistics
@@ -147,7 +168,12 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     public void process() {
         state = null;
-        List<ReminderEvent> reminders = query.all();
+        Iterator<ReminderEvent> iterator = query.all();
+        List<ReminderEvent> reminders = new ArrayList<>();
+        while ((moreAvailable = iterator.hasNext()) && reminders.size() < BATCH_SIZE) {
+            reminders.add(iterator.next());
+        }
+
         if (!reminders.isEmpty()) {
             try {
                 state = processor.prepare(reminders, ReminderType.GroupBy.NONE, new Date(), getResend());
