@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
-import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
@@ -32,10 +31,8 @@ import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.DeferredAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.DeferredReference;
 import org.openvpms.component.business.dao.hibernate.im.common.DeleteHandler;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
-import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.DefaultObjectLoader;
 import org.openvpms.component.business.dao.hibernate.im.entity.HibernateResultCollector;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectNodeResultCollector;
@@ -72,7 +69,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -237,7 +233,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * Retrieves partially populated objects that match the query.
      * This may be used to selectively load parts of object graphs to improve
      * performance.
-     * <p/>
+     * <p>
      * All simple properties of the returned objects are populated - the
      * <code>nodes</code> argument is used to specify which collection nodes to
      * populate. If empty, no collections will be loaded, and the behaviour of
@@ -311,15 +307,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
-     * <p/>
+     * <p>
      * All parameters are optional and can either denote an exact or partial
      * match semantics. If a parameter has a '*' at the start or end of the
      * value then it will perform a wildcard match.  If not '*' is specified in
      * the value then it will only return objects with the exact value.
-     * <p/>
+     * <p>
      * If two or more parameters are specified then it will return entities
      * that matching all criteria.
-     * <p/>
+     * <p>
      * The results will be returned in a {@link Page} object, which may contain
      * a subset of the total result set. The caller can then use the context
      * information in the {@link Page} object to make subsequent calls.
@@ -333,11 +329,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param firstResult  the first result to retrieve
      * @param maxResults   the maximum number of results to return
      * @return IPage<IMObject>
-     *         the results and associated context information
+     * the results and associated context information
      * @throws IMObjectDAOException a runtime exception if the request cannot
      *                              complete
      * @deprecated replaced by {@link #get(String, String, String, boolean,
-     *             int, int)}
+     * int, int)}
      */
     @Deprecated
     public IPage<IMObject> get(String rmName, String entityName,
@@ -364,15 +360,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
-     * <p/>
+     * <p>
      * All parameters are optional and can either denote an exact or partial
      * match semantics. If a parameter has a '*' at the start or end of the
      * value then it will perform a wildcard match.  If not '*' is specified in
      * the value then it will only return objects with the exact value.
-     * <p/>
+     * <p>
      * If two or more parameters are specified then it will return entities
      * that matching all criteria.
-     * <p/>
+     * <p>
      * The results will be returned in a {@link Page} object, which may contain
      * a subset of the total result set. The caller can then use the context
      * information in the {@link Page} object to make subsequent calls.
@@ -396,8 +392,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
 
         StringBuilder queryString = new StringBuilder();
-        List<String> names = new ArrayList<String>();
-        List<Object> params = new ArrayList<Object>();
+        List<String> names = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
         boolean andRequired = false;
 
         queryString.append("from ");
@@ -530,7 +526,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
     /**
      * Invoked after successful commit.
-     * <p/>
+     * <p>
      * This propagates identifier and version changes from the committed
      * <tt>IMObjectDO</tt>s to their corresponding <tt>IMObject</tt>s.
      *
@@ -542,7 +538,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
     /**
      * Invoked on transaction rollback.
-     * <p/>
+     * <p>
      * This reverts identifier and version changes
      *
      * @param context the assembly context
@@ -656,7 +652,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     for (Object object : rows) {
                         collector.collect(object);
                     }
-                    resolveDeferredReferences(context);
+                    context.resolveDeferredReferences();
                 }
                 return null;
             }
@@ -721,7 +717,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 for (Object object : rows) {
                     collector.collect(object);
                 }
-                resolveDeferredReferences(context);
+                context.resolveDeferredReferences();
                 return null;
             }
         });
@@ -852,7 +848,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     Context context = getContext(session);
                     IMObjectDO object = (IMObjectDO) results.get(0);
                     IMObject result = assembler.assemble(object, context);
-                    resolveDeferredReferences(context);
+                    context.resolveDeferredReferences();
                     return result;
                 }
             }
@@ -959,13 +955,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @return the assembled objects
      */
     private List<DOState> assembleDeferred(Context context) {
-        List<DOState> result = new ArrayList<DOState>();
+        List<DOState> result = new ArrayList<>();
         boolean processed;
         do {
             processed = false;
             DOState[] states = context.getSaveDeferred().toArray(
                     new DOState[context.getSaveDeferred().size()]);
-            Set<DeferredAssembler> deferred = new HashSet<DeferredAssembler>();
+            Set<DeferredAssembler> deferred = new HashSet<>();
             for (DOState state : states) {
                 Set<DeferredAssembler> set = state.getDeferred();
                 if (!set.isEmpty()) {
@@ -1003,63 +999,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
-     * Resolves deferred references.
-     *
-     * @param context the assembly context
-     */
-    private void resolveDeferredReferences(Context context) {
-        List<DeferredReference> deferred = context.getDeferredReferences();
-        if (!deferred.isEmpty()) {
-            Map<Class<? extends IMObjectDOImpl>, List<DeferredReference>> map
-                    = new HashMap<Class<? extends IMObjectDOImpl>, List<DeferredReference>>();
-            for (DeferredReference ref : deferred) {
-                IMObjectDO object = ref.getObject();
-                if (Hibernate.isInitialized(object)) {
-                    ref.update(object.getObjectReference());
-                } else {
-                    List<DeferredReference> list = map.get(ref.getType());
-                    if (list == null) {
-                        list = new ArrayList<DeferredReference>();
-                        map.put(ref.getType(), list);
-                    }
-                    list.add(ref);
-                }
-            }
-            if (!map.isEmpty()) {
-                for (Map.Entry<Class<? extends IMObjectDOImpl>,
-                        List<DeferredReference>> entry : map.entrySet()) {
-                    Class<? extends IMObjectDOImpl> type = entry.getKey();
-                    List<DeferredReference> refs = entry.getValue();
-                    Map<Long, IMObjectDO> objects = new HashMap<Long, IMObjectDO>();
-                    for (DeferredReference ref : refs) {
-                        IMObjectDO object = ref.getObject();
-                        objects.put(object.getId(), object);
-                    }
-                    Map<Long, IMObjectReference> resolvedRefs
-                            = context.getReferences(objects, type);
-                    for (DeferredReference ref : refs) {
-                        IMObjectReference resolved
-                                = resolvedRefs.get(ref.getObject().getId());
-                        if (resolved != null) {
-                            ref.update(resolved);
-                        }
-                    }
-                }
-                map.clear();
-            }
-            deferred.clear();
-        }
-    }
-
-    /**
      * Check whether write operations are allowed on the given Session.
      * <p>Default implementation throws an InvalidDataAccessApiUsageException
      * in case of FlushMode.NEVER. Can be overridden in subclasses.
      *
      * @param template the hibernate template
      * @param session  the current session
-     * @throws InvalidDataAccessApiUsageException
-     *          if write operations are not allowed
+     * @throws InvalidDataAccessApiUsageException if write operations are not allowed
      * @see HibernateTemplate#checkWriteOperationAllowed(Session)
      */
     private void checkWriteOperationAllowed(HibernateTemplate template,
@@ -1213,7 +1159,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
             NamedQuery q = (NamedQuery) query;
             List<String> names = (q.getNames() != null) ?
-                                 new ArrayList<String>(q.getNames()) : null;
+                                 new ArrayList<>(q.getNames()) : null;
             List<String> refNames = Collections.emptyList();
             HibernateResultCollector<ObjectSet> collector
                     = new ObjectSetResultCollector(names, refNames, null);

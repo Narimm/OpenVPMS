@@ -427,6 +427,50 @@ public class Context {
     }
 
     /**
+     * Resolves deferred references.
+     */
+    public void resolveDeferredReferences() {
+        List<DeferredReference> deferred = getDeferredReferences();
+        if (!deferred.isEmpty()) {
+            Map<Class<? extends IMObjectDOImpl>, List<DeferredReference>> map = new HashMap<>();
+            for (DeferredReference ref : deferred) {
+                IMObjectDO object = ref.getObject();
+                if (Hibernate.isInitialized(object)) {
+                    ref.update(object.getObjectReference());
+                } else {
+                    List<DeferredReference> list = map.get(ref.getType());
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        map.put(ref.getType(), list);
+                    }
+                    list.add(ref);
+                }
+            }
+            if (!map.isEmpty()) {
+                for (Map.Entry<Class<? extends IMObjectDOImpl>,
+                        List<DeferredReference>> entry : map.entrySet()) {
+                    Class<? extends IMObjectDOImpl> type = entry.getKey();
+                    List<DeferredReference> refs = entry.getValue();
+                    Map<Long, IMObjectDO> objects = new HashMap<>();
+                    for (DeferredReference ref : refs) {
+                        IMObjectDO object = ref.getObject();
+                        objects.put(object.getId(), object);
+                    }
+                    Map<Long, IMObjectReference> resolvedRefs = getReferences(objects, type);
+                    for (DeferredReference ref : refs) {
+                        IMObjectReference resolved = resolvedRefs.get(ref.getObject().getId());
+                        if (resolved != null) {
+                            ref.update(resolved);
+                        }
+                    }
+                }
+                map.clear();
+            }
+            deferred.clear();
+        }
+    }
+
+    /**
      * Destroys the context, releasing resources.
      */
     public void destroy() {
