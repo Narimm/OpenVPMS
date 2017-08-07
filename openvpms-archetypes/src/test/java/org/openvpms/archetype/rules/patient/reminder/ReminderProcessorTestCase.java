@@ -88,6 +88,11 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      */
     private Entity reminderType;
 
+    /**
+     * The reminder configuration.
+     */
+    private ReminderConfiguration config;
+
 
     /**
      * Sets up the test case.
@@ -100,6 +105,20 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         customer = TestHelper.createCustomer(new Contact[0]); // customer with no contacts
         patient = TestHelper.createPatient(customer);
         reminderType = ReminderTestHelper.createReminderType(1, DateUnits.MONTHS, 1, DateUnits.DAYS);
+
+        IMObject object = create(ReminderArchetypes.CONFIGURATION);
+        IMObjectBean bean = new IMObjectBean(object);
+        bean.setValue("emailInterval", 2);
+        bean.setValue("emailUnits", DateUnits.DAYS.toString());
+        bean.setValue("smsInterval", 3);
+        bean.setValue("smsUnits", DateUnits.DAYS.toString());
+        bean.setValue("printInterval", 1);
+        bean.setValue("printUnits", DateUnits.WEEKS.toString());
+        bean.setValue("exportInterval", 2);
+        bean.setValue("exportUnits", DateUnits.WEEKS.toString());
+        bean.setValue("listInterval", 1);
+        bean.setValue("listUnits", DateUnits.MONTHS.toString());
+        config = new ReminderConfiguration(object, getArchetypeService());
     }
 
     /**
@@ -334,6 +353,45 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         assertEquals(ActStatus.CANCELLED, acts.get(0).getStatus());
     }
 
+    @Test
+    public void testMultipleCounts() {
+        Entity emailTemplate = createEmailTemplate("subject", "text");
+        Entity smsTemplate = createSMSTemplate("TEXT", "text");
+        Entity template = createDocumentTemplate(emailTemplate, smsTemplate);
+
+        Entity allRule = ReminderTestHelper.createRule(false, true, true, true, true, true, ReminderRule.SendTo.ALL);
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, allRule);
+        addReminderCount(reminderType, 1, 1, DateUnits.WEEKS, template, allRule);
+        addReminderCount(reminderType, 2, 2, DateUnits.MONTHS, template, allRule);
+        addReminderCount(reminderType, 3, 3, DateUnits.YEARS, template, allRule);
+        Act reminder = createReminderDueTomorrow();
+
+        addContacts(createEmail(false), createPhone(true, false), createLocation(false));
+        checkProcess(true, true, true, true, true, reminder);
+        completeItems(reminder, 0);
+        checkProcess(true, true, true, true, true, reminder);
+        completeItems(reminder, 1);
+        checkProcess(true, true, true, true, true, reminder);
+        completeItems(reminder, 2);
+    }
+
+    protected void completeItems(Act reminder, int count) {
+        ActBean bean = new ActBean(reminder);
+        assertEquals(count, bean.getInt("reminderCount"));
+        List<Act> items = bean.getNodeActs("items");
+        for (Act item : items) {
+            ActBean itemBean = new ActBean(item);
+            if (itemBean.getInt("count") == count) {
+                item.setStatus(ReminderItemStatus.COMPLETED);
+                save(item);
+                if (reminderRules.updateReminder(reminder, item)) {
+                    save(reminder, item);
+                }
+            }
+        }
+        assertEquals(count + 1, bean.getInt("reminderCount"));
+    }
+
     /**
      * Adds contacts to the customer.
      *
@@ -388,35 +446,48 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         List<Act> acts = process(reminder);
         assertFalse(acts.isEmpty());
         save(acts);
-        checkActs(acts, ReminderArchetypes.EMAIL_REMINDER, email);
-        checkActs(acts, ReminderArchetypes.SMS_REMINDER, sms);
-        checkActs(acts, ReminderArchetypes.PRINT_REMINDER, print);
-        checkActs(acts, ReminderArchetypes.EXPORT_REMINDER, export);
-        checkActs(acts, ReminderArchetypes.LIST_REMINDER, list);
+
+        ReminderType type = new ReminderType(reminderType, getArchetypeService());
+        checkActs(reminder, type, acts, ReminderArchetypes.EMAIL_REMINDER, email);
+        checkActs(reminder, type, acts, ReminderArchetypes.SMS_REMINDER, sms);
+        checkActs(reminder, type, acts, ReminderArchetypes.PRINT_REMINDER, print);
+        checkActs(reminder, type, acts, ReminderArchetypes.EXPORT_REMINDER, export);
+        checkActs(reminder, type, acts, ReminderArchetypes.LIST_REMINDER, list);
     }
 
     /**
      * Verifies that the specified act exists/doesn't exist.
      *
+     * @param reminder  the reminder
+     * @param type      the reminder type
      * @param acts      the acts
      * @param shortName the act short name
      * @param exists    if {@code true}, it must exist at most once in {@code acts}, otherwise it mustn't exist
      */
-    private void checkActs(List<Act> acts, String shortName, boolean exists) {
-        int found = 0;
+    private void checkActs(Act reminder, ReminderType type, List<Act> acts, String shortName, boolean exists) {
+        Act item = null;
         for (Act act : acts) {
             if (TypeHelper.isA(act, shortName)) {
-                found++;
+                if (item != null) {
+                    fail(shortName + " found more than once");
+                } else if (!exists) {
+                    fail(shortName + " found");
+                }
+                item = act;
             }
         }
-        if (exists) {
-            if (found == 0) {
-                fail(shortName + " not found");
-            } else if (found > 1) {
-                fail(shortName + " found more than once");
+        if (item != null) {
+            ActBean bean = new ActBean(reminder);
+            int reminderCount = bean.getInt("reminderCount");
+            ActBean itemBean = new ActBean(item);
+            assertEquals(reminderCount, itemBean.getInt("count"));
+            Date dueDate = type.getNextDueDate(reminder.getActivityEndTime(), reminderCount);
+            if (dueDate == null) {
+                // reminder type has no next due date for the reminder count. The current due date will be used
+                dueDate = reminder.getActivityStartTime();
             }
-        } else if (found != 0) {
-            fail(shortName + " found");
+            Date sendDate = config.getSendDate(dueDate, shortName);
+            assertEquals(sendDate, item.getActivityStartTime());
         }
     }
 
@@ -426,8 +497,6 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      * @param reminder the reminder
      */
     private List<Act> process(Act reminder) {
-        IMObject object = create(ReminderArchetypes.CONFIGURATION);
-        ReminderConfiguration config = new ReminderConfiguration(object, getArchetypeService());
         ReminderProcessor processor = new ReminderProcessor(new Date(), config, false, getArchetypeService(), rules);
         return processor.process(reminder);
     }

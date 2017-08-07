@@ -18,11 +18,11 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
-import org.openvpms.archetype.rules.patient.reminder.PagedReminderItemIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
@@ -51,6 +51,7 @@ import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -480,8 +481,8 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * Invoked to complete all reminders items matching the query, without sending them.
      */
     private void onCompleteAll() {
-        ConfirmationDialog.show(Messages.get("reporting.reminder.completeall.title"),
-                                Messages.get("reporting.reminder.completeall.message"),
+        ConfirmationDialog.show(Messages.get("reporting.reminder.completeall.prompt.title"),
+                                Messages.get("reporting.reminder.completeall.prompt.message"),
                                 ConfirmationDialog.YES_NO, new PopupDialogListener() {
                     @Override
                     public void onYes() {
@@ -496,20 +497,20 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private void onCompleteAllConfirmed() {
         ReminderItemQueryFactory factory = getQueryFactory();
         if (factory != null) {
-            PagedReminderItemIterator iterator = new PagedReminderItemIterator(factory, 1000,
-                                                                       ServiceHelper.getArchetypeService());
-            while (iterator.hasNext()) {
-                ObjectSet set = iterator.next();
-                Act item = (Act) set.get("item");
-                String status = item.getStatus();
-                if (ReminderItemStatus.PENDING.equals(status) || ReminderItemStatus.ERROR.equals(status)) {
-                    Act reminder = (Act) set.get("reminder");
-                    complete(item, reminder);
-                    iterator.updated();
+            CompleteAllProgressBarProcessor processor = new CompleteAllProgressBarProcessor(factory);
+            ReminderItemProgressBarDialog dialog = new ReminderItemProgressBarDialog(
+                    Messages.get("reporting.reminder.completeall.run.title"),
+                    Messages.get("reporting.reminder.completeall.run.message"), processor);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                @Override
+                public void onClose(WindowPaneEvent event) {
+                    onRefresh(getObject());
                 }
-            }
+            });
+            dialog.show();
+        } else {
+            onRefresh(getObject());
         }
-        onRefresh(getObject());
     }
 
     /**
@@ -590,4 +591,30 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
             return true;
         }
     }
+
+    private class CompleteAllProgressBarProcessor extends ReminderItemProgressBarProcessor {
+
+        /**
+         * Constructs a {@code CompleteAllProgressBarProcessor}.
+         */
+        public CompleteAllProgressBarProcessor(ReminderItemQueryFactory factory) {
+            super(factory);
+        }
+
+        /**
+         * Processes a reminder item.
+         *
+         * @param item     the reminder item
+         * @param reminder the reminder
+         */
+        @Override
+        protected void process(Act item, Act reminder) {
+            String status = item.getStatus();
+            if (ReminderItemStatus.PENDING.equals(status) || ReminderItemStatus.ERROR.equals(status)) {
+                complete(item, reminder);
+                updated();
+            }
+        }
+    }
+
 }
