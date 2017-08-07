@@ -118,6 +118,7 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
             for (Object object : query.list()) {
                 collector.collect(object);
             }
+            context.resolveDeferredReferences();
             List objects;
             objects = collector.getPage().getResults();
             results = objects;
