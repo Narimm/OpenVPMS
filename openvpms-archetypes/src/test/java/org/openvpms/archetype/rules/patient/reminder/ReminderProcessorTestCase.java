@@ -353,6 +353,9 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         assertEquals(ActStatus.CANCELLED, acts.get(0).getStatus());
     }
 
+    /**
+     * Tests processing reminder items for multiple reminder counts.
+     */
     @Test
     public void testMultipleCounts() {
         Entity emailTemplate = createEmailTemplate("subject", "text");
@@ -373,9 +376,20 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         completeItems(reminder, 1);
         checkProcess(true, true, true, true, true, reminder);
         completeItems(reminder, 2);
+        checkProcess(true, true, true, true, true, reminder);
+        completeItems(reminder, 3);
+
+        List<Act> acts = process(reminder);
+        assertTrue(acts.isEmpty());         // no reminder count = 4
     }
 
-    protected void completeItems(Act reminder, int count) {
+    /**
+     * Completes reminder items associated with a reminder, and verifies the reminder count is incremented.
+     *
+     * @param reminder the reminder
+     * @param count the reminder count
+     */
+    private void completeItems(Act reminder, int count) {
         ActBean bean = new ActBean(reminder);
         assertEquals(count, bean.getInt("reminderCount"));
         List<Act> items = bean.getNodeActs("items");
@@ -456,7 +470,9 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the specified act exists/doesn't exist.
+     * Verifies that the specified item exists/doesn't exist.
+     * <p/>
+     * If an item exists, its send date and count will be checked.
      *
      * @param reminder  the reminder
      * @param type      the reminder type
