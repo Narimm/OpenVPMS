@@ -17,6 +17,8 @@
 package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
@@ -97,6 +99,11 @@ public class InteractivePrinter implements Printer {
      */
     private PrintDialog dialog;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(InteractivePrinter.class);
+
 
     /**
      * Constructs an {@link InteractivePrinter}.
@@ -172,6 +179,9 @@ public class InteractivePrinter implements Printer {
      */
     public void print(String printer) {
         if (interactive || printer == null) {
+            printInteractive(printer);
+        } else if (!PrintHelper.exists(printer)) {
+            log.warn("Printer not found: " + printer);
             printInteractive(printer);
         } else {
             printDirect(printer);

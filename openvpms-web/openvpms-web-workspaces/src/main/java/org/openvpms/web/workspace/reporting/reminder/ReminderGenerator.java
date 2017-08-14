@@ -157,11 +157,22 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      *
      * @param processor the processor
      */
-    private void process(ReminderBatchProcessor processor) {
+    private void process(final ReminderBatchProcessor processor) {
         processor.setListener(new BatchProcessorListener() {
             @Override
             public void completed() {
-                onCompletion();
+                if (processor.hasMoreReminders()) {
+                    InformationDialog.show(Messages.get("reporting.reminder.run.title"),
+                                           Messages.format("reporting.reminder.run.rerun", processor.getTitle()),
+                                           new WindowPaneListener() {
+                                               @Override
+                                               public void onClose(WindowPaneEvent event) {
+                                                   onCompletion();
+                                               }
+                                           });
+                } else {
+                    onCompletion();
+                }
             }
 
             @Override

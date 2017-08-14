@@ -16,9 +16,11 @@
 
 package org.openvpms.web.echo.dialog;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.echo.button.ButtonRow;
@@ -216,17 +218,43 @@ public abstract class PopupWindow extends WindowPane {
 
     /**
      * Notifies {@code WindowPaneListener}s that the user has requested to close this {@code WindowPane}.
-     * <p/>
+     * <p>
      * This implementation re-registers keystroke listeners as a workaround to bugs in Firefox.
      *
      * @see KeyStrokeHelper#reregisterKeyStrokeListeners
      */
     @Override
     protected void fireWindowClosing() {
-        // re-register listeners for Firefox
-        KeyStrokeHelper.reregisterKeyStrokeListeners();
-
+        reregisterKeyStrokeListeners();
         super.fireWindowClosing();
+    }
+
+    /**
+     * Workaround to force re-registration of the key-stroke listeners on the parent dialog, if any, or the root window
+     * otherwise.
+     * Failure to do this means that the keyboard shortcuts don't work.
+     */
+    protected void reregisterKeyStrokeListeners() {
+        ApplicationInstance active = ApplicationInstance.getActive();
+        if (active != null) {
+            WindowPane next = null;
+            Window root = active.getDefaultWindow();
+            for (Component c : root.getContent().getComponents()) {
+                if (c instanceof WindowPane) {
+                    WindowPane pane = (WindowPane) c;
+                    if (pane.isModal()) {
+                        if (pane != this && (next == null || pane.getZIndex() > next.getZIndex())) {
+                            next = pane;
+                        }
+                    }
+                }
+            }
+            if (next != null) {
+                KeyStrokeHelper.reregisterKeyStrokeListeners(next);
+            } else {
+                KeyStrokeHelper.reregisterKeyStrokeListeners(root);
+            }
+        }
     }
 
     /**

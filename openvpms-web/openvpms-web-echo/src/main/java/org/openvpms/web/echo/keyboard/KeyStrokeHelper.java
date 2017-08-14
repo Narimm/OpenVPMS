@@ -59,11 +59,11 @@ public class KeyStrokeHelper {
     }
 
     /**
-     * Reregisters any keystroke listeners by traversing the component heirarchy
-     * looking for components that inplement the {@link KeyStrokeHandler}
+     * Reregisters any keystroke listeners by traversing the component hierarchy
+     * looking for components that implement the {@link KeyStrokeHandler}
      * interface.
      *
-     * @param component the root of the component heirarchy to traverse
+     * @param component the root of the component hierarchy to traverse
      * @see KeyStrokeHandler
      */
     public static void reregisterKeyStrokeListeners(Component component) {

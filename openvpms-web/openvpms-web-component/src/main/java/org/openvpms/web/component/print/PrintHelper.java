@@ -16,6 +16,8 @@
 
 package org.openvpms.web.component.print;
 
+import org.apache.commons.lang.StringUtils;
+
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
@@ -49,6 +51,22 @@ public class PrintHelper {
             names[i] = printers[i].getName();
         }
         return names;
+    }
+
+    /**
+     * Determines if a printer exists.
+     *
+     * @param name the printer name
+     * @return {@code true} if the printer exists, otherwise {@code false}
+     */
+    public static boolean exists(String name) {
+        PrintService[] printers = PrintServiceLookup.lookupPrintServices(null, null);
+        for (PrintService printer : printers) {
+            if (StringUtils.equals(printer.getName(), name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

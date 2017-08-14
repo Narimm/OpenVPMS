@@ -91,6 +91,7 @@ import java.util.Set;
 
 import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
 import static org.openvpms.report.ReportException.ErrorCode.FailedToGetParameters;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToPrintReport;
 import static org.openvpms.report.ReportException.ErrorCode.NoPagesToPrint;
 import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
@@ -255,7 +256,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
     /**
      * Generates a report.
-     * <p/>
+     * <p>
      * The default mime type will be used to select the output format.
      *
      * @param parameters a map of parameter names and their values, to pass to the report
@@ -307,7 +308,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
     /**
      * Generates a report for a collection of objects.
-     * <p/>
+     * <p>
      * The default mime type will be used to select the output format.
      *
      * @param objects the objects to report on
@@ -337,7 +338,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
     /**
      * Generates a report for a collection of objects.
-     * <p/>
+     * <p>
      * The default mime type will be used to select the output format.
      *
      * @param objects    the objects to report on
@@ -422,7 +423,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             JasperPrint print = JasperFillManager.getInstance(context).fill(getReport(), params);
             print(print, properties);
         } catch (JRException | JRRuntimeException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
+            throw new ReportException(exception, FailedToPrintReport, getName(), properties.getPrinterName(),
+                                      exception.getMessage());
         } finally {
             if (executer != null) {
                 executer.close();
@@ -460,7 +462,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             JasperPrint print = report(objects, parameters, fields);
             print(print, properties);
         } catch (JRException | JRRuntimeException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
+            throw new ReportException(exception, FailedToPrintReport, getName(), properties.getPrinterName(),
+                                      exception.getMessage());
         }
     }
 

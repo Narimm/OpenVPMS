@@ -123,7 +123,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * The product participation editor.
-     * <p/>
+     * <p>
      * This needs to be created outside of the automatic layout, in order to ensure events
      * aren't lost when the layout changes.
      */
@@ -279,7 +279,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Constructs a {@link CustomerChargeActItemEditor}.
-     * <p/>
+     * <p>
      * This recalculates the tax amount.
      *
      * @param act           the act to edit
@@ -610,7 +610,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Notifies the editor that the product has been ordered via a pharmacy.
-     * <p/>
+     * <p>
      * This refreshes the display to make the patient and product read-only, and display the received and returned
      * nodes if required.
      */
@@ -644,7 +644,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Updates the discount and checks that it isn't less than the total cost.
-     * <p/>
+     * <p>
      * If so, gives the user the opportunity to remove the discount.
      *
      * @return {@code true} if the discount was updated
@@ -688,10 +688,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This implementation saves the current object before children, to ensure deletion of child acts
      * don't result in StaleObjectStateException exceptions.
-     * <p/>
+     * <p>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
@@ -716,7 +716,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Saves the object.
-     * <p/>
+     * <p>
      * For invoice items, this implementation also creates/deletes document acts related to the document templates
      * associated with the product, using {@link ChargeItemDocumentLinker}.
      *
@@ -762,7 +762,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected boolean disposeOnChangeLayout(Editor editor) {
-        return editor != productCollectionEditor && editor != dispensing && editor != investigations 
+        return editor != productCollectionEditor && editor != dispensing && editor != investigations
                && editor != reminders && editor != alerts;
     }
 
@@ -792,6 +792,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             });
         }
         updateBatch(getProduct(), getStockLocationRef());
+
+        Prescriptions prescriptions = getPrescriptions();
+        PatientMedicationActEditor medicationEditor = getMedicationActEditor();
+        if (prescriptions != null && medicationEditor != null) {
+            medicationEditor.setPrescriptions(prescriptions);
+        }
     }
 
     /**
@@ -987,13 +993,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes to update patient medications.
-     * <p/>
+     * <p>
      * If the new product is a medication and there is:
      * <ul>
      * <li>an existing act, the existing act will be updated.
      * <li>no existing act, a new medication will be created
      * </ul>
-     * <p/>
+     * <p>
      * If the product is null, any existing act will be removed
      *
      * @param product the product. May be {@code null}
@@ -1095,7 +1101,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         boolean dispensingLabel = hasDispensingLabel(product);
         IMObjectEditor editor = createEditor(act, dispensing);
         if (editor instanceof PatientMedicationActEditor) {
-            ((PatientMedicationActEditor) editor).setQuantity(quantity);
+            PatientMedicationActEditor medicationEditor = (PatientMedicationActEditor) editor;
+            medicationEditor.setQuantity(quantity);
+            medicationEditor.setPrescriptions(getPrescriptions());
         }
         dispensing.addEdited(editor);
         if (dispensingLabel) {
@@ -1106,7 +1114,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes to update investigation acts.
-     * <p/>
+     * <p>
      * This removes any existing investigations, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1139,7 +1147,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes, to update reminders acts.
-     * <p/>
+     * <p>
      * This removes any existing reminders, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1188,7 +1196,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes, to update alert acts.
-     * <p/>
+     * <p>
      * This removes any existing alerts, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1334,7 +1342,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to return the investigation types for a product.
-     * <p/>
+     * <p>
      * If there are multiple investigation types, these will be sorted on name.
      *
      * @param product the product
@@ -1354,7 +1362,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Queues an editor for display in a popup dialog.
      * Use this when there may be multiple editors requiring display.
-     * <p/>
+     * <p>
      * NOTE: all objects should be added to the collection prior to them being edited. If they are skipped,
      * they will subsequently be removed. This is necessary as the layout excludes nodes based on elements being
      * present.
@@ -1623,7 +1631,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Initialises the stock location if one isn't present and there is a medication or merchandise product.
-     * <p/>
+     * <p>
      * This is required due to a bug where charge quantities of zero would remove the stock location relationship,
      * and prevent subsequent quantity changes would not be reflected in the stock.
      *
@@ -1661,7 +1669,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Adds a patient identity for a product, if one is configured.
-     * <p/>
+     * <p>
      * Only one identity will be added, i.e. the quantity is ignored.
      *
      * @param product the product
@@ -1699,7 +1707,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Returns a node filter for the specified product reference.
-     * <p/>
+     * <p>
      * This excludes:
      * <ul>
      * <li>the dispensing node if the product isn't a <em>product.medication</em>
@@ -1797,7 +1805,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to create a collection editor for an act relationship node, if the node exists.
-     * <p/>
+     * <p>
      * The returned editor is configured to not exclude default value objects.
      *
      * @param name the collection node name
@@ -1825,7 +1833,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         DispensingActRelationshipCollectionEditor editor = null;
         CollectionProperty collection = (CollectionProperty) getProperty("dispensing");
         if (collection != null && !collection.isHidden()) {
-            editor = new DispensingActRelationshipCollectionEditor(collection, getObject(), getLayoutContext());
+            editor = new DispensingActRelationshipCollectionEditor(collection, getObject(),
+                                                                   new DefaultLayoutContext(getLayoutContext()));
             getEditors().add(editor);
         }
         return editor;
@@ -1840,7 +1849,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         AlertActRelationshipCollectionEditor editor = null;
         CollectionProperty collection = (CollectionProperty) getProperty(ALERTS);
         if (collection != null && !collection.isHidden()) {
-            editor = new AlertActRelationshipCollectionEditor(collection, getObject(), getLayoutContext());
+            editor = new AlertActRelationshipCollectionEditor(collection, getObject(),
+                                                              new DefaultLayoutContext(getLayoutContext()));
             editor.setAlerts(getEditContext().getAlerts());
             getEditors().add(editor);
         }
@@ -1886,7 +1896,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         /**
          * Apply the layout strategy.
-         * <p/>
+         * <p>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply

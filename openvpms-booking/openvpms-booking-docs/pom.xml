@@ -26,6 +26,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openvpms-booking-docs</artifactId>
+    <name>OpenVPMS Booking API</name>
+    <description>JSON API to make customer appointments in OpenVPMS</description>
     <packaging>pom</packaging>
 
     <dependencies>
@@ -47,16 +49,14 @@
             <plugin>
                 <groupId>com.webcohesion.enunciate</groupId>
                 <artifactId>enunciate-maven-plugin</artifactId>
-                <version>2.3.0</version>
+                <version>2.9.0</version>
                 <executions>
                     <execution>
                         <configuration>
                             <buildDir>target/enunciate</buildDir>
-                            <sourcepath-includes>
-                                <include>
-                                    <groupId>org.openvpms</groupId>
-                                </include>
-                            </sourcepath-includes>
+                            <exports>
+                                <docs>openvpms-booking-api-${project.version}.zip</docs>
+                            </exports>
                         </configuration>
                         <goals>
                             <goal>docs</goal>

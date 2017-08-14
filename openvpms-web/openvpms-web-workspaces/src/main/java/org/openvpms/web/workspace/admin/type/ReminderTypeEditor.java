@@ -16,7 +16,8 @@
 
 package org.openvpms.web.workspace.admin.type;
 
-import org.joda.time.Seconds;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -129,7 +130,7 @@ public class ReminderTypeEditor extends AbstractIMObjectEditor {
 
         /**
          * Invoked when two objects are swapped.
-         * <p/>
+         * <p>
          *
          * @param object1 the first object
          * @param object2 the second object
@@ -141,7 +142,7 @@ public class ReminderTypeEditor extends AbstractIMObjectEditor {
 
         /**
          * Validates the object.
-         * <p/>
+         * <p>
          * This validates the current object being edited, and if valid, the collection.
          *
          * @param validator the validator
@@ -154,25 +155,29 @@ public class ReminderTypeEditor extends AbstractIMObjectEditor {
 
         /**
          * Ensures that overdue intervals are in increasing order by reminder count.
+         * <p/>
+         * This converts intervals to dates based on the current date, so may allow 30 days < 1 month in January, but
+         * not June for example.
          *
          * @param validator the validator
          * @return {@code true} if the overdue intervals are valid, otherwise {@code false}
          */
         private boolean validateOverdueIntervals(Validator validator) {
             boolean valid = true;
-            SortedMap<Integer, Seconds> overdue = new TreeMap<>();
+            DateTime from = new DateTime();
+            SortedMap<Integer, DateTime> overdue = new TreeMap<>();
             for (IMObject object : getCurrentObjects()) {
                 IMObjectBean bean = new IMObjectBean(object);
                 int count = bean.getInt("count");
                 int interval = bean.getInt("interval");
                 String units = bean.getString("units");
                 if (units != null) {
-                    Seconds period = DateUnits.fromString(units).toPeriod(interval).toStandardSeconds();
-                    overdue.put(count, period);
+                    Period period = DateUnits.fromString(units).toPeriod(interval);
+                    overdue.put(count, from.withPeriodAdded(period, 1));
                 }
             }
-            Map.Entry<Integer, Seconds> last = null;
-            for (Map.Entry<Integer, Seconds> entry : overdue.entrySet()) {
+            Map.Entry<Integer, DateTime> last = null;
+            for (Map.Entry<Integer, DateTime> entry : overdue.entrySet()) {
                 if (last == null || entry.getValue().compareTo(last.getValue()) > 0) {
                     last = entry;
                 } else {

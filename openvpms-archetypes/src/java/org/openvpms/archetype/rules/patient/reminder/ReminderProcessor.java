@@ -27,6 +27,7 @@ import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -45,6 +46,7 @@ import java.util.Set;
 
 import static org.openvpms.archetype.rules.party.ContactArchetypes.EMAIL;
 import static org.openvpms.archetype.rules.party.ContactArchetypes.LOCATION;
+import static org.openvpms.archetype.rules.party.ContactArchetypes.PHONE;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoContactsForRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderCount;
@@ -64,7 +66,7 @@ public class ReminderProcessor {
     public static final String REMINDER_PURPOSE = "REMINDER";
 
     /**
-     * Process reminders due on or before this date.
+     * The date to use to determine if reminders should be cancelled.
      */
     private final Date processingDate;
 
@@ -101,7 +103,8 @@ public class ReminderProcessor {
     /**
      * Constructs a {@link ReminderProcessor}.
      *
-     * @param date       process reminders due on or before this date
+     * @param date       the date to use to determine if reminders should be cancelled. Any reminder with a
+     *                   due date + cancel interval <= this will be cancelled
      * @param config     the reminder configuration
      * @param disableSMS if {@code true}, ignore any reminder templates with {@code sms = true}
      * @param service    the archetype service
@@ -244,10 +247,27 @@ public class ReminderProcessor {
 
         Date dueDate = reminder.getActivityStartTime();
         if (!ignoreDueDate && reminderType.shouldCancel(dueDate, processingDate)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cancelling reminder=" + reminder.getId() + ", patient=" + getPatientId(bean)
+                          + ", reminderType=" + toString(reminderType) + ", firstDueDate=" + toString(dueDate)
+                          + ", processingDate=" + toString(processingDate)
+                          + ", cancelDate=" + toString(reminderType.getCancelDate(dueDate))
+                          + ": firstDueDate <= cancelDate");
+            }
             result = cancel(reminder);
         } else {
             Party patient = getPatient(bean);
             if (!patient.isActive() || patientRules.isDeceased(patient)) {
+                if (log.isDebugEnabled()) {
+                    if (!patient.isActive()) {
+                        log.debug("Cancelling reminder=" + reminder.getId() + ", patient=" + toString(patient)
+                                  + ", reminderType=" + toString(reminderType) + ": patient is inactive");
+                    } else {
+                        log.debug("Cancelling reminder=" + reminder.getId()
+                                  + ", patient=" + toString(patient) + ", reminderType=" + toString(reminderType)
+                                  + ": patient is deceased");
+                    }
+                }
                 result = cancel(reminder);
             } else {
                 ReminderCount count = reminderType.getReminderCount(reminderCount);
@@ -262,6 +282,11 @@ public class ReminderProcessor {
                 } else {
                     // a reminderCount > 0 with no ReminderCount is valid - just skip the reminder
                     result = Collections.emptyList();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Skipping reminder=" + reminder.getId() + ", patient=" + toString(patient)
+                                  + ", reminderType=" + toString(reminderType)
+                                  + ": no reminder count=" + reminderCount);
+                    }
                 }
             }
         }
@@ -334,7 +359,7 @@ public class ReminderProcessor {
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("NO matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
-                          + ", reminderType=" + reminderType.getName() + ", count" + count.getCount()
+                          + ", reminderType=" + reminderType.getName() + ", count=" + count.getCount()
                           + ". Reminder will be Listed");
             }
             String message = new ReminderProcessorException(NoContactsForRules).getMessage();
@@ -375,7 +400,8 @@ public class ReminderProcessor {
                        null, toSave);
             result = true;
         } else if (log.isDebugEnabled()) {
-            log.debug("NOT generating email reminder - customer has no email contact");
+            log.debug("NOT generating email reminder for reminder=" + reminder.getAct().getId()
+                      + ", patient=" + getPatientId(reminder) + ": customer has no email contact");
         }
         return result;
     }
@@ -397,7 +423,8 @@ public class ReminderProcessor {
                        toSave);
             result = true;
         } else if (log.isDebugEnabled()) {
-            log.debug("NOT generating email reminder - customer has no SMS contact");
+            log.debug("NOT generating SMS reminder for reminder=" + reminder.getAct().getId()
+                      + ", patient=" + getPatientId(reminder) + ": customer has no SMS contact");
         }
         return result;
     }
@@ -419,7 +446,8 @@ public class ReminderProcessor {
                        null, toSave);
             result = true;
         } else if (log.isDebugEnabled()) {
-            log.debug("NOT generating print reminder - customer has no location contact");
+            log.debug("NOT generating print reminder for reminder=" + reminder.getAct().getId()
+                      + ", patient=" + getPatientId(reminder) + ": customer has no location contact");
         }
         return result;
     }
@@ -441,7 +469,8 @@ public class ReminderProcessor {
                        null, toSave);
             result = true;
         } else if (log.isDebugEnabled()) {
-            log.debug("NOT generating export reminder - customer has no location contact");
+            log.debug("NOT generating export reminder for reminder=" + reminder.getAct().getId()
+                      + ", patient=" + getPatientId(reminder) + ": customer has no location contact");
         }
         return result;
     }
@@ -525,7 +554,8 @@ public class ReminderProcessor {
                 if (!addReminderContacts(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
                         log.debug("Rule not matched. There are no REMINDER contacts for reminderType="
-                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                                  + toString(reminderType) + ", count=" + count.getCount()
+                                  + ", rule=" + rule);
                     }
                     return false;
                 }
@@ -534,7 +564,8 @@ public class ReminderProcessor {
                 if (!addEmailContact(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
                         log.debug("Rule not matched. There are no email contacts for reminderType="
-                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                                  + toString(reminderType) + ", count=" + count.getCount() + ", rule="
+                                  + rule);
                     }
                     return false;
                 }
@@ -543,14 +574,16 @@ public class ReminderProcessor {
                 if (isAll && disableSMS) {
                     if (log.isDebugEnabled()) {
                         log.debug("Rule not matched. SMS has been disabled for reminderType="
-                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                                  + toString(reminderType) + ", count=" + count.getCount()
+                                  + ", rule=" + rule);
                     }
                     return false;
                 }
                 if (!addSMSContact(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
                         log.debug("Rule not matched. There are no SMS contacts for reminderType="
-                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                                  + toString(reminderType) + ", count=" + count.getCount()
+                                  + ", rule=" + rule);
                     }
                     return false;
                 }
@@ -559,20 +592,23 @@ public class ReminderProcessor {
                 if (!addLocationContact(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
                         log.debug("Rule not matched. There are no location contacts for reminderType="
-                                  + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                                  + toString(reminderType) + ", count=" + count.getCount()
+                                  + ", rule=" + rule);
                     }
                     return false;
                 }
             }
         }
-        if ((rule.isExport() || rule.isList())) {
+        if (rule.isExport()) {
             addContact(LOCATION, contacts, matches);
+        } else if (rule.isList()) {
+            addContact(PHONE, contacts, matches);
         }
 
         boolean result = !matches.isEmpty();
         if (!result && log.isDebugEnabled()) {
             log.debug("Rule not matched. No contacts match reminderType="
-                      + reminderType.getName() + ", count=" + count.getCount() + ", rule=" + rule);
+                      + toString(reminderType) + ", count=" + count.getCount() + ", rule=" + rule);
         }
         return result;
     }
@@ -632,10 +668,10 @@ public class ReminderProcessor {
             } else {
                 if (log.isDebugEnabled()) {
                     if (disableSMS) {
-                        log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+                        log.debug("NOT adding SMS contacts for reminderType=" + toString(reminderType)
                                   + ", reminderCount=" + count.getCount() + ". SMS is disabled");
                     } else {
-                        log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+                        log.debug("NOT adding SMS contacts for reminderType=" + toString(reminderType)
                                   + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
                                   + " has no SMS template");
                     }
@@ -645,13 +681,13 @@ public class ReminderProcessor {
             if (template.getEmailTemplate() != null) {
                 matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(EMAIL, REMINDER_PURPOSE, true, service)));
             } else {
-                log.debug("NOT adding email contacts for reminderType=" + reminderType.getName()
+                log.debug("NOT adding email contacts for reminderType=" + toString(reminderType)
                           + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
                           + " has no email template");
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("NOT adding REMINDER contacts for reminderType=" + reminderType.getName()
+                log.debug("NOT adding REMINDER contacts for reminderType=" + toString(reminderType)
                           + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
             }
         }
@@ -675,12 +711,12 @@ public class ReminderProcessor {
             if (template.getEmailTemplate() != null) {
                 result = addContact(ContactArchetypes.EMAIL, contacts, matches);
             } else if (log.isDebugEnabled()) {
-                log.debug("NOT adding email contacts for reminderType=" + reminderType.getName()
+                log.debug("NOT adding email contacts for reminderType=" + toString(reminderType)
                           + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
                           + " has no email template");
             }
         } else if (log.isDebugEnabled()) {
-            log.debug("NOT adding email contacts for reminderType=" + reminderType.getName()
+            log.debug("NOT adding email contacts for reminderType=" + toString(reminderType)
                       + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
 
         }
@@ -704,12 +740,12 @@ public class ReminderProcessor {
             if (template.getSMSTemplate() != null) {
                 result = addContact(contacts, matches, new SMSMatcher(REMINDER_PURPOSE, false, service));
             } else if (log.isDebugEnabled()) {
-                log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+                log.debug("NOT adding SMS contacts for reminderType=" + toString(reminderType)
                           + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
                           + " has no SMS template");
             }
         } else if (log.isDebugEnabled()) {
-            log.debug("NOT adding SMS contacts for reminderType=" + reminderType.getName()
+            log.debug("NOT adding SMS contacts for reminderType=" + toString(reminderType)
                       + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
         }
         return result;
@@ -731,7 +767,7 @@ public class ReminderProcessor {
         if (template != null) {
             result = addContact(LOCATION, contacts, matches);
         } else if (log.isDebugEnabled()) {
-            log.debug("NOT adding location contacts for reminderType=" + reminderType.getName()
+            log.debug("NOT adding location contacts for reminderType=" + toString(reminderType)
                       + ", reminderCount=" + count.getCount() + ". ReminderCount has no template");
         }
         return result;
@@ -768,13 +804,44 @@ public class ReminderProcessor {
     }
 
     /**
-     * Helper to generate a debug string for a party.
+     * Helper to generate a debug string for a reminder type.
      *
-     * @param party the party. May be {@code null}
+     * @param reminderType the reminder type. May be {@code null}
+     * @return a string, or {@code null} if the reminder type is null
+     */
+    private String toString(ReminderType reminderType) {
+        return (reminderType != null) ? toString(reminderType.getEntity()) : null;
+    }
+
+    /**
+     * Helper to generate a debug string for an entity.
+     *
+     * @param entity the party. May be {@code null}
      * @return a string, or {@code null} if the party is null
      */
-    private String toString(Party party) {
-        return (party != null) ? party.getName() + " (" + party.getId() + ")" : null;
+    private String toString(Entity entity) {
+        return (entity != null) ? entity.getName() + " (" + entity.getId() + ")" : null;
+    }
+
+    /**
+     * Helper to generate a debug string for a date.
+     *
+     * @param date the date
+     * @return a string
+     */
+    private String toString(Date date) {
+        return new java.sql.Timestamp(date.getTime()).toString();
+    }
+
+    /**
+     * Helper to generate a debug string for a patient associated with a reminder.
+     *
+     * @param reminder the reminder
+     * @return a string, or {@code null} if the patient is null
+     */
+    private String getPatientId(ActBean reminder) {
+        IMObjectReference patient = reminder.getNodeParticipantRef("patient");
+        return patient != null ? Long.toString(patient.getId()) : null;
     }
 
     /**

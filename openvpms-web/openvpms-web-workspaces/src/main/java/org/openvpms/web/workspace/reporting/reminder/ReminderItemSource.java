@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
 
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * The reminder item source, used by the {@link ReminderGenerator} to generate reminders.
@@ -40,7 +40,7 @@ public interface ReminderItemSource {
      *
      * @return all items that match the query
      */
-    List<ReminderEvent> all();
+    Iterator<ReminderEvent> all();
 
     /**
      * Executes the query.

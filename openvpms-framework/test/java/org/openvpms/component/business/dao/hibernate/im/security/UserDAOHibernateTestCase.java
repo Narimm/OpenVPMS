@@ -21,9 +21,14 @@ import org.hibernate.Transaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.party.ContactDO;
 import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.party.PartyDO;
+import org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.security.User;
 
@@ -60,6 +65,16 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
     private static final ArchetypeId PHONE_ID = new ArchetypeId("contact.phoneNumber.1.0");
 
     /**
+     * Practice-location id.
+     */
+    private static final ArchetypeId PRACTICE_LOCATION_ID = new ArchetypeId("party.organisationLocation.1.0");
+
+    /**
+     * User-location id.
+     */
+    private static final ArchetypeId USER_LOCATION_ID = new ArchetypeId("entityRelationship.userLocation.1.0");
+
+    /**
      * The user DAO.
      */
     private UserDAOHibernate dao;
@@ -78,14 +93,42 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
         UserDO user1 = createUser(name1, password1, USER_ID);
         UserDO user2 = createUser(name2, password2, ESCI_USER_ID);
 
+        PartyDO location1 = new PartyDOImpl();
+        location1.setArchetypeId(PRACTICE_LOCATION_ID);
+        EntityRelationshipDO link1 = new EntityRelationshipDOImpl(USER_LOCATION_ID);
+        link1.setSource(user1);
+        link1.setTarget(location1);
+        user1.addSourceEntityRelationship(link1);
+        location1.addTargetEntityRelationship(link1);
+
+        PartyDO location2 = new PartyDOImpl();
+        location2.setArchetypeId(PRACTICE_LOCATION_ID);
+        EntityRelationshipDO link2 = new EntityRelationshipDOImpl(USER_LOCATION_ID);
+        link2.setSource(user2);
+        link2.setTarget(location2);
+        user2.addSourceEntityRelationship(link2);
+        location2.addTargetEntityRelationship(link2);
+
         Session session = getSession();
         Transaction tx = session.beginTransaction();
         session.save(user1);
         session.save(user2);
+        session.save(location1);
+        session.save(location2);
         tx.commit();
 
-        checkCanRetrieve(name1, password1);
-        checkCanRetrieve(name2, password2);
+        User retrieved1 = checkCanRetrieve(name1, password1);
+        User retrieved2 = checkCanRetrieve(name2, password2);
+        assertEquals(1, retrieved1.getSourceEntityRelationships().size());
+        assertEquals(1, retrieved2.getSourceEntityRelationships().size());
+
+        EntityRelationship relationship1 = retrieved1.getSourceEntityRelationships().iterator().next();
+        EntityRelationship relationship2 = retrieved2.getSourceEntityRelationships().iterator().next();
+        assertEquals(retrieved1.getObjectReference(), relationship1.getSource());
+        assertEquals(retrieved2.getObjectReference(), relationship2.getSource());
+
+        assertEquals(location1.getObjectReference(), relationship1.getTarget());
+        assertEquals(location2.getObjectReference(), relationship2.getTarget());
     }
 
     /**
@@ -179,12 +222,13 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
      * @param name     the user name
      * @param password the password
      */
-    private void checkCanRetrieve(String name, String password) {
+    private User checkCanRetrieve(String name, String password) {
         List<User> list = dao.getByUserName(name);
         assertEquals(1, list.size());
         User retrieved = list.get(0);
         assertEquals(name, retrieved.getUsername());
         assertEquals(password, retrieved.getPassword());
+        return retrieved;
     }
 
     /**

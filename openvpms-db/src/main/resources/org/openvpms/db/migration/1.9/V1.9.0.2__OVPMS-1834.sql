@@ -26,19 +26,20 @@ FROM entity_details d
 # =====================================================================================================================
 
 DROP TABLE IF EXISTS tmp_reminder_counts;
-CREATE TEMPORARY TABLE tmp_reminder_counts (
+CREATE TABLE tmp_reminder_counts (
   relationship_id   BIGINT(20) PRIMARY KEY,
   linkId            VARCHAR(36),
   reminder_type_id  BIGINT(20),
   template_id       BIGINT(20),
   reminder_count_id BIGINT(20),
-  reminderCount     INT,
-  overdueInterval   INT,
-  overdueUnits      VARCHAR(255),
+  reminder_count   INT,
+  overdue_interval INT,
+  overdue_units    VARCHAR(255),
   rule_id           BIGINT(20),
   list              VARCHAR(255),
   export            VARCHAR(255),
   sms               VARCHAR(255),
+  INDEX reminder_counts_type_count_idx(reminder_type_id, reminder_count),
   INDEX reminder_counts_id_idx(reminder_count_id),
   INDEX reminder_counts_linkId_idx(linkId)
 );
@@ -47,9 +48,9 @@ INSERT INTO tmp_reminder_counts (relationship_id,
                                  linkId,
                                  reminder_type_id,
                                  template_id,
-                                 reminderCount,
-                                 overdueInterval,
-                                 overdueUnits,
+                                 reminder_count,
+                                 overdue_interval,
+                                 overdue_units,
                                  list,
                                  export,
                                  sms)
@@ -58,22 +59,22 @@ INSERT INTO tmp_reminder_counts (relationship_id,
     r.linkId,
     r.source_id,
     r.target_id,
-    reminderCount.value,
-    overdueInterval.value,
-    overdueUnits.value,
+    reminder_count.value,
+    overdue_interval.value,
+    overdue_units.value,
     list.value,
     export.value,
     sms.value
   FROM entity_relationships r
-    JOIN entity_relationship_details reminderCount
-      ON r.entity_relationship_id = reminderCount.entity_relationship_id
-         AND reminderCount.name = 'reminderCount'
-    LEFT JOIN entity_relationship_details overdueInterval
-      ON r.entity_relationship_id = overdueInterval.entity_relationship_id
-         AND overdueInterval.name = 'interval'
-    LEFT JOIN entity_relationship_details overdueUnits
-      ON r.entity_relationship_id = overdueUnits.entity_relationship_id
-         AND overdueUnits.name = 'units'
+    JOIN entity_relationship_details reminder_count
+      ON r.entity_relationship_id = reminder_count.entity_relationship_id
+         AND reminder_count.name = 'reminderCount'
+    LEFT JOIN entity_relationship_details overdue_interval
+      ON r.entity_relationship_id = overdue_interval.entity_relationship_id
+         AND overdue_interval.name = 'interval'
+    LEFT JOIN entity_relationship_details overdue_units
+      ON r.entity_relationship_id = overdue_units.entity_relationship_id
+         AND overdue_units.name = 'units'
     LEFT JOIN entity_relationship_details list
       ON r.entity_relationship_id = list.entity_relationship_id
          AND list.name = 'list'
@@ -114,9 +115,9 @@ INSERT INTO entity_details (entity_id, name, type, value)
     t.reminder_count_id,
     'count',
     'int',
-    t.reminderCount
+    t.reminder_count
   FROM tmp_reminder_counts t
-  WHERE t.reminderCount IS NOT NULL
+  WHERE t.reminder_count IS NOT NULL
         AND NOT exists(SELECT *
                        FROM entity_details d
                        WHERE d.entity_id = t.reminder_count_id
@@ -127,9 +128,9 @@ INSERT INTO entity_details (entity_id, name, type, value)
     t.reminder_count_id,
     'interval',
     'int',
-    t.overdueInterval
+    t.overdue_interval
   FROM tmp_reminder_counts t
-  WHERE t.overdueInterval IS NOT NULL
+  WHERE t.overdue_interval IS NOT NULL
         AND NOT exists(SELECT *
                        FROM entity_details d
                        WHERE d.entity_id = t.reminder_count_id
@@ -140,9 +141,9 @@ INSERT INTO entity_details (entity_id, name, type, value)
     t.reminder_count_id,
     'units',
     'string',
-    t.overdueUnits
+    t.overdue_units
   FROM tmp_reminder_counts t
-  WHERE t.overdueUnits IS NOT NULL
+  WHERE t.overdue_units IS NOT NULL
         AND NOT exists(SELECT *
                        FROM entity_details d
                        WHERE d.entity_id = t.reminder_count_id AND d.name = 'units');
@@ -161,7 +162,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
     NULL,
     NULL,
     NULL,
-    t.reminderCount,
+    t.reminder_count,
     t.reminder_type_id,
     t.reminder_count_id
   FROM tmp_reminder_counts t
@@ -301,62 +302,83 @@ FROM entity_relationships r
 # Migrate reminder dates
 #
 DROP TABLE IF EXISTS tmp_reminders;
-CREATE TEMPORARY TABLE tmp_reminders (
-  act_id      BIGINT(20) PRIMARY KEY,
-  createdTime DATETIME,
-  nextDueDate DATETIME,
-  dueDate     DATETIME
+CREATE TABLE tmp_reminders (
+  act_id              BIGINT(20) PRIMARY KEY,
+  activity_start_time DATETIME,
+  activity_end_time   DATETIME,
+  reminder_type_id    BIGINT(20),
+  reminder_count      INT,
+  first_due_date      DATETIME,
+  next_due_date       DATETIME
 );
 
-INSERT INTO tmp_reminders (act_id, createdTime, nextDueDate, dueDate)
+INSERT INTO tmp_reminders (act_id, activity_start_time, activity_end_time, first_due_date, reminder_type_id,
+                           reminder_count)
   SELECT
-    act_id,
-    activity_start_time,
-    activity_end_time,
-    CASE
-    WHEN reminderUnits = 'YEARS'
-      THEN date_add(activity_end_time, INTERVAL -reminderInterval * reminderCount YEAR)
-    WHEN reminderUnits = 'MONTHS'
-      THEN date_add(activity_end_time, INTERVAL -reminderInterval * reminderCount MONTH)
-    WHEN reminderUnits = 'DAYS'
-      THEN date_add(activity_end_time, INTERVAL -reminderInterval * reminderCount DAY)
-    ELSE activity_end_time
-    END
-  FROM (
+    a.act_id,
+    a.activity_start_time,
+    a.activity_end_time,
+    a.activity_end_time,
+    p.entity_id,
+    coalesce(reminder_count.value, 0) reminder_count
+  FROM acts a
+    LEFT JOIN act_details d
+      ON a.act_id = d.act_id
+         AND d.name = 'createdTime'
+    LEFT JOIN act_details reminder_count
+      ON a.act_id = reminder_count.act_id
+         AND reminder_count.name = 'reminderCount'
+    JOIN participations p
+      ON a.act_id = p.act_id
+         AND p.arch_short_name = 'participation.reminderType'
+  WHERE a.arch_short_name = 'act.patientReminder'
+        AND d.name IS NULL;
+
+#
+# Calculate next due date for reminder_count > 0
+#
+UPDATE tmp_reminders r
+  JOIN (
          SELECT
-           a.act_id,
-           a.activity_start_time,
-           a.activity_end_time,
-           coalesce(reminderCount.value, 0)                      reminderCount,
-           coalesce(cast(reminderInterval.value AS UNSIGNED), 0) reminderInterval,
-           reminderUnits.value                                   reminderUnits
-         FROM acts a
-           LEFT JOIN act_details d
-             ON a.act_id = d.act_id
-                AND d.name = 'createdTime'
-           LEFT JOIN act_details reminderCount
-             ON a.act_id = reminderCount.act_id
-                AND reminderCount.name = 'reminderCount'
-           JOIN participations p
-             ON a.act_id = p.act_id
-                AND p.arch_short_name = 'participation.reminderType'
-           JOIN entities reminderType
-             ON p.entity_id = reminderType.entity_id
-           LEFT JOIN entity_details reminderInterval
-             ON reminderInterval.entity_id = reminderType.entity_id
-                AND reminderInterval.name = 'interval'
-           LEFT JOIN entity_details reminderUnits
-             ON reminderUnits.entity_id = reminderType.entity_id
-                AND reminderUnits.name = 'units'
-         WHERE a.arch_short_name = 'act.patientReminder'
-               AND d.name IS NULL) reminder;
+           r.act_id,
+           max(t.reminder_count) reminder_count
+         FROM tmp_reminders r
+           JOIN tmp_reminder_counts t
+             ON r.reminder_type_id = t.reminder_type_id
+         WHERE t.reminder_count <= r.reminder_count
+         GROUP BY r.act_id, r.reminder_type_id) max_count
+    ON r.act_id = max_count.act_id
+  JOIN tmp_reminder_counts t
+    ON r.reminder_type_id = t.reminder_type_id
+       AND t.reminder_count = max_count.reminder_count
+SET next_due_date = CASE
+                    WHEN t.overdue_units = 'YEARS'
+                      THEN date_add(r.first_due_date, INTERVAL t.overdue_interval YEAR)
+                    WHEN t.overdue_units = 'MONTHS'
+                      THEN date_add(r.first_due_date, INTERVAL t.overdue_interval MONTH)
+                    WHEN t.overdue_units = 'WEEKS'
+                      THEN date_add(r.first_due_date, INTERVAL (t.overdue_interval * 7) DAY)
+                    WHEN t.overdue_units = 'DAYS'
+                      THEN date_add(r.first_due_date, INTERVAL t.overdue_interval DAY)
+                    ELSE r.first_due_date
+                    END
+WHERE r.reminder_count > 0 AND max_count.reminder_count > 0;
+
+#
+# Set next due date for reminder_count=0 or where there is no corresponding tmp_reminder_counts record
+#
+UPDATE tmp_reminders r
+SET next_due_date = first_due_date
+WHERE reminder_count = 0
+      OR next_due_date IS NULL
+      OR next_due_date < first_due_date;
 
 INSERT INTO act_details (act_id, name, type, value)
   SELECT
     t.act_id,
     'createdTime',
     'sql-timestamp',
-    t.createdTime
+    t.activity_start_time
   FROM tmp_reminders t
   WHERE NOT exists(
       SELECT *
@@ -368,9 +390,10 @@ UPDATE acts a
   JOIN tmp_reminders t
     ON a.act_id = t.act_id
        AND a.arch_short_name = 'act.patientReminder'
-SET a.activity_start_time = t.nextDueDate,
-  a.activity_end_time     = t.dueDate;
+SET a.activity_start_time = t.next_due_date,
+  a.activity_end_time     = t.first_due_date;
 
+DROP TABLE tmp_reminder_counts;
 DROP TABLE tmp_reminders;
 
 # =====================================================================================================================

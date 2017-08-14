@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
-import org.openvpms.archetype.rules.patient.reminder.ReminderQueueQueryFactory;
+import org.openvpms.archetype.rules.patient.reminder.ReminderQueueIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -35,8 +35,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.jobs.JobCompletionNotifier;
@@ -52,7 +50,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -92,11 +89,6 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
      * The transaction manager.
      */
     private final PlatformTransactionManager transactionManager;
-
-    /**
-     * The reminder queue query factory.
-     */
-    private final ReminderQueueQueryFactory factory;
 
     /**
      * Used to send messages to users on completion or failure.
@@ -143,7 +135,6 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
         this.practiceService = practiceService;
         this.transactionManager = transactionManager;
         this.rules = rules;
-        factory = new ReminderQueueQueryFactory();
         notifier = new JobCompletionNotifier(service);
     }
 
@@ -183,45 +174,30 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
         }
         ReminderConfiguration config = getConfiguration(practice);
         boolean disableSMS = practiceService.getSMS() == null;
-        Date maxLeadTime = config.getMaxLeadTime(getStartTime());
-        Date date = DateRules.getDate(maxLeadTime, 1, DateUnits.DAYS); // process all reminders due up to max lead + 1
-        ArchetypeQuery query = factory.createQuery(date);
+        Date startTime = getStartTime();
+        Date maxLeadTime = config.getMaxLeadTime(startTime);
+        Date due = DateRules.getDate(maxLeadTime, 1, DateUnits.DAYS); // process all reminders due up to max lead + 1
         int pageSize = getPageSize();
-        query.setMaxResults(pageSize);
+        ReminderQueueIterator iterator = new ReminderQueueIterator(due, pageSize, service);
         // pull in pageSize results at a time. Note that queueing affects paging, so the query needs to be re-issued
         // from the start if any have updated.
-        boolean done = false;
         queued = 0;
         cancelled = 0;
         skipped = 0;
-        ReminderProcessor processor = createProcessor(date, config, disableSMS);
+        ReminderProcessor processor = createProcessor(startTime, config, disableSMS);
 
-        Set<Long> exclude = new HashSet<>(); // ids of reminders to exclude
-        while (!stop && !done) {
-            IPage<IMObject> page = service.get(query);
-            boolean updated = false;  // flag to indicate if any reminders were updated
-            for (IMObject reminder : page.getResults()) {
-                long id = reminder.getId();
-                if (!exclude.contains(id)) {
-                    exclude.add(id);
-                    QueueStatus status = queue((Act) reminder, processor);
-                    if (status == QueueStatus.QUEUED || status == QueueStatus.CANCELLED) {
-                        if (status == QueueStatus.QUEUED) {
-                            ++queued;
-                        } else {
-                            ++cancelled;
-                        }
-                        updated = true;
-                    } else {
-                        skipped++;
-                    }
-                }
+        while (!stop && iterator.hasNext()) {
+            Act reminder = iterator.next();
+            QueueStatus status = queue(reminder, processor);
+            if (status == QueueStatus.QUEUED) {
+                ++queued;
+            } else if (status == QueueStatus.CANCELLED) {
+                ++cancelled;
+            } else {
+                ++skipped;
             }
-            if (page.getResults().size() < pageSize) {
-                done = true;
-            } else if (!updated) {
-                // nothing updated, so pull in the next page
-                query.setFirstResult(query.getFirstResult() + page.getResults().size());
+            if (status == QueueStatus.QUEUED || status == QueueStatus.CANCELLED) {
+                iterator.updated(); // flag that the iterator needs to re-issue query
             }
         }
     }
@@ -240,7 +216,7 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
 
     /**
      * Queues a reminder.
-     * <p/>
+     * <p>
      * This will attempt to process the reminder again, if the first attempt fails. This is to handle the case where
      * a user updates or deletes a reminder while processing is underway.
      *
@@ -391,7 +367,7 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
 
         /**
          * Runs the action for the first time.
-         * <p/>
+         * <p>
          * This implementation delegates to {@link #runAction()}.
          *
          * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be

@@ -520,8 +520,10 @@ public class AppointmentEditor extends CalendarEventEditor {
     private void updateSendReminder(boolean select) {
         Date startTime = getStartTime();
         Date now = new Date();
-        boolean enabled = smsPractice && scheduleReminders && appointmentTypeReminders && noReminder != null &&
-                          startTime != null && startTime.after(now) && SMSHelper.canSMS(getCustomer());
+        Party customer = getCustomer();
+        boolean enabled = smsPractice && scheduleReminders && appointmentTypeReminders && noReminder != null
+                          && customer != null && startTime != null && startTime.after(now)
+                          && SMSHelper.canSMS(customer);
         if (!enabled) {
             sendReminder.setSelected(false);
         }

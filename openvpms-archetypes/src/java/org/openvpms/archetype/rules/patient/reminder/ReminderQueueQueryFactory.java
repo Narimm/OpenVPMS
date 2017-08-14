@@ -29,6 +29,7 @@ import static org.openvpms.component.system.common.query.Constraints.join;
 import static org.openvpms.component.system.common.query.Constraints.lt;
 import static org.openvpms.component.system.common.query.Constraints.notExists;
 import static org.openvpms.component.system.common.query.Constraints.shortName;
+import static org.openvpms.component.system.common.query.Constraints.sort;
 
 /**
  * A factory for queries that return reminders for queuing.
@@ -51,6 +52,7 @@ public class ReminderQueueQueryFactory {
         query.add(join("patient", "p").add(join("entity", "patient")));
         query.add(eq("status", ReminderStatus.IN_PROGRESS));
         query.add(lt("startTime", date));
+        query.add(sort("id"));
         ArchetypeQuery items = new ArchetypeQuery(shortName("items", ReminderArchetypes.REMINDER_ITEMS));
         items.add(join("reminder").add(join("source", "r2")));
         items.add(idEq("r1", "r2"));
