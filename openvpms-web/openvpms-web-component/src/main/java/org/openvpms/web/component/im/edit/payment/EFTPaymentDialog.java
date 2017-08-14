@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.component.im.edit.payment;
 
 import nextapp.echo2.app.ApplicationInstance;
@@ -10,7 +26,6 @@ import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.webcontainer.ContainerContext;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.eftpos.Prompt;
 import org.openvpms.eftpos.Terminal;
 import org.openvpms.eftpos.Transaction;
@@ -99,7 +114,7 @@ class EFTPaymentDialog extends ModalDialog {
     @Override
     protected void doCancel() {
         if (transaction.getStatus() == Transaction.Status.PENDING
-                || transaction.getStatus() == Transaction.Status.PROMPT) {
+            || transaction.getStatus() == Transaction.Status.PROMPT) {
             transaction.cancel();
         }
         super.doCancel();
@@ -128,13 +143,9 @@ class EFTPaymentDialog extends ModalDialog {
         Label content = LabelFactory.create(true, true);
         Column options = ColumnFactory.create(Styles.CELL_SPACING);
         try {
-            List<String> messages = transaction.getMessages();
-            if (!messages.isEmpty()) {
-                String message = StringUtils.join(messages, '\n');
-                content.setText(message);
-            }
             final Prompt prompt = transaction.getPrompt();
             if (prompt != null) {
+                content.setText(prompt.getMessage());
                 final Property property = new SimpleProperty("option", null, String.class);
                 ButtonGroup group = new ButtonGroup();
                 for (final String option : prompt.getOptions()) {
@@ -152,6 +163,11 @@ class EFTPaymentDialog extends ModalDialog {
                         }
                     }
                 });
+            } else {
+                List<String> messages = transaction.getMessages();
+                if (!messages.isEmpty()) {
+                    content.setText(messages.get(messages.size() - 1));
+                }
             }
         } catch (Throwable exception) {
             content.setText(ErrorFormatter.format(exception));

@@ -170,10 +170,9 @@ public class EFTPaymentItemEditor extends PaymentItemEditor {
                     } else {
                         BigDecimal amount = getAmount();
                         BigDecimal cashout = getCashout();
-                        Transaction transaction = terminal.pay(customer, amount, cashout);
+                        Transaction transaction = terminal.pay(null, customer, amount, cashout);
                         EFTPaymentDialog dialog = new EFTPaymentDialog(terminal, transaction);
                         dialog.show();
-
                     }
                 }
             } catch (Exception exception) {
