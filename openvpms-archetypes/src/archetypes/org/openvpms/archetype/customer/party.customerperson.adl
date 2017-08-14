@@ -20,10 +20,10 @@
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"  maxLength="100"
-              derivedValue="concat(/details/companyName,substring(concat(/details/lastName,',',/details/firstName),0,number(not(/details/companyName))*string-length(concat(/details/lastName,',',/details/firstName))+1))"/>
+              derivedValue="expr:ifempty(/details/companyName, concat(/details/lastName,',',/details/firstName))"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(party:getBillingAddress(.),' - ',party:getHomeTelephone(.))"/>
+              derivedValue="concat(party:getBillingAddress(., true()),' - ',party:getHomeTelephone(.))"/>
         <node name="lastName" path="/details/lastName" type="java.lang.String"
               minCardinality="1" maxLength="30">
             <assertion name="propercase"/>
@@ -64,7 +64,6 @@
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.customerInsurance"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node displayName="Travel" name="travel" path="/details/travel" type="java.lang.String" minCardinality="0"
