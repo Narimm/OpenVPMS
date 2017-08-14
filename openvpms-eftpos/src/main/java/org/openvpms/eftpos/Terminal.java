@@ -54,14 +54,20 @@ public interface Terminal {
 
     /**
      * Start a payment.
+     * <p>
+     * Where possible, transactions should use the supplied transaction identifier to uniquely identify transactions,
+     * and must return it via {@link Transaction#getId()}.
+     * If a provider cannot support this, the value returned by {@link Transaction#getId()} must be unique with respect
+     * to a terminal.
      *
+     * @param id       the unique identifier for this transaction
      * @param customer the customer
      * @param amount   the amount
      * @param cashout  the cash-out amount
      * @return the transaction corresponding to the payment
      * @throws EFTPOSException for any EFTPOS error
      */
-    Transaction pay(Party customer, BigDecimal amount, BigDecimal cashout);
+    Transaction pay(String id, Party customer, BigDecimal amount, BigDecimal cashout);
 
     /**
      * Returns a transaction given its identifier.
