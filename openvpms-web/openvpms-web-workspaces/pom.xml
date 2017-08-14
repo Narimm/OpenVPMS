@@ -208,10 +208,6 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jvnet.jax-ws-commons.spring</groupId>
-            <artifactId>jaxws-spring</artifactId>
-        </dependency>
-        <dependency>
             <groupId>p6spy</groupId>
             <artifactId>p6spy</artifactId>
             <scope>runtime</scope>

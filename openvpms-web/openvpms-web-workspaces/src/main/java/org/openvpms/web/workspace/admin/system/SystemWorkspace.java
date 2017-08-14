@@ -56,6 +56,7 @@ public class SystemWorkspace extends TabbedWorkspace<IMObject> {
     @Override
     protected void addTabs(ObjectTabPaneModel<TabComponent> model) {
         addInfoBrowser(model);
+        addPluginBrowser(model);
         addDocumentLockBrowser(model);
     }
 
@@ -67,6 +68,16 @@ public class SystemWorkspace extends TabbedWorkspace<IMObject> {
     private void addInfoBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("session");
         addTab("admin.system.session", model, new SessionBrowser(help));
+    }
+
+    /**
+     * Adds a plugin browser to the tabbed pane.
+     *
+     * @param model the tab pane model
+     */
+    private void addPluginBrowser(ObjectTabPaneModel<TabComponent> model) {
+        HelpContext help = subtopic("plugin");
+        addTab("admin.system.plugin", model, new PluginBrowser(help));
     }
 
     /**

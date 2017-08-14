@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.openvpms</groupId>
+        <artifactId>openvpms</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>openvpms-plugins</artifactId>
+    <packaging>pom</packaging>
+    <name>OpenVPMS plugins</name>
+
+    <description>
+        OpenVPMS plugins
+    </description>
+
+    <properties>
+        <felix.log.version>1.0.1</felix.log.version>
+        <felix.configadmin.version>1.8.14</felix.configadmin.version>
+        <felix.fileinstall.version>3.6.0</felix.fileinstall.version>
+        <aries.util.version>1.1.3</aries.util.version>
+        <aries.proxy.version>1.1.1</aries.proxy.version>
+        <blueprint.api.version>1.0.1</blueprint.api.version>
+        <blueprint.cm.version>1.1.0</blueprint.cm.version>
+        <blueprint.core.version>1.8.1</blueprint.core.version>
+        <osgi.version>4.3.1</osgi.version>
+        <felix.shell.version>1.4.3</felix.shell.version>
+        <felix.shell.remote.version>1.2.0</felix.shell.remote.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.core</artifactId>
+                <version>${osgi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.compendium</artifactId>
+                <version>${osgi.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <extensions>true</extensions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>openvpms-test-plugins</module>
+        <module>openvpms-felix</module>
+        <module>openvpms-plugin-manager</module>
+        <module>openvpms-plugin-services</module>
+    </modules>
+
+</project>
