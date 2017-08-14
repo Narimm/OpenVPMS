@@ -45,7 +45,7 @@ public class ReportExceptionTestCase {
         checkException(FailedToFindSubReport, "There is no sub-report named: foo\nThis is needed by report: bar",
                        "foo", "bar");
         checkException(FailedToGenerateReport, "Failed to generate report foo: bar", "foo", "bar");
-        checkException(FailedToPrintReport, "Failed to print report foo: bar", "foo", "bar");
+        checkException(FailedToPrintReport, "Failed to print report foo on printer bar: gum", "foo", "bar", "gum");
         checkException(UnsupportedMimeType,
                        "foo is not a supported mime type by bar", "foo", "bar");
         checkException(NoExpressionEvaluatorForType,

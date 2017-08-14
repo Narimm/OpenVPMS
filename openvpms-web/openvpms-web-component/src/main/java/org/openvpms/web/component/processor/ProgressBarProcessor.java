@@ -29,6 +29,8 @@ import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.servlet.SessionMonitor;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Iterator;
+
 
 /**
  * A {BatchProcessor} that displays the current progress in a progress bar.
@@ -38,11 +40,6 @@ import org.openvpms.web.system.ServiceHelper;
 public abstract class ProgressBarProcessor<T>
         extends AbstractAsynchronousBatchProcessor<T>
         implements BatchProcessorComponent {
-
-    /**
-     * The items to process.
-     */
-    private Iterable<T> items;
 
     /**
      * Determines how often the progress bar is updated.
@@ -106,7 +103,7 @@ public abstract class ProgressBarProcessor<T>
      * Constructs a {@code ProgressBarProcessor}.
      * The {@link #setItems} method must be invoked prior to starting processing.
      *
-     * @param title the progress bar title. May be <tt>null</tt>
+     * @param title the progress bar title. May be {@code null}
      */
     public ProgressBarProcessor(String title) {
         bar = new ProgressBar();
@@ -119,7 +116,7 @@ public abstract class ProgressBarProcessor<T>
     /**
      * Returns the processor title.
      *
-     * @return the processor title. May be <tt>null</tt>
+     * @return the processor title. May be {@code null}
      */
     public String getTitle() {
         return title;
@@ -177,8 +174,17 @@ public abstract class ProgressBarProcessor<T>
      * @param size  the expected no. of items. This need not be exact
      */
     protected void setItems(Iterable<T> items, int size) {
-        this.items = items;
-        setIterator(items.iterator());
+        setItems(items.iterator(), size);
+    }
+
+    /**
+     * Sets the items to iterate.
+     *
+     * @param items the items.
+     * @param size  the expected no. of items. This need not be exact
+     */
+    protected void setItems(Iterator<T> items, int size) {
+        setIterator(items);
         bar.setMaximum(size);
         step = size / 10;
         if (step == 0) {

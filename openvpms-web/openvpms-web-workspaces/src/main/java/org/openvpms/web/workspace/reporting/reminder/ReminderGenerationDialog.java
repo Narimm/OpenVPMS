@@ -21,7 +21,6 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
@@ -222,7 +221,7 @@ class ReminderGenerationDialog extends PopupDialog {
          *
          * @param processor the processor
          */
-        public ReminderBatchProcessorTask(BatchProcessor processor) {
+        public ReminderBatchProcessorTask(ReminderBatchProcessor processor) {
             super(processor);
             status = LabelFactory.create(null, Styles.BOLD);
         }
@@ -250,7 +249,12 @@ class ReminderGenerationDialog extends PopupDialog {
         @Override
         protected void notifyCompleted() {
             super.notifyCompleted();
-            status.setText(Messages.get("reporting.reminder.run.completed"));
+            ReminderBatchProcessor processor = (ReminderBatchProcessor) getProcessor();
+            if (processor.hasMoreReminders()) {
+                status.setText(Messages.get("reporting.reminder.run.completedmoreavail"));
+            } else {
+                status.setText(Messages.get("reporting.reminder.run.completed"));
+            }
         }
 
         /**

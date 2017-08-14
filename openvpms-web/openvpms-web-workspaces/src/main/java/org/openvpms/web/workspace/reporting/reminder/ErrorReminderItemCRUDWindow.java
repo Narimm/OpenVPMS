@@ -18,12 +18,10 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.archetype.rules.patient.reminder.PagedReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -32,7 +30,6 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Reminder item CRUD window for items with error status.
@@ -112,8 +109,8 @@ class ErrorReminderItemCRUDWindow extends ReminderItemCRUDWindow {
      * Invoked to resolve errors in all reminders matching the query.
      */
     private void onResolveAll() {
-        ConfirmationDialog.show(Messages.get("reporting.reminder.resolveall.title"),
-                                Messages.get("reporting.reminder.resolveall.message"),
+        ConfirmationDialog.show(Messages.get("reporting.reminder.resolveall.prompt.title"),
+                                Messages.get("reporting.reminder.resolveall.prompt.message"),
                                 ConfirmationDialog.YES_NO, new WindowPaneListener() {
                     @Override
                     public void onClose(WindowPaneEvent event) {
@@ -129,19 +126,20 @@ class ErrorReminderItemCRUDWindow extends ReminderItemCRUDWindow {
     private void onResolveAllConfirmed() {
         ReminderItemQueryFactory factory = getQueryFactory();
         if (factory != null) {
-            PagedReminderIterator iterator = new PagedReminderIterator(factory, 1000,
-                                                                       ServiceHelper.getArchetypeService());
-            while (iterator.hasNext()) {
-                ObjectSet set = iterator.next();
-                Act item = (Act) set.get("item");
-                String status = item.getStatus();
-                if (ReminderItemStatus.ERROR.equals(status)) {
-                    resolveError(item);
-                    iterator.updated();
+            ResolveAllProgressBarProcessor processor = new ResolveAllProgressBarProcessor(factory);
+            ReminderItemProgressBarDialog dialog = new ReminderItemProgressBarDialog(
+                    Messages.get("reporting.reminder.resolveall.run.title"),
+                    Messages.get("reporting.reminder.resolveall.run.message"), processor);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                @Override
+                public void onClose(WindowPaneEvent event) {
+                    onRefresh(getObject());
                 }
-            }
+            });
+            dialog.show();
+        } else {
+            onRefresh(getObject());
         }
-        onRefresh(getObject());
     }
 
     /**
@@ -154,6 +152,31 @@ class ErrorReminderItemCRUDWindow extends ReminderItemCRUDWindow {
         bean.setValue("status", ReminderItemStatus.PENDING);
         bean.setValue("error", null);
         bean.save();
+    }
+
+    private class ResolveAllProgressBarProcessor extends ReminderItemProgressBarProcessor {
+
+        /**
+         * Constructs a {@link ResolveAllProgressBarProcessor}.
+         */
+        public ResolveAllProgressBarProcessor(ReminderItemQueryFactory factory) {
+            super(factory);
+        }
+
+        /**
+         * Processes a reminder item.
+         *
+         * @param item     the reminder item
+         * @param reminder the reminder
+         */
+        @Override
+        protected void process(Act item, Act reminder) {
+            String status = item.getStatus();
+            if (ReminderItemStatus.ERROR.equals(status)) {
+                resolveError(item);
+                updated();
+            }
+        }
     }
 
 }

@@ -98,6 +98,11 @@ public class PatientMedicationActEditor extends PatientActEditor {
     private boolean prescription = false;
 
     /**
+     * The prescriptions, if this medication is being edited in an invoice.
+     */
+    private Prescriptions prescriptions;
+
+    /**
      * The expiry date component. Cached as it needs to be disabled if a batch is selected.
      */
     private ComponentState expiryDate;
@@ -296,6 +301,15 @@ public class PatientMedicationActEditor extends PatientActEditor {
     }
 
     /**
+     * Registers the prescriptions.
+     *
+     * @param prescriptions the prescriptions. May be {@code null}
+     */
+    public void setPrescriptions(Prescriptions prescriptions) {
+        this.prescriptions = prescriptions;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -350,6 +364,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
         };
         strategy.setProductReadOnly(showProductReadOnly);
         strategy.setDispensedFromPrescription(prescription);
+        strategy.setPrescriptions(prescriptions);
         strategy.addComponent(expiryDate);
         return strategy;
     }

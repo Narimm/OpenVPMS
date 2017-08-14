@@ -510,9 +510,9 @@ public abstract class PatientReminderProcessor {
      * @param message the error message. May be {@code null}
      */
     protected void updateItem(Act item, String status, String message) {
-        item.setActivityStartTime(new Date()); // update the send time to when it was actually sent
         item.setStatus(status);
         ActBean bean = new ActBean(item, service);
+        bean.setValue("processed", new Date());
         bean.setValue("error", message);
     }
 

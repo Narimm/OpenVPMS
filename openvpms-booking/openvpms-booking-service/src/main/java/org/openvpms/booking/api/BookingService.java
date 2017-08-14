@@ -37,6 +37,7 @@ import javax.ws.rs.core.UriInfo;
  *
  * @author Tim Anderson
  */
+@Path("bookings")
 public interface BookingService {
 
     /**

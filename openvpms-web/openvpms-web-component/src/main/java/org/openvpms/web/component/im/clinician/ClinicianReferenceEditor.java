@@ -67,7 +67,9 @@ public class ClinicianReferenceEditor extends AbstractIMObjectReferenceEditor<Us
      */
     @Override
     protected Query<User> createQuery(String name) {
-        return new ClinicianQuery(getProperty().getArchetypeRange(), getContext());
+        ClinicianQuery query = new ClinicianQuery(getProperty().getArchetypeRange(), getContext());
+        query.setValue(name);
+        return query;
     }
 
     /**
