@@ -48,14 +48,19 @@ import java.util.List;
 public class Palette<T> extends Row {
 
     /**
+     * The set of all items.
+     */
+    private final List<T> items;
+
+    /**
      * The set of unselected items.
      */
-    private final List<T> unselected;
+    private final List<T> unselected = new ArrayList<>();
 
     /**
      * The set of selected items.
      */
-    private final List<T> selected;
+    private final List<T> selected = new ArrayList<>();
 
     /**
      * The unselected item list box.
@@ -87,10 +92,8 @@ public class Palette<T> extends Row {
     @SuppressWarnings("unchecked")
     public Palette(List<T> items, List<T> selected) {
         setStyleName("Palette");
-        this.selected = selected;
-        sort(selected);
-        unselected = (List<T>) ListUtils.subtract(items, selected);
-        sort(unselected);
+        this.items = items;
+        setSelected(selected);
 
         doLayout();
     }
@@ -117,6 +120,15 @@ public class Palette<T> extends Row {
         selectedList.setFocusTraversalIndex(newValue);
         add.setFocusTraversalIndex(newValue);
         remove.setFocusTraversalIndex(newValue);
+    }
+
+    /**
+     * Returns all items available for selection.
+     *
+     * @return the items
+     */
+    public List<T> getItems() {
+        return items;
     }
 
     /**
@@ -153,6 +165,26 @@ public class Palette<T> extends Row {
         add(left);
         add(middle);
         add(right);
+    }
+
+    /**
+     * Sets the selected items.
+     *
+     * @param list the selected items
+     */
+    @SuppressWarnings("unchecked")
+    protected void setSelected(List<T> list) {
+        selected.clear();
+        selected.addAll(list);
+        unselected.clear();
+        unselected.addAll((List<T>) ListUtils.subtract(items, selected));
+        sort(selected);
+        sort(unselected);
+
+        if (selectedList != null && unselectedList != null) {
+            selectedList.setModel(new DefaultListModel(selected.toArray()));
+            unselectedList.setModel(new DefaultListModel(unselected.toArray()));
+        }
     }
 
     /**
@@ -223,7 +255,7 @@ public class Palette<T> extends Row {
 
     /**
      * Sorts a list.
-     * <p/>
+     * <p>
      * This implementation is a no-op
      *
      * @param values the list to sort
