@@ -19,7 +19,6 @@ package org.openvpms.web.component.im.contact;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -32,7 +31,7 @@ import org.openvpms.web.system.ServiceHelper;
  *
  * @author Tim Anderson
  */
-public class LocationEditor extends AbstractIMObjectEditor {
+public class LocationEditor extends AbstractContactEditor {
 
     /**
      * Constructs a {@link LocationEditor}.
