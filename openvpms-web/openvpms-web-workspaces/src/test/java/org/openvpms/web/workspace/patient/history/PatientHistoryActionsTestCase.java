@@ -79,7 +79,7 @@ public class PatientHistoryActionsTestCase extends AbstractAppTest {
         assertTrue(actions.canDelete(letter));
         assertTrue(actions.canDelete(image));
 
-        // verifies that items linked to an invoice item cannot be deleted
+        // verifies that items linked to an invoice item cannot be deleted, unless they are patient documents
         Act invoiceItem = (Act) create(CustomerAccountArchetypes.INVOICE_ITEM);
         ActBean bean = new ActBean(invoiceItem);
         bean.addNodeRelationship("dispensing", medication);
@@ -91,10 +91,10 @@ public class PatientHistoryActionsTestCase extends AbstractAppTest {
 
         assertFalse(actions.canDelete(medication));
         assertFalse(actions.canDelete(investigation));
-        assertFalse(actions.canDelete(attachment));
-        assertFalse(actions.canDelete(form));
-        assertFalse(actions.canDelete(letter));
-        assertFalse(actions.canDelete(image));
+        assertTrue(actions.canDelete(attachment));
+        assertTrue(actions.canDelete(form));
+        assertTrue(actions.canDelete(letter));
+        assertTrue(actions.canDelete(image));
 
         // verifies that a problem cannot be deleted if it has items
         Act problem2 = PatientTestHelper.createProblem(new Date(), patient, note);
