@@ -97,7 +97,7 @@ left join (
 		select pp.product_price_id as ppid, pp.price as price, e.entity_id as pid, 
 			pp.start_time, pp.end_time, pp.name, ppg.name as ppgName, null as lkid,
 			if(pp.arch_short_name="productPrice.fixedPrice","F",if(pp.arch_short_name="productPrice.unitPrice","U","?"))  as type,
-			cast(d1.value  as decimal(18.3)) as markup, 
+			cast(d1.value  as decimal(18,3)) as markup, 
 			cast(d3.value as decimal(18,3)) as cost
 
 		from products p
@@ -115,7 +115,7 @@ left join (
 		select pp.product_price_id as ppid, pp.price as price, e.entity_id as pid, 
 			pp.start_time, pp.end_time, pp.name, ppg.name as ppgName, pt.entity_id as lkid,
 			if(pp.arch_short_name="productPrice.fixedPrice","L",if(pp.arch_short_name="productPrice.unitPrice","LU","?"))  as type,
-			cast(d1.value  as decimal(18.3)) as markup, 
+			cast(d1.value  as decimal(18,3)) as markup, 
 			cast(d3.value as decimal(18,3)) as cost
 		from products p
 		join entities e on p.product_id = e.entity_id 
