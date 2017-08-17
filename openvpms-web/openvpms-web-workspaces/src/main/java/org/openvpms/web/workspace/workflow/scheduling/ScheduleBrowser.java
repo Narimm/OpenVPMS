@@ -16,8 +16,10 @@
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
+import echopointng.LabelEx;
 import echopointng.TableEx;
 import echopointng.table.TableActionEventEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
@@ -42,6 +44,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 
 import java.util.ArrayList;
@@ -506,15 +509,15 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Adds a table to the browser component.
-     * <p>
-     * This implementation adds it with a small inset.
+     * Adds the title and table to the browser component.
      *
      * @param table     the table to add
      * @param component the component
      */
     protected void addTable(Table table, Component component) {
-        component.add(ColumnFactory.create(Styles.INSET, table));
+        LabelEx spacer = new LabelEx(new XhtmlFragment(TableHelper.SPACER));
+        // add a spacer so that popup notes in the first line of the table won't be clipped
+        component.add(ColumnFactory.create(Styles.INSET_CELL_SPACING, spacer, table));
     }
 
     /**
