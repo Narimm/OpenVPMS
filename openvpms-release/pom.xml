@@ -49,6 +49,12 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-felix</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-sms</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -121,6 +127,13 @@
                             <version>${project.version}</version>
                             <outputDirectory>target/archetypes</outputDirectory>
                             <includes>org/**/*.adl</includes>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>org.openvpms</groupId>
+                            <artifactId>openvpms-felix</artifactId>
+                            <version>${project.version}</version>
+                            <type>zip</type>
+                            <outputDirectory>target/plugins</outputDirectory>
                         </artifactItem>
                     </artifactItems>
                 </configuration>
