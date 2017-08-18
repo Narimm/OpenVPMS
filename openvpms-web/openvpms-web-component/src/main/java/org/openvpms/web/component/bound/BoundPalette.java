@@ -17,6 +17,8 @@
 package org.openvpms.web.component.bound;
 
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.palette.Palette;
 
@@ -37,6 +39,11 @@ public class BoundPalette<T> extends Palette<T> implements BoundProperty {
     private final CollectionProperty property;
 
     /**
+     * The listener to be notified of property updates.
+     */
+    private final ModifiableListener listener;
+
+    /**
      * Constructs a {@link BoundPalette}.
      *
      * @param items    all items that may be selected
@@ -46,6 +53,13 @@ public class BoundPalette<T> extends Palette<T> implements BoundProperty {
     public BoundPalette(List<T> items, CollectionProperty property) {
         super(items, new ArrayList<T>(property.getValues()));
         this.property = property;
+        listener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onModified();
+            }
+        };
+        property.addModifiableListener(listener);
     }
 
     /**
@@ -65,8 +79,13 @@ public class BoundPalette<T> extends Palette<T> implements BoundProperty {
      */
     @Override
     protected void add(Object[] values) {
-        for (Object value : values) {
-            property.add(value);
+        try {
+            property.removeModifiableListener(listener);
+            for (Object value : values) {
+                property.add(value);
+            }
+        } finally {
+            property.addModifiableListener(listener);
         }
     }
 
@@ -77,8 +96,21 @@ public class BoundPalette<T> extends Palette<T> implements BoundProperty {
      */
     @Override
     protected void remove(Object[] values) {
-        for (Object value : values) {
-            property.remove(value);
+        try {
+            property.removeModifiableListener(listener);
+            for (Object value : values) {
+                property.remove(value);
+            }
+        } finally {
+            property.addModifiableListener(listener);
         }
+    }
+
+    /**
+     * Updates the palette when the property changes.
+     */
+    @SuppressWarnings("unchecked")
+    private void onModified() {
+        setSelected(property.getValues());
     }
 }

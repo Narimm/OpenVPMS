@@ -2,6 +2,8 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
+import org.openvpms.archetype.component.processor.BatchProcessorListener;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -41,6 +43,17 @@ class ReminderItemProgressBarDialog extends PopupDialog {
     public void show() {
         super.show();
         processor.process();
+        processor.setListener(new BatchProcessorListener() {
+            @Override
+            public void completed() {
+                close();
+            }
+
+            @Override
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        });
     }
 
     /**

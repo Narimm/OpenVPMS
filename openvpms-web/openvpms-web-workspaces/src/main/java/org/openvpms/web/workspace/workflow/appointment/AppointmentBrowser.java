@@ -16,10 +16,8 @@
 
 package org.openvpms.web.workspace.workflow.appointment;
 
-import echopointng.LabelEx;
 import echopointng.TabbedPane;
 import echopointng.table.TableActionEventEx;
-import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -45,7 +43,6 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -370,19 +367,6 @@ public class AppointmentBrowser extends ScheduleBrowser {
         });
 
         return component;
-    }
-
-    /**
-     * Adds the title and table to the browser component.
-     *
-     * @param table     the table to add
-     * @param component the component
-     */
-    @Override
-    protected void addTable(Table table, Component component) {
-        LabelEx spacer = new LabelEx(new XhtmlFragment(TableHelper.SPACER));
-        // add a spacer so that popup notes in the first line of the table won't be clipped
-        component.add(ColumnFactory.create(Styles.INSET_CELL_SPACING, spacer, table));
     }
 
     /**

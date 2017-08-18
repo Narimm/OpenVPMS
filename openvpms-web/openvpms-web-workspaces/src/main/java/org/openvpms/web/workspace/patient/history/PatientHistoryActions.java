@@ -44,12 +44,34 @@ public class PatientHistoryActions extends ActActions<Act> {
      */
     public static final PatientHistoryActions INSTANCE = new PatientHistoryActions();
 
+    /**
+     * Patient document archetypes.
+     */
+    private final String[] DOCUMENTS = {PatientArchetypes.DOCUMENT_ATTACHMENT,
+                                        PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION,
+                                        PatientArchetypes.DOCUMENT_FORM,
+                                        PatientArchetypes.DOCUMENT_LETTER, PatientArchetypes.DOCUMENT_LETTER_VERSION,
+                                        PatientArchetypes.DOCUMENT_IMAGE, PatientArchetypes.DOCUMENT_IMAGE_VERSION};
+
 
     /**
      * Default constructor.
      */
     protected PatientHistoryActions() {
         super();
+    }
+
+    /**
+     * Determines if an act needs locking.
+     *
+     * @param act thr act
+     * @return {@code true} if the act needs locking
+     */
+    public static boolean needsLock(Act act) {
+        MedicalRecordRules recordRules = ServiceHelper.getBean(MedicalRecordRules.class);
+        PracticeService practiceService = ServiceHelper.getBean(PracticeService.class);
+        Period period = practiceService.getRecordLockPeriod();
+        return (period != null) && recordRules.needsLock(act, period);
     }
 
     /**
@@ -73,7 +95,8 @@ public class PatientHistoryActions extends ActActions<Act> {
      * <ul>
      * <li>isn't {@code POSTED}, locked or an invoice item; and</li>
      * <li>it is an event, problem, note, or medication that isn't linked to anything else; or</li>
-     * <li>isn't linked to an an invoice item.
+     * <li>it is a document; or</li>
+     * <li>isn't linked to an an invoice item
      * </ul>
      *
      * @param act the act to check
@@ -88,6 +111,8 @@ public class PatientHistoryActions extends ActActions<Act> {
         } else if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT, PatientArchetypes.CLINICAL_PROBLEM,
                                   PatientArchetypes.CLINICAL_NOTE)) {
             return act.getSourceActRelationships().isEmpty();
+        } else if (TypeHelper.isA(act, DOCUMENTS)) {
+            return true;
         } else {
             // reject deletion if the item is linked to an invoice
             for (ActRelationship rel : act.getTargetActRelationships()) {
@@ -135,19 +160,6 @@ public class PatientHistoryActions extends ActActions<Act> {
     @Override
     public boolean isLocked(Act act) {
         return super.isLocked(act) || needsLock(act);
-    }
-
-    /**
-     * Determines if an act needs locking.
-     *
-     * @param act thr act
-     * @return {@code true} if the act needs locking
-     */
-    public static boolean needsLock(Act act) {
-        MedicalRecordRules recordRules = ServiceHelper.getBean(MedicalRecordRules.class);
-        PracticeService practiceService = ServiceHelper.getBean(PracticeService.class);
-        Period period = practiceService.getRecordLockPeriod();
-        return (period != null) && recordRules.needsLock(act, period);
     }
 
 }

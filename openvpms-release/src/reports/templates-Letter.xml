@@ -75,7 +75,7 @@
 			  description="Used by Patients|Medical Records|Problems|Print button"
               path="Patient/Medical Records/Letter/Problems.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Prescription" archetype="act.patientPrescription" reportType="PATIENT" description="Prescription"
-              path="Patient/Medical Records/A4/Prescription.odt" mimeType="application/vnd.oasis.opendocument.text"
+              path="Patient/Medical Records/Letter/Prescription.odt" mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
     <template name="Stock Adjustment" archetype="act.stockAdjust" reportType="PRODUCT" description="Stock Adjustment(A5)"
               path="Product/Stock Adjustment/Letter/Stock Adjustment.jrxml" mimeType="text/xml" docType="document.other"/>
