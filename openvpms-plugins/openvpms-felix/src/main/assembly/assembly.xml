@@ -33,6 +33,9 @@
                 <include>org.apache.felix:org.apache.felix.configadmin</include>
                 <include>org.apache.felix:org.apache.felix.fileinstall</include>
                 <include>org.apache.aries:org.apache.aries.util</include>
+                <include>org.apache.felix:org.apache.felix.http.api</include>
+                <include>org.apache.felix:org.apache.felix.http.base</include>
+                <include>org.apache.felix:org.apache.felix.http.bridge</include>
                 <include>org.apache.aries.proxy:org.apache.aries.proxy</include>
                 <include>org.apache.aries.blueprint:org.apache.aries.blueprint.api</include>
                 <include>org.apache.aries.blueprint:org.apache.aries.blueprint.core</include>

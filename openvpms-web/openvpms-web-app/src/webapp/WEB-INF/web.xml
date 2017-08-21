@@ -89,6 +89,10 @@
         <listener-class>org.openvpms.web.echo.servlet.SessionListener</listener-class>
     </listener>
 
+    <listener>
+        <listener-class>org.apache.felix.http.proxy.impl.ProxyServletContextListener</listener-class>
+    </listener>
+
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
         <jsp-file>/login.jsp</jsp-file>
@@ -135,6 +139,12 @@
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>org.openvpms.booking.BookingApplication</param-value>
         </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>PluginServlet</servlet-name>
+        <servlet-class>org.apache.felix.http.proxy.ProxyServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
@@ -186,6 +196,11 @@
     <servlet-mapping>
         <servlet-name>BookingServlet</servlet-name>
         <url-pattern>/ws/booking/v1/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>PluginServlet</servlet-name>
+        <url-pattern>/plugin/*</url-pattern>
     </servlet-mapping>
 
     <session-config>

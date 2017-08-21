@@ -21,6 +21,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.plugin.test.service.impl.TestServiceImpl;
 import org.openvpms.plugins.test.impl.TestPluginImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
@@ -62,7 +63,7 @@ public class SpringPluginManagerTestCase extends AbstractJUnit4SpringContextTest
         assertNotNull(name);
         String path = FelixHelper.getFelixDir();
 
-        PluginManagerImpl pluginManager = new PluginManagerImpl(path, provider);
+        PluginManagerImpl pluginManager = new PluginManagerImpl(path, provider, new MockServletContext());
         pluginManager.start();
         Thread.sleep(10000);
         pluginManager.stop();

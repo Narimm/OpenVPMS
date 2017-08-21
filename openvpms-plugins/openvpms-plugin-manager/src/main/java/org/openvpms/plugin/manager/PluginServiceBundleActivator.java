@@ -20,6 +20,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import javax.servlet.ServletContext;
 import java.util.List;
 
 
@@ -37,6 +38,11 @@ class PluginServiceBundleActivator implements BundleActivator {
     private final PluginServiceProvider provider;
 
     /**
+     * The servlet context, used to by the http bridge.
+     */
+    private final ServletContext servletContext;
+
+    /**
      * The service registrations.
      */
     private List<ServiceRegistration<?>> registrations = null;
@@ -45,10 +51,12 @@ class PluginServiceBundleActivator implements BundleActivator {
     /**
      * Constructs a {@link PluginServiceBundleActivator}.
      *
-     * @param provider the plugin service provider
+     * @param provider       the plugin service provider
+     * @param servletContext the servlet context, used by the http bridge. May be {@code null}
      */
-    public PluginServiceBundleActivator(PluginServiceProvider provider) {
+    public PluginServiceBundleActivator(PluginServiceProvider provider, ServletContext servletContext) {
         this.provider = provider;
+        this.servletContext = servletContext;
     }
 
     /**
@@ -57,6 +65,10 @@ class PluginServiceBundleActivator implements BundleActivator {
      * @param context the context
      */
     public void start(BundleContext context) {
+        if (servletContext != null) {
+            // pass the BundleContext to the servlet context. This is used by Felix HTTP Proxy
+            servletContext.setAttribute(BundleContext.class.getName(), context);
+        }
         registrations = provider.provide(context);
     }
 
