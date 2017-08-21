@@ -1,4 +1,3 @@
-
 /*
  * Version: 1.0
  *
@@ -39,6 +38,7 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -63,6 +63,10 @@ import java.util.jar.Manifest;
  */
 public class PluginManagerImpl implements PluginManager {
 
+    private static final BundleRevision BUNDLE_REVISION = new MockBundleRevision();
+    private static final String DELIM_START = "${";
+    private static final String DELIM_STOP = "}";
+
     /**
      * The plugins path.
      */
@@ -74,25 +78,31 @@ public class PluginManagerImpl implements PluginManager {
     private final PluginServiceProvider provider;
 
     /**
-     * Apache Felix.
+     * The servlet context.
      */
-    private Felix felix;
+    private final ServletContext context;
 
     /**
      * The logger.
      */
     private final Logger logger = new Logger();
 
-    private static final BundleRevision BUNDLE_REVISION = new MockBundleRevision();
+    /**
+     * Apache Felix.
+     */
+    private Felix felix;
 
     /**
      * Constructs a {@link PluginManagerImpl}.
-     * @param path
-     * @param provider
+     *
+     * @param path     the plugin installation path
+     * @param provider the plugin service provider
+     * @param context  the servlet context
      */
-    public PluginManagerImpl(String path, PluginServiceProvider provider) {
+    public PluginManagerImpl(String path, PluginServiceProvider provider, ServletContext context) {
         this.path = path;
         this.provider = provider;
+        this.context = context;
     }
 
     /**
@@ -171,7 +181,7 @@ public class PluginManagerImpl implements PluginManager {
             getConfiguration(etc, config);
 
             List<Object> list = new ArrayList<>();
-            list.add(new PluginServiceBundleActivator(provider));
+            list.add(new PluginServiceBundleActivator(provider, context));
             config.put(FelixConstants.SYSTEMBUNDLE_ACTIVATORS_PROP, list);
             config.put(FelixConstants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
             config.put(AutoProcessor.AUTO_DEPLOY_ACTION_PROPERTY,
@@ -362,9 +372,6 @@ public class PluginManagerImpl implements PluginManager {
 
         return dir;
     }
-
-    private static final String DELIM_START = "${";
-    private static final String DELIM_STOP = "}";
 
     /**
      * <p>

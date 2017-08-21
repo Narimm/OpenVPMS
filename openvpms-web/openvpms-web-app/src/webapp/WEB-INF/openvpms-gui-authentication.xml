@@ -63,10 +63,20 @@
 
     <bean id="wsEntryPoint"
           class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
-        <property name="realmName" value="OpenVPMS Web Services"/>
+        <property name="realmName" value="OpenVPMS Services"/>
     </bean>
 
     <security:http pattern="/ws/**" create-session="stateless"
+                   access-decision-manager-ref="authenticatedVoterAccessDecisionManager"
+                   authentication-manager-ref="guiAuthenticationManager">
+        <security:http-basic entry-point-ref="wsEntryPoint"/>
+        <security:anonymous enabled="false"/>
+        <security:intercept-url pattern='/**' access='IS_AUTHENTICATED_FULLY'/>
+    </security:http>
+
+    <security:http pattern="/plugin/resource/**" create-session="stateless" security="none"/>
+
+    <security:http pattern="/plugin/servlet/**" create-session="stateless"
                    access-decision-manager-ref="authenticatedVoterAccessDecisionManager"
                    authentication-manager-ref="guiAuthenticationManager">
         <security:http-basic entry-point-ref="wsEntryPoint"/>

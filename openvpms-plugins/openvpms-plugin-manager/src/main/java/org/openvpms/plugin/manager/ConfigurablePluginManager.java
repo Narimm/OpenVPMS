@@ -26,7 +26,10 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.web.context.ServletContextAware;
 
+import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +38,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class ConfigurablePluginManager implements PluginManager, InitializingBean, DisposableBean {
+public class ConfigurablePluginManager implements PluginManager, InitializingBean, DisposableBean, ServletContextAware{
 
     /**
      * The archetype service.
@@ -51,6 +54,11 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
      * The plugin manager.
      */
     private volatile PluginManager manager;
+
+    /**
+     * The servlet context.
+     */
+    private ServletContext servletContext;
 
     /**
      * Constructs a {@link ConfigurablePluginManager}.
@@ -128,7 +136,7 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
                 path = bean.getString("path");
             }
             if (path != null) {
-                manager = new PluginManagerImpl(path, provider);
+                manager = new PluginManagerImpl(path, provider, servletContext);
                 manager.start();
             }
         }
@@ -176,4 +184,19 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
         stop();
     }
 
+    /**
+     * Set the {@link ServletContext} that this object runs in.
+     * <p>Invoked after population of normal bean properties but before an init
+     * callback like InitializingBean's {@code afterPropertiesSet} or a
+     * custom init-method. Invoked after ApplicationContextAware's
+     * {@code setApplicationContext}.
+     *
+     * @param servletContext ServletContext object to be used by this object
+     * @see InitializingBean#afterPropertiesSet
+     * @see ApplicationContextAware#setApplicationContext
+     */
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
 }

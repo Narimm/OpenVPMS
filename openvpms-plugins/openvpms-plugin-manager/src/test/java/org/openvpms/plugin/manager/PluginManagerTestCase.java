@@ -27,6 +27,7 @@ import org.openvpms.plugins.test.api.TestPlugin;
 import org.openvpms.plugins.test.impl.TestPluginImpl;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.springframework.mock.web.MockServletContext;
 
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -65,16 +66,17 @@ public class PluginManagerTestCase extends ArchetypeServiceTest {
         PluginServiceProvider provider = new PluginServiceProvider() {
             public List<ServiceRegistration<?>> provide(BundleContext context) {
                 ServiceRegistration<?> testService = context.registerService(TestService.class.getName(), service,
-                        new Hashtable<String, Object>());
+                                                                             new Hashtable<String, Object>());
                 ServiceRegistration<?> archetypeService = context.registerService(IArchetypeService.class.getName(),
-                        getArchetypeService(),
-                        new Hashtable<String, Object>());
+                                                                                  getArchetypeService(),
+                                                                                  new Hashtable<String, Object>());
                 return Arrays.asList(testService, archetypeService);
             }
         };
 
         // start the plugin manager
-        PluginManagerImpl manager = new PluginManagerImpl(FelixHelper.getFelixDir(), provider);
+        MockServletContext servletContext = new MockServletContext();
+        PluginManagerImpl manager = new PluginManagerImpl(FelixHelper.getFelixDir(), provider, servletContext);
         manager.start();
         for (int i = 0; i < 20; ++i) {
             if (StringUtils.equals(name, service.getValue())) {
