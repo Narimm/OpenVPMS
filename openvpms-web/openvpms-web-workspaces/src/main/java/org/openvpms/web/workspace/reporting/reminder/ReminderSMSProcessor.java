@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.party.SMSMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -79,15 +80,17 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
      * @param reminderTypes the reminder types
      * @param practice      the practice
      * @param reminderRules the reminder rules
+     * @param patientRules  the patient rules
      * @param practiceRules the practice rules
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
     public ReminderSMSProcessor(ConnectionFactory factory, ReminderSMSEvaluator evaluator, ReminderTypes reminderTypes,
-                                Party practice, ReminderRules reminderRules, PracticeRules practiceRules,
-                                IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger) {
-        super(reminderTypes, reminderRules, practice, service, config, logger);
+                                Party practice, ReminderRules reminderRules, PatientRules patientRules,
+                                PracticeRules practiceRules, IArchetypeService service, ReminderConfiguration config,
+                                CommunicationLogger logger) {
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
         this.factory = factory;
         this.evaluator = evaluator;
         smsEnabled = practiceRules.isSMSEnabled(practice);
@@ -101,16 +104,6 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     @Override
     public String getArchetype() {
         return ReminderArchetypes.SMS_REMINDER;
-    }
-
-    /**
-     * Determines if reminder processing is performed asynchronously.
-     *
-     * @return {@code true} if reminder processing is performed asynchronously
-     */
-    @Override
-    public boolean isAsynchronous() {
-        return false;
     }
 
     /**
@@ -158,6 +151,38 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     }
 
     /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
+        return false;
+    }
+
+    /**
+     * Logs reminder communications.
+     *
+     * @param state  the reminder state
+     * @param logger the communication logger
+     */
+    @Override
+    protected void log(PatientReminders state, CommunicationLogger logger) {
+        SMSReminders reminders = (SMSReminders) state;
+        String subject = Messages.get("reminder.log.sms.subject");
+        Party customer = reminders.getCustomer();
+        Party location = reminders.getLocation();
+        Contact contact = reminders.getContact();
+        String text = ((SMSReminders) state).getText();
+        for (ReminderEvent event : state.getReminders()) {
+            String notes = getNote(event);
+            Party patient = event.getPatient();
+            logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
+                          notes, location);
+        }
+    }
+
+    /**
      * Prepares reminders for processing.
      *
      * @param reminders the reminders
@@ -190,16 +215,6 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     }
 
     /**
-     * Returns the contact archetype.
-     *
-     * @return the contact archetype
-     */
-    @Override
-    protected String getContactArchetype() {
-        return ContactArchetypes.PHONE;
-    }
-
-    /**
      * Creates a contact matcher to locate the contact to send to.
      *
      * @return a new contact matcher
@@ -210,25 +225,13 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     }
 
     /**
-     * Logs reminder communications.
+     * Returns the contact archetype.
      *
-     * @param state  the reminder state
-     * @param logger the communication logger
+     * @return the contact archetype
      */
     @Override
-    protected void log(PatientReminders state, CommunicationLogger logger) {
-        SMSReminders reminders = (SMSReminders) state;
-        String subject = Messages.get("reminder.log.sms.subject");
-        Party customer = reminders.getCustomer();
-        Party location = reminders.getLocation();
-        Contact contact = reminders.getContact();
-        String text = ((SMSReminders) state).getText();
-        for (ReminderEvent event : state.getReminders()) {
-            String notes = getNote(event);
-            Party patient = event.getPatient();
-            logger.logSMS(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, text,
-                          notes, location);
-        }
+    protected String getContactArchetype() {
+        return ContactArchetypes.PHONE;
     }
 
 }

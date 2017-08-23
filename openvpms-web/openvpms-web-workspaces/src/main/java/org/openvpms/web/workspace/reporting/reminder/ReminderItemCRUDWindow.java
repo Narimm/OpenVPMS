@@ -392,19 +392,19 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 Context context = getContext();
                 Party location = context.getLocation();
                 Party practice = context.getPractice();
-                ReminderGenerator generator = factory.create(item, location, practice, help);
+                final ReminderGenerator generator = factory.create(item, location, practice, help);
                 generator.setResend(resend);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {
-                        if (!resend) {
-                            // if the reminder is being resent, the status/error apply to when it was sent originally
+                        if (generator.getProcessed() == 0) {
+                            // the reminder failed to be sent
                             String error = new ActBean(item).getString("error");
                             if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
                                 String message = !StringUtils.isEmpty(error)
                                                  ? error : Messages.get("reporting.reminder.send.cancelled");
-                                InformationDialog.show(Messages.get("reporting.reminder.send.title"), message);
+                                ErrorDialog.show(Messages.get("reporting.reminder.send.title"), message);
                             } else if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
-                                InformationDialog.show(Messages.get("reporting.reminder.send.title"), error);
+                                ErrorDialog.show(Messages.get("reporting.reminder.send.title"), error);
                             }
                             onRefresh(getObject());
                         }

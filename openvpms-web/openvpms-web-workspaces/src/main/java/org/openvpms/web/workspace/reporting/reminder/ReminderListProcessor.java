@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -79,19 +80,21 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * Constructs a {@link ReminderListProcessor}.
      *
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
-     * @param location      the practice location
-     * @param practice      the practice
-     * @param service       the archetype service
-     * @param config        the reminder configuration
-     * @param factory       the printer factory
-     * @param logger        the communication logger. May be {@code null}
-     * @param help          the help context
+     * @param reminderRules the reminder rules
+     * @param patientRules the patient rules
+     * @param location the practice location
+     * @param practice the practice
+     * @param service the archetype service
+     * @param config the reminder configuration
+     * @param factory the printer factory
+     * @param logger the communication logger. May be {@code null}
+     * @param help the help context
      */
-    public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party location, Party practice,
-                                 IArchetypeService service, ReminderConfiguration config, IMPrinterFactory factory,
-                                 CommunicationLogger logger, HelpContext help) {
-        super(reminderTypes, rules, practice, service, config, logger);
+    public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules reminderRules, PatientRules patientRules,
+                                 Party location, Party practice, IArchetypeService service,
+                                 ReminderConfiguration config, IMPrinterFactory factory, CommunicationLogger logger,
+                                 HelpContext help) {
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
         this.location = location;
         this.help = help;
         this.factory = factory;
@@ -105,17 +108,6 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     @Override
     public String getArchetype() {
         return ReminderArchetypes.LIST_REMINDER;
-    }
-
-    /**
-     * Registers a listener for printer events.
-     * <p>
-     * This must be registered prior to processing any reminders.
-     *
-     * @param listener the listener
-     */
-    public void setListener(PrinterListener listener) {
-        this.listener = listener;
     }
 
     /**
@@ -159,11 +151,11 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * </ul>
      *
      * @param reminders the reminders to prepare
-     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param groupBy the reminder grouping policy. This determines which document template is selected
      * @param cancelled reminder items that will be cancelled
-     * @param errors    reminders that can't be processed due to error
-     * @param updated   acts that need to be saved on completion
-     * @param resend    if {@code true}, reminders are being resent
+     * @param errors reminders that can't be processed due to error
+     * @param updated acts that need to be saved on completion
+     * @param resend if {@code true}, reminders are being resent
      * @return the reminders to process
      */
     @Override
@@ -183,7 +175,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     /**
      * Logs reminder communications.
      *
-     * @param state  the reminder state
+     * @param state the reminder state
      * @param logger the communication logger
      */
     protected void log(PatientReminders state, CommunicationLogger logger) {
@@ -200,6 +192,17 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     }
 
     /**
+     * Registers a listener for printer events.
+     * <p>
+     * This must be registered prior to processing any reminders.
+     *
+     * @param listener the listener
+     */
+    public void setListener(PrinterListener listener) {
+        this.listener = listener;
+    }
+
+    /**
      * Creates a new interactive printer.
      *
      * @param printer the printer to delegate to
@@ -213,10 +216,10 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     /**
      * Creates a new interactive printer.
      *
-     * @param title   the dialog title
+     * @param title the dialog title
      * @param printer the printer to delegate to
      * @param context the context
-     * @param help    the help context
+     * @param help the help context
      * @return a new interactive printer
      */
     protected InteractivePrinter createPrinter(String title, IMObjectReportPrinter<Act> printer, Context context,
