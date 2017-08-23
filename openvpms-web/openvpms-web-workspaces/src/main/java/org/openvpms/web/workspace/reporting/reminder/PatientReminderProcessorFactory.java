@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -56,6 +57,11 @@ public class PatientReminderProcessorFactory {
      * The reminder rules.
      */
     private final ReminderRules reminderRules;
+
+    /**
+     * The patient rules.
+     */
+    private final PatientRules patientRules;
 
     /**
      * The practice rules.
@@ -122,6 +128,7 @@ public class PatientReminderProcessorFactory {
     public PatientReminderProcessorFactory(Party location, Party practice, HelpContext help) {
         service = ServiceHelper.getArchetypeService();
         this.reminderRules = ServiceHelper.getBean(ReminderRules.class);
+        this.patientRules = ServiceHelper.getBean(PatientRules.class);
         this.practiceRules = ServiceHelper.getBean(PracticeRules.class);
 
         this.location = location;
@@ -243,7 +250,7 @@ public class PatientReminderProcessorFactory {
     protected ReminderEmailProcessor createEmailProcessor() {
         EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
         return new ReminderEmailProcessor(getMailerFactory(), evaluator, getReporterFactory(), reminderTypes, practice,
-                                          reminderRules, practiceRules, service, config, logger);
+                                          reminderRules, patientRules, practiceRules, service, config, logger);
     }
 
     /**
@@ -276,7 +283,7 @@ public class PatientReminderProcessorFactory {
     protected ReminderSMSProcessor createSMSProcessor() {
         ReminderSMSEvaluator evaluator = ServiceHelper.getBean(ReminderSMSEvaluator.class);
         return new ReminderSMSProcessor(getConnectionFactory(), evaluator, reminderTypes, practice, reminderRules,
-                                        practiceRules, service, config, logger);
+                                        patientRules, practiceRules, service, config, logger);
     }
 
     /**
@@ -296,7 +303,7 @@ public class PatientReminderProcessorFactory {
      * @return a new processor
      */
     protected ReminderPrintProcessor createPrintProcessor() {
-        ReminderPrintProcessor processor = new ReminderPrintProcessor(help, reminderTypes, reminderRules, practice,
+        ReminderPrintProcessor processor = new ReminderPrintProcessor(help, reminderTypes, reminderRules, patientRules, practice,
                                                                       service, config, getPrinterFactory(), logger);
         processor.setInteractiveAlways(true);
         return processor;
@@ -308,7 +315,7 @@ public class PatientReminderProcessorFactory {
      * @return a new processor
      */
     protected ReminderExportProcessor createExportProcessor() {
-        return new ReminderExportProcessor(reminderTypes, reminderRules, location, practice, service, config, logger);
+        return new ReminderExportProcessor(reminderTypes, reminderRules, patientRules, location, practice, service, config, logger);
     }
 
     /**
@@ -327,7 +334,7 @@ public class PatientReminderProcessorFactory {
      * @return a new list processor
      */
     protected ReminderListProcessor createListProcessor() {
-        return new ReminderListProcessor(reminderTypes, reminderRules, location, practice, service, config,
+        return new ReminderListProcessor(reminderTypes, reminderRules, patientRules, location, practice, service, config,
                                          getPrinterFactory(), logger, help);
     }
 

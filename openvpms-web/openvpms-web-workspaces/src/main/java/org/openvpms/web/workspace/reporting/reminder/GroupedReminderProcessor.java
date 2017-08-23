@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCount;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -53,16 +54,17 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * Constructs a {@link GroupedReminderProcessor}.
      *
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
+     * @param reminderRules the reminder rules
+     * @param patientRules  the patient rules
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public GroupedReminderProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party practice,
-                                    IArchetypeService service, ReminderConfiguration config,
+    public GroupedReminderProcessor(ReminderTypes reminderTypes, ReminderRules reminderRules, PatientRules patientRules,
+                                    Party practice, IArchetypeService service, ReminderConfiguration config,
                                     CommunicationLogger logger) {
-        super(reminderTypes, rules, practice, service, config, logger);
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
     }
 
     /**

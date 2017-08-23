@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -86,7 +87,8 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      * @param reporterFactory the reporter factory
      * @param reminderTypes   the reminder types
      * @param practice        the practice
-     * @param rules           the reminder rules
+     * @param reminderRules   the reminder rules
+     * @param patientRules    the patient rules
      * @param practiceRules   the practice rules
      * @param service         the archetype service
      * @param config          the reminder configuration
@@ -94,9 +96,10 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      */
     public ReminderEmailProcessor(MailerFactory factory, EmailTemplateEvaluator evaluator,
                                   ReporterFactory reporterFactory, ReminderTypes reminderTypes,
-                                  Party practice, ReminderRules rules, PracticeRules practiceRules,
-                                  IArchetypeService service, ReminderConfiguration config, CommunicationLogger logger) {
-        super(reminderTypes, rules, practice, service, config, logger);
+                                  Party practice, ReminderRules reminderRules, PatientRules patientRules,
+                                  PracticeRules practiceRules, IArchetypeService service, ReminderConfiguration config,
+                                  CommunicationLogger logger) {
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
         this.factory = factory;
         this.evaluator = evaluator;
         this.reporterFactory = reporterFactory;

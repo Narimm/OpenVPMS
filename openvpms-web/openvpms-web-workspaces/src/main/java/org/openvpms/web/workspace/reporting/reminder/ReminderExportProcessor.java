@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -58,16 +59,17 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      *
      * @param reminderTypes the reminder types
      * @param rules         the reminder rules
+     * @param patientRules  the patient rules
      * @param location      the current practice location
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderExportProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party location, Party practice,
-                                   IArchetypeService service, ReminderConfiguration config,
-                                   CommunicationLogger logger) {
-        super(reminderTypes, rules, practice, service, config, logger);
+    public ReminderExportProcessor(ReminderTypes reminderTypes, ReminderRules rules, PatientRules patientRules,
+                                   Party location, Party practice, IArchetypeService service,
+                                   ReminderConfiguration config, CommunicationLogger logger) {
+        super(reminderTypes, rules, patientRules, practice, service, config, logger);
         this.location = location;
     }
 
@@ -79,16 +81,6 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     @Override
     public String getArchetype() {
         return ReminderArchetypes.EXPORT_REMINDER;
-    }
-
-    /**
-     * Determines if reminder processing is performed asynchronously.
-     *
-     * @return {@code true} if reminder processing is performed asynchronously
-     */
-    @Override
-    public boolean isAsynchronous() {
-        return false;
     }
 
     /**
@@ -104,10 +96,19 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
         DownloadServlet.startDownload(document);
     }
 
+    /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
+        return false;
+    }
 
     /**
      * Prepares reminders for processing.
-     * <p/>
+     * <p>
      * This:
      * <ul>
      * <li>filters out any reminders that can't be processed due to missing data</li>
