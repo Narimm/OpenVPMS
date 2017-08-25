@@ -244,7 +244,7 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
      * @param printer the printer
      * @param context the context
      */
-    private <T> void print(IMPrinter<T> printer, Context context) {
+    protected <T> void print(IMPrinter<T> printer, Context context) {
         final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
         String printerName = printer.getDefaultPrinter();
         if (printerName == null) {

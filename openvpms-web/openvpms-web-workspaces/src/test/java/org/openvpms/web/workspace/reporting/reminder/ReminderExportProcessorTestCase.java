@@ -18,63 +18,47 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
-import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.ReportFactory;
-import org.openvpms.report.openoffice.Converter;
-import org.openvpms.web.component.im.report.ReporterFactory;
-import org.openvpms.web.component.mail.EmailTemplateEvaluator;
-import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.mail.Mailer;
-import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addReminderCount;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createExportRule;
 
 /**
- * Tests the {@link ReminderEmailProcessor}.
+ * Tests the {@link ReminderExportProcessor}.
  *
  * @author Tim Anderson
  */
-public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProcessorTest {
-
-    /**
-     * Practice rules.
-     */
-    @Autowired
-    private PracticeRules practiceRules;
-
-    /**
-     * The mailer
-     */
-    private Mailer mailer;
+public class ReminderExportProcessorTestCase extends AbstractPatientReminderProcessorTest {
 
     /**
      * The reminder processor.
      */
-    private ReminderEmailProcessor processor;
+    private ReminderExportProcessor processor;
 
     /**
-     * Constructs a {@link ReminderEmailProcessorTestCase}.
+     * Constructs a {@link ReminderExportProcessorTestCase}.
      */
-    public ReminderEmailProcessorTestCase() {
-        super(ContactArchetypes.EMAIL);
+    public ReminderExportProcessorTestCase() {
+        super(ContactArchetypes.LOCATION);
     }
 
     /**
@@ -84,51 +68,54 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
     @Override
     public void setUp() {
         super.setUp();
-        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate(true, false);
-        addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, documentTemplate, createEmailRule());
-
-        MailerFactory mailerFactory = Mockito.mock(MailerFactory.class);
-        mailer = Mockito.mock(Mailer.class);
-        Mockito.when(mailerFactory.create(Mockito.<MailContext>any())).thenReturn(mailer);
+        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate(false, false);
+        addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, documentTemplate, createExportRule());
 
         IArchetypeService service = getArchetypeService();
-        EmailTemplateEvaluator evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(),
-                                                                      null, Mockito.mock(ReportFactory.class),
-                                                                      Mockito.mock(Converter.class));
         ReminderTypes reminderTypes = new ReminderTypes(service);
-        CommunicationLogger logger = Mockito.mock(CommunicationLogger.class);
-        ReporterFactory reporterFactory = Mockito.mock(ReporterFactory.class);
+        CommunicationLogger logger = mock(CommunicationLogger.class);
         ReminderConfiguration config = createConfiguration();
-        processor = new ReminderEmailProcessor(mailerFactory, evaluator, reporterFactory, reminderTypes, practice,
-                                               reminderRules, patientRules, practiceRules, service, config, logger);
+        Party location = TestHelper.createLocation();
+        processor = new ReminderExportProcessor(reminderTypes, reminderRules, patientRules, location, practice, service,
+                                                config, logger) {
+            /**
+             * Exports reminders.
+             *
+             * @param reminders the reminders to export
+             */
+            @Override
+            protected void export(List<ReminderEvent> reminders) {
+                // no-op
+            }
+        };
     }
 
     /**
-     * Verifies that emails are sent to the REMINDER contact.
+     * Verifies that reminders are sent to the REMINDER contact.
      */
     @Test
     public void testReminderContact() {
-        Contact email1 = TestHelper.createEmailContact("x@test.com", false, "REMINDER");
-        Contact email2 = TestHelper.createEmailContact("y@test.com", true, null);
-        Contact email3 = TestHelper.createEmailContact("z@test.com");
-        customer.addContact(email1);
-        customer.addContact(email2);
-        customer.addContact(email3);
+        Contact location1 = createLocation("1 St Georges Rd", true, "REMINDER");
+        Contact location2 = createLocation("2 Keon St", false, null);
+        Contact location3 = createLocation("3 Hutton St", false, null);
+        customer.addContact(location1);
+        customer.addContact(location2);
+        customer.addContact(location3);
 
-        checkSend(null, "x@test.com");
+        checkExport(null, location1);
     }
 
     /**
-     * Verifies that emails can be sent to a contact different to the default.
+     * Verifies that prints can be address to a contact different to the default.
      */
     @Test
     public void testOverrideContact() {
-        Contact email1 = TestHelper.createEmailContact("x@test.com", true, "REMINDER");
-        Contact email2 = TestHelper.createEmailContact("y@test.com", false, null);
-        customer.addContact(email1);
-        customer.addContact(email2);
+        Contact location1 = createLocation("1 St Georges Rd", true, "REMINDER");
+        Contact location2 = createLocation("2 Keon St", false, null);
+        customer.addContact(location1);
+        customer.addContact(location2);
 
-        checkSend(email2, "y@test.com");
+        checkExport(location2, location2);
     }
 
     /**
@@ -150,19 +137,22 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
      */
     @Override
     protected Act createReminderItem(Date send, Date dueDate) {
-        return ReminderTestHelper.createEmailReminder(send, dueDate, ReminderItemStatus.PENDING, 0);
+        return ReminderTestHelper.createExportReminder(send, dueDate, ReminderItemStatus.PENDING, 0);
     }
 
     /**
-     * Sends an email reminder.
+     * Exports reminders.
      *
      * @param contact the contact to use. May be {@code null}
      * @param to      the expected to address
      */
-    private void checkSend(Contact contact, String to) {
+    private void checkExport(Contact contact, Contact to) {
         PatientReminders reminders = prepare(contact);
         processor.process(reminders);
-        Mockito.verify(mailer).setTo(new String[]{to});
+        assertEquals(1, reminders.getProcessed());
+        for (ReminderEvent event : reminders.getReminders()) {
+            assertEquals(to, event.getContact());
+        }
     }
 
     /**
@@ -173,8 +163,9 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
      */
     private PatientReminders prepare(Contact contact) {
         Date tomorrow = DateRules.getTomorrow();
-        Act item = createReminderItem(DateRules.getToday(), tomorrow);
+        Act item = ReminderTestHelper.createSMSReminder(DateRules.getToday(), tomorrow, ReminderItemStatus.PENDING, 0);
         Act reminder = ReminderTestHelper.createReminder(tomorrow, patient, reminderType, item);
+
         return prepare(item, reminder, contact);
     }
 

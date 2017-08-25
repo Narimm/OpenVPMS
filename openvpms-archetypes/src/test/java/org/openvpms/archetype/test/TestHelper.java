@@ -205,7 +205,7 @@ public class TestHelper {
 
     /**
      * Creates a new <em>contact.location</em>
-     * <p/>
+     * <p>
      * Any required lookups will be created and saved.
      *
      * @param address    the street address
@@ -249,19 +249,37 @@ public class TestHelper {
      * @return a new phone contact
      */
     public static Contact createPhoneContact(String areaCode, String number, boolean sms) {
+        return createPhoneContact(areaCode, number, sms, true, null);
+    }
+
+    /**
+     * Creates a new <em>contact.phoneNumber</em>
+     *
+     * @param areaCode  the area code
+     * @param number    the phone number
+     * @param sms       if {@code true}, allow SMS
+     * @param preferred if {@code true}, flags the contact as preferred
+     * @param purpose   the contact purpose. May be {@code null}
+     * @return a new phone contact
+     */
+    public static Contact createPhoneContact(String areaCode, String number, boolean sms, boolean preferred,
+                                             String purpose) {
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("areaCode", areaCode);
         bean.setValue("telephoneNumber", number);
-        bean.setValue("preferred", true);
         bean.setValue("sms", sms);
+        bean.setValue("preferred", preferred);
+        if (purpose != null) {
+            contact.addClassification(getLookup(ContactArchetypes.PURPOSE, purpose));
+        }
         return contact;
     }
 
     /**
      * Creates a new <em>contact.email</em>
      *
-     * @param address the phone number
+     * @param address the email address
      * @return a new email contact
      */
     public static Contact createEmailContact(String address) {
@@ -271,7 +289,7 @@ public class TestHelper {
     /**
      * Creates a new <em>contact.email</em>
      *
-     * @param address   the phone number
+     * @param address   the email address
      * @param preferred if {@code true}, flags the contact as preferred
      * @param purpose   the contact purpose. May be {@code null}
      * @return a new email contact
@@ -289,7 +307,7 @@ public class TestHelper {
 
     /**
      * Creates and saves a new <em>contact.location</em>
-     * <p/>
+     * <p>
      * Any required lookups will be created and saved.
      *
      * @param address    the street address
@@ -546,11 +564,11 @@ public class TestHelper {
     /**
      * Returns the <em>party.organisationPractice</em> singleton,
      * creating one if it doesn't exist.
-     * <p/>
+     * <p>
      * If it exists, any tax rates will be removed.
-     * <p/>
+     * <p>
      * The practice currency is set to <em>AUD</em>.
-     * <p/>
+     * <p>
      * Default contacts are added.
      *
      * @return the practice
@@ -701,7 +719,7 @@ public class TestHelper {
 
     /**
      * Returns a lookup, creating it if it doesn't exist.
-     * <p/>
+     * <p>
      * If the lookup exists, but the name is different, the name will be updated.
      *
      * @param shortName the lookup short name

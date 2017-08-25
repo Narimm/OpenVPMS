@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
@@ -43,6 +44,11 @@ import java.util.List;
 public class ReminderGenerator extends AbstractBatchProcessor {
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
      * The reminder processors.
      */
     private List<ReminderBatchProcessor> processors = new ArrayList<>();
@@ -52,24 +58,20 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     private boolean multipleReminders = true;
 
-    /**
-     * The help context.
-     */
-    private final HelpContext help;
-
 
     /**
      * Constructs a {@link ReminderGenerator} to process a single reminder item.
      *
      * @param item             the reminder item
      * @param reminder         the reminder
+     * @param contact          the contact to send to. May be {@code null}
      * @param help             the help context
      * @param processorFactory the reminder processor factory
      */
-    public ReminderGenerator(Act item, Act reminder, HelpContext help,
+    public ReminderGenerator(Act item, Act reminder, Contact contact, HelpContext help,
                              PatientReminderProcessorFactory processorFactory) {
         this.help = help;
-        ReminderItemSource query = new SingleReminderItemSource(item, reminder);
+        ReminderItemSource query = new SingleReminderItemSource(item, reminder, contact);
         ReminderBatchProcessor processor = processorFactory.createBatchProcessor(query);
         processors.add(processor);
         multipleReminders = false;

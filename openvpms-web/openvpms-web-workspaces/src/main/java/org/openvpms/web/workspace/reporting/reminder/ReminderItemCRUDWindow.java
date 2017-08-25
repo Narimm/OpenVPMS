@@ -392,7 +392,7 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 Context context = getContext();
                 Party location = context.getLocation();
                 Party practice = context.getPractice();
-                final ReminderGenerator generator = factory.create(item, location, practice, help);
+                final ReminderGenerator generator = factory.create(item, null, location, practice, help);
                 generator.setResend(resend);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {
