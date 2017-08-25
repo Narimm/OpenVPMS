@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.query;
@@ -277,7 +277,7 @@ public class Constraints {
     /**
      * Creates a new is-a constraint, to determine if an alias or node is of a particular archetype.
      *
-     * @param name the alias or qualified node name
+     * @param name       the alias or qualified node name
      * @param shortNames the archetype short names
      * @return a new constraint
      */
@@ -493,6 +493,17 @@ public class Constraints {
         ShortNameConstraint constraint = shortName(shortNames);
         constraint.setAlias(alias);
         return new ArchetypeQuery(constraint);
+    }
+
+    /**
+     * Creates a new sub-query.
+     *
+     * @param object the object to join on
+     * @param alias  the alias to use
+     * @return a new sub-query
+     */
+    public static ArchetypeQuery subQuery(IMObject object, String alias) {
+        return new ArchetypeQuery(new ObjectRefConstraint(alias, object.getObjectReference()));
     }
 
 }
