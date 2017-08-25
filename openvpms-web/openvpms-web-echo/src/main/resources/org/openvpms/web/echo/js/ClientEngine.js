@@ -1067,6 +1067,7 @@ EchoClientMessage = {
         }
         messagePartElement.appendChild(actionElement);
 
+        EchoAsyncMonitor.active(); // flag the session as active. See OVPMS-1939
         EchoDebugManager.updateClientMessage();
 
         return actionElement;
