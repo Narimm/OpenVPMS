@@ -131,6 +131,8 @@ public abstract class PatientReminderProcessor {
      * <li>adds meta-data for subsequent calls to {@link #process}</li>
      * </ul>
      * If reminders are being resent, due dates are ignored, and no cancellation will occur.
+     * <p>
+     * To specify the contact to use, pre-populate reminders via the {@link ReminderEvent#setContact(Contact)} method.
      *
      * @param reminders  the reminders
      * @param groupBy    the reminder grouping policy. This determines which document template is selected
@@ -462,11 +464,19 @@ public abstract class PatientReminderProcessor {
     /**
      * Returns the contact to use.
      *
-     * @param customer the reminder
+     * @param customer       the reminder
+     * @param matcher        the contact matcher
+     * @param defaultContact the default contact, or {@code null} to select one from the customer
      * @return the contact, or {@code null} if none is found
      */
-    protected Contact getContact(Party customer, ContactMatcher matcher) {
-        return Contacts.find(Contacts.sort(customer.getContacts()), matcher);
+    protected Contact getContact(Party customer, ContactMatcher matcher, Contact defaultContact) {
+        Contact contact;
+        if (defaultContact != null && matcher.isA(defaultContact)) {
+            contact = defaultContact;
+        } else {
+            contact = Contacts.find(Contacts.sort(customer.getContacts()), matcher);
+        }
+        return contact;
     }
 
     /**

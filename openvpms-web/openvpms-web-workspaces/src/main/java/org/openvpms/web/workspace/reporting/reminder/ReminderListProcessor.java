@@ -81,14 +81,14 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      *
      * @param reminderTypes the reminder types
      * @param reminderRules the reminder rules
-     * @param patientRules the patient rules
-     * @param location the practice location
-     * @param practice the practice
-     * @param service the archetype service
-     * @param config the reminder configuration
-     * @param factory the printer factory
-     * @param logger the communication logger. May be {@code null}
-     * @param help the help context
+     * @param patientRules  the patient rules
+     * @param location      the practice location
+     * @param practice      the practice
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param factory       the printer factory
+     * @param logger        the communication logger. May be {@code null}
+     * @param help          the help context
      */
     public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules reminderRules, PatientRules patientRules,
                                  Party location, Party practice, IArchetypeService service,
@@ -121,14 +121,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
         for (ReminderEvent reminder : reminders.getReminders()) {
             acts.add(reminder.getReminder());
         }
-        Context context = new LocalContext();
-        context.setLocation(location);
-        context.setPractice(getPractice());
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER, context);
-        IMObjectReportPrinter<Act> printer = factory.createIMObjectReportPrinter(acts, locator, context);
-        InteractivePrinter iPrinter = createPrinter(printer, context);
-        iPrinter.setListener(listener);
-        iPrinter.print();
+        print(acts);
     }
 
     /**
@@ -142,6 +135,33 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     }
 
     /**
+     * Registers a listener for printer events.
+     * <p>
+     * This must be registered prior to processing any reminders.
+     *
+     * @param listener the listener
+     */
+    public void setListener(PrinterListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Prints reminders.
+     *
+     * @param reminders the reminders to print
+     */
+    protected void print(List<Act> reminders) {
+        Context context = new LocalContext();
+        context.setLocation(location);
+        context.setPractice(getPractice());
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER, context);
+        IMObjectReportPrinter<Act> printer = factory.createIMObjectReportPrinter(reminders, locator, context);
+        InteractivePrinter iPrinter = createPrinter(printer, context);
+        iPrinter.setListener(listener);
+        iPrinter.print();
+    }
+
+    /**
      * Prepares reminders for processing.
      * <p>
      * This:
@@ -151,11 +171,11 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * </ul>
      *
      * @param reminders the reminders to prepare
-     * @param groupBy the reminder grouping policy. This determines which document template is selected
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
      * @param cancelled reminder items that will be cancelled
-     * @param errors reminders that can't be processed due to error
-     * @param updated acts that need to be saved on completion
-     * @param resend if {@code true}, reminders are being resent
+     * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
      * @return the reminders to process
      */
     @Override
@@ -166,7 +186,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
         for (ReminderEvent reminder : reminders) {
             Party customer = reminder.getCustomer();
             Party location = getLocation(customer);
-            Contact contact = getContact(customer, matcher);
+            Contact contact = getContact(customer, matcher, reminder.getContact());
             populate(reminder, contact, location);
         }
         return new PatientReminders(reminders, groupBy, cancelled, errors, updated, resend);
@@ -175,7 +195,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     /**
      * Logs reminder communications.
      *
-     * @param state the reminder state
+     * @param state  the reminder state
      * @param logger the communication logger
      */
     protected void log(PatientReminders state, CommunicationLogger logger) {
@@ -192,17 +212,6 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     }
 
     /**
-     * Registers a listener for printer events.
-     * <p>
-     * This must be registered prior to processing any reminders.
-     *
-     * @param listener the listener
-     */
-    public void setListener(PrinterListener listener) {
-        this.listener = listener;
-    }
-
-    /**
      * Creates a new interactive printer.
      *
      * @param printer the printer to delegate to
@@ -216,10 +225,10 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     /**
      * Creates a new interactive printer.
      *
-     * @param title the dialog title
+     * @param title   the dialog title
      * @param printer the printer to delegate to
      * @param context the context
-     * @param help the help context
+     * @param help    the help context
      * @return a new interactive printer
      */
     protected InteractivePrinter createPrinter(String title, IMObjectReportPrinter<Act> printer, Context context,

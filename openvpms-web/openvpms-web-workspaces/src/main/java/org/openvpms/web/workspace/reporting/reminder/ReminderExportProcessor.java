@@ -91,9 +91,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     @Override
     public void process(PatientReminders state) {
         List<ReminderEvent> reminders = state.getReminders();
-        ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
-        Document document = exporter.export(reminders);
-        DownloadServlet.startDownload(document);
+        export(reminders);
     }
 
     /**
@@ -104,6 +102,17 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     @Override
     public boolean isAsynchronous() {
         return false;
+    }
+
+    /**
+     * Exports reminders.
+     *
+     * @param reminders the reminders to export
+     */
+    protected void export(List<ReminderEvent> reminders) {
+        ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
+        Document document = exporter.export(reminders);
+        DownloadServlet.startDownload(document);
     }
 
     /**
@@ -131,7 +140,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
         ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
         for (ReminderEvent reminder : reminders) {
             Party customer = reminder.getCustomer();
-            Contact contact = getContact(customer, matcher);
+            Contact contact = getContact(customer, matcher, reminder.getContact());
             if (contact != null) {
                 populate(reminder, contact, getLocation(customer));
                 toProcess.add(reminder);

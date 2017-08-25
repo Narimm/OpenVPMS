@@ -32,49 +32,40 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.ReportFactory;
-import org.openvpms.report.openoffice.Converter;
-import org.openvpms.web.component.im.report.ReporterFactory;
-import org.openvpms.web.component.mail.EmailTemplateEvaluator;
-import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.mail.Mailer;
-import org.openvpms.web.component.mail.MailerFactory;
+import org.openvpms.sms.Connection;
+import org.openvpms.sms.ConnectionFactory;
+import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addReminderCount;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createSMSRule;
 
 /**
- * Tests the {@link ReminderEmailProcessor}.
+ * Tests the {@link ReminderSMSProcessor}.
  *
  * @author Tim Anderson
  */
-public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProcessorTest {
-
-    /**
-     * Practice rules.
-     */
-    @Autowired
-    private PracticeRules practiceRules;
-
-    /**
-     * The mailer
-     */
-    private Mailer mailer;
+public class ReminderSMSProcessorTestCase extends AbstractPatientReminderProcessorTest {
 
     /**
      * The reminder processor.
      */
-    private ReminderEmailProcessor processor;
+    private ReminderSMSProcessor processor;
 
     /**
-     * Constructs a {@link ReminderEmailProcessorTestCase}.
+     * The SMS connection.
      */
-    public ReminderEmailProcessorTestCase() {
-        super(ContactArchetypes.EMAIL);
+    private Connection connection;
+
+    /**
+     * Constructs a {@link ReminderSMSProcessorTestCase}.
+     */
+    public ReminderSMSProcessorTestCase() {
+        super(ContactArchetypes.PHONE);
     }
 
     /**
@@ -84,51 +75,61 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
     @Override
     public void setUp() {
         super.setUp();
-        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate(true, false);
-        addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, documentTemplate, createEmailRule());
-
-        MailerFactory mailerFactory = Mockito.mock(MailerFactory.class);
-        mailer = Mockito.mock(Mailer.class);
-        Mockito.when(mailerFactory.create(Mockito.<MailContext>any())).thenReturn(mailer);
+        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate(false, true);
+        addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, documentTemplate, createSMSRule());
 
         IArchetypeService service = getArchetypeService();
-        EmailTemplateEvaluator evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(),
-                                                                      null, Mockito.mock(ReportFactory.class),
-                                                                      Mockito.mock(Converter.class));
+        SMSTemplateEvaluator templateEvaluator = new SMSTemplateEvaluator(service, getLookupService(), null);
+        ReminderSMSEvaluator evaluator = new ReminderSMSEvaluator(templateEvaluator);
         ReminderTypes reminderTypes = new ReminderTypes(service);
-        CommunicationLogger logger = Mockito.mock(CommunicationLogger.class);
-        ReporterFactory reporterFactory = Mockito.mock(ReporterFactory.class);
+        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+        when(connectionFactory.getMaxParts()).thenReturn(1);
+        connection = mock(Connection.class);
+        when(connectionFactory.createConnection()).thenReturn(connection);
+        CommunicationLogger logger = mock(CommunicationLogger.class);
         ReminderConfiguration config = createConfiguration();
-        processor = new ReminderEmailProcessor(mailerFactory, evaluator, reporterFactory, reminderTypes, practice,
-                                               reminderRules, patientRules, practiceRules, service, config, logger);
+        PracticeRules practiceRules = mock(PracticeRules.class);
+        when(practiceRules.isSMSEnabled(practice)).thenReturn(true);
+        processor = new ReminderSMSProcessor(connectionFactory, evaluator, reminderTypes, practice,
+                                             reminderRules, patientRules, practiceRules, service, config, logger);
     }
 
     /**
-     * Verifies that emails are sent to the REMINDER contact.
+     * Verifies that reminders are sent to the REMINDER contact.
      */
     @Test
     public void testReminderContact() {
-        Contact email1 = TestHelper.createEmailContact("x@test.com", false, "REMINDER");
-        Contact email2 = TestHelper.createEmailContact("y@test.com", true, null);
-        Contact email3 = TestHelper.createEmailContact("z@test.com");
-        customer.addContact(email1);
-        customer.addContact(email2);
-        customer.addContact(email3);
+        Contact sms1 = TestHelper.createPhoneContact(null, "1", true, true, "REMINDER");
+        Contact sms2 = TestHelper.createPhoneContact(null, "2", true, false, null);
+        Contact sms3 = TestHelper.createPhoneContact(null, "3", true, false, null);
+        customer.addContact(sms1);
+        customer.addContact(sms2);
+        customer.addContact(sms3);
 
-        checkSend(null, "x@test.com");
+        checkSend(null, "1");
     }
 
     /**
-     * Verifies that emails can be sent to a contact different to the default.
+     * Verifies that SMS can be sent to a contact different to the default.
      */
     @Test
     public void testOverrideContact() {
-        Contact email1 = TestHelper.createEmailContact("x@test.com", true, "REMINDER");
-        Contact email2 = TestHelper.createEmailContact("y@test.com", false, null);
-        customer.addContact(email1);
-        customer.addContact(email2);
+        Contact sms1 = TestHelper.createPhoneContact(null, "1", true, true, "REMINDER");
+        Contact sms2 = TestHelper.createPhoneContact(null, "2", true, false, null);
+        customer.addContact(sms1);
+        customer.addContact(sms2);
 
-        checkSend(email2, "y@test.com");
+        checkSend(sms2, "2");
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR, when the customer no phone contact with sms enabled.
+     */
+    @Test
+    public void testNoSMSContact() {
+        Contact phone = TestHelper.createPhoneContact(null, "1", false, true, "REMINDER");
+        customer.addContact(phone);
+        checkNoContact();
     }
 
     /**
@@ -150,11 +151,11 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
      */
     @Override
     protected Act createReminderItem(Date send, Date dueDate) {
-        return ReminderTestHelper.createEmailReminder(send, dueDate, ReminderItemStatus.PENDING, 0);
+        return ReminderTestHelper.createSMSReminder(send, dueDate, ReminderItemStatus.PENDING, 0);
     }
 
     /**
-     * Sends an email reminder.
+     * Sends an SMS reminder.
      *
      * @param contact the contact to use. May be {@code null}
      * @param to      the expected to address
@@ -162,7 +163,7 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
     private void checkSend(Contact contact, String to) {
         PatientReminders reminders = prepare(contact);
         processor.process(reminders);
-        Mockito.verify(mailer).setTo(new String[]{to});
+        Mockito.verify(connection).send(to, "some plain text");
     }
 
     /**
@@ -173,8 +174,9 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
      */
     private PatientReminders prepare(Contact contact) {
         Date tomorrow = DateRules.getTomorrow();
-        Act item = createReminderItem(DateRules.getToday(), tomorrow);
+        Act item = ReminderTestHelper.createSMSReminder(DateRules.getToday(), tomorrow, ReminderItemStatus.PENDING, 0);
         Act reminder = ReminderTestHelper.createReminder(tomorrow, patient, reminderType, item);
+
         return prepare(item, reminder, contact);
     }
 

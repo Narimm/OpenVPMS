@@ -75,7 +75,17 @@ public abstract class ContactMatcher {
      * @return {@code true} if the contact is an exact match; otherwise {@code false}
      */
     public boolean matches(Contact contact) {
-        return matchesShortName(contact);
+        return isA(contact);
+    }
+
+    /**
+     * Determines if a contact is one of the supported archetype(s).
+     *
+     * @param contact the contact
+     * @return {@code true} if the contact matches; otherwise {@code false}
+     */
+    public boolean isA(Contact contact) {
+        return TypeHelper.isA(contact, shortNames);
     }
 
     /**
@@ -101,16 +111,6 @@ public abstract class ContactMatcher {
         if (contacts.get(priority) == null) {
             contacts.put(priority, contact);
         }
-    }
-
-    /**
-     * Determines if a contact matches the short name.
-     *
-     * @param contact the contact
-     * @return {@code true} if the contact matches; otherwise {@code false}
-     */
-    protected boolean matchesShortName(Contact contact) {
-        return TypeHelper.isA(contact, shortNames);
     }
 
     /**

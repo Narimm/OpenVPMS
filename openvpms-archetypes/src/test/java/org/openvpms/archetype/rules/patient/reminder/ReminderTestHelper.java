@@ -450,7 +450,7 @@ public class ReminderTestHelper extends TestHelper {
      */
     public static Entity createDocumentTemplate(boolean emailTemplate, boolean smsTemplate) {
         Entity email = (emailTemplate) ? createEmailTemplate("subject", "text") : null;
-        Entity sms = (smsTemplate) ? createSMSTemplate("TEXT", "some plan text") : null;
+        Entity sms = (smsTemplate) ? createSMSTemplate("TEXT", "some plain text") : null;
         return createDocumentTemplate(email, sms);
     }
 

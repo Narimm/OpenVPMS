@@ -27,7 +27,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 
 /**
  * Reminder event.
- * <p/>
+ * <p>
  * This extends {@link ObjectSet} so reminder information can be supplied to reports.
  *
  * @author Tim Anderson
@@ -126,6 +126,20 @@ public class ReminderEvent extends ObjectSet {
     }
 
     /**
+     * Constructs a {@link ReminderEvent}.
+     *
+     * @param reminder the reminder
+     * @param item     the reminder item
+     * @param patient  the patient
+     * @param customer the customer
+     * @param contact  the contact. May be {@code null}
+     */
+    public ReminderEvent(Act reminder, Act item, Party patient, Party customer, Contact contact) {
+        this(reminder, item, patient, customer);
+        setContact(contact);
+    }
+
+    /**
      * Returns the reminder.
      *
      * @return the reminder
@@ -216,21 +230,21 @@ public class ReminderEvent extends ObjectSet {
     }
 
     /**
-     * Sets the contact.
-     *
-     * @param contact the contact. May be {@code null}
-     */
-    public void setContact(Contact contact) {
-        set("contact", contact);
-    }
-
-    /**
      * Returns the contact.
      *
      * @return the contact. May be {@code null}
      */
     public Contact getContact() {
         return (Contact) safeGet(CONTACT, null);
+    }
+
+    /**
+     * Sets the contact.
+     *
+     * @param contact the contact. May be {@code null}
+     */
+    public void setContact(Contact contact) {
+        set("contact", contact);
     }
 
     /**

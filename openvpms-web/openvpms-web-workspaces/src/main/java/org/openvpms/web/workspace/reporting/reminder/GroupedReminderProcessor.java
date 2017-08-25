@@ -97,9 +97,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
         if (!reminders.isEmpty()) {
             ReminderEvent event = reminders.get(0);
             customer = event.getCustomer();
-            if (customer != null) {
-                contact = getContact(customer);
-            }
+            contact = getContact(customer, createContactMatcher(), event.getContact());
             if (contact != null) {
                 location = getLocation(customer);
                 toProcess.addAll(reminders);
@@ -198,16 +196,6 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     }
 
     /**
-     * Returns the contact to use.
-     *
-     * @param customer the customer
-     * @return the contact, or {@code null} if none is found
-     */
-    protected Contact getContact(Party customer) {
-        return getContact(customer, createContactMatcher());
-    }
-
-    /**
      * Creates a new contact matcher.
      *
      * @return a new contact matcher
@@ -222,6 +210,5 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @return the contact archetype
      */
     protected abstract String getContactArchetype();
-
 
 }
