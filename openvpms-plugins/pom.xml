@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -46,7 +46,7 @@
         <blueprint.api.version>1.0.1</blueprint.api.version>
         <blueprint.cm.version>1.1.0</blueprint.cm.version>
         <blueprint.core.version>1.8.1</blueprint.core.version>
-        <osgi.version>4.3.1</osgi.version>
+        <osgi.version>6.0.0</osgi.version>
         <felix.shell.version>1.4.3</felix.shell.version>
         <felix.shell.remote.version>1.2.0</felix.shell.remote.version>
     </properties>
@@ -60,7 +60,7 @@
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.compendium</artifactId>
+                <artifactId>osgi.cmpn</artifactId>
                 <version>${osgi.version}</version>
             </dependency>
         </dependencies>

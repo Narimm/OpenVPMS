@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.plugins.test.impl;
@@ -35,7 +35,7 @@ import java.util.Iterator;
 public class TestPluginImpl implements TestPlugin {
 
     /**
-     * Constructs a {@code TestPlugin}.
+     * Constructs a {@link TestPluginImpl}.
      *
      * @param archetypeService the archetype service
      * @param service          the test service

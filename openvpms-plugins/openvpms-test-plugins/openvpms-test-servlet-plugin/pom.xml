@@ -19,40 +19,33 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>openvpms-plugins</artifactId>
+        <artifactId>openvpms-test-plugins</artifactId>
         <groupId>org.openvpms</groupId>
         <version>2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <artifactId>openvpms-test-servlet-plugin</artifactId>
     <packaging>bundle</packaging>
-
-    <artifactId>openvpms-plugin-services</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-framework</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-archetypes</artifactId>
-        </dependency>
-        <!-- The following ensure that JAXB is exported via org.osgi.framework.system.packages.extra -->
-        <dependency>
-            <groupId>org.apache.servicemix.specs</groupId>
-            <artifactId>org.apache.servicemix.specs.jaxb-api-2.2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.servicemix.bundles</groupId>
-            <artifactId>org.apache.servicemix.bundles.jaxb-impl</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
@@ -62,15 +55,13 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
+                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
-                        <Export-Package>org.openvpms.plugin.service.archetype.*;version="${project.version}",
-                            org.openvpms.plugin.service.config.*;version="${project.version}"
-                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
 </project>
