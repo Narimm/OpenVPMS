@@ -20,6 +20,8 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
@@ -58,11 +60,6 @@ import java.util.List;
 public class TemplateLoader {
 
     /**
-     * The default application context.
-     */
-    private static final String APPLICATION_CONTEXT = "applicationContext.xml";
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -71,6 +68,16 @@ public class TemplateLoader {
      * The document handlers.
      */
     private final DocumentHandlers handlers;
+
+    /**
+     * The default application context.
+     */
+    private static final String APPLICATION_CONTEXT = "applicationContext.xml";
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(TemplateLoader.class);
 
 
     /**
@@ -82,6 +89,42 @@ public class TemplateLoader {
     public TemplateLoader(IArchetypeService service, DocumentHandlers handlers) {
         this.service = service;
         this.handlers = handlers;
+    }
+
+    /**
+     * Main line.
+     *
+     * @param args command line arguments
+     */
+    public static void main(String[] args) {
+        try {
+            JSAP parser = createParser();
+            JSAPResult config = parser.parse(args);
+            if (!config.success()) {
+                displayUsage(parser);
+            } else {
+                String contextPath = config.getString("context");
+                String file = config.getString("file");
+
+                ApplicationContext context;
+                if (!new File(contextPath).exists()) {
+                    context = new ClassPathXmlApplicationContext(contextPath);
+                } else {
+                    context = new FileSystemXmlApplicationContext(contextPath);
+                }
+
+                if (file != null) {
+                    IArchetypeService service = (IArchetypeService) context.getBean("archetypeService");
+                    DocumentHandlers handlers = (DocumentHandlers) context.getBean("documentHandlers");
+                    TemplateLoader loader = new TemplateLoader(service, handlers);
+                    loader.load(file);
+                } else {
+                    displayUsage(parser);
+                }
+            }
+        } catch (Throwable exception) {
+            log.error(exception.getMessage(), exception);
+        }
     }
 
     /**
@@ -153,64 +196,7 @@ public class TemplateLoader {
             bean.setValue("orientation", template.getOrientation().value());
         }
         service.save(Arrays.asList(document, entity, act));
-    }
-
-    /**
-     * Main line.
-     *
-     * @param args command line arguments
-     */
-    public static void main(String[] args) {
-        try {
-            JSAP parser = createParser();
-            JSAPResult config = parser.parse(args);
-            if (!config.success()) {
-                displayUsage(parser);
-            } else {
-                String contextPath = config.getString("context");
-                String file = config.getString("file");
-
-                ApplicationContext context;
-                if (!new File(contextPath).exists()) {
-                    context = new ClassPathXmlApplicationContext(contextPath);
-                } else {
-                    context = new FileSystemXmlApplicationContext(contextPath);
-                }
-
-                if (file != null) {
-                    IArchetypeService service
-                            = (IArchetypeService) context.getBean(
-                            "archetypeService");
-                    DocumentHandlers handlers
-                            = (DocumentHandlers) context.getBean(
-                            "documentHandlers");
-                    TemplateLoader loader = new TemplateLoader(service,
-                                                               handlers);
-                    loader.load(file);
-                } else {
-                    displayUsage(parser);
-                }
-            }
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
-    }
-
-    /**
-     * Creates a new {@link Document} from a template.
-     *
-     * @param template the template descriptor
-     * @param dir      the directory to locate relative paths
-     * @return a new document containing the serialized template
-     * @throws DocumentException for any error
-     */
-    private Document getDocument(Template template, File dir) {
-        File file = new File(template.getPath());
-        if (!file.isAbsolute()) {
-            file = new File(dir, template.getPath());
-        }
-        return DocumentHelper.create(file, template.getDocType(),
-                                     template.getMimeType(), handlers);
+        log.info("Loaded '" + template.getName() + "'");
     }
 
     /**
@@ -242,6 +228,22 @@ public class TemplateLoader {
         System.err.println();
         System.err.println(parser.getHelp());
         System.exit(1);
+    }
+
+    /**
+     * Creates a new {@link Document} from a template.
+     *
+     * @param template the template descriptor
+     * @param dir      the directory to locate relative paths
+     * @return a new document containing the serialized template
+     * @throws DocumentException for any error
+     */
+    private Document getDocument(Template template, File dir) {
+        File file = new File(template.getPath());
+        if (!file.isAbsolute()) {
+            file = new File(dir, template.getPath());
+        }
+        return DocumentHelper.create(file, template.getDocType(), template.getMimeType(), handlers);
     }
 
 }
