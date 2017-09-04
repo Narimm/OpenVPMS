@@ -34,11 +34,18 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
+import org.openvpms.sms.SMSException;
+import org.openvpms.sms.i18n.SMSMessages;
 import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
+import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.Date;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addReminderCount;
@@ -133,6 +140,41 @@ public class ReminderSMSProcessorTestCase extends AbstractPatientReminderProcess
     }
 
     /**
+     * Verifies that the reminder item status is set to ERROR, when the phone contact is incomplete.
+     */
+    @Test
+    public void testMissingPhoneNumber() {
+        Contact phone = TestHelper.createPhoneContact(null, null, true, true, "REMINDER");
+        customer.addContact(phone);
+        checkNoContact();
+    }
+
+    /**
+     * Verifies that {@link ReminderSMSProcessor#failed(PatientReminders, Throwable)} updates reminders with the
+     * failure message.
+     */
+    @Test
+    public void testFailed() {
+        Contact sms = TestHelper.createPhoneContact(null, "1", true, true, "REMINDER");
+        customer.addContact(sms);
+
+        Date tomorrow = DateRules.getTomorrow();
+        Act item = ReminderTestHelper.createSMSReminder(DateRules.getToday(), tomorrow, ReminderItemStatus.PENDING, 0);
+        Act reminder = ReminderTestHelper.createReminder(tomorrow, patient, reminderType, item);
+
+        doThrow(new SMSException(SMSMessages.noMessageText())).when(connection).send(anyString(), anyString());
+
+        PatientReminders reminders = prepare(item, reminder, null);
+        try {
+            processor.process(reminders);
+            fail("Expected exception to be thrown");
+        } catch (ReportingException expected) {
+            assertTrue(processor.failed(reminders, expected));
+            checkItem(get(item), ReminderItemStatus.ERROR, "Failed to process reminder: SMS-0304: Message has no text");
+        }
+    }
+
+    /**
      * Returns the reminder processor.
      *
      * @return the reminder processor
@@ -164,6 +206,7 @@ public class ReminderSMSProcessorTestCase extends AbstractPatientReminderProcess
         PatientReminders reminders = prepare(contact);
         processor.process(reminders);
         Mockito.verify(connection).send(to, "some plain text");
+        assertTrue(processor.complete(reminders));
     }
 
     /**

@@ -304,17 +304,50 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
             Reminders reminders = iterator.next();
-            PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), date, false);
-            if (!state.getReminders().isEmpty()) {
-                processor.process(state);
+            try {
+                PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), date,
+                                                           false);
+                Stats stats = send(state, processor, iterator);
+                total = total.add(stats);
+            } catch (Throwable exception) {
+                log.error("Failed to send reminders", exception);
+                total = total.add(new Stats(0, 0, reminders.getReminders().size()));
             }
-            int cancelled = state.getCancelled().size();
-            int errors = state.getErrors().size();
-            processor.complete(state);
-            total = total.add(new Stats(state.getProcessed(), cancelled, errors));
-            iterator.updated();
         }
         return total;
+    }
+
+    /**
+     * Sends reminders.
+     *
+     * @param reminders the reminders to send
+     * @param processor the processor to use
+     * @param iterator  the reminder iterator
+     * @return the send statistics
+     */
+    private Stats send(PatientReminders reminders, PatientReminderProcessor processor,
+                       GroupingReminderIterator iterator) {
+        int processed;
+        int errors;
+        boolean updated;
+        try {
+            if (!reminders.getReminders().isEmpty()) {
+                processor.process(reminders);
+            }
+            updated = processor.complete(reminders);
+            processed = reminders.getProcessed();
+            errors = reminders.getErrors().size();
+        } catch (Throwable exception) {
+            // give each of the reminders that failed to be sent ERROR status
+            processed = 0;
+            errors = reminders.getErrors().size() + reminders.getReminders().size();
+            updated = processor.failed(reminders, exception);
+        }
+        if (updated) {
+            iterator.updated();
+        }
+        int cancelled = reminders.getCancelled().size();
+        return new Stats(processed, cancelled, errors);
     }
 
     /**
