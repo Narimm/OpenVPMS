@@ -37,13 +37,18 @@ import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.mail.MailException;
 import org.openvpms.web.component.mail.Mailer;
 import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
+import org.openvpms.web.workspace.reporting.ReportingException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addReminderCount;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailRule;
 
@@ -129,6 +134,33 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
         customer.addContact(email2);
 
         checkSend(email2, "y@test.com");
+    }
+
+    /**
+     * Verifies that {@link ReminderEmailProcessor#failed(PatientReminders, Throwable)} updates reminders with the
+     * failure message.
+     */
+    @Test
+    public void testFailed() {
+        Contact email = TestHelper.createEmailContact("x@test.com", true, "REMINDER");
+        customer.addContact(email);
+
+        Date tomorrow = DateRules.getTomorrow();
+        Act item = ReminderTestHelper.createSMSReminder(DateRules.getToday(), tomorrow, ReminderItemStatus.PENDING, 0);
+        Act reminder = ReminderTestHelper.createReminder(tomorrow, patient, reminderType, item);
+
+        doThrow(new MailException(MailException.ErrorCode.FailedToSend, "x@test.com", "some error"))
+                .when(mailer).send();
+
+        PatientReminders reminders = prepare(item, reminder, null);
+        try {
+            processor.process(reminders);
+            fail("Expected exception to be thrown");
+        } catch (ReportingException expected) {
+            assertTrue(processor.failed(reminders, expected));
+            checkItem(get(item), ReminderItemStatus.ERROR,
+                      "Failed to process reminder: Failed to send email to x@test.com: some error");
+        }
     }
 
     /**

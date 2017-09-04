@@ -37,6 +37,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.util.SMSLengthCalculator;
+import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
@@ -118,35 +119,29 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
         }
         SMSReminders reminders = (SMSReminders) state;
         String phoneNumber = reminders.getPhoneNumber();
-        if (StringUtils.isEmpty(phoneNumber)) {
-            Party customer = reminders.getCustomer();
-            throw new ReportingException(FailedToProcessReminder, "Contact has no phone number for customer=" +
-                                                                  customer.getName() + " (" + customer.getId() + ")");
-        } else {
-            try {
-                Party practice = getPractice();
-                String text = reminders.getText(practice);
-                if (StringUtils.isEmpty(text)) {
-                    throw new ReportingException(SMSMessageEmpty, reminders.getSMSTemplate().getName());
-                } else {
-                    int parts = SMSLengthCalculator.getParts(text);
-                    int maxParts = factory.getMaxParts();
-                    if (parts > maxParts) {
-                        throw new ReportingException(SMSMessageTooLong, reminders.getSMSTemplate().getName(),
-                                                     parts, maxParts);
-                    }
+        try {
+            Party practice = getPractice();
+            String text = reminders.getText(practice);
+            if (StringUtils.isEmpty(text)) {
+                throw new ReportingException(SMSMessageEmpty, reminders.getSMSTemplate().getName());
+            } else {
+                int parts = SMSLengthCalculator.getParts(text);
+                int maxParts = factory.getMaxParts();
+                if (parts > maxParts) {
+                    throw new ReportingException(SMSMessageTooLong, reminders.getSMSTemplate().getName(), parts,
+                                                 maxParts);
                 }
-                Connection connection = factory.createConnection();
-                try {
-                    connection.send(phoneNumber, text);
-                } finally {
-                    connection.close();
-                }
-            } catch (ReportingException exception) {
-                throw exception;
-            } catch (Throwable exception) {
-                throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
             }
+            Connection connection = factory.createConnection();
+            try {
+                connection.send(phoneNumber, text);
+            } finally {
+                connection.close();
+            }
+        } catch (ReportingException exception) {
+            throw exception;
+        } catch (Throwable exception) {
+            throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
         }
     }
 
@@ -158,6 +153,23 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
     @Override
     public boolean isAsynchronous() {
         return false;
+    }
+
+    /**
+     * Returns the contact to use.
+     *
+     * @param customer       the reminder
+     * @param matcher        the contact matcher
+     * @param defaultContact the default contact, or {@code null} to select one from the customer
+     * @return the contact, or {@code null} if none is found
+     */
+    @Override
+    protected Contact getContact(Party customer, ContactMatcher matcher, Contact defaultContact) {
+        Contact contact = super.getContact(customer, matcher, defaultContact);
+        if (contact != null && StringUtils.isEmpty(SMSHelper.getPhone(contact))) {
+            contact = null;
+        }
+        return contact;
     }
 
     /**

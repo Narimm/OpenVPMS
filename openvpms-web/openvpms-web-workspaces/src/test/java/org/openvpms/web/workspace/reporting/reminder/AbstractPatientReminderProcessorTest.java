@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Base class for {@link PatientReminderProcessor} tests.
@@ -208,6 +209,8 @@ public abstract class AbstractPatientReminderProcessorTest extends ArchetypeServ
         assertEquals(1, reminders.getCancelled().size());
         assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
         checkItem(item, ReminderItemStatus.CANCELLED, message);
+
+        assertTrue(processor.complete(reminders));
     }
 
     /**

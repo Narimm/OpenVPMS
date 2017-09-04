@@ -16,6 +16,9 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.archetype.rules.party.PurposeMatcher;
@@ -39,6 +42,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
@@ -97,6 +101,11 @@ public abstract class PatientReminderProcessor {
      * The communication logger.
      */
     private final CommunicationLogger logger;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PatientReminderProcessor.class);
 
     /**
      * Constructs a {@link PatientReminderProcessor}.
@@ -185,8 +194,10 @@ public abstract class PatientReminderProcessor {
      * Completes processing.
      *
      * @param reminders the reminders
+     * @return {@code true} if any changes were saved
      */
-    public void complete(PatientReminders reminders) {
+    public boolean complete(PatientReminders reminders) {
+        boolean result;
         boolean resend = reminders.getResend();
         for (ReminderEvent event : reminders.getReminders()) {
             if (!resend) {
@@ -199,11 +210,39 @@ public abstract class PatientReminderProcessor {
                 }
             }
         }
-        save(reminders);
+        result = save(reminders);
         CommunicationLogger logger = getLogger();
         if (logger != null && !reminders.getReminders().isEmpty()) {
             log(reminders, logger);
         }
+        return result;
+    }
+
+    /**
+     * Invoked when processing fails due to exception.
+     * For reminders that are not being resent and are not in error cancelled, this sets the:
+     * <ul>
+     *     <li>status of each reminder to be sent to {@link ReminderItemStatus#ERROR}</li>
+     *     <li>error node to the formatted message from the exception</li>
+     * </ul>
+     *
+     * @param reminders the reminders
+     * @param exception the exception
+     * @return {@code true} if any reminders were updated
+     */
+    public boolean failed(PatientReminders reminders, Throwable exception) {
+        boolean result = false;
+        boolean resend = reminders.getResend();
+        log.error("Failed to send reminders: " + exception.getMessage(), exception);
+        if (!resend) {
+            for (ReminderEvent event : reminders.getReminders()) {
+                Act item = (Act) service.get(event.getItem().getObjectReference());
+                if (item != null) {
+                    result |= setError(item, exception);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -351,12 +390,16 @@ public abstract class PatientReminderProcessor {
      * Saves the state.
      *
      * @param state the state
+     * @return {@code true} if any changes were saved
      */
-    protected void save(PatientReminders state) {
+    protected boolean save(PatientReminders state) {
+        boolean result = false;
         List<Act> updated = state.getUpdated();
         if (!updated.isEmpty()) {
             service.save(updated);
+            result = true;
         }
+        return result;
     }
 
     /**
@@ -372,6 +415,34 @@ public abstract class PatientReminderProcessor {
             location = config.getLocation();
         }
         return location;
+    }
+
+    /**
+     * Assigns a reminder item ERROR status, and populates the error with the exception message.
+     *
+     * @param item      them item
+     * @param exception the cause of the error
+     * @return {@code true} if the item was successfully updated
+     */
+    protected boolean setError(Act item, Throwable exception) {
+        boolean result = false;
+        String message = null;
+        try {
+            item.setStatus(ReminderItemStatus.ERROR);
+            IMObjectBean bean = new IMObjectBean(item, service);
+            message = ErrorFormatter.format(exception);
+            if (message != null) {
+                int maxLength = bean.getDescriptor("error").getMaxLength();
+                message = StringUtils.abbreviate(message, maxLength);
+            }
+            bean.setValue("error", message);
+            bean.save();
+            result = true;
+        } catch (Throwable error) {
+            log.error("Failed to update reminder item=" + item.getId() + " with error=" + message + ": "
+                      + error.getMessage(), exception);
+        }
+        return result;
     }
 
     /**
