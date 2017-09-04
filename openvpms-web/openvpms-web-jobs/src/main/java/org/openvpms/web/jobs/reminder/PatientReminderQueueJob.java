@@ -19,7 +19,9 @@ package org.openvpms.web.jobs.reminder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
+import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQueueIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
@@ -34,6 +36,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.component.retry.Retryer;
@@ -101,12 +104,7 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
     private volatile boolean stop;
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(PatientReminderQueueJob.class);
-
-    /**
-     * The no. of queued reminders.
+     * The no. of reminders queued for sending.
      */
     private int queued;
 
@@ -116,9 +114,20 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
     private int cancelled;
 
     /**
-     * The no. of reminders skipped due to error.
+     * The no. of reminders skipped. This occurs if a reminder has a non-zero reminder count but there is
+     * no corresponding entity.reminderCount.
      */
     private int skipped;
+
+    /**
+     * The no. of reminder items in error.
+     */
+    private int errors;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PatientReminderQueueJob.class);
 
     /**
      * Constructs a {@link PatientReminderQueueJob}.
@@ -183,6 +192,7 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
         // from the start if any have updated.
         queued = 0;
         cancelled = 0;
+        errors = 0;
         skipped = 0;
         ReminderProcessor processor = createProcessor(startTime, config, disableSMS);
 
@@ -193,10 +203,12 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
                 ++queued;
             } else if (status == QueueStatus.CANCELLED) {
                 ++cancelled;
+            } else if (status == QueueStatus.ERROR) {
+                ++errors;
             } else {
                 ++skipped;
             }
-            if (status == QueueStatus.QUEUED || status == QueueStatus.CANCELLED) {
+            if (status != QueueStatus.SKIPPED) {
                 iterator.updated(); // flag that the iterator needs to re-issue query
             }
         }
@@ -279,10 +291,11 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
         if (log.isInfoEnabled()) {
             long elapsed = System.currentTimeMillis() - begin;
             double seconds = elapsed / 1000;
-            log.info("Reminders queued=" + queued + ", cancelled=" + cancelled + ", skipped=" + skipped + ", in "
-                     + seconds + "s");
+            log.info("Reminders queued=" + queued + ", cancelled=" + cancelled + ", errors=" + errors +
+                     ", skipped=" + skipped + ", in " + seconds + "s");
         }
-        if (exception != null || queued != 0 || cancelled != 0 || skipped != 0) {
+        if (exception != null || queued != 0 || cancelled != 0 || errors != 0) {
+            // only notify users if there is something to notify. Don't need to notify of skipped reminders
             Set<User> users = notifier.getUsers(configuration);
             if (!users.isEmpty()) {
                 notifyUsers(users, exception);
@@ -305,9 +318,9 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
             subject = Messages.format("patientreminderqueue.subject.exception", configuration.getName());
             text.append(Messages.format("patientreminderqueue.exception", exception.getMessage())).append("\n\n");
         } else {
-            if (skipped != 0) {
+            if (errors != 0) {
                 reason = SystemMessageReason.ERROR;
-                subject = Messages.format("patientreminderqueue.subject.errors", configuration.getName(), skipped);
+                subject = Messages.format("patientreminderqueue.subject.errors", configuration.getName(), errors);
             } else {
                 reason = SystemMessageReason.COMPLETED;
                 subject = Messages.format("patientreminderqueue.subject.success", configuration.getName(), queued);
@@ -315,6 +328,7 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
         }
         text.append(Messages.format("patientreminderqueue.queued", queued)).append('\n');
         text.append(Messages.format("patientreminderqueue.cancelled", cancelled)).append('\n');
+        text.append(Messages.format("patientreminderqueue.errors", errors)).append('\n');
         text.append(Messages.format("patientreminderqueue.skipped", skipped)).append('\n');
         notifier.send(users, subject, reason, text.toString());
     }
@@ -322,7 +336,8 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
     enum QueueStatus {
         SKIPPED,
         QUEUED,
-        CANCELLED
+        CANCELLED,
+        ERROR
     }
 
     /**
@@ -424,7 +439,17 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
                         if (ReminderStatus.CANCELLED.equals(reminder.getStatus())) {
                             preCommitStatus = QueueStatus.CANCELLED;
                         } else {
-                            preCommitStatus = QueueStatus.QUEUED;
+                            for (Act saved : acts) {
+                                if (TypeHelper.isA(saved, ReminderArchetypes.REMINDER_ITEMS)) {
+                                    if (ReminderItemStatus.ERROR.equals(saved.getStatus())) {
+                                        preCommitStatus = QueueStatus.ERROR;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (preCommitStatus == null) {
+                                preCommitStatus = QueueStatus.QUEUED;
+                            }
                         }
                     }
                     return true;
