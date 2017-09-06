@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -111,11 +111,10 @@ class CustomerActReversalHandler extends ActCopyHandler {
     @Override
     public IMObject getObject(IMObject object, IArchetypeService service) {
         IMObject result = super.getObject(object, service);
-        if (TypeHelper.isA(object, REFUND_CASH)
-            && TypeHelper.isA(result, PAYMENT_CASH)) {
-            FinancialAct refund = (FinancialAct) object;
+        if (TypeHelper.isA(object, REFUND_CASH) && TypeHelper.isA(result, PAYMENT_CASH)) {
+            ActBean refund = new ActBean((FinancialAct) object, service);
             ActBean payment = new ActBean((Act) result, service);
-            payment.setValue("tendered", refund.getTotal());
+            payment.setValue("tendered", refund.getBigDecimal("roundedAmount"));
         }
         return result;
     }
