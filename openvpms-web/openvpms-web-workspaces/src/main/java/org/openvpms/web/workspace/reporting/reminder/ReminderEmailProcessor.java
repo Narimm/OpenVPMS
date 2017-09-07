@@ -161,8 +161,9 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
                 }
             }
         }
+        Act reminder = events.get(0).getReminder();
         if (body == null) {
-            body = evaluator.getMessage(emailTemplate, customer, context);
+            body = evaluator.getMessage(emailTemplate, reminder, context);
         }
         if (StringUtils.isEmpty(body)) {
             throw new ReportingException(TemplateMissingEmailText, reminderTemplate.getName());
