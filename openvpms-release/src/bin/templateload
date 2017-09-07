@@ -9,7 +9,7 @@ function usage {
     echo "   size - the page size. One of: A4, A5, Letter"
     echo "   file - templates.xml file path"
     echo
-    echo NOTE: existing templates will be replaced
+    echo NOTE: existing templates with the same name and content file name will be replaced
     echo
     echo E.g.:
     echo "   templateload documents A4"

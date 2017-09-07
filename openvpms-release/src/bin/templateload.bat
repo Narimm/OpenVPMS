@@ -1,10 +1,10 @@
 @echo off
 setlocal enableextensions enabledelayedexpansion
 
-for %%I in ("%~dp0\..\") do set "OPENVPMS_HOME=%%~fI"
+for %%I in ("%~dp0\..") do set "OPENVPMS_HOME=%%~fI"
 if not exist "%OPENVPMS_HOME%\bin\setenv.bat" (
     echo templateload: OpenVPMS installation not found
-    exit 1
+    exit /b 1
 )
 
 if "%1" == "documents" (
@@ -20,6 +20,8 @@ if "%1" == "documents" (
         )
     )
 )
+exit /b %ERRORLEVEL%
+
 
 :loadsize
 set valid=0
@@ -41,19 +43,19 @@ if %valid% == 1 (
         call :load !file!
     ) else (
         echo templateload: %1 are not available in size %2
-        exit 1
+        exit /b 1
     )
 ) else (
     goto :usage
 )
+goto :eof
 
 :load
-
-cd "%OPENVPMS_HOME%/bin"
+cd "%OPENVPMS_HOME%\bin"
 call setenv.bat
 
 java "-Dlog4j.configuration=file:../conf/log4j.properties" org.openvpms.report.tools.TemplateLoader -c "../conf/applicationContext.xml" -f "%1"
-exit %ERRORLEVEL%
+goto :eof
 
 :usage
 @echo.
@@ -64,11 +66,11 @@ exit %ERRORLEVEL%
 @echo    size - the page size. One of: A4, A5, Letter
 @echo    file - templates.xml file path
 @echo.
-@echo NOTE: existing templates will be replaced
+@echo NOTE: existing templates with the same name and content file name will be replaced
 @echo.
 @echo E.g.:
 @echo    templateload documents A4
 @echo    templateload reports Letter
 @echo    templateload c:\myreports\my-custom-A4.xml
 
-exit 1
+exit /b 1
