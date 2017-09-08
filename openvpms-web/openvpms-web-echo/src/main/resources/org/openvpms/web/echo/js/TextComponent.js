@@ -343,8 +343,8 @@ EchoTextComponent = Core.extend(
 
                 /**
                  * Processes a key down event.
-                 * If the key is Ctrl-left arrow, selects the previous %% if any.
-                 * If the key is Ctrl-right arrow, selects the next %% if any.
+                 * If the key is Ctrl-left arrow, selects the previous {__} if any.
+                 * If the key is Ctrl-right arrow, selects the next {__} if any.
                  * If there is no token, the browser default behaviour is used.
                  * Any Ctrl-shift arrow combination is ignored, to allow range selection.
                  */
@@ -490,7 +490,7 @@ EchoTextComponent = Core.extend(
              * @returns true if the token was selected
              */
             selectToken: function (element, forward) {
-                var token = '%%';
+                var token = '{__}';
                 var current = element.selectionStart;
                 var position = (forward) ? element.value.indexOf(token, current + 1)
                         : element.value.lastIndexOf(token, current - 1);
