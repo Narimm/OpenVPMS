@@ -1,6 +1,8 @@
 @echo off
 setlocal enableextensions enabledelayedexpansion
 
+if "%1" == "" goto :usage
+
 for %%I in ("%~dp0\..") do set "OPENVPMS_HOME=%%~fI"
 if not exist "%OPENVPMS_HOME%\bin\setenv.bat" (
     echo templateload: OpenVPMS installation not found
@@ -16,7 +18,8 @@ if "%1" == "documents" (
         if exist "%~dpnx1" (
             call :load "%~dpnx1"
         ) else (
-            goto :usage
+            echo templateload: File "%1" does not exist
+            exit /b 1
         )
     )
 )
