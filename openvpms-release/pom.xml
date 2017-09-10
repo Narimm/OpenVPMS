@@ -285,7 +285,10 @@
                 <artifactId>openvpms-report-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <configuration>
-                    <file>src/reports/documents-A4.xml</file>
+                    <files>
+                        <file>src/reports/documents-A4.xml</file>
+                        <file>src/reports/reports-A4.xml</file>
+                    </files>
                     <dialect>${build.hibernate.dialect}</dialect>
                     <driver>${build.jdbc.driverClassName}</driver>
                     <url>${build.jdbc.url}</url>
