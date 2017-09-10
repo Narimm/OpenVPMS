@@ -1,6 +1,6 @@
 #!/bin/sh
 
-function usage {
+usage() {
     echo
     echo Loads OpenVPMS document and report templates
     echo
@@ -18,9 +18,9 @@ function usage {
     exit 1
 }
 
-function load {
+load() {
     file="$1"
-    if [ $cygwin ]; then
+    if [ $cygwin = "true" ]; then
         file="$(cygpath --path -w "$file")"
     fi
 
@@ -51,11 +51,11 @@ elif [ "$#" -eq 1 ]; then
     if [ -f "$file" ]; then
         load "$file"
     else
-        echo templateload: file not found
+        echo templateload: File "$1" does not exist
         exit 1
     fi
-elif [ "$#" -eq 2 ] && [ "$1" == "documents" -o "$1" == "reports" ]; then
-    if [ "$2" == "A4" -o "$2" == "A5" -o "$2" == "Letter" ]; then
+elif ([ "$#" -eq 2 ] && ([ "$1" = "documents" ] || [ "$1" = "reports" ])) ; then
+    if [ "$2" = "A4" ] || [ "$2" = "A5" ] || [ "$2" = "Letter" ]; then
         file="$OPENVPMS_HOME/reports/$1-$2.xml"
         if [  -f "$file" ]; then
             load "$file"
