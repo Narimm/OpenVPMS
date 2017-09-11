@@ -159,6 +159,38 @@ public class ScheduledDispatcherTestCase extends AbstractDispatcherTest {
     }
 
     /**
+     * Verifies that the dispatcher continues to dispatch messages after failure.
+     *
+     * @throws Exception for any eror
+     */
+    @Test
+    public void testFailure() throws Exception {
+        Party location1 = createLocation("location1", "A");
+        Party location2 = createLocation("location2", "B");
+        TestQueue queue1 = new TestQueue(5);
+        TestQueue queue2 = new TestQueue(10);
+
+        // set up the queues to fail after the 1st and 5th message respectively.
+        queue1.setFail(1);
+        queue2.setFail(5);
+        factory.setQueue(location1, queue1);
+        factory.setQueue(location2, queue2);
+
+        QueueDispatchers dispatchers = new QueueDispatchers(factory);
+        dispatchers.add(location1);
+        dispatchers.add(location2);
+        dispatcher = new ScheduledDispatcher(dispatchers, practiceService);
+        dispatcher.setPollInterval(1);
+        dispatcher.setFailureInterval(1);
+        dispatcher.dispatch();
+        Thread.sleep(4000);
+
+        // verify the queues have been read
+        assertEquals(5, queue1.getRead());
+        assertEquals(10, queue2.getRead());
+    }
+
+    /**
      * A test queue that returns up to {@code count} messages.
      */
     private static class TestQueue implements Queue {
@@ -173,6 +205,11 @@ public class ScheduledDispatcherTestCase extends AbstractDispatcherTest {
          */
         private int read = 0;
 
+        /**
+         * The message to throw an exception at, or {@code -1} if no exception should be thrown.
+         */
+        private int fail = -1;
+
 
         /**
          * Constructs a {@link TestQueue}.
@@ -185,6 +222,9 @@ public class ScheduledDispatcherTestCase extends AbstractDispatcherTest {
 
         /**
          * Returns the next message from the queue.
+         * <br/>
+         * If the number of read messages == {@link #setFail(int) fail}, a {@code ServiceException} will be thrown,
+         * and {@link #setFail(int) fail} reset to {@code -1}, allowing the next call to succeed.
          *
          * @return the next message, or {@code null} if there are no more messages.
          * @throws ServiceException if a service exception is encountered
@@ -192,6 +232,10 @@ public class ScheduledDispatcherTestCase extends AbstractDispatcherTest {
         @Override
         public synchronized BrokeredMessage next() throws ServiceException {
             if (read < count) {
+                if (read == fail) {
+                    fail = -1;
+                    throw new ServiceException("Simulated failure");
+                }
                 ++read;
                 return new BrokeredMessage();
             }
@@ -214,6 +258,15 @@ public class ScheduledDispatcherTestCase extends AbstractDispatcherTest {
          */
         public synchronized int getRead() {
             return read;
+        }
+
+        /**
+         * Sets the message to fail at.
+         *
+         * @param fail the message to fail at, or {@code -1} to not fail
+         */
+        public synchronized void setFail(int fail) {
+            this.fail = fail;
         }
 
         /**
