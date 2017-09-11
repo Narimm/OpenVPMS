@@ -108,7 +108,9 @@ public class EmailReminders extends GroupedReminders {
      * @return the email subject
      */
     public String getSubject(Context context) {
-        String subject = evaluator.getSubject(emailTemplate, getCustomer(), context);
+        List<ReminderEvent> reminders = getReminders();
+        Act reminder = reminders.get(0).getReminder();
+        String subject = evaluator.getSubject(emailTemplate, reminder, context);
         if (StringUtils.isEmpty(subject)) {
             subject = getTemplate().getName();
         }

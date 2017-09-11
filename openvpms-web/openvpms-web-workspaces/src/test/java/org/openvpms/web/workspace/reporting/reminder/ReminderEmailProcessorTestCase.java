@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.im.report.ReporterFactory;
@@ -89,7 +90,14 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
     @Override
     public void setUp() {
         super.setUp();
-        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate(true, false);
+        reminderType.setName("Vaccination Reminder");
+        save(reminderType);
+        Entity emailTemplate = ReminderTestHelper.createEmailTemplate("openvpms:get(., 'reminderType.entity.name')",
+                                                                      "text");
+        IMObjectBean bean = new IMObjectBean(emailTemplate);
+        bean.setValue("subjectType", "XPATH");
+        bean.save();
+        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate(emailTemplate, null);
         addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, documentTemplate, createEmailRule());
 
         MailerFactory mailerFactory = Mockito.mock(MailerFactory.class);
@@ -195,6 +203,7 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
         PatientReminders reminders = prepare(contact);
         processor.process(reminders);
         Mockito.verify(mailer).setTo(new String[]{to});
+        Mockito.verify(mailer).setSubject("Vaccination Reminder");
     }
 
     /**
