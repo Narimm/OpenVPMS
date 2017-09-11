@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.archetype;
@@ -47,20 +47,19 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     private final Class<T> type;
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(ArchetypeHandlers.class);
-
-    /**
      * Map of short names to their corresponding handlers.
      */
     private Map<String, ArchetypeHandler<T>> handlers = new HashMap<>();
 
     /**
-     * Map of handlers not associated with any short name. These
-     * can only be returned by class name.
+     * Map of handlers not associated with any short name. These can only be returned by class name.
      */
     private Map<String, ArchetypeHandler<T>> anonymousHandlers = new HashMap<>();
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ArchetypeHandlers.class);
 
 
     /**
@@ -81,11 +80,23 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * @param type         class the each handler must implement/extend
      */
     public ArchetypeHandlers(String name, String fallbackName, Class<T> type) {
+        this(name, fallbackName, type, null);
+    }
+
+    /**
+     * Construct an {@link ArchetypeHandlers}.
+     *
+     * @param name            the resource name
+     * @param fallbackName    the fallback resource name. May be {@code null}
+     * @param type            class the each handler must implement/extend
+     * @param anonymousPrefix the prefix for anonymous handlers. May be {@code null}
+     */
+    public ArchetypeHandlers(String name, String fallbackName, Class<T> type, String anonymousPrefix) {
         this.type = type;
         if (fallbackName != null) {
-            read(fallbackName, false);
+            read(fallbackName, false, anonymousPrefix);
         }
-        read(name, true);
+        read(name, true, anonymousPrefix);
     }
 
     /**
@@ -175,16 +186,17 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     /**
      * Reads a handler configuration resource.
      *
-     * @param name    the resource name
-     * @param replace if {@code true}, replace any existing handler
+     * @param name            the resource name
+     * @param replace         if {@code true}, replace any existing handler
+     * @param anonymousPrefix property name prefix for handlers that can't be created directly. May be {@code null}
      */
-    private void read(String name, boolean replace) {
+    private void read(String name, boolean replace, String anonymousPrefix) {
         if (name.endsWith(".properties")) {
-            readProperties(name, replace);
+            readProperties(name, replace, anonymousPrefix);
         } else if (name.endsWith(".xml")) {
             readXML(name, replace);
         } else {
-            readProperties(name + ".properties", replace);
+            readProperties(name + ".properties", replace, anonymousPrefix);
             readXML(name + ".xml", replace);
         }
     }
@@ -256,12 +268,78 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     /**
      * Loads all property resources with the specified name.
      *
-     * @param name    the resource name
-     * @param replace if {@code true}, replace any existing handler
+     * @param name            the resource name
+     * @param replace         if {@code true}, replace any existing handler
+     * @param anonymousPrefix property name prefix for handlers that can't be created directly. May be {@code null}
      */
-    private void readProperties(String name, boolean replace) {
-        Reader parser = new Reader(replace);
+    private void readProperties(String name, boolean replace, String anonymousPrefix) {
+        Reader parser = new Reader(replace, anonymousPrefix);
         parser.read(name);
+    }
+
+    /**
+     * Helper to deserialize handlers from XML.
+     */
+    public static class Handlers implements Iterable<Handler> {
+
+        /**
+         * The handlers.
+         */
+        private List<Handler> handlers = new ArrayList<>();
+
+        /**
+         * Adds a handler.
+         *
+         * @param handler the handler to add
+         */
+        public void add(Handler handler) {
+            handlers.add(handler);
+        }
+
+        /**
+         * Returns an iterator over a set of elements of type T.
+         *
+         * @return an Iterator.
+         */
+        public Iterator<Handler> iterator() {
+            return handlers.iterator();
+        }
+    }
+
+    /**
+     * Helper to deserialize a handler from XML.
+     */
+    public static class Handler {
+
+        private String shortName;
+
+        private String type;
+
+        private Map<String, Object> properties;
+
+        public String getShortName() {
+            return shortName;
+        }
+
+        public void setShortName(String shortName) {
+            this.shortName = shortName;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public Map<String, Object> getProperties() {
+            return properties;
+        }
+
+        public void setProperties(Map<String, Object> properties) {
+            this.properties = properties;
+        }
     }
 
     /**
@@ -274,13 +352,17 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
          */
         private final boolean replace;
 
+        private final String anonymousPrefix;
+
         /**
          * Constructs a {@link Reader}.
          *
-         * @param replace if {@code true}, replace any existing handler
+         * @param replace         if {@code true}, replace any existing handler
+         * @param anonymousPrefix property name prefix for handlers that can't be created directly. May be {@code null}
          */
-        public Reader(boolean replace) {
+        public Reader(boolean replace, String anonymousPrefix) {
             this.replace = replace;
+            this.anonymousPrefix = anonymousPrefix;
         }
 
         /**
@@ -302,6 +384,9 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
                     for (int i = 1; i < properties.length; ++i) {
                         String[] pair = properties[i].split("=");
                         config.put(pair[0], pair[1]);
+                    }
+                    if (key != null && anonymousPrefix != null && key.startsWith(anonymousPrefix)) {
+                        key = null;
                     }
                     addHandler(key, clazz, config, path, replace);
                 }
@@ -350,69 +435,6 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
             } catch (Throwable exception) {
                 log.error(exception, exception);
             }
-        }
-    }
-
-    /**
-     * Helper to deserialize handlers from XML.
-     */
-    public static class Handlers implements Iterable<Handler> {
-
-        /**
-         * The handlers.
-         */
-        private List<Handler> handlers = new ArrayList<>();
-
-        /**
-         * Adds a handler.
-         *
-         * @param handler the handler to add
-         */
-        public void add(Handler handler) {
-            handlers.add(handler);
-        }
-
-        /**
-         * Returns an iterator over a set of elements of type T.
-         *
-         * @return an Iterator.
-         */
-        public Iterator<Handler> iterator() {
-            return handlers.iterator();
-        }
-    }
-
-    /**
-     * Helper to deserialize a handler from XML.
-     */
-    public static class Handler {
-
-        private String shortName;
-        private String type;
-        private Map<String, Object> properties;
-
-        public String getShortName() {
-            return shortName;
-        }
-
-        public void setShortName(String shortName) {
-            this.shortName = shortName;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Map<String, Object> getProperties() {
-            return properties;
-        }
-
-        public void setProperties(Map<String, Object> properties) {
-            this.properties = properties;
         }
     }
 
