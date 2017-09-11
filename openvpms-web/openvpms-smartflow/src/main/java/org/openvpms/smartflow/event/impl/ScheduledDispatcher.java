@@ -65,7 +65,7 @@ class ScheduledDispatcher {
     /**
      * The interval between polls, in seconds.
      */
-    private volatile int pollInterval;
+    private volatile int pollInterval = 30;
 
     /**
      * The interval to pause after failure, in seconds.
@@ -237,8 +237,8 @@ class ScheduledDispatcher {
                 } catch (Exception exception) {
                     // dispatch failed, so exclude this from subsequent dispatches
                     iterator.remove();
-                    log.error("Failed to dispatch message for location='" + dispatcher.getLocation()
-                              + "': " + exception.getMessage(), exception);
+                    log.error("Failed to dispatch message for location='" + dispatcher.getLocation().getName() + "': "
+                              + exception.getMessage(), exception);
                 }
                 if (isShutdown()) {
                     dispatched = false;
