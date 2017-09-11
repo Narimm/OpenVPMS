@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.component.im.clinician;
 
 import nextapp.echo2.app.Component;
@@ -16,6 +32,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityObjectSetQuery;
 import org.openvpms.web.component.im.query.EntityObjectSetResultSet;
 import org.openvpms.web.component.im.query.EntityQuery;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.event.ActionListener;
@@ -41,7 +58,7 @@ public class ClinicianQuery extends EntityQuery<User> {
     }
 
     /**
-     * Constructs an {@link EntityQuery} that queries entities with the specified short names.
+     * Constructs an {@link ClinicianQuery} that queries entities with the specified short names.
      *
      * @param shortNames the short names
      * @param context    the context
@@ -49,7 +66,7 @@ public class ClinicianQuery extends EntityQuery<User> {
      */
     public ClinicianQuery(String[] shortNames, Context context) {
         super(new ClinicianObjectSetQuery(shortNames, context.getLocation(), context.getPractice()), context);
-        setAuto(true);
+        QueryFactory.initialise(this);
     }
 
     /**

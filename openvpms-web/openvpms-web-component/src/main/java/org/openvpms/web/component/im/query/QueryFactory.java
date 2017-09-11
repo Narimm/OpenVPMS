@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -31,21 +31,21 @@ import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
  * A factory for {@link Query} instances. The factory is configured to return
  * specific {@link Query} implementations based on the supplied criteria, with
  * {@link DefaultQuery} returned if no implementation matches.
- * <p/>
+ * <p>
  * The factory is configured using a <em>QueryFactory.properties</em> file,
  * located in the class path. The file contains pairs of archetype short names
  * and their corresponding query implementations. Short names may be wildcarded
  * e.g:
- * <p/>
+ * <p>
  * <table> <tr><td>classification.*</td><td>org.openvpms.web.component.im.query.AutoQuery</td></tr>
  * <tr><td>lookup.*</td><td>org.openvpms.web.component.im.query.AutoQuery</td></tr>
  * <tr><td>party.patient*</td><td>org.openvpms.web.component.im.query.PatientQuery</td></tr>
  * <tr><td>party.organisation*</td>org.openvpms.web.component.im.query.AutoQuery</td></tr>
  * <tr><td>party.supplier*</td>org.openvpms.web.component.im.query.AutoQuery</td></tr>
  * </table>
- * <p/>
+ * <p>
  * Multiple <em>QueryFactory.properties</em> may be used.
- * <p/>
+ * <p>
  * Default implementations can be registered in a <em>DefaultQueryFactory.properties</em> file; these are overridden by
  * <em>QueryFactory.properties</em>.
  *
@@ -192,14 +192,32 @@ public final class QueryFactory {
      *
      * @param query the query to initialise
      */
+    @SuppressWarnings("unchecked")
     public static <T> void initialise(Query<T> query) {
-        ArchetypeHandler<Query> handler = getQueries().getHandler(query.getShortNames());
-        if (handler != null && handler.getType().isAssignableFrom(query.getClass())) {
-            try {
-                handler.initialise(query);
-            } catch (Throwable exception) {
-                log.error(exception);
+        Class<Query> type = (Class<Query>) query.getClass();
+        ArchetypeHandlers<Query> handlers = getQueries();
+        ArchetypeHandler<Query> handler = handlers.getHandler(type);
+        if (handler != null) {
+            initialise(query, handler);
+        } else {
+            handler = handlers.getHandler(query.getShortNames());
+            if (handler != null && handler.getType().isAssignableFrom(type)) {
+                initialise(query, handler);
             }
+        }
+    }
+
+    /**
+     * Initialise a query.
+     *
+     * @param query   the query
+     * @param handler the query handler
+     */
+    protected static <T> void initialise(Query<T> query, ArchetypeHandler<Query> handler) {
+        try {
+            handler.initialise(query);
+        } catch (Throwable exception) {
+            log.error(exception);
         }
     }
 
@@ -270,7 +288,8 @@ public final class QueryFactory {
      */
     private static synchronized ArchetypeHandlers<Query> getQueries() {
         if (queries == null) {
-            queries = new ArchetypeHandlers<>("QueryFactory.properties", "DefaultQueryFactory.properties", Query.class);
+            queries = new ArchetypeHandlers<>("QueryFactory.properties", "DefaultQueryFactory.properties", Query.class,
+                                              "query.");
         }
         return queries;
     }
