@@ -256,6 +256,20 @@
                     </configuration>
                 </plugin-->
                 <plugin>
+                    <!-- required to deploy to AWS. Note that for the purposes of deployment, maven 3.x must be used  -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                    <!-- See https://jira.codehaus.org/browse/WAGON-393 -->
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh</artifactId>
+                            <version>2.12</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>castor-maven-plugin</artifactId>
                     <version>2.1</version>
@@ -293,19 +307,18 @@
         <repository>
             <id>openvpms-releases</id>
             <name>OpenVPMS Release Repository</name>
-            <url>scp://repository.openvpms.org:22333/home/admin/public_html/repository.openvpms.org/public/releases
+            <url>scp://repository.openvpms.org:/srv/www/repository.openvpms.org/public/releases
             </url>
         </repository>
-        <site>
+        <!--site>
             <id>openvpms-site</id>
             <name>OpenVPMS Maven Site</name>
             <url>scp://dev.openvpms.org:22333/home/admin/public_html/dev.openvpms.org/public/</url>
-        </site>
+        </site-->
         <snapshotRepository>
             <id>openvpms-snapshots</id>
             <name>OpenVPMS Snapshot Repository</name>
-            <url>scp://repository.openvpms.org:22333/home/admin/public_html/repository.openvpms.org/public/snapshots
-            </url>
+            <url>scp://repository.openvpms.org:/srv/www/repository.openvpms.org/public/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
