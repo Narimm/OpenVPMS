@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -188,7 +188,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     /**
      * Customer account type lookup cache.
      */
-    private Map<String, Lookup> lookupCache = new HashMap<String, Lookup>();
+    private Map<String, Lookup> lookupCache = new HashMap<>();
 
     /**
      * Balance calculator helper.
@@ -211,7 +211,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     private static final Set<String> NAMES;
 
     static {
-        NAMES = new LinkedHashSet<String>();
+        NAMES = new LinkedHashSet<>();
         NAMES.add(CUSTOMER_REFERENCE);
         NAMES.add(CUSTOMER_NAME);
         NAMES.add(BALANCE);
@@ -369,7 +369,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         this.from = overdueFrom;
         this.to = overdueTo;
         this.rules = rules;
-        ArchetypeQuery query = createQuery(date, accountType, customerFrom, customerTo, location);
+        ArchetypeQuery query = createQuery(this.date, accountType, customerFrom, customerTo, location);
         query.setMaxResults(1000);
         iterator = new ObjectSetQueryIterator(service, query);
         balanceCalc = new BalanceCalculator(service);
@@ -479,7 +479,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     private ObjectSet doNext() {
         IMObjectReference current = null;
         Map<IMObjectReference, ObjectSet> sets
-                = new LinkedHashMap<IMObjectReference, ObjectSet>();
+                = new LinkedHashMap<>();
         // the sets for the current customer, keyed on act. This is necessary
         // to filter duplicate rows, should a customer erroneously have > 1
         // account type configured
