@@ -30,11 +30,12 @@
 
     <name>OpenVPMS Web App</name>
 
-    <!-- ========================================================================== -->
-    <!-- Debugging notes:                                                           -->
-    <!-- . p6spy can be enabled using:                                              -->
-    <!--   mvn -Djdbc.driverClassName=com.p6spy.engine.spy.P6SpyDriver tomcat:run   -->
-    <!-- ========================================================================== -->
+    <!-- ============================================================================================ -->
+    <!-- Debugging notes:                                                                             -->
+    <!-- . p6spy can be enabled using:                                                                -->
+    <!--   mvn -Dhibernate.connection.driver_class=com.p6spy.engine.spy.P6SpyDriver \                 -->
+    <!--       -Dhibernate.connection.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8 tomcat:run   -->
+    <!-- ============================================================================================ -->
 
     <build>
         <finalName>openvpms</finalName>
