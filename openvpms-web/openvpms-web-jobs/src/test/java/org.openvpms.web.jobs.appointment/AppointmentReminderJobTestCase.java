@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.appointment;
@@ -39,12 +39,14 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.macro.Macros;
 import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
@@ -132,11 +134,12 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        SMSTemplateEvaluator smsEvaluator = new SMSTemplateEvaluator(getArchetypeService(), getLookupService(),
+        IArchetypeService service = getArchetypeService();
+        SMSTemplateEvaluator smsEvaluator = new SMSTemplateEvaluator(service, getLookupService(),
                                                                      applicationContext.getBean(Macros.class));
-        evaluator = new AppointmentReminderEvaluator(getArchetypeService(), smsEvaluator);
-        customerRules = new CustomerRules(getArchetypeService(), getLookupService());
-        patientRules = new PatientRules(practiceRules, getArchetypeService(), getLookupService());
+        evaluator = new AppointmentReminderEvaluator(service, smsEvaluator);
+        customerRules = new CustomerRules(service, getLookupService());
+        patientRules = new PatientRules(practiceRules, service, getLookupService());
         dateFrom = TestHelper.getDate("2015-11-01");
 
         Entity scheduleView1 = ScheduleTestHelper.createScheduleView();
@@ -150,18 +153,17 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         ScheduleTestHelper.addSchedules(scheduleView1, schedule1);
         ScheduleTestHelper.addSchedules(scheduleView2, schedule2);
 
-        // disable SMS reminders for existing acts for the test period
+        // remove SMS reminders for existing acts for the test period
         ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT);
         Date disableFrom = DateRules.getDate(dateFrom, -2, DateUnits.WEEKS);
         Date disableTo = TestHelper.getDate("2015-11-20");
         query.add(Constraints.between("startTime", disableFrom, disableTo));
+        query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
 
         IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(query);
         while (iterator.hasNext()) {
             Act act = iterator.next();
-            ActBean bean = new ActBean(act);
-            bean.setValue("sendReminder", false);
-            bean.save();
+            service.remove(act);
         }
 
         template = createTemplate();

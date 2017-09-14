@@ -16,8 +16,10 @@
   -->
 
 <!-- This file loads all the reports accessible from Reporting|Reports.
-  These are normally never customised and hence can be safely loaded without fear of overwritingthe customised versions.
-  Remember that if you do customise a report then you should ensure that your customised version has a different report name and content file name.
+  These are normally never customised and hence can be safely loaded without fear of overwriting 
+  the customised versions.
+  Remember that if you do customise a report then you should ensure that your customised version 
+  has a different report name and content file name.
   This will ensure that it is never overwritten when using this file to load the standard reports.
   -->
   
