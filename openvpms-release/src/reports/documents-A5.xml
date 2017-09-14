@@ -15,18 +15,19 @@
   ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
-<!-- This file loads all the documents - ie all templates that are not report templates accedded via Reporting|Reports.
-  You may have customised versions of these templates - if these have the same template name and content file name as the standard ones
-  then these will be overwritten.
+<!-- This file loads all the documents - ie all templates that are not report templates accessed via 
+  Reporting|Reports.
+  You may have customised versions of these templates - if these have the same template name and content
+  file name as the standard ones then these will be overwritten.
   If you do have customised versions, then you have two choices:
     1) do not load the documents using this file
-    2) edit this file to delete or comment out the templates that you do not wish to load. To make this easier the template below are
-       grouped together
+    2) edit this file to delete or comment out the templates that you do not wish to load. To make this 
+       easier the template below are grouped together
   
-  Note that the Letterhead facility is used by the majority of these templates, this normally provides all the customisation required 
-  without the need to customised the actual jrxml files.
-  Hence if you have customised Customer Documents (ie Invoice, Counter Sale, etc), but no others, then it is worth editing this file to
-  delete/comment the Customer Documents, but load the remainder
+  Note that the Letterhead facility is used by the majority of these templates, this normally provides 
+  all the customisation required without the need to customised the actual jrxml files.
+  Hence if you have customised Customer Documents (ie Invoice, Counter Sale, etc), but no others, then 
+  it is worth editing this file to delete/comment out the Customer Documents, but load the remainder
   -->
 
 <templates>
@@ -122,11 +123,11 @@
 
 <!-- Reminder documents -->
     <template name="Grouped Reminders Report" archetype="GROUPED_REMINDERS" reportType="PATIENT"
-              description="Used by Reporting|Reminders|Print &#038; Send All buttons for Grouped Reminders"
+              description="Used by Reporting|Reminders|Print &#038; Send All buttons for Grouped Reminders" 
               path="Reporting/Reminders/A5/Grouped Reminders.jrxml"
               mimeType="text/xml" docType="document.other"/>
     <template name="Patient Reminders Report" archetype="act.patientReminder" reportType="PATIENT"
-              description="Used by Reporting|Reminders|Report button"
+              description="Used by Reporting|Reminders|Report button" 
               path="Reporting/Reminders/A5/Patient Reminders.jrxml"
               mimeType="text/xml" docType="document.other"/>
 
@@ -228,7 +229,7 @@
 
 
 <!-- Letterhead items -->
-    <template name="Letterhead" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead"
+    <template name="Letterhead" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead (A4)"
               path="Letterhead/A4/Letterhead.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Letterhead-A5" archetype="SUBREPORT" reportType="WORKFLOW" description="Letterhead (A5)"
               path="Letterhead/A5/Letterhead-A5.jrxml" mimeType="text/xml" docType="document.other"/>
