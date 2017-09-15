@@ -18,8 +18,10 @@
 		<fieldDescription><![CDATA[Payment Amount]]></fieldDescription>
 	</field>
 	<field name="target.shortName" class="java.lang.String"/>
+	<field name="target.change" class="java.math.BigDecimal"/>
 	<field name="target.creditCard" class="java.lang.String"/>
 	<field name="target.roundedAmount" class="java.math.BigDecimal"/>
+	<field name="target.tendered" class="java.math.BigDecimal"/>
 	<field name="target.bank" class="java.lang.String"/>
 	<field name="target.bsb" class="java.lang.String"/>
 	<field name="target.drawer" class="java.lang.String"/>
@@ -48,8 +50,7 @@
 		<variableExpression><![CDATA[new Boolean($F{target.shortName}.contains("Other"))]]></variableExpression>
 	</variable>
 	<variable name="dblCashOut" class="java.lang.Double">
-		<variableExpression><![CDATA[/*$V{isEFT}?$F{target.cashout}.doubleValue():0.0*/
-0.0]]></variableExpression>
+		<variableExpression><![CDATA[$V{isEFT}?$F{target.cashout}.doubleValue():0.0]]></variableExpression>
 	</variable>
 	<variable name="dEFT" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isEFT}?(($V{dblCashOut}!=0.0)?
@@ -60,7 +61,8 @@
 	<variable name="dCash" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isCash}?(((($F{target.roundedAmount}.compareTo($F{target.amount}) !=0))?
 	("RoundedAmt: "+NumberFormat.getCurrencyInstance($P{REPORT_LOCALE}).format($F{target.roundedAmount})+"  "):"")
-):""]]></variableExpression>
+	     +"Tendered: "+NumberFormat.getCurrencyInstance($P{REPORT_LOCALE}).format($F{target.tendered})
+	     +"  Change: "+NumberFormat.getCurrencyInstance($P{REPORT_LOCALE}).format($F{target.change})):""]]></variableExpression>
 	</variable>
 	<variable name="dCheque" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isCheque}?(($F{target.bank}!=null?$F{target.bank}:"unspecified bank")+" "+($F{target.bsb}!=null?" - "+$F{target.bsb}:"")+" "+($F{target.drawer}!=null?(" :"+$F{target.drawer}):"")):""]]></variableExpression>
@@ -103,7 +105,7 @@
 				<textElement>
 					<font size="11" isBold="false"/>
 				</textElement>
-				<text><![CDATA[Refund Type]]></text>
+				<text><![CDATA[Payment Type]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-8" x="133" y="3" width="56" height="18" uuid="a08566cd-3b31-4e79-8059-8445d1a917f1"/>
