@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductQueryFactory;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -35,6 +36,7 @@ import org.openvpms.component.system.common.i18n.Message;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectBeanQueryIterator;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.InventoryItem;
@@ -45,9 +47,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -230,7 +234,7 @@ public class InventoryService extends FlowSheetService {
     }
 
     /**
-     * Returns all active products.
+     * Returns all active products that can be synchronised.
      *
      * @param useLocationProducts if {@code true}, only return products available at the location/stock location
      * @param location            the practice location
@@ -238,6 +242,7 @@ public class InventoryService extends FlowSheetService {
      * @return the active products
      */
     private Iterator<Product> getProducts(boolean useLocationProducts, Party location, Party stockLocation) {
+        final Set<IMObjectReference> productTypes = getSynchronisableProductTypes();
         String[] archetypes = {ProductArchetypes.MEDICATION, ProductArchetypes.SERVICE, ProductArchetypes.MERCHANDISE};
         ArchetypeQuery query = ProductQueryFactory.create(archetypes, null, null, useLocationProducts, location,
                                                           stockLocation);
@@ -245,15 +250,38 @@ public class InventoryService extends FlowSheetService {
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         IMObjectQueryIterator<Product> iterator = new IMObjectQueryIterator<>(service, query);
 
-        // exclude all templateOnly products
+        // exclude all templateOnly products, and product types that don't get synchronised
         Predicate<Product> predicate = new Predicate<Product>() {
             @Override
             public boolean evaluate(Product object) {
+                boolean result = false;
                 IMObjectBean bean = new IMObjectBean(object, service);
-                return !bean.getBoolean("templateOnly");
+                if (!bean.getBoolean("templateOnly")) {
+                    IMObjectReference type = bean.getNodeTargetObjectRef("type");
+                    result = type == null || productTypes.contains(type);
+                }
+                return result;
             }
         };
         return new FilterIterator<>(iterator, predicate);
+    }
+
+    /**
+     * Returns active product types that have their synchroniseWithSFS flag set.
+     *
+     * @return the product type references
+     */
+    private Set<IMObjectReference> getSynchronisableProductTypes() {
+        Set<IMObjectReference> result = new HashSet<>();
+        ArchetypeQuery query = new ArchetypeQuery(ProductArchetypes.PRODUCT_TYPE, true);
+        IMObjectBeanQueryIterator iterator = new IMObjectBeanQueryIterator(service, query);
+        while (iterator.hasNext()) {
+            IMObjectBean bean = iterator.next();
+            if (bean.getBoolean("synchroniseWithSFS")) {
+                result.add(bean.getObject().getObjectReference());
+            }
+        }
+        return result;
     }
 
     /**

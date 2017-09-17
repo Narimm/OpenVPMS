@@ -38,5 +38,7 @@
                 <errorMessage>Duplicate active discount product type relationship</errorMessage>
             </assertion>
         </node>
+        <node name="synchroniseWithSFS" displayName="Synchronise With Smart Flow Sheet"
+              path="/details/synchroniseWithSFS" type="java.lang.Boolean" defaultValue="false()" minCardinality="0"/>
     </archetype>
 </archetypes>
