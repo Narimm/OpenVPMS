@@ -325,21 +325,21 @@ public class InventoryService extends FlowSheetService {
     /**
      * Creates a new inventory item.
      *
-     * @param id              the item identifier
-     * @param name            the item name
-     * @param concentration   the concentration. May be {@code null}
-     * @param dispensingUnits the dispensing units. May be {@code null}
-     * @param weightUnits     the weight units. May be {@code null}
+     * @param id                 the item identifier
+     * @param name               the item name
+     * @param concentration      the concentration. May be {@code null}
+     * @param concentrationUnits the concentration units. May be {@code null}
+     * @param dispensingUnits    the dispensing units. May be {@code null}
      * @return a new inventory item
      */
-    private InventoryItem createItem(String id, String name, BigDecimal concentration, String dispensingUnits,
-                                     String weightUnits) {
+    private InventoryItem createItem(String id, String name, BigDecimal concentration, String concentrationUnits,
+                                     String dispensingUnits) {
         InventoryItem item = new InventoryItem();
         item.setId(id);
         item.setName(name);
         item.setConcentration(concentration);
-        item.setConcentrationUnits(dispensingUnits);
-        item.setConcentrationVolume(weightUnits);
+        item.setConcentrationUnits(concentrationUnits);
+        item.setConcentrationVolume(dispensingUnits);
         return item;
     }
 
