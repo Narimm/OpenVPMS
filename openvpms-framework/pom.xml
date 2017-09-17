@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.9.3</version>
+        <version>1.9.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>openvpms-framework</artifactId>
