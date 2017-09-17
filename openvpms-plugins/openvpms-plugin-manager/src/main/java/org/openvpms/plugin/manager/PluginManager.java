@@ -19,6 +19,7 @@ package org.openvpms.plugin.manager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -74,4 +75,16 @@ public interface PluginManager {
      * @throws InterruptedException if the thread was interrupted
      */
     void stop() throws BundleException, InterruptedException;
+
+    /**
+     * Installs a plugin from the specified stream.
+     * <p>
+     * The plugin manager must be started for this operation to be successful.
+     *
+     * @param location the location identifier of the plugin to install.
+     * @param stream   the stream object from which the plugin will be read
+     * @throws BundleException if the plugin cannot be installed
+     */
+    void install(String location, InputStream stream) throws BundleException;
+
 }
