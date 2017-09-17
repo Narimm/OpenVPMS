@@ -21,6 +21,8 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.filetransfer.UploadEvent;
+import nextapp.echo2.app.filetransfer.UploadListener;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -31,6 +33,8 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.plugin.manager.PluginManager;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.doc.AbstractUploadListener;
+import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -58,7 +62,7 @@ import org.osgi.framework.Constants;
 import java.util.Arrays;
 
 /**
- * Plugin browserr.
+ * Plugin browser.
  *
  * @author Tim Anderson
  */
@@ -85,6 +89,11 @@ public class PluginBrowser extends AbstractTabComponent {
     private PagedIMTable<Bundle> plugins;
 
     /**
+     * Configuration archetype.
+     */
+    private static final String PLUGIN_CONFIGURATION = "entity.pluginConfiguration";
+
+    /**
      * Constructs a {@link PluginBrowser}.
      *
      * @param help the help context for the tab
@@ -100,7 +109,7 @@ public class PluginBrowser extends AbstractTabComponent {
         getButtonSet().add("button.install", new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-
+                onInstall();
             }
         });
         getButtonSet().add("button.configure", new ActionListener() {
@@ -116,16 +125,7 @@ public class PluginBrowser extends AbstractTabComponent {
      */
     @Override
     public void show() {
-        int active = 0;
-        Bundle[] bundles = manager.getBundles();
-        for (Bundle bundle : bundles) {
-            if (bundle.getState() == Bundle.ACTIVE) {
-                active++;
-            }
-        }
-        status.setText(Messages.format("admin.system.plugin.active", active, bundles.length));
-        ResultSet<Bundle> set = new ListResultSet<>(Arrays.asList(bundles), 20);
-        plugins.setResultSet(set);
+        refresh();
     }
 
     /**
@@ -142,8 +142,40 @@ public class PluginBrowser extends AbstractTabComponent {
                                        getButtons(), component);
     }
 
+    /**
+     * Refreshes the display.
+     */
+    private void refresh() {
+        int active = 0;
+        Bundle[] bundles = manager.getBundles();
+        for (Bundle bundle : bundles) {
+            if (bundle.getState() == Bundle.ACTIVE) {
+                active++;
+            }
+        }
+        status.setText(Messages.format("admin.system.plugin.active", active, bundles.length));
+        ResultSet<Bundle> set = new ListResultSet<>(Arrays.asList(bundles), 20);
+        plugins.setResultSet(set);
+    }
+
+    private void onInstall() {
+        UploadListener listener = new AbstractUploadListener() {
+            @Override
+            public void fileUpload(UploadEvent uploadEvent) {
+                try {
+                    manager.install(uploadEvent.getFileName(), uploadEvent.getInputStream());
+                } catch (Exception exception) {
+                    ErrorHelper.show(exception);
+                }
+                refresh();
+            }
+        };
+        UploadDialog dialog = new UploadDialog(listener, getHelpContext());
+        dialog.show();
+    }
+
     private void onConfigure() {
-        ArchetypeQuery query = new ArchetypeQuery("entity.pluginConfiguration", false, false);
+        ArchetypeQuery query = new ArchetypeQuery(PLUGIN_CONFIGURATION, false, false);
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
         IMObjectQueryIterator<Entity> iterator = new IMObjectQueryIterator<>(query);
@@ -151,7 +183,7 @@ public class PluginBrowser extends AbstractTabComponent {
         if (iterator.hasNext()) {
             configuration = iterator.next();
         } else {
-            configuration = (Entity) IMObjectCreator.create("entity.pluginConfiguration");
+            configuration = (Entity) IMObjectCreator.create(PLUGIN_CONFIGURATION);
         }
         HelpContext help = getHelpContext().topic(configuration, "edit");
         LayoutContext context = new DefaultLayoutContext(true, new LocalContext(), help);
@@ -168,6 +200,7 @@ public class PluginBrowser extends AbstractTabComponent {
                         ErrorHelper.show(exception);
                     }
                 }
+                refresh();
             }
         });
         dialog.show();
@@ -176,8 +209,11 @@ public class PluginBrowser extends AbstractTabComponent {
     private static class PluginTableModel extends AbstractIMTableModel<Bundle> {
 
         private static final int ID_INDEX = 0;
+
         private static final int NAME_INDEX = ID_INDEX + 1;
+
         private static final int VERSION_INDEX = NAME_INDEX + 1;
+
         private static final int STATUS_INDEX = VERSION_INDEX + 1;
 
         public PluginTableModel() {
@@ -187,6 +223,18 @@ public class PluginBrowser extends AbstractTabComponent {
             model.addColumn(createTableColumn(VERSION_INDEX, "admin.system.plugin.version"));
             model.addColumn(createTableColumn(STATUS_INDEX, "admin.system.plugin.status"));
             setTableColumnModel(model);
+        }
+
+        /**
+         * Returns the sort criteria.
+         *
+         * @param column    the primary sort column
+         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+         * @return the sort criteria, or {@code null} if the column isn't sortable
+         */
+        @Override
+        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+            return null;
         }
 
         /**
@@ -236,18 +284,6 @@ public class PluginBrowser extends AbstractTabComponent {
                     }
             }
             return result;
-        }
-
-        /**
-         * Returns the sort criteria.
-         *
-         * @param column    the primary sort column
-         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
-         * @return the sort criteria, or {@code null} if the column isn't sortable
-         */
-        @Override
-        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-            return null;
         }
     }
 }

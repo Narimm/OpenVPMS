@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +39,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class ConfigurablePluginManager implements PluginManager, InitializingBean, DisposableBean, ServletContextAware{
+public class ConfigurablePluginManager implements PluginManager, InitializingBean, DisposableBean, ServletContextAware {
 
     /**
      * The archetype service.
@@ -156,6 +157,24 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
             manager.stop();
             manager = null;
         }
+    }
+
+    /**
+     * Installs a plugin from the specified stream.
+     * <p>
+     * The plugin manager must be started for this operation to be successful.
+     *
+     * @param location the location identifier of the plugin to install.
+     * @param stream   the stream object from which the plugin will be read
+     * @throws BundleException if the plugin cannot be installed
+     */
+    @Override
+    public synchronized void install(String location, InputStream stream) throws BundleException {
+        if (manager == null) {
+            throw new BundleException("Plugin cannot be installed: PluginManager is not running",
+                                      BundleException.INVALID_OPERATION);
+        }
+        manager.install(location, stream);
     }
 
     /**
