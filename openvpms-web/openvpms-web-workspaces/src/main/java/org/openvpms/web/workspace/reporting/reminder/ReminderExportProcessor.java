@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -58,16 +59,17 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
      *
      * @param reminderTypes the reminder types
      * @param rules         the reminder rules
+     * @param patientRules  the patient rules
      * @param location      the current practice location
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderExportProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party location, Party practice,
-                                   IArchetypeService service, ReminderConfiguration config,
-                                   CommunicationLogger logger) {
-        super(reminderTypes, rules, practice, service, config, logger);
+    public ReminderExportProcessor(ReminderTypes reminderTypes, ReminderRules rules, PatientRules patientRules,
+                                   Party location, Party practice, IArchetypeService service,
+                                   ReminderConfiguration config, CommunicationLogger logger) {
+        super(reminderTypes, rules, patientRules, practice, service, config, logger);
         this.location = location;
     }
 
@@ -82,6 +84,17 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     }
 
     /**
+     * Processes reminders.
+     *
+     * @param state the reminder state
+     */
+    @Override
+    public void process(PatientReminders state) {
+        List<ReminderEvent> reminders = state.getReminders();
+        export(reminders);
+    }
+
+    /**
      * Determines if reminder processing is performed asynchronously.
      *
      * @return {@code true} if reminder processing is performed asynchronously
@@ -92,22 +105,19 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
     }
 
     /**
-     * Processes reminders.
+     * Exports reminders.
      *
-     * @param state the reminder state
+     * @param reminders the reminders to export
      */
-    @Override
-    public void process(PatientReminders state) {
-        List<ReminderEvent> reminders = state.getReminders();
+    protected void export(List<ReminderEvent> reminders) {
         ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
         Document document = exporter.export(reminders);
         DownloadServlet.startDownload(document);
     }
 
-
     /**
      * Prepares reminders for processing.
-     * <p/>
+     * <p>
      * This:
      * <ul>
      * <li>filters out any reminders that can't be processed due to missing data</li>
@@ -130,7 +140,7 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
         ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
         for (ReminderEvent reminder : reminders) {
             Party customer = reminder.getCustomer();
-            Contact contact = getContact(customer, matcher);
+            Contact contact = getContact(customer, matcher, reminder.getContact());
             if (contact != null) {
                 populate(reminder, contact, getLocation(customer));
                 toProcess.add(reminder);

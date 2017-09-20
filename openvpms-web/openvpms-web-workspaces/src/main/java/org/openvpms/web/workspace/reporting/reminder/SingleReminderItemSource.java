@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.system.ServiceHelper;
@@ -52,8 +53,9 @@ public class SingleReminderItemSource implements ReminderItemSource {
      *
      * @param item     the reminder item
      * @param reminder the reminder
+     * @param contact  the contact to send to. May be {@code null}
      */
-    public SingleReminderItemSource(Act item, Act reminder) {
+    public SingleReminderItemSource(Act item, Act reminder, Contact contact) {
         this.shortNames = new String[]{item.getArchetypeId().getShortName()};
         ActBean bean = new ActBean(reminder);
         Party patient = (Party) bean.getNodeParticipant("patient");
@@ -61,7 +63,7 @@ public class SingleReminderItemSource implements ReminderItemSource {
         if (patient != null) {
             Party customer = ServiceHelper.getBean(PatientRules.class).getOwner(patient);
             if (customer != null) {
-                event = new ReminderEvent(reminder, item, patient, customer);
+                event = new ReminderEvent(reminder, item, patient, customer, contact);
             }
         }
         this.event = event;

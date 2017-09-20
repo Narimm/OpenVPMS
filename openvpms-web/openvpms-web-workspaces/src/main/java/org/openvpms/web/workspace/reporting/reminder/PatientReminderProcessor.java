@@ -16,9 +16,13 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.party.ContactMatcher;
 import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.archetype.rules.party.PurposeMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
@@ -38,6 +42,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
@@ -75,7 +80,12 @@ public abstract class PatientReminderProcessor {
     /**
      * The reminder rules.
      */
-    private final ReminderRules rules;
+    private final ReminderRules reminderRules;
+
+    /**
+     * The patient rules.
+     */
+    private final PatientRules patientRules;
 
     /**
      * The archetype service.
@@ -92,22 +102,28 @@ public abstract class PatientReminderProcessor {
      */
     private final CommunicationLogger logger;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PatientReminderProcessor.class);
 
     /**
      * Constructs a {@link PatientReminderProcessor}.
      *
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
+     * @param reminderRules the reminder rules
+     * @param patientRules  the patient rules
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public PatientReminderProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party practice,
-                                    IArchetypeService service, ReminderConfiguration config,
+    public PatientReminderProcessor(ReminderTypes reminderTypes, ReminderRules reminderRules, PatientRules patientRules,
+                                    Party practice, IArchetypeService service, ReminderConfiguration config,
                                     CommunicationLogger logger) {
         this.reminderTypes = reminderTypes;
-        this.rules = rules;
+        this.reminderRules = reminderRules;
+        this.patientRules = patientRules;
         this.practice = practice;
         this.service = service;
         this.config = config;
@@ -124,6 +140,8 @@ public abstract class PatientReminderProcessor {
      * <li>adds meta-data for subsequent calls to {@link #process}</li>
      * </ul>
      * If reminders are being resent, due dates are ignored, and no cancellation will occur.
+     * <p>
+     * To specify the contact to use, pre-populate reminders via the {@link ReminderEvent#setContact(Contact)} method.
      *
      * @param reminders  the reminders
      * @param groupBy    the reminder grouping policy. This determines which document template is selected
@@ -139,14 +157,18 @@ public abstract class PatientReminderProcessor {
         List<Act> updated = new ArrayList<>();
         for (ReminderEvent event : reminders) {
             Act item = event.getItem();
-            if (!resend && shouldCancel(item, cancelDate)) {
-                updateItem(item, ReminderItemStatus.CANCELLED, Messages.get("reporting.reminder.outofdate"));
-                updated.add(item);
-                Act reminder = updateReminder(event, item);
-                if (reminder != null) {
-                    updated.add(reminder);
-                }
-                cancelled.add(event);
+            if (!resend && isOutOfDate(item, cancelDate)) {
+                // cancel out of date reminders, unless they are being resent
+                cancel(event, Messages.get("reporting.reminder.outofdate"), updated, cancelled, false);
+            } else if (isDeceased(event)) {
+                // cancel reminders for deceased patients
+                cancel(event, Messages.get("reporting.reminder.deceased"), updated, cancelled, resend);
+            } else if (isPatientInactive(event)) {
+                // cancel reminders for inactive patients
+                cancel(event, Messages.get("reporting.reminder.patientinactive"), updated, cancelled, resend);
+            } else if (isCustomerInactive(event)) {
+                // cancel reminders for inactive customers. If the reminder is being resent, don't update the reminder.
+                cancel(event, Messages.get("reporting.reminder.customerinactive"), updated, cancelled, resend);
             } else {
                 toProcess.add(event);
             }
@@ -172,8 +194,10 @@ public abstract class PatientReminderProcessor {
      * Completes processing.
      *
      * @param reminders the reminders
+     * @return {@code true} if any changes were saved
      */
-    public void complete(PatientReminders reminders) {
+    public boolean complete(PatientReminders reminders) {
+        boolean result;
         boolean resend = reminders.getResend();
         for (ReminderEvent event : reminders.getReminders()) {
             if (!resend) {
@@ -186,11 +210,39 @@ public abstract class PatientReminderProcessor {
                 }
             }
         }
-        save(reminders);
+        result = save(reminders);
         CommunicationLogger logger = getLogger();
         if (logger != null && !reminders.getReminders().isEmpty()) {
             log(reminders, logger);
         }
+        return result;
+    }
+
+    /**
+     * Invoked when processing fails due to exception.
+     * For reminders that are not being resent and are not in error cancelled, this sets the:
+     * <ul>
+     *     <li>status of each reminder to be sent to {@link ReminderItemStatus#ERROR}</li>
+     *     <li>error node to the formatted message from the exception</li>
+     * </ul>
+     *
+     * @param reminders the reminders
+     * @param exception the exception
+     * @return {@code true} if any reminders were updated
+     */
+    public boolean failed(PatientReminders reminders, Throwable exception) {
+        boolean result = false;
+        boolean resend = reminders.getResend();
+        log.error("Failed to send reminders: " + exception.getMessage(), exception);
+        if (!resend) {
+            for (ReminderEvent event : reminders.getReminders()) {
+                Act item = (Act) service.get(event.getItem().getObjectReference());
+                if (item != null) {
+                    result |= setError(item, exception);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -255,15 +307,75 @@ public abstract class PatientReminderProcessor {
                                                 List<Act> updated, boolean resend);
 
     /**
-     * Determines if a reminder item should be cancelled.
+     * Cancels a reminder item.
+     * <p>
+     * If the item is being resent it is changed, but not added to the set of updated acts. This is to ensure that
+     * any original status and message is preserved, but that the status of the resend can be returned to the caller.
+     *
+     * @param event     the reminder
+     * @param message   the cancellation reason
+     * @param updated   the set of updated acts
+     * @param cancelled the set of cancelled reminders
+     * @param resend    determines if reminders are being resent. If {@code true}, the reminder itself isn't updated,
+     *                  but is added to the set of cancelled reminders
+     */
+    protected void cancel(ReminderEvent event, String message, List<Act> updated, List<ReminderEvent> cancelled,
+                          boolean resend) {
+        Act item = event.getItem();
+        updateItem(item, ReminderItemStatus.CANCELLED, message);
+        if (!resend) {
+            updated.add(item);
+            Act reminder = updateReminder(event, item);
+            if (reminder != null) {
+                updated.add(reminder);
+            }
+        }
+        cancelled.add(event);
+    }
+
+    /**
+     * Determines if a reminder item should be cancelled as it is out of date
      *
      * @param item the item
      * @param from the date to cancel from
      * @return {@code true} if the reminder item should be cancelled
      */
-    protected boolean shouldCancel(Act item, Date from) {
+    protected boolean isOutOfDate(Act item, Date from) {
         Date cancel = config.getCancelDate(item.getActivityStartTime(), getArchetype());
         return DateRules.compareDates(cancel, from) <= 0;
+    }
+
+    /**
+     * Determines if the patient is deceased.
+     *
+     * @param event the reminder
+     * @return {@code true} if the patient is deceased
+     */
+    protected boolean isDeceased(ReminderEvent event) {
+        Party patient = event.getPatient();
+        return patient != null && patientRules.isDeceased(patient);
+    }
+
+    /**
+     * Determines if the patient is inactive.
+     *
+     * @param event the reminder
+     * @return {@code true} if the patient is inactive
+     */
+    protected boolean isPatientInactive(ReminderEvent event) {
+        Party patient = event.getPatient();
+        return patient == null || !patient.isActive();
+    }
+
+    /**
+     * Determines if the customer is inactive.
+     *
+     * @param event the reminder
+     * @return {@code true} if the customer is inactive
+     */
+    protected boolean isCustomerInactive(ReminderEvent event) {
+        Party customer = event.getCustomer();
+        return customer == null || !customer.isActive();
     }
 
     /**
@@ -278,12 +390,16 @@ public abstract class PatientReminderProcessor {
      * Saves the state.
      *
      * @param state the state
+     * @return {@code true} if any changes were saved
      */
-    protected void save(PatientReminders state) {
+    protected boolean save(PatientReminders state) {
+        boolean result = false;
         List<Act> updated = state.getUpdated();
         if (!updated.isEmpty()) {
             service.save(updated);
+            result = true;
         }
+        return result;
     }
 
     /**
@@ -299,6 +415,34 @@ public abstract class PatientReminderProcessor {
             location = config.getLocation();
         }
         return location;
+    }
+
+    /**
+     * Assigns a reminder item ERROR status, and populates the error with the exception message.
+     *
+     * @param item      them item
+     * @param exception the cause of the error
+     * @return {@code true} if the item was successfully updated
+     */
+    protected boolean setError(Act item, Throwable exception) {
+        boolean result = false;
+        String message = null;
+        try {
+            item.setStatus(ReminderItemStatus.ERROR);
+            IMObjectBean bean = new IMObjectBean(item, service);
+            message = ErrorFormatter.format(exception);
+            if (message != null) {
+                int maxLength = bean.getDescriptor("error").getMaxLength();
+                message = StringUtils.abbreviate(message, maxLength);
+            }
+            bean.setValue("error", message);
+            bean.save();
+            result = true;
+        } catch (Throwable error) {
+            log.error("Failed to update reminder item=" + item.getId() + " with error=" + message + ": "
+                      + error.getMessage(), exception);
+        }
+        return result;
     }
 
     /**
@@ -391,11 +535,19 @@ public abstract class PatientReminderProcessor {
     /**
      * Returns the contact to use.
      *
-     * @param customer the reminder
+     * @param customer       the reminder
+     * @param matcher        the contact matcher
+     * @param defaultContact the default contact, or {@code null} to select one from the customer
      * @return the contact, or {@code null} if none is found
      */
-    protected Contact getContact(Party customer, ContactMatcher matcher) {
-        return Contacts.find(Contacts.sort(customer.getContacts()), matcher);
+    protected Contact getContact(Party customer, ContactMatcher matcher, Contact defaultContact) {
+        Contact contact;
+        if (defaultContact != null && matcher.isA(defaultContact)) {
+            contact = defaultContact;
+        } else {
+            contact = Contacts.find(Contacts.sort(customer.getContacts()), matcher);
+        }
+        return contact;
     }
 
     /**
@@ -484,10 +636,6 @@ public abstract class PatientReminderProcessor {
         return null;
     }
 
-    private boolean updateReminder(Act reminder, Act item) {
-        return rules.updateReminder(reminder, item);
-    }
-
     /**
      * Updates a reminder item.
      *
@@ -514,6 +662,21 @@ public abstract class PatientReminderProcessor {
         ActBean bean = new ActBean(item, service);
         bean.setValue("processed", new Date());
         bean.setValue("error", message);
+    }
+
+    /**
+     * Updates a reminder if it has no PENDING or ERROR items besides that supplied.
+     * <p>
+     * This increments the reminder count.
+     * <p>
+     * The caller is responsible for saving the reminder.
+     *
+     * @param reminder the reminder
+     * @param item     the reminder item
+     * @return {@code true} if the reminder was updated
+     */
+    private boolean updateReminder(Act reminder, Act item) {
+        return reminderRules.updateReminder(reminder, item);
     }
 
 }

@@ -20,7 +20,6 @@ import nextapp.echo2.app.Component;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -47,14 +46,14 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     private final PatientReminderProcessor processor;
 
     /**
-     * The reminders currently being processed.
-     */
-    private PatientReminders state;
-
-    /**
      * Title localisation key.
      */
     private final String titleKey;
+
+    /**
+     * The reminders currently being processed.
+     */
+    private PatientReminders state;
 
     /**
      * Determines if reminders are being resent.
@@ -101,6 +100,15 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     }
 
     /**
+     * Determines if reminders are being resent.
+     *
+     * @return {@code true} if reeminders are being resent
+     */
+    public boolean getResend() {
+        return resend;
+    }
+
+    /**
      * Indicates if reminders are being reprocessed.
      * <p>
      * If set:
@@ -115,15 +123,6 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     public void setResend(boolean resend) {
         this.resend = resend;
-    }
-
-    /**
-     * Determines if reminders are being resent.
-     *
-     * @return {@code true} if reeminders are being resent
-     */
-    public boolean getResend() {
-        return resend;
     }
 
     /**
@@ -228,14 +227,10 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     @Override
     protected void notifyError(Throwable exception) {
         if (state != null) {
-            for (ReminderEvent event : state.getReminders()) {
-                if (!resend) {
-                    Act item = event.getItem();
-                    ReminderHelper.setError(item, exception);
-                }
-                if (statistics != null) {
-                    statistics.incErrors();
-                }
+            processor.failed(state, exception);
+            if (statistics != null) {
+                statistics.addErrors(state.getReminders().size());
+                statistics.addErrors(state.getErrors().size());
             }
         }
         super.notifyError(exception);

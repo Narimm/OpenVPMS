@@ -66,11 +66,6 @@ class ResendReminderDialog extends PopupDialog {
     private final Act reminder;
 
     /**
-     * The reminder processor.
-     */
-    private ReminderProcessor processor;
-
-    /**
      * The context.
      */
     private final Context context;
@@ -79,6 +74,11 @@ class ResendReminderDialog extends PopupDialog {
      * The reminder rules.
      */
     private final ReminderRules rules;
+
+    /**
+     * The reminder processor.
+     */
+    private ReminderProcessor processor;
 
     /**
      * The reminder count selector.
@@ -184,8 +184,22 @@ class ResendReminderDialog extends PopupDialog {
     }
 
     /**
+     * Returns the reminder configuration.
+     *
+     * @return the reminder configuration
+     */
+    protected static ReminderConfiguration getReminderConfig(Context context) {
+        IMObjectBean bean = new IMObjectBean(context.getPractice());
+        IMObject config = bean.getNodeTargetObject("reminderConfiguration");
+        if (config == null) {
+            throw new IllegalStateException("Patient reminders have not been configured");
+        }
+        return new ReminderConfiguration(config, ServiceHelper.getArchetypeService());
+    }
+
+    /**
      * Invoked when the OK button is pressed.
-     * <p/>
+     * <p>
      * If a reminder count and contact have been selected, generates the reminder.
      */
     @Override
@@ -195,46 +209,6 @@ class ResendReminderDialog extends PopupDialog {
         if (count != null && contact != null) {
             generate(count, contact);
         }
-    }
-
-    /**
-     * Generates a reminder.
-     *
-     * @param reminderCount the reminder count to use
-     * @param contact       the contact to use
-     */
-    private void generate(final int reminderCount, Contact contact) {
-        Act item = rules.getReminderItem(reminder, reminderCount, contact);
-        if (item == null) {
-            // no reminder item was created for the contact type. Create one now.
-            item = processor.process(reminder, reminderCount, contact);
-            // set the date to today, rather than the date when it should have been sent
-            item.setActivityStartTime(new Date());
-        }
-        generate(item);
-    }
-
-    /**
-     * Generates a reminder for an item.
-     *
-     * @param item the reminder item
-     */
-    private void generate(final Act item) {
-        ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
-        Party location = context.getLocation();
-        Party practice = context.getPractice();
-        ReminderGenerator generator = factory.create(item, reminder, location, practice, getHelpContext());
-        generator.setResend(true);
-        generator.setListener(new BatchProcessorListener() {
-            public void completed() {
-                close();
-            }
-
-            public void error(Throwable exception) {
-                ErrorHelper.show(exception);
-            }
-        });
-        generator.process();
     }
 
     /**
@@ -282,17 +256,44 @@ class ResendReminderDialog extends PopupDialog {
     }
 
     /**
-     * Returns the reminder configuration.
+     * Generates a reminder.
      *
-     * @return the reminder configuration
+     * @param reminderCount the reminder count to use
+     * @param contact       the contact to use
      */
-    protected static ReminderConfiguration getReminderConfig(Context context) {
-        IMObjectBean bean = new IMObjectBean(context.getPractice());
-        IMObject config = bean.getNodeTargetObject("reminderConfiguration");
-        if (config == null) {
-            throw new IllegalStateException("Patient reminders have not been configured");
+    private void generate(final int reminderCount, Contact contact) {
+        Act item = rules.getReminderItem(reminder, reminderCount, contact);
+        if (item == null) {
+            // no reminder item was created for the contact type. Create one now.
+            item = processor.process(reminder, reminderCount, contact);
+            // set the date to today, rather than the date when it should have been sent
+            item.setActivityStartTime(new Date());
         }
-        return new ReminderConfiguration(config, ServiceHelper.getArchetypeService());
+        generate(item, contact);
+    }
+
+    /**
+     * Generates a reminder for an item.
+     *
+     * @param item    the reminder item
+     * @param contact the contact to use
+     */
+    private void generate(final Act item, Contact contact) {
+        ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
+        Party location = context.getLocation();
+        Party practice = context.getPractice();
+        ReminderGenerator generator = factory.create(item, reminder, contact, location, practice, getHelpContext());
+        generator.setResend(true);
+        generator.setListener(new BatchProcessorListener() {
+            public void completed() {
+                close();
+            }
+
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        });
+        generator.process();
     }
 
 }

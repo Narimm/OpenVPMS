@@ -28,7 +28,7 @@
         <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="1" maxCardinality="1" filter="entityLink.reminderConfigurationLocation"/>
         <node name="emailInterval" path="/details/emailInterval" type="java.lang.Integer" minCardinality="1"
-              defaultValue="3">
+              displayName="Email Lead Time" defaultValue="3">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
@@ -44,7 +44,7 @@
             </assertion>
         </node>
         <node name="emailCancelInterval" path="/details/emailCancelInterval" type="java.lang.Integer" minCardinality="1"
-              defaultValue="3">
+              displayName="Email Cancel Time" defaultValue="3">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
@@ -59,13 +59,13 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="smsInterval" displayName="SMS Interval" path="/details/smsInterval" type="java.lang.Integer"
+        <node name="smsInterval" displayName="SMS Lead Time" path="/details/smsInterval" type="java.lang.Integer"
               minCardinality="1" defaultValue="3">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
         </node>
-        <node name="smsUnits" displayName="SMS Interval Units" path="/details/smsUnits" type="java.lang.String"
+        <node name="smsUnits" displayName="SMS Lead Time Units" path="/details/smsUnits" type="java.lang.String"
               minCardinality="1" defaultValue="'DAYS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
@@ -75,13 +75,13 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="smsCancelInterval" displayName="SMS Cancel Interval" path="/details/smsCancelInterval"
+        <node name="smsCancelInterval" displayName="SMS Cancel Time" path="/details/smsCancelInterval"
               type="java.lang.Integer" minCardinality="1" defaultValue="3">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
         </node>
-        <node name="smsCancelUnits" displayName="SMS Cancel Interval Units" path="/details/smsCancelUnits"
+        <node name="smsCancelUnits" displayName="SMS Cancel Time Units" path="/details/smsCancelUnits"
               type="java.lang.String" minCardinality="1" defaultValue="'DAYS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
@@ -92,7 +92,7 @@
             </assertion>
         </node>
         <node name="printInterval" path="/details/printInterval" type="java.lang.Integer" minCardinality="1"
-              defaultValue="2">
+              displayName="Print Lead Time" defaultValue="2">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
@@ -108,7 +108,7 @@
             </assertion>
         </node>
         <node name="printCancelInterval" path="/details/printCancelInterval" type="java.lang.Integer" minCardinality="1"
-              defaultValue="2">
+              displayName="Print Cancel Time" defaultValue="2">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
@@ -124,7 +124,7 @@
             </assertion>
         </node>
         <node name="exportInterval" path="/details/exportInterval" type="java.lang.Integer" minCardinality="1"
-              defaultValue="2">
+              displayName="Export Lead Time" defaultValue="2">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
@@ -140,13 +140,13 @@
             </assertion>
         </node>
         <node name="exportCancelInterval" path="/details/exportCancelInterval" type="java.lang.Integer"
-              minCardinality="1" defaultValue="2">
+              displayName="Print Cancel Time" minCardinality="1" defaultValue="2">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
         </node>
         <node name="exportCancelUnits" path="/details/exportCancelUnits" type="java.lang.String"
-              minCardinality="1" defaultValue="'WEEKS'">
+              displayName="Print Cancel Time" minCardinality="1" defaultValue="'WEEKS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -156,7 +156,7 @@
             </assertion>
         </node>
         <node name="listInterval" path="/details/listInterval" type="java.lang.Integer" minCardinality="1"
-              defaultValue="2">
+              displayName="List Lead Time" defaultValue="2">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
@@ -172,7 +172,7 @@
             </assertion>
         </node>
         <node name="listCancelInterval" path="/details/listCancelInterval" type="java.lang.Integer" minCardinality="1"
-              defaultValue="2">
+              displayName="List Cancel Time" defaultValue="2">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>

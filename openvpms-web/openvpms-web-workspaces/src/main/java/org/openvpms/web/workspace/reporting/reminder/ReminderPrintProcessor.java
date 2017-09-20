@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -55,6 +56,11 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
     private final IMPrinterFactory factory;
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
      * Determines if a print dialog is being displayed.
      */
     private boolean interactive;
@@ -75,26 +81,22 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
     private PrinterListener listener;
 
     /**
-     * The help context.
-     */
-    private final HelpContext help;
-
-    /**
      * Constructs a {@link ReminderPrintProcessor}.
      *
      * @param help          the help context
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
+     * @param reminderRules the reminder rules
+     * @param patientRules  the patient rules
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param factory       the printer factory
      * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderPrintProcessor(HelpContext help, ReminderTypes reminderTypes, ReminderRules rules,
-                                  Party practice, IArchetypeService service, ReminderConfiguration config,
-                                  IMPrinterFactory factory, CommunicationLogger logger) {
-        super(reminderTypes, rules, practice, service, config, logger);
+    public ReminderPrintProcessor(HelpContext help, ReminderTypes reminderTypes, ReminderRules reminderRules,
+                                  PatientRules patientRules, Party practice, IArchetypeService service,
+                                  ReminderConfiguration config, IMPrinterFactory factory, CommunicationLogger logger) {
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
         this.factory = factory;
         this.help = help;
     }
@@ -242,7 +244,7 @@ public class ReminderPrintProcessor extends GroupedReminderProcessor {
      * @param printer the printer
      * @param context the context
      */
-    private <T> void print(IMPrinter<T> printer, Context context) {
+    protected <T> void print(IMPrinter<T> printer, Context context) {
         final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
         String printerName = printer.getDefaultPrinter();
         if (printerName == null) {

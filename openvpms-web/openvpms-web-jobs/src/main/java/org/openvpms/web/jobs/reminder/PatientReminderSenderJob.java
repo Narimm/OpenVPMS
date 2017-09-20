@@ -19,6 +19,7 @@ package org.openvpms.web.jobs.reminder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.GroupingReminderIterator;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
@@ -89,6 +90,11 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     private final ReminderRules reminderRules;
 
     /**
+     * The patient rules.
+     */
+    private final PatientRules patientRules;
+
+    /**
      * The practice rules.
      */
     private final PracticeRules practiceRules;
@@ -145,6 +151,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * @param service                the archetype service
      * @param practiceService        the practice service
      * @param reminderRules          the reminder rules
+     * @param patientRules           the patient rules
      * @param mailService            the mail service
      * @param handlers               the document handlers
      * @param emailTemplateEvaluator the email template evaluator
@@ -155,14 +162,16 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      */
     public PatientReminderSenderJob(Entity configuration, IArchetypeRuleService service,
                                     PracticeService practiceService, ReminderRules reminderRules,
-                                    PracticeRules practiceRules, PracticeMailService mailService,
-                                    DocumentHandlers handlers, EmailTemplateEvaluator emailTemplateEvaluator,
-                                    ReporterFactory reporterFactory, ConnectionFactory connectionFactory,
-                                    ReminderSMSEvaluator smsEvaluator, CommunicationLogger communicationLogger) {
+                                    PatientRules patientRules, PracticeRules practiceRules,
+                                    PracticeMailService mailService, DocumentHandlers handlers,
+                                    EmailTemplateEvaluator emailTemplateEvaluator, ReporterFactory reporterFactory,
+                                    ConnectionFactory connectionFactory, ReminderSMSEvaluator smsEvaluator,
+                                    CommunicationLogger communicationLogger) {
         this.configuration = configuration;
         this.service = service;
         this.practiceService = practiceService;
         this.reminderRules = reminderRules;
+        this.patientRules = patientRules;
         this.practiceRules = practiceRules;
         this.mailerFactory = new DefaultMailerFactory(mailService, handlers);
         this.emailTemplateEvaluator = emailTemplateEvaluator;
@@ -230,8 +239,8 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
                                        ReminderConfiguration config, CommunicationLogger logger) {
         ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, emailTemplateEvaluator,
                                                                       reporterFactory, reminderTypes, practice,
-                                                                      reminderRules, practiceRules, service, config,
-                                                                      logger);
+                                                                      reminderRules, patientRules, practiceRules,
+                                                                      service, config, logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.EMAIL_REMINDER, reminderTypes, date,
                                                            config);
         return send(date, processor, iterator);
@@ -250,8 +259,8 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     protected Stats sendSMSReminders(Date date, ReminderTypes reminderTypes, Party practice,
                                      ReminderConfiguration config, CommunicationLogger logger) {
         ReminderSMSProcessor sender = new ReminderSMSProcessor(connectionFactory, smsEvaluator, reminderTypes,
-                                                               practice, reminderRules, practiceRules, service, config,
-                                                               logger);
+                                                               practice, reminderRules, patientRules, practiceRules,
+                                                               service, config, logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.SMS_REMINDER, reminderTypes, date,
                                                            config);
         return send(date, sender, iterator);
@@ -295,17 +304,50 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
             Reminders reminders = iterator.next();
-            PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), date, false);
-            if (!state.getReminders().isEmpty()) {
-                processor.process(state);
+            try {
+                PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), date,
+                                                           false);
+                Stats stats = send(state, processor, iterator);
+                total = total.add(stats);
+            } catch (Throwable exception) {
+                log.error("Failed to send reminders", exception);
+                total = total.add(new Stats(0, 0, reminders.getReminders().size()));
             }
-            int cancelled = state.getCancelled().size();
-            int errors = state.getErrors().size();
-            processor.complete(state);
-            total = total.add(new Stats(state.getProcessed(), cancelled, errors));
-            iterator.updated();
         }
         return total;
+    }
+
+    /**
+     * Sends reminders.
+     *
+     * @param reminders the reminders to send
+     * @param processor the processor to use
+     * @param iterator  the reminder iterator
+     * @return the send statistics
+     */
+    private Stats send(PatientReminders reminders, PatientReminderProcessor processor,
+                       GroupingReminderIterator iterator) {
+        int processed;
+        int errors;
+        boolean updated;
+        try {
+            if (!reminders.getReminders().isEmpty()) {
+                processor.process(reminders);
+            }
+            updated = processor.complete(reminders);
+            processed = reminders.getProcessed();
+            errors = reminders.getErrors().size();
+        } catch (Throwable exception) {
+            // give each of the reminders that failed to be sent ERROR status
+            processed = 0;
+            errors = reminders.getErrors().size() + reminders.getReminders().size();
+            updated = processor.failed(reminders, exception);
+        }
+        if (updated) {
+            iterator.updated();
+        }
+        int cancelled = reminders.getCancelled().size();
+        return new Stats(processed, cancelled, errors);
     }
 
     /**

@@ -36,12 +36,12 @@ import java.io.File;
 public class ReportLoadMojo extends AbstractHibernateMojo {
 
     /**
-     * The templates file.
+     * The templates file(s).
      *
      * @parameter
      * @required
      */
-    private File file;
+    private File[] files;
 
     /**
      * TODO - the JDBC properties are repeated from AbstractHibernateMojo as the maven plugin API cannot pick up
@@ -97,30 +97,21 @@ public class ReportLoadMojo extends AbstractHibernateMojo {
     private MavenProject project;
 
     /**
-     * Sets the templates file.
+     * Returns the templates file(s).
      *
-     * @param file the file
+     * @return the templates file(s)
      */
-    public void setFile(File file) {
-        this.file = file;
+    public File[] getFiles() {
+        return files;
     }
 
     /**
-     * Returns the templates file.
+     * Sets the templates file(s).
      *
-     * @return the templates file
+     * @param files the files
      */
-    public File getFile() {
-        return file;
-    }
-
-    /**
-     * Sets the maven project.
-     *
-     * @param project the project
-     */
-    public void setProject(MavenProject project) {
-        this.project = project;
+    public void setFiles(File[] files) {
+        this.files = files;
     }
 
     /**
@@ -133,20 +124,37 @@ public class ReportLoadMojo extends AbstractHibernateMojo {
     }
 
     /**
+     * Sets the maven project.
+     *
+     * @param project the project
+     */
+    public void setProject(MavenProject project) {
+        this.project = project;
+    }
+
+    /**
      * Loads report templates from the specified directory.
      *
      * @throws MojoExecutionException if an unexpected problem occurs
      */
     protected void doExecute() throws MojoExecutionException {
-        if (file == null || !file.exists()) {
-            throw new MojoExecutionException("File not found: " + file);
+        if (files == null || files.length == 0) {
+            throw new MojoExecutionException("No files specified");
+        }
+        for (File file : files) {
+            if (!file.exists()) {
+                throw new MojoExecutionException("File does not exist: " + file);
+            }
         }
         try {
             ApplicationContext context = getContext();
             IArchetypeService service = (IArchetypeService) context.getBean("archetypeService");
             DocumentHandlers handlers = (DocumentHandlers) context.getBean("documentHandlers");
             TemplateLoader loader = new TemplateLoader(service, handlers);
-            loader.load(file.getPath());
+            for (File file : files) {
+                getLog().info("Loading: " + file.getPath());
+                loader.load(file.getPath());
+            }
         } catch (Throwable exception) {
             throw new MojoExecutionException("Failed to load report templates", exception);
         }
