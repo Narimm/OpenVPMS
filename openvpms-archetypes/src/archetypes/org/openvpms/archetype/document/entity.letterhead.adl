@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -26,6 +26,8 @@
               path="/details/companyID"/>
         <node name="logoFile" displayName="Logo File" path="/details/logoFile"
               type="java.lang.String" minCardinality="1" maxLength="240"/>
+        <node name="logoFileHTML" displayName="HTML Logo URL" path="/details/logoFileHTML"
+              type="java.lang.String" maxLength="240"/>
         <node name="contacts" displayName="Contacts Source" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.letterheadContacts"/>

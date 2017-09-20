@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -63,24 +63,6 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
     }
 
     /**
-     * Returns the schedule.
-     *
-     * @return the schedule, or {@code null} if  all templates are being used
-     */
-    public Entity getSchedule() {
-        return schedule;
-    }
-
-    /**
-     * Returns the work list.
-     *
-     * @return the work list, or {@code null} if  all templates are being used
-     */
-    public Entity getWorkList() {
-        return workList;
-    }
-
-    /**
      * Determines if a schedule uses all patient forms and letters, or those directly associated with it via
      * its templates node.
      * <p/>
@@ -98,6 +80,24 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
         } else {
             return bean.getValues("templates").isEmpty();
         }
+    }
+
+    /**
+     * Returns the schedule.
+     *
+     * @return the schedule, or {@code null} if  all templates are being used
+     */
+    public Entity getSchedule() {
+        return schedule;
+    }
+
+    /**
+     * Returns the work list.
+     *
+     * @return the work list, or {@code null} if  all templates are being used
+     */
+    public Entity getWorkList() {
+        return workList;
     }
 
     /**
@@ -133,8 +133,8 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
 
             private ExistsConstraint createExists(Entity entity, String alias) {
                 String relAlias = alias + "r";
-                return exists(subQuery(entity.getArchetypeId().getShortName(), alias)
-                                      .add(join("templates", relAlias).add(idEq("t", relAlias + ".target"))));
+                return exists(subQuery(entity, alias).add(join("templates", relAlias)
+                                                                  .add(idEq("t", relAlias + ".target"))));
             }
         };
     }

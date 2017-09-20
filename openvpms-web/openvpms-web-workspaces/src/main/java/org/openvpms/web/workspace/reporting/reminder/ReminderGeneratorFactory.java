@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -35,17 +36,18 @@ public class ReminderGeneratorFactory {
      * Constructs a {@link ReminderGenerator} to process a single reminder item.
      *
      * @param item     the reminder item
+     * @param contact  the contact to send to. May be {@code null}
      * @param location the practice location
      * @param practice the practice
      * @param help     the help context
      */
-    public ReminderGenerator create(Act item, Party location, Party practice, HelpContext help) {
+    public ReminderGenerator create(Act item, Contact contact, Party location, Party practice, HelpContext help) {
         ActBean bean = new ActBean(item);
         Act reminder = (Act) bean.getNodeSourceObject("reminder");
         if (reminder == null) {
             throw new IllegalArgumentException("Argument 'item' is not associated with any reminder");
         }
-        return create(item, reminder, location, practice, help);
+        return create(item, reminder, contact, location, practice, help);
     }
 
     /**
@@ -53,12 +55,14 @@ public class ReminderGeneratorFactory {
      *
      * @param item     the reminder item
      * @param reminder the reminder
+     * @param contact  the contact to send to. May be {@code null}
      * @param location the practice location
      * @param practice the practice
      * @param help     the help context
      */
-    public ReminderGenerator create(Act item, Act reminder, Party location, Party practice, HelpContext help) {
-        return new ReminderGenerator(item, reminder, help, createFactory(location, practice, help));
+    public ReminderGenerator create(Act item, Act reminder, Contact contact, Party location, Party practice,
+                                    HelpContext help) {
+        return new ReminderGenerator(item, reminder, contact, help, createFactory(location, practice, help));
     }
 
     /**

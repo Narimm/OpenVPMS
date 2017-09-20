@@ -80,16 +80,19 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-servicebus</artifactId>
             <version>0.9.7</version>
-            <exclusions>
-                <exclusion>
+            <!-- NOTE:  Azure Service Bus requires these as it imports -->
+            <!-- com.sun.jersey.api.client.ClientHandlerException and  -->
+            <!-- com.sun.jersey.api.client.UniformInterfaceException   -->
+            <!--exclusions>
+                <-exclusion>
                     <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-client</artifactId>
-                </exclusion>
-                <exclusion>
+                </exclusion-->
+                <!--exclusion>
                     <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-json</artifactId>
                 </exclusion>
-            </exclusions>
+            </exclusions-->
         </dependency>
 
         <dependency>
@@ -118,6 +121,11 @@
             <groupId>${jdbc.groupId}</groupId>
             <artifactId>${jdbc.artifactId}</artifactId>
             <version>${jdbc.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

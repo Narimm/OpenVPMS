@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.Reminders;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -119,13 +118,13 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
 
     /**
      * Indicates if reminders are being resent.
-     * <p/>
+     * <p>
      * If set:
      * <ul>
      * <li>due dates are ignored</li>
      * <li>the reminder last sent date is not updated</li>
      * </ul>
-     * <p/>
+     * <p>
      * Defaults to {@code false}.
      *
      * @param resend if {@code true} reminders are being resent
@@ -234,7 +233,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
 
     /**
      * Invoked if an error occurs processing the batch.
-     * <p/>
+     * <p>
      * This:
      * <ul>
      * <li>updates the error node of each reminder if they aren't being resent</li>
@@ -246,16 +245,11 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
      * @param exception the cause
      */
     protected void processError(Throwable exception) {
-        if (currentReminders != null) {
+        if (currentState != null) {
             currentError = true;
-            for (ReminderEvent event : currentReminders.getReminders()) {
-                if (!resend) {
-                    ReminderHelper.setError(event.getItem(), exception);
-                }
-                if (statistics != null) {
-                    statistics.incErrors();
-                }
-            }
+            processor.failed(currentState, exception);
+            statistics.addErrors(currentState.getReminders().size());
+            statistics.addErrors(currentState.getErrors().size());
             notifyError(exception);
         } else {
             log.error("ReminderProgressBarProcess.processError() invoked with no current reminders", exception);
@@ -274,7 +268,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
 
     /**
      * Skips a set of reminders.
-     * <p/>
+     * <p>
      * This doesn't update the reminders and their statistics.
      */
     protected void skip() {

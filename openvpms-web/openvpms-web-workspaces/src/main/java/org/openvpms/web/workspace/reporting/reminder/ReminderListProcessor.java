@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -79,7 +80,8 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * Constructs a {@link ReminderListProcessor}.
      *
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
+     * @param reminderRules the reminder rules
+     * @param patientRules  the patient rules
      * @param location      the practice location
      * @param practice      the practice
      * @param service       the archetype service
@@ -88,10 +90,11 @@ public class ReminderListProcessor extends PatientReminderProcessor {
      * @param logger        the communication logger. May be {@code null}
      * @param help          the help context
      */
-    public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party location, Party practice,
-                                 IArchetypeService service, ReminderConfiguration config, IMPrinterFactory factory,
-                                 CommunicationLogger logger, HelpContext help) {
-        super(reminderTypes, rules, practice, service, config, logger);
+    public ReminderListProcessor(ReminderTypes reminderTypes, ReminderRules reminderRules, PatientRules patientRules,
+                                 Party location, Party practice, IArchetypeService service,
+                                 ReminderConfiguration config, IMPrinterFactory factory, CommunicationLogger logger,
+                                 HelpContext help) {
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
         this.location = location;
         this.help = help;
         this.factory = factory;
@@ -108,6 +111,30 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     }
 
     /**
+     * Processes reminders.
+     *
+     * @param reminders the reminder state
+     */
+    @Override
+    public void process(PatientReminders reminders) {
+        List<Act> acts = new ArrayList<>();
+        for (ReminderEvent reminder : reminders.getReminders()) {
+            acts.add(reminder.getReminder());
+        }
+        print(acts);
+    }
+
+    /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
+        return true;
+    }
+
+    /**
      * Registers a listener for printer events.
      * <p>
      * This must be registered prior to processing any reminders.
@@ -119,34 +146,19 @@ public class ReminderListProcessor extends PatientReminderProcessor {
     }
 
     /**
-     * Processes reminders.
+     * Prints reminders.
      *
-     * @param reminders the reminder state
+     * @param reminders the reminders to print
      */
-    @Override
-    public void process(PatientReminders reminders) {
-        List<Act> acts = new ArrayList<>();
-        for (ReminderEvent reminder : reminders.getReminders()) {
-            acts.add(reminder.getReminder());
-        }
+    protected void print(List<Act> reminders) {
         Context context = new LocalContext();
         context.setLocation(location);
         context.setPractice(getPractice());
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER, context);
-        IMObjectReportPrinter<Act> printer = factory.createIMObjectReportPrinter(acts, locator, context);
+        IMObjectReportPrinter<Act> printer = factory.createIMObjectReportPrinter(reminders, locator, context);
         InteractivePrinter iPrinter = createPrinter(printer, context);
         iPrinter.setListener(listener);
         iPrinter.print();
-    }
-
-    /**
-     * Determines if reminder processing is performed asynchronously.
-     *
-     * @return {@code true} if reminder processing is performed asynchronously
-     */
-    @Override
-    public boolean isAsynchronous() {
-        return true;
     }
 
     /**
@@ -174,7 +186,7 @@ public class ReminderListProcessor extends PatientReminderProcessor {
         for (ReminderEvent reminder : reminders) {
             Party customer = reminder.getCustomer();
             Party location = getLocation(customer);
-            Contact contact = getContact(customer, matcher);
+            Contact contact = getContact(customer, matcher, reminder.getContact());
             populate(reminder, contact, location);
         }
         return new PatientReminders(reminders, groupBy, cancelled, errors, updated, resend);

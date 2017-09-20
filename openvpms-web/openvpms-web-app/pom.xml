@@ -38,11 +38,12 @@
     <!--   mvn package cargo:run                                                    -->
     <!-- ========================================================================== -->
 
-    <!-- ========================================================================== -->
-    <!-- Debugging notes:                                                           -->
-    <!-- . p6spy can be enabled using:                                              -->
-    <!--   mvn -Djdbc.driverClassName=com.p6spy.engine.spy.P6SpyDriver tomcat:run   -->
-    <!-- ========================================================================== -->
+    <!-- ============================================================================================ -->
+    <!-- Debugging notes:                                                                             -->
+    <!-- . p6spy can be enabled using:                                                                -->
+    <!--   mvn -Dhibernate.connection.driver_class=com.p6spy.engine.spy.P6SpyDriver \                 -->
+    <!--       -Dhibernate.connection.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8 tomcat:run   -->
+    <!-- ============================================================================================ -->
 
     <build>
         <finalName>openvpms</finalName>
@@ -277,18 +278,6 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <!-- for jetty plugin dependencies -->
-            <id>java.net</id>
-            <url>http://download.java.net/maven/2/</url>
-            <snapshots>
-                <enabled>false</enabled>
-                <checksumPolicy>fail</checksumPolicy>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>

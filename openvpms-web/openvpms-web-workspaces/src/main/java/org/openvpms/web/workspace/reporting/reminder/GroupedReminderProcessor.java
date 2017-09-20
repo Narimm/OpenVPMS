@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCount;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
@@ -53,16 +54,17 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * Constructs a {@link GroupedReminderProcessor}.
      *
      * @param reminderTypes the reminder types
-     * @param rules         the reminder rules
+     * @param reminderRules the reminder rules
+     * @param patientRules  the patient rules
      * @param practice      the practice
      * @param service       the archetype service
      * @param config        the reminder configuration
      * @param logger        the communication logger. May be {@code null}
      */
-    public GroupedReminderProcessor(ReminderTypes reminderTypes, ReminderRules rules, Party practice,
-                                    IArchetypeService service, ReminderConfiguration config,
+    public GroupedReminderProcessor(ReminderTypes reminderTypes, ReminderRules reminderRules, PatientRules patientRules,
+                                    Party practice, IArchetypeService service, ReminderConfiguration config,
                                     CommunicationLogger logger) {
-        super(reminderTypes, rules, practice, service, config, logger);
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
     }
 
     /**
@@ -95,9 +97,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
         if (!reminders.isEmpty()) {
             ReminderEvent event = reminders.get(0);
             customer = event.getCustomer();
-            if (customer != null) {
-                contact = getContact(customer);
-            }
+            contact = getContact(customer, createContactMatcher(), event.getContact());
             if (contact != null) {
                 location = getLocation(customer);
                 toProcess.addAll(reminders);
@@ -196,16 +196,6 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     }
 
     /**
-     * Returns the contact to use.
-     *
-     * @param customer the customer
-     * @return the contact, or {@code null} if none is found
-     */
-    protected Contact getContact(Party customer) {
-        return getContact(customer, createContactMatcher());
-    }
-
-    /**
      * Creates a new contact matcher.
      *
      * @return a new contact matcher
@@ -220,6 +210,5 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @return the contact archetype
      */
     protected abstract String getContactArchetype();
-
 
 }

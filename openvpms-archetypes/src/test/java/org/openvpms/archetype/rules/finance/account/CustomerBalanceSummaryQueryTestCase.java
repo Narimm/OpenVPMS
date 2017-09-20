@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -47,6 +47,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 /**
  * Tests the {@link CustomerBalanceSummaryQuery} class.
@@ -161,7 +162,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         Party customer2 = TestHelper.createCustomer(location2);
         Party customer3 = TestHelper.createCustomer();
 
-        Set<Party> customers = new HashSet<Party>();
+        Set<Party> customers = new HashSet<>();
         customers.add(customer1);
         customers.add(customer2);
         customers.add(customer3);
@@ -284,7 +285,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         Party customerZ = TestHelper.createCustomer(
                 "Foo", "Z" + System.currentTimeMillis(), true);
 
-        Set<Party> customers = new HashSet<Party>();
+        Set<Party> customers = new HashSet<>();
         customers.add(customerA);
         customers.add(customerB);
         customers.add(customerZ);
@@ -446,6 +447,47 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
     }
 
     /**
+     * Verifies that the query includes all balances for the specified date.
+     */
+    @Test
+    public void testQueryForDatetime() {
+        Party customer = getCustomer();
+
+        // create and save a new invoice
+        BigDecimal hundred = new BigDecimal(100);
+        Date startTime = getDatetime("2017-09-10 10:00:00");
+        List<FinancialAct> invoice = createChargesInvoice(hundred, startTime);
+        save(invoice);
+
+        Date date = getDate("2017-09-10"); // should include all balances done on this date
+        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(date, getArchetypeService(),
+                                                                            getLookupService(), getRules());
+        assertTrue(query.hasNext());
+        ObjectSet set = null;
+        while (query.hasNext()) {
+            ObjectSet tmp = query.next();
+            IMObjectReference ref = tmp.getReference(CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+            if (customer.getObjectReference().equals(ref)) {
+                set = tmp;
+                break;
+            }
+        }
+        assertNotNull(set);
+
+        BigDecimal balance = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
+        BigDecimal overdue = set.getBigDecimal(CustomerBalanceSummaryQuery.OVERDUE_BALANCE);
+        BigDecimal credit = set.getBigDecimal(CustomerBalanceSummaryQuery.CREDIT_BALANCE);
+        Date invoiceDate = set.getDate(CustomerBalanceSummaryQuery.LAST_INVOICE_DATE);
+        BigDecimal invoiceAmount = set.getBigDecimal(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
+
+        checkEquals(hundred, balance);
+        checkEquals(hundred, overdue);
+        checkEquals(BigDecimal.ZERO, credit);
+        assertEquals(startTime, invoiceDate);
+        checkEquals(hundred, invoiceAmount);
+    }
+
+    /**
      * Checks the no. of summaries for a query.
      *
      * @param expected the expected count
@@ -486,7 +528,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      * @return a list of customers with overdue balances
      */
     private List<IMObjectReference> getCustomersWithOverdueBalances(Date date, int from, int to) {
-        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
+        List<IMObjectReference> result = new ArrayList<>();
         CustomerAccountRules rules = getRules();
         CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(date, from, to, null, getArchetypeService(),
                                                                             getLookupService(), rules);
@@ -506,9 +548,9 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      * @param expected  the expected customers
      */
     private void checkCustomers(CustomerBalanceSummaryQuery query, Set<Party> customers, Party... expected) {
-        Set<IMObjectReference> customerSet = new HashSet<IMObjectReference>();
-        Set<IMObjectReference> expectedSet = new HashSet<IMObjectReference>();
-        Set<IMObjectReference> found = new HashSet<IMObjectReference>();
+        Set<IMObjectReference> customerSet = new HashSet<>();
+        Set<IMObjectReference> expectedSet = new HashSet<>();
+        Set<IMObjectReference> found = new HashSet<>();
         for (Party customer : customers) {
             customerSet.add(customer.getObjectReference());
         }
@@ -534,7 +576,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      * @return the sets
      */
     private Map<IMObjectReference, ObjectSet> getSets(CustomerBalanceSummaryQuery query) {
-        Map<IMObjectReference, ObjectSet> result = new HashMap<IMObjectReference, ObjectSet>();
+        Map<IMObjectReference, ObjectSet> result = new HashMap<>();
         while (query.hasNext()) {
             ObjectSet set = query.next();
             IMObjectReference ref = set.getReference(
