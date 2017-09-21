@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -42,7 +42,7 @@ public abstract class AbstractReportTest extends ArchetypeServiceTest {
      * The document handlers.
      */
     @Autowired
-    private DocumentHandlers handlers;
+    protected DocumentHandlers handlers;
 
     /**
      * Helper to load a document from a file.
