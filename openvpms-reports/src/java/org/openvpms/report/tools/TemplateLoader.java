@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.tools;
@@ -20,36 +20,38 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import org.apache.commons.collections.PredicateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.exolab.castor.xml.MarshalException;
-import org.exolab.castor.xml.ValidationException;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.report.jasper.tools.Template;
-import org.openvpms.report.jasper.tools.Templates;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -133,71 +135,61 @@ public class TemplateLoader {
      * @param path the file path
      * @throws IOException               for any I/O error
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws JAXBException             for any JAXB error
      */
-    public void load(String path) throws IOException, ValidationException,
-                                         MarshalException {
+    public void load(String path) throws IOException, JAXBException {
         File file = new File(path);
-        FileReader reader = new FileReader(file);
-        Templates templates = Templates.unmarshal(reader);
+        JAXBContext context = JAXBContext.newInstance(Templates.class);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        Templates templates = (Templates) unmarshaller.unmarshal(file);
         File dir = file.getParentFile();
-        for (Template template : templates.getTemplate()) {
-            load(template, dir);
+        Map<String, Entity> emailTemplates = new HashMap<>();
+
+        // first pass loads all email templates
+        for (BaseTemplate template : templates.getTemplateOrEmailTemplate()) {
+            if (template instanceof EmailTemplate) {
+
+                Entity entity = loadEmailTemplate((EmailTemplate) template, dir);
+                emailTemplates.put(entity.getName(), entity);
+            }
+        }
+
+        // second pass loads all document templates
+        for (BaseTemplate template : templates.getTemplateOrEmailTemplate()) {
+            if (template instanceof Template) {
+                loadTemplate((Template) template, dir, emailTemplates);
+            }
         }
     }
 
     /**
-     * Load a report template.
+     * Load a document template.
+     * <br/>
+     * NOTE: email templates must have already been loaded prior to this being invoked.
      *
-     * @param template the report template to load
-     * @param dir      the parent directory for resolving relative paths
+     * @param template       the report template to load
+     * @param dir            the parent directory for resolving relative paths
+     * @param emailTemplates the email templates
      * @throws DocumentException         if the document cannot be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void load(Template template, File dir) {
-        Document document = getDocument(template, dir);
-        Entity entity;
-        DocumentAct act;
-        ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT, false, true);
-        query.add(Constraints.eq("name", document.getName()));
-        query.setFirstResult(0);
-        query.setMaxResults(1);
-        List<IMObject> rows = service.get(query).getResults();
-        if (!rows.isEmpty()) {
-            act = (DocumentAct) rows.get(0);
-            ActBean bean = new ActBean(act, service);
-            entity = bean.getNodeParticipant("template");
-            if (entity == null) {
-                entity = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
-                bean.setParticipant(DocumentArchetypes.DOCUMENT_PARTICIPATION, entity);
-            }
-        } else {
-            entity = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
-            act = (DocumentAct) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
-            act.setFileName(document.getName());
-            act.setMimeType(document.getMimeType());
-
-            act.setDescription(DescriptorHelper.getDisplayName(document));
-            ActBean bean = new ActBean(act, service);
-            bean.addNodeParticipation("template", entity);
-        }
-
-        act.setDocument(document.getObjectReference());
-
-        String name = template.getName();
-        if (name == null) {
-            name = document.getName();
-        }
-        entity.setName(name);
-        entity.setDescription(template.getDescription());
-        EntityBean bean = new EntityBean(entity);
-        bean.setValue("archetype", template.getArchetype());
-        bean.setValue("reportType", template.getReportType());
-        if (template.getOrientation() != null) {
-            bean.setValue("orientation", template.getOrientation().value());
-        }
-        service.save(Arrays.asList(document, entity, act));
-        log.info("Loaded '" + template.getName() + "'");
+    private void loadTemplate(Template template, File dir, Map<String, Entity> emailTemplates) {
+        DocLoader loader = new DocLoader(emailTemplates);
+        loader.load(template, dir);
     }
+
+    /**
+     * Loads an email template.
+     *
+     * @param template the template
+     * @param dir      the parent directory for resolving relative paths
+     * @return the template entity
+     */
+    private Entity loadEmailTemplate(EmailTemplate template, File dir) {
+        EmailLoader loader = new EmailLoader(template.getSystem());
+        return loader.load(template, dir);
+    }
+
 
     /**
      * Creates a new command line parser.
@@ -231,19 +223,196 @@ public class TemplateLoader {
     }
 
     /**
-     * Creates a new {@link Document} from a template.
-     *
-     * @param template the template descriptor
-     * @param dir      the directory to locate relative paths
-     * @return a new document containing the serialized template
-     * @throws DocumentException for any error
+     * Loads a template.
      */
-    private Document getDocument(Template template, File dir) {
-        File file = new File(template.getPath());
-        if (!file.isAbsolute()) {
-            file = new File(dir, template.getPath());
+    private abstract class Loader<T extends BaseTemplate> {
+
+        private final String archetype;
+
+        private Document document;
+
+        private Entity entity;
+
+        private DocumentAct act;
+
+        /**
+         * Constructs a {@link Loader}.
+         *
+         * @param archetype the template archetype
+         */
+        public Loader(String archetype) {
+            this.archetype = archetype;
         }
-        return DocumentHelper.create(file, template.getDocType(), template.getMimeType(), handlers);
+
+        /**
+         * Loads a the template.
+         *
+         * @param template the template descriptor
+         * @param dir      the directory to locate relative paths
+         * @return the template entity
+         */
+        public Entity load(T template, File dir) {
+            Entity entity = prepare(template, dir);
+            save();
+            log.info("Loaded '" + entity.getName() + "'");
+            return entity;
+        }
+
+        /**
+         * Prepares the template.
+         *
+         * @param template the template descriptor
+         * @param dir      the directory to locate relative paths
+         * @return the template entity
+         */
+        protected Entity prepare(T template, File dir) {
+            document = getDocument(dir, template.getPath(), template.getDocType(), template.getMimeType());
+            ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT, false, true);
+            query.add(Constraints.eq("name", document.getName()));
+            query.add(Constraints.join("template").add(Constraints.isA("entity", archetype)));
+            query.setFirstResult(0);
+            query.setMaxResults(1);
+            List<IMObject> rows = service.get(query).getResults();
+            if (!rows.isEmpty()) {
+                act = (DocumentAct) rows.get(0);
+                ActBean bean = new ActBean(act, service);
+                entity = bean.getNodeParticipant("template");
+            } else {
+                act = (DocumentAct) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
+            }
+            act.setFileName(document.getName());
+            act.setMimeType(document.getMimeType());
+            act.setDescription(DescriptorHelper.getDisplayName(document, service));
+
+            if (entity == null) {
+                entity = (Entity) service.create(archetype);
+                if (entity == null) {
+                    throw new IllegalStateException("Failed to create " + archetype + ": archetype not found");
+                }
+                ActBean bean = new ActBean(act, service);
+                bean.setNodeParticipant("template", entity);
+            }
+
+            act.setDocument(document.getObjectReference());
+            entity.setName(template.getName());
+            entity.setDescription(template.getDescription());
+            return entity;
+        }
+
+        /**
+         * Saves the document, template, and document act
+         */
+        public void save() {
+            service.save(Arrays.asList(document, entity, act));
+        }
+
+        /**
+         * Creates a new {@link Document} from a template.
+         *
+         * @param dir      the directory to locate relative paths
+         * @param path     the template path
+         * @param docType  the document archetype. May be {@code null}
+         * @param mimeType the mime type
+         * @return a new document containing the serialized template
+         * @throws DocumentException for any error
+         */
+        protected Document getDocument(File dir, String path, String docType, String mimeType) {
+            File file = new File(path);
+            if (!file.isAbsolute()) {
+                file = new File(dir, path);
+            }
+            if (docType == null) {
+                docType = DocumentArchetypes.DEFAULT_DOCUMENT;
+            }
+            return DocumentHelper.create(file, docType, mimeType, handlers);
+        }
     }
 
+    /**
+     * Loads document templates.
+     */
+    private class DocLoader extends Loader<Template> {
+
+        /**
+         * The email templates, keyed on name.
+         */
+        private final Map<String, Entity> emailTemplates;
+
+        /**
+         * Constructs a {@link DocLoader}.
+         *
+         * @param emailTemplates the email templates, keyed on name
+         */
+        public DocLoader(Map<String, Entity> emailTemplates) {
+            super(DocumentArchetypes.DOCUMENT_TEMPLATE);
+            this.emailTemplates = emailTemplates;
+        }
+
+        /**
+         * Prepares the template.
+         *
+         * @param template the template descriptor
+         * @param dir      the directory to locate relative paths
+         * @return the template entity
+         */
+        @Override
+        protected Entity prepare(Template template, File dir) {
+            Entity entity = super.prepare(template, dir);
+            IMObjectBean bean = new IMObjectBean(entity, service);
+            bean.setValue("archetype", template.getArchetype());
+            bean.setValue("reportType", template.getReportType());
+            if (template.getOrientation() != null) {
+                bean.setValue("orientation", template.getOrientation().value());
+            }
+            Template.EmailTemplate email = template.getEmailTemplate();
+            if (email != null) {
+                Entity emailTemplate = emailTemplates.get(email.getName());
+                if (emailTemplate == null) {
+                    throw new IllegalStateException("Template '" + template.getName()
+                                                    + "' references non-existent email template: " + email.getName());
+                }
+                EntityLink link = (EntityLink) bean.getValue("email", PredicateUtils.truePredicate());
+                // hack to return the first value of collection
+                if (link == null) {
+                    bean.addNodeTarget("email", emailTemplate);
+                } else {
+                    link.setTarget(emailTemplate.getObjectReference());
+                }
+            }
+            return entity;
+        }
+    }
+
+    /**
+     * Loads email templates.
+     */
+    private class EmailLoader extends Loader<EmailTemplate> {
+
+        /**
+         * Constructs a {@link EmailLoader}.
+         *
+         * @param useSystem if {@code true} use <em>entity.documentTemplateEmailSystem</em>,
+         *                  otherwise use <em>entity.documentTemplateEmailUser</em>
+         */
+        public EmailLoader(boolean useSystem) {
+            super(useSystem ? DocumentArchetypes.SYSTEM_EMAIL_TEMPLATE : DocumentArchetypes.USER_EMAIL_TEMPLATE);
+        }
+
+        /**
+         * Prepares the template.
+         *
+         * @param template the template descriptor
+         * @param dir      the directory to locate relative paths
+         * @return the template entity
+         */
+        @Override
+        protected Entity prepare(EmailTemplate template, File dir) {
+            Entity entity = super.prepare(template, dir);
+            IMObjectBean bean = new IMObjectBean(entity, service);
+            bean.setValue("subject", template.getSubject());
+            bean.setValue("subjectType", template.getSubjectType());
+            bean.setValue("contentType", "DOCUMENT");
+            return entity;
+        }
+    }
 }

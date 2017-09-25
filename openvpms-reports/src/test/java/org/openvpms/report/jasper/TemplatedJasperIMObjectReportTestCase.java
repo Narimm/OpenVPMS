@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -70,7 +70,7 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
 
     /**
      * Tests the {@link TemplatedJasperIMObjectReport#generate(Iterable, Map, Map, String)} method.
-     * <p/>
+     * <p>
      * This verifies that a parameter may be passed and accessed using the {@link EvaluateFunction#EVALUATE(String)}
      * method.
      *
@@ -258,11 +258,8 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
         }
         ActBean bean = new ActBean(act);
         Document document = getDocument(path, "text/xml");
-        Entity template = bean.getNodeParticipant("template");
-        if (template == null) {
-            template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
-            bean.addNodeParticipation("template", template);
-        }
+        Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        bean.setNodeParticipant("template", template);
         template.setName(document.getName());
         IMObjectBean templateBean = new IMObjectBean(template);
         templateBean.setValue("archetype", type);
