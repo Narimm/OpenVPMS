@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -189,8 +189,7 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return {@code true} if the query should be run automaticaly;
-     * otherwise {@code false}
+     * @return {@code true} if the query should be run automatically; otherwise {@code false}
      */
     boolean isAuto();
 
