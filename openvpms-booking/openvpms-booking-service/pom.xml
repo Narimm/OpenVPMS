@@ -37,6 +37,14 @@
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-smartflow</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <!-- TODO 1 - Azure Service Bus pulls in JAX-RS 1.0 jars, which conflict with JAX-RS 2.0      -->
+                <!-- TODO 2 - move the classes from openvpms-smartflow into another module that can be shared -->
+                <exclusion>
+                    <groupId>com.microsoft.azure</groupId>
+                    <artifactId>azure-servicebus</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>

@@ -164,6 +164,12 @@
             </includes>
         </fileSet>
 
+        <!-- plugins -->
+        <fileSet>
+            <directory>${basedir}/target/plugins</directory>
+            <outputDirectory>plugins</outputDirectory>
+        </fileSet>
+
         <!-- license -->
         <fileSet>
             <directory>${basedir}/src/doc</directory>
