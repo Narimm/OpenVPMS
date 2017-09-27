@@ -238,6 +238,12 @@
                     </httpConnector>
                     <stopPort>9091</stopPort>
                     <stopKey>stop</stopKey>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>catalina.base</name>
+                            <value>${project.build.directory}/tmp</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
                 <dependencies>
                     <dependency>

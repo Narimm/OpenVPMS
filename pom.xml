@@ -641,6 +641,7 @@
         <module>openvpms-web</module>
         <module>openvpms-etl</module>
         <module>openvpms-release</module>
+        <module>openvpms-domain-services</module>
     </modules>
 
     <repositories>

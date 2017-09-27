@@ -17,37 +17,58 @@
 package org.openvpms.plugin.service.internal.archetype;
 
 import org.openvpms.archetype.rules.practice.PracticeService;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.DelegatingArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.security.RunAs;
 import org.openvpms.plugin.service.archetype.PluginArchetypeService;
 
 import java.util.Collection;
 
 /**
- * .
+ * Default implementation of the {@link PluginArchetypeService}.
  *
  * @author Tim Anderson
  */
 public class PluginArchetypeServiceImpl implements PluginArchetypeService {
 
+    /**
+     * The archetype service.
+     */
     private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
+     * The practice service.
+     */
     private final PracticeService practiceService;
 
+    /**
+     * Archetype service that handles setting up a user context for save operations.
+     */
     private final IArchetypeService writable;
 
-    public PluginArchetypeServiceImpl(IArchetypeRuleService service, PracticeService practiceService) {
+    /**
+     * Constructs a {@link PluginArchetypeServiceImpl}.
+     *
+     * @param service         the archetype service
+     * @param lookups         the lookup service
+     * @param practiceService the practice service
+     */
+    public PluginArchetypeServiceImpl(IArchetypeRuleService service, ILookupService lookups,
+                                      PracticeService practiceService) {
         this.service = service;
+        this.lookups = lookups;
         this.practiceService = practiceService;
         writable = new DelegatingArchetypeService(service) {
             @Override
@@ -81,29 +102,7 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
      */
     @Override
     public IMObjectBean getBean(IMObject object) {
-        return new IMObjectBean(object, writable);
-    }
-
-    /**
-     * Returns a bean for an act.
-     *
-     * @param object the object
-     * @return the bean
-     */
-    @Override
-    public ActBean getBean(Act object) {
-        return new ActBean(object, writable);
-    }
-
-    /**
-     * Returns a bean for an entity.
-     *
-     * @param object the object
-     * @return the bean
-     */
-    @Override
-    public EntityBean getBean(Entity object) {
-        return new EntityBean(object, writable);
+        return new IMObjectBean(object, writable, lookups);
     }
 
     /**

@@ -30,7 +30,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Associates an alert type with an optional alert act.
- * <p/>
+ * <p>
  * Implements {@code Comparable} to order alerts on priority.
  *
  * @author Tim Anderson
@@ -49,19 +49,13 @@ public class Alert implements Comparable<Alert> {
     public class Priority implements Comparable<Priority> {
 
         private final String code;
+
         private String displayName;
 
         private String name;
 
         public Priority(String code) {
             this.code = code;
-        }
-
-        String getDisplayName() {
-            if (displayName == null) {
-                displayName = getBean().getDisplayName("priority");
-            }
-            return displayName;
         }
 
         public String getName() {
@@ -77,7 +71,6 @@ public class Alert implements Comparable<Alert> {
             return Rank.valueOf(code);
         }
 
-
         /**
          * Compares this object with the specified object for order.  Returns a
          * negative integer, zero, or a positive integer as this object is less
@@ -90,6 +83,13 @@ public class Alert implements Comparable<Alert> {
         @Override
         public int compareTo(Priority o) {
             return getRank().compareTo(o.getRank());
+        }
+
+        String getDisplayName() {
+            if (displayName == null) {
+                displayName = getBean().getDisplayName("priority");
+            }
+            return displayName;
         }
     }
 
@@ -141,6 +141,23 @@ public class Alert implements Comparable<Alert> {
     public Alert(IMObject alertType, Act alert) {
         this.alertType = alertType;
         this.alert = alert;
+    }
+
+    /**
+     * Creates an alert from an act.
+     *
+     * @param act the act. Must be an <em>act.patientAlert</em> or <em>act.customerAlert</em>
+     * @return the alert, or {@code null} if the act is of the wrong type or the alert type cannot be determined
+     */
+    public static Alert create(Act act) {
+        ActBean bean = new ActBean(act);
+        IMObject alertType = null;
+        if (bean.isA(CustomerArchetypes.ALERT)) {
+            alertType = bean.getLookup("alertType");
+        } else if (bean.isA(PatientArchetypes.ALERT)) {
+            alertType = bean.getNodeParticipant("alertType");
+        }
+        return (alertType != null) ? new Alert(alertType, act) : null;
     }
 
     /**
@@ -217,9 +234,7 @@ public class Alert implements Comparable<Alert> {
             }
         }
         return priorityCode;
-    }
-
-    /**
+    }    /**
      * Compares this object with the specified object for order.  Returns a
      * negative integer, zero, or a positive integer as this object is less
      * than, equal to, or greater than the specified object.
@@ -246,23 +261,6 @@ public class Alert implements Comparable<Alert> {
     }
 
     /**
-     * Creates an alert from an act.
-     *
-     * @param act the act. Must be an <em>act.patientAlert</em> or <em>act.customerAlert</em>
-     * @return the alert, or {@code null} if the act is of the wrong type or the alert type cannot be determined
-     */
-    public static Alert create(Act act) {
-        ActBean bean = new ActBean(act);
-        IMObject alertType = null;
-        if (bean.isA(CustomerArchetypes.ALERT)) {
-            alertType = ServiceHelper.getLookupService().getLookup(act, "alertType");
-        } else if (bean.isA(PatientArchetypes.ALERT)) {
-            alertType = bean.getNodeParticipant("alertType");
-        }
-        return (alertType != null) ? new Alert(alertType, act) : null;
-    }
-
-    /**
      * Wraps the alert type in a bean.
      *
      * @return the bean
@@ -273,5 +271,7 @@ public class Alert implements Comparable<Alert> {
         }
         return bean;
     }
+
+
 
 }

@@ -30,12 +30,17 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -69,6 +74,11 @@ public class IMObjectBean {
     private IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private ILookupService lookups;
+
+    /**
      * Used to convert node values to a particular type.
      */
     private NodePropertySet properties;
@@ -91,6 +101,19 @@ public class IMObjectBean {
      */
     public IMObjectBean(IMObject object, IArchetypeService service) {
         this.service = service;
+        this.properties = new NodePropertySet(object);
+    }
+
+    /**
+     * Constructs an {@link IMObjectBean}.
+     *
+     * @param object  the object
+     * @param service the archetype service. May be {@code null}
+     * @param lookups the lookup service. May be {@code null}
+     */
+    public IMObjectBean(IMObject object, IArchetypeService service, ILookupService lookups) {
+        this.service = service;
+        this.lookups = lookups;
         this.properties = new NodePropertySet(object);
     }
 
@@ -379,7 +402,7 @@ public class IMObjectBean {
 
     /**
      * Returns the object at the specified node.
-     * <p/>
+     * <p>
      * If the named object is an {@link IMObjectReference}, it will be
      * resolved.
      *
@@ -417,6 +440,40 @@ public class IMObjectBean {
     public List<IMObject> getValues(String name) {
         NodeDescriptor node = getNode(name);
         return node.getChildren(getObject());
+    }
+
+    /**
+     * Returns an active lookup based on the value of a node.
+     *
+     * @param name the node name
+     * @return the value. May be {@code null}
+     * @throws IMObjectBeanException if the node doesn't exist
+     */
+    public Lookup getLookup(String name) {
+        return getLookup(name, true);
+    }
+
+    /**
+     * Returns a lookup based on the value of a node
+     *
+     * @param name   the node name
+     * @param active if {@code true}, only return the lookup if it is active
+     * @return the value. May be {@code null}
+     * @throws IMObjectBeanException if the node doesn't exist
+     */
+    public Lookup getLookup(String name, boolean active) {
+        NodeDescriptor node = getNode(name);
+        Lookup result = null;
+        IMObject object = getObject();
+        Object value = node.getValue(object);
+        if (value != null) {
+            LookupAssertion assertion = LookupAssertionFactory.create(node, service, getLookups());
+            Lookup lookup = assertion.getLookup(object, value.toString());
+            if (lookup != null && (!active || lookup.isActive())) {
+                result = lookup;
+            }
+        }
+        return result;
     }
 
     /**
@@ -1612,7 +1669,7 @@ public class IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p/>
+     * <p>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -1629,7 +1686,7 @@ public class IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p/>
+     * <p>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -1645,7 +1702,7 @@ public class IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p/>
+     * <p>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -1662,7 +1719,7 @@ public class IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p/>
+     * <p>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -1721,7 +1778,7 @@ public class IMObjectBean {
 
     /**
      * Saves the object.
-     * <p/>
+     * <p>
      * Any derived nodes will have their values derived prior to the object
      * being saved.
      *
@@ -1781,9 +1838,23 @@ public class IMObjectBean {
      */
     protected IArchetypeService getArchetypeService() {
         if (service == null) {
+            // TODO - this should not be supported. IArchetypeService should always be supplied at construction.
             service = ArchetypeServiceHelper.getArchetypeService();
         }
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookups() {
+        if (lookups == null) {
+            // TODO - this should not be supported. ILookupService should always be supplied at construction.
+            lookups = LookupServiceHelper.getLookupService();
+        }
+        return lookups;
     }
 
     /**
@@ -1936,7 +2007,7 @@ public class IMObjectBean {
 
     /**
      * Resolves references.
-     * <p/>
+     * <p>
      * If an object cannot be resolved, or doesn't match the active criteria, it is ignored.
      *
      * @param refs   the references to resolve
@@ -1962,9 +2033,9 @@ public class IMObjectBean {
 
     /**
      * Returns the source or target from the first relationship matching the specified criteria.
-     * <p/>
+     * <p>
      * If active is {@code true} the object must be active in order to be returned.
-     * <p/>
+     * <p>
      * If active is {@code false}, then an active object will be returned in preference to an inactive one.
      *
      * @param relationships the relationships
