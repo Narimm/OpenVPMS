@@ -23,6 +23,8 @@
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()" readOnly="true"/>
+        <node name="claimId" displayName="Claim Number" path="/identities" type="java.util.HashSet" minCardinality="0"
+              maxCardinality="1" filter="actIdentity.insuranceClaim"/>
         <node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
@@ -37,8 +39,9 @@
               readOnly="true">
             <assertion name="lookup.local">
                 <propertyList name="entries">
-                    <property name="IN_PROGRESS" value="In Progress"/>
+                    <property name="PENDING" value="Pending"/>
                     <property name="POSTED" value="Finalised"/>
+                    <property name="SUBMITTED" value="Submitted"/>
                     <property name="SETTLED" value="Settled"/>
                     <property name="DECLINED" value="Declined"/>
                     <property name="CANCELLED" value="Cancelled"/>

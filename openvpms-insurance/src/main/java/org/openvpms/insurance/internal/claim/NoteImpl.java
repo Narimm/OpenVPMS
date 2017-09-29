@@ -14,44 +14,75 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.insurance.claim;
+package org.openvpms.insurance.internal.claim;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.insurance.claim.Note;
 
 import java.util.Date;
 
 /**
- * A note from the animal's clinical history.
+ * Default implementation of the {@link Note} interface.
  *
  * @author Tim Anderson
  */
-public interface Note {
+public class NoteImpl implements Note {
+
+    /**
+     * The note.
+     */
+    private final ActBean note;
+
+    /**
+     * Constructs a {@link NoteImpl}.
+     *
+     * @param note    the note
+     * @param service the archetype service.
+     */
+    public NoteImpl(Act note, IArchetypeService service) {
+        this.note = new ActBean(note, service);
+    }
 
     /**
      * Returns the date/time the note was entered.
      *
      * @return the date/time
      */
-    Date getDate();
+    @Override
+    public Date getDate() {
+        return note.getAct().getActivityStartTime();
+    }
 
     /**
      * Returns the author of the note.
      *
      * @return the author of the note. May be {@code null}
      */
-    User getAuthor();
+    @Override
+    public User getAuthor() {
+        return (User) note.getNodeParticipant("author");
+    }
 
     /**
      * Returns the clinician associated with the note.
      *
      * @return the clinician. May be {@code null}
      */
-    User getClinician();
+    @Override
+    public User getClinician() {
+        return (User) note.getNodeParticipant("clinician");
+    }
 
     /**
      * Returns the text of the note.
      *
      * @return the text of the note
      */
-    String getText();
+    @Override
+    public String getText() {
+        return note.getString("note");
+    }
 }

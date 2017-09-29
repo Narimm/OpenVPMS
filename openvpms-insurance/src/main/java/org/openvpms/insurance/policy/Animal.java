@@ -28,7 +28,7 @@ public interface Animal {
     enum Sex {
         MALE,
         FEMALE,
-        UNKNOWN
+        UNSPECIFIED
     }
 
     /**
@@ -48,21 +48,21 @@ public interface Animal {
     /**
      * Returns the animal's date of birth.
      *
-     * @return the animal's date of birth
+     * @return the animal's date of birth. May be {@code null}
      */
     Date getDateOfBirth();
 
     /**
      * Returns the species name.
      *
-     * @return the species name
+     * @return the species name. May be {@code null}
      */
     String getSpecies();
 
     /**
      * Returns the breed name.
      *
-     * @return the breed name
+     * @return the breed name. May be {@code null}
      */
     String getBreed();
 

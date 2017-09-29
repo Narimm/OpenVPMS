@@ -42,7 +42,7 @@ public interface PolicyHolder {
     /**
      * Returns the policy holder's address.
      *
-     * @return the policy holder's address
+     * @return the policy holder's address. May be {@code null}
      */
     Contact getAddress();
 

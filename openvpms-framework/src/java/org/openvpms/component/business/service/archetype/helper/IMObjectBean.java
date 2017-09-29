@@ -538,6 +538,24 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the first value of a collection node that matches the supplied predicate.
+     *
+     * @param name      the node name
+     * @param predicate the predicate
+     * @param type      the expected object type
+     * @return the first object matching the predicate, or {@code null} if none is found
+     * @throws IMObjectBeanException if the node doesn't exist
+     */
+    public <T extends IMObject> T getValue(String name, Predicate predicate, Class<T> type) {
+        for (T object : getValues(name, type)) {
+            if (predicate.evaluate(object)) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
      * specified relationship node.
      *

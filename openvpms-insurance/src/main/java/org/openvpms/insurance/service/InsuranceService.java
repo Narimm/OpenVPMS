@@ -16,18 +16,37 @@
 
 package org.openvpms.insurance.service;
 
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.insurance.claim.Claim;
 
 /**
- * .
+ * The service for managing insurance claims.
  *
  * @author Tim Anderson
  */
 public interface InsuranceService {
 
+    /**
+     * Submit a claim.
+     * <p>
+     * The claim status must be {@link Claim.Status#POSTED}. On successful submission, it will be updated to
+     * {@link Claim.Status#SUBMITTED}.
+     *
+     * @param claim the claim to submit
+     */
     void submit(Claim claim);
 
-    void submitAttachment(Claim claim);
+    /**
+     * Submit an attachment to an existing claim.
+     *
+     * @param claim the claim
+     */
+    void submitAttachment(Claim claim, Document attachment);
 
+    /**
+     * Cancels a claim.
+     *
+     * @param claim the claim
+     */
     void cancel(Claim claim);
 }

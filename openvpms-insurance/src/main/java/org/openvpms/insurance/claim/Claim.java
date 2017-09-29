@@ -28,7 +28,12 @@ import java.util.List;
 public interface Claim {
 
     enum Status {
-        SUBMITTED
+        PENDING,
+        POSTED,
+        SUBMITTED,
+        SETTLED,
+        DECLINED,
+        CANCELLED
     }
 
     /**
@@ -37,6 +42,20 @@ public interface Claim {
      * @return the claim identifier
      */
     long getId();
+
+    /**
+     * Returns the claim identifier, issued by the insurer.
+     *
+     * @return the claim identifier, or {@code null} if none has been issued
+     */
+    String getClaimId();
+
+    /**
+     * Sets the cleaim identifier, issued by the insurer.
+     *
+     * @param id the claim identifier
+     */
+    void setClaimId(String id);
 
     /**
      * Returns the policy that a claim is being made on.
@@ -51,6 +70,13 @@ public interface Claim {
      * @return the claim status
      */
     Status getStatus();
+
+    /**
+     * Sets the claim status.
+     *
+     * @param status the claim status
+     */
+    void setStatus(Status status);
 
     /**
      * Returns the conditions being claimed.

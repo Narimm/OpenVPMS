@@ -28,11 +28,11 @@ import java.util.Date;
 public interface Policy {
 
     /**
-     * Returns the policy number, issued by the insurer.
+     * Returns the policy identifier, issued by the insurer.
      *
-     * @return the policy number
+     * @return the policy identifier
      */
-    String getPolicyNumber();
+    String getPolicyId();
 
     /**
      * Returns the date when the policy expires.
