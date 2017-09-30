@@ -77,6 +77,33 @@ public class PatientTestHelper {
     }
 
     /**
+     * Creates a new patient.
+     *
+     * @param name        the patient name
+     * @param species     the patient species code
+     * @param breed       the patient breed code
+     * @param sex         the patient sex
+     * @param dateOfBirth the patient's date of birth. May be {@code null}
+     * @param microchip   the microchip. May be {@code nul}
+     * @param colour      the colour. May be {@code null}
+     * @param owner       the patient owner
+     * @return a new patient
+     */
+    public static Party createPatient(String name, String species, String breed, String sex, Date dateOfBirth,
+                                      String microchip, String colour, Party owner) {
+        Party patient = createPatient(name, species, breed, dateOfBirth, owner);
+        IMObjectBean bean = new IMObjectBean(patient);
+        bean.setValue("sex", sex);
+        if (microchip != null) {
+            patient.addIdentity(TestHelper.createEntityIdentity(PatientArchetypes.MICROCHIP, microchip));
+        }
+        bean.setValue("colour", colour);
+        bean.save();
+        return patient;
+    }
+
+
+    /**
      * Helper to create an <em>act.patientMedication</em>.
      *
      * @param patient the patient
@@ -136,7 +163,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -149,7 +176,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -163,7 +190,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -189,7 +216,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p/>
+     * <p>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -203,7 +230,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p/>
+     * <p>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time

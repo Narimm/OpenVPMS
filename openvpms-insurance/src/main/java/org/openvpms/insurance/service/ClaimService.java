@@ -14,28 +14,26 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.insurance.internal;
+package org.openvpms.insurance.service;
+
+import org.openvpms.insurance.claim.Claim;
 
 /**
- * Insurance archetype.
+ * Service for querying claims in OpenVPMS.
+ * <p>
+ * This is used by {@link InsuranceService} implementations to locate and update the status of claims issued by
+ * OpenVPMS.
  *
  * @author Tim Anderson
  */
-public class InsuranceArchetypes {
+public interface ClaimService {
 
     /**
-     * The insurance policy archetype.
+     * Returns a claim.
+     *
+     * @param archetype the claim identity archetype
+     * @param claimId   the claim identifier
+     * @return the corresponding claim, or {@code null} if none is found
      */
-    public static final String POLICY = "act.patientInsurancePolicy";
-
-    /**
-     * The insurance policy type archetype.
-     */
-    public static final String POLICY_TYPE = "entity.insurancePolicyType";
-
-    /**
-     * The insurance claim archetype.
-     */
-    public static final String CLAIM = "act.patientInsuranceClaim";
-
+    Claim getClaim(String archetype, String claimId);
 }

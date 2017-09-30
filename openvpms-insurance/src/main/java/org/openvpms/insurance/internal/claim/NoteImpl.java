@@ -16,13 +16,19 @@
 
 package org.openvpms.insurance.internal.claim;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.ActComparator;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.insurance.claim.Note;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Default implementation of the {@link Note} interface.
@@ -37,13 +43,28 @@ public class NoteImpl implements Note {
     private final ActBean note;
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Addenda.
+     */
+    private List<Note> addenda;
+
+    /**
      * Constructs a {@link NoteImpl}.
      *
-     * @param note    the note
+     * @param note    the note or addenda
      * @param service the archetype service.
      */
     public NoteImpl(Act note, IArchetypeService service) {
         this.note = new ActBean(note, service);
+        this.service = service;
+        if (TypeHelper.isA(note, PatientArchetypes.CLINICAL_ADDENDUM)) {
+            // addendum acts can't have addenda
+            addenda = Collections.emptyList();
+        }
     }
 
     /**
@@ -84,5 +105,33 @@ public class NoteImpl implements Note {
     @Override
     public String getText() {
         return note.getString("note");
+    }
+
+    /**
+     * Returns additional notes associated with this note.
+     *
+     * @return additional notes, if any
+     */
+    @Override
+    public List<Note> getNotes() {
+        if (addenda == null) {
+            addenda = collectAddenda();
+        }
+        return addenda;
+    }
+
+    /**
+     * Collects addenda associated with the note.
+     *
+     * @return the addenda
+     */
+    protected List<Note> collectAddenda() {
+        List<Note> result = new ArrayList<>();
+        List<Act> acts = note.getNodeActs("addenda");
+        Collections.sort(acts, ActComparator.ascending());
+        for (Act act : acts) {
+            result.add(new NoteImpl(act, service));
+        }
+        return result;
     }
 }

@@ -16,16 +16,22 @@
 
 package org.openvpms.insurance;
 
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.insurance.internal.InsuranceArchetypes;
 
 import java.util.Date;
+
+import static org.openvpms.archetype.test.TestHelper.create;
+import static org.openvpms.archetype.test.TestHelper.randomName;
+import static org.openvpms.archetype.test.TestHelper.save;
 
 /**
  * Helper for insurance tests.
@@ -35,17 +41,44 @@ import java.util.Date;
 public class InsuranceTestHelper {
 
     /**
+     * Creates and saves a new insurer.
+     *
+     * @param name the insurer name
+     * @return a new insurer
+     */
+    public static Party createInsurer(String name) {
+        Party result = (Party) create(SupplierArchetypes.INSURER);
+        result.setName(name);
+        save(result);
+        return result;
+    }
+
+    /**
+     * Creates and saves a new policy type.
+     *
+     * @param insurer the insurer that issues the policy
+     * @return the policy type
+     */
+    public static Entity createPolicyType(Party insurer) {
+        Entity result = (Entity) create(InsuranceArchetypes.POLICY_TYPE);
+        result.setName(randomName("ZPolicyType-"));
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.addNodeTarget("insurer", insurer);
+        bean.save();
+        return result;
+    }
+
+    /**
      * Creates a new policy starting today, and expiring in 12 months.
      *
-     * @param customer  the customer
-     * @param patient   the patient
-     * @param insurer   the insurer
-     * @param type      the policy type
-     * @param clinician the clinician
+     * @param customer the customer
+     * @param patient  the patient
+     * @param insurer  the insurer
+     * @param type     the policy type
      * @return a new policy
      */
-    public static Act createPolicy(Party customer, Party patient, Party insurer, Party type, User clinician) {
-        Act policy = (Act) TestHelper.create(InsuranceArchetypes.POLICY);
+    public static Act createPolicy(Party customer, Party patient, Party insurer, Entity type) {
+        Act policy = (Act) create(InsuranceArchetypes.POLICY);
         ActBean bean = new ActBean(policy);
         Date from = new Date();
         Date to = DateRules.getDate(from, 1, DateUnits.YEARS);
@@ -55,7 +88,6 @@ public class InsuranceTestHelper {
         bean.setNodeParticipant("patient", patient);
         bean.setNodeParticipant("insurer", insurer);
         bean.setNodeParticipant("type", type);
-        bean.setNodeParticipant("clinician", clinician);
         return policy;
     }
 
@@ -67,11 +99,13 @@ public class InsuranceTestHelper {
      * @return a new claim
      */
     public static Act createClaim(Act policy, User clinician) {
-        Act claim = (Act) TestHelper.create(InsuranceArchetypes.CLAIM);
+        Act claim = (Act) create(InsuranceArchetypes.CLAIM);
         ActBean bean = new ActBean(claim);
         ActBean policyBean = new ActBean(policy);
         bean.setNodeParticipant("patient", policyBean.getNodeParticipantRef("patient"));
+        bean.setNodeParticipant("author", clinician);
         bean.setNodeParticipant("clinician", clinician);
+        bean.addNodeRelationship("policy", policy);
         return claim;
     }
 }

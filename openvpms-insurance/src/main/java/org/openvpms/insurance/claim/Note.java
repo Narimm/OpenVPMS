@@ -19,6 +19,7 @@ package org.openvpms.insurance.claim;
 import org.openvpms.component.business.domain.im.security.User;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * A note from the animal's clinical history.
@@ -54,4 +55,11 @@ public interface Note {
      * @return the text of the note
      */
     String getText();
+
+    /**
+     * Returns additional notes associated with this note.
+     *
+     * @return additional notes, if any
+     */
+    List<Note> getNotes();
 }

@@ -638,10 +638,10 @@
         <module>openvpms-db</module>
         <module>openvpms-plugins</module>
         <module>openvpms-booking</module>
+        <module>openvpms-insurance</module>
         <module>openvpms-web</module>
         <module>openvpms-etl</module>
         <module>openvpms-release</module>
-        <module>openvpms-domain-services</module>
     </modules>
 
     <repositories>

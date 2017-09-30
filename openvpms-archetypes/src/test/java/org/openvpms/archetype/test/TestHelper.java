@@ -27,6 +27,8 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -171,7 +173,19 @@ public class TestHelper {
      * @return a new customer
      */
     public static Party createCustomer(Contact... contacts) {
-        Party customer = createCustomer("J", "Zoo-" + nextId(), false, false);
+        return createCustomer("J", randomName("Zoo-"), contacts);
+    }
+
+    /**
+     * Creates and saves a new customer, with the specified contacts.
+     *
+     * @param firstName the customer's first name
+     * @param lastName  the customer's surname
+     * @param contacts  the contacts
+     * @return a new customer
+     */
+    public static Party createCustomer(String firstName, String lastName, Contact... contacts) {
+        Party customer = createCustomer(firstName, lastName, false, false);
         for (Contact contact : contacts) {
             customer.addContact(contact);
         }
@@ -186,7 +200,7 @@ public class TestHelper {
      * @return a new customer
      */
     public static Party createCustomer(boolean save) {
-        return createCustomer("J", "Zoo-" + nextId(), save);
+        return createCustomer("J", randomName("Zoo-"), save);
     }
 
     /**
@@ -336,7 +350,7 @@ public class TestHelper {
      * @return a new patient
      */
     public static Party createPatient(boolean save) {
-        return createPatient("XPatient-" + nextId(), save);
+        return createPatient(randomName("XPatient-"), save);
     }
 
     /**
@@ -376,7 +390,7 @@ public class TestHelper {
      * @return a new patient
      */
     public static Party createPatient(Party owner, boolean save) {
-        return createPatient("XPatient-" + nextId(), owner, save);
+        return createPatient(randomName("XPatient-"), owner, save);
     }
 
     /**
@@ -404,7 +418,7 @@ public class TestHelper {
      * @return a new user
      */
     public static User createUser() {
-        return createUser("zuser" + nextId(), true);
+        return createUser(randomName("zuser"), true);
     }
 
     /**
@@ -442,7 +456,7 @@ public class TestHelper {
      * @return a new user
      */
     public static User createClinician(boolean save) {
-        String username = "zuser" + nextId();
+        String username = randomName("zuser");
         User user = createUser(username, false);
         user.addClassification(getLookup("lookup.userType", "CLINICIAN"));
         if (save) {
@@ -496,7 +510,7 @@ public class TestHelper {
     public static Product createProduct(String shortName, String species, boolean save) {
         Product product = (Product) create(shortName);
         EntityBean bean = new EntityBean(product);
-        String name = "XProduct-" + ((species != null) ? species : "") + nextId();
+        String name = randomName("XProduct-" + ((species != null) ? species : ""));
         bean.setValue("name", name);
         if (species != null) {
             Lookup classification
@@ -824,6 +838,32 @@ public class TestHelper {
     }
 
     /**
+     * Creates a new act identity.
+     *
+     * @param archetype the identity archetype
+     * @param id        the identity
+     * @return a new act identity
+     */
+    public static ActIdentity createActIdentity(String archetype, String id) {
+        ActIdentity identity = (ActIdentity) create(archetype);
+        identity.setIdentity(id);
+        return identity;
+    }
+
+    /**
+     * Creates a new entity identity.
+     *
+     * @param archetype the identity archetype
+     * @param id        the identity
+     * @return a new entity identity
+     */
+    public static EntityIdentity createEntityIdentity(String archetype, String id) {
+        EntityIdentity identity = (EntityIdentity) create(archetype);
+        identity.setIdentity(id);
+        return identity;
+    }
+
+    /**
      * Helper to create a date-time given a string of the form
      * <em>yyyy-mm-dd hh:mm:ss</em>.
      *
@@ -858,8 +898,14 @@ public class TestHelper {
         }
     }
 
-    private static int nextId() {
-        return Math.abs(random.nextInt());
+    /**
+     * Creates a name starting with the specified prefix, with a random numerical suffix.
+     *
+     * @param prefix the prefix
+     * @return a random name
+     */
+    public static String randomName(String prefix) {
+        return prefix + Math.abs(random.nextInt());
     }
 
 }

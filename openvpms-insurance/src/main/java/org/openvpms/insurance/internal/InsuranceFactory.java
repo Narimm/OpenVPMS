@@ -14,20 +14,23 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.insurance.internal.claim;
+package org.openvpms.insurance.internal;
 
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.internal.claim.ClaimImpl;
+import org.openvpms.insurance.internal.policy.PolicyImpl;
+import org.openvpms.insurance.policy.Policy;
 
 /**
- * Factory for insurance {@link Claim} instances, given an <em>act.patientInsuranceClaim</em>.
+ * Factory for insurance {@link Policy} and {@link Claim} instances.
  *
  * @author Tim Anderson
  */
-public class ClaimFactory {
+public class InsuranceFactory {
 
     /**
      * The archetype service.
@@ -45,16 +48,26 @@ public class ClaimFactory {
     private final PatientRules patientRules;
 
     /**
-     * Constructs a {@link ClaimFactory}.
+     * Constructs a {@link InsuranceFactory}.
      *
      * @param service       the archetype service
      * @param customerRules the customer rules
      * @param patientRules  the patient rules
      */
-    public ClaimFactory(IArchetypeService service, CustomerRules customerRules, PatientRules patientRules) {
+    public InsuranceFactory(IArchetypeService service, CustomerRules customerRules, PatientRules patientRules) {
         this.service = service;
         this.customerRules = customerRules;
         this.patientRules = patientRules;
+    }
+
+    /**
+     * Creates a policy, given an <em>act.patientInsurancePolicy</em>.
+     *
+     * @param policy the policy act
+     * @return the corresponding policy
+     */
+    public Policy createPolicy(Act policy) {
+        return new PolicyImpl(policy, service, customerRules, patientRules);
     }
 
     /**
@@ -63,7 +76,7 @@ public class ClaimFactory {
      * @param claim the claim act
      * @return the corresponding claim
      */
-    public Claim create(Act claim) {
+    public Claim createClaim(Act claim) {
         return new ClaimImpl(claim, service, customerRules, patientRules);
     }
 }

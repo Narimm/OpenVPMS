@@ -22,9 +22,11 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -122,16 +124,23 @@ public class ClaimImpl implements Claim {
     }
 
     /**
-     * Sets the cleaim identifier, issued by the insurer.
+     * Sets the claim identifier, issued by the insurer.
+     * <p>
+     * A claim can have a single identifier issued by an insurer. To avoid duplicates, each insurance service must
+     * provide a unique archetype.
      *
-     * @param id the claim identifier
+     * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceClaim</em> prefix.
+     * @param id        the claim identifier
      */
     @Override
-    public void setClaimId(String id) {
+    public void setClaimId(String archetype, String id) {
         ActIdentity identity = getIdentity();
         if (identity == null) {
-            identity = (ActIdentity) service.create("actIdentity.insuranceClaim");
+            identity = (ActIdentity) service.create(archetype);
             claim.addValue("claimId", identity);
+        } else if (!TypeHelper.isA(identity, archetype)) {
+            throw new IllegalArgumentException(
+                    "Argument 'archetype' must be of the same type as the existing identifier");
         }
         identity.setIdentity(id);
         claim.save();
@@ -195,6 +204,22 @@ public class ClaimImpl implements Claim {
             history = collectHistory();
         }
         return history;
+    }
+
+    /**
+     * Adds an attachment to the claim.
+     * <p>
+     * This may be done while the status is one of {@link Status#PENDING PENDING} {@link Status#POSTED POSTED}, or
+     * {@link Status#SUBMITTED SUBMITTED}. For the latter two statuses, it is used to supplement an existing claim.
+     *
+     * @param attachment the attachment
+     */
+    @Override
+    public void addAttachment(Document attachment) {
+        Status status = getStatus();
+        if (status != Status.PENDING && status != Status.POSTED && status != Status.SUBMITTED) {
+            throw new IllegalStateException("Cannot add attachment to claim=" + getId() + " with status=" + status);
+        }
     }
 
     /**

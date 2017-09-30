@@ -247,9 +247,13 @@ public class PartyRules {
 
     /**
      * Returns an address for a party.
-     * @param party the party
-     * @param purpose the contact pursseo
-     * @return
+     * <p/>
+     * If it cannot find the specified purpose, it uses the preferred location contact or
+     * any location contact if there is no preferred.
+     *
+     * @param party   the party
+     * @param purpose the contact purpose
+     * @return the contact, or {@code null} if none is found
      */
     public Contact getAddressContact(Party party, String purpose) {
         return getContact(party, ContactArchetypes.LOCATION, purpose);
@@ -282,7 +286,7 @@ public class PartyRules {
     }
 
     /**
-     * Returns the preferred telephone contact for a party.
+     * Returns the telephone contact for a party.
      * <p>
      * This will return a phone contact with the specified purpose, or any phone contact if there is none.
      *
@@ -291,7 +295,19 @@ public class PartyRules {
      * @return the preferred contact, or {@code null} if there is no corresponding <em>contact.phoneNumber</em> contact
      */
     public Contact getTelephoneContact(Party party, String purpose) {
-        return getContact(party, ContactArchetypes.PHONE, false, ContactArchetypes.FAX_PURPOSE, purpose);
+        return getTelephoneContact(party, false, purpose);
+    }
+
+    /**
+     * Returns the telephone contact for a party.
+     *
+     * @param party   the party. May be {@code null}
+     * @param exact   if {@code true}, the contact must have the specified purpose
+     * @param purpose the contact purpose
+     * @return the preferred contact, or {@code null} if there is no corresponding <em>contact.phoneNumber</em> contact
+     */
+    public Contact getTelephoneContact(Party party, boolean exact, String purpose) {
+        return getContact(party, ContactArchetypes.PHONE, exact, ContactArchetypes.FAX_PURPOSE, purpose);
     }
 
     /**
@@ -340,7 +356,7 @@ public class PartyRules {
      * <em>contact.phoneNumber</em> contact
      */
     public String getMobileTelephone(Party party) {
-        Contact contact = getTelephoneContact(party, ContactArchetypes.MOBILE_PURPOSE);
+        Contact contact = getTelephoneContact(party, true, ContactArchetypes.MOBILE_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
     }
 
@@ -353,7 +369,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWorkTelephone(Party party) {
-        Contact contact = getTelephoneContact(party, ContactArchetypes.WORK_PURPOSE);
+        Contact contact = getTelephoneContact(party, true, ContactArchetypes.WORK_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
     }
 

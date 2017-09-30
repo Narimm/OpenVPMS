@@ -126,7 +126,7 @@ public class PolicyImpl implements Policy {
             }
             policyHolder = new PolicyHolderImpl(customer, customerRules);
         }
-        return null;
+        return policyHolder;
     }
 
     /**
@@ -178,7 +178,7 @@ public class PolicyImpl implements Policy {
      * @return the policy identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return policy.getValue("policy", PredicateUtils.truePredicate(), ActIdentity.class);
+        return policy.getValue("policyId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 
 }

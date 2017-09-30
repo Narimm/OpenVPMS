@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance.claim;
 
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.insurance.policy.Policy;
 
 import java.util.List;
@@ -51,11 +52,15 @@ public interface Claim {
     String getClaimId();
 
     /**
-     * Sets the cleaim identifier, issued by the insurer.
+     * Sets the claim identifier, issued by the insurer.
+     * <p>
+     * A claim can have a single identifier issued by an insurer. To avoid duplicates, each insurance service must
+     * provide a unique archetype.
      *
-     * @param id the claim identifier
+     * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceClaim</em> prefix.
+     * @param id        the claim identifier
      */
-    void setClaimId(String id);
+    void setClaimId(String archetype, String id);
 
     /**
      * Returns the policy that a claim is being made on.
@@ -91,5 +96,17 @@ public interface Claim {
      * @return the clinical history
      */
     List<Note> getClinicalHistory();
+
+    /**
+     * Adds an attachment to the claim.
+     * <p>
+     * This may be done while the status is one of {@link Status#PENDING PENDING} {@link Status#POSTED POSTED}, or
+     * {@link Status#SUBMITTED SUBMITTED}. For the latter two statuses, it is used to supplement an existing claim.
+     * <p>
+     * The caller is responsible for submitting the attachment to the insurer.
+     *
+     * @param attachment the attachment
+     */
+    void addAttachment(Document attachment);
 
 }
