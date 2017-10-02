@@ -329,7 +329,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="7" isBold="true" isItalic="true" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{startTime})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{endTime}==null?"":DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{endTime})]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-13" x="59" y="0" width="8" height="10" uuid="68fe7f06-c4e9-49d1-b2ca-b0af7a7d4f1c">
