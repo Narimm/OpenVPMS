@@ -23,6 +23,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.insurance.claim.Item;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Default implementation of the {@link Item} interface.
@@ -54,6 +55,16 @@ public class ItemImpl implements Item {
     @Override
     public long getId() {
         return item.getObject().getId();
+    }
+
+    /**
+     * Returns the date when the invoice item was charged.
+     *
+     * @return the date
+     */
+    @Override
+    public Date getDate() {
+        return item.getAct().getActivityStartTime();
     }
 
     /**
@@ -103,7 +114,7 @@ public class ItemImpl implements Item {
      */
     @Override
     public BigDecimal getTotal() {
-        return item.getBigDecimal("amount", BigDecimal.ZERO);
+        return item.getBigDecimal("total", BigDecimal.ZERO);
     }
 
     /**

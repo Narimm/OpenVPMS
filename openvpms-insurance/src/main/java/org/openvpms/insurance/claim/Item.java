@@ -19,6 +19,7 @@ package org.openvpms.insurance.claim;
 import org.openvpms.component.business.domain.im.product.Product;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * An invoice item being charged on a claim.
@@ -33,6 +34,13 @@ public interface Item {
      * @return the invoice item identifier
      */
     long getId();
+
+    /**
+     * Returns the date when the invoice item was charged.
+     *
+     * @return the date
+     */
+    Date getDate();
 
     /**
      * Returns the product.

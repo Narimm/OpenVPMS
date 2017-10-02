@@ -28,12 +28,9 @@
             </assertion>
         </node>
         <node displayName="Treatment Start" name="startTime" path="/activityStartTime" type="java.util.Date"
-              minCardinality="1"
-              defaultValue="java.util.Date.new()"/>
+              minCardinality="1"/>
         <node displayName="Treatment End" name="endTime" path="/activityEndTime" type="java.util.Date"
-              minCardinality="0"/>
-        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
-              filter="participation.patient" hidden="true"/>
+              minCardinality="1"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.author" readOnly="true"/>
         <node name="deceased" path="/details/deceased" type="java.lang.String" minCardinality="0">

@@ -39,6 +39,7 @@ import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.openvpms.archetype.test.TestHelper.createActIdentity;
 import static org.openvpms.archetype.test.TestHelper.createEmailContact;
 import static org.openvpms.archetype.test.TestHelper.createLocationContact;
 import static org.openvpms.archetype.test.TestHelper.createPhoneContact;
@@ -79,8 +80,8 @@ public class PolicyImplTestCase extends ArchetypeServiceTest {
                                                         "BLACK", customer);
         Party insurer = InsuranceTestHelper.createInsurer(TestHelper.randomName("ZInsurer-"));
         Entity policyType = InsuranceTestHelper.createPolicyType(insurer);
-        Act act = InsuranceTestHelper.createPolicy(customer, patient, insurer, policyType);
-        act.addIdentity(TestHelper.createActIdentity("actIdentity.insurancePolicy", "123456"));
+        Act act = InsuranceTestHelper.createPolicy(customer, patient, insurer, policyType,
+                                                   createActIdentity("actIdentity.insurancePolicy", "123456"));
 
         Policy policy = new PolicyImpl(act, getArchetypeService(), customerRules, patientRules);
         assertEquals("123456", policy.getPolicyId());

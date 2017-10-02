@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.system.common.query;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -36,26 +37,29 @@ public class NodeSortConstraint extends SortConstraint {
     private static final long serialVersionUID = 1L;
 
     /**
+     * The type alias. May be {@code null}.
+     */
+    private final String alias;
+
+    /**
      * The name of the node.
      */
-    private String nodeName;
+    private final String nodeName;
 
 
     /**
-     * Constructs a new <code>NodeSortConstraint</code> specifying a node name
-     * sorted in ascending order.
+     * Constructs a {@link NodeSortConstraint} specifying a node name sorted in ascending order.
      *
-     * @param nodeName the name of the node to sort on
+     * @param nodeName the name of the node to sort on, optionally prefixed by the type alias
      */
     public NodeSortConstraint(String nodeName) {
         this(nodeName, true);
     }
 
     /**
-     * Construct an instance of this sort constraint specifying a node name
-     * and whether it is ascending or not.
+     * Constructs a {@link NodeSortConstraint} specifying a node name and whether it is ascending or not.
      *
-     * @param nodeName  the name of the node to sort on
+     * @param nodeName the name of the node to sort on, optionally prefixed by the type alias
      * @param ascending whether to sort in ascending or descending order
      */
     public NodeSortConstraint(String nodeName, boolean ascending) {
@@ -63,10 +67,9 @@ public class NodeSortConstraint extends SortConstraint {
     }
 
     /**
-     * Construct an instance of this sort constraint specifying a node name
-     * sorted in ascending order.
+     * Constructs a {@link NodeSortConstraint} constraint specifying a node name sorted in ascending order.
      *
-     * @param alias    the type alias. May be <code>null</code>
+     * @param alias    the type alias
      * @param nodeName the name of the node to sort on
      */
     public NodeSortConstraint(String alias, String nodeName) {
@@ -74,17 +77,40 @@ public class NodeSortConstraint extends SortConstraint {
     }
 
     /**
-     * Construct an instance of this sort constraint specifying a node name
-     * and whether it is ascending or not.
+     * Constructs a {@link NodeSortConstraint} constraint specifying a node name and whether it is ascending or not.
      *
-     * @param alias     the type alias. May be <code>null</code>
+     * @param alias     the type alias
      * @param nodeName  the name of the node to sort on
      * @param ascending whether to sort in ascending or descending order
      */
-    public NodeSortConstraint(String alias, String nodeName,
-                              boolean ascending) {
-        super(alias, ascending);
-        this.nodeName = nodeName;
+    public NodeSortConstraint(String alias, String nodeName, boolean ascending) {
+        super(ascending);
+        if (StringUtils.isEmpty(nodeName)) {
+            throw new ArchetypeQueryException(ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
+        }
+        if (alias == null) {
+            int index = nodeName.indexOf(".");
+            if (index != -1) {
+                this.alias = nodeName.substring(0, index);
+                this.nodeName = nodeName.substring(index + 1);
+            } else {
+                this.alias = null;
+                this.nodeName = nodeName;
+            }
+        } else {
+            this.alias = alias;
+            this.nodeName = nodeName;
+        }
+    }
+
+    /**
+     * Returns the type alias.
+     *
+     * @return the type alias. May be {@code null}
+     */
+    @Override
+    public String getAlias() {
+        return alias;
     }
 
     /**
@@ -94,15 +120,6 @@ public class NodeSortConstraint extends SortConstraint {
      */
     public String getNodeName() {
         return nodeName;
-    }
-
-    /**
-     * Sets the node name.
-     *
-     * @param nodeName the node name
-     */
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
     }
 
     /* (non-Javadoc)

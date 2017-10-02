@@ -274,7 +274,24 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createNote(Date startTime, Party patient, User clinician) {
+        return createNote(startTime, patient, clinician, null);
+    }
+
+    /**
+     * Creates an <em>act.patientClinicalNote</em>.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @param note      the note. May be {@code null}
+     * @return a new act
+     */
+    public static Act createNote(Date startTime, Party patient, User clinician, String note) {
         Act act = createAct(PatientArchetypes.CLINICAL_NOTE, startTime, patient, clinician);
+        if (note != null) {
+            ActBean bean = new ActBean(act);
+            bean.setValue("note", note);
+        }
         save(act);
         return act;
     }
@@ -282,7 +299,8 @@ public class PatientTestHelper {
     /**
      * Adds an <em>act.patientClinicalAddendum</em> to another act.
      *
-     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an <em>act.patientMedication</em>
+     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an
+     *                 <em>act.patientMedication</em>
      * @param addendum the addendum
      */
     public static void addAddendum(Act act, Act addendum) {
@@ -300,7 +318,24 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createAddendum(Date startTime, Party patient, User clinician) {
+        return createAddendum(startTime, patient, clinician, null);
+    }
+
+    /**
+     * Creates an <em>act.patientClinicalAddendum</em>.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @param note      the note. May be {@code null}
+     * @return a new act
+     */
+    public static Act createAddendum(Date startTime, Party patient, User clinician, String note) {
         Act act = createAct(PatientArchetypes.CLINICAL_ADDENDUM, startTime, patient, clinician);
+        if (note != null) {
+            ActBean bean = new ActBean(act);
+            bean.setValue("note", note);
+        }
         save(act);
         return act;
     }

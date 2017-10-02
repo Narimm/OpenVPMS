@@ -38,4 +38,9 @@ public class InsuranceArchetypes {
      */
     public static final String CLAIM = "act.patientInsuranceClaim";
 
+    /**
+     * The insurance claim item archetype.
+     */
+    public static final String CLAIM_ITEM = "act.patientInsuranceClaimItem";
+
 }

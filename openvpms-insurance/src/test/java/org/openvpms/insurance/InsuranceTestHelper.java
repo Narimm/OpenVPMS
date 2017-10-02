@@ -19,7 +19,9 @@ package org.openvpms.insurance;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -75,9 +77,10 @@ public class InsuranceTestHelper {
      * @param patient  the patient
      * @param insurer  the insurer
      * @param type     the policy type
+     * @param identity the policy identity. May be {@code null}
      * @return a new policy
      */
-    public static Act createPolicy(Party customer, Party patient, Party insurer, Entity type) {
+    public static Act createPolicy(Party customer, Party patient, Party insurer, Entity type, ActIdentity identity) {
         Act policy = (Act) create(InsuranceArchetypes.POLICY);
         ActBean bean = new ActBean(policy);
         Date from = new Date();
@@ -88,6 +91,9 @@ public class InsuranceTestHelper {
         bean.setNodeParticipant("patient", patient);
         bean.setNodeParticipant("insurer", insurer);
         bean.setNodeParticipant("type", type);
+        if (identity != null) {
+            policy.addIdentity(identity);
+        }
         return policy;
     }
 
@@ -96,9 +102,10 @@ public class InsuranceTestHelper {
      *
      * @param policy    the policy
      * @param clinician the clinician
+     * @param items     the claim items. A list of <em>act.patientInsuranceClaimItem</em>
      * @return a new claim
      */
-    public static Act createClaim(Act policy, User clinician) {
+    public static Act createClaim(Act policy, User clinician, Act... items) {
         Act claim = (Act) create(InsuranceArchetypes.CLAIM);
         ActBean bean = new ActBean(claim);
         ActBean policyBean = new ActBean(policy);
@@ -106,6 +113,33 @@ public class InsuranceTestHelper {
         bean.setNodeParticipant("author", clinician);
         bean.setNodeParticipant("clinician", clinician);
         bean.addNodeRelationship("policy", policy);
+        for (Act item : items) {
+            bean.addNodeRelationship("items", item);
+        }
         return claim;
+    }
+
+    /**
+     * Creates a new claim item.
+     *
+     * @param diagnosis    the VeNom diagnosis code
+     * @param startTime    the treatment start time
+     * @param endTime      the treatment end time
+     * @param author       the author of the claim item
+     * @param invoiceItems the invoice items being claimed
+     * @return a new claim item
+     */
+    public static Act createClaimItem(String diagnosis, Date startTime, Date endTime, User author,
+                                      Act... invoiceItems) {
+        Act item = (Act) create(InsuranceArchetypes.CLAIM_ITEM);
+        ActBean bean = new ActBean(item);
+        item.setReason(TestHelper.getLookup("lookup.diagnosisVeNom", diagnosis).getCode());
+        item.setActivityStartTime(startTime);
+        item.setActivityEndTime(endTime);
+        bean.setNodeParticipant("author", author);
+        for (Act invoiceItem : invoiceItems) {
+            bean.addNodeRelationship("items", invoiceItem);
+        }
+        return item;
     }
 }

@@ -245,7 +245,7 @@ public class ClaimImpl implements Claim {
         Party patient = ((PolicyImpl) getPolicy()).getPatient();
         ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("note", PatientArchetypes.CLINICAL_NOTE));
         Date startTime = claim.getAct().getActivityStartTime();
-        query.add(join("event").add(
+        query.add(join("event", "e").add(
                 join("source", "event")
                         .add(join("patient").add(eq("entity", patient)))
                         .add(lte("event.startTime", startTime))))

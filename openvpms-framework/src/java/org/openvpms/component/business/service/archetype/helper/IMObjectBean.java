@@ -1795,6 +1795,17 @@ public class IMObjectBean {
     }
 
     /**
+     * Derived values for the object.
+     * <p>
+     * For each node with {@code derived=true}, the node will be evaluated and the corresponding value set.
+     *
+     * @throws ArchetypeServiceException if values cannot be derived
+     */
+    public void deriveValues() {
+        getArchetypeService().deriveValues(getObject());
+    }
+
+    /**
      * Saves the object.
      * <p>
      * Any derived nodes will have their values derived prior to the object
@@ -1803,8 +1814,8 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException if the object can't be saved
      */
     public void save() {
-        IArchetypeService service = getArchetypeService();
         IMObject object = getObject();
+        IArchetypeService service = getArchetypeService();
         service.deriveValues(object);
         service.save(object);
     }

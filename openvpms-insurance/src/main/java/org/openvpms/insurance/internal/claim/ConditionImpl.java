@@ -220,6 +220,12 @@ public class ConditionImpl implements Condition {
         for (Map.Entry<IMObjectReference, Act> entry : invoicesByRef.entrySet()) {
             Act invoice = entry.getValue();
             List<Item> items = itemsByInvoice.get(entry.getKey());
+            Collections.sort(items, new Comparator<Item>() {
+                @Override
+                public int compare(Item o1, Item o2) {
+                    return DateRules.compareTo(o1.getDate(), o2.getDate());
+                }
+            });
             result.add(new InvoiceImpl(invoice, items));
         }
         Collections.sort(result, new Comparator<Invoice>() {
