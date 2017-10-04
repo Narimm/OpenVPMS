@@ -89,7 +89,7 @@ public class PolicyImplTestCase extends ArchetypeServiceTest {
 
         PolicyHolder policyHolder = policy.getPolicyHolder();
         assertNotNull(policyHolder);
-        assertEquals("Bloggs,J", policyHolder.getName());
+        assertEquals("J Bloggs", policyHolder.getName());
         assertEquals(address, policyHolder.getAddress());
         assertEquals(work, policyHolder.getDaytimePhone());
         assertEquals(home, policyHolder.getEveningPhone());

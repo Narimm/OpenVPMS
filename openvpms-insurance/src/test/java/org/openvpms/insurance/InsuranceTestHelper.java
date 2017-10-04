@@ -23,14 +23,24 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.insurance.claim.Condition;
+import org.openvpms.insurance.claim.Invoice;
+import org.openvpms.insurance.claim.Item;
+import org.openvpms.insurance.claim.Note;
 import org.openvpms.insurance.internal.InsuranceArchetypes;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.openvpms.archetype.test.TestHelper.checkEquals;
 import static org.openvpms.archetype.test.TestHelper.create;
 import static org.openvpms.archetype.test.TestHelper.randomName;
 import static org.openvpms.archetype.test.TestHelper.save;
@@ -100,18 +110,22 @@ public class InsuranceTestHelper {
     /**
      * Creates a claim for a policy.
      *
-     * @param policy    the policy
-     * @param clinician the clinician
-     * @param items     the claim items. A list of <em>act.patientInsuranceClaimItem</em>
+     * @param policy       the policy
+     * @param location     the practice location
+     * @param clinician    the clinician
+     * @param claimHandler the claim handler
+     * @param items        the claim items. A list of <em>act.patientInsuranceClaimItem</em>
      * @return a new claim
      */
-    public static Act createClaim(Act policy, User clinician, Act... items) {
+    public static Act createClaim(Act policy, Party location, User clinician, User claimHandler, Act... items) {
         Act claim = (Act) create(InsuranceArchetypes.CLAIM);
         ActBean bean = new ActBean(claim);
         ActBean policyBean = new ActBean(policy);
         bean.setNodeParticipant("patient", policyBean.getNodeParticipantRef("patient"));
-        bean.setNodeParticipant("author", clinician);
+        bean.setNodeParticipant("author", claimHandler);
         bean.setNodeParticipant("clinician", clinician);
+        bean.setNodeParticipant("location", location);
+        bean.setNodeParticipant("user", claimHandler);
         bean.addNodeRelationship("policy", policy);
         for (Act item : items) {
             bean.addNodeRelationship("items", item);
@@ -142,4 +156,94 @@ public class InsuranceTestHelper {
         }
         return item;
     }
+
+    /**
+     * Creates a VeNom diagnosis lookup.
+     *
+     * @param code         the lookup code
+     * @param name         the lookup name
+     * @param dictionaryId the VeNom dictionary identifier for the code
+     * @return the lookup
+     */
+    public static Lookup createDiagnosis(String code, String name, String dictionaryId) {
+        Lookup diagnosis = TestHelper.getLookup("lookup.diagnosisVeNom", code, false);
+        IMObjectBean bean = new IMObjectBean(diagnosis);
+        bean.setValue("name", name);
+        bean.setValue("dataDictionaryId", dictionaryId);
+        bean.save();
+        return diagnosis;
+    }
+
+    /**
+     * Verifies a condition matches that expected.
+     *
+     * @param condition   the condition to check
+     * @param treatedFrom the expected treated-from date
+     * @param treatedTo   the expected treated-to date
+     * @param diagnosis   the expected diagnosis code
+     */
+    public static void checkCondition(Condition condition, Date treatedFrom, Date treatedTo, String diagnosis) {
+        assertEquals(treatedFrom, condition.getTreatedFrom());
+        assertEquals(treatedTo, condition.getTreatedTo());
+        Lookup lookup = condition.getDiagnosis();
+        assertNotNull(lookup);
+        assertEquals(diagnosis, lookup.getCode());
+    }
+
+    /**
+     * Verifies an invoice matches that expected.
+     *
+     * @param invoice  the invoice to check
+     * @param id       the expected id
+     * @param discount the expected discount
+     * @param tax      the expected tax
+     * @param total    the expected total
+     */
+    public static void checkInvoice(Invoice invoice, long id, BigDecimal discount, BigDecimal tax, BigDecimal total) {
+        assertEquals(id, invoice.getId());
+        checkEquals(discount, invoice.getDiscount());
+        checkEquals(tax, invoice.getTotalTax());
+        checkEquals(total, invoice.getTotal());
+    }
+
+    /**
+     * Verifies an invoice item matches that expected.
+     *
+     * @param item     the invoice item to check
+     * @param id       the expected id
+     * @param date     the expected date
+     * @param product  the expected product
+     * @param discount the expected discount
+     * @param tax      the expected tax
+     * @param total    the expected total
+     */
+    public static void checkItem(Item item, long id, Date date, Product product, BigDecimal discount, BigDecimal tax,
+                                 BigDecimal total) {
+        assertEquals(id, item.getId());
+        assertEquals(date, item.getDate());
+        assertEquals(product, item.getProduct());
+        checkEquals(discount, item.getDiscount());
+        checkEquals(tax, item.getTotalTax());
+        checkEquals(total, item.getTotal());
+    }
+
+    /**
+     * Verifies a note matches that expected.
+     *
+     * @param note      the note to check
+     * @param date      the expected date
+     * @param clinician the expected clinician
+     * @param text      the expected tex
+     * @param notes     the expected no. of addenda
+     * @return the note
+     */
+    public static Note checkNote(Note note, Date date, User clinician, String text, int notes) {
+        assertEquals(date, note.getDate());
+        assertEquals(clinician, note.getClinician());
+        assertEquals(text, note.getText());
+        assertEquals(notes, note.getNotes().size());
+        return note;
+    }
+
+
 }

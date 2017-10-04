@@ -22,15 +22,18 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
-import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.claim.ClaimHandler;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Note;
 import org.openvpms.insurance.internal.policy.PolicyImpl;
@@ -86,6 +89,16 @@ public class ClaimImpl implements Claim {
      * The clinical history, up to the time of the claim.
      */
     private List<Note> history;
+
+    /**
+     * The claim attachments.
+     */
+    private List<Attachment> attachments;
+
+    /**
+     * The claim handler.
+     */
+    private ClaimHandler handler;
 
     /**
      * Constructs a {@link ClaimImpl}.
@@ -207,19 +220,59 @@ public class ClaimImpl implements Claim {
     }
 
     /**
-     * Adds an attachment to the claim.
-     * <p>
-     * This may be done while the status is one of {@link Status#PENDING PENDING} {@link Status#POSTED POSTED}, or
-     * {@link Status#SUBMITTED SUBMITTED}. For the latter two statuses, it is used to supplement an existing claim.
+     * Returns the attachments.
      *
-     * @param attachment the attachment
+     * @return the attachments
      */
     @Override
-    public void addAttachment(Document attachment) {
-        Status status = getStatus();
-        if (status != Status.PENDING && status != Status.POSTED && status != Status.SUBMITTED) {
-            throw new IllegalStateException("Cannot add attachment to claim=" + getId() + " with status=" + status);
+    public List<Attachment> getAttachments() {
+        if (attachments == null) {
+            attachments = collectAttachments();
         }
+        return attachments;
+    }
+
+    /**
+     * Returns the user handling the claim.
+     *
+     * @return the clinician
+     */
+    @Override
+    public User getClinician() {
+        return (User) claim.getNodeParticipant("clinician");
+    }
+
+    /**
+     * Returns the claim handler.
+     *
+     * @return the claim handler
+     */
+    @Override
+    public ClaimHandler getClaimHandler() {
+        if (handler == null) {
+            final User user = (User) claim.getNodeParticipant("user");
+            final Party location = (Party) claim.getNodeParticipant("location");
+            if (user == null) {
+                throw new IllegalStateException("Claim has no user");
+            }
+            handler = new ClaimHandler() {
+                @Override
+                public String getName() {
+                    return user.getName();
+                }
+
+                @Override
+                public Contact getPhone() {
+                    return (location != null) ? customerRules.getTelephoneContact(location) : null;
+                }
+
+                @Override
+                public Contact getEmail() {
+                    return (location != null) ? customerRules.getEmailContact(location) : null;
+                }
+            };
+        }
+        return handler;
     }
 
     /**
@@ -259,6 +312,11 @@ public class ClaimImpl implements Claim {
             Act note = iterator.next();
             result.add(new NoteImpl(note, service));
         }
+        return result;
+    }
+
+    protected List<Attachment> collectAttachments() {
+        List<Attachment> result = new ArrayList<>();
         return result;
     }
 

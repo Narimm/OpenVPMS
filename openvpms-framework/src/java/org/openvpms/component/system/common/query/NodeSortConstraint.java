@@ -34,7 +34,7 @@ public class NodeSortConstraint extends SortConstraint {
     /**
      * Default SUID.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The type alias. May be {@code null}.

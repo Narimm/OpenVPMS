@@ -16,7 +16,7 @@
 
 package org.openvpms.insurance.claim;
 
-import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.insurance.policy.Policy;
 
 import java.util.List;
@@ -98,15 +98,23 @@ public interface Claim {
     List<Note> getClinicalHistory();
 
     /**
-     * Adds an attachment to the claim.
-     * <p>
-     * This may be done while the status is one of {@link Status#PENDING PENDING} {@link Status#POSTED POSTED}, or
-     * {@link Status#SUBMITTED SUBMITTED}. For the latter two statuses, it is used to supplement an existing claim.
-     * <p>
-     * The caller is responsible for submitting the attachment to the insurer.
+     * Returns the attachments.
      *
-     * @param attachment the attachment
+     * @return the attachments
      */
-    void addAttachment(Document attachment);
+    List<Attachment> getAttachments();
 
+    /**
+     * Returns the clinician responsible for the claim.
+     *
+     * @return the clinician
+     */
+    User getClinician();
+
+    /**
+     * Returns the claim handler.
+     *
+     * @return the claim handler
+     */
+    ClaimHandler getClaimHandler();
 }

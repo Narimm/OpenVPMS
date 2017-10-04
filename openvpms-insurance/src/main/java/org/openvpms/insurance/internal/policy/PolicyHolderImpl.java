@@ -67,7 +67,7 @@ public class PolicyHolderImpl implements PolicyHolder {
      */
     @Override
     public String getName() {
-        return customer.getName();
+        return rules.getFullName(customer);
     }
 
     /**

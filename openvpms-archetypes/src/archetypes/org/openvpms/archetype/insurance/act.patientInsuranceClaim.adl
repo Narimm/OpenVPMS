@@ -31,6 +31,10 @@
         <node name="reason" path="/reason" type="java.lang.String" maxLength="100"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.author" readOnly="true"/>
+        <node name="user" displayName="Claim Handler" path="/participations" type="java.util.HashSet" minCardinality="1"
+              maxCardinality="1" filter="participation.user"/>
+        <node name="location" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.location"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.clinician"/>
         <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0"

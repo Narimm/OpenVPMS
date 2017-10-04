@@ -30,9 +30,10 @@ import java.util.List;
 public interface Condition {
 
     enum Status {
-        ALIVE,
-        DIED,
-        EUTHANASED
+        RESOLVED,     // condition is resolved
+        ONGOING,      // condition is ongoing
+        DIED,         // animal died from the condition
+        EUTHANASED    // animal was euthanased because of the condition
     }
 
     /**

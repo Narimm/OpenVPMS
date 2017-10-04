@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance.claim;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
 
 import java.math.BigDecimal;
@@ -48,6 +49,13 @@ public interface Item {
      * @return the product
      */
     Product getProduct();
+
+    /**
+     * Returns the product type.
+     *
+     * @return the product type. May be {@code null}
+     */
+    Entity getProductType();
 
     /**
      * Returns the quantity.

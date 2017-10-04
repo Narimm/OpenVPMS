@@ -17,9 +17,11 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.insurance.claim.Item;
 
 import java.math.BigDecimal;
@@ -38,6 +40,11 @@ public class ItemImpl implements Item {
     private final ActBean item;
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * Constructs a {@link ItemImpl}.
      *
      * @param item    the invoice item
@@ -45,6 +52,7 @@ public class ItemImpl implements Item {
      */
     public ItemImpl(Act item, IArchetypeService service) {
         this.item = new ActBean(item, service);
+        this.service = service;
     }
 
     /**
@@ -75,6 +83,17 @@ public class ItemImpl implements Item {
     @Override
     public Product getProduct() {
         return (Product) item.getNodeParticipant("product");
+    }
+
+    /**
+     * Returns the product type.
+     *
+     * @return the product type. May be {@code null}
+     */
+    @Override
+    public Entity getProductType() {
+        IMObjectBean bean = new IMObjectBean(getProduct(), service);
+        return (Entity) bean.getNodeTargetObject("type");
     }
 
     /**

@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
@@ -31,12 +30,10 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.insurance.InsuranceTestHelper;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
@@ -60,11 +57,12 @@ import static org.openvpms.archetype.rules.patient.PatientTestHelper.createEvent
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createNote;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createPatient;
 import static org.openvpms.archetype.test.TestHelper.createActIdentity;
-import static org.openvpms.archetype.test.TestHelper.createEmailContact;
-import static org.openvpms.archetype.test.TestHelper.createLocationContact;
-import static org.openvpms.archetype.test.TestHelper.createPhoneContact;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
+import static org.openvpms.insurance.InsuranceTestHelper.checkCondition;
+import static org.openvpms.insurance.InsuranceTestHelper.checkInvoice;
+import static org.openvpms.insurance.InsuranceTestHelper.checkItem;
+import static org.openvpms.insurance.InsuranceTestHelper.checkNote;
 import static org.openvpms.insurance.InsuranceTestHelper.createClaim;
 import static org.openvpms.insurance.InsuranceTestHelper.createClaimItem;
 import static org.openvpms.insurance.InsuranceTestHelper.createInsurer;
@@ -90,31 +88,54 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
     @Autowired
     private PatientRules patientRules;
 
+    /**
+     * The test customer.
+     */
     private Party customer;
 
+    /**
+     * The test patient.
+     */
     private Party patient;
 
+    /**
+     * The test clinician.
+     */
     private User clinician;
+
+    /**
+     * The practice location.
+     */
+    private Party location;
+
+    /**
+     * The claim handler.
+     */
+    private User user;
 
     /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        // set up the customer
-        Contact address = createLocationContact("12 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC", "3925");
-        Contact home = createPhoneContact("03", "9123456", false, false, ContactArchetypes.HOME_PURPOSE);
-        Contact work = createPhoneContact("03", "9123456", false, false, ContactArchetypes.WORK_PURPOSE);
-        Contact mobile = createPhoneContact(null, "04987654321", true);
-        Contact email = createEmailContact("foo@test.com");
-        customer = TestHelper.createCustomer("J", "Bloggs", address, home, work, mobile, email);
+        // customer
+        customer = TestHelper.createCustomer("MS", "J", "Bloggs", "12 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC",
+                                             "3925", "9123456", "98765432", "04987654321", "foo@test.com");
+
+        // practice location
+        location = TestHelper.createLocation("5123456", "vetsrus@test.com", false);
 
         // clinician
         clinician = TestHelper.createClinician();
 
-        // set up the patient
+        // claim handler
+        user = TestHelper.createUser("Z", "Smith");
+
+        // patient
         Date dateOfBirth = DateRules.getDate(DateRules.getToday(), -1, DateUnits.YEARS);
         patient = createPatient("Fido", "CANINE", "PUG", "MALE", dateOfBirth, "123454321", "BLACK", customer);
+
+        // patient history
         Act note1 = createNote(getDate("2015-05-01"), patient, clinician, "Note 1");
         Act note2 = createNote(getDate("2015-05-02"), patient, clinician, "Note 2");
         createEvent(getDate("2015-05-01"), patient, note1, note2);
@@ -126,7 +147,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         createEvent(getDate("2015-07-01"), patient, note3);
 
         // diagnosis codes
-        initDiagnosis("VENOM_328", "Abcess", "328");
+        InsuranceTestHelper.createDiagnosis("VENOM_328", "Abcess", "328");
     }
 
     /**
@@ -168,7 +189,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
 
         Act item1Act = createClaimItem("VENOM_328", treatFrom1, treatTo1, clinician, invoiceItem1, invoiceItem2,
                                        invoiceItem3);
-        Act claimAct = createClaim(policyAct, clinician, item1Act);
+        Act claimAct = createClaim(policyAct, location, clinician, user, item1Act);
         claimAct.addIdentity(createActIdentity("actIdentity.insuranceClaim", "CLM987654"));
         save(policyAct, claimAct, item1Act);
 
@@ -209,70 +230,8 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         checkNote(history.get(0), getDate("2015-05-01"), clinician, "Note 1", 0);
         checkNote(history.get(1), getDate("2015-05-02"), clinician, "Note 2", 0);
         Note note3 = checkNote(history.get(2), getDate("2015-07-01"), clinician, "Note 3", 2);
-        assertEquals(2, note3.getNotes().size());
         checkNote(note3.getNotes().get(0), getDate("2015-07-03"), clinician, "Note 3 addendum 1", 0);
         checkNote(note3.getNotes().get(1), getDate("2015-07-04"), clinician, "Note 3 addendum 2", 0);
-    }
-
-    /**
-     * Verifies a condition matches that expected.
-     *
-     * @param condition   the condition to check
-     * @param treatedFrom the expected treated-from date
-     * @param treatedTo   the expected treated-to date
-     * @param diagnosis   the expected diagnosis code
-     */
-    private void checkCondition(Condition condition, Date treatedFrom, Date treatedTo, String diagnosis) {
-        assertEquals(treatedFrom, condition.getTreatedFrom());
-        assertEquals(treatedTo, condition.getTreatedTo());
-        Lookup lookup = condition.getDiagnosis();
-        assertNotNull(lookup);
-        assertEquals(diagnosis, lookup.getCode());
-    }
-
-    private Note checkNote(Note note, Date date, User clinician, String text, int notes) {
-        assertEquals(date, note.getDate());
-        assertEquals(clinician, note.getClinician());
-        assertEquals(text, note.getText());
-        assertEquals(notes, note.getNotes().size());
-        return note;
-    }
-
-    /**
-     * Verifies an invoice matches that expected.
-     *
-     * @param invoice  the invoice to check
-     * @param id       the expected id
-     * @param discount the expected discount
-     * @param tax      the expected tax
-     * @param total    the expected total
-     */
-    private void checkInvoice(Invoice invoice, long id, BigDecimal discount, BigDecimal tax, BigDecimal total) {
-        assertEquals(id, invoice.getId());
-        checkEquals(discount, invoice.getDiscount());
-        checkEquals(tax, invoice.getTotalTax());
-        checkEquals(total, invoice.getTotal());
-    }
-
-    /**
-     * Verifies an invoice item matches that expected.
-     *
-     * @param item     the invoice item to check
-     * @param id       the expected id
-     * @param date     the expected date
-     * @param product  the expected product
-     * @param discount the expected discount
-     * @param tax      the expected tax
-     * @param total    the expected total
-     */
-    private void checkItem(Item item, long id, Date date, Product product, BigDecimal discount, BigDecimal tax,
-                           BigDecimal total) {
-        assertEquals(id, item.getId());
-        assertEquals(date, item.getDate());
-        assertEquals(product, item.getProduct());
-        checkEquals(discount, item.getDiscount());
-        checkEquals(tax, item.getTotalTax());
-        checkEquals(total, item.getTotal());
     }
 
     /**
@@ -306,19 +265,5 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         return invoice;
     }
 
-    /**
-     * Initialises a VeNom diagnosis lookup.
-     *
-     * @param code         the lookup code
-     * @param name         the lookup name
-     * @param dictionaryId the VeNom dictionary identifier for the code
-     */
-    private void initDiagnosis(String code, String name, String dictionaryId) {
-        Lookup diagnosis = TestHelper.getLookup("lookup.diagnosisVeNom", code, false);
-        IMObjectBean bean = new IMObjectBean(diagnosis);
-        bean.setValue("name", name);
-        bean.setValue("dataDictionaryId", dictionaryId);
-        bean.save();
-    }
 }
 
