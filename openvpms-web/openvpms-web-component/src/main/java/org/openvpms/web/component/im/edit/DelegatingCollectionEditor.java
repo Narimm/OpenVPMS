@@ -136,9 +136,9 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Creates a new object.
-     * <p/>
+     * <p>
      * The object is not automatically added to the collection.
-     * <p/>
+     * <p>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
@@ -371,7 +371,7 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Returns editors for items in the collection.
-     * <p/>
+     * <p>
      * These include any editors that have been created for objects in the
      * collection, and the current editor, which may be for an uncommitted object.
      *
@@ -384,7 +384,7 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Returns the objects in the collection.
-     * <p/>
+     * <p>
      * This includes the object of the current editor, which may be uncommitted.
      *
      * @return the objects
@@ -392,6 +392,18 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     @Override
     public Collection<IMObject> getCurrentObjects() {
         return editor.getCurrentObjects();
+    }
+
+    /**
+     * Returns an editor for the first object in the collection.
+     *
+     * @param create, if {@code true} create a new instance if the collection is empty
+     * @return the first object editor, or {@code null} if one wasn't found or {@code create} was {@code false} or an
+     * editor could not be created
+     */
+    @Override
+    public IMObjectEditor getFirstEditor(boolean create) {
+        return editor.getFirstEditor(create);
     }
 
     /**
