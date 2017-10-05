@@ -240,7 +240,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
 
     /**
      * Returns all current editors.
-     * <p/>
+     * <p>
      * These include any editors that have been created for objects in the
      * collection, and the {@link #getCurrentEditor() current editor}, which
      * may be for an uncommitted object.
@@ -259,7 +259,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
 
     /**
      * Returns the objects in the collection.
-     * <p/>
+     * <p>
      * This includes the object of the current editor, which may be uncommitted.
      *
      * @return the objects
@@ -274,8 +274,35 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     }
 
     /**
+     * Returns an editor for the first object in the collection.
+     *
+     * @param create@return the first object editor, or {@code null} if one wasn't found or {@code create} was {@code false} or an
+     *                      editor could not be created
+     */
+    @Override
+    public IMObjectEditor getFirstEditor(boolean create) {
+        IMObject object = null;
+        IMObjectEditor editor = getCurrentEditor();
+        if (editor == null) {
+            Collection<IMObject> objects = getCurrentObjects();
+            if (!objects.isEmpty()) {
+                object = objects.iterator().next();
+            } else if (create) {
+                object = create();
+                if (object != null) {
+                    add(object);
+                }
+            }
+            if (object != null) {
+                editor = getEditor(object);
+            }
+        }
+        return editor;
+    }
+
+    /**
      * Validates the object.
-     * <p/>
+     * <p>
      * This validates the current object being edited, and if valid, the collection.
      *
      * @param validator the validator
@@ -304,7 +331,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
 
     /**
      * Removes the current editor.
-     * <p/>
+     * <p>
      * This implementation simply invokes {@code setCurrentEditor(null)}.
      */
     protected void removeCurrentEditor() {
