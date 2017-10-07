@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -26,12 +26,12 @@ import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.im.delete.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.IMObjectDeletionListener;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.macro.MacroVariables;

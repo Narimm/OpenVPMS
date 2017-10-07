@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.lookup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.archetype.helper.lookup.RemoteLookup;
@@ -101,8 +102,8 @@ public class LookupPropertyEditorFactory {
      */
     private static synchronized ArchetypeHandlers<LookupPropertyEditor> getEditors() {
         if (editors == null) {
-            editors = new ArchetypeHandlers<LookupPropertyEditor>("LookupPropertyEditorFactory.properties",
-                                                                  LookupPropertyEditor.class);
+            editors = new ArchetypeHandlers<>("LookupPropertyEditorFactory.properties", LookupPropertyEditor.class,
+                                              ArchetypeServiceHelper.getArchetypeService());
         }
         return editors;
     }

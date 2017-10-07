@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -442,11 +442,15 @@
     <!--                        REPORTING                                   -->
     <!-- ================================================================== -->
 
-    <!-- the Document handlers -->
+    <bean id="imageDocumentHandler" class="org.openvpms.archetype.rules.doc.ImageDocumentHandler">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="documentHandlers" class="org.openvpms.archetype.rules.doc.DocumentHandlers">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg>
             <list>
+                <ref bean="imageDocumentHandler"/>
                 <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
                     <constructor-arg ref="archetypeService"/>
                 </bean>
@@ -492,9 +496,14 @@
     <!-- ================================================================== -->
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
-    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
+    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
+
     <bean class="org.openvpms.web.workspace.patient.summary.DefaultCustomerPatientSummaryFactory"/>
+
     <bean class="org.openvpms.web.component.im.doc.DocumentGeneratorFactory">
         <constructor-arg ref="fileNameFormatter"/>
         <constructor-arg ref="archetypeService"/>
@@ -511,6 +520,15 @@
 
     <bean class="org.openvpms.web.component.im.print.IMPrinterFactory">
         <constructor-arg ref="reporterFactory"/>
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="deletionHandlerFactory" class="org.openvpms.web.component.im.delete.IMObjectDeletionHandlerFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="confirmingDeleter" class="org.openvpms.web.component.im.delete.ConfirmingDeleter">
+        <constructor-arg ref="deletionHandlerFactory"/>
     </bean>
 
     <!-- =========================================================================================================== -->

@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.im.delete;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
@@ -24,11 +25,10 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -44,17 +44,37 @@ import static org.junit.Assert.assertNull;
 
 
 /**
- * Tests the {@link IMObjectDeleter} class.
+ * Tests the {@link ConfirmingDeleter} class.
  *
  * @author Tim Anderson
  */
-public class IMObjectDeleterTestCase extends AbstractAppTest {
+public class ConfirmingDeleterTestCase extends AbstractAppTest {
 
     /**
      * The help context.
      */
     private final HelpContext help = new HelpContext("foo", null);
 
+    /**
+     * The context.
+     */
+    private final Context context = new LocalContext();
+
+    /**
+     * The deletion handler factory.
+     */
+    private IMObjectDeletionHandlerFactory factory;
+
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        factory = new IMObjectDeletionHandlerFactory(getArchetypeService());
+        factory.setApplicationContext(applicationContext);
+    }
 
     /**
      * Verifies that attempting to delete an entity with participations deactivates it.
@@ -72,7 +92,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
 
         TestDeleter deleter = new TestDeleter();
         TestListener listener = new TestListener();
-        deleter.delete(customer, help, listener);
+        deleter.delete(customer, context, help, listener);
 
         // verify the customer has been deactivated rather than deleted
         checkDeleter(deleter, false, true, false);
@@ -85,7 +105,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         // now attempt deletion again. The deactivated() method should be invoked
         deleter = new TestDeleter();
         listener = new TestListener();
-        deleter.delete(customer, help, listener);
+        deleter.delete(customer, context, help, listener);
         checkDeleter(deleter, false, false, true);
         checkListener(listener, false);
     }
@@ -100,7 +120,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
 
         TestDeleter deleter = new TestDeleter();
         TestListener listener = new TestListener();
-        deleter.delete(customer, help, listener);
+        deleter.delete(customer, context, help, listener);
 
         // verify the customer has been deactivated
         checkDeleter(deleter, false, true, false);
@@ -114,7 +134,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
 
     /**
      * Verifies that attempting to delete an entity which is the target of a relationship
-     * invokes {@link IMObjectDeleter#remove}, and performs the removal.
+     * invokes {@link AbstractIMObjectDeleter#delete}, and performs the removal.
      */
     @Test
     public void testDeleteTargetWithEntityRelationships() {
@@ -123,7 +143,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
 
         TestDeleter deleter = new TestDeleter();
         TestListener listener = new TestListener();
-        deleter.delete(pet, help, listener);
+        deleter.delete(pet, context, help, listener);
 
         // verify the customer has been deleted
         checkDeleter(deleter, true, false, false);
@@ -144,7 +164,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         // create a template with associated act.documentTemplate
         Entity template = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
         TestListener listener = new TestListener();
-        deleter.delete(template, help, listener);
+        deleter.delete(template, context, help, listener);
 
         // verify the template has been deleted
         checkDeleter(deleter, true, false, false);
@@ -170,7 +190,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         save(act);
 
         TestListener listener = new TestListener();
-        deleter.delete(template, help, listener);
+        deleter.delete(template, context, help, listener);
 
         // verify the template has been deactivated
         checkDeleter(deleter, false, true, false);
@@ -183,41 +203,9 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         // now attempt deletion again. The deactivated() method should be invoked
         deleter = new TestDeleter();
         listener = new TestListener();
-        deleter.delete(template, help, listener);
+        deleter.delete(template, context, help, listener);
         checkDeleter(deleter, false, false, true);
         checkListener(listener, false);
-    }
-
-    /**
-     * Verifies that entities can be deleted if relationships are excluded.
-     */
-    @Test
-    public void testDeleteWithRelationshipsExcluded() {
-        TestDeleter deleter = new TestDeleter();
-        TestListener listener = new TestListener();
-
-        Entity job = (Entity) create("entity.jobESCIInboxReader");
-        Entity runAs = TestHelper.createUser();
-        EntityBean bean = new EntityBean(job);
-        bean.addNodeRelationship("runAs", runAs);
-        save(job, runAs);
-
-        deleter.delete(job, help, listener);
-
-        // verify the job has been deactivated rather than deleted
-        checkDeleter(deleter, false, true, false);
-        checkListener(listener, false);
-
-        // now attempt deletion again, but this time exclude the runAs relationship
-        deleter = new TestDeleter();
-        listener = new TestListener();
-        deleter.setExcludeRelationships("entityRelationship.jobUser");
-        deleter.delete(job, help, listener);
-
-        checkDeleter(deleter, true, false, false);
-        checkListener(listener, true);
-
-        assertNull(get(job));
     }
 
     /**
@@ -231,7 +219,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         TestDeleter deleter = new TestDeleter();
         TestListener listener = new TestListener();
 
-        deleter.delete(location, help, listener);
+        deleter.delete(location, context, help, listener);
 
         checkDeleter(deleter, false, true, false);
         checkListener(listener, false);
@@ -266,7 +254,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         assertFalse(listener.failedInvoked());
     }
 
-    private static class TestDeleter extends IMObjectDeleter {
+    private class TestDeleter extends ConfirmingDeleter<Entity> {
 
         /**
          * Determines if remove() was invoked.
@@ -287,7 +275,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
          * Constructs a {@code TestDeleter}.
          */
         public TestDeleter() {
-            super(new LocalContext());
+            super(factory);
         }
 
         /**
@@ -318,28 +306,32 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         }
 
         /**
-         * Invoked to remove an object.
+         * Invoked to delete an object.
          *
-         * @param object   the object to remove
-         * @param listener the listener to notify
+         * @param handler  the deletion handler
+         * @param context  the context
          * @param help     the help context
+         * @param listener the listener to notify
          */
-        protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
+        @Override
+        protected void delete(IMObjectDeletionHandler<Entity> handler, Context context, HelpContext help,
+                              IMObjectDeletionListener<Entity> listener) {
             remove = true;
-            doRemove(object, listener, help);
+            doDelete(handler, context, help, listener);
         }
 
         /**
          * Invoked to deactivate an object.
          *
-         * @param object   the object to deactivate
+         * @param handler  the deletion handler
          * @param listener the listener
          * @param help     the help context
          */
-        protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener,
-                                                       HelpContext help) {
+        @Override
+        protected void deactivate(IMObjectDeletionHandler<Entity> handler, IMObjectDeletionListener<Entity> listener,
+                                  HelpContext help) {
             deactivate = true;
-            doDeactivate(object, listener);
+            doDeactivate(handler, listener);
         }
 
         /**
@@ -348,9 +340,11 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
          * @param object the object
          * @param help   the help context
          */
-        protected <T extends IMObject> void deactivated(T object, HelpContext help) {
+        @Override
+        protected void deactivated(Entity object, HelpContext help) {
             deactivated = true;
         }
+
     }
 
     private class TestListener extends AbstractIMObjectDeletionListener<Entity> {

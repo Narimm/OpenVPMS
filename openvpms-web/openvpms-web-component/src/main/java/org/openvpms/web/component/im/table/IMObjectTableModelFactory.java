@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.table;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -188,7 +189,7 @@ public class IMObjectTableModelFactory {
     private static synchronized ArchetypeHandlers getTableModels() {
         if (models == null) {
             models = new ArchetypeHandlers<>("IMObjectTableModelFactory", "DefaultIMObjectTableModelFactory",
-                                             IMObjectTableModel.class);
+                                             IMObjectTableModel.class, ArchetypeServiceHelper.getArchetypeService());
         }
         return models;
     }
