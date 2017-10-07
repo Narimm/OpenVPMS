@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -195,8 +195,8 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     @Override
     protected void doDelete() {
         if (deleteAct) {
-            super.deleteChildren();
             ServiceHelper.getArchetypeService().remove(act);
+            deleteChildren();
         } else {
             super.doDelete();
         }

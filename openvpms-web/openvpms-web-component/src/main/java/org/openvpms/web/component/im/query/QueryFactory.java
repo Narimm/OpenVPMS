@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
@@ -289,7 +290,7 @@ public final class QueryFactory {
     private static synchronized ArchetypeHandlers<Query> getQueries() {
         if (queries == null) {
             queries = new ArchetypeHandlers<>("QueryFactory.properties", "DefaultQueryFactory.properties", Query.class,
-                                              "query.");
+                                              "query.", ArchetypeServiceHelper.getArchetypeService());
         }
         return queries;
     }

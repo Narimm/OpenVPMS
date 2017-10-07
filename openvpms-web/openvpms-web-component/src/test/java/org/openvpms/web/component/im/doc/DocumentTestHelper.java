@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -91,12 +91,23 @@ public class DocumentTestHelper {
      * @return a new template
      */
     public static Entity createDocumentTemplate(String archetype, Document document) {
+        Entity entity = createDocumentTemplate(archetype, document.getName());
+        createDocumentTemplate(entity, document);
+        return entity;
+    }
+
+    /**
+     * Creates a  new <em>entity.documentTemplate</em>
+     *
+     * @param archetype the archetype
+     * @param name      the template name
+     * @return a new template
+     */
+    public static Entity createDocumentTemplate(String archetype, String name) {
         Entity entity = (Entity) TestHelper.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         IMObjectBean template = new IMObjectBean(entity);
-        template.setValue("name", document.getName());
+        template.setValue("name", name);
         template.setValue("archetype", archetype);
-
-        createDocumentTemplate(entity, document);
         return entity;
     }
 
@@ -116,8 +127,9 @@ public class DocumentTestHelper {
      *
      * @param template the <em>entity.documentTemplate</em>
      * @param document the document
+     * @return the act
      */
-    public static void createDocumentTemplate(Entity template, Document document) {
+    public static DocumentAct createDocumentTemplate(Entity template, Document document) {
         DocumentAct act = (DocumentAct) TestHelper.create("act.documentTemplate");
         act.setDocument(document.getObjectReference());
         act.setFileName(document.getName());
@@ -126,6 +138,7 @@ public class DocumentTestHelper {
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("template", template);
         TestHelper.save(Arrays.asList(act, template, document));
+        return act;
     }
 
     /**

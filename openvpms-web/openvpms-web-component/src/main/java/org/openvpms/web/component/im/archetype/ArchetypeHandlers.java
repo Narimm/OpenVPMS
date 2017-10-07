@@ -21,6 +21,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
@@ -42,9 +43,79 @@ import java.util.Set;
 public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
 
     /**
+     * Helper to deserialize handlers from XML.
+     */
+    public static class Handlers implements Iterable<Handler> {
+
+        /**
+         * The handlers.
+         */
+        private List<Handler> handlers = new ArrayList<>();
+
+        /**
+         * Adds a handler.
+         *
+         * @param handler the handler to add
+         */
+        public void add(Handler handler) {
+            handlers.add(handler);
+        }
+
+        /**
+         * Returns an iterator over a set of elements of type T.
+         *
+         * @return an Iterator.
+         */
+        public Iterator<Handler> iterator() {
+            return handlers.iterator();
+        }
+    }
+
+    /**
+     * Helper to deserialize a handler from XML.
+     */
+    public static class Handler {
+
+        private String shortName;
+
+        private String type;
+
+        private Map<String, Object> properties;
+
+        public String getShortName() {
+            return shortName;
+        }
+
+        public void setShortName(String shortName) {
+            this.shortName = shortName;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public Map<String, Object> getProperties() {
+            return properties;
+        }
+
+        public void setProperties(Map<String, Object> properties) {
+            this.properties = properties;
+        }
+    }
+
+    /**
      * The type that each handler must implement/extend.
      */
     private final Class<T> type;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * Map of short names to their corresponding handlers.
@@ -65,11 +136,12 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     /**
      * Construct an {@link ArchetypeHandlers}.
      *
-     * @param name the resource name
-     * @param type class the each handler must implement/extend
+     * @param name    the resource name
+     * @param type    class the each handler must implement/extend
+     * @param service the archetype service
      */
-    public ArchetypeHandlers(String name, Class<T> type) {
-        this(name, null, type);
+    public ArchetypeHandlers(String name, Class<T> type, IArchetypeService service) {
+        this(name, null, type, service);
     }
 
     /**
@@ -78,9 +150,10 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * @param name         the resource name
      * @param fallbackName the fallback resource name. May be {@code null}
      * @param type         class the each handler must implement/extend
+     * @param service      the archetype service
      */
-    public ArchetypeHandlers(String name, String fallbackName, Class<T> type) {
-        this(name, fallbackName, type, null);
+    public ArchetypeHandlers(String name, String fallbackName, Class<T> type, IArchetypeService service) {
+        this(name, fallbackName, type, null, service);
     }
 
     /**
@@ -90,9 +163,12 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * @param fallbackName    the fallback resource name. May be {@code null}
      * @param type            class the each handler must implement/extend
      * @param anonymousPrefix the prefix for anonymous handlers. May be {@code null}
+     * @param service         the archetype service
      */
-    public ArchetypeHandlers(String name, String fallbackName, Class<T> type, String anonymousPrefix) {
+    public ArchetypeHandlers(String name, String fallbackName, Class<T> type, String anonymousPrefix,
+                             IArchetypeService service) {
         this.type = type;
+        this.service = service;
         if (fallbackName != null) {
             read(fallbackName, false, anonymousPrefix);
         }
@@ -210,8 +286,8 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * @return {@code true} if shortName1 is more specific than shortName2
      */
     private boolean moreSpecific(String shortName1, String shortName2) {
-        String[] matches1 = DescriptorHelper.getShortNames(shortName1);
-        String[] matches2 = DescriptorHelper.getShortNames(shortName2);
+        String[] matches1 = DescriptorHelper.getShortNames(shortName1, service);
+        String[] matches2 = DescriptorHelper.getShortNames(shortName2, service);
         return matches1.length < matches2.length;
     }
 
@@ -227,7 +303,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     private void addHandler(String shortName, Class<T> type, Map<String, Object> properties, String path,
                             boolean replace) {
         if (!StringUtils.isEmpty(shortName)) {
-            String[] matches = DescriptorHelper.getShortNames(shortName, false);
+            String[] matches = DescriptorHelper.getShortNames(shortName, false, service);
             if (matches.length == 0) {
                 log.warn("No archetypes found matching short name=" + shortName + ", loaded from path=" + path);
             } else {
@@ -275,71 +351,6 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     private void readProperties(String name, boolean replace, String anonymousPrefix) {
         Reader parser = new Reader(replace, anonymousPrefix);
         parser.read(name);
-    }
-
-    /**
-     * Helper to deserialize handlers from XML.
-     */
-    public static class Handlers implements Iterable<Handler> {
-
-        /**
-         * The handlers.
-         */
-        private List<Handler> handlers = new ArrayList<>();
-
-        /**
-         * Adds a handler.
-         *
-         * @param handler the handler to add
-         */
-        public void add(Handler handler) {
-            handlers.add(handler);
-        }
-
-        /**
-         * Returns an iterator over a set of elements of type T.
-         *
-         * @return an Iterator.
-         */
-        public Iterator<Handler> iterator() {
-            return handlers.iterator();
-        }
-    }
-
-    /**
-     * Helper to deserialize a handler from XML.
-     */
-    public static class Handler {
-
-        private String shortName;
-
-        private String type;
-
-        private Map<String, Object> properties;
-
-        public String getShortName() {
-            return shortName;
-        }
-
-        public void setShortName(String shortName) {
-            this.shortName = shortName;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Map<String, Object> getProperties() {
-            return properties;
-        }
-
-        public void setProperties(Map<String, Object> properties) {
-            this.properties = properties;
-        }
     }
 
     /**

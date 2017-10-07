@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.lookup;
@@ -22,15 +22,14 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.delete.AbstractIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.IMObjectDeleter;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeleter;
-import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -76,8 +75,8 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
      */
     @Override
     protected void delete(Lookup object) {
-        IMObjectDeleter deletor = new DefaultIMObjectDeleter(getContext());
-        deletor.delete(object, getHelpContext().subtopic("delete"), new LookupDeletorListener());
+        IMObjectDeleter<Lookup> deletor = getDeleter();
+        deletor.delete(object, getContext(), getHelpContext().subtopic("delete"), new LookupDeletorListener());
     }
 
     /**
@@ -157,6 +156,35 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
         dialog.show();
     }
 
+    /**
+     * A dialog that prompts to replace a lookup.
+     */
+    private static class ReplaceLookupBrowserDialog extends BrowserDialog<Lookup> {
+
+        /**
+         * Constructs an {@link ReplaceLookupBrowserDialog}.
+         *
+         * @param browser the lookup browser
+         * @param help    the help context
+         */
+        public ReplaceLookupBrowserDialog(ReplaceLookupBrowser browser, HelpContext help) {
+            super(Messages.get("lookup.replace.title"), OK_CANCEL, browser, help);
+            setCloseOnSelection(false);
+            getButtons().setEnabled(BrowserDialog.OK_ID, false);
+        }
+
+        /**
+         * Enables the OK button when a lookup is selected.
+         *
+         * @param object the selected object
+         */
+        @Override
+        protected void onSelected(Lookup object) {
+            getButtons().setEnabled(OK_ID, object != null);
+            super.onSelected(object);
+        }
+    }
+
     private class LookupDeletorListener extends AbstractIMObjectDeletionListener<Lookup> {
 
         public void deleted(Lookup object) {
@@ -209,35 +237,6 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             ErrorHelper.show(title, message);
         }
 
-    }
-
-    /**
-     * A dialog that prompts to replace a lookup.
-     */
-    private static class ReplaceLookupBrowserDialog extends BrowserDialog<Lookup> {
-
-        /**
-         * Constructs an {@link ReplaceLookupBrowserDialog}.
-         *
-         * @param browser the lookup browser
-         * @param help    the help context
-         */
-        public ReplaceLookupBrowserDialog(ReplaceLookupBrowser browser, HelpContext help) {
-            super(Messages.get("lookup.replace.title"), OK_CANCEL, browser, help);
-            setCloseOnSelection(false);
-            getButtons().setEnabled(BrowserDialog.OK_ID, false);
-        }
-
-        /**
-         * Enables the OK button when a lookup is selected.
-         *
-         * @param object the selected object
-         */
-        @Override
-        protected void onSelected(Lookup object) {
-            getButtons().setEnabled(OK_ID, object != null);
-            super.onSelected(object);
-        }
     }
 
 }

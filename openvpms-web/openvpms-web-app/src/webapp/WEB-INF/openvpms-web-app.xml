@@ -150,7 +150,9 @@
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
-    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
+    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
 
     <bean id="reminderGeneratorFactory" class="org.openvpms.web.workspace.reporting.reminder.ReminderGeneratorFactory"/>
 
@@ -173,12 +175,21 @@
 
     <bean id="imPrinterFactory" class="org.openvpms.web.component.im.print.IMPrinterFactory">
         <constructor-arg ref="reporterFactory"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="documentGeneratorFactory" class="org.openvpms.web.component.im.doc.DocumentGeneratorFactory">
         <constructor-arg ref="fileNameFormatter"/>
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="deletionHandlerFactory" class="org.openvpms.web.component.im.delete.IMObjectDeletionHandlerFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="confirmingDeleter" class="org.openvpms.web.component.im.delete.ConfirmingDeleter">
+        <constructor-arg ref="deletionHandlerFactory"/>
     </bean>
 
     <!-- ================================================================== -->

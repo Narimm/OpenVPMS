@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.IMObjectDeletionListener;
 import org.openvpms.web.component.im.util.DefaultIMObjectSaveListener;
-import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectSaveListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.i18n.Messages;
