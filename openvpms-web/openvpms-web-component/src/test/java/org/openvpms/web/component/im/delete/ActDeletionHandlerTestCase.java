@@ -87,6 +87,45 @@ public class ActDeletionHandlerTestCase extends AbstractAppTest {
         assertNotNull(get(charge2.get(1)));
     }
 
+    /**
+     * Verify acts can't be deactivated.
+     */
+    @Test
+    public void testDeactivate() {
+        Party customer = TestHelper.createCustomer();
+        Product product = TestHelper.createProduct();
+        List<FinancialAct> charge1 = FinancialTestHelper.createChargesCounter(BigDecimal.TEN, customer, product,
+                                                                              ActStatus.IN_PROGRESS);
+        List<FinancialAct> charge2 = FinancialTestHelper.createChargesCounter(BigDecimal.TEN, customer, product,
+                                                                              ActStatus.POSTED);
+        save(charge1);
+        save(charge2);
+
+        // verify non-POSTED acts can't be deactivated.
+        ActDeletionHandler<FinancialAct> handler1 = createDeletionHandler(charge1.get(0));
+        assertFalse(handler1.canDeactivate());
+
+        // verify deactivate throws IllegalStateException
+        try {
+            handler1.deactivate();
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException expected) {
+            // do nothing
+        }
+
+        // verify POSTED acts can't be deactivated.
+        ActDeletionHandler<FinancialAct> handler2 = createDeletionHandler(charge2.get(0));
+        assertFalse(handler2.canDeactivate());
+
+        // verify deactivate throws IllegalStateException
+        try {
+            handler2.deactivate();
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException expected) {
+            // do nothing
+        }
+    }
+
 
     /**
      * Verifies that the {@link IMObjectDeletionHandlerFactory} returns {@link ActDeletionHandler} for acts.

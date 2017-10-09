@@ -107,12 +107,34 @@ public abstract class AbstractIMObjectDeletionHandler<T extends IMObject> implem
     }
 
     /**
+     * Determines if the object can be deactivated.
+     *
+     * @return {@code true} if the object can be deactivated
+     */
+    @Override
+    public boolean canDeactivate() {
+        return object.isActive();
+    }
+
+    /**
      * Deactivates the object.
+     *
+     * @throws IllegalStateException if the object cannot be deleted
      */
     @Override
     public void deactivate() {
-        object.setActive(false);
-        service.save(object);
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                if (!canDeactivate()) {
+                    throw new IllegalStateException(DescriptorHelper.getDisplayName(object, service)
+                                                    + " cannot be deactivated");
+                }
+                object.setActive(false);
+                service.save(object);
+            }
+        });
     }
 
     /**
