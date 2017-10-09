@@ -51,4 +51,14 @@ public class ActDeletionHandler<T extends Act> extends AbstractIMObjectDeletionH
     public boolean canDelete() {
         return !ActStatus.POSTED.equals(getObject().getStatus());
     }
+
+    /**
+     * Determines if the object can be deactivated.
+     *
+     * @return {@code false}. Acts cannot be deactivated
+     */
+    @Override
+    public boolean canDeactivate() {
+        return false;
+    }
 }

@@ -108,4 +108,15 @@ public class ConfirmingDeleter<T extends IMObject> extends AbstractIMObjectDelet
         ErrorDialog.show(message, help);
     }
 
+    /**
+     * Invoked when deletion and deactivation of an object is not supported.
+     *
+     * @param object the deletion handler
+     * @param help   the help context
+     */
+    @Override
+    protected void unsupported(T object, HelpContext help) {
+        String message = Messages.format("imobject.delete.unsupported", DescriptorHelper.getDisplayName(object));
+        ErrorDialog.show(message, help);
+    }
 }

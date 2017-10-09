@@ -51,7 +51,16 @@ public interface IMObjectDeletionHandler<T extends IMObject> {
     void delete(Context context, HelpContext helpContext);
 
     /**
+     * Determines if the object can be deactivated.
+     *
+     * @return {@code true} if the object can be deactivated
+     */
+    boolean canDeactivate();
+
+    /**
      * Deactivates the object.
+     *
+     * @throws IllegalStateException if the object cannot be deleted
      */
     void deactivate();
 

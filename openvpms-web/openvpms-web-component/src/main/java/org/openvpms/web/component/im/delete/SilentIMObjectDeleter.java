@@ -74,4 +74,15 @@ public class SilentIMObjectDeleter<T extends IMObject> extends AbstractIMObjectD
     protected void deactivated(T object, HelpContext help) {
         // no-op
     }
+
+    /**
+     * Invoked when deletion and deactivation of an object is not supported.
+     *
+     * @param object  the deletion handler
+     * @param help*   the help context
+     */
+    @Override
+    protected void unsupported(T object, HelpContext help) {
+        // no-op
+    }
 }

@@ -57,7 +57,11 @@ public abstract class AbstractIMObjectDeleter<T extends IMObject> implements IMO
             if (handler.canDelete()) {
                 delete(handler, context, help, listener);
             } else if (object.isActive()) {
-                deactivate(handler, listener, help);
+                if (handler.canDeactivate()) {
+                    deactivate(handler, listener, help);
+                } else {
+                    unsupported(object, help);
+                }
             } else {
                 deactivated(object, help);
             }
@@ -94,6 +98,14 @@ public abstract class AbstractIMObjectDeleter<T extends IMObject> implements IMO
      * @param help   the help context
      */
     protected abstract void deactivated(T object, HelpContext help);
+
+    /**
+     * Invoked when deletion and deactivation of an object is not supported.
+     *
+     * @param object the object
+     * @param help   the help context
+     */
+    protected abstract void unsupported(T object, HelpContext help);
 
     /**
      * Performs deletion.
