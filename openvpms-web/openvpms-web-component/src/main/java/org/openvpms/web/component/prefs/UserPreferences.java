@@ -168,7 +168,7 @@ public class UserPreferences implements Preferences {
      * @param groupName the preference group name
      * @param name      the preference name
      * @param value     the preference value. May be {@code null}
-     * @param save      if {@code true}, make the preference persitent, otherwise store it for the session
+     * @param save      if {@code true}, make the preference persistent, otherwise store it for the session
      */
     public void setPreference(String groupName, String name, Object value, boolean save) {
         if (!save) {
