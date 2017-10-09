@@ -308,7 +308,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
         if (grid instanceof CageScheduleGrid) {
             CageScheduleGrid cageGrid = (CageScheduleGrid) grid;
             if (getQuery().getShow() == AppointmentQuery.Show.CAGE) {
-                model = new DefaultCageTableModel(cageGrid, getContext(), appointmentColours, clinicianColours, blockingEventColours);
+                model = new DefaultCageTableModel(cageGrid, getContext(), appointmentColours, clinicianColours,
+                                                  blockingEventColours);
             } else {
                 model = new CageSummaryTableModel(cageGrid, getContext(), appointmentColours, clinicianColours,
                                                   blockingEventColours);
