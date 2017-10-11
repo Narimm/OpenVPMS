@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -149,7 +150,8 @@ public class IMObjectCollectionEditorFactory {
     private static synchronized ArchetypeHandlers<IMObjectCollectionEditor> getEditors() {
         if (editors == null) {
             editors = new ArchetypeHandlers<>("IMObjectCollectionEditorFactory.properties",
-                                              IMObjectCollectionEditor.class);
+                                              IMObjectCollectionEditor.class,
+                                              ArchetypeServiceHelper.getArchetypeService());
         }
         return editors;
     }
@@ -163,7 +165,8 @@ public class IMObjectCollectionEditorFactory {
         if (editable == null) {
             editable = new ArchetypeHandlers<>("EditableIMObjectCollectionEditorFactory.properties",
                                                "DefaultEditableIMObjectCollectionEditorFactory.properties",
-                                               EditableIMObjectCollectionEditor.class);
+                                               EditableIMObjectCollectionEditor.class,
+                                               ArchetypeServiceHelper.getArchetypeService());
         }
         return editable;
     }

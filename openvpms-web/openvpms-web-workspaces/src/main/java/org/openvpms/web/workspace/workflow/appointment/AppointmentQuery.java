@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -57,17 +57,13 @@ class AppointmentQuery extends ScheduleServiceQuery {
         ALL(0, 24), MORNING(8, 12), AFTERNOON(12, 17), EVENING(17, 24),
         AM(0, 12), PM(12, 24);
 
+        private final int startMins;
+
+        private final int endMins;
+
         TimeRange(int startHour, int endHour) {
             this.startMins = startHour * 60;
             this.endMins = endHour * 60;
-        }
-
-        public int getStartMins() {
-            return startMins;
-        }
-
-        public int getEndMins() {
-            return endMins;
         }
 
         /**
@@ -117,9 +113,13 @@ class AppointmentQuery extends ScheduleServiceQuery {
             return EVENING;
         }
 
-        private final int startMins;
+        public int getStartMins() {
+            return startMins;
+        }
 
-        private final int endMins;
+        public int getEndMins() {
+            return endMins;
+        }
     }
 
     public enum DateRange {
@@ -129,6 +129,26 @@ class AppointmentQuery extends ScheduleServiceQuery {
     public enum Show {
         ALL, CAGE, SUMMARY, CHECKIN, CHECKOUT
     }
+
+    /**
+     * The container for the Dates label.
+     */
+    private final Component datesLabelContainer = new Row();
+
+    /**
+     * The container for the Dates selector.
+     */
+    private final Component datesContainer = new Row();
+
+    /**
+     * The container for the Show label.
+     */
+    private final Component showLabelContainer = new Row();
+
+    /**
+     * The container for the show selector.
+     */
+    private final Component showContainer = new Row();
 
     /**
      * Time range selector.
@@ -151,16 +171,6 @@ class AppointmentQuery extends ScheduleServiceQuery {
     private int days = 1;
 
     /**
-     * The container for the Dates label.
-     */
-    private final Component datesLabelContainer = new Row();
-
-    /**
-     * The container for the Dates selector.
-     */
-    private final Component datesContainer = new Row();
-
-    /**
      * The selected show type.
      */
     private Show show = Show.ALL;
@@ -171,16 +181,6 @@ class AppointmentQuery extends ScheduleServiceQuery {
     private SelectField showSelector;
 
     /**
-     * The container for the Show label.
-     */
-    private final Component showLabelContainer = new Row();
-
-    /**
-     * The container for the show selector.
-     */
-    private final Component showContainer = new Row();
-
-    /**
      * Constructs an {@link AppointmentQuery}.
      *
      * @param location the practice location. May be {@code null}
@@ -188,6 +188,12 @@ class AppointmentQuery extends ScheduleServiceQuery {
      */
     public AppointmentQuery(Party location, Preferences prefs) {
         super(ServiceHelper.getAppointmentService(), new AppointmentSchedules(location, prefs), prefs);
+        String showPref = prefs.getString(PreferenceArchetypes.SCHEDULING, "show", Show.ALL.toString());
+        try {
+            show = Show.valueOf(showPref);
+        } catch (Exception exception) {
+            show = Show.ALL;
+        }
     }
 
     /**
@@ -286,6 +292,8 @@ class AppointmentQuery extends ScheduleServiceQuery {
                          Messages.get("workflow.scheduling.show.checkout")
         };
         showSelector = SelectFieldFactory.create(show);
+        showSelector.setSelectedIndex(this.show.ordinal());
+
         showSelector.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -351,7 +359,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
 
     /**
      * Invoked when the schedule view changes.
-     * <p/>
+     * <p>
      * Notifies any listener to perform a query.
      */
     @Override
@@ -371,7 +379,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
 
     /**
      * Invoked when the date changes.
-     * <p/>
+     * <p>
      * This implementation invokes {@link #onQuery()}.
      */
     @Override
@@ -392,6 +400,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
             range = DateRange.DAY;
         }
         setDateRange(range);
+        getPreferences().setPreference(PreferenceArchetypes.SCHEDULING, "dates", range.toString());
         onQuery();
     }
 
@@ -468,6 +477,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
         int index = showSelector.getSelectedIndex();
         if (index >= 0 && index < Show.values().length) {
             show = Show.values()[index];
+            getPreferences().setPreference(PreferenceArchetypes.SCHEDULING, "show", show.toString());
             onQuery();
         }
     }
@@ -477,7 +487,8 @@ class AppointmentQuery extends ScheduleServiceQuery {
      */
     private void updateShowSelector() {
         boolean hasCageType = false;
-        if (getShow() == Show.ALL) {
+        if (show == Show.CAGE) {
+            // if the schedule doesn't have any cages, don't enable the cage view by default
             for (Entity schedule : getSelectedSchedules()) {
                 IMObjectBean bean = new IMObjectBean(schedule);
                 if (bean.getNodeTargetObjectRef("cageType") != null) {
@@ -485,8 +496,8 @@ class AppointmentQuery extends ScheduleServiceQuery {
                     break;
                 }
             }
-            if (hasCageType) {
-                show = Show.CAGE;
+            if (!hasCageType) {
+                show = Show.ALL;
                 showSelector.setSelectedIndex(show.ordinal());
             }
         }
@@ -521,7 +532,14 @@ class AppointmentQuery extends ScheduleServiceQuery {
         DateRange range;
         Entity view = getScheduleView();
         if (AppointmentHelper.isMultiDayView(view)) {
-            range = DateRange.FORTNIGHT;
+            String datesPref = getPreferences().getString(PreferenceArchetypes.SCHEDULING, "dates",
+                                                          DateRange.FORTNIGHT.toString());
+            try {
+                range = DateRange.valueOf(datesPref);
+            } catch (Exception exception) {
+                range = DateRange.FORTNIGHT;
+            }
+
             if (datesContainer.getComponentCount() == 0) {
                 datesLabelContainer.add(LabelFactory.create("workflow.scheduling.dates"));
                 datesContainer.add(dateSelector);

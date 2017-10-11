@@ -17,12 +17,10 @@
 package org.openvpms.web.workspace.admin.organisation;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -47,20 +45,4 @@ public class OrganisationCRUDWindow extends ResultSetCRUDWindow<Entity> {
         super(archetypes, query, set, context, help);
     }
 
-    /**
-     * Creates a deleter to delete an object.
-     * <p/>
-     * This ensures that entity.job* can be deleted rather than deactivated.
-     *
-     * @param object the object to delete
-     * @return a new deleter
-     */
-    @Override
-    protected IMObjectDeleter createDeleter(Entity object) {
-        IMObjectDeleter deleter = super.createDeleter(object);
-        if (TypeHelper.isA(object, "entity.job*")) {
-            deleter.setExcludeRelationships("entityRelationship.jobUser");
-        }
-        return deleter;
-    }
 }

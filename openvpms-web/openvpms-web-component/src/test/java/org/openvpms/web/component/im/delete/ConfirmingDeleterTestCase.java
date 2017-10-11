@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.im.delete;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
@@ -27,34 +28,57 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
- * Tests the {@link IMObjectDeleter} class.
+ * Tests the {@link ConfirmingDeleter} class.
  *
  * @author Tim Anderson
  */
-public class IMObjectDeleterTestCase extends AbstractAppTest {
+public class ConfirmingDeleterTestCase extends AbstractAppTest {
 
     /**
      * The help context.
      */
     private final HelpContext help = new HelpContext("foo", null);
 
+    /**
+     * The context.
+     */
+    private final Context context = new LocalContext();
+
+    /**
+     * The deletion handler factory.
+     */
+    private IMObjectDeletionHandlerFactory factory;
+
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        factory = new IMObjectDeletionHandlerFactory(getArchetypeService());
+        factory.setApplicationContext(applicationContext);
+    }
 
     /**
      * Verifies that attempting to delete an entity with participations deactivates it.
@@ -70,12 +94,12 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
                                                                               ActStatus.POSTED);
         save(invoice);     // customer has participation relationships to the invoice
 
-        TestDeleter deleter = new TestDeleter();
-        TestListener listener = new TestListener();
-        deleter.delete(customer, help, listener);
+        TestDeleter<IMObject> deleter = new TestDeleter<>();
+        TestListener<IMObject> listener = new TestListener<>();
+        deleter.delete(customer, context, help, listener);
 
         // verify the customer has been deactivated rather than deleted
-        checkDeleter(deleter, false, true, false);
+        checkDeleter(deleter, false, true, false, false);
         checkListener(listener, false);
 
         customer = get(customer);
@@ -83,10 +107,10 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         assertFalse(customer.isActive());
 
         // now attempt deletion again. The deactivated() method should be invoked
-        deleter = new TestDeleter();
-        listener = new TestListener();
-        deleter.delete(customer, help, listener);
-        checkDeleter(deleter, false, false, true);
+        deleter = new TestDeleter<>();
+        listener = new TestListener<>();
+        deleter.delete(customer, context, help, listener);
+        checkDeleter(deleter, false, false, true, false);
         checkListener(listener, false);
     }
 
@@ -98,12 +122,12 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         Party customer = TestHelper.createCustomer();
         Party pet = TestHelper.createPatient(customer);
 
-        TestDeleter deleter = new TestDeleter();
-        TestListener listener = new TestListener();
-        deleter.delete(customer, help, listener);
+        TestDeleter<IMObject> deleter = new TestDeleter<>();
+        TestListener<IMObject> listener = new TestListener<>();
+        deleter.delete(customer, context, help, listener);
 
         // verify the customer has been deactivated
-        checkDeleter(deleter, false, true, false);
+        checkDeleter(deleter, false, true, false, false);
         checkListener(listener, false);
 
         customer = get(customer);
@@ -114,19 +138,19 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
 
     /**
      * Verifies that attempting to delete an entity which is the target of a relationship
-     * invokes {@link IMObjectDeleter#remove}, and performs the removal.
+     * invokes {@link AbstractIMObjectDeleter#delete}, and performs the removal.
      */
     @Test
     public void testDeleteTargetWithEntityRelationships() {
         Party customer = TestHelper.createCustomer();
         Party pet = TestHelper.createPatient(customer);
 
-        TestDeleter deleter = new TestDeleter();
-        TestListener listener = new TestListener();
-        deleter.delete(pet, help, listener);
+        TestDeleter<IMObject> deleter = new TestDeleter<>();
+        TestListener<IMObject> listener = new TestListener<>();
+        deleter.delete(pet, context, help, listener);
 
         // verify the customer has been deleted
-        checkDeleter(deleter, true, false, false);
+        checkDeleter(deleter, true, false, false, false);
         checkListener(listener, true);
 
         assertNull(get(pet));
@@ -139,15 +163,15 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
      */
     @Test
     public void testDeleteTemplate() {
-        TestDeleter deleter = new TestDeleter();
+        TestDeleter<IMObject> deleter = new TestDeleter<>();
 
         // create a template with associated act.documentTemplate
         Entity template = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
-        TestListener listener = new TestListener();
-        deleter.delete(template, help, listener);
+        TestListener<IMObject> listener = new TestListener<>();
+        deleter.delete(template, context, help, listener);
 
         // verify the template has been deleted
-        checkDeleter(deleter, true, false, false);
+        checkDeleter(deleter, true, false, false, false);
         checkListener(listener, true);
 
         assertNull(get(template));
@@ -159,7 +183,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
      */
     @Test
     public void testDeleteTemplateWithParticipations() {
-        TestDeleter deleter = new TestDeleter();
+        TestDeleter<IMObject> deleter = new TestDeleter<>();
 
         Entity template = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
         Act act = (Act) create(PatientArchetypes.DOCUMENT_FORM);
@@ -169,11 +193,11 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         bean.addNodeParticipation("documentTemplate", template);
         save(act);
 
-        TestListener listener = new TestListener();
-        deleter.delete(template, help, listener);
+        TestListener<IMObject> listener = new TestListener<>();
+        deleter.delete(template, context, help, listener);
 
         // verify the template has been deactivated
-        checkDeleter(deleter, false, true, false);
+        checkDeleter(deleter, false, true, false, false);
         checkListener(listener, false);
 
         template = get(template);
@@ -181,43 +205,11 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         assertFalse(template.isActive());
 
         // now attempt deletion again. The deactivated() method should be invoked
-        deleter = new TestDeleter();
-        listener = new TestListener();
-        deleter.delete(template, help, listener);
-        checkDeleter(deleter, false, false, true);
+        deleter = new TestDeleter<>();
+        listener = new TestListener<>();
+        deleter.delete(template, context, help, listener);
+        checkDeleter(deleter, false, false, true, false);
         checkListener(listener, false);
-    }
-
-    /**
-     * Verifies that entities can be deleted if relationships are excluded.
-     */
-    @Test
-    public void testDeleteWithRelationshipsExcluded() {
-        TestDeleter deleter = new TestDeleter();
-        TestListener listener = new TestListener();
-
-        Entity job = (Entity) create("entity.jobESCIInboxReader");
-        Entity runAs = TestHelper.createUser();
-        EntityBean bean = new EntityBean(job);
-        bean.addNodeRelationship("runAs", runAs);
-        save(job, runAs);
-
-        deleter.delete(job, help, listener);
-
-        // verify the job has been deactivated rather than deleted
-        checkDeleter(deleter, false, true, false);
-        checkListener(listener, false);
-
-        // now attempt deletion again, but this time exclude the runAs relationship
-        deleter = new TestDeleter();
-        listener = new TestListener();
-        deleter.setExcludeRelationships("entityRelationship.jobUser");
-        deleter.delete(job, help, listener);
-
-        checkDeleter(deleter, true, false, false);
-        checkListener(listener, true);
-
-        assertNull(get(job));
     }
 
     /**
@@ -228,17 +220,40 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         Party location = TestHelper.createLocation();
         TestHelper.createCustomer(location);
 
-        TestDeleter deleter = new TestDeleter();
-        TestListener listener = new TestListener();
+        TestDeleter<IMObject> deleter = new TestDeleter<>();
+        TestListener<IMObject> listener = new TestListener<>();
 
-        deleter.delete(location, help, listener);
+        deleter.delete(location, context, help, listener);
 
-        checkDeleter(deleter, false, true, false);
+        checkDeleter(deleter, false, true, false, false);
         checkListener(listener, false);
 
         location = get(location);
         assertNotNull(location);
         assertFalse(location.isActive());
+    }
+
+    /**
+     * Verifies POSTED acts can't be deleted or deactivated.
+     */
+    @Test
+    public void testDeletePostedAct() {
+        Party customer = TestHelper.createCustomer();
+        Product product = TestHelper.createProduct();
+        List<FinancialAct> charge = FinancialTestHelper.createChargesCounter(BigDecimal.TEN, customer, product,
+                                                                             ActStatus.POSTED);
+        save(charge);
+
+        TestDeleter<IMObject> deleter = new TestDeleter<>();
+        TestListener<IMObject> listener = new TestListener<>();
+        deleter.delete(charge.get(0), context, help, listener);
+
+        checkDeleter(deleter, false, false, false, true);
+        checkListener(listener, false);
+
+        FinancialAct act = get(charge.get(0));
+        assertNotNull(act);
+        assertTrue(act.isActive());
     }
 
     /**
@@ -248,11 +263,14 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
      * @param remove      if {@code true} expect remove() to have been invoked
      * @param deactivate  if {@code true} expect deactivate() to have been invoked
      * @param deactivated if {@code true} expect deactivated() to have been invoked
+     * @param unsupported if {@code true} expect unsupported() to have been invoked
      */
-    private void checkDeleter(TestDeleter deleter, boolean remove, boolean deactivate, boolean deactivated) {
+    private void checkDeleter(TestDeleter<IMObject> deleter, boolean remove, boolean deactivate, boolean deactivated,
+                              boolean unsupported) {
         assertEquals(remove, deleter.removeInvoked());
         assertEquals(deactivate, deleter.deactivateInvoked());
         assertEquals(deactivated, deleter.deactivatedInvoked());
+        assertEquals(unsupported, deleter.unsupportedInvoked());
     }
 
     /**
@@ -266,7 +284,7 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         assertFalse(listener.failedInvoked());
     }
 
-    private static class TestDeleter extends IMObjectDeleter {
+    private class TestDeleter<T extends IMObject> extends ConfirmingDeleter<T> {
 
         /**
          * Determines if remove() was invoked.
@@ -284,10 +302,15 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         private boolean deactivated;
 
         /**
+         * Determines if unsupported() has been invoked.
+         */
+        private boolean unsupported;
+
+        /**
          * Constructs a {@code TestDeleter}.
          */
         public TestDeleter() {
-            super(new LocalContext());
+            super(factory);
         }
 
         /**
@@ -318,28 +341,41 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         }
 
         /**
-         * Invoked to remove an object.
+         * Determines if unsupported() has been invoked.
          *
-         * @param object   the object to remove
-         * @param listener the listener to notify
-         * @param help     the help context
+         * @return {@code true} if unsupported() was invoked
          */
-        protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
+        public boolean unsupportedInvoked() {
+            return unsupported;
+        }
+
+        /**
+         * Invoked to delete an object.
+         *
+         * @param handler  the deletion handler
+         * @param context  the context
+         * @param help     the help context
+         * @param listener the listener to notify
+         */
+        @Override
+        protected void delete(IMObjectDeletionHandler<T> handler, Context context, HelpContext help,
+                              IMObjectDeletionListener<T> listener) {
             remove = true;
-            doRemove(object, listener, help);
+            doDelete(handler, context, help, listener);
         }
 
         /**
          * Invoked to deactivate an object.
          *
-         * @param object   the object to deactivate
+         * @param handler  the deletion handler
          * @param listener the listener
          * @param help     the help context
          */
-        protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener,
-                                                       HelpContext help) {
+        @Override
+        protected void deactivate(IMObjectDeletionHandler<T> handler, IMObjectDeletionListener<T> listener,
+                                  HelpContext help) {
             deactivate = true;
-            doDeactivate(object, listener);
+            doDeactivate(handler, listener);
         }
 
         /**
@@ -348,12 +384,24 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
          * @param object the object
          * @param help   the help context
          */
-        protected <T extends IMObject> void deactivated(T object, HelpContext help) {
+        @Override
+        protected void deactivated(T object, HelpContext help) {
             deactivated = true;
+        }
+
+        /**
+         * Invoked when deletion and deactivation of an object is not supported.
+         *
+         * @param object the deletion handler
+         * @param help   the help context
+         */
+        @Override
+        protected void unsupported(T object, HelpContext help) {
+            unsupported = true;
         }
     }
 
-    private class TestListener extends AbstractIMObjectDeletionListener<Entity> {
+    private class TestListener<T extends IMObject> extends AbstractIMObjectDeletionListener<T> {
 
         /**
          * Determines if deleted() was invoked.
@@ -384,18 +432,17 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         }
 
         @Override
-        public void deleted(Entity object) {
+        public void deleted(T object) {
             deleted = true;
         }
 
-
         @Override
-        public void failed(Entity object, Throwable cause) {
+        public void failed(T object, Throwable cause) {
             failed = true;
         }
 
         @Override
-        public void failed(Entity object, Throwable cause, IMObjectEditor editor) {
+        public void failed(T object, Throwable cause, IMObjectEditor editor) {
             failed = true;
         }
     }

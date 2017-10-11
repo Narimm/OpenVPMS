@@ -144,8 +144,8 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     @Override
     public void setUp() {
         super.setUp();
-        propertiesHandlers = new ArchetypeHandlers<>(PROPERTIES, null, Query.class, "query.");
-        xmlHandlers = new ArchetypeHandlers<>(XML, Query.class);
+        propertiesHandlers = new ArchetypeHandlers<>(PROPERTIES, null, Query.class, "query.", getArchetypeService());
+        xmlHandlers = new ArchetypeHandlers<>(XML, Query.class, getArchetypeService());
     }
 
     /**

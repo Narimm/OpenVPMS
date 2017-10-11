@@ -32,6 +32,9 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DelegatingContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.delete.AbstractIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.ConfirmingDeleter;
+import org.openvpms.web.component.im.delete.IMObjectDeleter;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectActions;
@@ -43,11 +46,8 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
-import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.mail.MailContext;
@@ -94,6 +94,21 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public static final String PRINT_ID = "print";
 
     /**
+     * The archetypes that this may create.
+     */
+    private final Archetypes<T> archetypes;
+
+    /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * Help context.
+     */
+    private final HelpContext help;
+
+    /**
      * The object.
      */
     private T object;
@@ -107,11 +122,6 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Determines the operations that may be performed on the selected object.
      */
     private IMObjectActions<T> actions;
-
-    /**
-     * The archetypes that this may create.
-     */
-    private final Archetypes<T> archetypes;
 
     /**
      * The listener.
@@ -129,19 +139,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     private ButtonSet buttons;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * Email context.
      */
     private MailContext mailContext;
-
-    /**
-     * Help context.
-     */
-    private final HelpContext help;
 
     /**
      * Constructs an {@code AbstractCRUDWindow}.
@@ -323,7 +323,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * Sets the mail context.
-     * <p/>
+     * <p>
      * This is used to determine email addresses when mailing.
      *
      * @param context the mail context. May be {@code null}
@@ -389,13 +389,15 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
-     * Creates a deleter to delete an object.
+     * Returns an {@link IMObjectDeleter} to delete an object.
+     * <p>
+     * This implementation returns an instance that prompts for confirmation.
      *
-     * @param object the object to delete
      * @return a new deleter
      */
-    protected IMObjectDeleter createDeleter(T object) {
-        return new DefaultIMObjectDeleter(getContext());
+    @SuppressWarnings("unchecked")
+    protected IMObjectDeleter<T> getDeleter() {
+        return (IMObjectDeleter<T>) ServiceHelper.getBean(ConfirmingDeleter.class);
     }
 
     /**
@@ -607,9 +609,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param object the object to delete
      */
     protected void delete(T object) {
-        IMObjectDeleter deleter = createDeleter(object);
+        IMObjectDeleter<T> deleter = getDeleter();
         HelpContext delete = getHelpContext().subtopic("delete");
-        deleter.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
+        deleter.delete(object, context, delete, new AbstractIMObjectDeletionListener<T>() {
             public void deleted(T object) {
                 onDeleted(object);
             }
@@ -622,7 +624,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * Invoked if an object may not be deleted.
-     * <p/>
+     * <p>
      * This implementation is a no-op
      *
      * @param object the object
@@ -711,7 +713,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * Creates a new edit dialog.
-     * <p/>
+     * <p>
      * This implementation uses {@link EditDialogFactory#create}.
      *
      * @param editor the editor
@@ -878,7 +880,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * A delegating context where location and stock location changes are not propagated.
-     * <p/>
+     * <p>
      * This is to prevent changes that an editor makes to the location/stock location from propagating to the global
      * context.
      */

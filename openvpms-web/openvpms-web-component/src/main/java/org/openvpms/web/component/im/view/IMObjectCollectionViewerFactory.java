@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.view;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -95,9 +96,9 @@ public class IMObjectCollectionViewerFactory {
      */
     private static synchronized ArchetypeHandlers<IMObjectCollectionViewer> getViewers() {
         if (viewers == null) {
-            viewers = new ArchetypeHandlers<IMObjectCollectionViewer>(
+            viewers = new ArchetypeHandlers<>(
                     "IMObjectCollectionViewerFactory.properties", "DefaultIMObjectCollectionViewerFactory.properties",
-                    IMObjectCollectionViewer.class);
+                    IMObjectCollectionViewer.class, ArchetypeServiceHelper.getArchetypeService());
         }
         return viewers;
     }

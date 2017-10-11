@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -29,13 +29,6 @@ import java.util.Collection;
 public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEditor {
 
     /**
-     * Determines if items can be added and removed.
-     *
-     * @param readOnly if {@code true} items can't be added and removed
-     */
-    void setCardinalityReadOnly(boolean readOnly);
-
-    /**
      * Determines if items can be added or removed.
      *
      * @return {@code true} if items can't be added or removed.
@@ -43,11 +36,11 @@ public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEdit
     boolean isCardinalityReadOnly();
 
     /**
-     * Sets a listener to be notified when an object is created.
+     * Determines if items can be added and removed.
      *
-     * @param listener the listener. May be {@code null}
+     * @param readOnly if {@code true} items can't be added and removed
      */
-    void setCreationListener(IMObjectCreationListener listener);
+    void setCardinalityReadOnly(boolean readOnly);
 
     /**
      * Returns the listener to be notified when an object is created.
@@ -57,11 +50,11 @@ public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEdit
     IMObjectCreationListener getCreationListener();
 
     /**
-     * Registers a handler to confirm removal of objects.
+     * Sets a listener to be notified when an object is created.
      *
-     * @param handler the handler. May be {@code null}
+     * @param listener the listener. May be {@code null}
      */
-    void setRemoveConfirmationHandler(RemoveConfirmationHandler handler);
+    void setCreationListener(IMObjectCreationListener listener);
 
     /**
      * Returns the handler to confirm removal of objects.
@@ -71,10 +64,17 @@ public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEdit
     RemoveConfirmationHandler getRemoveConfirmationHandler();
 
     /**
+     * Registers a handler to confirm removal of objects.
+     *
+     * @param handler the handler. May be {@code null}
+     */
+    void setRemoveConfirmationHandler(RemoveConfirmationHandler handler);
+
+    /**
      * Creates a new object.
-     * <p/>
+     * <p>
      * The object is not automatically added to the collection.
-     * <p/>
+     * <p>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
@@ -104,10 +104,10 @@ public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEdit
 
     /**
      * Returns editors for items in the collection.
-     * <p/>
+     * <p>
      * These include any editors that have been created for objects in the
      * collection, and the current editor, which may be for an uncommitted object.
-     * <p/>
+     * <p>
      * If an object hasn't been edited, it may not have a corresponding editor.
      *
      * @return editors for items in the collection and editors for items not yet committed to the collection
@@ -116,10 +116,19 @@ public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEdit
 
     /**
      * Returns the objects in the collection.
-     * <p/>
+     * <p>
      * This includes the object of the current editor, which may be uncommitted.
      *
      * @return the objects
      */
     Collection<IMObject> getCurrentObjects();
+
+    /**
+     * Returns an editor for the first object in the collection.
+     *
+     * @param create, if {@code true} create a new instance if the collection is empty
+     * @return the first object editor, or {@code null} if one wasn't found or {@code create} was {@code false} or an
+     * editor could not be created
+     */
+    IMObjectEditor getFirstEditor(boolean create);
 }

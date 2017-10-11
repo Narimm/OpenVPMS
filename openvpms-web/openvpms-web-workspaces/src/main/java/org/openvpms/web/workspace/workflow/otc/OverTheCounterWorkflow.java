@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
@@ -25,9 +25,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.IMObjectDeletionHandlerFactory;
+import org.openvpms.web.component.im.delete.SilentIMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.util.SilentIMObjectDeleter;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -183,8 +184,9 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         charge = IMObjectHelper.reload(charge);
         if (charge != null) {
             // this will fail if someone has subsequently posted the charge.
-            SilentIMObjectDeleter deleter = new SilentIMObjectDeleter(getContext());
-            deleter.delete(charge, getHelpContext(), new DefaultIMObjectDeletionListener<IMObject>());
+            IMObjectDeletionHandlerFactory factory = ServiceHelper.getBean(IMObjectDeletionHandlerFactory.class);
+            SilentIMObjectDeleter<IMObject> deleter = new SilentIMObjectDeleter<>(factory);
+            deleter.delete(charge, getContext(), getHelpContext(), new DefaultIMObjectDeletionListener<>());
         }
     }
 

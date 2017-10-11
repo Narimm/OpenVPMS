@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -32,11 +33,6 @@ import java.lang.reflect.Constructor;
 public class IMObjectEditorFactory {
 
     /**
-     * Editor implementations.
-     */
-    private ArchetypeHandlers<IMObjectEditor> editors;
-
-    /**
      * The resource name.
      */
     private final String name;
@@ -45,6 +41,16 @@ public class IMObjectEditorFactory {
      * The fallback resource name.
      */
     private final String fallbackName;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Editor implementations.
+     */
+    private ArchetypeHandlers<IMObjectEditor> editors;
 
     /**
      * The default resource name.
@@ -58,9 +64,11 @@ public class IMObjectEditorFactory {
 
     /**
      * Constructs an {@link IMObjectEditorFactory}.
+     *
+     * @param service the archetype service
      */
-    public IMObjectEditorFactory() {
-        this(NAME, FALLBACK_NAME);
+    public IMObjectEditorFactory(IArchetypeService service) {
+        this(NAME, FALLBACK_NAME, service);
     }
 
     /**
@@ -68,10 +76,12 @@ public class IMObjectEditorFactory {
      *
      * @param name         the resource name
      * @param fallbackName the fallback resource name. May be {@code null}
+     * @param service      the archetype service
      */
-    public IMObjectEditorFactory(String name, String fallbackName) {
+    public IMObjectEditorFactory(String name, String fallbackName, IArchetypeService service) {
         this.name = name;
         this.fallbackName = fallbackName;
+        this.service = service;
     }
 
     /**
@@ -126,7 +136,7 @@ public class IMObjectEditorFactory {
      */
     private synchronized ArchetypeHandlers getEditors() {
         if (editors == null) {
-            editors = new ArchetypeHandlers<>(name, fallbackName, IMObjectEditor.class);
+            editors = new ArchetypeHandlers<>(name, fallbackName, IMObjectEditor.class, service);
         }
         return editors;
     }

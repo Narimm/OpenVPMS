@@ -11,9 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.im.delete;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,8 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * Abstract implementation of the {@link IMObjectDeletionListener} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMObjectDeletionListener<T> {
 
@@ -44,7 +43,7 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
 
     /**
      * Notifies that an object has been deleted.
-     * <p/>
+     * <p>
      * This implementation does nothing.
      *
      * @param object the deleted object
@@ -54,7 +53,7 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
 
     /**
      * Notifies that an object has been deactivated.
-     * <p/>
+     * <p>
      * This implementation does nothing.
      *
      * @param object the deactivated object
@@ -64,7 +63,7 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
 
     /**
      * Notifies that an object has failed to be deleted.
-     * <p/>
+     * <p>
      * This implementation displays an error dialog.
      *
      * @param object the object that failed to be deleted
@@ -88,7 +87,7 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
 
     /**
      * Notifies that an object has failed to be deleted.
-     * <p/>
+     * <p>
      * This implementation displays an error dialog.
      *
      * @param object the object that failed to be deleted

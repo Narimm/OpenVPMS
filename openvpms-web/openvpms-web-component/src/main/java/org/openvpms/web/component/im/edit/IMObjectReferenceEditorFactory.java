@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -21,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -30,8 +29,7 @@ import org.openvpms.web.component.property.Property;
 /**
  * A factory for {@link IMObjectReferenceEditor} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-08-10 07:37:14Z $
+ * @author Tim Anderson
  */
 public class IMObjectReferenceEditorFactory {
 
@@ -44,7 +42,7 @@ public class IMObjectReferenceEditorFactory {
      * The logger.
      */
     private static final Log log
-        = LogFactory.getLog(IMObjectReferenceEditorFactory.class);
+            = LogFactory.getLog(IMObjectReferenceEditorFactory.class);
 
     /**
      * Prevent construction.
@@ -71,14 +69,13 @@ public class IMObjectReferenceEditorFactory {
         if (handler != null) {
             try {
                 result = (IMObjectReferenceEditor<T>) handler.create(
-                    new Object[]{property, parent, context});
+                        new Object[]{property, parent, context});
             } catch (Throwable exception) {
                 log.error(exception, exception);
             }
         }
         if (result == null) {
-            result = new DefaultIMObjectReferenceEditor<T>(property, parent,
-                                                           context);
+            result = new DefaultIMObjectReferenceEditor<>(property, parent, context);
         }
         return result;
     }
@@ -88,12 +85,11 @@ public class IMObjectReferenceEditorFactory {
      *
      * @return the editors
      */
-    private static synchronized ArchetypeHandlers<IMObjectReferenceEditor>
-    getEditors() {
+    private static synchronized ArchetypeHandlers<IMObjectReferenceEditor> getEditors() {
         if (editors == null) {
-            editors = new ArchetypeHandlers<IMObjectReferenceEditor>(
-                "IMObjectReferenceEditorFactory.properties",
-                IMObjectReferenceEditor.class);
+            editors = new ArchetypeHandlers<>("IMObjectReferenceEditorFactory.properties",
+                                              IMObjectReferenceEditor.class,
+                                              ArchetypeServiceHelper.getArchetypeService());
         }
         return IMObjectReferenceEditorFactory.editors;
     }
