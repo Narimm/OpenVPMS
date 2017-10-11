@@ -23,6 +23,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,7 +33,9 @@ import org.springframework.web.context.ServletContextAware;
 import javax.servlet.ServletContext;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A {@link PluginManager} that is configured by an <em>entity.pluginConfiguration</em>.
@@ -50,6 +53,11 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
      * The plugin service provider;
      */
     private final PluginServiceProvider provider;
+
+    /**
+     * The listeners.
+     */
+    private final Set<PluginManagerListener> listeners = new HashSet<>();
 
     /**
      * The plugin manager.
@@ -97,6 +105,17 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
     }
 
     /**
+     * Returns the bundle context, or {@code null} if the manager is not running.
+     *
+     * @return the bundle context. May be {@code null}
+     */
+    @Override
+    public BundleContext getBundleContext() {
+        PluginManager manager = this.manager;
+        return (manager != null) ? manager.getBundleContext() : null;
+    }
+
+    /**
      * Returns a list of all installed bundles.
      *
      * @return the installed bundles
@@ -138,6 +157,9 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
             }
             if (path != null) {
                 manager = new PluginManagerImpl(path, provider, servletContext);
+                for (PluginManagerListener listener : listeners) {
+                    manager.addListener(listener);
+                }
                 manager.start();
             }
         }
@@ -178,6 +200,32 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
     }
 
     /**
+     * Adds a listener to be notified of plugin manager events.
+     *
+     * @param listener the listener to notify
+     */
+    @Override
+    public synchronized void addListener(PluginManagerListener listener) {
+        listeners.add(listener);
+        if (manager != null) {
+            manager.addListener(listener);
+        }
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public synchronized void removeListener(PluginManagerListener listener) {
+        listeners.remove(listener);
+        if (manager != null) {
+            manager.removeListener(listener);
+        }
+    }
+
+    /**
      * Invoked by a BeanFactory after it has set all bean properties supplied
      * (and satisfied BeanFactoryAware and ApplicationContextAware).
      * <p>This method allows the bean instance to perform initialization only
@@ -200,7 +248,13 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
      */
     @Override
     public void destroy() throws Exception {
-        stop();
+        try {
+            stop();
+        } finally {
+            synchronized (this) {
+                listeners.clear();
+            }
+        }
     }
 
     /**

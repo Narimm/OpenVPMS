@@ -327,6 +327,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-insurance</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>webstart-jnlp-servlet</artifactId>
             <version>1.0-beta-6</version>

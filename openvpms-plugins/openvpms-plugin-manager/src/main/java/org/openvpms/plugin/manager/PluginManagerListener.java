@@ -14,35 +14,22 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.service.archetype;
-
-import java.io.InputStream;
+package org.openvpms.plugin.manager;
 
 /**
- * Installs archetypes from streams, the classpath or filesystem.
+ * Listener for {@link PluginManager} events.
  *
  * @author Tim Anderson
  */
-public interface ArchetypeInstaller {
+public interface PluginManagerListener {
 
     /**
-     * Installs archetypes from a stream.
-     *
-     * @param stream the stream
+     * Invoked when the {@link PluginManager} has started.
      */
-    void install(InputStream stream);
+    void started();
 
     /**
-     * Installs archetypes at the specified path.
-     *
-     * @param path the path
+     * Invoked when the {@link PluginManager} has stopped.
      */
-    void install(String path);
-
-    /**
-     * Installs archetypes at the specified paths.
-     *
-     * @param paths the paths
-     */
-    void install(String[] paths);
+    void stopped();
 }

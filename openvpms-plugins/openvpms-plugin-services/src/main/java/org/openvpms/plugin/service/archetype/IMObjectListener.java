@@ -16,33 +16,33 @@
 
 package org.openvpms.plugin.service.archetype;
 
-import java.io.InputStream;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
- * Installs archetypes from streams, the classpath or filesystem.
+ * Listener for {@link IMObject} changes.
  *
  * @author Tim Anderson
  */
-public interface ArchetypeInstaller {
+public interface IMObjectListener {
 
     /**
-     * Installs archetypes from a stream.
+     * The archetypes to receive notifications for.
      *
-     * @param stream the stream
+     * @return the archetypes
      */
-    void install(InputStream stream);
+    String[] getArchetypes();
 
     /**
-     * Installs archetypes at the specified path.
+     * Invoked when an object is updated.
      *
-     * @param path the path
+     * @param object the object
      */
-    void install(String path);
+    void updated(IMObject object);
 
     /**
-     * Installs archetypes at the specified paths.
+     * invoked when an object is removed.
      *
-     * @param paths the paths
+     * @param object the object
      */
-    void install(String[] paths);
+    void removed(IMObject object);
 }

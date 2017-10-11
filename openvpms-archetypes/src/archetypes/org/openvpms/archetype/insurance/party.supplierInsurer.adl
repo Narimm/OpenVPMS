@@ -52,5 +52,7 @@
                 <errorMessage>Duplicate active representatives relationship</errorMessage>
             </assertion>
         </node>
+        <node name="service" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.insuranceService" hidden="true"/>
     </archetype>
 </archetypes>

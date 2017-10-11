@@ -14,35 +14,20 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.service.archetype;
-
-import java.io.InputStream;
+package org.openvpms.insurance.service;
 
 /**
- * Installs archetypes from streams, the classpath or filesystem.
+ * Represents a legal declaration that users must accept prior to submitting claims.
  *
  * @author Tim Anderson
  */
-public interface ArchetypeInstaller {
+public interface Declaration {
 
     /**
-     * Installs archetypes from a stream.
+     * Returns the text of the declaration.
      *
-     * @param stream the stream
+     * @return the text of the declaration
      */
-    void install(InputStream stream);
+    String getText();
 
-    /**
-     * Installs archetypes at the specified path.
-     *
-     * @param path the path
-     */
-    void install(String path);
-
-    /**
-     * Installs archetypes at the specified paths.
-     *
-     * @param paths the paths
-     */
-    void install(String[] paths);
 }

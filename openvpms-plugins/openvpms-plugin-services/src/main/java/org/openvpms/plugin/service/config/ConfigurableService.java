@@ -16,25 +16,33 @@
 
 package org.openvpms.plugin.service.config;
 
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
- * Provides configuration services to plugins.
+ * A service that is configured from an {@link IMObject}.
  *
  * @author Tim Anderson
  */
-public interface PluginConfigurationService {
+public interface ConfigurableService {
 
     /**
-     * Returns the first configuration matching the specified archetype name, creating one if none is found.
-     * <p>
-     * It is expected that only a single instance of the configuration exists. If multiple instances exist, that with
-     * the lowest identifier will be returned.
-     * <p>
-     * It is the caller's responsibility to save the configuration if it was created.
+     * Returns the archetype that this service is configured with.
      *
-     * @param archetype the configuration archetype
-     * @return the configuration
+     * @return the archetype short name
      */
-    IMObjectBean getConfiguration(String archetype);
+    String getArchetype();
+
+    /**
+     * Invoked when the service is registered, and each time the configuration is updated.
+     *
+     * @param config may be {@code null}, if no configuration exists
+     */
+    void updated(IMObject config);
+
+    /**
+     * Invoked when the configuration is removed.
+     *
+     * @param config the removed configuration
+     */
+    void removed(IMObject config);
 }

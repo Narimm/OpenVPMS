@@ -14,35 +14,31 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.service.archetype;
+package org.openvpms.insurance.service;
 
-import java.io.InputStream;
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
- * Installs archetypes from streams, the classpath or filesystem.
+ * Locates {@link InsuranceService}.
  *
  * @author Tim Anderson
  */
-public interface ArchetypeInstaller {
+public interface InsuranceServices {
 
     /**
-     * Installs archetypes from a stream.
+     * Determines if an insurer has an associated insurance service.
      *
-     * @param stream the stream
+     * @param insurer the insurer
+     * @return {@code true} if the insurer has an insurance service
      */
-    void install(InputStream stream);
+    boolean hasInsuranceService(Party insurer);
 
     /**
-     * Installs archetypes at the specified path.
+     * Returns the insurance service for the specified insurer.
      *
-     * @param path the path
+     * @param insurer the insurer
+     * @return the insurance service, or {@code null} if none is found
      */
-    void install(String path);
+    InsuranceService getService(Party insurer);
 
-    /**
-     * Installs archetypes at the specified paths.
-     *
-     * @param paths the paths
-     */
-    void install(String[] paths);
 }

@@ -40,10 +40,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 
 /**
@@ -72,6 +75,12 @@ public class PluginManagerImpl implements PluginManager {
      * The Felix logger.
      */
     private final Logger logger = new Logger();
+
+    /**
+     * The listeners.
+     */
+    private final Set<PluginManagerListener> listeners = Collections.synchronizedSet(
+            new HashSet<PluginManagerListener>());
 
     /**
      * Apache Felix.
@@ -142,6 +151,15 @@ public class PluginManagerImpl implements PluginManager {
     }
 
     /**
+     * Returns the bundle context, or {@code null} if the manager is not running.
+     *
+     * @return the bundle context. May be {@code null}
+     */
+    public synchronized BundleContext getBundleContext() {
+        return (felix != null) ? felix.getBundleContext() : null;
+    }
+
+    /**
      * Returns a list of all installed bundles.
      *
      * @return the installed bundles
@@ -189,6 +207,7 @@ public class PluginManagerImpl implements PluginManager {
             felix.init();
             AutoProcessor.process(config, felix.getBundleContext());
             felix.start();
+            notifyStarted();
         }
     }
 
@@ -213,6 +232,7 @@ public class PluginManagerImpl implements PluginManager {
             felix.stop();
             felix.waitForStop(0);
             felix = null;
+            notifyStopped();
         }
     }
 
@@ -246,12 +266,23 @@ public class PluginManagerImpl implements PluginManager {
     }
 
     /**
-     * Returns the bundle context, or {@code null} if Felix is not running.
+     * Adds a listener to be notified of plugin manager events.
      *
-     * @return the bundle context. May be {@code null}
+     * @param listener the listener to notify
      */
-    private synchronized BundleContext getBundleContext() {
-        return (felix != null) ? felix.getBundleContext() : null;
+    @Override
+    public void addListener(PluginManagerListener listener) {
+
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeListener(PluginManagerListener listener) {
+
     }
 
     /**
@@ -350,6 +381,30 @@ public class PluginManagerImpl implements PluginManager {
         }
 
         return dir;
+    }
+
+    private void notifyStarted() {
+        synchronized (listeners) {
+            for (PluginManagerListener listener : listeners) {
+                try {
+                    listener.started();
+                } catch (Throwable exception) {
+                    log.error("PluginManagerListener threw exception", exception);
+                }
+            }
+        }
+    }
+
+    private void notifyStopped() {
+        synchronized (listeners) {
+            for (PluginManagerListener listener : listeners) {
+                try {
+                    listener.stopped();
+                } catch (Throwable exception) {
+                    log.error("PluginManagerListener threw exception", exception);
+                }
+            }
+        }
     }
 
 }

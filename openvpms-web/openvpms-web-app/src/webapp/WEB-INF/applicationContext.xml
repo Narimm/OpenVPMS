@@ -32,6 +32,7 @@
     <import resource="openvpms-webdav.xml"/>
     <import resource="openvpms-booking.xml"/>
     <import resource="openvpms-plugins.xml"/>
+    <import resource="openvpms-insurance.xml"/>
     <import resource="openvpms-web-app.xml"/>
 
 </beans>

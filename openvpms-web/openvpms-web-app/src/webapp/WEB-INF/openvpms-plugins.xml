@@ -36,10 +36,15 @@
     </bean>
 
     <bean id="pluginConfigurationService"
-          class="org.openvpms.plugin.service.internal.config.PluginConfigurationServiceImpl">
+          class="org.openvpms.plugin.service.internal.config.PluginConfigurationService">
         <plugin:service/>
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="pluginArchetypeService"/>
+    </bean>
+
+    <bean class="org.openvpms.plugin.service.internal.archetype.IMObjectListenerNotifier">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="pluginManager"/>
     </bean>
 
     <bean id="archetypeInstaller" class="org.openvpms.plugin.service.internal.archetype.ArchetypeInstallerImpl">

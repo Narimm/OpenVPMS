@@ -17,6 +17,7 @@
 package org.openvpms.insurance.service;
 
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.insurance.claim.Claim;
 
 /**
@@ -25,6 +26,30 @@ import org.openvpms.insurance.claim.Claim;
  * @author Tim Anderson
  */
 public interface InsuranceService {
+
+    /**
+     * Returns the insurance service archetype that this supports.
+     *
+     * @return an <em>entity.insuranceService*</em> archetype
+     */
+    String getArchetype();
+
+    /**
+     * Synchronises insurers.
+     * <p>
+     * This adds insurers that aren't already present, updates existing insurers if required, and deactivates
+     * insurers that are no longer relevant.
+     *
+     * @return the changes that were made
+     */
+    Changes<Party> synchroniseInsurers();
+
+    /**
+     * Returns the declaration that users must accept, before submitting a claim.
+     *
+     * @return the declaration, or {@code null}, if no declaration is required
+     */
+    Declaration getDeclaration();
 
     /**
      * Submit a claim.
