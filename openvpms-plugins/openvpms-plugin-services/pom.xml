@@ -38,6 +38,11 @@
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-version</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- The following ensure that JAXB is exported via org.osgi.framework.system.packages.extra -->
         <dependency>
             <groupId>org.apache.servicemix.specs</groupId>

@@ -38,23 +38,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <resources>
-            <resource>
-                <includes>
-                    <include>*.properties</include>
-                </includes>
-                <directory>${basedir}/src/main/resources/version</directory>
-                <targetPath>META-INF/</targetPath>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

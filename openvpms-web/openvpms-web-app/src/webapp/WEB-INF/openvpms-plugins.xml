@@ -48,4 +48,8 @@
         <constructor-arg ref="txnManager"/>
     </bean>
 
+    <bean id="version" class="org.openvpms.plugin.service.internal.version.VersionImpl">
+        <plugin:service/>
+    </bean>
+
 </beans>
