@@ -20,27 +20,28 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.insurance.internal.InsuranceArchetypes;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 
 /**
- * Queries <em>act.patientInsurance*</em> acts for a patient.
+ * Queries <em>act.patientInsurancePolicy</em> acts for a patient.
  *
  * @author Tim Anderson
  */
-public class InsuranceQuery extends DateRangeActQuery<Act> {
+public class PolicyQuery extends DateRangeActQuery<Act> {
 
     /**
      * The short names of the archetypes that this queries.
      */
-    public static final String[] ARCHETYPES = {"act.patientInsurancePolicy", "act.patientInsuranceClaim"};
+    public static final String[] ARCHETYPES = {InsuranceArchetypes.POLICY};
 
     /**
-     * Constructs a {@link InsuranceQuery}.
+     * Constructs a {@link PolicyQuery}.
      *
      * @param patient the patient to search for
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public InsuranceQuery(Party patient) {
+    public PolicyQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, ARCHETYPES, Act.class);
     }
 }

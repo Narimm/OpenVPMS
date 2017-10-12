@@ -17,42 +17,53 @@
 package org.openvpms.web.workspace.patient.insurance;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 
 /**
- * Editor for <em>act.patientInsuranceClaimItem</em> acts.
+ * Editor for <em>act.patientInsurancePolicy</em>.
  *
  * @author Tim Anderson
  */
-public class ClaimItemEditor extends AbstractActEditor {
+public class PolicyEditor extends AbstractActEditor {
 
     /**
-     * Constructs a {@link ClaimItemEditor}.
+     * Constructs an {@link PolicyEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent act. May be {@code null}
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public ClaimItemEditor(Act act, Act parent, LayoutContext context) {
+    public PolicyEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        if (act.isNew()) {
+            initParticipant("customer", context.getContext().getCustomer());
+            initParticipant("patient", context.getContext().getPatient());
+        }
         addStartEndTimeListeners();
-        getProperty("status").addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onStatusChanged();
-            }
-        });
     }
 
-    private void onStatusChanged() {
-        IMObjectLayoutStrategy layout = getView().getLayout();
-        if (layout instanceof ClaimItemLayoutStrategy) {
-            boolean euthanased = "EUTHANASED".equals(getStatus());
-            ((ClaimItemLayoutStrategy) layout).setShowEuthanasiaReason(euthanased);
-        }
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        return new PolicyEditor(reload(getObject()), getParent(), getLayoutContext());
     }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new PolicyLayoutStrategy();
+    }
+
 }

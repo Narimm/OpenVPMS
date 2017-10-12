@@ -51,7 +51,7 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.insurance.InsuranceCRUDWindow;
-import org.openvpms.web.workspace.patient.insurance.InsuranceQuery;
+import org.openvpms.web.workspace.patient.insurance.PolicyQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
@@ -492,7 +492,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @return a new browser
      */
     protected Browser<Act> createInsuranceBrowser(Party patient, Context context, HelpContext help) {
-        ActQuery<Act> query = new InsuranceQuery(patient);
+        ActQuery<Act> query = new PolicyQuery(patient);
         return BrowserFactory.create(query, new DefaultLayoutContext(context, help));
     }
 

@@ -21,20 +21,20 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1"
               defaultValue="'Insurance Policy'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
-        <node name="policyId" displayName="Policy Number" path="/identities" type="java.util.HashSet" minCardinality="0"
-              maxCardinality="1" filter="actIdentity.insurancePolicy"/>
+        <node name="policyId" displayName="Policy Number" path="/identities" type="java.util.HashSet"
+              baseName="Identity" minCardinality="1" maxCardinality="1" filter="actIdentity.insurancePolicy"/>
         <node displayName="Start Date" name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1"/>
         <node name="customer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
-              filter="participation.customer" hidden="true" readOnly="true"/>
+              filter="participation.customer" readOnly="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true" readOnly="true"/>
         <node name="insurer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.insurer"/>
-        <node name="type" displayName="Policy Type" path="/participations" type="java.util.HashSet" minCardinality="1"
-              maxCardinality="1" filter="participation.insurancePolicy"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" readOnly="true"/>
+        <node name="claims" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
+              minCardinality="0" maxCardinality="*" filter="actRelationship.insuranceClaimPolicy" readOnly="true"/>
     </archetype>
 </archetypes>
