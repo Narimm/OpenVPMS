@@ -39,7 +39,7 @@
           class="org.openvpms.plugin.service.internal.config.PluginConfigurationService">
         <plugin:service/>
         <constructor-arg ref="archetypeRuleService"/>
-        <constructor-arg ref="pluginArchetypeService"/>
+        <constructor-arg ref="pluginManager"/>
     </bean>
 
     <bean class="org.openvpms.plugin.service.internal.archetype.IMObjectListenerNotifier">

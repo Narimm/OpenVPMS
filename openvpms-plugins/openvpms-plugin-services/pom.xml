@@ -76,7 +76,8 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>org.openvpms.plugin.service.archetype.*;version="${project.version}",
-                            org.openvpms.plugin.service.config.*;version="${project.version}"
+                            org.openvpms.plugin.service.config.*;version="${project.version}",
+                            org.openvpms.plugin.service.version.*;version="${project.version}
                         </Export-Package>
                     </instructions>
                 </configuration>

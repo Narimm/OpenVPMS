@@ -52,6 +52,11 @@ public class PluginConfigurationService extends AbstractIMObjectListenerNotifier
      */
     @Override
     protected Listener createListener(final ConfigurableService service) {
+        final String archetype = service.getArchetype();
+        if (archetype.contains("*")) {
+            throw new IllegalStateException(ConfigurableService.class.getSimpleName()
+                                            + " archetypes cannot contain wildcards: " + archetype);
+        }
         IArchetypeServiceListener delegate = new AbstractArchetypeServiceListener() {
             /**
              * Invoked after an object has been saved and the transaction committed.
@@ -60,7 +65,7 @@ public class PluginConfigurationService extends AbstractIMObjectListenerNotifier
              */
             @Override
             public void saved(IMObject object) {
-                service.updated(object);
+                onSaved(object, service);
             }
 
             /**
@@ -70,22 +75,69 @@ public class PluginConfigurationService extends AbstractIMObjectListenerNotifier
              */
             @Override
             public void removed(IMObject object) {
-                service.removed(object);
+                onRemoved(object, service);
             }
         };
-        String archetype = service.getArchetype();
-        if (archetype.contains("*")) {
-            throw new IllegalStateException(ConfigurableService.class.getSimpleName()
-                                            + " archetypes cannot contain wildcards: " + archetype);
-        }
         IMObject config = getConfig(archetype);
-        service.updated(config);
+        service.setConfiguration(config);
         String[] archetypes = new String[]{archetype};
         return new Listener(archetypes, delegate);
     }
 
+    /**
+     * Invoked when a configuration is saved.
+     *
+     * @param object  the object
+     * @param service the configurable service
+     */
+    private void onSaved(IMObject object, ConfigurableService service) {
+        boolean inactive = false;
+        synchronized (service) {
+            IMObject current = service.getConfiguration();
+            if (current == null || (current.getId() == object.getId()) && current.getVersion() < object.getVersion()) {
+                if (object.isActive()) {
+                    service.setConfiguration(object);
+                } else {
+                    inactive = true;
+                }
+            }
+        }
+        if (inactive) {
+            // the configuration is inactive. Get an active configuration, if one is available, and the service
+            // hasn't updated subsequently
+            IMObject config = getConfig(object.getArchetypeId().getShortName());
+            synchronized (service) {
+                IMObject current = service.getConfiguration();
+                if (current == null || current.getId() == object.getId()) {
+                    service.setConfiguration(config);
+                }
+            }
+        }
+    }
+
+    /**
+     * Invoked when a configuration is removed.
+     *
+     * @param object  the object
+     * @param service the configurable service
+     */
+    private void onRemoved(IMObject object, ConfigurableService service) {
+        synchronized (service) {
+            IMObject current = service.getConfiguration();
+            if (current != null && current.getId() == object.getId()) {
+                service.setConfiguration(getConfig(object.getArchetypeId().getShortName()));
+            }
+        }
+    }
+
+    /**
+     * Returns a configuration object of the specified archetype.
+     *
+     * @param archetype the archetype
+     * @return the configuration object, or {@code null} if no active instance exists
+     */
     private IMObject getConfig(String archetype) {
-        ArchetypeQuery query = new ArchetypeQuery(archetype, false);
+        ArchetypeQuery query = new ArchetypeQuery(archetype, true);
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
         IMObjectQueryIterator<IMObject> iterator = new IMObjectQueryIterator<>(getService(), query);

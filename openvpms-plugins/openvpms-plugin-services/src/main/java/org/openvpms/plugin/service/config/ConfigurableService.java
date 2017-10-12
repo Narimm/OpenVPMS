@@ -35,14 +35,14 @@ public interface ConfigurableService {
     /**
      * Invoked when the service is registered, and each time the configuration is updated.
      *
-     * @param config may be {@code null}, if no configuration exists
+     * @param config may be {@code null}, if no configuration exists, or the configuration is deactivated or removed
      */
-    void updated(IMObject config);
+    void setConfiguration(IMObject config);
 
     /**
-     * Invoked when the configuration is removed.
+     * Returns the configuration.
      *
-     * @param config the removed configuration
+     * @return the configuration. May be {@code null}
      */
-    void removed(IMObject config);
+    IMObject getConfiguration();
 }
