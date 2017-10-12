@@ -73,6 +73,12 @@
             <artifactId>commons-dbcp</artifactId>
             <version>1.2.1</version>
             <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dom4j</groupId>
