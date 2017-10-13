@@ -29,7 +29,6 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -67,7 +66,6 @@ import static org.openvpms.insurance.InsuranceTestHelper.createClaim;
 import static org.openvpms.insurance.InsuranceTestHelper.createClaimItem;
 import static org.openvpms.insurance.InsuranceTestHelper.createInsurer;
 import static org.openvpms.insurance.InsuranceTestHelper.createPolicy;
-import static org.openvpms.insurance.InsuranceTestHelper.createPolicyType;
 
 /**
  * Tests the {@link ClaimImpl} class.
@@ -156,8 +154,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testClaim() {
         Party insurer = createInsurer(TestHelper.randomName("ZInsurer-"));
-        Entity policyType = createPolicyType(insurer);
-        Act policyAct = createPolicy(customer, patient, insurer, policyType,
+        Act policyAct = createPolicy(customer, patient, insurer,
                                      createActIdentity("actIdentity.insurancePolicy", "POL123456"));
 
         Date treatFrom1 = getDate("2017-09-27");

@@ -150,7 +150,7 @@ public class ClaimImpl implements Claim {
         ActIdentity identity = getIdentity();
         if (identity == null) {
             identity = (ActIdentity) service.create(archetype);
-            claim.addValue("claimId", identity);
+            claim.addValue("insuranceId", identity);
         } else if (!TypeHelper.isA(identity, archetype)) {
             throw new IllegalArgumentException(
                     "Argument 'archetype' must be of the same type as the existing identifier");
@@ -326,7 +326,7 @@ public class ClaimImpl implements Claim {
      * @return the claim identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return claim.getValue("claimId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return claim.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 
 }

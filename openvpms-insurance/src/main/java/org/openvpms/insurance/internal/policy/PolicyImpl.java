@@ -178,7 +178,7 @@ public class PolicyImpl implements Policy {
      * @return the policy identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return policy.getValue("policyId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return policy.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 
 }

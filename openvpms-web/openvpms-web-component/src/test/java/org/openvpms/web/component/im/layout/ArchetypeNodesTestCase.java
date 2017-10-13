@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.layout;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -26,8 +27,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -61,7 +65,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testAll() {
-        ArchetypeNodes nodes = new ArchetypeNodes();
+        ArchetypeNodes nodes = ArchetypeNodes.all();
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
@@ -76,7 +80,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testSimple() {
-        ArchetypeNodes nodes = new ArchetypeNodes(true, false);
+        ArchetypeNodes nodes = ArchetypeNodes.allSimple();
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
@@ -89,7 +93,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testComplex() {
-        ArchetypeNodes nodes = new ArchetypeNodes(false, true);
+        ArchetypeNodes nodes = ArchetypeNodes.allComplex();
         checkSimple(archetype, nodes);
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
                      "reminders", "alerts", "documents", "discounts", "species", "updates", "classifications",
@@ -101,7 +105,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testComplexAsSimple() {
-        ArchetypeNodes nodes = new ArchetypeNodes().simple("species");
+        ArchetypeNodes nodes = ArchetypeNodes.all().simple("species");
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
@@ -109,6 +113,16 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
                      "reminders", "alerts", "documents", "discounts", "updates", "classifications", "identities",
                      "equivalents", "taxes", "sourceRelationships");
+    }
+
+    /**
+     * Tests the {@link ArchetypeNodes#onlySimple(String...)} method.
+     */
+    @Test
+    public void testOnlySimple() {
+        ArchetypeNodes nodes = ArchetypeNodes.onlySimple("id", "name", "description");
+        checkSimple(archetype, nodes, "id", "name", "description");
+        checkComplex(archetype, nodes);
     }
 
     /**
@@ -170,6 +184,21 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ArchetypeNodes#excludeStringLongerThan} method.
+     */
+    @Test
+    public void testExcludeStringLongerThan() {
+        ArchetypeDescriptor location = getArchetypeService().getArchetypeDescriptor(ContactArchetypes.LOCATION);
+        assertNotNull(location);
+
+        checkNodeNames(ArchetypeNodes.allSimple().excludeStringLongerThan(100), location,
+                       "id", "preferred", "startDate", "endDate");
+        checkNodeNames(ArchetypeNodes.allSimple().excludeStringLongerThan(255), location,
+                       "id", "name", "description", "suburb", "postcode", "state", "preferred",
+                       "startDate", "endDate");
+    }
+
+    /**
      * Tests the behaviour of {@link ArchetypeNodes#order}.
      */
     @Test
@@ -187,6 +216,50 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
                     "locations");
     }
+
+    /**
+     * Tests the {@link ArchetypeNodes#getNodeNames(List)} method.
+     */
+    @Test
+    public void testGetNodeNames() {
+        IArchetypeService service = getArchetypeService();
+        ArchetypeDescriptor location = service.getArchetypeDescriptor(ContactArchetypes.LOCATION);
+        ArchetypeDescriptor email = service.getArchetypeDescriptor(ContactArchetypes.EMAIL);
+        assertNotNull(location);
+        assertNotNull(email);
+        List<ArchetypeDescriptor> archetypes = Arrays.asList(location, email);
+        checkNodeNames(ArchetypeNodes.allSimple(), archetypes, "id", "name", "description", "preferred", "startDate",
+                       "endDate");
+        checkNodeNames(ArchetypeNodes.allSimple().simple("address", "emailAddress").order("address", "emailAddress"),
+                       archetypes, "id", "name", "description", "address", "emailAddress", "preferred", "startDate",
+                       "endDate");
+    }
+
+    /**
+     * Verifies that {@link ArchetypeNodes#getNodeNames(List)} returns the expected nodes.
+     *
+     * @param nodes     the nodes
+     * @param archetype the archetype to test
+     * @param names     the expected names
+     */
+    private void checkNodeNames(ArchetypeNodes nodes, ArchetypeDescriptor archetype, String... names) {
+        checkNodeNames(nodes, Collections.singletonList(archetype), names);
+    }
+
+    /**
+     * Verifies that {@link ArchetypeNodes#getNodeNames(List)} returns the expected nodes.
+     *
+     * @param nodes      the nodes
+     * @param archetypes the archetypes to test
+     * @param names      the expected names
+     */
+    private void checkNodeNames(ArchetypeNodes nodes, List<ArchetypeDescriptor> archetypes, String... names) {
+        List<String> expected = Arrays.asList(names);
+        List<String> actual = nodes.getNodeNames(archetypes);
+        assertEquals("Expected=" + StringUtils.join(expected, ",") + ". Actual=" + StringUtils.join(actual, ","),
+                     expected, actual);
+    }
+
 
     /**
      * Verifies that the expected simple nodes are returned, in the correct order.

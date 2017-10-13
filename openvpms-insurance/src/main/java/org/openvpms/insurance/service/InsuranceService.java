@@ -28,6 +28,13 @@ import org.openvpms.insurance.claim.Claim;
 public interface InsuranceService {
 
     /**
+     * Returns a display name for this service.
+     *
+     * @return a display name for this service
+     */
+    String getName();
+
+    /**
      * Returns the insurance service archetype that this supports.
      *
      * @return an <em>entity.insuranceService*</em> archetype

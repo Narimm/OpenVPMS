@@ -52,7 +52,8 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
         Act policy = (Act) claimBean.getNodeTargetObject("policy");
         if (policy != null) {
             ActBean policyBean = new ActBean(policy);
-            ActIdentity identity = policyBean.getValue("policyId", PredicateUtils.truePredicate(), ActIdentity.class);
+            ActIdentity identity = policyBean.getValue("insuranceId", PredicateUtils.truePredicate(),
+                                                       ActIdentity.class);
             if (identity != null) {
                 IMObjectComponentFactory factory = context.getComponentFactory();
                 if (!(factory instanceof ReadOnlyComponentFactory)) {

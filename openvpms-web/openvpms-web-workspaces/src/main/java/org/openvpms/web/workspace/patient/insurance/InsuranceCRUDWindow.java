@@ -18,22 +18,32 @@ package org.openvpms.web.workspace.patient.insurance;
 
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.InsuranceArchetypes;
+import org.openvpms.insurance.internal.InsuranceFactory;
+import org.openvpms.insurance.internal.service.ClaimStatus;
+import org.openvpms.insurance.service.InsuranceService;
+import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
- * CRUD window for patient insurance.
+ * CRUD window for patient insurance policies.
  *
  * @author Tim Anderson
  */
@@ -45,13 +55,18 @@ public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private static final String CLAIM_ID = "button.claim";
 
     /**
+     * Submit button identifier.
+     */
+    private static final String SUBMIT_ID = "button.submit";
+
+    /**
      * Constructs an {@link InsuranceCRUDWindow}.
      *
      * @param context the context
      * @param help    the help context
      */
     public InsuranceCRUDWindow(Context context, HelpContext help) {
-        super(Archetypes.create(InsuranceArchetypes.POLICY, Act.class), ActActions.edit(), context, help);
+        super(Archetypes.create(InsuranceArchetypes.POLICY, Act.class), InsuranceActions.INSTANCE, context, help);
     }
 
     /**
@@ -67,6 +82,11 @@ public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 onClaim();
             }
         }));
+        buttons.add(ButtonFactory.create(SUBMIT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onSubmit();
+            }
+        }));
     }
 
     /**
@@ -78,34 +98,103 @@ public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.setEnabled(CLAIM_ID, enable);
+        Act object = getObject();
+        buttons.setEnabled(CLAIM_ID, enable && TypeHelper.isA(object, InsuranceArchetypes.POLICY));
+        buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
     }
 
     /**
-     * Invoked when the editor is closed.
+     * Determines the actions that may be performed on the selected object.
      *
-     * @param editor the editor
-     * @param isNew  determines if the object is a new instance
+     * @return the actions
      */
     @Override
-    protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
-        if (TypeHelper.isA(editor.getObject(), InsuranceArchetypes.POLICY)) {
-            super.onEditCompleted(editor, isNew);
-        } else {
-            onRefresh(getObject());
+    protected InsuranceActions getActions() {
+        return (InsuranceActions) super.getActions();
+    }
+
+    /**
+     * Invoked when the 'Claim' button is pressed.
+     */
+    private void onClaim() {
+        Act object = IMObjectHelper.reload(getObject());
+        if (TypeHelper.isA(object, InsuranceArchetypes.POLICY)) {
+            Act act = (Act) IMObjectCreator.create(InsuranceArchetypes.CLAIM);
+            if (act != null) {
+                ActBean bean = new ActBean(act);
+                Act policy = getObject();
+                bean.addNodeRelationship("policy", policy);
+                edit(act, null);
+            }
         }
     }
 
     /**
-     * Invoked when the 'Claim' button is impressed.
+     * Invoked when the 'Submit' button is pressed.
      */
-    private void onClaim() {
-        Act act = (Act) IMObjectCreator.create(InsuranceArchetypes.CLAIM);
-        if (act != null) {
-            ActBean bean = new ActBean(act);
-            Act policy = getObject();
-            bean.addNodeRelationship("policy", policy);
-            edit(act, null);
+    private void onSubmit() {
+        Act object = IMObjectHelper.reload(getObject());
+        if (getActions().canSubmit(object)) {
+            InsuranceFactory factory = ServiceHelper.getBean(InsuranceFactory.class);
+            final Claim claim = factory.createClaim(object);
+            InsuranceServices insuranceServices = ServiceHelper.getBean(InsuranceServices.class);
+            Party insurer = claim.getPolicy().getInsurer();
+            final InsuranceService service = insuranceServices.getService(insurer);
+            String title = Messages.get("patient.insurance.submit.title");
+            if (service != null) {
+                ConfirmationDialog.show(title, Messages.format("patient.insurance.submit.online", service.getName()),
+                                        ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                            @Override
+                            public void onYes() {
+                                submit(claim, service);
+                            }
+                        });
+            } else {
+                ConfirmationDialog.show(title, Messages.format("patient.insurance.submit.offline", insurer.getName()),
+                                        ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                            @Override
+                            public void onYes() {
+                            }
+                        });
+            }
+        }
+    }
+
+    private void submit(Claim claim, InsuranceService service) {
+        service.submit(claim);
+    }
+
+    private static class InsuranceActions extends ActActions<Act> {
+
+        public static final InsuranceActions INSTANCE = new InsuranceActions();
+
+        /**
+         * Determines if an act can be deleted.
+         *
+         * @param act the act to check
+         * @return {@code true} if the act isn't locked
+         */
+        @Override
+        public boolean canDelete(Act act) {
+            boolean result = super.canDelete(act);
+            if (result) {
+                if (TypeHelper.isA(act, InsuranceArchetypes.POLICY)) {
+                    result = new ActBean(act).getValues("claims").isEmpty();
+                } else if (TypeHelper.isA(act, InsuranceArchetypes.CLAIM)) {
+                    result = ClaimStatus.PENDING.equals(act.getStatus());
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Determines if an act is a claim that can be submitted.
+         *
+         * @param act the act
+         * @return {@code true} if the act is a claim that can be submitted
+         */
+        public boolean canSubmit(Act act) {
+            return TypeHelper.isA(act, InsuranceArchetypes.CLAIM) && ClaimStatus.POSTED.equals(act.getStatus());
         }
     }
 }

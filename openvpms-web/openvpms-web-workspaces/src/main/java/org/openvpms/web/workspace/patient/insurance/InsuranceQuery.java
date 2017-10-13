@@ -24,24 +24,24 @@ import org.openvpms.insurance.internal.InsuranceArchetypes;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 
 /**
- * Queries <em>act.patientInsurancePolicy</em> acts for a patient.
+ * Queries <em>act.patientInsurancePolicy</em> and <em>act.patientInsuranceClaim</em> acts for a patient.
  *
  * @author Tim Anderson
  */
-public class PolicyQuery extends DateRangeActQuery<Act> {
+public class InsuranceQuery extends DateRangeActQuery<Act> {
 
     /**
      * The short names of the archetypes that this queries.
      */
-    public static final String[] ARCHETYPES = {InsuranceArchetypes.POLICY};
+    public static final String[] ARCHETYPES = {InsuranceArchetypes.POLICY, InsuranceArchetypes.CLAIM};
 
     /**
-     * Constructs a {@link PolicyQuery}.
+     * Constructs a {@link InsuranceQuery}.
      *
      * @param patient the patient to search for
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public PolicyQuery(Party patient) {
+    public InsuranceQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, ARCHETYPES, Act.class);
     }
 }

@@ -18,6 +18,8 @@
     <archetype name="act.patientInsuranceClaim.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.Act" displayName="Insurance Claim">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="insuranceId" displayName="Claim Number" path="/identities" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1" filter="actIdentity.insuranceClaim*"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" readOnly="true"
               defaultValue="'Patient Insurance Claim'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
@@ -27,8 +29,6 @@
               hidden="true"/>
         <node name="policy" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
               minCardinality="1" maxCardinality="1" filter="actRelationship.insuranceClaimPolicy" readOnly="true"/>
-        <node name="claimId" displayName="Claim Number" path="/identities" type="java.util.HashSet" minCardinality="0"
-              maxCardinality="1" filter="actIdentity.insuranceClaim"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
         <node name="reason" path="/reason" type="java.lang.String" maxLength="100"/>

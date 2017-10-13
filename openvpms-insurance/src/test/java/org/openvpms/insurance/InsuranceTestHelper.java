@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -42,7 +41,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.openvpms.archetype.test.TestHelper.checkEquals;
 import static org.openvpms.archetype.test.TestHelper.create;
-import static org.openvpms.archetype.test.TestHelper.randomName;
 import static org.openvpms.archetype.test.TestHelper.save;
 
 /**
@@ -66,31 +64,15 @@ public class InsuranceTestHelper {
     }
 
     /**
-     * Creates and saves a new policy type.
-     *
-     * @param insurer the insurer that issues the policy
-     * @return the policy type
-     */
-    public static Entity createPolicyType(Party insurer) {
-        Entity result = (Entity) create(InsuranceArchetypes.POLICY_TYPE);
-        result.setName(randomName("ZPolicyType-"));
-        IMObjectBean bean = new IMObjectBean(result);
-        bean.addNodeTarget("insurer", insurer);
-        bean.save();
-        return result;
-    }
-
-    /**
      * Creates a new policy starting today, and expiring in 12 months.
      *
      * @param customer the customer
      * @param patient  the patient
      * @param insurer  the insurer
-     * @param type     the policy type
      * @param identity the policy identity. May be {@code null}
      * @return a new policy
      */
-    public static Act createPolicy(Party customer, Party patient, Party insurer, Entity type, ActIdentity identity) {
+    public static Act createPolicy(Party customer, Party patient, Party insurer, ActIdentity identity) {
         Act policy = (Act) create(InsuranceArchetypes.POLICY);
         ActBean bean = new ActBean(policy);
         Date from = new Date();
@@ -100,7 +82,6 @@ public class InsuranceTestHelper {
         bean.setNodeParticipant("customer", customer);
         bean.setNodeParticipant("patient", patient);
         bean.setNodeParticipant("insurer", insurer);
-        bean.setNodeParticipant("type", type);
         if (identity != null) {
             policy.addIdentity(identity);
         }

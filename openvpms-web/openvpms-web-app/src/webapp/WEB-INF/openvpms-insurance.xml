@@ -23,4 +23,10 @@
         <constructor-arg ref="pluginManager"/>
         <constructor-arg ref="archetypeService"/>
     </bean>
+
+    <bean id="insuranceFactory" class="org.openvpms.insurance.internal.InsuranceFactory">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="patientRules"/>
+    </bean>
 </beans>
