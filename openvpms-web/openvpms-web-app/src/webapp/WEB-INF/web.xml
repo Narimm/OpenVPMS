@@ -89,9 +89,10 @@
         <listener-class>org.openvpms.web.echo.servlet.SessionListener</listener-class>
     </listener>
 
-    <listener>
+    <!-- TODO - the following require servlet API 3.1.0 which requires Tomcat 8 -->
+    <!--listener>
         <listener-class>org.apache.felix.http.proxy.impl.ProxyServletContextListener</listener-class>
-    </listener>
+    </listener-->
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
@@ -142,11 +143,12 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
 
-    <servlet>
+    <!-- TODO - the following require servlet API 3.1.0 which requires Tomcat 8 -->
+    <!--servlet>
         <servlet-name>PluginServlet</servlet-name>
         <servlet-class>org.apache.felix.http.proxy.ProxyServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
-    </servlet>
+    </servlet-->
 
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
@@ -198,10 +200,11 @@
         <url-pattern>/ws/booking/v1/*</url-pattern>
     </servlet-mapping>
 
-    <servlet-mapping>
+    <!-- TODO - the following require servlet API 3.1.0 which requires Tomcat 8 -->
+    <!--servlet-mapping>
         <servlet-name>PluginServlet</servlet-name>
         <url-pattern>/plugin/*</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping-->
 
     <session-config>
         <session-timeout>120</session-timeout>
