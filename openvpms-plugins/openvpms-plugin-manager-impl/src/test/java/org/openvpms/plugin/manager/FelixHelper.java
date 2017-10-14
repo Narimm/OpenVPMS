@@ -14,38 +14,28 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.test.service.impl;
+package org.openvpms.plugin.manager;
 
-import org.openvpms.plugin.test.service.TestService;
+import java.io.File;
+
+import static org.junit.Assert.assertTrue;
 
 /**
- * Implementation of {@link TestService}.
+ * Felix helper methods.
  *
  * @author Tim Anderson
  */
-public class TestServiceImpl implements TestService {
+public class FelixHelper {
 
     /**
-     * The value
-     */
-    private long value;
-
-    /**
-     * Sets the value.
+     * Returns the path to the Felix install.
      *
-     * @param value the value to set
+     * @return the path
      */
-    public void setValue(long value) {
-        this.value = value;
-    }
-
-    /**
-     * Returns the value.
-     *
-     * @return the value
-     */
-    @Override
-    public long getValue() {
-        return value;
+    public static String getFelixDir() {
+        String relPath = FelixHelper.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        File dir = new File(relPath + "../../target/felix");
+        assertTrue("Felix installation at " + dir.getPath() + " not found ", dir.exists());
+        return dir.getPath();
     }
 }

@@ -83,6 +83,8 @@
         <module>openvpms-felix</module>
         <module>openvpms-plugin-manager</module>
         <module>openvpms-plugin-services</module>
+        <module>openvpms-plugin-services-impl</module>
+        <module>openvpms-plugin-manager-impl</module>
     </modules>
 
 </project>

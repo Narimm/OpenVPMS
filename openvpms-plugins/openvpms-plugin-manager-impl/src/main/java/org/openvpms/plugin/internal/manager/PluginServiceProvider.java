@@ -14,38 +14,26 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.test.service.impl;
+package org.openvpms.plugin.internal.manager;
 
-import org.openvpms.plugin.test.service.TestService;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+
+import java.util.List;
+
 
 /**
- * Implementation of {@link TestService}.
+ * Provides services to plugins.
  *
  * @author Tim Anderson
  */
-public class TestServiceImpl implements TestService {
+public interface PluginServiceProvider {
 
     /**
-     * The value
-     */
-    private long value;
-
-    /**
-     * Sets the value.
+     * Provide services to the specified bundle context.
      *
-     * @param value the value to set
+     * @param context the context
+     * @return the service registrations
      */
-    public void setValue(long value) {
-        this.value = value;
-    }
-
-    /**
-     * Returns the value.
-     *
-     * @return the value
-     */
-    @Override
-    public long getValue() {
-        return value;
-    }
+    List<ServiceRegistration<?>> provide(BundleContext context);
 }

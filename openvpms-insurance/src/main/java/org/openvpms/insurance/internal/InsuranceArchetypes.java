@@ -29,11 +29,6 @@ public class InsuranceArchetypes {
     public static final String POLICY = "act.patientInsurancePolicy";
 
     /**
-     * The insurance policy type archetype.
-     */
-    public static final String POLICY_TYPE = "entity.insurancePolicyType";
-
-    /**
      * The insurance claim archetype.
      */
     public static final String CLAIM = "act.patientInsuranceClaim";

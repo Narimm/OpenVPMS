@@ -14,38 +14,34 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.test.service.impl;
+package org.openvpms.plugin.internal.service.version;
 
-import org.openvpms.plugin.test.service.TestService;
+import org.openvpms.plugin.service.version.Version;
 
 /**
- * Implementation of {@link TestService}.
+ * Default implementation of {@link Version}.
  *
  * @author Tim Anderson
  */
-public class TestServiceImpl implements TestService {
+public class VersionImpl implements Version {
 
     /**
-     * The value
-     */
-    private long value;
-
-    /**
-     * Sets the value.
+     * Returns the application version.
      *
-     * @param value the value to set
+     * @return the application version
      */
-    public void setValue(long value) {
-        this.value = value;
+    @Override
+    public String getVersion() {
+        return org.openvpms.version.Version.VERSION;
     }
 
     /**
-     * Returns the value.
+     * Returns the version control revision.
      *
-     * @return the value
+     * @return the version control revision
      */
     @Override
-    public long getValue() {
-        return value;
+    public String getRevision() {
+        return org.openvpms.version.Version.REVISION;
     }
 }

@@ -22,11 +22,11 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" readOnly="true"
               defaultValue="'Policy Insurer'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
-        <node name="source" displayName="Insurance Policy Type" path="/source"
+        <node name="source" displayName="Insurer" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
-              filter="entity.insurancePolicyType" minCardinality="1"/>
-        <node name="target" displayName="Insurer" path="/target"
+              filter="party.supplierInsurer*" minCardinality="1"/>
+        <node name="target" displayName="Insurance Service" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
-              filter="party.supplierInsurer" minCardinality="1"/>
+              filter="entity.insuranceService*" minCardinality="1"/>
     </archetype>
 </archetypes>

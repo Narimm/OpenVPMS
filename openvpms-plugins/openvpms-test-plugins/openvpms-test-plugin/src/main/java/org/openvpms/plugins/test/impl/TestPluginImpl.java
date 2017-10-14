@@ -16,15 +16,8 @@
 
 package org.openvpms.plugins.test.impl;
 
-import org.openvpms.archetype.rules.practice.PracticeArchetypes;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.plugin.test.service.TestService;
 import org.openvpms.plugins.test.api.TestPlugin;
-
-import java.util.Iterator;
 
 
 /**
@@ -37,16 +30,10 @@ public class TestPluginImpl implements TestPlugin {
     /**
      * Constructs a {@link TestPluginImpl}.
      *
-     * @param archetypeService the archetype service
-     * @param service          the test service
+     * @param service the test service
      */
-    public TestPluginImpl(IArchetypeService archetypeService, TestService service) {
-        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true);
-        query.setMaxResults(1);
-        Iterator<Party> iterator = new IMObjectQueryIterator<>(archetypeService, query);
-        while (iterator.hasNext()) {
-            Party practice = iterator.next();
-            service.setValue(practice.getName());
-        }
+    public TestPluginImpl(TestService service) {
+        service.setValue(service.getValue() + 1);
     }
+
 }

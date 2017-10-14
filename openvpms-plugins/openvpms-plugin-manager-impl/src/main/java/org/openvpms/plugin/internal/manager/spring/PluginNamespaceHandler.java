@@ -14,38 +14,23 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.test.service.impl;
+package org.openvpms.plugin.internal.manager.spring;
 
-import org.openvpms.plugin.test.service.TestService;
+import org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader;
+import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * Implementation of {@link TestService}.
+ * Plugin namespace handler.
  *
  * @author Tim Anderson
  */
-public class TestServiceImpl implements TestService {
+public class PluginNamespaceHandler extends NamespaceHandlerSupport {
 
     /**
-     * The value
+     * Invoked by the {@link DefaultBeanDefinitionDocumentReader} after
+     * construction but before any custom elements are parsed.
      */
-    private long value;
-
-    /**
-     * Sets the value.
-     *
-     * @param value the value to set
-     */
-    public void setValue(long value) {
-        this.value = value;
-    }
-
-    /**
-     * Returns the value.
-     *
-     * @return the value
-     */
-    @Override
-    public long getValue() {
-        return value;
+    public void init() {
+        registerBeanDefinitionDecorator("service", new PluginServiceBeanDefinitionDecorator());
     }
 }

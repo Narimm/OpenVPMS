@@ -34,34 +34,6 @@
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-archetypes</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-version</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-plugin-manager</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- The following ensure that JAXB is exported via org.osgi.framework.system.packages.extra -->
-        <dependency>
-            <groupId>org.apache.servicemix.specs</groupId>
-            <artifactId>org.apache.servicemix.specs.jaxb-api-2.2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.servicemix.bundles</groupId>
-            <artifactId>org.apache.servicemix.bundles.jaxb-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>

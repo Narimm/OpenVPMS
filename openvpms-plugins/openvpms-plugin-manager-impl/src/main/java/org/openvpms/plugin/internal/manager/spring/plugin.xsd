@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
 <!--
   ~ Version: 1.0
@@ -16,16 +16,10 @@
   ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+<xsd:schema xmlns="http://openvpms.org/schema/plugin/spring"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://openvpms.org/schema/plugin/spring"
+            elementFormDefault="qualified">
 
-    <bean id="plugin" class="org.openvpms.plugins.test.impl.TestPluginImpl">
-        <argument ref="testService"/>
-    </bean>
-
-    <service ref="plugin" auto-export="interfaces"/>
-
-    <reference id="testService" interface="org.openvpms.plugin.test.service.TestService"/>
-
-</blueprint>
+    <xsd:element name="service"/>
+</xsd:schema>
