@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
+import org.openvpms.web.component.workspace.ActCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -47,7 +47,7 @@ import org.openvpms.web.system.ServiceHelper;
  *
  * @author Tim Anderson
  */
-public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
+public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
      * Claim button identifier.
@@ -82,6 +82,7 @@ public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 onClaim();
             }
         }));
+        buttons.add(createPostButton());
         buttons.add(ButtonFactory.create(SUBMIT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSubmit();
@@ -100,6 +101,7 @@ public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
         super.enableButtons(buttons, enable);
         Act object = getObject();
         buttons.setEnabled(CLAIM_ID, enable && TypeHelper.isA(object, InsuranceArchetypes.POLICY));
+        buttons.setEnabled(POST_ID, enable && getActions().canPost(object));
         buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
     }
 
@@ -127,6 +129,18 @@ public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 edit(act, null);
             }
         }
+    }
+
+    /**
+     * Invoked when posting of an act is complete, either by saving the act
+     * with <em>POSTED</em> status, or invoking {@link #onPost()}.
+     *
+     * @param act the act
+     */
+    @Override
+    protected void onPosted(Act act) {
+        setObject(act);
+        onSubmit();
     }
 
     /**
@@ -185,6 +199,19 @@ public class InsuranceCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 }
             }
             return result;
+        }
+
+        /**
+         * Determines if an act can be posted (i.e finalised).
+         * <p>
+         * This implementation returns {@code true} if the act status isn't {@code POSTED} or {@code CANCELLED}.
+         *
+         * @param act the act to check
+         * @return {@code true} if the act can be posted
+         */
+        @Override
+        public boolean canPost(Act act) {
+            return TypeHelper.isA(act, InsuranceArchetypes.CLAIM) && ClaimStatus.PENDING.equals(act.getStatus());
         }
 
         /**

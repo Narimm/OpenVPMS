@@ -14,12 +14,13 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.patient.insurance;
+package org.openvpms.web.workspace.patient.insurance.claim;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 
@@ -31,6 +32,11 @@ import org.openvpms.web.component.property.ModifiableListener;
 public class ClaimItemEditor extends AbstractActEditor {
 
     /**
+     * The charges associated with the claim item.
+     */
+    private final ChargeCollectionEditor charges;
+
+    /**
      * Constructs a {@link ClaimItemEditor}.
      *
      * @param act     the act to edit
@@ -39,6 +45,8 @@ public class ClaimItemEditor extends AbstractActEditor {
      */
     public ClaimItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, context);
+        getEditors().add(charges);
         addStartEndTimeListeners();
         getProperty("status").addModifiableListener(new ModifiableListener() {
             @Override
@@ -48,6 +56,21 @@ public class ClaimItemEditor extends AbstractActEditor {
         });
     }
 
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        strategy.addComponent(new ComponentState(charges));
+        return strategy;
+    }
+
+    /**
+     * Invoked when the status changes.
+     */
     private void onStatusChanged() {
         IMObjectLayoutStrategy layout = getView().getLayout();
         if (layout instanceof ClaimItemLayoutStrategy) {

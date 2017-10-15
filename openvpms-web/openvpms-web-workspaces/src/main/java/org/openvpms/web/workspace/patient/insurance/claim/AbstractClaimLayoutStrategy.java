@@ -14,7 +14,7 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.patient.insurance;
+package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
@@ -62,7 +62,7 @@ public abstract class AbstractClaimLayoutStrategy extends AbstractLayoutStrategy
         Component component = notes.getComponent();
         if (component instanceof TextArea) {
             TextArea text = (TextArea) component;
-            text.setHeight(new Extent(5, Extent.EM));
+            text.setHeight(new Extent(4, Extent.EM));
         }
         return notes;
     }

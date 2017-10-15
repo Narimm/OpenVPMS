@@ -417,15 +417,15 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Helper to create an {@link ArchetypeNodes} that includes all simple nodes except for strings > 255 characters
-     * and the id node.
+     * Helper to create an {@link ArchetypeNodes} that includes all simple nodes except for strings > 255 characters,
+     * and any id or password node.
      *
      * @return a new instance
      */
     protected ArchetypeNodes allSimpleNodesMinusIdAndLongText() {
         return ArchetypeNodes.allSimple()
                 .excludeStringLongerThan(NodeDescriptor.DEFAULT_MAX_LENGTH)
-                .exclude("id");
+                .exclude("id", "password");
     }
 
     /**

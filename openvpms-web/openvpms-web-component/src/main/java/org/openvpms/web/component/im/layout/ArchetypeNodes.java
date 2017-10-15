@@ -83,14 +83,19 @@ public class ArchetypeNodes {
     private Set<String> exclude = new HashSet<>();
 
     /**
+     * Exclude nodes if they are empty.
+     */
+    private Set<String> excludeIfEmpty = new HashSet<>();
+
+    /**
      * If >= 0, exclude any string nodes with a maximum length greater than than that specified.
      */
     private long excludeStringLongerThan = -1;
 
     /**
-     * Exclude nodes if they are empty.
+     * Determines if hidden nodes should be included.
      */
-    private Set<String> excludeIfEmpty = new HashSet<>();
+    private boolean hidden;
 
     /**
      * Used to order nodes. The n-th element is placed before the n-th+1 element.
@@ -132,6 +137,8 @@ public class ArchetypeNodes {
         this.includeComplexNodes = new LinkedHashSet<>(nodes.includeComplexNodes);
         this.exclude = new HashSet<>(nodes.exclude);
         this.excludeIfEmpty = new HashSet<>(nodes.excludeIfEmpty);
+        this.excludeStringLongerThan = nodes.excludeStringLongerThan;
+        this.hidden = nodes.hidden;
         this.order = new ArrayList<>(nodes.order);
     }
 
@@ -225,6 +232,17 @@ public class ArchetypeNodes {
      */
     public ArchetypeNodes excludeStringLongerThan(long length) {
         this.excludeStringLongerThan = length;
+        return this;
+    }
+
+    /**
+     * Determines if hidden nodes should be included.
+     *
+     * @param hidden if {@code true} include hidden nodes, otherwise exclude them
+     * @return this instance
+     */
+    public ArchetypeNodes hidden(boolean hidden) {
+        this.hidden = hidden;
         return this;
     }
 
@@ -366,7 +384,8 @@ public class ArchetypeNodes {
                    && includeComplexNodes.equals(nodes.includeComplexNodes)
                    && exclude.equals(nodes.exclude)
                    && excludeIfEmpty.equals(nodes.excludeIfEmpty)
-                   && excludeStringLongerThan == nodes.excludeStringLongerThan;
+                   && excludeStringLongerThan == nodes.excludeStringLongerThan
+                   && hidden == nodes.hidden;
         }
         return false;
     }
@@ -386,9 +405,10 @@ public class ArchetypeNodes {
      * @param nodes the nodes
      * @return a new instance
      */
-    public static ArchetypeNodes onlySimple(String ... nodes) {
+    public static ArchetypeNodes onlySimple(String... nodes) {
         return new ArchetypeNodes(false, false).simple(nodes);
     }
+
     /**
      * Creates a new instance that selects all simple nodes.
      *
@@ -661,7 +681,7 @@ public class ArchetypeNodes {
         protected boolean include(NodeDescriptor descriptor) {
             boolean result = false;
             String name = descriptor.getName();
-            if (!exclude.contains(name)) {
+            if ((hidden || !descriptor.isHidden()) && !exclude.contains(name)) {
                 result = !excludeIfEmpty(descriptor) && (!descriptor.isString() || includeString(descriptor));
             }
             return result;

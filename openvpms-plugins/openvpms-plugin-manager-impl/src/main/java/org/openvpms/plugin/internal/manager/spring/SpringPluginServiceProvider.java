@@ -13,9 +13,11 @@
  *
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.plugin.internal.manager.spring;
 
 
+import org.apache.commons.lang.ClassUtils;
 import org.openvpms.plugin.internal.manager.PluginServiceProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -66,11 +68,12 @@ public class SpringPluginServiceProvider implements PluginServiceProvider {
         for (String name : beanNames) {
             if (factory.isSingleton(name)) {
                 Object bean = factory.getBean(name);
-                Class<?>[] interfaces = bean.getClass().getInterfaces();
-                if (interfaces.length != 0) {
-                    String[] names = new String[interfaces.length];
-                    for (int i = 0; i < interfaces.length; ++i) {
-                        names[i] = interfaces[i].getName();
+                // TODO - provide a way of specifying which interfaces to use
+                List interfaces = ClassUtils.getAllInterfaces(bean.getClass());
+                if (!interfaces.isEmpty()) {
+                    String[] names = new String[interfaces.size()];
+                    for (int i = 0; i < interfaces.size(); ++i) {
+                        names[i] = ((Class) interfaces.get(i)).getName();
                     }
                     Hashtable<String, Object> properties = new Hashtable<>();
                     ServiceRegistration<?> registration = context.registerService(names, bean, properties);

@@ -116,7 +116,8 @@
                         <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
-                        <Export-Package>org.openvpms.component.business.domain*,org.openvpms.component.business.service.archetype.helper.*;version="${project.version}",
+                        <Export-Package>
+                            org.openvpms.component.business.domain*,org.openvpms.component.business.service.archetype.helper.*;version="${project.version}",
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -273,6 +274,13 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
             <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- using the servicemix spring-tx -->
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-tx</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

@@ -305,18 +305,18 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-plugin-manager</artifactId>
+            <artifactId>openvpms-plugin-manager-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-plugin-services-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <artifactId>vethub-openvpms-plugin</artifactId>
             <groupId>com.petsure</groupId>
             <version>2.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-plugin-services</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>

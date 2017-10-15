@@ -14,7 +14,7 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.patient.insurance;
+package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Component;
 import org.apache.commons.collections.PredicateUtils;

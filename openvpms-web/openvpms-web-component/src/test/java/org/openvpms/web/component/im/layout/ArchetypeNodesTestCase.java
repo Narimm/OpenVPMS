@@ -65,7 +65,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testAll() {
-        ArchetypeNodes nodes = ArchetypeNodes.all();
+        ArchetypeNodes nodes = ArchetypeNodes.all().hidden(true);
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
@@ -81,10 +81,9 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     @Test
     public void testSimple() {
         ArchetypeNodes nodes = ArchetypeNodes.allSimple();
-        checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
+        checkSimple(archetype, nodes, "id", "name", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
-                    "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
-                    "locations");
+                    "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes");
         checkComplex(archetype, nodes);
     }
 
@@ -93,7 +92,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testComplex() {
-        ArchetypeNodes nodes = ArchetypeNodes.allComplex();
+        ArchetypeNodes nodes = ArchetypeNodes.allComplex().hidden(true);
         checkSimple(archetype, nodes);
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
                      "reminders", "alerts", "documents", "discounts", "species", "updates", "classifications",
@@ -105,7 +104,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testComplexAsSimple() {
-        ArchetypeNodes nodes = ArchetypeNodes.all().simple("species");
+        ArchetypeNodes nodes = ArchetypeNodes.all().simple("species").hidden(true);
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
@@ -120,7 +119,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testOnlySimple() {
-        ArchetypeNodes nodes = ArchetypeNodes.onlySimple("id", "name", "description");
+        ArchetypeNodes nodes = ArchetypeNodes.onlySimple("id", "name", "description").hidden(true);
         checkSimple(archetype, nodes, "id", "name", "description");
         checkComplex(archetype, nodes);
     }
@@ -130,7 +129,8 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testExclude() {
-        ArchetypeNodes nodes = new ArchetypeNodes().exclude("label", "dispInstructions", "usageNotes", "prices");
+        ArchetypeNodes nodes = ArchetypeNodes.all().exclude("label", "dispInstructions", "usageNotes", "prices")
+                .hidden(true);
         Product product = (Product) create(ProductArchetypes.MEDICATION);
 
         // verify label, dispInstructions and usageNotes are excluded from simple nodes
@@ -149,7 +149,8 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testExcludeIfEmpty() {
-        ArchetypeNodes nodes = new ArchetypeNodes().excludeIfEmpty("label", "dispInstructions", "usageNotes", "prices");
+        ArchetypeNodes nodes = ArchetypeNodes.all().hidden(true)
+                .excludeIfEmpty("label", "dispInstructions", "usageNotes", "prices");
         Product product = (Product) create(ProductArchetypes.MEDICATION);
 
         IMObjectBean bean = new IMObjectBean(product);
@@ -191,11 +192,9 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         ArchetypeDescriptor location = getArchetypeService().getArchetypeDescriptor(ContactArchetypes.LOCATION);
         assertNotNull(location);
 
-        checkNodeNames(ArchetypeNodes.allSimple().excludeStringLongerThan(100), location,
-                       "id", "preferred", "startDate", "endDate");
+        checkNodeNames(ArchetypeNodes.allSimple().excludeStringLongerThan(100), location, "preferred");
         checkNodeNames(ArchetypeNodes.allSimple().excludeStringLongerThan(255), location,
-                       "id", "name", "description", "suburb", "postcode", "state", "preferred",
-                       "startDate", "endDate");
+                       "name", "suburb", "postcode", "state", "preferred");
     }
 
     /**
@@ -204,13 +203,13 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     @Test
     public void testOrder() {
         // default ordering
-        checkSimple(archetype, new ArchetypeNodes(), "id", "name", "description", "printedName", "drugSchedule",
-                    "activeIngredients", "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits",
-                    "dispensingVerb", "label", "dispInstructions", "type", "pharmacy", "templateOnly",
-                    "patientIdentity", "active", "usageNotes", "locations");
+        checkSimple(archetype, ArchetypeNodes.all().hidden(true), "id", "name", "description", "printedName",
+                    "drugSchedule", "activeIngredients", "concentration", "concentrationUnits", "sellingUnits",
+                    "dispensingUnits", "dispensingVerb", "label", "dispInstructions", "type", "pharmacy",
+                    "templateOnly", "patientIdentity", "active", "usageNotes", "locations");
 
         // now place the printedName before the description
-        ArchetypeNodes nodes = new ArchetypeNodes().order("printedName", "description");
+        ArchetypeNodes nodes = ArchetypeNodes.all().hidden(true).order("printedName", "description");
         checkSimple(archetype, nodes, "id", "name", "printedName", "description", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes",
@@ -228,9 +227,10 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         assertNotNull(location);
         assertNotNull(email);
         List<ArchetypeDescriptor> archetypes = Arrays.asList(location, email);
-        checkNodeNames(ArchetypeNodes.allSimple(), archetypes, "id", "name", "description", "preferred", "startDate",
-                       "endDate");
-        checkNodeNames(ArchetypeNodes.allSimple().simple("address", "emailAddress").order("address", "emailAddress"),
+        checkNodeNames(ArchetypeNodes.allSimple().hidden(true), archetypes, "id", "name", "description", "preferred",
+                       "startDate", "endDate");
+        checkNodeNames(ArchetypeNodes.allSimple().hidden(true).simple("address", "emailAddress")
+                               .order("address", "emailAddress"),
                        archetypes, "id", "name", "description", "address", "emailAddress", "preferred", "startDate",
                        "endDate");
     }
@@ -322,9 +322,6 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         String[] names = getNames(actual);
         assertArrayEquals("Expected=" + StringUtils.join(expected, ",") + ". Actual=" + StringUtils.join(names, ","),
                           expected, names);
-        for (int i = 0; i < expected.length; ++i) {
-            assertEquals(expected[i], names[i]);
-        }
     }
 
     /**
