@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.plugin.manager.PluginManager;
@@ -53,15 +54,14 @@ public class InsuranceServicesImpl implements InsuranceServices {
     }
 
     /**
-     * Determines if an insurer has an associated insurance service.
+     * Determines if claim can be submitted via an {@link InsuranceService}.
      *
-     * @param insurer the insurer
-     * @return {@code true} if the insurer has an insurance service
+     * @param claim the claim
+     * @return {@code true} if the claim can be submitted
      */
-    @Override
-    public boolean hasInsuranceService(Party insurer) {
-        IMObjectBean bean = new IMObjectBean(insurer, service);
-        return bean.getNodeTargetObjectRef("service") != null;
+    public boolean canSubmit(Claim claim) {
+        Party insurer = claim.getPolicy().getInsurer();
+        return getConfig(insurer) != null;
     }
 
     /**
@@ -73,8 +73,7 @@ public class InsuranceServicesImpl implements InsuranceServices {
     @Override
     public InsuranceService getService(Party insurer) {
         InsuranceService result = null;
-        IMObjectBean bean = new IMObjectBean(insurer, service);
-        Entity config = (Entity) bean.getNodeTargetObject("service");
+        Entity config = getConfig(insurer);
         if (config != null) {
             String archetype = config.getArchetypeId().getShortName();
             for (InsuranceService service : manager.getServices(InsuranceService.class)) {
@@ -85,5 +84,16 @@ public class InsuranceServicesImpl implements InsuranceServices {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the <em>entity.insuranceService*</em> configuration for an insurer.
+     *
+     * @param insurer the insurer
+     * @return the configuration, or {@code null} if none exists or is inactive
+     */
+    private Entity getConfig(Party insurer) {
+        IMObjectBean bean = new IMObjectBean(insurer, service);
+        return (Entity) bean.getNodeTargetObject("service");
     }
 }

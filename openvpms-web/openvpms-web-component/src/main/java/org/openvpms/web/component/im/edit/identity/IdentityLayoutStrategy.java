@@ -38,7 +38,7 @@ public class IdentityLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * The nodes to display. This excludes all but the identity node.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes(false, false).simple("identity");
+    private static final ArchetypeNodes NODES = ArchetypeNodes.none().simple("identity");
 
     /**
      * Constructs a {@link IdentityLayoutStrategy}.

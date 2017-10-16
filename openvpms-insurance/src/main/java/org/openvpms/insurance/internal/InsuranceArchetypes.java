@@ -34,6 +34,11 @@ public class InsuranceArchetypes {
     public static final String CLAIM = "act.patientInsuranceClaim";
 
     /**
+     * The default insurance claim identity, used when claims are submitted manually.
+     */
+    public static final String CLAIM_IDENTITY = "actIdentity.insuranceClaim";
+
+    /**
      * The insurance claim item archetype.
      */
     public static final String CLAIM_ITEM = "act.patientInsuranceClaimItem";

@@ -14,32 +14,35 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.insurance.service;
+package org.openvpms.insurance.exception;
 
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.insurance.claim.Claim;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.i18n.Message;
 
 /**
- * Locates {@link InsuranceService}.
+ * Insurance exception.
  *
  * @author Tim Anderson
  */
-public interface InsuranceServices {
+public class InsuranceException extends OpenVPMSException {
 
     /**
-     * Determines if claim can be submitted via an {@link InsuranceService}.
+     * Constructs an {@link InsuranceException}.
      *
-     * @param claim the claim
-     * @return {@code true} if the claim can be submitted
+     * @param message the message
      */
-    boolean canSubmit(Claim claim);
+    public InsuranceException(Message message) {
+        super(message.toString());
+    }
 
     /**
-     * Returns the insurance service for the specified insurer.
+     * Constructs an {@link InsuranceException}.
      *
-     * @param insurer the insurer
-     * @return the insurance service, or {@code null} if none is found
+     * @param message the message
+     * @param cause   the root cause
      */
-    InsuranceService getService(Party insurer);
+    public InsuranceException(Message message, Throwable cause) {
+        super(message.toString(), cause);
+    }
 
 }

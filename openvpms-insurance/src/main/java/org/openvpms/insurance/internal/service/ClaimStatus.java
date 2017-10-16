@@ -16,6 +16,9 @@
 
 package org.openvpms.insurance.internal.service;
 
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.workflow.WorkflowStatus;
+
 /**
  * Insurance claim statuses.
  *
@@ -26,12 +29,12 @@ public class ClaimStatus {
     /**
      * Pending claim.
      */
-    public static final String PENDING = "PENDING";
+    public static final String PENDING = WorkflowStatus.PENDING;
 
     /**
      * Finalised claim.
      */
-    public static final String POSTED = "POSTED";
+    public static final String POSTED = ActStatus.POSTED;
 
     /**
      * Submitted claim.
@@ -42,6 +45,11 @@ public class ClaimStatus {
      * Settled claim.
      */
     public static final String SETTLED = "SETTLED";
+
+    /**
+     * Cancelled claim.
+     */
+    public static final String CANCELLED = ActStatus.CANCELLED;
 
     /**
      * Declined claim.

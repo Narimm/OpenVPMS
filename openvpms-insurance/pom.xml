@@ -42,7 +42,8 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>
-                            org.openvpms.insurance.claim.*,org.openvpms.insurance.policy.*,org.openvpms.insurance.service.*;version="${project.version}"
+                            org.openvpms.insurance.claim.exception,org.openvpms.insurance.claim.*,
+                            org.openvpms.insurance.policy.*,org.openvpms.insurance.service.*;version="${project.version}"
                         </Export-Package>
                     </instructions>
                 </configuration>

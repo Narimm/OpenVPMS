@@ -15,20 +15,20 @@
   -->
 
 <!-- =========================================================================================================== -->
-<!-- Default insurance claim identity archetype.                                                                 -->
+<!-- Sample insurance claim attachment identity archetype.                                                                  -->
 <!--                                                                                                             -->
-<!-- This must not be used for InsuranceService claims. InsuranceService implementations must provide their own  -->
-<!-- version with a unique name of the form:                                                                     -->
-<!--     actIdentity.insuranceClaim&lt;insurer&gt;                                                               -->
+<!-- This must not be used directly. InsuranceService implementations must provide their own version with a      -->
+<!-- unique name of the form:                                                                                    -->
+<!-- actIdentity.insuranceAttachment&lt;insurer&gt;                                                                   -->
 <!--                                                                                                             -->
 <!-- This is to avoid id collisions between insurers.                                                            -->
 <!-- =========================================================================================================== -->
 
 <archetypes>
-    <archetype name="actIdentity.insuranceClaim.1.0" latest="true"
+    <!--archetype name="actIdentity.insuranceAttachment.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.ActIdentity"
-               displayName="Claim Identifier">
+               displayName="Sample Attachment Identifier">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="identity" path="/identity" type="java.lang.String" minCardinality="1" maxLenth="100"/>
-    </archetype>
+    </archetype-->
 </archetypes>

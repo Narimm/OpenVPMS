@@ -428,6 +428,17 @@ public class ArchetypeNodes {
     }
 
     /**
+     * Creates a new instance that selects no nodes.
+     * <p/>
+     * Nodes must be explicitly added.
+     *
+     * @return a new instance
+     */
+    public static ArchetypeNodes none() {
+        return new ArchetypeNodes(false, false);
+    }
+
+    /**
      * Filters the properties, only including those matching the specified names.
      *
      * @param properties the properties

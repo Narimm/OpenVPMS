@@ -25,6 +25,7 @@ import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.InsuranceArchetypes;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.internal.service.ClaimStatus;
+import org.openvpms.insurance.service.Declaration;
 import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.Context;
@@ -35,6 +36,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -58,6 +60,16 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      * Submit button identifier.
      */
     private static final String SUBMIT_ID = "button.submit";
+
+    /**
+     * Accept button id.
+     */
+    private static final String ACCEPT_ID = "button.accept";
+
+    /**
+     * Decline button it.
+     */
+    private static final String DECLINE_ID = "button.decline";
 
     /**
      * Constructs an {@link InsuranceCRUDWindow}.
@@ -116,22 +128,6 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
-     * Invoked when the 'Claim' button is pressed.
-     */
-    private void onClaim() {
-        Act object = IMObjectHelper.reload(getObject());
-        if (TypeHelper.isA(object, InsuranceArchetypes.POLICY)) {
-            Act act = (Act) IMObjectCreator.create(InsuranceArchetypes.CLAIM);
-            if (act != null) {
-                ActBean bean = new ActBean(act);
-                Act policy = getObject();
-                bean.addNodeRelationship("policy", policy);
-                edit(act, null);
-            }
-        }
-    }
-
-    /**
      * Invoked when posting of an act is complete, either by saving the act
      * with <em>POSTED</em> status, or invoking {@link #onPost()}.
      *
@@ -141,6 +137,27 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     protected void onPosted(Act act) {
         setObject(act);
         onSubmit();
+    }
+
+    /**
+     * Invoked when the 'Claim' button is pressed.
+     */
+    private void onClaim() {
+        Act object = IMObjectHelper.reload(getObject());
+        if (TypeHelper.isA(object, InsuranceArchetypes.POLICY)) {
+            if (!getActions().hasExistingClaims(object)) {
+                Act act = (Act) IMObjectCreator.create(InsuranceArchetypes.CLAIM);
+                if (act != null) {
+                    ActBean bean = new ActBean(act);
+                    Act policy = getObject();
+                    bean.addNodeRelationship("policy", policy);
+                    edit(act, null);
+                }
+            } else {
+                ErrorDialog.show(Messages.get("patient.insurance.claim.existing.title"),
+                                 Messages.get("patient.insurance.claim.existing.message"));
+            }
+        }
     }
 
     /**
@@ -160,7 +177,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                                         ConfirmationDialog.YES_NO, new PopupDialogListener() {
                             @Override
                             public void onYes() {
-                                submit(claim, service);
+                                checkDeclaration(claim, service);
                             }
                         });
             } else {
@@ -171,6 +188,30 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                             }
                         });
             }
+        }
+    }
+
+    /**
+     * Determines if a declaration needs to be acceepted
+     *
+     * @param claim
+     * @param service
+     */
+    private void checkDeclaration(final Claim claim, final InsuranceService service) {
+        Declaration declaration = service.getDeclaration();
+        if (declaration != null) {
+            String text = declaration.getText();
+            ConfirmationDialog.show(Messages.get("patient.insurance.declaration.title"), text,
+                                    new String[]{ACCEPT_ID, DECLINE_ID}, new PopupDialogListener() {
+                        @Override
+                        public void onAction(String action) {
+                            if (ACCEPT_ID.equals(action)) {
+                                submit(claim, service);
+                            }
+                        }
+                    });
+        } else {
+            submit(claim, service);
         }
     }
 
@@ -222,6 +263,26 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
          */
         public boolean canSubmit(Act act) {
             return TypeHelper.isA(act, InsuranceArchetypes.CLAIM) && ClaimStatus.POSTED.equals(act.getStatus());
+        }
+
+        /**
+         * Determines if an act is a policy with outstanding claims.
+         *
+         * @param act the act
+         * @return {@code true} if the act is a policy with outstanding claims
+         */
+        public boolean hasExistingClaims(Act act) {
+            if (TypeHelper.isA(act, InsuranceArchetypes.POLICY)) {
+                ActBean bean = new ActBean(act);
+                for (Act claim : bean.getNodeActs("claims")) {
+                    String status = claim.getStatus();
+                    if (!ClaimStatus.CANCELLED.equals(status) && !ClaimStatus.DECLINED.equals(claim.getStatus())
+                        && !ClaimStatus.SETTLED.equals(status)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }

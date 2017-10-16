@@ -19,6 +19,7 @@ package org.openvpms.insurance.service;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.exception.InsuranceException;
 
 /**
  * The service for managing insurance claims.
@@ -31,6 +32,7 @@ public interface InsuranceService {
      * Returns a display name for this service.
      *
      * @return a display name for this service
+     * @throws InsuranceException for any error
      */
     String getName();
 
@@ -38,6 +40,7 @@ public interface InsuranceService {
      * Returns the insurance service archetype that this supports.
      *
      * @return an <em>entity.insuranceService*</em> archetype
+     * @throws InsuranceException for any error
      */
     String getArchetype();
 
@@ -48,6 +51,7 @@ public interface InsuranceService {
      * insurers that are no longer relevant.
      *
      * @return the changes that were made
+     * @throws InsuranceException for any error
      */
     Changes<Party> synchroniseInsurers();
 
@@ -55,6 +59,7 @@ public interface InsuranceService {
      * Returns the declaration that users must accept, before submitting a claim.
      *
      * @return the declaration, or {@code null}, if no declaration is required
+     * @throws InsuranceException for any error
      */
     Declaration getDeclaration();
 
@@ -65,6 +70,7 @@ public interface InsuranceService {
      * {@link Claim.Status#SUBMITTED}.
      *
      * @param claim the claim to submit
+     * @throws InsuranceException for any error
      */
     void submit(Claim claim);
 
@@ -72,6 +78,7 @@ public interface InsuranceService {
      * Submit an attachment to an existing claim.
      *
      * @param claim the claim
+     * @throws InsuranceException for any error
      */
     void submitAttachment(Claim claim, Document attachment);
 
@@ -79,6 +86,7 @@ public interface InsuranceService {
      * Cancels a claim.
      *
      * @param claim the claim
+     * @throws InsuranceException for any error
      */
     void cancel(Claim claim);
 }

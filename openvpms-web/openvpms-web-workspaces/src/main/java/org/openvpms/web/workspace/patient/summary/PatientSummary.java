@@ -29,6 +29,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.insurance.InsuranceRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
@@ -109,6 +110,11 @@ public class PatientSummary extends PartySummary {
     private final ReminderRules reminderRules;
 
     /**
+     * The insurance rules.
+     */
+    private final InsuranceRules insuranceRules;
+
+    /**
      * Value of <em>showReferrals</em> to indicate to always show referral information.
      */
     private static final String ALWAYS_SHOW_REFERRAL = "ALWAYS";
@@ -134,11 +140,12 @@ public class PatientSummary extends PartySummary {
         super(context, help, preferences);
         rules = ServiceHelper.getBean(PatientRules.class);
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
+        insuranceRules = ServiceHelper.getBean(InsuranceRules.class);
     }
 
     /**
      * Returns summary information for a party.
-     * <p/>
+     * <p>
      * The summary includes any alerts.
      *
      * @param patient the patient
@@ -272,6 +279,7 @@ public class PatientSummary extends PartySummary {
         addDateOfBirth(patient, grid);
         addWeight(patient, grid);
         addMicrochip(patient, grid);
+        addInsurancePolicy(patient, grid);
         addReferral(patient, grid);
         return grid;
     }
@@ -421,6 +429,31 @@ public class PatientSummary extends PartySummary {
             });
             container.add(add);
         }
+    }
+
+    /**
+     * Displays the patient insurance policy in a grid.
+     *
+     * @param patient the patient
+     * @param grid    the grid
+     */
+    protected void addInsurancePolicy(Party patient, Grid grid) {
+        Label title = LabelFactory.create("patient.insurance");
+
+        Label value = LabelFactory.create();
+        Act policy = insuranceRules.getPolicy(patient);
+        if (policy == null) {
+            value.setText(Messages.get("patient.insurance.none"));
+        } else if (policy.getActivityEndTime().compareTo(new Date()) < 0) {
+            value.setText(Messages.get("patient.insurance.expired"));
+        } else {
+            Party insurer = insuranceRules.getInsurer(policy);
+            if (insurer != null) {
+                value.setText(insurer.getName());
+            }
+        }
+        grid.add(title);
+        grid.add(value);
     }
 
     /**
