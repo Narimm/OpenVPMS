@@ -36,12 +36,12 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
     /**
      * The euthanasia reason component
      */
-    private ComponentState euthanasiaResson;
+    private ComponentState euthanasiaReason;
 
     /**
      * The nodes to display.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("euthanasiaReason");
+    private static final ArchetypeNodes NODES = ArchetypeNodes.all().exclude("euthanasiaReason");
 
     /**
      * Constructs a {@link ClaimItemLayoutStrategy}.
@@ -57,9 +57,8 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
      * @param show if {@code true} display the euthansia reason, otherwise hide it.
      */
     public void setShowEuthanasiaReason(boolean show) {
-        if (euthanasiaResson != null) {
-            euthanasiaResson.getLabel().setVisible(show);
-            euthanasiaResson.getComponent().setVisible(show);
+        if (euthanasiaReason != null) {
+            euthanasiaReason.setVisible(show);
         }
     }
 
@@ -79,10 +78,10 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
         Row statusRow = RowFactory.create(Styles.CELL_SPACING);
         Property status = properties.get("status");
         ComponentState statusState = createComponent(status, object, context);
-        euthanasiaResson = createComponent(properties.get("euthanasiaReason"), object, context);
+        euthanasiaReason = createComponent(properties.get("euthanasiaReason"), object, context);
         statusRow.add(statusState.getComponent());
-        statusRow.add(euthanasiaResson.getLabel());
-        statusRow.add(euthanasiaResson.getComponent());
+        statusRow.add(euthanasiaReason.getLabel());
+        statusRow.add(euthanasiaReason.getComponent());
         addComponent(new ComponentState(statusRow, statusState.getProperty()));
         setShowEuthanasiaReason("EUTHANASED".equals(status.getString()));
 

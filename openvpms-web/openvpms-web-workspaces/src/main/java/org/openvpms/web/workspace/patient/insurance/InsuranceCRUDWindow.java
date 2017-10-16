@@ -17,12 +17,12 @@
 package org.openvpms.web.workspace.patient.insurance;
 
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.insurance.claim.Claim;
-import org.openvpms.insurance.internal.InsuranceArchetypes;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.internal.service.ClaimStatus;
 import org.openvpms.insurance.service.Declaration;

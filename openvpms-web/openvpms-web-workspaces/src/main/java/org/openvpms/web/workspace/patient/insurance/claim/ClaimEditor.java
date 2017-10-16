@@ -16,29 +16,34 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.insurance.claim.Claim;
-import org.openvpms.insurance.internal.InsuranceArchetypes;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.identity.SingleIdentityCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.List;
 
 /**
  * Editor for <em>act.patientInsuranceClaim</em>.
  *
  * @author Tim Anderson
  */
-public class ClaimEditor extends AbstractActEditor {
+public class ClaimEditor extends AbstractClaimEditor {
 
     /**
      * Determines if the claim will be submitted via an {@link InsuranceService}.
@@ -59,14 +64,14 @@ public class ClaimEditor extends AbstractActEditor {
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public ClaimEditor(Act act, IMObject parent, LayoutContext context) {
-        super(act, parent, context);
+    public ClaimEditor(FinancialAct act, IMObject parent, LayoutContext context) {
+        super(act, parent, "amount", context);
         if (act.isNew()) {
             initParticipant("patient", context.getContext().getPatient());
             initParticipant("location", context.getContext().getLocation());
             initParticipant("clinician", context.getContext().getClinician());
         }
-        eClaim = hasInsuranceService(act);
+        eClaim = canSubmitClaim(act);
         if (!eClaim) {
             CollectionProperty insuranceId = getCollectionProperty("insuranceId");
             if (insuranceId.getValues().isEmpty()) {
@@ -85,7 +90,7 @@ public class ClaimEditor extends AbstractActEditor {
      */
     @Override
     public IMObjectEditor newInstance() {
-        return new ClaimEditor(reload(getObject()), getParent(), getLayoutContext());
+        return new ClaimEditor((FinancialAct) reload(getObject()), getParent(), getLayoutContext());
     }
 
     /**
@@ -95,16 +100,49 @@ public class ClaimEditor extends AbstractActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        ClaimLayoutStrategy strategy = new ClaimLayoutStrategy();
         if (identityCollectionEditor != null) {
             strategy.addComponent(new ComponentState(identityCollectionEditor));
-        } else if (strategy instanceof ClaimLayoutStrategy) {
-            ((ClaimLayoutStrategy) strategy).setInsuranceIdReadOnly(eClaim);
+        } else {
+            strategy.setInsuranceIdReadOnly(eClaim);
         }
         return strategy;
     }
 
-    private boolean hasInsuranceService(Act act) {
+    /**
+     * Invoked when layout has completed.
+     * <p>
+     * This can be used to perform processing that requires all editors to be created.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        getEditor("items").addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onItemsChanged();
+            }
+        });
+    }
+
+    /**
+     * Returns the item acts to sum.
+     *
+     * @return the acts
+     */
+    @Override
+    protected List<Act> getItemActs() {
+        ActRelationshipCollectionEditor editor = (ActRelationshipCollectionEditor) getEditor("items");
+        return editor.getActs();
+    }
+
+    /**
+     * Determines if a claim can be submitted via an {@link InsuranceService}.
+     *
+     * @param act the claim act
+     * @return {@code true} if the claim can be submitted
+     */
+    private boolean canSubmitClaim(Act act) {
         Claim claim = ServiceHelper.getBean(InsuranceFactory.class).createClaim(act);
         return ServiceHelper.getBean(InsuranceServices.class).canSubmit(claim);
     }

@@ -43,6 +43,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
@@ -66,6 +67,25 @@ public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
      */
     public ChargeCollectionEditor(CollectionProperty property, Act object, LayoutContext context) {
         super(new ChargeRelationshipCollectionPropertyEditor(property, object), object, context);
+    }
+
+    /**
+     * Returns the charge acts.
+     *
+     * @return the charge acts
+     */
+    public List<Act> getActs() {
+        return new ArrayList<>(getCollectionPropertyEditor().getActs().keySet());
+    }
+
+    /**
+     * Returns the collection property editor.
+     *
+     * @return the collection property editor
+     */
+    @Override
+    protected ChargeRelationshipCollectionPropertyEditor getCollectionPropertyEditor() {
+        return (ChargeRelationshipCollectionPropertyEditor) super.getCollectionPropertyEditor();
     }
 
     /**

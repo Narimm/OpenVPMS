@@ -14,7 +14,7 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.insurance.internal;
+package org.openvpms.archetype.rules.patient.insurance;
 
 /**
  * Insurance archetype.

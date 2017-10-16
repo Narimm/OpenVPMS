@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance;
 
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -32,7 +33,6 @@ import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
 import org.openvpms.insurance.claim.Note;
-import org.openvpms.insurance.internal.InsuranceArchetypes;
 
 import java.math.BigDecimal;
 import java.util.Date;

@@ -17,19 +17,20 @@
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 
+import java.util.List;
+
 /**
  * Editor for <em>act.patientInsuranceClaimItem</em> acts.
  *
  * @author Tim Anderson
  */
-public class ClaimItemEditor extends AbstractActEditor {
+public class ClaimItemEditor extends AbstractClaimEditor {
 
     /**
      * The charges associated with the claim item.
@@ -44,8 +45,13 @@ public class ClaimItemEditor extends AbstractActEditor {
      * @param context the layout context
      */
     public ClaimItemEditor(Act act, Act parent, LayoutContext context) {
-        super(act, parent, context);
+        super(act, parent, "total", context);
         charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, context);
+        charges.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onItemsChanged();
+            }
+        });
         getEditors().add(charges);
         addStartEndTimeListeners();
         getProperty("status").addModifiableListener(new ModifiableListener() {
@@ -54,6 +60,16 @@ public class ClaimItemEditor extends AbstractActEditor {
                 onStatusChanged();
             }
         });
+    }
+
+    /**
+     * Returns the item acts to sum.
+     *
+     * @return the acts
+     */
+    @Override
+    protected List<Act> getItemActs() {
+        return charges.getActs();
     }
 
     /**
@@ -78,4 +94,5 @@ public class ClaimItemEditor extends AbstractActEditor {
             ((ClaimItemLayoutStrategy) layout).setShowEuthanasiaReason(euthanased);
         }
     }
+
 }

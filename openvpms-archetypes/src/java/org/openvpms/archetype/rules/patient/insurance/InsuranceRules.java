@@ -42,8 +42,6 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
  */
 public class InsuranceRules {
 
-    public static final String POLICY = "act.patientInsurancePolicy";
-
     /**
      * The archetype service.
      */
@@ -123,13 +121,23 @@ public class InsuranceRules {
     }
 
     /**
-     * Returns the insurer associated with a policy.
+     * Returns the insurer associated with a policy or claim.
      *
-     * @param policy the policy
+     * @param act the policy or claim
      * @return the insurer
      */
-    public Party getInsurer(Act policy) {
-        return (Party) new ActBean(policy, service).getNodeParticipant("insurer");
+    public Party getInsurer(Act act) {
+        Party insurer = null;
+        ActBean bean = new ActBean(act, service);
+        if (bean.isA(InsuranceArchetypes.POLICY)) {
+            insurer = (Party) bean.getNodeParticipant("insurer");
+        } else {
+            Act policy = (Act) bean.getNodeTargetObject("policy");
+            if (policy != null) {
+                insurer = getInsurer(policy);
+            }
+        }
+        return insurer;
     }
 
     /**
@@ -150,11 +158,11 @@ public class InsuranceRules {
      * @return the query
      */
     private ArchetypeQuery createPolicyQuery(Party patient) {
-        ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("act", POLICY));
+        ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("act", InsuranceArchetypes.POLICY));
         query.setMaxResults(1);
         query.add(Constraints.join("patient")
                           .add(eq("entity", patient))
-                          .add(new ParticipationConstraint(ActShortName, POLICY)));
+                          .add(new ParticipationConstraint(ActShortName, InsuranceArchetypes.POLICY)));
         return query;
     }
 

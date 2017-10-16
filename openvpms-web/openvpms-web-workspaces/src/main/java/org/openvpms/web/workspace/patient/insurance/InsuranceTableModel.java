@@ -16,11 +16,16 @@
 
 package org.openvpms.web.workspace.patient.insurance;
 
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.patient.insurance.InsuranceRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -31,6 +36,17 @@ import org.openvpms.web.resource.i18n.Messages;
 public class InsuranceTableModel extends DescriptorTableModel<Act> {
 
     /**
+     * Insurance rules.
+     */
+    private final InsuranceRules rules;
+
+    /**
+     * The nodes to display.
+     */
+    private static final String[] NAMES = new String[]{"insurer", "insuranceId", "endTime", "status"};
+
+
+    /**
      * Constructs a {@link DescriptorTableModel}.
      *
      * @param shortNames the archetype short names
@@ -38,10 +54,51 @@ public class InsuranceTableModel extends DescriptorTableModel<Act> {
      */
     public InsuranceTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
+        rules = ServiceHelper.getBean(InsuranceRules.class);
         DescriptorTableColumn insuranceId = getColumn("insuranceId");
         if (insuranceId != null) {
             insuranceId.setHeaderValue(Messages.get("patient.insurance.policyClaimId"));
         }
+        DescriptorTableColumn endTime = getColumn("endTime");
+        if (endTime != null) {
+            endTime.setHeaderValue(Messages.get("patient.insurance.expiry"));
+        }
     }
 
+    /**
+     * Returns a list of node descriptor names to include in the table.
+     *
+     * @return the list of node descriptor names to include in the table
+     */
+    @Override
+    protected String[] getNodeNames() {
+        return NAMES;
+    }
+
+    /**
+     * Returns a value for a given column.
+     *
+     * @param object the object to operate on
+     * @param column the column
+     * @param row    the row
+     * @return the value for the column
+     */
+    @Override
+    protected Object getValue(Act object, DescriptorTableColumn column, int row) {
+        Object result;
+        String name = column.getName();
+        if (name.equals("insurer")) {
+            Party insurer = rules.getInsurer(object);
+            result = (insurer != null) ? insurer.getName() : null;
+        } else if (name.equals("endTime") && !TypeHelper.isA(object, InsuranceArchetypes.POLICY)) {
+            // claims have no end-time
+            result = null;
+        } else if (name.equals("status") && !TypeHelper.isA(object, InsuranceArchetypes.CLAIM)) {
+            // policies have no status
+            result = null;
+        } else {
+            result = super.getValue(object, column, row);
+        }
+        return result;
+    }
 }
