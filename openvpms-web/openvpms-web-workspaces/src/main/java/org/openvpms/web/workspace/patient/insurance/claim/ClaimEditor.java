@@ -20,17 +20,18 @@ import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
+import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.identity.SingleIdentityCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -46,16 +47,34 @@ import java.util.List;
 public class ClaimEditor extends AbstractClaimEditor {
 
     /**
-     * Determines if the claim will be submitted via an {@link InsuranceService}.
-     * <p>
-     * If so, users cannot edit the insuranceId node, as this will be generated.
+     * The policy.
      */
-    private final boolean eClaim;
+    private final Act policy;
+
+    /**
+     * The policy customer.
+     */
+    private final Party customer;
+
+    /**
+     * The attachments.
+     */
+    private final AttachmentCollectionEditor attachments;
+
+    /**
+     * The claim items.
+     */
+    private final ClaimItemCollectionEditor items;
+
+    /**
+     * The attachment generator.
+     */
+    private final AttachmentGenerator generator;
 
     /**
      * The insuranceId node editor, for non-eClaims.
      */
-    private SingleIdentityCollectionEditor identityCollectionEditor;
+    private SingleIdentityCollectionEditor insuranceId;
 
     /**
      * Constructs an {@link ClaimEditor}.
@@ -66,21 +85,55 @@ public class ClaimEditor extends AbstractClaimEditor {
      */
     public ClaimEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, "amount", context);
+
+        ActBean claimBean = new ActBean(act);
+        policy = (Act) claimBean.getNodeTargetObject("policy");
+        if (policy == null) {
+            throw new IllegalStateException("Claim has no policy");
+        }
+        ActBean policyBean = new ActBean(policy);
+        customer = (Party) policyBean.getNodeParticipant("customer");
+        if (customer == null) {
+            throw new IllegalStateException("Policy has no customer");
+        }
+
         if (act.isNew()) {
             initParticipant("patient", context.getContext().getPatient());
             initParticipant("location", context.getContext().getLocation());
             initParticipant("clinician", context.getContext().getClinician());
         }
-        eClaim = canSubmitClaim(act);
-        if (!eClaim) {
-            CollectionProperty insuranceId = getCollectionProperty("insuranceId");
-            if (insuranceId.getValues().isEmpty()) {
-                identityCollectionEditor = new SingleIdentityCollectionEditor(insuranceId, act, context);
-                IMObject identity = IMObjectCreator.create(InsuranceArchetypes.CLAIM_IDENTITY);
-                insuranceId.add(identity);
-                getEditors().add(identityCollectionEditor);
-            }
+        Party patient = getPatient();
+        if (patient == null) {
+            throw new IllegalStateException("Claim has no patient");
         }
+
+        Editors editors = getEditors();
+        if (!canSubmitClaim(act)) {
+            // users can't submit the claim via an InsuranceService, so allow the insuranceId to be edited
+            CollectionProperty property = getCollectionProperty("insuranceId");
+            if (property.getValues().isEmpty()) {
+                IMObject identity = IMObjectCreator.create(InsuranceArchetypes.CLAIM_IDENTITY);
+                property.add(identity);
+            }
+            insuranceId = new SingleIdentityCollectionEditor(property, act, context);
+            editors.add(insuranceId);
+        }
+        attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, context);
+        items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, attachments, context);
+        editors.add(attachments);
+        editors.add(items);
+
+        generator = new AttachmentGenerator(customer, patient, context.getContext());
+        items.addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onItemsChanged();
+            }
+        });
+    }
+
+    public Party getPatient() {
+        return (Party) getParticipant("patient");
     }
 
     /**
@@ -94,35 +147,20 @@ public class ClaimEditor extends AbstractClaimEditor {
     }
 
     /**
+     * Generates attachments.
+     */
+    public void generateAttachments() {
+        generator.generate(attachments);
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        ClaimLayoutStrategy strategy = new ClaimLayoutStrategy();
-        if (identityCollectionEditor != null) {
-            strategy.addComponent(new ComponentState(identityCollectionEditor));
-        } else {
-            strategy.setInsuranceIdReadOnly(eClaim);
-        }
-        return strategy;
-    }
-
-    /**
-     * Invoked when layout has completed.
-     * <p>
-     * This can be used to perform processing that requires all editors to be created.
-     */
-    @Override
-    protected void onLayoutCompleted() {
-        super.onLayoutCompleted();
-        getEditor("items").addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onItemsChanged();
-            }
-        });
+        return new ClaimLayoutStrategy(getPatient(), insuranceId, items, attachments);
     }
 
     /**
@@ -132,8 +170,7 @@ public class ClaimEditor extends AbstractClaimEditor {
      */
     @Override
     protected List<Act> getItemActs() {
-        ActRelationshipCollectionEditor editor = (ActRelationshipCollectionEditor) getEditor("items");
-        return editor.getActs();
+        return items.getActs();
     }
 
     /**

@@ -72,5 +72,8 @@
         <node name="items" displayName="Conditions" path="/sourceActRelationships" type="java.util.HashSet"
               baseName="SourceActRelationship" minCardinality="1" maxCardinality="*"
               filter="actRelationship.insuranceClaimItem"/>
+        <node name="attachments" path="/sourceActRelationships" type="java.util.HashSet"
+              baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.insuranceClaimAttachment"/>
     </archetype>
 </archetypes>

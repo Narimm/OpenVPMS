@@ -16,35 +16,27 @@
 
 package org.openvpms.archetype.rules.patient.insurance;
 
+import org.openvpms.archetype.rules.workflow.WorkflowStatus;
+
 /**
- * Insurance archetype.
+ * The attachment status.
  *
  * @author Tim Anderson
  */
-public class InsuranceArchetypes {
+public class AttachmentStatus {
 
     /**
-     * The insurance policy archetype.
+     * Attachment pending submission.
      */
-    public static final String POLICY = "act.patientInsurancePolicy";
+    public static final String PENDING = WorkflowStatus.PENDING;
 
     /**
-     * The insurance claim archetype.
+     * Attachment in error status.
      */
-    public static final String CLAIM = "act.patientInsuranceClaim";
+    public static final String ERROR = "ERROR";
 
     /**
-     * The default insurance claim identity, used when claims are submitted manually.
+     * Attachment submitted.
      */
-    public static final String CLAIM_IDENTITY = "actIdentity.insuranceClaim";
-
-    /**
-     * The insurance claim item archetype.
-     */
-    public static final String CLAIM_ITEM = "act.patientInsuranceClaimItem";
-
-    /**
-     * The insurance claim attachment archetype.
-     */
-    public static final String ATTACHMENT = "act.patientInsuranceClaimAttachment";
+    public static final String SUBMITTED = "SUBMITTED";
 }

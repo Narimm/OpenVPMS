@@ -1,0 +1,165 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
+package org.openvpms.web.workspace.patient.insurance.claim;
+
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.document.CustomerPatientDocumentBrowser;
+
+/**
+ * Editor for the collection of attachments associated with a claim.
+ *
+ * @author Tim Anderson
+ */
+class AttachmentCollectionEditor extends ActRelationshipCollectionEditor {
+
+    /**
+     * Constructs an {@link AttachmentCollectionEditor}.
+     *
+     * @param property the collection property
+     * @param act      the parent act
+     * @param context  the layout context
+     */
+    public AttachmentCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
+        super(property, act, context);
+    }
+
+    /**
+     * Adds a document.
+     *
+     * @param document the document
+     */
+    public void addDocument(DocumentAct document) {
+        if (!exists(document)) {
+            Act attachment = createDocument(document);
+            add(attachment);
+            refresh();
+        }
+    }
+
+    /**
+     * Adds an invoice attachment, if it doesn't already exist.
+     *
+     * @param invoice the invoice
+     */
+    public void addInvoice(FinancialAct invoice) {
+        if (!exists(invoice)) {
+            Act attachment = createInvoice(invoice);
+            add(attachment);
+            refresh();
+        }
+    }
+
+    /**
+     * Determines if an attachment is already present.
+     *
+     * @param attachment the attachment
+     * @return {@code true} if it already present
+     */
+    public boolean exists(Act attachment) {
+        boolean result = false;
+        for (Act act : getCurrentActs()) {
+            ActBean bean = new ActBean(act);
+            if (bean.getRelationship(attachment) != null) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
+     * an editor.
+     *
+     * @return the new editor, or {@code null} if one could not be created
+     */
+    @Override
+    protected IMObjectEditor onAdd() {
+        LayoutContext layout = getContext();
+        Context context = layout.getContext();
+        Party customer = context.getCustomer();
+        Party patient = context.getPatient();
+        CustomerPatientDocumentBrowser browser = new CustomerPatientDocumentBrowser(customer, patient, false, layout);
+        String title = Messages.get("patient.insurance.attach.title");
+        final BrowserDialog<Act> dialog = new BrowserDialog<>(title, browser, layout.getHelpContext());
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                DocumentAct document = (DocumentAct) dialog.getSelected();
+                addDocument(document);
+            }
+        });
+        dialog.show();
+        return null;
+    }
+
+    /**
+     * Creates an attachment for a document.
+     *
+     * @param original the original document
+     * @return a new attachment
+     */
+    private Act createDocument(DocumentAct original) {
+        ActBean bean = create(original, original.getName());
+        bean.setValue("fileName", original.getFileName());
+        bean.setValue("mimeType", original.getMimeType());
+        return bean.getAct();
+    }
+
+    /**
+     * Creates an attachment for an invoice.
+     *
+     * @param original the original invoice
+     * @return a new attachment
+     */
+    private Act createInvoice(FinancialAct original) {
+        ActBean bean = create(original, original.getName() + "  " + original.getId());
+        return bean.getAct();
+    }
+
+    /**
+     * Creates an attachment.
+     *
+     * @param original the original act
+     * @param name     the name
+     * @return a new attachment
+     */
+    private ActBean create(Act original, String name) {
+        Act act = (Act) IMObjectCreator.create(InsuranceArchetypes.ATTACHMENT);
+        ActBean bean = new ActBean(act);
+        bean.setValue("startTime", original.getActivityStartTime());
+        bean.setValue("name", name);
+        bean.setValue("type", act.getArchetypeId().getShortName());
+        bean.addNodeRelationship("original", original);
+        return bean;
+    }
+
+}

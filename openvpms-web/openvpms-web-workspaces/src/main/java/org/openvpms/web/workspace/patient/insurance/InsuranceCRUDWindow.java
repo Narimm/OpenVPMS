@@ -31,6 +31,8 @@ import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
@@ -43,6 +45,8 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.insurance.claim.ClaimEditDialog;
+import org.openvpms.web.workspace.patient.insurance.claim.ClaimEditor;
 
 /**
  * CRUD window for patient insurance policies.
@@ -128,6 +132,20 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
+     * Creates a new edit dialog.
+     *
+     * @param editor the editor
+     * @return a new edit dialog
+     */
+    @Override
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        if (editor instanceof ClaimEditor) {
+            return new ClaimEditDialog((ClaimEditor) editor, getContext());
+        }
+        return super.createEditDialog(editor);
+    }
+
+    /**
      * Invoked when posting of an act is complete, either by saving the act
      * with <em>POSTED</em> status, or invoking {@link #onPost()}.
      *
@@ -177,7 +195,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                                         ConfirmationDialog.YES_NO, new PopupDialogListener() {
                             @Override
                             public void onYes() {
-                                checkDeclaration(claim, service);
+                                submitWithDeclaration(claim, service);
                             }
                         });
             } else {
@@ -192,12 +210,12 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
-     * Determines if a declaration needs to be acceepted
+     * Submits a claim to an {@link InsuranceService}, after accepting a declaration if required.
      *
-     * @param claim
-     * @param service
+     * @param claim   the claim to submit
+     * @param service the service to submit to
      */
-    private void checkDeclaration(final Claim claim, final InsuranceService service) {
+    private void submitWithDeclaration(final Claim claim, final InsuranceService service) {
         Declaration declaration = service.getDeclaration();
         if (declaration != null) {
             String text = declaration.getText();
@@ -215,6 +233,12 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         }
     }
 
+    /**
+     * Submits a claim to an {@link InsuranceService}.
+     *
+     * @param claim   the claim
+     * @param service the service to submit to
+     */
     private void submit(Claim claim, InsuranceService service) {
         service.submit(claim);
     }
@@ -284,5 +308,6 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
             }
             return false;
         }
+
     }
 }

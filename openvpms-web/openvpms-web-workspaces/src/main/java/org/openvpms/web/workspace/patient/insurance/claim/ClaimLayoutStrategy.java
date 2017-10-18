@@ -23,14 +23,20 @@ import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.insurance.service.InsuranceService;
+import org.openvpms.web.component.im.edit.identity.SingleIdentityCollectionEditor;
+import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
+
+import java.util.List;
 
 /**
  * Layout strategy for <em>act.patientInsuranceClaim</em>.
@@ -40,20 +46,47 @@ import org.openvpms.web.resource.i18n.Messages;
 public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
 
     /**
-     * Determines if the insuranceId node should be read-only.
+     * The patient.
      */
-    private boolean idReadOnly;
+    private final Party patient;
 
     /**
-     * Determines if the insuranceId node should be read-only.
-     * <p>
-     * It should be read-only when the claim is to be submitted via an {@link InsuranceService}, as the service
-     * is responsible for assigning the identifier.
-     *
-     * @param readOnly if {@code true}, the insuranceId node should be read-only
+     * The insuranceId editor.
      */
-    public void setInsuranceIdReadOnly(boolean readOnly) {
-        this.idReadOnly = readOnly;
+    private final SingleIdentityCollectionEditor insuranceId;
+
+    /**
+     * The items editor.
+     */
+    private final ClaimItemCollectionEditor items;
+
+    /**
+     * The attachments editor.
+     */
+    private final AttachmentCollectionEditor attachments;
+
+
+    /**
+     * Default constructor, used for viewing claims.
+     */
+    public ClaimLayoutStrategy() {
+        this(null, null, null, null);
+    }
+
+    /**
+     * Constructor, used for editing claims.
+     *
+     * @param patient     the patient
+     * @param insuranceId the insuranceId editor. May be {@code null}
+     * @param items       the claim items
+     * @param attachments the attachments editor
+     */
+    public ClaimLayoutStrategy(Party patient, SingleIdentityCollectionEditor insuranceId,
+                               ClaimItemCollectionEditor items, AttachmentCollectionEditor attachments) {
+        this.insuranceId = insuranceId;
+        this.items = items;
+        this.attachments = attachments;
+        this.patient = patient;
     }
 
     /**
@@ -71,16 +104,23 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
 
-        // render the claim identifier
-        CollectionProperty insuranceId = (CollectionProperty) properties.get("insuranceId");
-        if (idReadOnly && context.isEdit()) {
-            if (insuranceId.isEmpty()) {
-                addComponent(createDummyInsuranceId(object, insuranceId, factory));
+        CollectionProperty id = (CollectionProperty) properties.get("insuranceId");
+        if (context.isEdit()) {
+            if (insuranceId != null) {
+                addComponent(new ComponentState(insuranceId));
             } else {
-                addComponent(factory.create(createReadOnly(insuranceId), object));
+                if (id.isEmpty()) {
+                    addComponent(createDummyInsuranceId(object, id, factory));
+                } else {
+                    addComponent(factory.create(createReadOnly(id), object));
+                }
             }
-        } else if (!context.isEdit() && insuranceId.isEmpty()) {
-            addComponent(createDummyInsuranceId(object, insuranceId, factory));
+            addComponent(new ComponentState(items));
+            addComponent(new ComponentState(attachments));
+        } else {
+            if (id.isEmpty()) {
+                addComponent(createDummyInsuranceId(object, id, factory));
+            }
         }
 
         // render the policy
@@ -89,6 +129,30 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
 
         addComponent(createNotes(object, properties, context));
         return super.apply(object, properties, parent, context);
+    }
+
+    /**
+     * Lays out child components in a tab model.
+     *
+     * @param object     the parent object
+     * @param properties the properties
+     * @param model      the tab model
+     * @param context    the layout context
+     * @param shortcuts  if {@code true} include short cuts
+     */
+    @Override
+    protected void doTabLayout(IMObject object, List<Property> properties, IMObjectTabPaneModel model,
+                               LayoutContext context, boolean shortcuts) {
+        super.doTabLayout(object, properties, model, context, shortcuts);
+        if (patient != null) {
+            PatientHistoryQuery query = new PatientHistoryQuery(patient, context.getPreferences());
+            PatientHistoryBrowser history = new PatientHistoryBrowser(query, context);
+            String label = Messages.get("patient.insurance.history");
+            if (shortcuts && model.size() < 10) {
+                label = getShortcut(label, model.size() + 1);
+            }
+            model.addTab(label, history.getComponent());
+        }
     }
 
     /**

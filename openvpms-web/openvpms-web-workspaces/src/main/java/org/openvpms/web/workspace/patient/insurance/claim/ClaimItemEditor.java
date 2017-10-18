@@ -40,13 +40,14 @@ public class ClaimItemEditor extends AbstractClaimEditor {
     /**
      * Constructs a {@link ClaimItemEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act. May be {@code null}
-     * @param context the layout context
+     * @param act         the act to edit
+     * @param parent      the parent act. May be {@code null}
+     * @param attachments the attachments
+     * @param context     the layout context
      */
-    public ClaimItemEditor(Act act, Act parent, LayoutContext context) {
+    public ClaimItemEditor(Act act, Act parent, AttachmentCollectionEditor attachments, LayoutContext context) {
         super(act, parent, "total", context);
-        charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, context);
+        charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, attachments, context);
         charges.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onItemsChanged();

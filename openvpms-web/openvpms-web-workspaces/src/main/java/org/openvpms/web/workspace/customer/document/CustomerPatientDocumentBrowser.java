@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.document;
@@ -44,6 +44,11 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
     private final Party patient;
 
     /**
+     * If {@code true} display the customer tab first, otherwise display the patient tab.
+     */
+    private final boolean customerFirst;
+
+    /**
      * The layout context.
      */
     private final LayoutContext context;
@@ -59,15 +64,28 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
     private Browser<Act> patientDocuments;
 
     /**
-     * Constructs a {@code CustomerPatientDocumentBrowser}.
+     * Constructs a {@link CustomerPatientDocumentBrowser}.
      *
      * @param customer the customer. May be {@code null}
      * @param patient  the patient. May be {@code null}
      * @param context  the layout context
      */
     public CustomerPatientDocumentBrowser(Party customer, Party patient, LayoutContext context) {
+        this(customer, patient, true, context);
+    }
+
+    /**
+     * Constructs a {@link CustomerPatientDocumentBrowser}.
+     *
+     * @param customer      the customer. May be {@code null}
+     * @param patient       the patient. May be {@code null}
+     * @param customerFirst if {@code true} display the customer tab first, otherwise display the patient tab
+     * @param context       the layout context
+     */
+    public CustomerPatientDocumentBrowser(Party customer, Party patient, boolean customerFirst, LayoutContext context) {
         this.customer = customer;
         this.patient = patient;
+        this.customerFirst = customerFirst;
         this.context = context;
     }
 
@@ -77,17 +95,36 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
      * @return the browser component
      */
     public Component getComponent() {
+        if (customerFirst) {
+            addCustomerBrowser();
+            addPatientBrowser();
+        } else {
+            addPatientBrowser();
+            addCustomerBrowser();
+        }
+        return super.getComponent();
+    }
+
+    /**
+     * Adds the customer browser, if it the customer exists.
+     */
+    private void addCustomerBrowser() {
         if (customerDocuments == null && customer != null) {
-            CustomerDocumentQuery<Act> query = new CustomerDocumentQuery<Act>(customer);
+            CustomerDocumentQuery<Act> query = new CustomerDocumentQuery<>(customer);
             customerDocuments = BrowserFactory.create(query, context);
             addBrowser(Messages.get("customer.documentbrowser.customer"), customerDocuments);
         }
+    }
+
+    /**
+     * Adds the patient browser, if it the patient exists.
+     */
+    private void addPatientBrowser() {
         if (patientDocuments == null && patient != null) {
-            PatientDocumentQuery query = new PatientDocumentQuery(patient);
+            PatientDocumentQuery<Act> query = new PatientDocumentQuery<>(patient);
             patientDocuments = BrowserFactory.create(query, context);
             addBrowser(Messages.get("customer.documentbrowser.patient"), patientDocuments);
         }
-        return super.getComponent();
     }
 
 }

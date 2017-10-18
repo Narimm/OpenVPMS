@@ -20,6 +20,7 @@ import net.sf.jasperreports.engine.util.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -59,14 +60,21 @@ import static org.openvpms.component.system.common.query.Constraints.join;
 public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
 
     /**
-     * Constructs an {@link IMTableCollectionEditor}.
+     * The attachments.
+     */
+    private final AttachmentCollectionEditor attachments;
+
+    /**
+     * Constructs a {@link ChargeCollectionEditor}.
      *
      * @param property the collection property
      * @param object   the parent object
      * @param context  the layout context
      */
-    public ChargeCollectionEditor(CollectionProperty property, Act object, LayoutContext context) {
+    public ChargeCollectionEditor(CollectionProperty property, Act object, AttachmentCollectionEditor attachments,
+                                  LayoutContext context) {
         super(new ChargeRelationshipCollectionPropertyEditor(property, object), object, context);
+        this.attachments= attachments;
     }
 
     /**
@@ -182,14 +190,19 @@ public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                Act invoice = dialog.getSelected();
+                FinancialAct invoice = (FinancialAct) dialog.getSelected();
+                boolean added = false;
                 IMObjectReference patientRef = patient.getObjectReference();
                 ActBean bean = new ActBean(invoice);
                 for (Act item : bean.getNodeActs("items")) {
                     ActBean itemBean = new ActBean(item);
                     if (ObjectUtils.equals(patientRef, itemBean.getNodeParticipantRef("patient"))) {
                         add(item);
+                        added = true;
                     }
+                }
+                if (added) {
+                    attachments.addInvoice(invoice);
                 }
                 refresh();
             }
