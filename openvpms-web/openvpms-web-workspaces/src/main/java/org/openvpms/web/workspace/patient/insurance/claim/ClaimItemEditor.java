@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -42,18 +43,23 @@ public class ClaimItemEditor extends AbstractClaimEditor {
      *
      * @param act         the act to edit
      * @param parent      the parent act. May be {@code null}
+     * @param customer    the customer
+     * @param patient     the patient
+     * @param charges     the claim-wide charges
      * @param attachments the attachments
      * @param context     the layout context
      */
-    public ClaimItemEditor(Act act, Act parent, AttachmentCollectionEditor attachments, LayoutContext context) {
+    public ClaimItemEditor(Act act, Act parent, Party customer, Party patient, Charges charges,
+                           AttachmentCollectionEditor attachments, LayoutContext context) {
         super(act, parent, "total", context);
-        charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, attachments, context);
-        charges.addModifiableListener(new ModifiableListener() {
+        this.charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, customer, patient, charges,
+                                                  attachments, context);
+        this.charges.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onItemsChanged();
             }
         });
-        getEditors().add(charges);
+        getEditors().add(this.charges);
         addStartEndTimeListeners();
         getProperty("status").addModifiableListener(new ModifiableListener() {
             @Override

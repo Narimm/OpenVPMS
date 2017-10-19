@@ -47,16 +47,6 @@ import java.util.List;
 public class ClaimEditor extends AbstractClaimEditor {
 
     /**
-     * The policy.
-     */
-    private final Act policy;
-
-    /**
-     * The policy customer.
-     */
-    private final Party customer;
-
-    /**
      * The attachments.
      */
     private final AttachmentCollectionEditor attachments;
@@ -87,12 +77,12 @@ public class ClaimEditor extends AbstractClaimEditor {
         super(act, parent, "amount", context);
 
         ActBean claimBean = new ActBean(act);
-        policy = (Act) claimBean.getNodeTargetObject("policy");
+        Act policy = (Act) claimBean.getNodeTargetObject("policy");
         if (policy == null) {
             throw new IllegalStateException("Claim has no policy");
         }
         ActBean policyBean = new ActBean(policy);
-        customer = (Party) policyBean.getNodeParticipant("customer");
+        Party customer = (Party) policyBean.getNodeParticipant("customer");
         if (customer == null) {
             throw new IllegalStateException("Policy has no customer");
         }
@@ -119,7 +109,8 @@ public class ClaimEditor extends AbstractClaimEditor {
             editors.add(insuranceId);
         }
         attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, context);
-        items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, attachments, context);
+        items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, customer, patient,
+                                              new Charges(), attachments, context);
         editors.add(attachments);
         editors.add(items);
 

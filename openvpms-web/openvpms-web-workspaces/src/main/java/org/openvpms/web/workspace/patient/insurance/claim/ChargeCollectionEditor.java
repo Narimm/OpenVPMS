@@ -16,40 +16,27 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
-import net.sf.jasperreports.engine.util.ObjectUtils;
-import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionPropertyEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.BrowserFactory;
-import org.openvpms.web.component.im.query.DateRangeActQuery;
-import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
-import static org.openvpms.component.system.common.query.Constraints.eq;
-import static org.openvpms.component.system.common.query.Constraints.join;
 
 /**
  * Editor for the collection of charges associated with a claim item.
@@ -60,21 +47,43 @@ import static org.openvpms.component.system.common.query.Constraints.join;
 public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
 
     /**
+     * The customer.
+     */
+    private final Party customer;
+
+    /**
+     * The patient.
+     */
+    private final Party patient;
+
+    /**
+     * The charges.
+     */
+    private final Charges charges;
+
+    /**
      * The attachments.
      */
     private final AttachmentCollectionEditor attachments;
+
 
     /**
      * Constructs a {@link ChargeCollectionEditor}.
      *
      * @param property the collection property
      * @param object   the parent object
+     * @param customer the customer
+     * @param patient  the patient
+     * @param charges  the charges
      * @param context  the layout context
      */
-    public ChargeCollectionEditor(CollectionProperty property, Act object, AttachmentCollectionEditor attachments,
-                                  LayoutContext context) {
-        super(new ChargeRelationshipCollectionPropertyEditor(property, object), object, context);
-        this.attachments= attachments;
+    public ChargeCollectionEditor(CollectionProperty property, Act object, Party customer, Party patient,
+                                  Charges charges, AttachmentCollectionEditor attachments, LayoutContext context) {
+        super(new ChargeRelationshipCollectionPropertyEditor(property, object, charges), object, context);
+        this.customer = customer;
+        this.patient = patient;
+        this.charges = charges;
+        this.attachments = attachments;
     }
 
     /**
@@ -168,59 +177,85 @@ public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
      */
     @Override
     protected IMObjectEditor onAdd() {
-        LayoutContext layout = getContext();
-        Context context = layout.getContext();
-        String[] archetypes = {INVOICE};
-        String[] statuses = {ActStatus.POSTED};
-        Party customer = context.getCustomer();
-        final Party patient = context.getPatient();
-        DateRangeActQuery<Act> query = new DefaultActQuery<>(customer, "customer",
-                                                             CustomerArchetypes.CUSTOMER_PARTICIPATION,
-                                                             archetypes, statuses);
-        query.setDistinct(true);
-        Act parent = (Act) getObject();
-        if (parent != null) {
-            query.setFrom(parent.getActivityStartTime());
-            query.setTo(parent.getActivityEndTime());
-        }
-        query.setConstraints(join("items").add(join("target").add(join("patient").add(eq("entity", patient)))));
-        Browser<Act> browser = BrowserFactory.create(query, layout);
-        String title = Messages.format("imobject.select.title", DescriptorHelper.getDisplayName(INVOICE));
-        final BrowserDialog<Act> dialog = new BrowserDialog<>(title, browser, layout.getHelpContext());
+        Act act = (Act) getObject();
+        final ChargeBrowser browser = new ChargeBrowser(customer, patient, charges, act.getActivityStartTime(),
+                                                        act.getActivityEndTime(), getContext());
+        String title = Messages.format("imobject.select.title",
+                                       DescriptorHelper.getDisplayName(CustomerAccountArchetypes.INVOICE));
+        PopupDialog dialog = new PopupDialog(title, PopupDialog.OK_CANCEL) {
+            {
+                super.setStyleName("BrowserDialog");
+                setModal(true);
+                getLayout().add(browser.getComponent());
+            }
+        };
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                FinancialAct invoice = (FinancialAct) dialog.getSelected();
-                boolean added = false;
-                IMObjectReference patientRef = patient.getObjectReference();
-                ActBean bean = new ActBean(invoice);
-                for (Act item : bean.getNodeActs("items")) {
-                    ActBean itemBean = new ActBean(item);
-                    if (ObjectUtils.equals(patientRef, itemBean.getNodeParticipantRef("patient"))) {
-                        add(item);
-                        added = true;
-                    }
-                }
-                if (added) {
-                    attachments.addInvoice(invoice);
-                }
-                refresh();
+                addSelections(browser);
             }
         });
         dialog.show();
         return null;
     }
 
+    protected void addSelections(ChargeBrowser browser) {
+        List<Act> selected = browser.getSelectedItems();
+        for (Act object : selected) {
+            add(object);
+        }
+        refresh();
+        for (FinancialAct invoice : browser.getSelectedInvoices()) {
+            attachments.addInvoice(invoice);
+        }
+    }
+
+
     private static class ChargeRelationshipCollectionPropertyEditor extends ActRelationshipCollectionPropertyEditor {
+
+        /**
+         * The charges.
+         */
+        private final Charges charges;
 
         /**
          * Constructs an {@link ActRelationshipCollectionPropertyEditor}.
          *
          * @param property the property to edit
          * @param act      the parent act
+         * @param charges  the charges
          */
-        public ChargeRelationshipCollectionPropertyEditor(CollectionProperty property, Act act) {
+        public ChargeRelationshipCollectionPropertyEditor(CollectionProperty property, Act act, Charges charges) {
             super(property, act);
+            this.charges = charges;
+            for (Act object : getActs().keySet()) {
+                charges.add(object);
+            }
+        }
+
+        /**
+         * Adds an object to the collection, if it doesn't exist.
+         *
+         * @param object the object to add
+         */
+        @Override
+        public boolean add(IMObject object) {
+            boolean add = super.add(object);
+            charges.add((Act) object);
+            return add;
+        }
+
+        /**
+         * Removes an object from the collection.
+         *
+         * @param object the object to remove
+         * @return {@code true} if the object was removed
+         */
+        @Override
+        public boolean remove(IMObject object) {
+            boolean remove = super.remove(object);
+            charges.remove((Act) object);
+            return remove;
         }
 
         /**

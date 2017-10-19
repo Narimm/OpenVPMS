@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.patient.insurance.claim;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -31,6 +32,21 @@ import org.openvpms.web.component.property.CollectionProperty;
 class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
 
     /**
+     * The customer.
+     */
+    private final Party customer;
+
+    /**
+     * The patient.
+     */
+    private final Party patient;
+
+    /**
+     * The charges.
+     */
+    private final Charges charges;
+
+    /**
      * The attachments.
      */
     private final AttachmentCollectionEditor attachments;
@@ -40,12 +56,19 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
      *
      * @param property    the collection property
      * @param act         the parent act
+     * @param customer    the customer
+     * @param patient     the patient
+     * @param charges     the charges
      * @param attachments the attachments
      * @param context     the layout context
      */
-    public ClaimItemCollectionEditor(CollectionProperty property, Act act, AttachmentCollectionEditor attachments,
+    public ClaimItemCollectionEditor(CollectionProperty property, Act act, Party customer, Party patient,
+                                     Charges charges, AttachmentCollectionEditor attachments,
                                      LayoutContext context) {
         super(property, act, context);
+        this.customer = customer;
+        this.patient = patient;
+        this.charges = charges;
         this.attachments = attachments;
     }
 
@@ -58,6 +81,6 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        return new ClaimItemEditor((Act) object, (Act) getObject(), attachments, context);
+        return new ClaimItemEditor((Act) object, (Act) getObject(), customer, patient, charges, attachments, context);
     }
 }
