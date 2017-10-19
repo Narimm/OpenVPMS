@@ -254,16 +254,6 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         } else {
             addColumns(archetypes, names, columns);
         }
-
-        // if an id column is present, and has not be explicitly placed, move it to the first column
-        // TODO - probably not required
-        if (names.contains("id") && getNodeNames() == null) {
-            int offset = getColumnOffset(columns, "id");
-            if (offset != -1) {
-                columns.moveColumn(offset, 0);
-            }
-        }
-
         return columns;
     }
 

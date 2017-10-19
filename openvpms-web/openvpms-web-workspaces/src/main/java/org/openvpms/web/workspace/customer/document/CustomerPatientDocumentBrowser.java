@@ -22,9 +22,12 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.TabbedBrowser;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
+
+import java.util.Date;
 
 /**
  * A browser for customer and patient documents.
@@ -49,6 +52,16 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
     private final boolean customerFirst;
 
     /**
+     * The date to query from. May be {@code null}.
+     */
+    private final Date from;
+
+    /**
+     * The date to query to. May be {@code null}.
+     */
+    private final Date to;
+
+    /**
      * The layout context.
      */
     private final LayoutContext context;
@@ -71,7 +84,7 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
      * @param context  the layout context
      */
     public CustomerPatientDocumentBrowser(Party customer, Party patient, LayoutContext context) {
-        this(customer, patient, true, context);
+        this(customer, patient, true, null, null, context);
     }
 
     /**
@@ -80,12 +93,17 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
      * @param customer      the customer. May be {@code null}
      * @param patient       the patient. May be {@code null}
      * @param customerFirst if {@code true} display the customer tab first, otherwise display the patient tab
+     * @param from          the from date. May  be {@code null}
+     * @param to            the to date. May be {@code null}
      * @param context       the layout context
      */
-    public CustomerPatientDocumentBrowser(Party customer, Party patient, boolean customerFirst, LayoutContext context) {
+    public CustomerPatientDocumentBrowser(Party customer, Party patient, boolean customerFirst, Date from,
+                                          Date to, LayoutContext context) {
         this.customer = customer;
         this.patient = patient;
         this.customerFirst = customerFirst;
+        this.from = from;
+        this.to = to;
         this.context = context;
     }
 
@@ -110,7 +128,7 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
      */
     private void addCustomerBrowser() {
         if (customerDocuments == null && customer != null) {
-            CustomerDocumentQuery<Act> query = new CustomerDocumentQuery<>(customer);
+            CustomerDocumentQuery<Act> query = init(new CustomerDocumentQuery<>(customer));
             customerDocuments = BrowserFactory.create(query, context);
             addBrowser(Messages.get("customer.documentbrowser.customer"), customerDocuments);
         }
@@ -121,10 +139,26 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
      */
     private void addPatientBrowser() {
         if (patientDocuments == null && patient != null) {
-            PatientDocumentQuery<Act> query = new PatientDocumentQuery<>(patient);
+            PatientDocumentQuery<Act> query = init(new PatientDocumentQuery<>(patient));
             patientDocuments = BrowserFactory.create(query, context);
             addBrowser(Messages.get("customer.documentbrowser.patient"), patientDocuments);
         }
+    }
+
+    /**
+     * Initialises a query.
+     *
+     * @param query the query
+     * @return the query
+     */
+    private <T extends DateRangeActQuery<Act>> T init(T query) {
+        if (from != null || to != null) {
+            query.getComponent();
+            query.setAllDates(false);
+            query.setFrom(from);
+            query.setTo(to);
+        }
+        return query;
     }
 
 }

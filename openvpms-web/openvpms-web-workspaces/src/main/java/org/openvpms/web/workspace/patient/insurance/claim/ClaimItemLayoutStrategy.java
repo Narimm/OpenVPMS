@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.patient.insurance.ClaimItemStatus;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,9 +40,15 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
     private ComponentState euthanasiaReason;
 
     /**
+     * Euthanasia reason node name.
+     */
+    private static final String EUTHANASIA_REASON = "euthanasiaReason";
+
+    /**
      * The nodes to display.
      */
-    private static final ArchetypeNodes NODES = ArchetypeNodes.all().exclude("euthanasiaReason");
+    private static final ArchetypeNodes NODES = ArchetypeNodes.all().exclude(EUTHANASIA_REASON);
+
 
     /**
      * Constructs a {@link ClaimItemLayoutStrategy}.
@@ -78,12 +85,12 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
         Row statusRow = RowFactory.create(Styles.CELL_SPACING);
         Property status = properties.get("status");
         ComponentState statusState = createComponent(status, object, context);
-        euthanasiaReason = createComponent(properties.get("euthanasiaReason"), object, context);
+        euthanasiaReason = createComponent(properties.get(EUTHANASIA_REASON), object, context);
         statusRow.add(statusState.getComponent());
         statusRow.add(euthanasiaReason.getLabel());
         statusRow.add(euthanasiaReason.getComponent());
         addComponent(new ComponentState(statusRow, statusState.getProperty()));
-        setShowEuthanasiaReason("EUTHANASED".equals(status.getString()));
+        setShowEuthanasiaReason(ClaimItemStatus.EUTHANASED.equals(status.getString()));
 
         addComponent(createNotes(object, properties, context));
         return super.apply(object, properties, parent, context);

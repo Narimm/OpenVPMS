@@ -50,7 +50,7 @@
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'ONGOING'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
-                    <property name="ONGOING" value="Ongoing"/>
+                    <property name="UNRESOLVED" value="Ongoing"/>
                     <!-- condition is ongoing -->
                     <property name="RESOLVED" value="Resolved"/>
                     <!-- condition is resolved -->

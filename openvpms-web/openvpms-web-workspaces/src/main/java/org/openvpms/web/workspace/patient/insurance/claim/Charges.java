@@ -63,6 +63,16 @@ class Charges {
     /**
      * Determines if a charge item exists.
      *
+     * @param item the charge item
+     * @return {@code true} if the charge item exists
+     */
+    public boolean contains(Act item) {
+        return contains(item.getObjectReference());
+    }
+
+    /**
+     * Determines if a charge item exists.
+     *
      * @param reference the charge item reference
      * @return {@code true} if the charge item exists
      */

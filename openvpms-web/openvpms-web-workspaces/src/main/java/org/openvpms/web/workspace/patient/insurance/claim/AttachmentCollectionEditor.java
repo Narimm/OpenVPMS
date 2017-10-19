@@ -107,7 +107,8 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor {
         Context context = layout.getContext();
         Party customer = context.getCustomer();
         Party patient = context.getPatient();
-        CustomerPatientDocumentBrowser browser = new CustomerPatientDocumentBrowser(customer, patient, false, layout);
+        CustomerPatientDocumentBrowser browser = new CustomerPatientDocumentBrowser(customer, patient, false,
+                                                                                    null, null, layout);
         String title = Messages.get("patient.insurance.attach.title");
         final BrowserDialog<Act> dialog = new BrowserDialog<>(title, browser, layout.getHelpContext());
         dialog.addWindowPaneListener(new PopupDialogListener() {

@@ -78,7 +78,9 @@ public class ClaimEditDialog extends EditDialog {
     protected void onGenerate() {
         if (save()) {
             ClaimEditor editor = getEditor();
-            editor.generateAttachments();
+            if (!editor.generateAttachments()) {
+                editor.checkAttachments();
+            }
         }
     }
 }

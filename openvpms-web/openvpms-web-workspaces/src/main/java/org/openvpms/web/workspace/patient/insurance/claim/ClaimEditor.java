@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
+import org.openvpms.archetype.rules.patient.insurance.AttachmentStatus;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -35,6 +36,8 @@ import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
@@ -139,9 +142,30 @@ public class ClaimEditor extends AbstractClaimEditor {
 
     /**
      * Generates attachments.
+     *
+     * @return {@code true} if all attachments were successfully generated
      */
-    public void generateAttachments() {
-        generator.generate(attachments);
+    public boolean generateAttachments() {
+        boolean generate = generator.generate(attachments);
+        if (!generate) {
+            ClaimLayoutStrategy strategy = (ClaimLayoutStrategy) getView().getLayout();
+            strategy.selectAttachments();
+        }
+        return generate;
+    }
+
+    public boolean checkAttachments() {
+        boolean result = true;
+        for (Act attachment : attachments.getCurrentActs()) {
+            if (AttachmentStatus.ERROR.equals(attachment.getStatus())) {
+                ErrorDialog.show(Messages.get("patient.insurance.attachments.title"),
+                                 Messages.format("patient.insurance.attachments.message", attachment.getName(),
+                                                 new ActBean(attachment).getString("error")));
+                result = false;
+                break;
+            }
+        }
+        return result;
     }
 
     /**

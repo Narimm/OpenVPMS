@@ -17,14 +17,15 @@
 package org.openvpms.web.workspace.patient.insurance;
 
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.patient.insurance.ClaimStatus;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.InsuranceFactory;
-import org.openvpms.insurance.internal.service.ClaimStatus;
 import org.openvpms.insurance.service.Declaration;
 import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
@@ -104,6 +105,32 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                 onSubmit();
             }
         }));
+    }
+
+
+    /**
+     * Posts the act. For claims, this generates any attachments first.
+     *
+     * @param act the act to post
+     * @return {@code true} if the act was saved
+     */
+    @Override
+    protected boolean post(Act act) {
+        boolean result = false;
+        if (TypeHelper.isA(act, InsuranceArchetypes.CLAIM)) {
+            ClaimEditor editor = new ClaimEditor((FinancialAct) act, null, createLayoutContext(getHelpContext()));
+            if (editor.generateAttachments()) {
+                result = super.post(act);
+            } else {
+                edit(editor);
+
+                // need to display the error popup after the dialog, to ensure it displays on top
+                editor.checkAttachments();
+            }
+        } else {
+            result = super.post(act);
+        }
+        return result;
     }
 
     /**

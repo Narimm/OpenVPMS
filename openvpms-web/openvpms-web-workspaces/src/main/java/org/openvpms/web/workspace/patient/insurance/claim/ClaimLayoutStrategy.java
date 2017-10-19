@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.identity.SingleIdentityCollectionEditor;
+import org.openvpms.web.component.im.layout.IMObjectTabPane;
 import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -65,6 +66,8 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      */
     private final AttachmentCollectionEditor attachments;
 
+    private IMObjectTabPane pane;
+
 
     /**
      * Default constructor, used for viewing claims.
@@ -87,6 +90,15 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
         this.items = items;
         this.attachments = attachments;
         this.patient = patient;
+    }
+
+    /**
+     * Selects the attachments tab.
+     */
+    public void selectAttachments() {
+        if (pane != null) {
+            pane.setSelectedIndex(1);
+        }
     }
 
     /**
@@ -132,27 +144,29 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     }
 
     /**
-     * Lays out child components in a tab model.
+     * Lays out each child component in a tabbed pane.
      *
-     * @param object     the parent object
+     * @param object     the object to lay out
+     * @param parent     the parent object. May be {@code null}
      * @param properties the properties
-     * @param model      the tab model
+     * @param container  the container to use
      * @param context    the layout context
-     * @param shortcuts  if {@code true} include short cuts
      */
     @Override
-    protected void doTabLayout(IMObject object, List<Property> properties, IMObjectTabPaneModel model,
-                               LayoutContext context, boolean shortcuts) {
-        super.doTabLayout(object, properties, model, context, shortcuts);
+    protected void doComplexLayout(IMObject object, IMObject parent, List<Property> properties, Component container,
+                                   LayoutContext context) {
+        IMObjectTabPaneModel model = doTabLayout(object, properties, container, context, false);
         if (patient != null) {
             PatientHistoryQuery query = new PatientHistoryQuery(patient, context.getPreferences());
             PatientHistoryBrowser history = new PatientHistoryBrowser(query, context);
             String label = Messages.get("patient.insurance.history");
-            if (shortcuts && model.size() < 10) {
-                label = getShortcut(label, model.size() + 1);
-            }
+            label = getShortcut(label, model.size() + 1);
             model.addTab(label, history.getComponent());
         }
+        pane = new IMObjectTabPane(model);
+
+        pane.setSelectedIndex(0);
+        container.add(pane);
     }
 
     /**

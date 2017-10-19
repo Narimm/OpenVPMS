@@ -14,7 +14,7 @@
  * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.insurance.internal.service;
+package org.openvpms.archetype.rules.patient.insurance;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;

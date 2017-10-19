@@ -22,14 +22,10 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
+import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionPropertyEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.IMObjectListResultSet;
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -44,7 +40,7 @@ import java.util.List;
  * @author Tim Anderson
  * @see ClaimItemEditor
  */
-public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
+public class ChargeCollectionEditor extends IMObjectTableCollectionEditor {
 
     /**
      * The customer.
@@ -96,6 +92,16 @@ public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
     }
 
     /**
+     * Determines if a charge has been claimed.
+     *
+     * @param charge the charge
+     * @return {@code true} if the charge has been claimed
+     */
+    public boolean isClaimed(Act charge) {
+        return charges.contains(charge);
+    }
+
+    /**
      * Returns the collection property editor.
      *
      * @return the collection property editor
@@ -106,67 +112,34 @@ public class ChargeCollectionEditor extends IMTableCollectionEditor<IMObject> {
     }
 
     /**
-     * Create a new table model.
+     * Invoked when an object is selected in the table.
+     */
+    @Override
+    protected void onSelected() {
+        enableNavigation(getSelected() != null);
+    }
+
+    /**
+     * Edit an object.
      *
+     * @param object the object to edit
+     * @return the editor
+     */
+    @Override
+    protected IMObjectEditor edit(IMObject object) {
+        throw new IllegalStateException("Charges may not be edited");
+    }
+
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
      * @param context the layout context
-     * @return a new table model
+     * @return an editor to edit {@code object}
      */
     @Override
-    protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
-        return ActCollectionResultSetFactory.INSTANCE.createTableModel(getCollectionPropertyEditor(),
-                                                                       getObject(), getContext());
-    }
-
-    /**
-     * Selects an object in the table.
-     *
-     * @param object the object to select
-     */
-    @Override
-    protected void setSelected(IMObject object) {
-
-    }
-
-    /**
-     * Returns the selected object.
-     *
-     * @return the selected object. May be {@code null}
-     */
-    @Override
-    protected IMObject getSelected() {
-        return null;
-    }
-
-    /**
-     * Selects the object prior to the selected object, if one is available.
-     *
-     * @return the prior object. May be {@code null}
-     */
-    @Override
-    protected IMObject selectPrevious() {
-        return null;
-    }
-
-    /**
-     * Selects the object after the selected object, if one is available.
-     *
-     * @return the next object. May be {@code null}
-     */
-    @Override
-    protected IMObject selectNext() {
-        return null;
-    }
-
-    /**
-     * Creates a new result set.
-     *
-     * @return a new result set
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    protected ResultSet<IMObject> createResultSet() {
-        List objects = getCollectionPropertyEditor().getObjects();
-        return new IMObjectListResultSet<>(objects, ROWS);
+    protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+        throw new IllegalStateException("Charges may not be edited");
     }
 
     /**

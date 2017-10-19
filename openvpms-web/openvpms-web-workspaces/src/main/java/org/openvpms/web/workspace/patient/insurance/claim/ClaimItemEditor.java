@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
+import org.openvpms.archetype.rules.patient.insurance.ClaimItemStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -70,6 +71,26 @@ public class ClaimItemEditor extends AbstractClaimEditor {
     }
 
     /**
+     * Returns the charges being claimed.
+     *
+     * @return the charges
+     */
+    public List<Act> getCharges() {
+        return charges.getActs();
+    }
+
+    /**
+     * Adds a charge, if it hasn't already been claimed.
+     *
+     * @param charge the charge to add
+     */
+    public void addCharge(Act charge) {
+        if (!charges.isClaimed(charge)) {
+            charges.add(charge);
+        }
+    }
+
+    /**
      * Returns the item acts to sum.
      *
      * @return the acts
@@ -97,7 +118,7 @@ public class ClaimItemEditor extends AbstractClaimEditor {
     private void onStatusChanged() {
         IMObjectLayoutStrategy layout = getView().getLayout();
         if (layout instanceof ClaimItemLayoutStrategy) {
-            boolean euthanased = "EUTHANASED".equals(getStatus());
+            boolean euthanased = ClaimItemStatus.EUTHANASED.equals(getStatus());
             ((ClaimItemLayoutStrategy) layout).setShowEuthanasiaReason(euthanased);
         }
     }

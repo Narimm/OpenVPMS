@@ -27,6 +27,7 @@ import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -37,7 +38,6 @@ import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleServ
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.ReportContextFactory;
@@ -45,12 +45,14 @@ import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.history.PatientHistoryFilter;
 import org.openvpms.web.workspace.patient.history.PatientHistoryIterator;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -98,8 +100,10 @@ class AttachmentGenerator {
      * Generates attachments.
      *
      * @param attachments the attachments editor
+     * @return {@code true} if all attachments were successfully generated
      */
-    public void generate(AttachmentCollectionEditor attachments) {
+    public boolean generate(AttachmentCollectionEditor attachments) {
+        boolean result = true;
         Act history = null;
         List<Act> acts = attachments.getCurrentActs();
         for (Act attachment : acts) {
@@ -112,52 +116,61 @@ class AttachmentGenerator {
             attachments.add(createHistory());
         }
         for (Act attachment : acts) {
-            generate(attachment);
+            if (!generate(attachment)) {
+                result = false;
+                break;
+            }
         }
         attachments.save();
         attachments.refresh();
+        return result;
     }
 
     /**
      * Generates an attachment.
      *
      * @param attachment the attachment
+     * @return {@code true} if the attachment was successfully generated
      */
-    private void generate(Act attachment) {
+    private boolean generate(Act attachment) {
+        boolean result = false;
         ActBean bean = new ActBean(attachment);
         String type = bean.getString("type");
         if (PatientArchetypes.CLINICAL_EVENT.equals(type)) {
-            generateHistory(bean);
+            result = generateHistory(bean);
         } else if (bean.getReference("document") == null) {
             Act original = (Act) bean.getNodeTargetObject("original");
             if (TypeHelper.isA(original, CustomerAccountArchetypes.INVOICE)) {
-                generateInvoice(bean, original);
+                result = generateInvoice(bean, original);
             } else if (TypeHelper.isA(original, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-                generateInvestigation(bean, (DocumentAct) original);
+                result = generateInvestigation(bean, (DocumentAct) original);
             } else if (original instanceof DocumentAct) {
-                generateDocument(bean, original);
+                result = generateDocument(bean, original);
             } else {
-                setStatus(bean, AttachmentStatus.ERROR, "The source document no longer exists");
+                setStatus(bean, AttachmentStatus.ERROR, Messages.get("patient.insurance.nodocument"));
             }
         }
+        return result;
     }
 
-    private void generateInvestigation(ActBean bean, DocumentAct investigation) {
+    /**
+     * Generates an investigation, storing it as an attachment.
+     *
+     * @param bean          the attachment
+     * @param investigation the investigation
+     * @return {@code true} if the investigation was generated successfully
+     */
+    private boolean generateInvestigation(ActBean bean, DocumentAct investigation) {
+        boolean result = false;
         IMObjectReference reference = investigation.getDocument();
         IArchetypeRuleService archetypeService = ServiceHelper.getArchetypeService();
         Document document = (reference != null) ? (Document) archetypeService.get(reference) : null;
         if (document == null) {
-            setStatus(bean, AttachmentStatus.ERROR, "The investigation has no document");
+            setStatus(bean, AttachmentStatus.ERROR, Messages.get("patient.insurance.noinvestigation"));
         } else {
-            copy(bean, document);
+            result = copy(bean, document);
         }
-    }
-
-    private void copy(ActBean bean, Document document) {
-        DocumentHandler handler = ServiceHelper.getBean(DocumentHandlers.class).get(document);
-        InputStream content = handler.getContent(document);
-        Document copy = handler.create(document.getName(), content, document.getMimeType(), document.getDocSize());
-        save(bean, copy);
+        return result;
     }
 
     /**
@@ -165,34 +178,30 @@ class AttachmentGenerator {
      *
      * @param bean     the attachment
      * @param original the original document
+     * @return {@code true} if the document was generated successfully
      */
-    private void generateDocument(ActBean bean, Act original) {
+    private boolean generateDocument(ActBean bean, Act original) {
+        boolean result = false;
         ActBean source = new ActBean(original);
         try {
             IMObjectReference docRef = source.getReference("document");
             if (docRef == null) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(original, context);
                 Reporter<Act> reporter = factory.create(original, locator, TemplatedReporter.class);
-                save(bean, reporter);
+                result = save(bean, reporter);
             } else {
                 IArchetypeRuleService archetypeService = ServiceHelper.getArchetypeService();
                 Document document = (Document) archetypeService.get(docRef);
                 if (document == null) {
-                    setStatus(bean, AttachmentStatus.ERROR, "The source document no longer exists");
+                    setStatus(bean, AttachmentStatus.ERROR, Messages.get("patient.insurance.nodocument"));
                 } else {
                     copy(bean, document);
                 }
             }
         } catch (Throwable exception) {
-            setStatus(bean, AttachmentStatus.ERROR, StringUtils.abbreviate(exception.getMessage(),
-                                                                           NodeDescriptor.DEFAULT_MAX_LENGTH));
+            setStatus(bean, AttachmentStatus.ERROR, exception.getMessage());
         }
-    }
-
-    private void setStatus(ActBean bean, String status, String message) {
-        bean.setStatus(status);
-        bean.setValue("error", message);
-        bean.save();
+        return result;
     }
 
     /**
@@ -200,27 +209,29 @@ class AttachmentGenerator {
      *
      * @param bean     the attachment
      * @param original the invoice
+     * @return {@code true} if it was saved
      */
-    private void generateInvoice(ActBean bean, Act original) {
+    private boolean generateInvoice(ActBean bean, Act original) {
         ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
         ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(original, context);
         Reporter<Act> reporter = factory.create(original, locator, TemplatedReporter.class);
-        save(bean, reporter);
+        return save(bean, reporter);
     }
 
     /**
      * Generates patient history, storing it in an attachment.
      *
      * @param bean the attachment
+     * @return {@code true} if it was saved
      */
-    private void generateHistory(ActBean bean) {
+    private boolean generateHistory(ActBean bean) {
         PatientHistoryQuery query = new PatientHistoryQuery(patient, true);
         PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames());
         PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                              context);
         Reporter<Act> reporter = factory.create(summary, locator, TemplatedReporter.class);
-        save(bean, reporter);
+        return save(bean, reporter);
     }
 
     /**
@@ -252,17 +263,62 @@ class AttachmentGenerator {
      * @param bean     the attachment
      * @param reporter the reporter used to generate the document
      */
-    private void save(ActBean bean, Reporter<Act> reporter) {
+    private boolean save(ActBean bean, Reporter<Act> reporter) {
         reporter.setFields(ReportContextFactory.create(context));
         Document document = reporter.getDocument(DocFormats.PDF_TYPE, false);
-        save(bean, document);
+        return save(bean, document);
     }
 
-    private void save(ActBean bean, Document document) {
-        bean.setStatus(AttachmentStatus.PENDING);
-        bean.setValue("error", null);
-        bean.setValue("document", document.getObjectReference());
-        SaveHelper.save(bean.getAct(), document);
+    /**
+     * Copies a document to an attachment.
+     *
+     * @param bean     the attachment
+     * @param document the document to copy
+     * @return {@code true} if the attachment was saved
+     */
+    private boolean copy(ActBean bean, Document document) {
+        DocumentHandler handler = ServiceHelper.getBean(DocumentHandlers.class).get(document);
+        InputStream content = handler.getContent(document);
+        Document copy = handler.create(document.getName(), content, document.getMimeType(), document.getDocSize());
+        return save(bean, copy);
+    }
+
+    /**
+     * Saves an attachment.
+     *
+     * @param bean     the attachment
+     * @param document the document
+     * @return {@code true} if it was successfully saved
+     */
+    private boolean save(ActBean bean, Document document) {
+        boolean result = false;
+        try {
+            bean.setStatus(AttachmentStatus.PENDING);
+            bean.setValue("error", null);
+            bean.setValue("document", document.getObjectReference());
+            List<IMObject> objects = Arrays.asList(bean.getAct(), document);
+            ServiceHelper.getArchetypeService().save(objects);
+            result = true;
+        } catch (Throwable exception) {
+            setStatus(bean, AttachmentStatus.ERROR, exception.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * Sets the status and message of an attachment.
+     *
+     * @param bean    the attachment
+     * @param status  the status
+     * @param message the message. May be {@code null}
+     */
+    private void setStatus(ActBean bean, String status, String message) {
+        bean.setStatus(status);
+        if (message != null) {
+            message = StringUtils.abbreviate(message, NodeDescriptor.DEFAULT_MAX_LENGTH);
+        }
+        bean.setValue("error", message);
+        bean.save();
     }
 
 }
