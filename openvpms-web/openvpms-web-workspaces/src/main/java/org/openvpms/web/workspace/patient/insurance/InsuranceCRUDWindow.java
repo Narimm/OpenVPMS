@@ -215,7 +215,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
             final Claim claim = factory.createClaim(object);
             InsuranceServices insuranceServices = ServiceHelper.getBean(InsuranceServices.class);
             Party insurer = claim.getPolicy().getInsurer();
-            final InsuranceService service = insuranceServices.getService(insurer);
+            final InsuranceService service = insuranceServices.getServiceForInsurer(insurer);
             String title = Messages.get("patient.insurance.submit.title");
             if (service != null) {
                 ConfirmationDialog.show(title, Messages.format("patient.insurance.submit.online", service.getName()),

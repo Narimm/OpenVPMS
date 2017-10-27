@@ -87,4 +87,11 @@ public interface Animal {
      */
     String getMicrochip();
 
+    /**
+     * Returns the date when the animal was created in OpenVPMS.
+     *
+     * @return the date. May be {@code null}
+     */
+    Date getCreatedDate();
+
 }

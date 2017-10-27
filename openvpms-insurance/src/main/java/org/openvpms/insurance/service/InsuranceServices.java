@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance.service;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.insurance.claim.Claim;
 
@@ -35,11 +36,19 @@ public interface InsuranceServices {
     boolean canSubmit(Claim claim);
 
     /**
+     * Returns the insurance service for the specified <em>entity.insuranceService*</em> configuration.
+     *
+     * @param service the service configuration
+     * @return the insurance service, or {@code null} if none is found
+     */
+    InsuranceService getService(Entity service);
+
+    /**
      * Returns the insurance service for the specified insurer.
      *
      * @param insurer the insurer
      * @return the insurance service, or {@code null} if none is found
      */
-    InsuranceService getService(Party insurer);
+    InsuranceService getServiceForInsurer(Party insurer);
 
 }

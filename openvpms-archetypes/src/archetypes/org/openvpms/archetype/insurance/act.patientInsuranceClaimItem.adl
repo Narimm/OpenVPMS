@@ -47,7 +47,7 @@
         </node>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.author" readOnly="true"/>
-        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'ONGOING'">
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'UNRESOLVED'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="UNRESOLVED" value="Ongoing"/>
@@ -69,5 +69,8 @@
         <node name="items" displayName="Charges" path="/sourceActRelationships" type="java.util.HashSet"
               baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.insuranceClaimInvoiceItem" readOnly="true"/>
+        <node name="claim" path="/targetActRelationships" type="java.util.HashSet"
+              baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.insuranceClaimItem" readOnly="true" hidden="true"/>
     </archetype>
 </archetypes>

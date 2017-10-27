@@ -17,6 +17,7 @@
 package org.openvpms.insurance.claim;
 
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 
 import java.util.List;
@@ -61,6 +62,13 @@ public interface Claim {
      * @param id        the claim identifier
      */
     void setClaimId(String archetype, String id);
+
+    /**
+     * Returns the animal that the claim applies to.
+     *
+     * @return the animal
+     */
+    Animal getAnimal();
 
     /**
      * Returns the policy that a claim is being made on.

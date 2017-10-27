@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +25,31 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class Changes<T> {
+
+    public static class Change<T> {
+
+        public enum State {
+            ADDED, UPDATED, DEACTIVATED
+        }
+
+        private final T object;
+
+        private final State state;
+
+        public Change(T object, State state) {
+            this.object = object;
+            this.state = state;
+        }
+
+        public T getObject() {
+            return object;
+        }
+
+        public State getState() {
+            return state;
+        }
+
+    }
 
     /**
      * The added objects.
@@ -78,5 +104,24 @@ public class Changes<T> {
      */
     public List<T> getDeactivated() {
         return deactivated;
+    }
+
+    /**
+     * Returns the changes, in order of added, updated and deactivated.
+     *
+     * @return the changes
+     */
+    public List<Change<T>> getChanges() {
+        List<Change<T>> result = new ArrayList<>();
+        for (T object : getAdded()) {
+            result.add(new Change<T>(object, Change.State.ADDED));
+        }
+        for (T object : getUpdated()) {
+            result.add(new Change<T>(object, Change.State.UPDATED));
+        }
+        for (T object : getDeactivated()) {
+            result.add(new Change<T>(object, Change.State.DEACTIVATED));
+        }
+        return result;
     }
 }

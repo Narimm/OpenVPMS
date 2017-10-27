@@ -37,9 +37,9 @@ public class AnimalImpl implements Animal {
     private final Party patient;
 
     /**
-     * The archetype service.
+     * The patient bean.
      */
-    private final IArchetypeService service;
+    private final IMObjectBean bean;
 
     /**
      * The patient rules.
@@ -55,8 +55,8 @@ public class AnimalImpl implements Animal {
      */
     public AnimalImpl(Party patient, IArchetypeService service, PatientRules patientRules) {
         this.patient = patient;
+        bean = new IMObjectBean(patient, service);
         this.patientRules = patientRules;
-        this.service = service;
     }
 
     /**
@@ -116,7 +116,7 @@ public class AnimalImpl implements Animal {
      */
     @Override
     public Sex getSex() {
-        String code = new IMObjectBean(patient, service).getString("sex");
+        String code = bean.getString("sex");
         return (code != null) ? Sex.valueOf(code) : Sex.UNSPECIFIED;
     }
 
@@ -138,5 +138,15 @@ public class AnimalImpl implements Animal {
     @Override
     public String getMicrochip() {
         return patientRules.getMicrochipNumber(patient);
+    }
+
+    /**
+     * Returns the date when the animal was created in OpenVPMS.
+     *
+     * @return the date. May be {@code null}
+     */
+    @Override
+    public Date getCreatedDate() {
+        return bean.getDate("createdDate");
     }
 }

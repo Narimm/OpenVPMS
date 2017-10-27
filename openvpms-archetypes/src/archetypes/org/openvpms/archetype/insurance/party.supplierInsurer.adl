@@ -24,6 +24,8 @@
         </node>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="/name"/>
+        <node name="insurerId" path="/identities" type="java.util.HashSet" baseName="Identity" minCardinality="0"
+              maxCardinality="1" filter="entityIdentity.insurer*" readOnly="true" hidden="true"/>
         <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="contacts" path="/contacts"

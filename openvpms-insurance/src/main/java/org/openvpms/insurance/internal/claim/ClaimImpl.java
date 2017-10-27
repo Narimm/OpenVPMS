@@ -37,6 +37,7 @@ import org.openvpms.insurance.claim.ClaimHandler;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Note;
 import org.openvpms.insurance.internal.policy.PolicyImpl;
+import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 
 import java.util.ArrayList;
@@ -157,6 +158,16 @@ public class ClaimImpl implements Claim {
         }
         identity.setIdentity(id);
         claim.save();
+    }
+
+    /**
+     * Returns the animal that the claim applies to.
+     *
+     * @return the animal
+     */
+    @Override
+    public Animal getAnimal() {
+        return getPolicy().getAnimal();
     }
 
     /**

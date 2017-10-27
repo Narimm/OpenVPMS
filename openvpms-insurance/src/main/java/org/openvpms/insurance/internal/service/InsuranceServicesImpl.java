@@ -65,23 +65,36 @@ public class InsuranceServicesImpl implements InsuranceServices {
     }
 
     /**
+     * Returns the insurance service for the specified <em>entity.insuranceService*</em> configuration.
+     *
+     * @param service the service configuration
+     * @return the insurance service, or {@code null} if none is found
+     */
+    @Override
+    public InsuranceService getService(Entity service) {
+        InsuranceService result = null;
+        String archetype = service.getArchetypeId().getShortName();
+        for (InsuranceService insuranceService : manager.getServices(InsuranceService.class)) {
+            if (archetype.equals(insuranceService.getArchetype())) {
+                result = insuranceService;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the insurance service for the specified insurer.
      *
      * @param insurer the insurer
      * @return the insurance service, or {@code null} if none is found
      */
     @Override
-    public InsuranceService getService(Party insurer) {
+    public InsuranceService getServiceForInsurer(Party insurer) {
         InsuranceService result = null;
         Entity config = getConfig(insurer);
         if (config != null) {
-            String archetype = config.getArchetypeId().getShortName();
-            for (InsuranceService service : manager.getServices(InsuranceService.class)) {
-                if (archetype.equals(service.getArchetype())) {
-                    result = service;
-                    break;
-                }
-            }
+            result = getService(config);
         }
         return result;
     }

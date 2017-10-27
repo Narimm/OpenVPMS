@@ -17,7 +17,9 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:plugin="http://openvpms.org/schema/plugin/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://openvpms.org/schema/plugin/spring http://openvpms.org/schema/plugin/spring/plugin.xsd">
 
     <bean id="insuranceServices" class="org.openvpms.insurance.internal.service.InsuranceServicesImpl">
         <constructor-arg ref="pluginManager"/>
@@ -28,5 +30,11 @@
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="patientRules"/>
+    </bean>
+
+    <bean id="insurers" class="org.openvpms.insurance.internal.service.InsurersImpl">
+        <plugin:service/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 </beans>

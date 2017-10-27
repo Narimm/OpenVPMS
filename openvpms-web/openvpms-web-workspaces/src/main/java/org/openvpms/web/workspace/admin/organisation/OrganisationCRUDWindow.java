@@ -16,13 +16,29 @@
 
 package org.openvpms.web.workspace.admin.organisation;
 
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.insurance.service.Changes;
+import org.openvpms.insurance.service.InsuranceService;
+import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
+
+import java.util.List;
+
+import static org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes.INSURANCE_SERVICES;
 
 /**
  * CRUD window for the Organisation workspace.
@@ -30,6 +46,11 @@ import org.openvpms.web.echo.help.HelpContext;
  * @author Tim Anderson
  */
 public class OrganisationCRUDWindow extends ResultSetCRUDWindow<Entity> {
+
+    /**
+     * Synchronise insurers button identifier.
+     */
+    private static final String SYNCH_INSURERS = "button.syncInsurers";
 
     /**
      * Constructs a {@link OrganisationCRUDWindow}.
@@ -43,6 +64,60 @@ public class OrganisationCRUDWindow extends ResultSetCRUDWindow<Entity> {
     public OrganisationCRUDWindow(Archetypes<Entity> archetypes, Query<Entity> query, ResultSet<Entity> set,
                                   Context context, HelpContext help) {
         super(archetypes, query, set, context, help);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+        buttons.add(SYNCH_INSURERS, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                synchroniseInsurers();
+            }
+        });
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(SYNCH_INSURERS, enable && TypeHelper.isA(getObject(), INSURANCE_SERVICES));
+    }
+
+    /**
+     * Synchronises insurers associated with an insurance service.
+     */
+    protected void synchroniseInsurers() {
+        Entity object = getObject();
+        if (TypeHelper.isA(object, INSURANCE_SERVICES)) {
+            InsuranceServices insuranceServices = ServiceHelper.getBean(InsuranceServices.class);
+            InsuranceService service = insuranceServices.getService(object);
+            if (service != null) {
+                Changes<Party> changes = service.synchroniseInsurers();
+                List<Changes.Change<Party>> list = changes.getChanges();
+                if (list.isEmpty()) {
+                    InformationDialog.show(Messages.get("admin.organisation.insurer.sync.title"),
+                                           Messages.format("admin.organisation.insurer.sync.nochanges",
+                                                           object.getName()));
+                } else {
+                    InsurerChanges popup = new InsurerChanges(list);
+                    popup.show();
+                }
+            } else {
+                ErrorDialog.show(Messages.get("admin.organisation.insurer.sync.title"),
+                                 Messages.format("admin.organisation.insurer.sync.noservice", object.getName()));
+            }
+        }
     }
 
 }

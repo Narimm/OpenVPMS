@@ -47,4 +47,14 @@ public class InsuranceArchetypes {
      * The insurance claim attachment archetype.
      */
     public static final String ATTACHMENT = "act.patientInsuranceClaimAttachment";
+
+    /**
+     * The insurance claim invoice item relationship archetype.
+     */
+    public static final String CLAIM_INVOICE_ITEM = "actRelationship.insuranceClaimInvoiceItem";
+
+    /**
+     * The insurance services archetypes.
+     */
+    public static String INSURANCE_SERVICES = "entity.insuranceService*";
 }

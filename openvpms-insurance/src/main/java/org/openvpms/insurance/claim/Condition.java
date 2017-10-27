@@ -31,7 +31,7 @@ public interface Condition {
 
     enum Status {
         RESOLVED,     // condition is resolved
-        ONGOING,      // condition is ongoing
+        UNRESOLVED,   // condition is ongoing
         DIED,         // animal died from the condition
         EUTHANASED    // animal was euthanased because of the condition
     }

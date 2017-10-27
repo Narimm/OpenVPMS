@@ -149,6 +149,8 @@ class AttachmentGenerator {
             } else {
                 setStatus(bean, AttachmentStatus.ERROR, Messages.get("patient.insurance.nodocument"));
             }
+        } else {
+            result = true;
         }
         return result;
     }
