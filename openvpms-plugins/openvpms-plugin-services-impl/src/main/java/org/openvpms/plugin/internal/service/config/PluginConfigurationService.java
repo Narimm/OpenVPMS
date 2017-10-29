@@ -23,7 +23,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeServiceListen
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.plugin.internal.service.archetype.AbstractIMObjectListenerNotifier;
+import org.openvpms.plugin.internal.service.archetype.IMObjectUpdateNotifier;
 import org.openvpms.plugin.manager.PluginManager;
 import org.openvpms.plugin.service.config.ConfigurableService;
 
@@ -32,7 +32,7 @@ import org.openvpms.plugin.service.config.ConfigurableService;
  *
  * @author Tim Anderson
  */
-public class PluginConfigurationService extends AbstractIMObjectListenerNotifier<ConfigurableService> {
+public class PluginConfigurationService extends IMObjectUpdateNotifier<ConfigurableService> {
 
     /**
      * Constructs a {@link PluginConfigurationService}.

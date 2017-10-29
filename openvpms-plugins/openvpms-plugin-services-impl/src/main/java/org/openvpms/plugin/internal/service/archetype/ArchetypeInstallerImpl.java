@@ -20,8 +20,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.plugin.service.archetype.ArchetypeInstaller;
-import org.openvpms.plugin.service.archetype.PluginArchetypeService;
 import org.openvpms.tools.archetype.comparator.ArchetypeComparator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -46,7 +49,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
     /**
      * The archetype service.
      */
-    private final PluginArchetypeService service;
+    private final IArchetypeService service;
 
     /**
      * The transaction manager.
@@ -64,7 +67,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
      * @param service    the archetype service
      * @param txnManager the transaction manager
      */
-    public ArchetypeInstallerImpl(PluginArchetypeService service, PlatformTransactionManager txnManager) {
+    public ArchetypeInstallerImpl(IArchetypeService service, PlatformTransactionManager txnManager) {
         this.service = service;
         this.txnManager = txnManager;
     }
@@ -120,12 +123,10 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
      */
     private void install(List<ArchetypeDescriptor> descriptors) {
         for (ArchetypeDescriptor descriptor : descriptors) {
-            ArchetypeDescriptor existing = service.getArchetypeDescriptor(descriptor.getShortName());
+            ArchetypeDescriptor existing = getPersistent(descriptor);
             if (existing != null) {
-                // make sure it is the latest instance and not a cached copy
-                existing = (ArchetypeDescriptor) service.get(existing.getObjectReference());
-            }
-            if (existing != null) {
+                // compare the archetype with the persistent instance. If the database has been updated outside OpenVPMS
+                // the persistent instance may be different to that cached.
                 ArchetypeComparator comparator = new ArchetypeComparator();
                 if (comparator.compare(existing, descriptor) != null) {
                     service.remove(existing);
@@ -135,6 +136,20 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
                 service.save(descriptor);
             }
         }
+    }
+
+    /**
+     * Returns the persistent archetype descriptor corresponding to that supplied.
+     *
+     * @param descriptor the archetype descriptor
+     * @return the persistent version, or {@code null} if none is found
+     */
+    private ArchetypeDescriptor getPersistent(ArchetypeDescriptor descriptor) {
+        ArchetypeQuery query = new ArchetypeQuery(descriptor.getArchetypeId().getShortName(), false);
+        query.add(Constraints.eq("name", descriptor.getName()));
+        query.setMaxResults(1);
+        IMObjectQueryIterator<ArchetypeDescriptor> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
@@ -172,7 +187,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
      */
     private List<ArchetypeDescriptor> validateAll(ArchetypeDescriptors descriptors, List<ArchetypeDescriptor> list) {
         for (ArchetypeDescriptor descriptor : descriptors.getArchetypeDescriptorsAsArray()) {
-            service.validate(descriptor);
+            service.validateObject(descriptor);
             list.add(descriptor);
         }
         return list;

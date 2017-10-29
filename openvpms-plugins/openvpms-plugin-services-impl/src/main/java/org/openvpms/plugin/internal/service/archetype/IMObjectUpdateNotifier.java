@@ -32,27 +32,55 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * .
+ * Notifies listeners when objects are updated or removed.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractIMObjectListenerNotifier<T> implements InitializingBean, DisposableBean {
+public abstract class IMObjectUpdateNotifier<T> implements InitializingBean, DisposableBean {
 
+    /**
+     * The plugin manager listener.
+     */
     private final PluginManagerListener listener;
 
+    /**
+     * The listener type.
+     */
     private final Class<T> type;
 
+    /**
+     * The archetype service.
+     */
     private final IArchetypeService service;
 
+    /**
+     * The plugin manager.
+     */
     private final PluginManager manager;
 
+    /**
+     * Tracks registration of listeners.
+     */
     private volatile ServiceTracker<T, T> tracker;
 
+    /**
+     * The listeners.
+     */
     private Map<T, Listener> listeners = Collections.synchronizedMap(new HashMap<T, Listener>());
 
-    private static final Log log = LogFactory.getLog(IMObjectListenerNotifier.class);
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(IMObjectUpdateNotifier.class);
 
-    public AbstractIMObjectListenerNotifier(Class<T> type, IArchetypeService service, final PluginManager manager) {
+    /**
+     * Constructs an {@link IMObjectUpdateNotifier}.
+     *
+     * @param type    the listener type
+     * @param service the archetype service
+     * @param manager the plugin manager
+     */
+    public IMObjectUpdateNotifier(Class<T> type, IArchetypeService service, final PluginManager manager) {
         this.type = type;
         listener = new PluginManagerListener() {
             @Override
@@ -95,9 +123,11 @@ public abstract class AbstractIMObjectListenerNotifier<T> implements Initializin
         manager.removeListener(listener);
     }
 
+    /**
+     * Invoked when the plugin manager starts.
+     */
     protected void onStart() {
-        tracker = new ServiceTracker<T, T>(
-                manager.getBundleContext(), type, null) {
+        tracker = new ServiceTracker<T, T>(manager.getBundleContext(), type, null) {
             /**
              * Invoked when a service is added.
              *
@@ -107,7 +137,9 @@ public abstract class AbstractIMObjectListenerNotifier<T> implements Initializin
             @Override
             public T addingService(ServiceReference<T> reference) {
                 T service = super.addingService(reference);
-                addService(service);
+                if (service != null) {
+                    addService(service);
+                }
                 return service;
             }
 
@@ -126,6 +158,11 @@ public abstract class AbstractIMObjectListenerNotifier<T> implements Initializin
         tracker.open();
     }
 
+    /**
+     * Adds a service.
+     *
+     * @param service the service to add
+     */
     protected void addService(final T service) {
         try {
             Listener listener = createListener(service);
@@ -144,7 +181,11 @@ public abstract class AbstractIMObjectListenerNotifier<T> implements Initializin
      */
     protected abstract Listener createListener(T service);
 
-
+    /**
+     * Removes a service.
+     *
+     * @param service the service to remove
+     */
     protected void removeService(T service) {
         Listener listener = listeners.remove(service);
         if (listener != null) {
@@ -152,6 +193,11 @@ public abstract class AbstractIMObjectListenerNotifier<T> implements Initializin
         }
     }
 
+    /**
+     * Retunrs the archetype service.
+     *
+     * @return the archetype service
+     */
     protected IArchetypeService getService() {
         return service;
     }

@@ -18,6 +18,9 @@ package org.openvpms.plugins.test.impl;
 
 import org.openvpms.plugin.test.service.TestService;
 import org.openvpms.plugins.test.api.TestPlugin;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 
 /**
@@ -25,15 +28,37 @@ import org.openvpms.plugins.test.api.TestPlugin;
  *
  * @author Tim Anderson
  */
+@Component(service = TestPlugin.class,
+        immediate = true)
 public class TestPluginImpl implements TestPlugin {
 
     /**
-     * Constructs a {@link TestPluginImpl}.
-     *
-     * @param service the test service
+     * The service.
      */
-    public TestPluginImpl(TestService service) {
-        service.setValue(service.getValue() + 1);
+    private TestService service;
+
+    /**
+     * Constructs a {@link TestPluginImpl}.
+     */
+    public TestPluginImpl() {
+        super();
     }
 
+    /**
+     * Registers the service.
+     *
+     * @param service the service
+     */
+    @Reference
+    public void setService(TestService service) {
+        this.service = service;
+    }
+
+    /**
+     * Invoked when the plugin is activated.
+     */
+    @Activate
+    public void activate() {
+        service.setValue(service.getValue() + 1);
+    }
 }

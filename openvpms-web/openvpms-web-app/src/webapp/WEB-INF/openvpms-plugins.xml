@@ -50,7 +50,7 @@
 
     <bean id="archetypeInstaller" class="org.openvpms.plugin.internal.service.archetype.ArchetypeInstallerImpl">
         <plugin:service/>
-        <constructor-arg ref="pluginArchetypeService"/>
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="txnManager"/>
     </bean>
 

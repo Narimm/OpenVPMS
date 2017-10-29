@@ -29,8 +29,14 @@ import org.openvpms.plugin.service.archetype.IMObjectListener;
  *
  * @author Tim Anderson
  */
-public class IMObjectListenerNotifier extends AbstractIMObjectListenerNotifier<IMObjectListener> {
+public class IMObjectListenerNotifier extends IMObjectUpdateNotifier<IMObjectListener> {
 
+    /**
+     * Constructs an {@link IMObjectListenerNotifier}.
+     *
+     * @param service the archetype service
+     * @param manager the plugin manager
+     */
     public IMObjectListenerNotifier(IArchetypeService service, PluginManager manager) {
         super(IMObjectListener.class, service, manager);
     }
