@@ -256,8 +256,9 @@ public class LoggingMailer implements Mailer {
             String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
             String reason = (mailer.getAttachments().isEmpty()) ? "AD_HOC_EMAIL" : "FORWARDED_DOCUMENT";
 
-            logger.logEmail(customer, context.getPatient(), mailer.getTo(), mailer.getCc(), mailer.getBcc(),
-                            mailer.getSubject(), reason, mailer.getBody(), null, attachments, location);
+            logger.logEmail(customer, context.getPatient(), mailer.getFrom(), mailer.getTo(), mailer.getCc(),
+                            mailer.getBcc(), mailer.getSubject(), reason, mailer.getBody(), null, attachments,
+                            location);
         }
     }
 

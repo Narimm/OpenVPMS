@@ -144,6 +144,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
             throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
         }
         if (getLogger() != null) {
+            String from = mailer.getFrom();
             String[] to = mailer.getTo();
             String[] cc = mailer.getCc();
             String[] bcc = mailer.getBcc();
@@ -151,6 +152,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
             String body = mailer.getBody();
             String attachments = CommunicationHelper.getAttachments(mailer.getAttachments());
             for (ReminderEvent reminder : reminderState.getReminders()) {
+                reminder.set("from", from);
                 reminder.set("to", to);
                 reminder.set("cc", cc);
                 reminder.set("bcc", bcc);
@@ -215,6 +217,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
         Party location = ((EmailReminders) state).getLocation();
         for (ReminderEvent event : state.getReminders()) {
             String notes = getNote(event);
+            String from = event.getString("from");
             String[] to = (String[]) event.get("to");
             String[] cc = (String[]) event.get("cc");
             String[] bcc = (String[]) event.get("bcc");
@@ -222,8 +225,8 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
             String body = event.getString("body");
             String attachments = event.getString("attachments");
 
-            logger.logEmail(event.getCustomer(), event.getPatient(), to, cc, bcc, subject, COMMUNICATION_REASON, body,
-                            notes, attachments, location);
+            logger.logEmail(event.getCustomer(), event.getPatient(), from, to, cc, bcc, subject, COMMUNICATION_REASON,
+                            body, notes, attachments, location);
         }
     }
 
