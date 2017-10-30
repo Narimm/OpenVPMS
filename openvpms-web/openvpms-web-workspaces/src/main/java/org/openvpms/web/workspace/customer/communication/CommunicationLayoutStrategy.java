@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
@@ -120,11 +120,6 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
     public static final String REASON = "reason";
 
     /**
-     * The property representing the message.
-     */
-    private Property messageProxy;
-
-    /**
      * The contact archetype short name.
      */
     private final String contacts;
@@ -138,6 +133,11 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
      * Determines if the patient node should be displayed when editing.
      */
     private final boolean showPatient;
+
+    /**
+     * The property representing the message.
+     */
+    private Property messageProxy;
 
     /**
      * Constructs a {@link CommunicationLayoutStrategy}.
@@ -279,17 +279,31 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
      * @param customer the customer
      * @param context  the layout context
      */
-    protected void addContactSelector(final Property property, IMObject object, Party customer, LayoutContext context) {
+    protected void addContactSelector(Property property, IMObject object, Party customer, LayoutContext context) {
+        List<Contact> contacts = getContacts(customer);
+        addContactSelector(property, object, contacts, context);
+    }
+
+    /**
+     * Adds a contact selector.
+     *
+     * @param property the contact property
+     * @param object   the communication object
+     * @param contacts the available contacts
+     * @param context  the layout context
+     */
+    protected void addContactSelector(final Property property, IMObject object, List<Contact> contacts,
+                                      LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
-        ComponentState addressComponent = factory.create(property, object);
-        if (addressComponent.getComponent() instanceof TextArea) {
-            ((TextArea) addressComponent.getComponent()).setHeight(new Extent(2, Extent.EM));
+        ComponentState address = factory.create(property, object);
+        Component addressComponent = address.getComponent();
+        if (addressComponent instanceof TextArea) {
+            ((TextArea) addressComponent).setHeight(new Extent(2, Extent.EM));
         }
-        List<Contact> list = getContacts(customer);
-        if (!list.isEmpty()) {
+        if (!contacts.isEmpty()) {
             final DropDown contactDropDown = new DropDown();
             final IMObjectTable<Contact> table = new IMObjectTable<>();
-            table.setObjects(list);
+            table.setObjects(contacts);
             table.addActionListener(new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
@@ -300,21 +314,20 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
                     contactDropDown.setExpanded(false);
                 }
             });
-            contactDropDown.setTarget(addressComponent.getComponent());
+            contactDropDown.setTarget(addressComponent);
             contactDropDown.setPopUpAlwaysOnTop(true);
             contactDropDown.setFocusOnExpand(true);
             contactDropDown.setPopUp(table);
             contactDropDown.setFocusComponent(table);
-            ComponentState state = new ComponentState(contactDropDown, property);
-            addComponent(state);
+            addComponent(new ComponentState(contactDropDown, property));
         } else {
-            addComponent(addressComponent);
+            addComponent(address);
         }
     }
 
     /**
      * Formats a contact.
-     * <p/>
+     * <p>
      * This version returns the contact description
      *
      * @param contact the contact to format
@@ -325,14 +338,14 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
     }
 
     /**
-     * Returns the contacts for a customer.
+     * Returns the contacts for a party.
      *
-     * @param customer the customer
+     * @param party the party
      * @return the contacts
      */
-    protected List<Contact> getContacts(Party customer) {
+    protected List<Contact> getContacts(Party party) {
         List<Contact> result = new ArrayList<>();
-        for (Contact contact : customer.getContacts()) {
+        for (Contact contact : party.getContacts()) {
             if (TypeHelper.isA(contact, contacts)) {
                 result.add(contact);
             }
@@ -410,7 +423,7 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
 
     /**
      * Returns the text properties.
-     * <p/>
+     * <p>
      * These are rendered under each other.
      *
      * @param properties the properties
@@ -426,7 +439,7 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
 
     /**
      * Returns the properties to display in the header.
-     * <p/>
+     * <p>
      * Note; this does not exclude empty properties the returned properties are used to determine the other nodes
      * to display. Empty properties are excluded via {@link #excludeEmptyHeaderProperties(List)} instead.
      *
@@ -459,7 +472,7 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
 
     /**
      * Excludes empty header properties.
-     * <p/>
+     * <p>
      * This implementation returns the properties unchanged.
      *
      * @param properties the header properties
