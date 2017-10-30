@@ -58,6 +58,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
@@ -104,7 +105,7 @@ public class CustomerSummary extends PartySummary {
 
     /**
      * Returns summary information for a party.
-     * <p/>
+     * <p>
      * The summary includes any alerts.
      *
      * @param party the party
@@ -121,9 +122,7 @@ public class CustomerSummary extends PartySummary {
         column.add(ColumnFactory.create(Styles.SMALL_INSET, phone));
 
         Contact email = ContactHelper.getPreferredEmail(party);
-        if (email != null) {
-            column.add(ColumnFactory.create(Styles.SMALL_INSET, getEmail(email)));
-        }
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, getEmail(email)));
         final Context context = getContext();
         if (getPreferences().getBoolean(PreferenceArchetypes.SUMMARY, "showCustomerAccount", true)) {
             Label balanceTitle = create("customer.account.balance");
@@ -281,8 +280,10 @@ public class CustomerSummary extends PartySummary {
 
     /**
      * Returns a button to launch an {@link MailDialog} for a customer.
+     * <p/>
+     * If the customer has no email address, displays 'No email', but still allows emails to be sent.
      *
-     * @param email the preferred email
+     * @param email the preferred email. May be {@code null}
      * @return a new button to launch the dialog
      */
     private Component getEmail(final Contact email) {
@@ -296,7 +297,8 @@ public class CustomerSummary extends PartySummary {
                 dialog.show();
             }
         });
-        mail.setText(ContactHelper.getEmail(email));
+        String address = (email != null) ? ContactHelper.getEmail(email) : Messages.get("customer.email.none");
+        mail.setText(address);
         return mail;
     }
 
