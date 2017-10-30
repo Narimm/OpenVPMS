@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -346,7 +346,11 @@ public class MailHeader extends AbstractModifiable {
         focus.add(cc.getField());
         focus.add(bcc.getField());
         focus.add(subjectText);
-        focus.setDefault(subjectText);
+        if (to.getSelected() == null) {
+            focus.setDefault(to.getField());
+        } else {
+            focus.setDefault(subjectText);
+        }
         return grid;
     }
 
