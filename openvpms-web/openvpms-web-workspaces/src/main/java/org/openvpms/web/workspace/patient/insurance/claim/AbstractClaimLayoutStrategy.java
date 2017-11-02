@@ -23,6 +23,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.text.TextArea;
 
@@ -58,13 +59,26 @@ public abstract class AbstractClaimLayoutStrategy extends AbstractLayoutStrategy
      * @return a new component
      */
     protected ComponentState createNotes(IMObject object, PropertySet properties, LayoutContext context) {
-        ComponentState notes = createComponent(properties.get("notes"), object, context);
-        Component component = notes.getComponent();
+        Property property = properties.get("notes");
+        return createTextArea(property, object, context);
+    }
+
+    /**
+     * Creates a text area for a property, limiting the height to 4 rows.
+     *
+     * @param property the property
+     * @param object   the parent object
+     * @param context  the layout context
+     * @return a new component
+     */
+    protected ComponentState createTextArea(Property property, IMObject object, LayoutContext context) {
+        ComponentState state = createComponent(property, object, context);
+        Component component = state.getComponent();
         if (component instanceof TextArea) {
             TextArea text = (TextArea) component;
             text.setHeight(new Extent(4, Extent.EM));
         }
-        return notes;
+        return state;
     }
 
 }

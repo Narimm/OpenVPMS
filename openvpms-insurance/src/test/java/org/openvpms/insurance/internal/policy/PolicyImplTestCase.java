@@ -72,7 +72,7 @@ public class PolicyImplTestCase extends ArchetypeServiceTest {
         Contact work = createPhoneContact("03", "9123456", false, false, ContactArchetypes.WORK_PURPOSE);
         Contact mobile = createPhoneContact(null, "04987654321", true);
         Contact email = createEmailContact("foo@test.com");
-        Party customer = TestHelper.createCustomer("J", "Bloggs", address, home, work, mobile, email);
+        Party customer = TestHelper.createCustomer("MS", "J", "Bloggs", address, home, work, mobile, email);
 
         Date dateOfBirth = DateRules.getDate(DateRules.getToday(), -1, DateUnits.YEARS);
         Party patient = PatientTestHelper.createPatient("Fido", "CANINE", "PUG", "MALE", dateOfBirth, "123454321",
@@ -87,7 +87,7 @@ public class PolicyImplTestCase extends ArchetypeServiceTest {
 
         PolicyHolder policyHolder = policy.getPolicyHolder();
         assertNotNull(policyHolder);
-        assertEquals("J Bloggs", policyHolder.getName());
+        assertEquals("Ms J Bloggs", policyHolder.getName());
         assertEquals(address, policyHolder.getAddress());
         assertEquals(work, policyHolder.getDaytimePhone());
         assertEquals(home, policyHolder.getEveningPhone());

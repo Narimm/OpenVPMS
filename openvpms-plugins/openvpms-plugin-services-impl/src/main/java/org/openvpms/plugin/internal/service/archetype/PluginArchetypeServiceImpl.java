@@ -73,12 +73,12 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
         writable = new DelegatingArchetypeService(service) {
             @Override
             public void save(final IMObject object) {
-                run(new Runnable() {
-                    @Override
-                    public void run() {
-                        PluginArchetypeServiceImpl.this.save(object);
-                    }
-                });
+                PluginArchetypeServiceImpl.this.save(object);
+            }
+
+            @Override
+            public IMObject create(String shortName) {
+                return PluginArchetypeServiceImpl.this.create(shortName);
             }
         };
     }

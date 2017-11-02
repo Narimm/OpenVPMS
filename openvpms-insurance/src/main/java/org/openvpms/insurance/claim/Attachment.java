@@ -26,6 +26,24 @@ import java.io.InputStream;
 public interface Attachment {
 
     /**
+     * Returns the attachment identifier, issued by the insurer.
+     *
+     * @return the attachment identifier, or {@code null} if none has been issued
+     */
+    String getInsurerId();
+
+    /**
+     * Sets the attachment identifier, issued by the insurer.
+     * <p>
+     * An attachment can have a single identifier issued by an insurer. To avoid duplicates, each insurance service must
+     * provide a unique archetype.
+     *
+     * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceAttachment</em> prefix.
+     * @param id        the claim identifier
+     */
+    void setInsurerId(String archetype, String id);
+
+    /**
      * Returns the attachment file name.
      *
      * @return the attachment file name

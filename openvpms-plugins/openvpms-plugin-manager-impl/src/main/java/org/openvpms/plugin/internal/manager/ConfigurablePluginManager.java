@@ -16,6 +16,8 @@
 
 package org.openvpms.plugin.internal.manager;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -30,6 +32,8 @@ import org.osgi.framework.BundleException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
@@ -41,10 +45,13 @@ import java.util.Set;
 
 /**
  * A {@link PluginManager} that is configured by an <em>entity.pluginConfiguration</em>.
+ * <p>
+ * The plugin manager is started after Spring has fully initialised, to avoid deadlocks.
  *
  * @author Tim Anderson
  */
-public class ConfigurablePluginManager implements PluginManager, InitializingBean, DisposableBean, ServletContextAware {
+public class ConfigurablePluginManager implements PluginManager, DisposableBean, ServletContextAware,
+        ApplicationListener<ContextRefreshedEvent> {
 
     /**
      * The archetype service.
@@ -70,6 +77,11 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
      * The servlet context.
      */
     private ServletContext servletContext;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ConfigurablePluginManager.class);
 
     /**
      * Constructs a {@link ConfigurablePluginManager}.
@@ -228,17 +240,17 @@ public class ConfigurablePluginManager implements PluginManager, InitializingBea
     }
 
     /**
-     * Invoked by a BeanFactory after it has set all bean properties supplied
-     * (and satisfied BeanFactoryAware and ApplicationContextAware).
-     * <p>This method allows the bean instance to perform initialization only
-     * possible when all bean properties have been set and to throw an
-     * exception in the event of misconfiguration.
+     * Handle an application event.
      *
-     * @throws Exception if initialization fails
+     * @param event the event to respond to
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
-        start();
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        try {
+            start();
+        } catch (Throwable exception) {
+            log.error("Failed to start the plugin manager", exception);
+        }
     }
 
     /**

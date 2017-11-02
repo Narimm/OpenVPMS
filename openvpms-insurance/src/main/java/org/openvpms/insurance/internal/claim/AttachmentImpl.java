@@ -16,10 +16,15 @@
 
 package org.openvpms.insurance.internal.claim;
 
+import org.apache.commons.collections.PredicateUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -39,7 +44,7 @@ public class AttachmentImpl implements Attachment {
     /**
      * The act.
      */
-    private final DocumentAct act;
+    private final ActBean act;
 
     /**
      * The archetype service.
@@ -59,9 +64,43 @@ public class AttachmentImpl implements Attachment {
      * @param handlers the document handlers
      */
     public AttachmentImpl(DocumentAct act, IArchetypeService service, DocumentHandlers handlers) {
-        this.act = act;
+        this.act = new ActBean(act, service);
         this.service = service;
         this.handlers = handlers;
+    }
+
+    /**
+     * Returns the attachment identifier, issued by the insurer.
+     *
+     * @return the attachment identifier, or {@code null} if none has been issued
+     */
+    @Override
+    public String getInsurerId() {
+        ActIdentity identity = getIdentity();
+        return identity != null ? identity.getIdentity() : null;
+    }
+
+    /**
+     * Sets the attachment identifier, issued by the insurer.
+     * <p>
+     * An attachment can have a single identifier issued by an insurer. To avoid duplicates, each insurance service must
+     * provide a unique archetype.
+     *
+     * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceAttachment</em> prefix.
+     * @param id        the claim identifier
+     */
+    @Override
+    public void setInsurerId(String archetype, String id) {
+        ActIdentity identity = getIdentity();
+        if (identity == null) {
+            identity = (ActIdentity) service.create(archetype);
+            act.addValue("insuranceId", identity);
+        } else if (!TypeHelper.isA(identity, archetype)) {
+            throw new IllegalArgumentException(
+                    "Argument 'archetype' must be of the same type as the existing identifier");
+        }
+        identity.setIdentity(id);
+        act.save();
     }
 
     /**
@@ -71,7 +110,7 @@ public class AttachmentImpl implements Attachment {
      */
     @Override
     public String getFileName() {
-        return act.getFileName();
+        return ((DocumentAct) act.getAct()).getFileName();
     }
 
     /**
@@ -81,7 +120,7 @@ public class AttachmentImpl implements Attachment {
      */
     @Override
     public String getMimeType() {
-        return act.getMimeType();
+        return ((DocumentAct) act.getAct()).getMimeType();
     }
 
     /**
@@ -92,8 +131,9 @@ public class AttachmentImpl implements Attachment {
     @Override
     public long getSize() {
         long size = 0;
-        if (act.getDocument() != null) {
-            ArchetypeQuery query = new ArchetypeQuery(act.getDocument());
+        IMObjectReference document = ((DocumentAct) act.getAct()).getDocument();
+        if (document != null) {
+            ArchetypeQuery query = new ArchetypeQuery(document);
             query.getArchetypeConstraint().setAlias("doc");
             query.add(new NodeSelectConstraint("size"));
             ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
@@ -113,8 +153,9 @@ public class AttachmentImpl implements Attachment {
     @Override
     public InputStream getContent() {
         InputStream result = null;
-        if (act.getDocument() != null) {
-            Document document = (Document) service.get(act.getDocument());
+        IMObjectReference reference = ((DocumentAct) act.getAct()).getDocument();
+        if (reference != null) {
+            Document document = (Document) service.get(reference);
             if (document != null) {
                 result = handlers.get(document).getContent(document);
             }
@@ -123,5 +164,14 @@ public class AttachmentImpl implements Attachment {
             result = new ByteArrayInputStream(new byte[0]);
         }
         return result;
+    }
+
+    /**
+     * Returns the claim identity, as specified by the insurance provider.
+     *
+     * @return the claim identity, or {@code null} if none is registered
+     */
+    protected ActIdentity getIdentity() {
+        return act.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 }

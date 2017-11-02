@@ -105,8 +105,7 @@ class AttachmentGenerator {
     public boolean generate(AttachmentCollectionEditor attachments) {
         boolean result = true;
         Act history = null;
-        List<Act> acts = attachments.getCurrentActs();
-        for (Act attachment : acts) {
+        for (Act attachment : attachments.getCurrentActs()) {
             if (isHistory(attachment)) {
                 history = attachment;
                 break;
@@ -115,7 +114,7 @@ class AttachmentGenerator {
         if (history == null) {
             attachments.add(createHistory());
         }
-        for (Act attachment : acts) {
+        for (Act attachment : attachments.getCurrentActs()) {
             if (!generate(attachment)) {
                 result = false;
                 break;
@@ -298,6 +297,8 @@ class AttachmentGenerator {
             bean.setStatus(AttachmentStatus.PENDING);
             bean.setValue("error", null);
             bean.setValue("document", document.getObjectReference());
+            bean.setValue("fileName", document.getName());
+            bean.setValue("mimeType", document.getMimeType());
             List<IMObject> objects = Arrays.asList(bean.getAct(), document);
             ServiceHelper.getArchetypeService().save(objects);
             result = true;

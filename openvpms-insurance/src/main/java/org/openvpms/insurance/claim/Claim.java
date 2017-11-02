@@ -33,6 +33,7 @@ public interface Claim {
         PENDING,
         POSTED,
         SUBMITTED,
+        ACCEPTED,
         SETTLED,
         DECLINED,
         CANCELLED
@@ -50,7 +51,7 @@ public interface Claim {
      *
      * @return the claim identifier, or {@code null} if none has been issued
      */
-    String getClaimId();
+    String getInsurerId();
 
     /**
      * Sets the claim identifier, issued by the insurer.
@@ -61,7 +62,7 @@ public interface Claim {
      * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceClaim</em> prefix.
      * @param id        the claim identifier
      */
-    void setClaimId(String archetype, String id);
+    void setInsurerId(String archetype, String id);
 
     /**
      * Returns the animal that the claim applies to.
@@ -90,6 +91,14 @@ public interface Claim {
      * @param status the claim status
      */
     void setStatus(Status status);
+
+    /**
+     * Sets the claim status, along with any message from the insurer.
+     *
+     * @param status  the status
+     * @param message the message. May be {@code null}
+     */
+    void setStatus(Status status, String message);
 
     /**
      * Returns the conditions being claimed.
@@ -125,4 +134,19 @@ public interface Claim {
      * @return the claim handler
      */
     ClaimHandler getClaimHandler();
+
+    /**
+     * Sets a message on the claim. This may be used by insurance service to convey to users the status of the claim,
+     * or why a claim was declined.
+     *
+     * @param message the message. May be {@code null}
+     */
+    void setMessage(String message);
+
+    /**
+     * Returns the message.
+     *
+     * @return the message. May be {@code null}
+     */
+    String getMessage();
 }

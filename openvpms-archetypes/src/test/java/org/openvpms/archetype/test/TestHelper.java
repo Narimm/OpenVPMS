@@ -173,19 +173,24 @@ public class TestHelper {
      * @return a new customer
      */
     public static Party createCustomer(Contact... contacts) {
-        return createCustomer("J", randomName("Zoo-"), contacts);
+        return createCustomer("MR", "J", randomName("Zoo-"), contacts);
     }
 
     /**
      * Creates and saves a new customer, with the specified contacts.
      *
+     * @param titleCode   the <em>lookup.personTitle</em> code. May be {@code null}
      * @param firstName the customer's first name
      * @param lastName  the customer's surname
      * @param contacts  the contacts
      * @return a new customer
      */
-    public static Party createCustomer(String firstName, String lastName, Contact... contacts) {
+    public static Party createCustomer(String titleCode, String firstName, String lastName, Contact... contacts) {
         Party customer = createCustomer(firstName, lastName, false, false);
+        if (titleCode != null) {
+            IMObjectBean bean = new IMObjectBean(customer);
+            bean.setValue("title", getLookup("lookup.personTitle", titleCode).getCode());
+        }
         for (Contact contact : contacts) {
             customer.addContact(contact);
         }

@@ -42,6 +42,11 @@ public class ClaimStatus {
     public static final String SUBMITTED = "SUBMITTED";
 
     /**
+     * Accepted claim. This indicates the insurance service has accepted the claim for processing.
+     */
+    public static final String ACCEPTED = "ACCEPTED";
+
+    /**
      * Settled claim.
      */
     public static final String SETTLED = "SETTLED";

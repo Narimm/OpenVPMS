@@ -19,6 +19,7 @@ package org.openvpms.insurance.internal.claim;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -87,6 +88,11 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
     private PatientRules patientRules;
 
     /**
+     * The document handlers.
+     */
+    private DocumentHandlers handlers;
+
+    /**
      * The test customer.
      */
     private Party customer;
@@ -119,6 +125,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         // customer
         customer = TestHelper.createCustomer("MS", "J", "Bloggs", "12 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC",
                                              "3925", "9123456", "98765432", "04987654321", "foo@test.com");
+        handlers = new DocumentHandlers(getArchetypeService());
 
         // practice location
         location = TestHelper.createLocation("5123456", "vetsrus@test.com", false);
@@ -190,9 +197,9 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         claimAct.addIdentity(createActIdentity("actIdentity.insuranceClaim", "CLM987654"));
         save(policyAct, claimAct, item1Act);
 
-        Claim claim = new ClaimImpl(claimAct, getArchetypeService(), customerRules, patientRules);
+        Claim claim = new ClaimImpl(claimAct, getArchetypeService(), customerRules, patientRules, handlers);
         assertEquals(claimAct.getId(), claim.getId());
-        assertEquals("CLM987654", claim.getClaimId());
+        assertEquals("CLM987654", claim.getInsurerId());
         assertEquals(Claim.Status.PENDING, claim.getStatus());
         Policy policy = claim.getPolicy();
         assertNotNull(policy);

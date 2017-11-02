@@ -17,11 +17,14 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.apache.commons.collections.PredicateUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -77,6 +80,11 @@ public class ClaimImpl implements Claim {
     private final PatientRules patientRules;
 
     /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
      * The policy.
      */
     private PolicyImpl policy;
@@ -108,12 +116,15 @@ public class ClaimImpl implements Claim {
      * @param service       the archetype service
      * @param customerRules the customer rules
      * @param patientRules  the patient rules
+     * @param handlers      the document handlers
      */
-    public ClaimImpl(Act claim, IArchetypeService service, CustomerRules customerRules, PatientRules patientRules) {
+    public ClaimImpl(Act claim, IArchetypeService service, CustomerRules customerRules, PatientRules patientRules,
+                     DocumentHandlers handlers) {
         this.claim = new ActBean(claim, service);
         this.customerRules = customerRules;
         this.patientRules = patientRules;
         this.service = service;
+        this.handlers = handlers;
     }
 
     /**
@@ -132,7 +143,7 @@ public class ClaimImpl implements Claim {
      * @return the claim identifier, or {@code null} if none has been issued
      */
     @Override
-    public String getClaimId() {
+    public String getInsurerId() {
         ActIdentity identity = getIdentity();
         return identity != null ? identity.getIdentity() : null;
     }
@@ -147,7 +158,7 @@ public class ClaimImpl implements Claim {
      * @param id        the claim identifier
      */
     @Override
-    public void setClaimId(String archetype, String id) {
+    public void setInsurerId(String archetype, String id) {
         ActIdentity identity = getIdentity();
         if (identity == null) {
             identity = (ActIdentity) service.create(archetype);
@@ -201,6 +212,19 @@ public class ClaimImpl implements Claim {
     @Override
     public void setStatus(Status status) {
         claim.setStatus(status.name());
+        claim.save();
+    }
+
+    /**
+     * Sets the claim status, along with any message from the insurer.
+     *
+     * @param status  the status
+     * @param message the message. May be {@code null}
+     */
+    @Override
+    public void setStatus(Status status, String message) {
+        claim.setStatus(status.name());
+        updateMessage(message);
         claim.save();
     }
 
@@ -287,6 +311,28 @@ public class ClaimImpl implements Claim {
     }
 
     /**
+     * Sets a message on the claim. This may be used by insurance service to convey to users the status of the claim,
+     * or why a claim was declined.
+     *
+     * @param message the message. May be {@code null}
+     */
+    @Override
+    public void setMessage(String message) {
+        updateMessage(message);
+        claim.save();
+    }
+
+    /**
+     * Returns the message.
+     *
+     * @return the message. May be {@code null}
+     */
+    @Override
+    public String getMessage() {
+        return claim.getString("message");
+    }
+
+    /**
      * Collects the list of claim conditions.
      *
      * @return the claim conditions
@@ -328,6 +374,9 @@ public class ClaimImpl implements Claim {
 
     protected List<Attachment> collectAttachments() {
         List<Attachment> result = new ArrayList<>();
+        for (DocumentAct act : claim.getNodeTargetObjects("attachments", DocumentAct.class)) {
+            result.add(new AttachmentImpl(act, service, handlers));
+        }
         return result;
     }
 
@@ -338,6 +387,13 @@ public class ClaimImpl implements Claim {
      */
     protected ActIdentity getIdentity() {
         return claim.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
+    }
+
+    private void updateMessage(String message) {
+        if (!StringUtils.isEmpty(message)) {
+            message = StringUtils.abbreviate(message, claim.getMaxLength("message"));
+        }
+        claim.setValue("message", message);
     }
 
 }

@@ -241,6 +241,11 @@
     </bean>
 
 
+    <!-- Document handlers -->
+    <bean id="documentHandlers" class="org.openvpms.archetype.rules.doc.DocumentHandlers">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--  Insurance                                                         -->
     <!-- ================================================================== -->
@@ -249,6 +254,7 @@
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="documentHandlers"/>
     </bean>
 
 </beans>

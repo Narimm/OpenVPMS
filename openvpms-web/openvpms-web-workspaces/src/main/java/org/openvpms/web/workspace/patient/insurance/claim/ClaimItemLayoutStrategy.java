@@ -40,6 +40,11 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
     private ComponentState euthanasiaReason;
 
     /**
+     * The status node name.
+     */
+    private static final String STATUS = "status";
+
+    /**
      * Euthanasia reason node name.
      */
     private static final String EUTHANASIA_REASON = "euthanasiaReason";
@@ -83,7 +88,7 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         Row statusRow = RowFactory.create(Styles.CELL_SPACING);
-        Property status = properties.get("status");
+        Property status = properties.get(STATUS);
         ComponentState statusState = createComponent(status, object, context);
         euthanasiaReason = createComponent(properties.get(EUTHANASIA_REASON), object, context);
         statusRow.add(statusState.getComponent());

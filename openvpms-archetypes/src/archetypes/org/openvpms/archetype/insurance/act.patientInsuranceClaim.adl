@@ -19,7 +19,7 @@
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Insurance Claim">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="insuranceId" displayName="Claim Number" path="/identities" type="java.util.HashSet"
-              minCardinality="0" maxCardinality="1" filter="actIdentity.insuranceClaim*"/>
+              baseName="Identity" minCardinality="0" maxCardinality="1" filter="actIdentity.insuranceClaim*"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" readOnly="true"
               defaultValue="'Insurance Claim'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
@@ -61,14 +61,16 @@
                     <property name="PENDING" value="Pending"/>
                     <property name="POSTED" value="Finalised"/>
                     <property name="SUBMITTED" value="Submitted"/>
+                    <property name="ACCEPTED" value="Accepted"/>
                     <property name="SETTLED" value="Settled"/>
                     <property name="DECLINED" value="Declined"/>
                     <property name="CANCELLED" value="Cancelled"/>
                 </propertyList>
             </assertion>
         </node>
-        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0"
-              maxLength="5000"/>
+        <node name="message" path="/details/message" type="java.lang.String" minCardinality="0" maxLength="5000"
+              readOnly="true"/>
+        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="5000"/>
         <node name="items" displayName="Conditions" path="/sourceActRelationships" type="java.util.HashSet"
               baseName="SourceActRelationship" minCardinality="1" maxCardinality="*"
               filter="actRelationship.insuranceClaimItem"/>

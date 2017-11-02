@@ -25,6 +25,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.plugin.service.archetype.ArchetypeInstaller;
+import org.openvpms.plugin.service.archetype.PluginArchetypeService;
 import org.openvpms.tools.archetype.comparator.ArchetypeComparator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -47,14 +48,24 @@ import java.util.List;
 public class ArchetypeInstallerImpl implements ArchetypeInstaller {
 
     /**
-     * The archetype service.
+     * The archetype service. Only required as the PluginArchetypeService does not yet provide query support. TODO
      */
     private final IArchetypeService service;
+
+    /**
+     * The plugin archetype service.
+     */
+    private final PluginArchetypeService pluginService;
 
     /**
      * The transaction manager.
      */
     private final PlatformTransactionManager txnManager;
+
+    /**
+     * The archetype comparator.
+     */
+    private final ArchetypeComparator comparator;
 
     /**
      * The logger.
@@ -64,12 +75,16 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
     /**
      * Constructs an {@link ArchetypeInstallerImpl}.
      *
-     * @param service    the archetype service
-     * @param txnManager the transaction manager
+     * @param service       the archetype service
+     * @param pluginService the plugin archetype service
+     * @param txnManager    the transaction manager
      */
-    public ArchetypeInstallerImpl(IArchetypeService service, PlatformTransactionManager txnManager) {
+    public ArchetypeInstallerImpl(IArchetypeService service, PluginArchetypeService pluginService,
+                                  PlatformTransactionManager txnManager) {
         this.service = service;
+        this.pluginService = pluginService;
         this.txnManager = txnManager;
+        comparator = new ArchetypeComparator();
     }
 
     /**
@@ -123,19 +138,35 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
      */
     private void install(List<ArchetypeDescriptor> descriptors) {
         for (ArchetypeDescriptor descriptor : descriptors) {
-            ArchetypeDescriptor existing = getPersistent(descriptor);
-            if (existing != null) {
-                // compare the archetype with the persistent instance. If the database has been updated outside OpenVPMS
-                // the persistent instance may be different to that cached.
-                ArchetypeComparator comparator = new ArchetypeComparator();
-                if (comparator.compare(existing, descriptor) != null) {
-                    service.remove(existing);
-                    service.save(descriptor);
+            // Compare the archetype with the both the cached and persistent instance.
+            // If the database has been updated outside OpenVPMS the persistent instance may be different to that
+            // cached.
+            String shortName = descriptor.getShortName();
+            ArchetypeDescriptor persistent = getPersistent(descriptor);
+            ArchetypeDescriptor cached = service.getArchetypeDescriptor(shortName);
+            if (persistent != null || cached != null) {
+                // only replace the archetype if it hasn't changed
+                if (persistent != null && comparator.compare(persistent, descriptor) != null) {
+                    replace(cached, descriptor);
+                } else if ((cached != null && comparator.compare(cached, descriptor) != null)) {
+                    replace(cached, descriptor);
                 }
             } else {
-                service.save(descriptor);
+                // archetype doesn't exist
+                pluginService.save(descriptor);
             }
         }
+    }
+
+    /**
+     * Replace an archetype descriptor.
+     *
+     * @param existing   the existing descriptor
+     * @param descriptor the new descriptor
+     */
+    private void replace(ArchetypeDescriptor existing, ArchetypeDescriptor descriptor) {
+        pluginService.remove(existing);
+        pluginService.save(descriptor);
     }
 
     /**
@@ -187,7 +218,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
      */
     private List<ArchetypeDescriptor> validateAll(ArchetypeDescriptors descriptors, List<ArchetypeDescriptor> list) {
         for (ArchetypeDescriptor descriptor : descriptors.getArchetypeDescriptorsAsArray()) {
-            service.validateObject(descriptor);
+            pluginService.validate(descriptor);
             list.add(descriptor);
         }
         return list;

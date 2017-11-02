@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance.internal;
 
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -48,16 +49,24 @@ public class InsuranceFactory {
     private final PatientRules patientRules;
 
     /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
      * Constructs a {@link InsuranceFactory}.
      *
      * @param service       the archetype service
      * @param customerRules the customer rules
      * @param patientRules  the patient rules
+     * @param handlers      the document handlers
      */
-    public InsuranceFactory(IArchetypeService service, CustomerRules customerRules, PatientRules patientRules) {
+    public InsuranceFactory(IArchetypeService service, CustomerRules customerRules, PatientRules patientRules,
+                            DocumentHandlers handlers) {
         this.service = service;
         this.customerRules = customerRules;
         this.patientRules = patientRules;
+        this.handlers = handlers;
     }
 
     /**
@@ -77,6 +86,6 @@ public class InsuranceFactory {
      * @return the corresponding claim
      */
     public Claim createClaim(Act claim) {
-        return new ClaimImpl(claim, service, customerRules, patientRules);
+        return new ClaimImpl(claim, service, customerRules, patientRules, handlers);
     }
 }

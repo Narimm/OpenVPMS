@@ -18,12 +18,14 @@ package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Component;
 import org.apache.commons.collections.PredicateUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.identity.SingleIdentityCollectionEditor;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectTabPane;
 import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -68,6 +70,16 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
 
     private IMObjectTabPane pane;
 
+    /**
+     * The message node name.
+     */
+    private static final String MESSAGE = "message";
+
+
+    /**
+     * The nodes to display
+     */
+    private static final ArchetypeNodes NODES = ArchetypeNodes.all().excludeIfEmpty(MESSAGE);
 
     /**
      * Default constructor, used for viewing claims.
@@ -86,6 +98,7 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      */
     public ClaimLayoutStrategy(Party patient, SingleIdentityCollectionEditor insuranceId,
                                ClaimItemCollectionEditor items, AttachmentCollectionEditor attachments) {
+        super(NODES);
         this.insuranceId = insuranceId;
         this.items = items;
         this.attachments = attachments;
@@ -133,6 +146,11 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
             if (id.isEmpty()) {
                 addComponent(createDummyInsuranceId(object, id, factory));
             }
+        }
+
+        Property message = properties.get(MESSAGE);
+        if (!StringUtils.isEmpty(message.getString())) {
+            addComponent(createTextArea(message, object, context));
         }
 
         // render the policy

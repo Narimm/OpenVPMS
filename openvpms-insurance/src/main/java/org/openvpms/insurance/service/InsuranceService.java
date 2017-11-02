@@ -66,8 +66,15 @@ public interface InsuranceService {
     /**
      * Submit a claim.
      * <p>
-     * The claim status must be {@link Claim.Status#POSTED}. On successful submission, it will be updated to
-     * {@link Claim.Status#SUBMITTED}.
+     * The claim status must be {@link Claim.Status#POSTED}. On successful submission, it will be updated to:
+     * <ul>
+     * <li>{@link Claim.Status#ACCEPTED}, for services that support synchronous submission</li>
+     * <li>{@link Claim.Status#SUBMITTED}, for services that support asynchronous submission. It is the
+     * responsibility of the service to update the status to {@link Claim.Status#ACCEPTED}</li>
+     * </ul>
+     * If the service rejects the claim, it may set the status to {@link Claim.Status#PENDING} to allow the user
+     * to add any missing details, and throw an {@link InsuranceException} containing the reason for the rejection.
+     * <ul>
      *
      * @param claim the claim to submit
      * @throws InsuranceException for any error
