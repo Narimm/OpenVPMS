@@ -17,6 +17,7 @@
 package org.openvpms.insurance.claim;
 
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 
@@ -36,7 +37,11 @@ public interface Claim {
         ACCEPTED,
         SETTLED,
         DECLINED,
-        CANCELLED
+        CANCELLED;
+
+        public boolean isA(String status) {
+            return name().equals(status);
+        }
     }
 
     /**
@@ -61,6 +66,7 @@ public interface Claim {
      *
      * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceClaim</em> prefix.
      * @param id        the claim identifier
+     * @throws InsuranceException if the identifier cannot be set
      */
     void setInsurerId(String archetype, String id);
 
@@ -79,7 +85,7 @@ public interface Claim {
     Policy getPolicy();
 
     /**
-     * Returns the claim status
+     * Returns the claim status.
      *
      * @return the claim status
      */
@@ -149,4 +155,15 @@ public interface Claim {
      * @return the message. May be {@code null}
      */
     String getMessage();
+
+    /**
+     * Finalises the claim prior to submission.
+     * <p>
+     * The claim can only be finalised if it has {@link Status#PENDING PENDING} status, and all attachments have
+     * content, and no attachments have {@link Attachment.Status#ERROR ERROR} status.
+     *
+     * @throws InsuranceException if the claim cannot be finalised
+     */
+    void finalise();
+
 }

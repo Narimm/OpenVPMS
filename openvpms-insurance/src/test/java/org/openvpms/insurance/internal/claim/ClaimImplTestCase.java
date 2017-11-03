@@ -41,6 +41,7 @@ import org.openvpms.insurance.claim.Item;
 import org.openvpms.insurance.claim.Note;
 import org.openvpms.insurance.policy.Policy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -86,6 +87,12 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
      */
     @Autowired
     private PatientRules patientRules;
+
+    /**
+     * The transaction manager.
+     */
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     /**
      * The document handlers.
@@ -197,13 +204,14 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         claimAct.addIdentity(createActIdentity("actIdentity.insuranceClaim", "CLM987654"));
         save(policyAct, claimAct, item1Act);
 
-        Claim claim = new ClaimImpl(claimAct, getArchetypeService(), customerRules, patientRules, handlers);
+        Claim claim = new ClaimImpl(claimAct, getArchetypeService(), customerRules, patientRules, handlers,
+                                    getLookupService(), transactionManager);
         assertEquals(claimAct.getId(), claim.getId());
         assertEquals("CLM987654", claim.getInsurerId());
         assertEquals(Claim.Status.PENDING, claim.getStatus());
         Policy policy = claim.getPolicy();
         assertNotNull(policy);
-        assertEquals("POL123456", policy.getPolicyId());
+        assertEquals("POL123456", policy.getInsurerId());
 
         assertEquals(1, claim.getConditions().size());
         Condition condition1 = claim.getConditions().get(0);

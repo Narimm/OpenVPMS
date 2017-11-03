@@ -25,12 +25,14 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -39,9 +41,15 @@ import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.ClaimHandler;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Note;
+import org.openvpms.insurance.exception.InsuranceException;
+import org.openvpms.insurance.i18n.InsuranceMessages;
 import org.openvpms.insurance.internal.policy.PolicyImpl;
 import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -85,6 +93,11 @@ public class ClaimImpl implements Claim {
     private final DocumentHandlers handlers;
 
     /**
+     * The transaction manager.
+     */
+    private final PlatformTransactionManager transactionManager;
+
+    /**
      * The policy.
      */
     private PolicyImpl policy;
@@ -112,19 +125,22 @@ public class ClaimImpl implements Claim {
     /**
      * Constructs a {@link ClaimImpl}.
      *
-     * @param claim         the claim
-     * @param service       the archetype service
-     * @param customerRules the customer rules
-     * @param patientRules  the patient rules
-     * @param handlers      the document handlers
+     * @param claim              the claim
+     * @param service            the archetype service
+     * @param customerRules      the customer rules
+     * @param patientRules       the patient rules
+     * @param handlers           the document handlers
+     * @param lookups            the lookups
+     * @param transactionManager the transaction manager
      */
     public ClaimImpl(Act claim, IArchetypeService service, CustomerRules customerRules, PatientRules patientRules,
-                     DocumentHandlers handlers) {
-        this.claim = new ActBean(claim, service);
+                     DocumentHandlers handlers, ILookupService lookups, PlatformTransactionManager transactionManager) {
+        this.claim = new ActBean(claim, service, lookups);
         this.customerRules = customerRules;
         this.patientRules = patientRules;
         this.service = service;
         this.handlers = handlers;
+        this.transactionManager = transactionManager;
     }
 
     /**
@@ -156,6 +172,7 @@ public class ClaimImpl implements Claim {
      *
      * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceClaim</em> prefix.
      * @param id        the claim identifier
+     * @throws InsuranceException if the identifier cannot be set
      */
     @Override
     public void setInsurerId(String archetype, String id) {
@@ -164,8 +181,8 @@ public class ClaimImpl implements Claim {
             identity = (ActIdentity) service.create(archetype);
             claim.addValue("insuranceId", identity);
         } else if (!TypeHelper.isA(identity, archetype)) {
-            throw new IllegalArgumentException(
-                    "Argument 'archetype' must be of the same type as the existing identifier");
+            throw new InsuranceException(InsuranceMessages.differentClaimIdentifierArchetype(
+                    identity.getArchetypeId().getShortName(), archetype));
         }
         identity.setIdentity(id);
         claim.save();
@@ -195,7 +212,7 @@ public class ClaimImpl implements Claim {
     }
 
     /**
-     * Returns the claim status
+     * Returns the claim status.
      *
      * @return the claim status
      */
@@ -333,6 +350,52 @@ public class ClaimImpl implements Claim {
     }
 
     /**
+     * Finalises the claim prior to submission.
+     * <p>
+     * The claim can only be finalised if it has {@link Status#PENDING PENDING} status, and all attachments have
+     * content, and no attachments have {@link Attachment.Status#ERROR ERROR} status.
+     *
+     * @throws InsuranceException if the claim cannot be finalised
+     */
+    @Override
+    public void finalise() {
+        Status status = getStatus();
+        if (status != Status.PENDING) {
+            Lookup lookup = claim.getLookup("status");
+            String displayName = (lookup != null) ? lookup.getName() : status.name();
+            throw new InsuranceException(InsuranceMessages.cannotFinaliseClaimWithStatus(displayName));
+        }
+        for (Attachment attachment : getAttachments()) {
+            if (attachment.getStatus() == Attachment.Status.ERROR) {
+                throw new InsuranceException(InsuranceMessages.cannotFinaliseClaimAttachmentError(
+                        attachment.getFileName()));
+            }
+            if (!attachment.hasContent()) {
+                throw new InsuranceException(InsuranceMessages.cannotFinaliseClaimNoAttachment(
+                        attachment.getFileName()));
+            }
+        }
+        try {
+            TransactionTemplate template = new TransactionTemplate(transactionManager);
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    setStatus(Status.POSTED);
+                    for (Attachment attachment : getAttachments()) {
+                        if (attachment.getStatus() == Attachment.Status.PENDING) {
+                            attachment.setStatus(Attachment.Status.POSTED);
+                        }
+                    }
+                }
+            });
+        } catch (InsuranceException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new InsuranceException(InsuranceMessages.failedToFinaliseClaim(exception.getMessage()), exception);
+        }
+    }
+
+    /**
      * Collects the list of claim conditions.
      *
      * @return the claim conditions
@@ -372,6 +435,11 @@ public class ClaimImpl implements Claim {
         return result;
     }
 
+    /**
+     * Collects attachments.
+     *
+     * @return the attachments
+     */
     protected List<Attachment> collectAttachments() {
         List<Attachment> result = new ArrayList<>();
         for (DocumentAct act : claim.getNodeTargetObjects("attachments", DocumentAct.class)) {
@@ -389,6 +457,11 @@ public class ClaimImpl implements Claim {
         return claim.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 
+    /**
+     * Updates the claim message, truncating it if it is too long.
+     *
+     * @param message the message. May be {@code null}
+     */
     private void updateMessage(String message) {
         if (!StringUtils.isEmpty(message)) {
             message = StringUtils.abbreviate(message, claim.getMaxLength("message"));

@@ -17,7 +17,6 @@
 package org.openvpms.web.workspace.patient.insurance;
 
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.patient.insurance.ClaimStatus;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -25,6 +24,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.claim.Claim.Status;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.service.Declaration;
 import org.openvpms.insurance.service.InsuranceService;
@@ -120,7 +120,10 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         if (TypeHelper.isA(act, InsuranceArchetypes.CLAIM)) {
             ClaimEditor editor = new ClaimEditor((FinancialAct) act, null, createLayoutContext(getHelpContext()));
             if (editor.generateAttachments()) {
-                result = super.post(act);
+                InsuranceFactory factory = ServiceHelper.getBean(InsuranceFactory.class);
+                Claim claim = factory.createClaim(editor.getObject());
+                claim.finalise();
+                onPosted(act);
             } else {
                 edit(editor);
 
@@ -287,7 +290,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                 if (TypeHelper.isA(act, InsuranceArchetypes.POLICY)) {
                     result = new ActBean(act).getValues("claims").isEmpty();
                 } else if (TypeHelper.isA(act, InsuranceArchetypes.CLAIM)) {
-                    result = ClaimStatus.PENDING.equals(act.getStatus());
+                    result = Status.PENDING.isA(act.getStatus());
                 }
             }
             return result;
@@ -303,7 +306,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
          */
         @Override
         public boolean canPost(Act act) {
-            return TypeHelper.isA(act, InsuranceArchetypes.CLAIM) && ClaimStatus.PENDING.equals(act.getStatus());
+            return TypeHelper.isA(act, InsuranceArchetypes.CLAIM) && Status.PENDING.isA(act.getStatus());
         }
 
         /**
@@ -313,7 +316,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
          * @return {@code true} if the act is a claim that can be submitted
          */
         public boolean canSubmit(Act act) {
-            return TypeHelper.isA(act, InsuranceArchetypes.CLAIM) && ClaimStatus.POSTED.equals(act.getStatus());
+            return TypeHelper.isA(act, InsuranceArchetypes.CLAIM) && Status.POSTED.isA(act.getStatus());
         }
 
         /**
@@ -327,8 +330,8 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                 ActBean bean = new ActBean(act);
                 for (Act claim : bean.getNodeActs("claims")) {
                     String status = claim.getStatus();
-                    if (!ClaimStatus.CANCELLED.equals(status) && !ClaimStatus.DECLINED.equals(claim.getStatus())
-                        && !ClaimStatus.SETTLED.equals(status)) {
+                    if (!Status.CANCELLED.isA(status) && !Status.DECLINED.isA(claim.getStatus())
+                        && !Status.SETTLED.isA(status)) {
                         return true;
                     }
                 }

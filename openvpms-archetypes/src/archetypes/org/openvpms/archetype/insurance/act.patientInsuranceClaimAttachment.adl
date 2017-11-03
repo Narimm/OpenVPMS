@@ -31,6 +31,7 @@
                 <propertyList name="entries">
                     <property name="PENDING" value="Pending"/>
                     <property name="ERROR" value="Error"/>
+                    <property name="POSTED" value="Finalised"/>
                     <property name="SUBMITTED" value="Submitted"/>
                 </propertyList>
             </assertion>

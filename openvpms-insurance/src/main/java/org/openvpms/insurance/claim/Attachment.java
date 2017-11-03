@@ -16,6 +16,8 @@
 
 package org.openvpms.insurance.claim;
 
+import org.openvpms.insurance.exception.InsuranceException;
+
 import java.io.InputStream;
 
 /**
@@ -24,6 +26,18 @@ import java.io.InputStream;
  * @author Tim Anderson
  */
 public interface Attachment {
+
+    enum Status {
+        PENDING,
+        ERROR,
+        POSTED,
+        SUBMITTED,
+        ACCEPTED;
+
+        public boolean isA(String status) {
+            return name().equals(status);
+        }
+    }
 
     /**
      * Returns the attachment identifier, issued by the insurer.
@@ -65,9 +79,32 @@ public interface Attachment {
     long getSize();
 
     /**
+     * Determines if the attachment has content.
+     *
+     * @return {@code true} if the attachment has content
+     */
+    boolean hasContent();
+
+    /**
      * Returns the attachment contents.
      *
      * @return the attachment contents
+     * @throws InsuranceException if the content cannot be retrieved
      */
     InputStream getContent();
+
+    /**
+     * Returns the attachment status.
+     *
+     * @return the attachment status
+     */
+    Status getStatus();
+
+    /**
+     * Sets the attachment status.
+     *
+     * @param status the attachment status
+     */
+    void setStatus(Status status);
+
 }

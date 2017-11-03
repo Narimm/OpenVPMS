@@ -16,13 +16,13 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
-import org.openvpms.archetype.rules.patient.insurance.AttachmentStatus;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.service.InsuranceService;
@@ -154,10 +154,17 @@ public class ClaimEditor extends AbstractClaimEditor {
         return generate;
     }
 
+    /**
+     * Verifies attachments aren't in error.
+     * <p>
+     * On error, displays an error dialog of the attachment that is in error.
+     *
+     * @return if {@code true} if all attachments are valid
+     */
     public boolean checkAttachments() {
         boolean result = true;
         for (Act attachment : attachments.getCurrentActs()) {
-            if (AttachmentStatus.ERROR.equals(attachment.getStatus())) {
+            if (Attachment.Status.ERROR.isA(attachment.getStatus())) {
                 ErrorDialog.show(Messages.get("patient.insurance.attachments.title"),
                                  Messages.format("patient.insurance.attachments.message", attachment.getName(),
                                                  new ActBean(attachment).getString("error")));

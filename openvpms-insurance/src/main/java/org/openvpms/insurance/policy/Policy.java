@@ -17,6 +17,7 @@
 package org.openvpms.insurance.policy;
 
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.insurance.exception.InsuranceException;
 
 import java.util.Date;
 
@@ -31,13 +32,15 @@ public interface Policy {
      * Returns the policy identifier, issued by the insurer.
      *
      * @return the policy identifier
+     * @throws InsuranceException for any error
      */
-    String getPolicyId();
+    String getInsurerId();
 
     /**
      * Returns the date when the policy expires.
      *
      * @return the policy expiry date
+     * @throws InsuranceException for any error
      */
     Date getExpiryDate();
 
@@ -45,6 +48,7 @@ public interface Policy {
      * Returns the policy holder.
      *
      * @return the policy holder
+     * @throws InsuranceException for any error
      */
     PolicyHolder getPolicyHolder();
 
@@ -52,6 +56,7 @@ public interface Policy {
      * Returns the animal that the policy applies to.
      *
      * @return the animal
+     * @throws InsuranceException for any error
      */
     Animal getAnimal();
 
@@ -59,6 +64,7 @@ public interface Policy {
      * Returns the insurer that issued the policy.
      *
      * @return insurer that issued the policy
+     * @throws InsuranceException for any error
      */
     Party getInsurer();
 

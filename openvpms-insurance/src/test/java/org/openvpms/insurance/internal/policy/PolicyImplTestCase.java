@@ -82,7 +82,7 @@ public class PolicyImplTestCase extends ArchetypeServiceTest {
                                                    createActIdentity("actIdentity.insurancePolicy", "123456"));
 
         Policy policy = new PolicyImpl(act, getArchetypeService(), customerRules, patientRules);
-        assertEquals("123456", policy.getPolicyId());
+        assertEquals("123456", policy.getInsurerId());
         assertEquals(act.getActivityEndTime(), policy.getExpiryDate());
 
         PolicyHolder policyHolder = policy.getPolicyHolder();

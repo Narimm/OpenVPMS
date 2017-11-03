@@ -24,6 +24,8 @@ import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.insurance.exception.InsuranceException;
+import org.openvpms.insurance.i18n.InsuranceMessages;
 import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 import org.openvpms.insurance.policy.PolicyHolder;
@@ -92,12 +94,13 @@ public class PolicyImpl implements Policy {
      * Returns the policy identifier, issued by the insurer.
      *
      * @return the policy identifier
+     * @throws InsuranceException for any error
      */
     @Override
-    public String getPolicyId() {
+    public String getInsurerId() {
         ActIdentity identity = getIdentity();
         if (identity == null) {
-            throw new IllegalStateException("Policy has no policyId: " + policy.getAct().getId());
+            throw new InsuranceException(InsuranceMessages.policyHasNoId());
         }
         return identity.getIdentity();
     }
@@ -106,23 +109,29 @@ public class PolicyImpl implements Policy {
      * Returns the date when the policy expires.
      *
      * @return the policy expiry date
+     * @throws InsuranceException for any error
      */
     @Override
     public Date getExpiryDate() {
-        return policy.getAct().getActivityEndTime();
+        Date date = policy.getAct().getActivityEndTime();
+        if (date == null) {
+            throw new InsuranceException(InsuranceMessages.policyHasNoExpiryDate());
+        }
+        return date;
     }
 
     /**
      * Returns the policy holder.
      *
      * @return the policy holder
+     * @throws InsuranceException for any error
      */
     @Override
     public PolicyHolder getPolicyHolder() {
         if (policyHolder == null) {
             Party customer = (Party) policy.getNodeParticipant("customer");
             if (customer == null) {
-                throw new IllegalStateException("Policy has no customer: " + policy.getAct().getId());
+                throw new InsuranceException(InsuranceMessages.policyHasNoCustomer());
             }
             policyHolder = new PolicyHolderImpl(customer, customerRules);
         }
@@ -133,6 +142,7 @@ public class PolicyImpl implements Policy {
      * Returns the animal that the policy applies to.
      *
      * @return the animal
+     * @throws InsuranceException for any error
      */
     @Override
     public Animal getAnimal() {
@@ -147,13 +157,14 @@ public class PolicyImpl implements Policy {
      * Returns the insurer that issued the policy.
      *
      * @return insurer that issued the policy
+     * @throws InsuranceException for any error
      */
     @Override
     public Party getInsurer() {
         if (insurer == null) {
             insurer = (Party) policy.getNodeParticipant("insurer");
             if (insurer == null) {
-                throw new IllegalStateException("Policy has no insurer: " + policy.getAct().getId());
+                throw new InsuranceException(InsuranceMessages.policyHasNoInsurer());
             }
         }
         return insurer;
@@ -163,11 +174,12 @@ public class PolicyImpl implements Policy {
      * Returns the patient.
      *
      * @return the patient
+     * @throws InsuranceException for any error
      */
     public Party getPatient() {
         Party patient = (Party) policy.getNodeParticipant("patient");
         if (patient == null) {
-            throw new IllegalStateException("Policy has no patient:" + policy.getAct().getId());
+            throw new InsuranceException(InsuranceMessages.policyHasNoPatient());
         }
         return patient;
     }

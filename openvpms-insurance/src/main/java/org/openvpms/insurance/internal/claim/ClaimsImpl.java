@@ -72,7 +72,7 @@ public class ClaimsImpl implements Claims {
     @Override
     public Claim getClaim(String archetype, String id) {
         if (archetype == null || archetype.contains("*") ||
-            !TypeHelper.matches(archetype, InsuranceArchetypes.CLAIM_IDENTITY)) {
+            !TypeHelper.matches(archetype, InsuranceArchetypes.CLAIM_IDENTITIES)) {
             throw new IllegalArgumentException("Argument 'archetype' is not a valid claim identity archetype: "
                                                + archetype);
         }

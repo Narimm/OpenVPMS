@@ -44,5 +44,4 @@ public class InsuranceException extends OpenVPMSException {
     public InsuranceException(Message message, Throwable cause) {
         super(message.toString(), cause);
     }
-
 }

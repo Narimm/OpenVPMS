@@ -21,10 +21,12 @@ import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.claim.ClaimImpl;
 import org.openvpms.insurance.internal.policy.PolicyImpl;
 import org.openvpms.insurance.policy.Policy;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Factory for insurance {@link Policy} and {@link Claim} instances.
@@ -54,19 +56,34 @@ public class InsuranceFactory {
     private final DocumentHandlers handlers;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
+     * The transaction manager.
+     */
+    private final PlatformTransactionManager transactionManager;
+
+    /**
      * Constructs a {@link InsuranceFactory}.
      *
-     * @param service       the archetype service
-     * @param customerRules the customer rules
-     * @param patientRules  the patient rules
-     * @param handlers      the document handlers
+     * @param service            the archetype service
+     * @param customerRules      the customer rules
+     * @param patientRules       the patient rules
+     * @param handlers           the document handlers
+     * @param lookups            the lookup  service
+     * @param transactionManager the transaction manager
      */
     public InsuranceFactory(IArchetypeService service, CustomerRules customerRules, PatientRules patientRules,
-                            DocumentHandlers handlers) {
+                            DocumentHandlers handlers, ILookupService lookups,
+                            PlatformTransactionManager transactionManager) {
         this.service = service;
         this.customerRules = customerRules;
         this.patientRules = patientRules;
         this.handlers = handlers;
+        this.lookups = lookups;
+        this.transactionManager = transactionManager;
     }
 
     /**
@@ -86,6 +103,6 @@ public class InsuranceFactory {
      * @return the corresponding claim
      */
     public Claim createClaim(Act claim) {
-        return new ClaimImpl(claim, service, customerRules, patientRules, handlers);
+        return new ClaimImpl(claim, service, customerRules, patientRules, handlers, lookups, transactionManager);
     }
 }

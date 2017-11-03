@@ -30,8 +30,9 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.insurance.claim.Attachment;
+import org.openvpms.insurance.exception.InsuranceException;
+import org.openvpms.insurance.i18n.InsuranceMessages;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 /**
@@ -146,6 +147,17 @@ public class AttachmentImpl implements Attachment {
     }
 
     /**
+     * Determines if the attachment has content.
+     *
+     * @return {@code true} if the attachment has content
+     */
+    @Override
+    public boolean hasContent() {
+        IMObjectReference reference = ((DocumentAct) act.getAct()).getDocument();
+        return reference != null;
+    }
+
+    /**
      * Returns the attachment contents.
      *
      * @return the attachment contents
@@ -153,7 +165,8 @@ public class AttachmentImpl implements Attachment {
     @Override
     public InputStream getContent() {
         InputStream result = null;
-        IMObjectReference reference = ((DocumentAct) act.getAct()).getDocument();
+        DocumentAct documentAct = (DocumentAct) act.getAct();
+        IMObjectReference reference = documentAct.getDocument();
         if (reference != null) {
             Document document = (Document) service.get(reference);
             if (document != null) {
@@ -161,9 +174,30 @@ public class AttachmentImpl implements Attachment {
             }
         }
         if (result == null) {
-            result = new ByteArrayInputStream(new byte[0]);
+            throw new InsuranceException(InsuranceMessages.attachmentHasNoContent(documentAct.getFileName()));
         }
         return result;
+    }
+
+    /**
+     * Returns the attachment status.
+     *
+     * @return the attachment status
+     */
+    @Override
+    public Status getStatus() {
+        return Status.valueOf(act.getStatus());
+    }
+
+    /**
+     * Sets the attachment status.
+     *
+     * @param status the attachment status
+     */
+    @Override
+    public void setStatus(Status status) {
+        act.setStatus(status.name());
+        act.save();
     }
 
     /**

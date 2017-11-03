@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.insurance.AttachmentStatus;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -35,6 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -146,7 +146,7 @@ class AttachmentGenerator {
             } else if (original instanceof DocumentAct) {
                 result = generateDocument(bean, original);
             } else {
-                setStatus(bean, AttachmentStatus.ERROR, Messages.get("patient.insurance.nodocument"));
+                setStatus(bean, Attachment.Status.ERROR, Messages.get("patient.insurance.nodocument"));
             }
         } else {
             result = true;
@@ -167,7 +167,7 @@ class AttachmentGenerator {
         IArchetypeRuleService archetypeService = ServiceHelper.getArchetypeService();
         Document document = (reference != null) ? (Document) archetypeService.get(reference) : null;
         if (document == null) {
-            setStatus(bean, AttachmentStatus.ERROR, Messages.get("patient.insurance.noinvestigation"));
+            setStatus(bean, Attachment.Status.ERROR, Messages.get("patient.insurance.noinvestigation"));
         } else {
             result = copy(bean, document);
         }
@@ -194,13 +194,13 @@ class AttachmentGenerator {
                 IArchetypeRuleService archetypeService = ServiceHelper.getArchetypeService();
                 Document document = (Document) archetypeService.get(docRef);
                 if (document == null) {
-                    setStatus(bean, AttachmentStatus.ERROR, Messages.get("patient.insurance.nodocument"));
+                    setStatus(bean, Attachment.Status.ERROR, Messages.get("patient.insurance.nodocument"));
                 } else {
                     copy(bean, document);
                 }
             }
         } catch (Throwable exception) {
-            setStatus(bean, AttachmentStatus.ERROR, exception.getMessage());
+            setStatus(bean, Attachment.Status.ERROR, exception.getMessage());
         }
         return result;
     }
@@ -294,7 +294,7 @@ class AttachmentGenerator {
     private boolean save(ActBean bean, Document document) {
         boolean result = false;
         try {
-            bean.setStatus(AttachmentStatus.PENDING);
+            bean.setStatus(Attachment.Status.PENDING.name());
             bean.setValue("error", null);
             bean.setValue("document", document.getObjectReference());
             bean.setValue("fileName", document.getName());
@@ -303,7 +303,7 @@ class AttachmentGenerator {
             ServiceHelper.getArchetypeService().save(objects);
             result = true;
         } catch (Throwable exception) {
-            setStatus(bean, AttachmentStatus.ERROR, exception.getMessage());
+            setStatus(bean, Attachment.Status.ERROR, exception.getMessage());
         }
         return result;
     }
@@ -315,8 +315,8 @@ class AttachmentGenerator {
      * @param status  the status
      * @param message the message. May be {@code null}
      */
-    private void setStatus(ActBean bean, String status, String message) {
-        bean.setStatus(status);
+    private void setStatus(ActBean bean, Attachment.Status status, String message) {
+        bean.setStatus(status.name());
         if (message != null) {
             message = StringUtils.abbreviate(message, NodeDescriptor.DEFAULT_MAX_LENGTH);
         }

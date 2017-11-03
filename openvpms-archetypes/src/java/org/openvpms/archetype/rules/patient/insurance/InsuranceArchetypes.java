@@ -39,6 +39,11 @@ public class InsuranceArchetypes {
     public static final String CLAIM_IDENTITY = "actIdentity.insuranceClaim";
 
     /**
+     * Insurance claim identity archetypes.
+     */
+    public static final String CLAIM_IDENTITIES = "actIdentity.insuranceClaim*";
+
+    /**
      * The insurance claim item archetype.
      */
     public static final String CLAIM_ITEM = "act.patientInsuranceClaimItem";
