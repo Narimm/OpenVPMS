@@ -105,6 +105,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                 onSubmit();
             }
         }));
+        buttons.add(createPrintButton());
     }
 
 
@@ -149,6 +150,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         buttons.setEnabled(CLAIM_ID, enable && TypeHelper.isA(object, InsuranceArchetypes.POLICY));
         buttons.setEnabled(POST_ID, enable && getActions().canPost(object));
         buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
+        enablePrintPreview(buttons, enable && TypeHelper.isA(object, InsuranceArchetypes.CLAIM));
     }
 
     /**

@@ -47,7 +47,7 @@ public interface Claim {
     /**
      * Returns the OpenVPMS identifier for this claim.
      *
-     * @return the claim identifier
+     * @return the identifier
      */
     long getId();
 

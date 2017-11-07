@@ -54,9 +54,9 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     private final Party patient;
 
     /**
-     * The insuranceId editor.
+     * The insurerId editor.
      */
-    private final SingleIdentityCollectionEditor insuranceId;
+    private final SingleIdentityCollectionEditor insurerId;
 
     /**
      * The items editor.
@@ -92,14 +92,14 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      * Constructor, used for editing claims.
      *
      * @param patient     the patient
-     * @param insuranceId the insuranceId editor. May be {@code null}
+     * @param insurerId   the insurerId editor. May be {@code null}
      * @param items       the claim items
      * @param attachments the attachments editor
      */
-    public ClaimLayoutStrategy(Party patient, SingleIdentityCollectionEditor insuranceId,
+    public ClaimLayoutStrategy(Party patient, SingleIdentityCollectionEditor insurerId,
                                ClaimItemCollectionEditor items, AttachmentCollectionEditor attachments) {
         super(NODES);
-        this.insuranceId = insuranceId;
+        this.insurerId = insurerId;
         this.items = items;
         this.attachments = attachments;
         this.patient = patient;
@@ -129,13 +129,13 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
 
-        CollectionProperty id = (CollectionProperty) properties.get("insuranceId");
+        CollectionProperty id = (CollectionProperty) properties.get("insurerId");
         if (context.isEdit()) {
-            if (insuranceId != null) {
-                addComponent(new ComponentState(insuranceId));
+            if (insurerId != null) {
+                addComponent(new ComponentState(insurerId));
             } else {
                 if (id.isEmpty()) {
-                    addComponent(createDummyInsuranceId(object, id, factory));
+                    addComponent(createDummyInsurerId(object, id, factory));
                 } else {
                     addComponent(factory.create(createReadOnly(id), object));
                 }
@@ -144,7 +144,7 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
             addComponent(new ComponentState(attachments));
         } else {
             if (id.isEmpty()) {
-                addComponent(createDummyInsuranceId(object, id, factory));
+                addComponent(createDummyInsurerId(object, id, factory));
             }
         }
 
@@ -188,22 +188,22 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     }
 
     /**
-     * Creates a place-holder for the insuranceId node when the collection is empty.
+     * Creates a place-holder for the insurerId node when the collection is empty.
      * <p>
      * This is a workaround for the default single collection rendering that displays a short field containing 'None'.
      *
-     * @param object      the parent object
-     * @param insuranceId the insuranceId node
-     * @param factory     the component factory
+     * @param object    the parent object
+     * @param insurerId the insurerId node
+     * @param factory   the component factory
      * @return the place-holder
      */
-    private ComponentState createDummyInsuranceId(IMObject object, CollectionProperty insuranceId,
-                                                  IMObjectComponentFactory factory) {
+    private ComponentState createDummyInsurerId(IMObject object, CollectionProperty insurerId,
+                                                IMObjectComponentFactory factory) {
         SimpleProperty dummy = new SimpleProperty("dummy", String.class);
-        dummy.setMaxLength(insuranceId.getMaxLength());
+        dummy.setMaxLength(insurerId.getMaxLength());
         dummy.setReadOnly(true);
         ComponentState state = factory.create(dummy, object);
-        return new ComponentState(state.getComponent(), insuranceId);
+        return new ComponentState(state.getComponent(), insurerId);
     }
 
     /**
@@ -222,9 +222,9 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
             ActBean bean = new ActBean(policy);
             Party insurer = (Party) bean.getNodeParticipant("insurer");
             String insurerName = (insurer != null) ? insurer.getName() : null;
-            ActIdentity identity = bean.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
-            String insuranceId = (identity != null) ? identity.getIdentity() : null;
-            value = Messages.format("patient.insurance.policy", insurerName, insuranceId);
+            ActIdentity identity = bean.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
+            String insurerId = (identity != null) ? identity.getIdentity() : null;
+            value = Messages.format("patient.insurance.policy", insurerName, insurerId);
         } else {
             value = Messages.get("imobject.none");
         }

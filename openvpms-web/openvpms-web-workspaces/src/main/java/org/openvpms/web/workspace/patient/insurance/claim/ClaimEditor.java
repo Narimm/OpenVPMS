@@ -65,9 +65,9 @@ public class ClaimEditor extends AbstractClaimEditor {
     private final AttachmentGenerator generator;
 
     /**
-     * The insuranceId node editor, for non-eClaims.
+     * The insurerId node editor, for non-eClaims.
      */
-    private SingleIdentityCollectionEditor insuranceId;
+    private SingleIdentityCollectionEditor insurerId;
 
     /**
      * Constructs an {@link ClaimEditor}.
@@ -102,14 +102,14 @@ public class ClaimEditor extends AbstractClaimEditor {
 
         Editors editors = getEditors();
         if (!canSubmitClaim(act)) {
-            // users can't submit the claim via an InsuranceService, so allow the insuranceId to be edited
-            CollectionProperty property = getCollectionProperty("insuranceId");
+            // users can't submit the claim via an InsuranceService, so allow the insurerId to be edited
+            CollectionProperty property = getCollectionProperty("insurerId");
             if (property.getValues().isEmpty()) {
                 IMObject identity = IMObjectCreator.create(InsuranceArchetypes.CLAIM_IDENTITY);
                 property.add(identity);
             }
-            insuranceId = new SingleIdentityCollectionEditor(property, act, context);
-            editors.add(insuranceId);
+            insurerId = new SingleIdentityCollectionEditor(property, act, context);
+            editors.add(insurerId);
         }
         attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, context);
         items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, customer, patient,
@@ -182,7 +182,7 @@ public class ClaimEditor extends AbstractClaimEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new ClaimLayoutStrategy(getPatient(), insuranceId, items, attachments);
+        return new ClaimLayoutStrategy(getPatient(), insurerId, items, attachments);
     }
 
     /**

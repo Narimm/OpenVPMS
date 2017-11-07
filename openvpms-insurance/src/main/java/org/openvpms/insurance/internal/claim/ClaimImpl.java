@@ -179,7 +179,7 @@ public class ClaimImpl implements Claim {
         ActIdentity identity = getIdentity();
         if (identity == null) {
             identity = (ActIdentity) service.create(archetype);
-            claim.addValue("insuranceId", identity);
+            claim.addValue("insurerId", identity);
         } else if (!TypeHelper.isA(identity, archetype)) {
             throw new InsuranceException(InsuranceMessages.differentClaimIdentifierArchetype(
                     identity.getArchetypeId().getShortName(), archetype));
@@ -454,7 +454,7 @@ public class ClaimImpl implements Claim {
      * @return the claim identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return claim.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return claim.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 
     /**

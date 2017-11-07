@@ -29,6 +29,13 @@ import java.util.Date;
 public interface Policy {
 
     /**
+     * Returns the OpenVPMS identifier for this policy.
+     *
+     * @return the identifier
+     */
+    long getId();
+
+    /**
      * Returns the policy identifier, issued by the insurer.
      *
      * @return the policy identifier

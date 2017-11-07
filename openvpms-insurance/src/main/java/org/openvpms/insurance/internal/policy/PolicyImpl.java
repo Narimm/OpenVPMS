@@ -91,6 +91,16 @@ public class PolicyImpl implements Policy {
     }
 
     /**
+     * Returns the OpenVPMS identifier for this policy.
+     *
+     * @return the identifier
+     */
+    @Override
+    public long getId() {
+        return policy.getObject().getId();
+    }
+
+    /**
      * Returns the policy identifier, issued by the insurer.
      *
      * @return the policy identifier
@@ -190,7 +200,7 @@ public class PolicyImpl implements Policy {
      * @return the policy identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return policy.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return policy.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 
 }

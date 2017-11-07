@@ -247,7 +247,7 @@ public class PartyRules {
 
     /**
      * Returns an address for a party.
-     * <p/>
+     * <p>
      * If it cannot find the specified purpose, it uses the preferred location contact or
      * any location contact if there is no preferred.
      *
@@ -613,6 +613,49 @@ public class PartyRules {
     }
 
     /**
+     * Formats an address.
+     *
+     * @param contact    the location contact. May be {@code null}
+     * @param singleLine if {@code true}, return the address as a single line
+     * @return the address, or an empty string if contact is not supplied, or cannot be formatted
+     */
+    public String formatAddress(Contact contact, boolean singleLine) {
+        String result = null;
+        if (contact != null) {
+            result = addressFormatter.format(contact, singleLine);
+        }
+        if (result == null) {
+            result = "";
+        }
+        return result;
+    }
+
+    /**
+     * Returns a formatted telephone number from a <em>contact.phoneNumber</em>.
+     *
+     * @param contact  the contact
+     * @param withName if {@code true} includes the name, if it is not the default value for the contact
+     * @return a formatted telephone number
+     */
+    public String formatPhone(Contact contact, boolean withName) {
+        IMObjectBean bean = new IMObjectBean(contact, service);
+        String areaCode = bean.getString("areaCode");
+        String phone = bean.getString("telephoneNumber", "");
+        if (withName) {
+            String name = contact.getName();
+            if (!StringUtils.isEmpty(name) && bean.hasNode("name") && !bean.isDefaultValue("name")) {
+                phone += " (" + name + ")";
+            }
+        }
+
+        if (StringUtils.isEmpty(areaCode)) {
+            return phone;
+        } else {
+            return "(" + areaCode + ") " + phone;
+        }
+    }
+
+    /**
      * Returns the archetype service.
      *
      * @return the archetype service
@@ -692,49 +735,6 @@ public class PartyRules {
     private Contact getContact(Party party, ContactMatcher matcher) {
         List<Contact> contacts = Contacts.sort(party.getContacts());
         return Contacts.find(contacts, matcher);
-    }
-
-    /**
-     * Formats an address.
-     *
-     * @param contact    the location contact. May be {@code null}
-     * @param singleLine if {@code true}, return the address as a single line
-     * @return the address, or an empty string if contacat is not supplied, or cannot be formatted
-     */
-    private String formatAddress(Contact contact, boolean singleLine) {
-        String result = null;
-        if (contact != null) {
-            result = addressFormatter.format(contact, singleLine);
-        }
-        if (result == null) {
-            result = "";
-        }
-        return result;
-    }
-
-    /**
-     * Returns a formatted telephone number from a <em>contact.phoneNumber</em>.
-     *
-     * @param contact  the contact
-     * @param withName if {@code true} includes the name, if it is not the default value for the contact
-     * @return a formatted telephone number
-     */
-    private String formatPhone(Contact contact, boolean withName) {
-        IMObjectBean bean = new IMObjectBean(contact, service);
-        String areaCode = bean.getString("areaCode");
-        String phone = bean.getString("telephoneNumber", "");
-        if (withName) {
-            String name = contact.getName();
-            if (!StringUtils.isEmpty(name) && bean.hasNode("name") && !bean.isDefaultValue("name")) {
-                phone += " (" + name + ")";
-            }
-        }
-
-        if (StringUtils.isEmpty(areaCode)) {
-            return phone;
-        } else {
-            return "(" + areaCode + ") " + phone;
-        }
     }
 
 }

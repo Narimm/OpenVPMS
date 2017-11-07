@@ -43,7 +43,7 @@ public class InsuranceTableModel extends DescriptorTableModel<Act> {
     /**
      * The nodes to display.
      */
-    private static final String[] NAMES = new String[]{"insurer", "insuranceId", "endTime", "status"};
+    private static final String[] NAMES = new String[]{"insurer", "insurerId", "endTime", "status"};
 
 
     /**
@@ -55,9 +55,9 @@ public class InsuranceTableModel extends DescriptorTableModel<Act> {
     public InsuranceTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
         rules = ServiceHelper.getBean(InsuranceRules.class);
-        DescriptorTableColumn insuranceId = getColumn("insuranceId");
-        if (insuranceId != null) {
-            insuranceId.setHeaderValue(Messages.get("patient.insurance.policyClaimId"));
+        DescriptorTableColumn insurerId = getColumn("insurerId");
+        if (insurerId != null) {
+            insurerId.setHeaderValue(Messages.get("patient.insurance.policyClaimId"));
         }
         DescriptorTableColumn endTime = getColumn("endTime");
         if (endTime != null) {

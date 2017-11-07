@@ -21,7 +21,7 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1"
               defaultValue="'Insurance Policy'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
-        <node name="insuranceId" displayName="Policy Number" path="/identities" type="java.util.HashSet"
+        <node name="insurerId" displayName="Policy Number" path="/identities" type="java.util.HashSet"
               baseName="Identity" minCardinality="1" maxCardinality="1" filter="actIdentity.insurancePolicy"/>
         <node displayName="Start Date" name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
@@ -34,7 +34,7 @@
               filter="participation.insurer"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" readOnly="true"/>
-        <node name="claims" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
+        <node name="claims" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
               minCardinality="0" maxCardinality="*" filter="actRelationship.insuranceClaimPolicy" readOnly="true"/>
     </archetype>
 </archetypes>

@@ -158,6 +158,18 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     }
 
     /**
+     * Evaluates an xpath against an object.
+     *
+     * @param object     the object
+     * @param expression the expression
+     * @return the result of the expression
+     */
+    @Override
+    public Object evaluate(Object object, String expression) {
+        return getContext(object).getValue(expression);
+    }
+
+    /**
      * Returns the formatted value of an expression.
      *
      * @param expression the expression
@@ -333,19 +345,30 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      */
     private JXPathContext getContext() {
         if (context == null) {
-            context = JXPathHelper.newContext(object, functions);
-            if (fields != null || parameters != null) {
-                IMObjectVariables variables = createVariables();
-                if (fields != null) {
-                    for (String name : fields.getNames()) {
-                        Object value = fields.get(name);
-                        if (value != null) {
-                            variables.add(name, value);
-                        }
+            context = getContext(object);
+        }
+        return context;
+    }
+
+    /**
+     * Returns the context to evaluate expressions with.
+     *
+     * @param object the object to evaluate against
+     * @return the context
+     */
+    private JXPathContext getContext(Object object) {
+        JXPathContext context = JXPathHelper.newContext(object, functions);
+        if (fields != null || parameters != null) {
+            IMObjectVariables variables = createVariables();
+            if (fields != null) {
+                for (String name : fields.getNames()) {
+                    Object value = fields.get(name);
+                    if (value != null) {
+                        variables.add(name, value);
                     }
                 }
-                context.setVariables(variables);
             }
+            context.setVariables(variables);
         }
         return context;
     }

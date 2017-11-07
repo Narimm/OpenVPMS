@@ -95,7 +95,7 @@ public class AttachmentImpl implements Attachment {
         ActIdentity identity = getIdentity();
         if (identity == null) {
             identity = (ActIdentity) service.create(archetype);
-            act.addValue("insuranceId", identity);
+            act.addValue("insurerId", identity);
         } else if (!TypeHelper.isA(identity, archetype)) {
             throw new IllegalArgumentException(
                     "Argument 'archetype' must be of the same type as the existing identifier");
@@ -206,6 +206,6 @@ public class AttachmentImpl implements Attachment {
      * @return the claim identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return act.getValue("insuranceId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return act.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
     }
 }

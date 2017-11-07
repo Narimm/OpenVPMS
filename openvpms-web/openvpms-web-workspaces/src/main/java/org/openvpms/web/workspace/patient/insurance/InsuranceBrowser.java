@@ -53,12 +53,12 @@ public class InsuranceBrowser extends IMObjectTableBrowser<Act> {
         IMTableModel<Act> model;
         Query<Act> query = getQuery();
         String[] shortNames = query.getShortNames();
+        context = new DefaultLayoutContext(context);
+        if (!(context.getComponentFactory() instanceof TableComponentFactory)) {
+            IMObjectComponentFactory factory = new TableComponentFactory(context);
+            context.setComponentFactory(factory);
+        }
         if (shortNames.length == 1) {
-            context = new DefaultLayoutContext(context);
-            if (!(context.getComponentFactory() instanceof TableComponentFactory)) {
-                IMObjectComponentFactory factory = new TableComponentFactory(context);
-                context.setComponentFactory(factory);
-            }
             model = IMObjectTableModelFactory.create(shortNames, query, context);
         } else {
             model = new InsuranceTableModel(shortNames, context);

@@ -74,7 +74,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
         this.context = new DefaultLayoutContext(context);
         // don't increase the layout depth
         this.context.setLayoutDepth(context.getLayoutDepth());
-        if (!(this.context.getComponentFactory() instanceof ReadOnlyComponentFactory)) {
+        if (!(this.context.getComponentFactory() instanceof AbstractReadOnlyComponentFactory)) {
             IMObjectComponentFactory factory = new ReadOnlyComponentFactory(this.context);
             this.context.setComponentFactory(factory);
         }

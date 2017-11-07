@@ -79,4 +79,8 @@ public class ContactArchetypes {
      */
     public static final String BILLING_PURPOSE = "BILLING";
 
+    /**
+     * Reminder lookup.contactPurpose code.
+     */
+    public static final String REMINDER_PURPOSE = "REMINDER";
 }

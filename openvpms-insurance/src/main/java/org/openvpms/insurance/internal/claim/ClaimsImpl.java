@@ -77,7 +77,7 @@ public class ClaimsImpl implements Claims {
                                                + archetype);
         }
         ArchetypeQuery query = new ArchetypeQuery(InsuranceArchetypes.CLAIM);
-        query.add(join("insuranceId", shortName(archetype)).add(eq("identity", id)));
+        query.add(join("insurerId", shortName(archetype)).add(eq("identity", id)));
         query.add(sort("id"));
         query.setMaxResults(1);
         IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(service, query);
