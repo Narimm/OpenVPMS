@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -102,9 +101,5 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
             }
         }
 
-        @Override
-        protected String[] getProductArchetypes() {
-            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE, ProductArchetypes.SERVICE};
-        }
     }
 }
