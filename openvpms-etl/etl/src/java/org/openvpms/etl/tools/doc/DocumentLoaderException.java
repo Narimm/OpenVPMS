@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -41,7 +41,8 @@ public class DocumentLoaderException extends OpenVPMSException {
         TargetChildOfSource,
         SourceErrorSame,
         ErrorChildOfSource,
-        DuplicateAct
+        DuplicateAct,
+        CannotLoadToCancelledAct
     }
 
     /**
