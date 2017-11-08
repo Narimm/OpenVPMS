@@ -25,13 +25,13 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Table;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
-import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableCellRenderer;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
@@ -138,11 +138,8 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
     protected TableLayoutDataEx getEventLayoutData(PropertySet event, ScheduleTableModel.Highlight highlight) {
         TableLayoutDataEx result = null;
         if (Schedule.isBlockingEvent(event)) {
-            ScheduleColours colours = getBlockingEventColours();
-            Color colour = null;
-            if (colours != null) {
-                colour = colours.getColour(event.getReference(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-            }
+            IMObjectReference reference = event.getReference(ScheduleEvent.SCHEDULE_TYPE_REFERENCE);
+            Color colour = getColour(reference);
             if (colour != null) {
                 result = new TableLayoutDataEx();
                 result.setBackground(colour);

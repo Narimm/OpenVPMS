@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -98,7 +98,9 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     @Override
     public void update(IMObject object) {
         if (TypeHelper.isA(object, ScheduleArchetypes.SCHEDULE_VIEW)) {
-            setObject((Entity) object);
+            if (!ObjectUtils.equals(getObject(), object)) {
+                setObject((Entity) object);
+            }
         } else if (TypeHelper.isA(object, ScheduleArchetypes.APPOINTMENT)) {
             Act act = (Act) object;
             if (!ObjectUtils.equals(getCRUDWindow().getObject(), act)) {

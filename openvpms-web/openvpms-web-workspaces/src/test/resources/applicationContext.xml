@@ -437,6 +437,9 @@
         <constructor-arg value="org.openvpms.hl7.laboratory.LaboratoryOrderService"/>
     </bean>
 
+    <bean id="scheduleColours" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.web.workspace.workflow.scheduling.ScheduleColours"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        REPORTING                                   -->

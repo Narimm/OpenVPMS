@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -96,20 +96,17 @@ class SingleScheduleTableModel extends AppointmentTableModel {
     /**
      * Constructs a {@link SingleScheduleTableModel}.
      *
-     * @param grid                 the appointment grid
-     * @param context              the context
-     * @param eventColours         the event colours
-     * @param clinicianColours     the clinician colours
-     * @param blockingEventColours the blocking event colours
+     * @param grid    the appointment grid
+     * @param context the context
+     * @param colours the colour cache
      */
-    public SingleScheduleTableModel(AppointmentGrid grid, Context context, ScheduleColours eventColours,
-                                    ScheduleColours clinicianColours, ScheduleColours blockingEventColours) {
-        super(grid, context, eventColours, clinicianColours, blockingEventColours);
+    public SingleScheduleTableModel(AppointmentGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, colours);
     }
 
     /**
      * Determines if a cell is cut.
-     * <p/>
+     * <p>
      * This implementation returns true if the row matches the cut row, and the column is any
      * other than the start time column.
      *
@@ -263,6 +260,18 @@ class SingleScheduleTableModel extends AppointmentTableModel {
     }
 
     /**
+     * Returns the display name of the specified node.
+     *
+     * @param archetype the archetype descriptor
+     * @param name      the node name
+     * @return the display name, or {@code null} if the node doesn't exist
+     */
+    protected String getDisplayName(ArchetypeDescriptor archetype, String name) {
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+        return (descriptor != null) ? descriptor.getDisplayName() : null;
+    }
+
+    /**
      * Returns a component representing the customer.
      *
      * @param event the appointment event
@@ -298,18 +307,6 @@ class SingleScheduleTableModel extends AppointmentTableModel {
             }
         }
         return columnNames;
-    }
-
-    /**
-     * Returns the display name of the specified node.
-     *
-     * @param archetype the archetype descriptor
-     * @param name      the node name
-     * @return the display name, or {@code null} if the node doesn't exist
-     */
-    protected String getDisplayName(ArchetypeDescriptor archetype, String name) {
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-        return (descriptor != null) ? descriptor.getDisplayName() : null;
     }
 
 }
