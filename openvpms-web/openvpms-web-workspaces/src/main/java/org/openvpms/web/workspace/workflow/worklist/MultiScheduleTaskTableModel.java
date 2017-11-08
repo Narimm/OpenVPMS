@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -37,14 +37,12 @@ public class MultiScheduleTaskTableModel extends TaskTableModel {
     /**
      * Constructs a {@link MultiScheduleTaskTableModel}.
      *
-     * @param grid             the task grid
-     * @param context          the context
-     * @param eventColours     the event colours
-     * @param clinicianColours the clinician colours
+     * @param grid    the task grid
+     * @param context the context
+     * @param colours the colour cache
      */
-    public MultiScheduleTaskTableModel(TaskGrid grid, Context context, ScheduleColours eventColours,
-                                       ScheduleColours clinicianColours) {
-        super(grid, context, eventColours, clinicianColours);
+    public MultiScheduleTaskTableModel(TaskGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, colours);
     }
 
     /**

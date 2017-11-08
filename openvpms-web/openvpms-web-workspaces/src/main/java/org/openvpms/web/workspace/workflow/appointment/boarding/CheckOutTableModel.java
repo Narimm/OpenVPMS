@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
@@ -31,15 +31,12 @@ public class CheckOutTableModel extends CheckInOutTableModel {
     /**
      * Constructs a {@link CheckOutTableModel}.
      *
-     * @param grid                 the appointment grid
-     * @param context              the context
-     * @param eventColours         the event colours
-     * @param clinicianColours     the clinician colours
-     * @param blockingEventColours the blocking event colours
+     * @param grid    the appointment grid
+     * @param context the context
+     * @param colours the colour cache
      */
-    public CheckOutTableModel(AbstractMultiDayScheduleGrid grid, Context context, ScheduleColours eventColours,
-                              ScheduleColours clinicianColours, ScheduleColours blockingEventColours) {
-        super(grid, context, eventColours, clinicianColours, blockingEventColours);
+    public CheckOutTableModel(AbstractMultiDayScheduleGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, colours);
     }
 
     /**

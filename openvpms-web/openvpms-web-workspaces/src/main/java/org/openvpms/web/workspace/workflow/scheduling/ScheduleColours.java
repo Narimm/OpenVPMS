@@ -11,42 +11,54 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
 import nextapp.echo2.app.Color;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.AbstractMonitoringIMObjectCache;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.web.echo.colour.ColourHelper;
 
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Cache for schedule colours.
+ * <p/>
+ * This caches colours for users, appointment types, calendar block types, and task types.
  *
  * @author Tim Anderson
  */
-public class ScheduleColours {
+public class ScheduleColours extends AbstractMonitoringIMObjectCache<Entity> {
 
     /**
      * The colours, keyed on reference.
      */
-    private final Map<IMObjectReference, String> colours;
+    private final Map<IMObjectReference, String> colours
+            = Collections.synchronizedMap(new HashMap<IMObjectReference, String>());
 
     /**
-     * Constructs a {@link ScheduleColours}.
-     *
-     * @param shortName the archetype to source colours from. Must have a 'colour' node
+     * The archetypes to cache colours for. Must have a 'colour' node.
      */
-    public ScheduleColours(String shortName) {
-        colours = getColours(shortName);
+    private static final String[] ARCHETYPES = {UserArchetypes.USER, ScheduleArchetypes.APPOINTMENT_TYPE,
+                                                ScheduleArchetypes.CALENDAR_BLOCK_TYPE, ScheduleArchetypes.TASK_TYPE};
+
+    /**
+     * Constructs an {@link AbstractMonitoringIMObjectCache}.
+     *
+     * @param service the archetype service
+     */
+    public ScheduleColours(IArchetypeService service) {
+        super(service, ARCHETYPES, Entity.class);
+        load();
     }
 
     /**
@@ -60,22 +72,24 @@ public class ScheduleColours {
     }
 
     /**
-     * Returns a map of object references and their corresponding 'colour' node
-     * values for the specified short name.
+     * Adds an object to the cache.
      *
-     * @param shortName the archetype short name
-     * @return a map of the matching objects and their 'colour' node  values
+     * @param object the object to add
      */
-    private Map<IMObjectReference, String> getColours(String shortName) {
-        Map<IMObjectReference, String> result = new HashMap<>();
-        ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<IMObject> iter = new IMObjectQueryIterator<>(query);
-        while (iter.hasNext()) {
-            IMObject object = iter.next();
-            IMObjectBean bean = new IMObjectBean(object);
-            result.put(object.getObjectReference(), bean.getString("colour"));
-        }
-        return result;
+    @Override
+    protected void addObject(Entity object) {
+        IMObjectBean bean = new IMObjectBean(object, getService());
+        colours.put(object.getObjectReference(), bean.getString("colour"));
     }
+
+    /**
+     * Removes an object.
+     *
+     * @param object the object to remove
+     */
+    @Override
+    protected void removeObject(Entity object) {
+        colours.remove(object.getObjectReference());
+    }
+
 }

@@ -67,19 +67,9 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     private final ScheduleTableModel model;
 
     /**
-     * Cache of event colours.
+     * The colour cache.
      */
-    private final ScheduleColours eventColours;
-
-    /**
-     * Cache of clinician colours.
-     */
-    private final ScheduleColours clinicianColours;
-
-    /**
-     * Cache of blocking event colours. May be {@code null}.
-     */
-    private final ScheduleColours blockingEventColours;
+    private final ScheduleColours colours;
 
     /**
      * The previous rendered row.
@@ -98,9 +88,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      */
     public ScheduleTableCellRenderer(ScheduleTableModel model) {
         this.model = model;
-        this.eventColours = model.getEventColours();
-        this.clinicianColours = model.getClinicianColours();
-        this.blockingEventColours = model.getBlockingEventColours();
+        this.colours = model.getColours();
     }
 
     /**
@@ -149,10 +137,10 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * This method is called to determine which cells within a row can cause an
      * action to be raised on the server when clicked.
-     * <p/>
+     * <p>
      * By default if a Table has attached actionListeners then any click on any
      * cell within a row will cause the action to fire.
-     * <p/>
+     * <p>
      * This method allows this to be overrriden and only certain cells within a
      * row can cause an action event to be raise.
      *
@@ -269,7 +257,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * Evaluates the view's displayExpression expression against the supplied
      * event. If no displayExpression is present, {@code null} is returned.
-     * <p/>
+     * <p>
      * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
      * a formatted string named <em>waiting</em> will be added to the set prior
      * to evaluation of the expression. This indicates the waiting time, and
@@ -338,7 +326,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
      * Highlights a cell component, used to highlight the selected cell.
-     * <p/>
+     * <p>
      * Ideally this would be done by the table, however none of the tables support cell selection.
      *
      * @param component the cell component
@@ -483,12 +471,13 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     }
 
     /**
-     * Returns the blocking event colours.
+     * Returns a colour for an object identified by its reference.
      *
-     * @return the blocking event colours. May be {@code null}
+     * @param reference the reference
+     * @return the colour, or {@code null} if no colour exists
      */
-    protected ScheduleColours getBlockingEventColours() {
-        return blockingEventColours;
+    protected Color getColour(IMObjectReference reference) {
+        return colours.getColour(reference);
     }
 
     /**
@@ -516,7 +505,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
      * Invoked to determine if the 'New' prompt should be rendered for a cell.
-     * <p/>
+     * <p>
      * Only invoked when a new prompt hasn't already been rendered for the
      * selected row, and the specified cell is empty.
      *
@@ -556,10 +545,10 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         if (event != null) {
             switch (highlight) {
                 case EVENT_TYPE:
-                    result = getColour(event, ScheduleEvent.SCHEDULE_TYPE_REFERENCE, eventColours);
+                    result = getColour(event, ScheduleEvent.SCHEDULE_TYPE_REFERENCE);
                     break;
                 case CLINICIAN:
-                    result = getColour(event, ScheduleEvent.CLINICIAN_REFERENCE, clinicianColours);
+                    result = getColour(event, ScheduleEvent.CLINICIAN_REFERENCE);
             }
         }
         return result;
@@ -568,18 +557,18 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * Helper to get a colour for an object identified by its reference.
      *
-     * @param set     the set to look up the reference in
-     * @param key     the reference key
-     * @param colours the colours
+     * @param set the set to look up the reference in
+     * @param key the reference key
      * @return the colour, or {@code null} if none is found
      */
-    private Color getColour(PropertySet set, String key, ScheduleColours colours) {
-        return colours.getColour(set.getReference(key));
+    private Color getColour(PropertySet set, String key) {
+        IMObjectReference reference = set.getReference(key);
+        return getColour(reference);
     }
 
     /**
      * Sets the font on a component to use strike-through.
-     * <p/>
+     * <p>
      * This sets the font on each nested component, to avoid font inheritance issues on Chrome.
      *
      * @param component the component
@@ -609,15 +598,15 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
      * Sets the foreground colour of a component based on a background colour.
-     * <p/>
+     * <p>
      * If the component is a {@code Row}, the request will be propagated to the child components.
-     * <p/>
+     * <p>
      * If the component is a BalloonHelp, or a child of a row is a BalloonHelp, the foreground colour change will
      * be ignored.
-     * <p/>
+     * <p>
      * NOTE: this is a workaround to ensure that rows containing {@code BalloonHelp} components are rendered correctly
      * when the background is black.
-     * <p/>
+     * <p>
      * TODO - don't render components within the model - move all of this out to the renderer(s)
      *
      * @param component  the component

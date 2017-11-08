@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
@@ -50,15 +50,12 @@ public abstract class CheckInOutTableModel extends MultiDayTableModel {
     /**
      * Constructs a {@link CheckInOutTableModel}.
      *
-     * @param grid                 the appointment grid
-     * @param context              the context
-     * @param eventColours         the event colours
-     * @param clinicianColours     the clinician colours
-     * @param blockingEventColours the blocking event colours
+     * @param grid    the appointment grid
+     * @param context the context
+     * @param colours the colour cache
      */
-    public CheckInOutTableModel(AbstractMultiDayScheduleGrid grid, Context context, ScheduleColours eventColours,
-                                ScheduleColours clinicianColours, ScheduleColours blockingEventColours) {
-        super(grid, context, eventColours, clinicianColours, blockingEventColours);
+    public CheckInOutTableModel(AbstractMultiDayScheduleGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, colours);
     }
 
     /**
@@ -191,10 +188,10 @@ public abstract class CheckInOutTableModel extends MultiDayTableModel {
         /**
          * This method is called to determine which cells within a row can cause an
          * action to be raised on the server when clicked.
-         * <p/>
+         * <p>
          * By default if a Table has attached actionListeners then any click on any
          * cell within a row will cause the action to fire.
-         * <p/>
+         * <p>
          * This method allows this to be overridden and only certain cells within a
          * row can cause an action event to be raise.
          *
