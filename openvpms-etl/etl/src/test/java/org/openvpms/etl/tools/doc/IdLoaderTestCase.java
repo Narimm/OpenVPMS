@@ -11,17 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -380,6 +384,38 @@ public class IdLoaderTestCase extends AbstractBasicLoaderTest {
         load(source, target, null, true, false, listener);
         assertEquals(1, listener.getMissingAct());
         assertEquals(1, listener.getErrors());
+    }
+
+    /**
+     * Verifies that a document isn't loaded if the act is cancelled.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testLoadToCancelledAct() throws Exception {
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
+        File error = folder.newFolder("edocs");
+
+        DocumentAct act1 = PatientTestHelper.createInvestigation(TestHelper.createPatient(),
+                                                                 ProductTestHelper.createInvestigationType());
+        act1.setStatus(ActStatus.CANCELLED);
+        save(act1);
+        File act1File = createFile(act1, source, null, null, ".gif");
+
+        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log);
+        load(source, target, error, false, false, listener);
+
+        assertEquals(0, listener.getLoaded());
+        assertEquals(1, listener.getErrors());
+        assertEquals(1, listener.getProcessed());
+        assertEquals(0, listener.getMissingAct());
+        assertEquals(0, listener.getAlreadyLoaded());
+
+        checkFiles(source);
+        checkFiles(target);
+        checkFiles(error, act1File);
+        checkNoDocument(act1);
     }
 
     /**
