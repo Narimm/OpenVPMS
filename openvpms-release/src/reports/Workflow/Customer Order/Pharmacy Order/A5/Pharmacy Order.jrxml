@@ -55,6 +55,10 @@
 	<variable name="CustomerFullName" class="java.lang.String" resetType="None">
 		<variableExpression><![CDATA[(($F{customer.entity.title} == null) ? "": $F{customer.entity.title}) + " " + (($F{customer.entity.initials} == null) ? "": $F{customer.entity.initials}) + " " + $F{customer.entity.lastName}]]></variableExpression>
 	</variable>
+	<variable name="isFinalised" class="java.lang.Boolean">
+		<variableExpression><![CDATA["POSTED".equals($F{status.code})]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
