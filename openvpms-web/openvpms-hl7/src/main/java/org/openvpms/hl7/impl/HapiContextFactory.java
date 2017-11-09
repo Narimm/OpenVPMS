@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -22,6 +22,7 @@ import ca.uhn.hl7v2.parser.DefaultModelClassFactory;
 import ca.uhn.hl7v2.parser.ParserConfiguration;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import ca.uhn.hl7v2.util.idgenerator.UUIDGenerator;
+import ca.uhn.hl7v2.validation.ValidationContext;
 import ca.uhn.hl7v2.validation.impl.ValidationContextFactory;
 
 /**
@@ -54,7 +55,7 @@ class HapiContextFactory {
     public static HapiContext create(IDGenerator generator) {
         ParserConfiguration configuration = new ParserConfiguration();
         configuration.setIdGenerator(generator);
-        return new DefaultHapiContext(configuration, ValidationContextFactory.defaultValidation(),
-                                      new DefaultModelClassFactory());
+        ValidationContext validationContext = ValidationContextFactory.defaultValidation();
+        return new DefaultHapiContext(configuration, validationContext, new DefaultModelClassFactory());
     }
 }
