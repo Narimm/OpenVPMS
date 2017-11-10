@@ -19,7 +19,9 @@ package org.openvpms.web.workspace.patient.insurance;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -36,6 +38,9 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.print.BatchPrintDialog;
+import org.openvpms.web.component.print.BatchPrinter;
+import org.openvpms.web.component.print.DefaultBatchPrinter;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -48,6 +53,9 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.insurance.claim.ClaimEditDialog;
 import org.openvpms.web.workspace.patient.insurance.claim.ClaimEditor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CRUD window for patient insurance policies.
@@ -65,6 +73,11 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      * Submit button identifier.
      */
     private static final String SUBMIT_ID = "button.submit";
+
+    /**
+     * Cancel claim button identifier.
+     */
+    private static final String CANCEL_CLAIM_ID = "button.cancelclaim";
 
     /**
      * Accept button id.
@@ -103,6 +116,11 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         buttons.add(ButtonFactory.create(SUBMIT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSubmit();
+            }
+        }));
+        buttons.add(ButtonFactory.create(CANCEL_CLAIM_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onCancelClaim();
             }
         }));
         buttons.add(createPrintButton());
@@ -150,6 +168,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         buttons.setEnabled(CLAIM_ID, enable && TypeHelper.isA(object, InsuranceArchetypes.POLICY));
         buttons.setEnabled(POST_ID, enable && getActions().canPost(object));
         buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
+        buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
         enablePrintPreview(buttons, enable && TypeHelper.isA(object, InsuranceArchetypes.CLAIM));
     }
 
@@ -190,9 +209,50 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
+     * Print an object.
+     *
+     * @param object the object to print
+     */
+    @Override
+    protected void print(Act object) {
+        if (TypeHelper.isA(object, InsuranceArchetypes.CLAIM)) {
+            ActBean bean = new ActBean(object);
+            final List<IMObject> objects = new ArrayList<>();
+            objects.add(object);
+            int missingAttachment = 0;
+            for (DocumentAct attachment : bean.getNodeActs("attachments", DocumentAct.class)) {
+                if (attachment.getDocument() != null) {
+                    objects.add(attachment);
+                } else {
+                    missingAttachment++;
+                    break;
+                }
+            }
+            String title = Messages.get("printdialog.title");
+            String message = null;
+            if (missingAttachment != 0) {
+                message = Messages.format("patient.insurance.print.noattachment", missingAttachment);
+            }
+            final BatchPrintDialog dialog = new BatchPrintDialog(title, message, BatchPrintDialog.OK_CANCEL,
+                                                                 objects, getHelpContext());
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    BatchPrinter printer = new DefaultBatchPrinter<>(dialog.getSelected(), getContext(),
+                                                                     getHelpContext());
+                    printer.print();
+                }
+            });
+            dialog.show();
+        } else {
+            super.print(object);
+        }
+    }
+
+    /**
      * Invoked when the 'Claim' button is pressed.
      */
-    private void onClaim() {
+    protected void onClaim() {
         Act object = IMObjectHelper.reload(getObject());
         if (TypeHelper.isA(object, InsuranceArchetypes.POLICY)) {
             if (!getActions().hasExistingClaims(object)) {
@@ -213,14 +273,12 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     /**
      * Invoked when the 'Submit' button is pressed.
      */
-    private void onSubmit() {
+    protected void onSubmit() {
         Act object = IMObjectHelper.reload(getObject());
         if (getActions().canSubmit(object)) {
-            InsuranceFactory factory = ServiceHelper.getBean(InsuranceFactory.class);
-            final Claim claim = factory.createClaim(object);
-            InsuranceServices insuranceServices = ServiceHelper.getBean(InsuranceServices.class);
+            final Claim claim = getClaim(object);
             Party insurer = claim.getPolicy().getInsurer();
-            final InsuranceService service = insuranceServices.getServiceForInsurer(insurer);
+            final InsuranceService service = getInsuranceService(insurer);
             String title = Messages.get("patient.insurance.submit.title");
             if (service != null) {
                 ConfirmationDialog.show(title, Messages.format("patient.insurance.submit.online", service.getName()),
@@ -239,6 +297,48 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                         });
             }
         }
+    }
+
+    /**
+     * Invoked to cancel a claim.
+     */
+    protected void onCancelClaim() {
+        final Act object = IMObjectHelper.reload(getObject());
+        if (getActions().canCancelClaim(object)) {
+            final Claim claim = getClaim(object);
+            Party insurer = claim.getPolicy().getInsurer();
+            final InsuranceService service = getInsuranceService(insurer);
+            String title = Messages.get("patient.insurance.cancel.title");
+            if (service != null) {
+                ConfirmationDialog.show(title, Messages.format("patient.insurance.cancel.online", service.getName()),
+                                        ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                            @Override
+                            public void onYes() {
+                                service.cancel(claim);
+                                onRefresh(object);
+                            }
+                        });
+            } else {
+                ConfirmationDialog.show(title, Messages.format("patient.insurance.submit.offline", insurer.getName()),
+                                        ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                            @Override
+                            public void onYes() {
+                                claim.setStatus(Status.CANCELLED);
+                                onRefresh(object);
+                            }
+                        });
+            }
+        }
+    }
+
+    private InsuranceService getInsuranceService(Party insurer) {
+        InsuranceServices insuranceServices = ServiceHelper.getBean(InsuranceServices.class);
+        return insuranceServices.getServiceForInsurer(insurer);
+    }
+
+    private Claim getClaim(Act claim) {
+        InsuranceFactory factory = ServiceHelper.getBean(InsuranceFactory.class);
+        return factory.createClaim(claim);
     }
 
     /**
@@ -341,5 +441,26 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
             return false;
         }
 
+        /**
+         * Determines if a confirmation should be displayed before printing an unfinalised act.
+         *
+         * @return {@code true}
+         */
+        @Override
+        public boolean warnWhenPrintingUnfinalisedAct() {
+            return true;
+        }
+
+        /**
+         * Determines if a claim can be cancelled.
+         *
+         * @param act the claim act
+         * @return {@code true} if the claim can be cancelled
+         */
+        public boolean canCancelClaim(Act act) {
+            String status = act.getStatus();
+            return TypeHelper.isA(act, InsuranceArchetypes.CLAIM)
+                   && (Status.PENDING.isA(status) || Status.POSTED.isA(status) || Status.SUBMITTED.isA(status));
+        }
     }
 }

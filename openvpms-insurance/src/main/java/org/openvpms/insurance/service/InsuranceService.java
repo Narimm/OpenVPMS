@@ -16,7 +16,6 @@
 
 package org.openvpms.insurance.service;
 
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.exception.InsuranceException;
@@ -80,14 +79,6 @@ public interface InsuranceService {
      * @throws InsuranceException for any error
      */
     void submit(Claim claim);
-
-    /**
-     * Submit an attachment to an existing claim.
-     *
-     * @param claim the claim
-     * @throws InsuranceException for any error
-     */
-    void submitAttachment(Claim claim, Document attachment);
 
     /**
      * Cancels a claim.

@@ -96,6 +96,17 @@ public abstract class ContactFunctions {
     }
 
     /**
+     * Returns a contact for the specified party and purpose.
+     *
+     * @param party   the party. May be {@code null}
+     * @param purpose the contact purpose. May be {@code null}
+     * @return the corresponding contact, or {@code null} if no contact with the purpose exists
+     */
+    public Contact purpose(Party party, String purpose) {
+        return (party != null && purpose != null) ? getContact(party, true, purpose) : null;
+    }
+
+    /**
      * Formats a contact.
      *
      * @param contact the contact. May be {@code null}
