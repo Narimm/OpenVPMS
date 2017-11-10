@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -53,64 +53,64 @@ public class QueryContext {
     private final QueryContext parent;
 
     /**
+     * Determines if distinct results should be returned.
+     */
+    private final boolean distinct;
+
+    /**
      * The select constraints.
      */
-    private List<SelectConstraint> selectConstraints = new ArrayList<SelectConstraint>();
+    private final List<SelectConstraint> selectConstraints = new ArrayList<>();
 
     /**
-     * The select clause.
+     * The select clauses, as they apply to Hibernate.
      */
-    private StringBuilder selectClause = new StringBuilder("select ");
+    private final List<String> selectClauses = new ArrayList<>();
 
     /**
-     * The default select name, if none are specified.
+     * The qualified names in the select clause. These may contain node names.
      */
-    private String defaultSelect;
-
-    /**
-     * The qualified names in the select clause.
-     */
-    private List<String> selectNames = new ArrayList<String>();
+    private final List<String> selectNames = new ArrayList<>();
 
     /**
      * The names of the object reference being selected.
      */
-    private List<String> refSelectNames = new ArrayList<String>();
+    private final List<String> refSelectNames = new ArrayList<>();
 
     /**
      * The where clause part of the hql query
      */
-    private Clause whereClause = new Clause();
+    private final Clause whereClause = new Clause();
 
     /**
      * The from clauses.
      */
-    private List<FromClause> fromClauses = new ArrayList<FromClause>();
+    private final List<FromClause> fromClauses = new ArrayList<>();
 
     /**
      * The from clause stack.
      */
-    private Stack<FromClause> fromStack = new Stack<FromClause>();
+    private final Stack<FromClause> fromStack = new Stack<>();
 
     /**
      * The ordered clause part of the hql query
      */
-    private StringBuilder orderedClause = new StringBuilder(" order by ");
+    private final StringBuilder orderedClause = new StringBuilder(" order by ");
 
     /**
      * The initial order length.
      */
-    private int initOrderedClauseLen = orderedClause.length();
+    private final int initOrderedClauseLen = orderedClause.length();
 
     /**
      * A stack of types while processing the {@link ArchetypeQuery}.
      */
-    private Stack<TypeSet> typeStack = new Stack<TypeSet>();
+    private final Stack<TypeSet> typeStack = new Stack<>();
 
     /**
      * The types, keyed on alias.
      */
-    private Map<String, TypeSet> typesets = new LinkedHashMap<String, TypeSet>();
+    private final Map<String, TypeSet> typesets = new LinkedHashMap<>();
 
     /**
      * Name allocator for types.
@@ -125,17 +125,22 @@ public class QueryContext {
     /**
      * a stack of parameters while processing the {@link ArchetypeQuery}.
      */
-    private Stack<String> varStack = new Stack<String>();
+    private final Stack<String> varStack = new Stack<>();
 
     /**
      * A stack of join types.
      */
-    private Stack<Counter<JoinConstraint.JoinType>> joinStack = new Stack<Counter<JoinConstraint.JoinType>>();
+    private final Stack<Counter<JoinConstraint.JoinType>> joinStack = new Stack<>();
 
     /**
      * Holds a reference to the parameters and the values used to process
      */
     private final Map<String, Object> params;
+
+    /**
+     * The default select name, if none are specified.
+     */
+    private String defaultSelect;
 
     /**
      * The 'not' constraint clause.
@@ -150,9 +155,7 @@ public class QueryContext {
      */
     QueryContext(boolean distinct, QueryContext parent) {
         this.parent = parent;
-        if (distinct) {
-            selectClause.append("distinct ");
-        }
+        this.distinct = distinct;
         if (parent != null) {
             typeNames = parent.typeNames;
             paramNames = parent.paramNames;
@@ -160,7 +163,7 @@ public class QueryContext {
         } else {
             typeNames = new NameAllocator();
             paramNames = new NameAllocator();
-            params = new HashMap<String, Object>();
+            params = new HashMap<>();
         }
     }
 
@@ -170,10 +173,46 @@ public class QueryContext {
      * @return the HQL query string
      */
     public String getQueryString() {
-        StringBuilder result = new StringBuilder(selectClause);
-        if (selectNames.isEmpty()) {
-            result.append(defaultSelect);
+        return getQueryString(false);
+    }
+
+    /**
+     * Returns the HQL query string.
+     *
+     * @param count if {@code true}, return a query that counts the results
+     * @return the HQL query string
+     */
+    public String getQueryString(boolean count) {
+        StringBuilder result = new StringBuilder("select ");
+
+        if (count) {
+            result.append("count (");
         }
+        if (distinct) {
+            result.append("distinct ");
+        }
+
+        if (selectClauses.isEmpty()) {
+            result.append(defaultSelect);
+        } else {
+            if (count && selectClauses.size() > 1) {
+                if (distinct) {
+                    throw new QueryBuilderException(QueryBuilderException.ErrorCode.CannotCountDistinctMultipleSelect);
+                }
+                result.append('*');
+            } else {
+                for (int i = 0; i < selectClauses.size(); ++i) {
+                    if (i != 0) {
+                        result.append(", ");
+                    }
+                    result.append(selectClauses.get(i));
+                }
+            }
+        }
+        if (count) {
+            result.append(')');
+        }
+
         if (!fromClauses.isEmpty()) {
             result.append(" from ");
             boolean first = true;
@@ -250,7 +289,7 @@ public class QueryContext {
      * @return a map of type aliases to their corresponding short names
      */
     public Map<String, Set<String>> getSelectTypes() {
-        Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> result = new HashMap<>();
         for (String name : selectNames) {
             int index = name.indexOf(".");
             String alias;
@@ -286,9 +325,9 @@ public class QueryContext {
 
     /**
      * Push the type set.
-     * <p/>
+     * <p>
      * If the type set is already on the stack, a new join constraint will not be added.
-     * <p/>
+     * <p>
      * The result of the method must be passed to {@link #popTypeSet} to correctly manage the context stack.
      *
      * @param types the type set
@@ -309,7 +348,7 @@ public class QueryContext {
 
             fromClauses.add(fromClause);
             fromStack.push(fromClause);
-            joinStack.push(new Counter<JoinType>(JoinType.InnerJoin));
+            joinStack.push(new Counter<>(JoinType.InnerJoin));
         }
 
         typeStack.push(types);
@@ -336,7 +375,7 @@ public class QueryContext {
         fromClauses.add(fromClause);
         fromStack.push(fromClause);
         typeStack.push(types);
-        joinStack.push(new Counter<JoinType>(joinType));
+        joinStack.push(new Counter<>(joinType));
         varStack.push(alias);
         return this;
     }
@@ -415,15 +454,8 @@ public class QueryContext {
         if (alias == null) {
             alias = varStack.peek();
         }
-        if (!selectNames.isEmpty()) {
-            selectClause.append(", ");
-        }
-
-        selectClause.append(alias);
-        if (property != null) {
-            selectClause.append('.');
-            selectClause.append(property);
-        }
+        String clause = (property == null) ? alias : alias + "." + property;
+        selectClauses.add(clause);
         if (node == null) {
             selectNames.add(alias);
         } else {
@@ -441,21 +473,17 @@ public class QueryContext {
         if (alias == null) {
             alias = varStack.peek();
         }
-        if (!selectNames.isEmpty()) {
-            selectClause.append(", ");
-        }
-
         String prefix = (nodeName != null) ? alias + "." + nodeName : alias;
-        selectClause.append(prefix);
-        selectClause.append(".archetypeId, ");
-        selectClause.append(prefix);
-        selectClause.append(".id, ");
-        selectClause.append(prefix);
-        selectClause.append(".linkId");
 
-        selectNames.add(prefix + ".archetypeId");
-        selectNames.add(prefix + ".id");
-        selectNames.add(prefix + ".linkId");
+        String archetypeId = prefix + ".archetypeId";
+        String id = prefix + ".id";
+        String linkId = prefix + ".linkId";
+        selectClauses.add(archetypeId);
+        selectClauses.add(id);
+        selectClauses.add(linkId);
+        selectNames.add(archetypeId);
+        selectNames.add(id);
+        selectNames.add(linkId);
         refSelectNames.add(prefix);
     }
 
@@ -609,7 +637,7 @@ public class QueryContext {
                         .append(getOperator(op, null))
                         .append(" (");
 
-                List<Object> values = new ArrayList<Object>();
+                List<Object> values = new ArrayList<>();
                 for (Object parameter : parameters) {
                     values.add(getValue(op, parameter));
                 }
@@ -685,7 +713,7 @@ public class QueryContext {
      * @param operator the operator type
      * @param param    the value to associated with the operator
      * @return String
-     *         the fragement
+     * the fragement
      */
     private String getOperator(RelationalOp operator, Object param) {
         switch (operator) {
@@ -762,9 +790,9 @@ public class QueryContext {
 
     /**
      * Adds a type set, creating an alias for it if one is not specified.
-     * <p/>
+     * <p>
      * If the type doesn't have an alias, it will be given one.
-     * <p/>
+     * <p>
      * If the type set already exists with the alias, but with different archetypes, an exception will be thrown.
      *
      * @param types the type set
@@ -842,43 +870,11 @@ public class QueryContext {
         return fromStack.peek();
     }
 
-    /**
-     * This is used to track the logical operator.
-     */
-    enum LogicalOperator {
-
-        AND(" and "),
-        OR(" or ");
-
-        /**
-         * Holds the string value.
-         */
-        private String value;
-
-        /**
-         * Constructor that takes string value.
-         *
-         * @param value the operator
-         */
-        LogicalOperator(String value) {
-            this.value = value;
-        }
-
-        /**
-         * Return the value.
-         *
-         * @return String
-         */
-        public String getValue() {
-            return value;
-        }
-    }
-
     private static class Clause {
 
         StringBuilder clause = new StringBuilder();
 
-        Stack<Counter<LogicalOperator>> stack = new Stack<Counter<LogicalOperator>>();
+        Stack<Counter<LogicalOperator>> stack = new Stack<>();
 
         /**
          * Determines if the last clause is a not.
@@ -887,7 +883,7 @@ public class QueryContext {
 
         public Counter<LogicalOperator> push(LogicalOperator operator) {
             appendOperator();
-            Counter<LogicalOperator> result = new Counter<LogicalOperator>(operator);
+            Counter<LogicalOperator> result = new Counter<>(operator);
             stack.push(result);
             append("(");
             return result;
@@ -937,9 +933,9 @@ public class QueryContext {
 
     private static class FromClause extends Clause {
 
-        private boolean with;
-
         private final boolean needsComma;
+
+        private boolean with;
 
         public FromClause(String type, String alias) {
             this(null, type, alias);
@@ -971,6 +967,15 @@ public class QueryContext {
             return needsComma;
         }
 
+        public Clause append(String value) {
+            if (!with) {
+                super.append(" with ");
+                with = true;
+            }
+            super.append(value);
+            return this;
+        }
+
         private void appendJoin(JoinType join) {
             if (join == JoinType.InnerJoin) {
                 super.append("inner join ");
@@ -979,15 +984,6 @@ public class QueryContext {
             } else if (join == JoinType.RightOuterJoin) {
                 super.append("right outer join ");
             }
-        }
-
-        public Clause append(String value) {
-            if (!with) {
-                super.append(" with ");
-                with = true;
-            }
-            super.append(value);
-            return this;
         }
     }
 
@@ -1015,7 +1011,7 @@ public class QueryContext {
 
     private static class NameAllocator {
 
-        private Set<String> names = new HashSet<String>();
+        private Set<String> names = new HashSet<>();
 
         public void reserve(String name) {
             names.add(name);
@@ -1042,6 +1038,38 @@ public class QueryContext {
             return result;
         }
 
+    }
+
+    /**
+     * This is used to track the logical operator.
+     */
+    enum LogicalOperator {
+
+        AND(" and "),
+        OR(" or ");
+
+        /**
+         * Holds the string value.
+         */
+        private String value;
+
+        /**
+         * Constructor that takes string value.
+         *
+         * @param value the operator
+         */
+        LogicalOperator(String value) {
+            this.value = value;
+        }
+
+        /**
+         * Return the value.
+         *
+         * @return String
+         */
+        public String getValue() {
+            return value;
+        }
     }
 
 }

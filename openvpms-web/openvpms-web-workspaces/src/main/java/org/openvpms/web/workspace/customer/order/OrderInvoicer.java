@@ -635,7 +635,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         }
 
         protected String[] getProductArchetypes() {
-            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE};
+            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE, ProductArchetypes.SERVICE};
         }
 
     }

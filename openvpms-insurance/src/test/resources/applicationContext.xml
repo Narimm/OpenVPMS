@@ -255,6 +255,8 @@
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="documentHandlers"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 
 </beans>

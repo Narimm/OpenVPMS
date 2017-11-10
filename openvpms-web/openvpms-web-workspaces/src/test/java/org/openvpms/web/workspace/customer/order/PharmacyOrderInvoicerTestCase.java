@@ -644,6 +644,20 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     }
 
     /**
+     * Verifies a validation error is produced if an order or return has an invalid product.
+     */
+    @Test
+    public void testInvalidProduct() {
+        String expected = "Product is not valid for this field";
+        Product template = ProductTestHelper.createTemplate("ZTemplate");
+        FinancialAct act1 = createOrder(customer, patient, template, ONE, null);
+        checkRequired(act1, expected);
+
+        FinancialAct act2 = createReturn(customer, patient, template, ONE, null);
+        checkRequired(act2, expected);
+    }
+
+    /**
      * Verifies that a validation error is raised if a required field is missing.
      * <p/>
      * Validation cannot occur using the archetype as as the delivery processor must be able to save incomplete/invalid

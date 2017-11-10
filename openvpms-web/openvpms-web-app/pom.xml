@@ -42,7 +42,7 @@
     <!-- Debugging notes:                                                                             -->
     <!-- . p6spy can be enabled using:                                                                -->
     <!--   mvn -Dhibernate.connection.driver_class=com.p6spy.engine.spy.P6SpyDriver \                 -->
-    <!--       -Dhibernate.connection.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8 tomcat:run   -->
+    <!--       -Dhibernate.connection.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8 jetty:run    -->
     <!-- ============================================================================================ -->
 
     <build>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -108,7 +108,7 @@ public class ProductLocationCollectionEditor extends AbstractIMObjectCollectionE
          * @param editor    the collection property editor
          */
         public LocationSelector(List<Party> locations, CollectionPropertyEditor editor) {
-            super(new ArrayList<IMObject>(locations), getLocations(editor, locations));
+            super(new ArrayList<>(locations), getLocations(editor, locations));
             this.editor = editor;
         }
 
@@ -137,7 +137,7 @@ public class ProductLocationCollectionEditor extends AbstractIMObjectCollectionE
             for (Object value : values) {
                 IMObject object = (IMObject) value;
                 IMObjectReference reference = object.getObjectReference();
-                for (IMObject link : new ArrayList<>(editor.getObjects())) {
+                for (IMObject link : new ArrayList<IMObject>(editor.getObjects())) {
                     if (ObjectUtils.equals(((EntityLink) link).getTarget(), reference)) {
                         editor.remove(link);
                     }

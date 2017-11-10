@@ -140,6 +140,10 @@
         -->
     </bean>
 
+    <bean id="scheduleColours" class="org.openvpms.web.workspace.workflow.scheduling.ScheduleColours">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="fileNameFormatter" class="org.openvpms.web.component.im.doc.FileNameFormatter">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>

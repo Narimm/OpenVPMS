@@ -98,7 +98,7 @@
             </assertion>
         </node>
         <node name="printUnits" path="/details/printUnits" type="java.lang.String"
-              minCardinality="1" defaultValue="'WEEKS'">
+              displayName="Print Lead Time Units" minCardinality="1" defaultValue="'WEEKS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -114,7 +114,7 @@
             </assertion>
         </node>
         <node name="printCancelUnits" path="/details/printCancelUnits" type="java.lang.String"
-              minCardinality="1" defaultValue="'WEEKS'">
+              displayName="Print Cancel Units" minCardinality="1" defaultValue="'WEEKS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -130,7 +130,7 @@
             </assertion>
         </node>
         <node name="exportUnits" path="/details/exportUnits" type="java.lang.String"
-              minCardinality="1" defaultValue="'WEEKS'">
+              displayName="Export Lead Time Units" minCardinality="1" defaultValue="'WEEKS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -140,13 +140,13 @@
             </assertion>
         </node>
         <node name="exportCancelInterval" path="/details/exportCancelInterval" type="java.lang.Integer"
-              displayName="Print Cancel Time" minCardinality="1" defaultValue="2">
+              displayName="Export Cancel Time" minCardinality="1" defaultValue="2">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
         </node>
         <node name="exportCancelUnits" path="/details/exportCancelUnits" type="java.lang.String"
-              displayName="Print Cancel Time" minCardinality="1" defaultValue="'WEEKS'">
+              displayName="Export Cancel Units" minCardinality="1" defaultValue="'WEEKS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -162,7 +162,7 @@
             </assertion>
         </node>
         <node name="listUnits" path="/details/listUnits" type="java.lang.String"
-              minCardinality="1" defaultValue="'WEEKS'">
+              displayName="List Lead Time Units" minCardinality="1" defaultValue="'WEEKS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -178,7 +178,7 @@
             </assertion>
         </node>
         <node name="listCancelUnits" path="/details/listCancelUnits" type="java.lang.String"
-              minCardinality="1" defaultValue="'WEEKS'">
+              displayName="List Cancel Units" minCardinality="1" defaultValue="'WEEKS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>

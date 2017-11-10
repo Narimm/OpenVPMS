@@ -17,9 +17,7 @@
 package org.openvpms.web.workspace.workflow.worklist;
 
 import org.openvpms.archetype.rules.prefs.Preferences;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -46,14 +44,9 @@ import java.util.Map;
 public class TaskBrowser extends ScheduleBrowser {
 
     /**
-     * The task colours.
+     * The colour cache.
      */
-    private final ScheduleColours taskColours;
-
-    /**
-     * The clinician colours.
-     */
-    private final ScheduleColours clinicianColours;
+    private final ScheduleColours colours;
 
     /**
      * The appointment rules.
@@ -68,8 +61,7 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     public TaskBrowser(Preferences prefs, Context context) {
         super(new TaskQuery(context, prefs), context);
-        taskColours = new ScheduleColours(ScheduleArchetypes.TASK_TYPE);
-        clinicianColours = new ScheduleColours(UserArchetypes.USER);
+        colours = ServiceHelper.getBean(ScheduleColours.class);
         rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
@@ -123,9 +115,9 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
         if (grid.getSchedules().size() == 1) {
-            return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext(), taskColours, clinicianColours);
+            return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext(), colours);
         }
-        return new MultiScheduleTaskTableModel((TaskGrid) grid, getContext(), taskColours, clinicianColours);
+        return new MultiScheduleTaskTableModel((TaskGrid) grid, getContext(), colours);
     }
 
 }

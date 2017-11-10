@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.im.common;
@@ -108,24 +106,6 @@ public interface IMObjectDAO {
      * @throws IMObjectDAOException for any error
      */
     IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes);
-
-    /**
-     * Execute a get using the specified query string, the query
-     * parameters and the result collector. The first result and the number of
-     * results is used to control the paging of the result set.
-     *
-     * @param queryString the query string
-     * @param parameters  the query parameters
-     * @param collector   the result collector
-     * @param firstResult the first result to retrieve
-     * @param maxResults  the maximum number of results to return
-     * @param count       if <code>true</code> counts the total no. of results,
-     *                    returning it in {@link IPage#getTotalResults()}
-     * @throws IMObjectDAOException for any error
-     */
-    void get(String queryString, Map<String, Object> parameters,
-             ResultCollector collector, int firstResult, int maxResults,
-             boolean count);
 
     /**
      * Retrieves the objects that match the specified search criteria.

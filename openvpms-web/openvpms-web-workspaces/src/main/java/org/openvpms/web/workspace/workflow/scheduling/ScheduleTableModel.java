@@ -57,99 +57,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
     }
 
     /**
-     * Schedule event grid.
-     */
-    private final ScheduleEventGrid grid;
-
-    /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
-     * Determines if the columns display schedules.
-     */
-    private final boolean scheduleColumns;
-
-    /**
-     * The column model.
-     */
-    private TableColumnModel model = new DefaultTableColumnModel();
-
-    /**
-     * The clinician to display events for.
-     * If {@code null} indicates to display events for all clinicians.
-     */
-    private IMObjectReference clinician;
-
-    /**
-     * The selected cell.
-     */
-    private Cell selected;
-
-    /**
-     * The marked cell.
-     */
-    private Cell marked;
-
-    /**
-     * If {@code true} the marked cell is being cut, else it is being copied.
-     */
-    private boolean isCut;
-
-    /**
-     * Determines cell colour.
-     */
-    private Highlight highlight = Highlight.EVENT_TYPE;
-
-    /**
-     * The display expression, from the schedule view. May be {@code null}
-     */
-    private final String expression;
-
-    /**
-     * Determines if the notes popup should be displayed.
-     */
-    private final boolean displayNotes;
-
-    /**
-     * Determines if completed/cancelled appointments should be display with a strike-through.
-     */
-    private final boolean useStrikethrough;
-
-    /**
-     * The event colours.
-     */
-    private final ScheduleColours eventColours;
-
-    /**
-     * The clinician colours.
-     */
-    private final ScheduleColours clinicianColours;
-
-    /**
-     * The blocking event colours.
-     */
-    private final ScheduleColours blockingEventColours;
-
-    /**
-     * A caching archetype service, used to improve performance when rendering with expressions.
-     */
-    private CachingReadOnlyArchetypeService service;
-
-    /**
-     * The functions used to evaluate expressions.
-     * <p/>
-     * These use caching to improve performance.
-     */
-    private FunctionLibrary functions;
-
-    /**
-     * 'Use strike-through' node name.
-     */
-    private static final String USE_STRIKETHROUGH = "useStrikethrough";
-
-    /**
      * Used to restore selection state.
      */
     public static class State {
@@ -175,14 +82,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
         private final IMObjectReference markedEvent;
 
         /**
-         * The marked schedule. May be {@code null}
-         */
-        private IMObjectReference markedSchedule;
-
-        /**
          * Determines if the marked event is being cut.
          */
         private final boolean isCut;
+
+        /**
+         * The marked schedule. May be {@code null}
+         */
+        private IMObjectReference markedSchedule;
 
         public State(ScheduleTableModel model) {
             schedules = State.getSchedules(model.getSchedules());
@@ -263,18 +170,98 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
     }
 
     /**
+     * Schedule event grid.
+     */
+    private final ScheduleEventGrid grid;
+
+    /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * Determines if the columns display schedules.
+     */
+    private final boolean scheduleColumns;
+
+    /**
+     * The display expression, from the schedule view. May be {@code null}
+     */
+    private final String expression;
+
+    /**
+     * Determines if the notes popup should be displayed.
+     */
+    private final boolean displayNotes;
+
+    /**
+     * Determines if completed/cancelled appointments should be display with a strike-through.
+     */
+    private final boolean useStrikethrough;
+
+    /**
+     * The colour cache.
+     */
+    private final ScheduleColours colours;
+
+    /**
+     * The column model.
+     */
+    private TableColumnModel model = new DefaultTableColumnModel();
+
+    /**
+     * The clinician to display events for.
+     * If {@code null} indicates to display events for all clinicians.
+     */
+    private IMObjectReference clinician;
+
+    /**
+     * The selected cell.
+     */
+    private Cell selected;
+
+    /**
+     * The marked cell.
+     */
+    private Cell marked;
+
+    /**
+     * If {@code true} the marked cell is being cut, else it is being copied.
+     */
+    private boolean isCut;
+
+    /**
+     * Determines cell colour.
+     */
+    private Highlight highlight = Highlight.EVENT_TYPE;
+
+    /**
+     * A caching archetype service, used to improve performance when rendering with expressions.
+     */
+    private CachingReadOnlyArchetypeService service;
+
+    /**
+     * The functions used to evaluate expressions.
+     * <p>
+     * These use caching to improve performance.
+     */
+    private FunctionLibrary functions;
+
+    /**
+     * 'Use strike-through' node name.
+     */
+    private static final String USE_STRIKETHROUGH = "useStrikethrough";
+
+    /**
      * Constructs a {@link ScheduleTableModel}.
      *
-     * @param grid                 the schedule event grid
-     * @param context              the context
-     * @param scheduleColumns      if {@code true}, display the schedules on the columns, otherwise display them on the rows
-     * @param eventColours         the event colours
-     * @param clinicianColours     the clinician colours
-     * @param blockingEventColours the blocking event colours. May be {@code null}
+     * @param grid            the schedule event grid
+     * @param context         the context
+     * @param scheduleColumns if {@code true}, display the schedules on the columns, otherwise display them on the rows
+     * @param colours         the colour cache
      */
     public ScheduleTableModel(ScheduleEventGrid grid, Context context, boolean scheduleColumns,
-                              ScheduleColours eventColours, ScheduleColours clinicianColours,
-                              ScheduleColours blockingEventColours) {
+                              ScheduleColours colours) {
         this.grid = grid;
         this.context = context;
         this.scheduleColumns = scheduleColumns;
@@ -282,9 +269,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
         expression = bean.getString("displayExpression");
         displayNotes = bean.getBoolean("displayNotes");
         useStrikethrough = bean.hasNode(USE_STRIKETHROUGH) && bean.getBoolean(USE_STRIKETHROUGH);
-        this.eventColours = eventColours;
-        this.clinicianColours = clinicianColours;
-        this.blockingEventColours = blockingEventColours;
+        this.colours = colours;
         model = createColumnModel(grid);
     }
 
@@ -474,7 +459,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
 
     /**
      * Determines the scheme to colour cells.
-     * <p/>
+     * <p>
      * Defaults to {@link Highlight#EVENT_TYPE}.
      *
      * @param highlight the highlight
@@ -682,7 +667,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
 
     /**
      * Returns the display expression, from the schedule view.
-     * <p/>
+     * <p>
      * This may be used to customise the event display.
      *
      * @return the expression. May be {@code null}
@@ -767,36 +752,18 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
     }
 
     /**
-     * Returns the event colours.
+     * Returns the colour cache.
      *
-     * @return the event colours
+     * @return the colour cache
      */
-    public ScheduleColours getEventColours() {
-        return eventColours;
-    }
-
-    /**
-     * Returns the clinician colours.
-     *
-     * @return the clinician colours
-     */
-    public ScheduleColours getClinicianColours() {
-        return clinicianColours;
-    }
-
-    /**
-     * Returns the blocking event colours.
-     *
-     * @return the blocking event colours. May be {@code null}
-     */
-    public ScheduleColours getBlockingEventColours() {
-        return blockingEventColours;
+    public ScheduleColours getColours() {
+        return colours;
     }
 
     /**
      * Evaluates the view's displayExpression expression against the supplied
      * event. If no displayExpression is present, {@code null} is returned.
-     * <p/>
+     * <p>
      * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
      * a formatted string named <em>waiting</em> will be added to the set prior
      * to evaluation of the expression. This indicates the waiting time, and
@@ -814,7 +781,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
                 functions = ServiceHelper.getBean(ArchetypeFunctionsFactory.class).create(service, true);
             }
             result = SchedulingHelper.evaluate(expression, event, functions);
-            // result = SchedulingHelper.evaluate(expression, event);
         }
         return result;
     }
@@ -889,7 +855,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
 
     /**
      * Returns the cell column corresponding to a slot.
-     * <p/>
+     * <p>
      * This implementation returns the slot unchanged.
      *
      * @param slot the slot
@@ -901,7 +867,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
 
     /**
      * Returns the cell row corresponding to a slot.
-     * <p/>
+     * <p>
      * This implementation returns the slot unchanged.
      *
      * @param slot the slot

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -26,6 +26,7 @@
               maxLength="255"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0"
               maxCardinality="1" filter="participation.author" readOnly="true"/>
+        <node displayName="From" name="from" type="java.lang.String" path="/details/from" minCardinality="0"/>
         <node displayName="To" name="address" type="java.lang.String" path="/details/address" minCardinality="0"
               maxLength="5000"/>
         <node displayName="Cc" name="cc" type="java.lang.String" path="/details/cc" minCardinality="0"
