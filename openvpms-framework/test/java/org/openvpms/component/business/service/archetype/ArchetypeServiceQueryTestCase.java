@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
 import org.junit.Test;
+import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException;
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -39,6 +41,7 @@ import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -53,8 +56,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.or;
+import static org.openvpms.component.system.common.query.Constraints.sort;
 
 
 /**
@@ -201,8 +207,8 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .add(Constraints.leftJoin("identities", Constraints.shortName("entityIdentity.personAlias"))
                              .add(eq("identity", "IDENT1*")))
-                .add(Constraints.or(eq("id", person1.getId()),
-                                    Constraints.notNull("identities.identity")));
+                .add(or(eq("id", person1.getId()),
+                        Constraints.notNull("identities.identity")));
         List<IMObject> objects = get(query);
         assertTrue(objects.contains(person1));
         assertFalse(objects.contains(person2));
@@ -407,7 +413,7 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
     }
 
     /**
-     * V
+     * Verifies entity links can be joined on.
      */
     @Test
     public void testQueryEntityLinks() {
@@ -437,6 +443,102 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         assertFalse(customers2.contains(person1));
         assertTrue(customers2.contains(person2));
         assertTrue(customers2.contains(person3));
+    }
+
+    /**
+     * Tests the behaviour of using {@link ArchetypeQuery#setDistinct(boolean) setDistinct(true)}.
+     */
+    @Test
+    public void testQueryDistinct() {
+        Party person = createPerson();
+        Party pet1 = createPet();
+        Party pet2 = createPet();
+        IMObjectBean bean = new IMObjectBean(person);
+        bean.addNodeTarget("owns", pet1);
+        bean.addNodeTarget("owns", pet2);
+        bean.addNodeTarget("owns", pet2);  // duplicate
+        save(person, pet1, pet2);
+
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.add(join("owns").add(or(eq("target", pet1), eq("target", pet2))));
+        query.setCountResults(true);
+
+        // verify that with distinct=false, the same customer is returned twice
+        IPage<IMObject> results1 = getArchetypeService().get(query);
+        assertEquals(3, results1.getTotalResults());
+        List<IMObject> customers1 = results1.getResults();
+        assertEquals(3, customers1.size());
+        assertEquals(person, customers1.get(0));
+        assertEquals(person, customers1.get(1));
+        assertEquals(person, customers1.get(2));
+
+        // now try the query with distinct=true
+        query.setDistinct(true);
+        IPage<IMObject> results2 = getArchetypeService().get(query);
+        assertEquals(1, results2.getTotalResults());
+
+        List<IMObject> customers2 = results2.getResults();
+        assertEquals(1, customers2.size());
+        assertEquals(person, customers2.get(0));
+    }
+
+    @Test
+    public void testQueryDistinctWithSelect() {
+        Party person = createPerson();
+        Party pet1 = createPet();
+        save(pet1);
+        Party pet2 = createPet();
+        save(pet2);
+        IMObjectBean bean = new IMObjectBean(person);
+        bean.addNodeTarget("owns", pet1);
+        bean.addNodeTarget("owns", pet2);
+        bean.addNodeTarget("owns", pet2); // duplicate
+        save(person);
+
+        ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("customer", "party.customerperson"));
+        query.add(join("owns").add(join("target", "patient").add(
+                or(eq("id", pet1.getId()), eq("id", pet2.getId())))));
+        query.add(sort("patient", "id"));
+        query.add(new ObjectSelectConstraint("customer"));
+        query.add(new ObjectSelectConstraint("patient"));
+        query.setCountResults(true);
+
+        // test the query with distinct=false. Duplicates should be returned
+        IPage<ObjectSet> results1 = getArchetypeService().getObjects(query);
+        assertEquals(3, results1.getTotalResults());
+        ObjectSet set1a = results1.getResults().get(0);
+        ObjectSet set1b = results1.getResults().get(1);
+        ObjectSet set1c = results1.getResults().get(2);
+        assertEquals(person, set1a.get("customer"));
+        assertEquals(pet1, set1a.get("patient"));
+        assertEquals(person, set1b.get("customer"));
+        assertEquals(pet2, set1b.get("patient"));
+        assertEquals(person, set1c.get("customer"));
+        assertEquals(pet2, set1c.get("patient"));
+
+        // now try the query with count=true, distinct=true. This should fail as
+        // select count(distinct customer, patient) ... is not supported.
+        query.setDistinct(true);
+        try {
+            getArchetypeService().getObjects(query);
+            fail("Expected query to fail");
+        }catch (ArchetypeServiceException exception) {
+            assertTrue(exception.getCause() instanceof IMObjectDAOException);
+            assertTrue(exception.getCause().getCause() instanceof QueryBuilderException);
+            assertEquals(QueryBuilderException.ErrorCode.CannotCountDistinctMultipleSelect,
+                         ((QueryBuilderException) exception.getCause().getCause()).getErrorCode());
+        }
+
+        // verify the query can be issued with count=false
+        query.setCountResults(false);
+        IPage<ObjectSet> results2 = getArchetypeService().getObjects(query);
+        assertEquals(-1, results2.getTotalResults());
+        ObjectSet set2a = results2.getResults().get(0);
+        ObjectSet set2b = results2.getResults().get(1);
+        assertEquals(person, set2a.get("customer"));
+        assertEquals(pet1, set2a.get("patient"));
+        assertEquals(person, set2b.get("customer"));
+        assertEquals(pet2, set2b.get("patient"));
     }
 
     /**
