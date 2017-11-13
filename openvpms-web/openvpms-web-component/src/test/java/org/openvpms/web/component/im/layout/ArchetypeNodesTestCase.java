@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -233,6 +234,21 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
                                .order("address", "emailAddress"),
                        archetypes, "id", "name", "description", "address", "emailAddress", "preferred", "startDate",
                        "endDate");
+    }
+
+    /**
+     * Tests the {@link ArchetypeNodes#excludePassword(boolean)} method.
+     */
+    @Test
+    public void testExcludePassword() {
+        ArchetypeDescriptor user = getArchetypeService().getArchetypeDescriptor(UserArchetypes.USER);
+        assertNotNull(user);
+        checkNodeNames(ArchetypeNodes.allSimple().excludePassword(false), user, "id", "username", "password", "name",
+                       "description", "active", "title", "firstName", "lastName", "qualifications", "userLevel",
+                       "editPreferences", "colour");
+        checkNodeNames(ArchetypeNodes.allSimple().excludePassword(true), user, "id", "username", "name",
+                       "description", "active", "title", "firstName", "lastName", "qualifications", "userLevel",
+                       "editPreferences", "colour");
     }
 
     /**

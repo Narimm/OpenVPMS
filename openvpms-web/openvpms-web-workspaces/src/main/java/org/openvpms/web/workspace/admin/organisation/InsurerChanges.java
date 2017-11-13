@@ -16,9 +16,8 @@
 
 package org.openvpms.web.workspace.admin.organisation;
 
-import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -29,10 +28,10 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
@@ -69,11 +68,12 @@ public class InsurerChanges extends ConfirmationDialog {
 
         InsurerModel model = new InsurerModel();
         PagedIMTable<Changes.Change<Party>> table = new PagedIMTable<>(model);
-        table.getTable().setStyleName(Styles.DEFAULT);
         table.setResultSet(set);
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, table.getComponent());
-        Row row = RowFactory.create(Styles.LARGE_INSET, column);
-        getLayout().add(row);
+
+        // need to render the table in a grid in order for it to grow to the width of the window
+        Grid grid = GridFactory.create(1, message, TableHelper.createSpacer(), table.getComponent());
+        grid.setWidth(Styles.FULL_WIDTH);
+        getLayout().add(grid);
     }
 
     private static class InsurerModel extends AbstractIMTableModel<Changes.Change<Party>> {
@@ -90,6 +90,18 @@ public class InsurerChanges extends ConfirmationDialog {
             model.addColumn(createTableColumn(NAME_IDEX, NAME));
             model.addColumn(createTableColumn(STATUS_IDEX, "admin.organisation.insurer.sync.status"));
             setTableColumnModel(model);
+        }
+
+        /**
+         * Returns the sort criteria.
+         *
+         * @param column    the primary sort column
+         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+         * @return the sort criteria, or {@code null} if the column isn't sortable
+         */
+        @Override
+        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+            return null;
         }
 
         /**
@@ -124,18 +136,6 @@ public class InsurerChanges extends ConfirmationDialog {
                     }
             }
             return result;
-        }
-
-        /**
-         * Returns the sort criteria.
-         *
-         * @param column    the primary sort column
-         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
-         * @return the sort criteria, or {@code null} if the column isn't sortable
-         */
-        @Override
-        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-            return null;
         }
     }
 

@@ -415,7 +415,8 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     protected ArchetypeNodes allSimpleNodesMinusIdAndLongText() {
         return ArchetypeNodes.allSimple()
                 .excludeStringLongerThan(NodeDescriptor.DEFAULT_MAX_LENGTH)
-                .exclude("id", "password");
+                .exclude("id")
+                .excludePassword(true);
     }
 
     /**

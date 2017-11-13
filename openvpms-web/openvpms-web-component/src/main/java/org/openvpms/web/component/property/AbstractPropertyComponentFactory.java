@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -22,6 +22,7 @@ import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.text.PasswordField;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextField;
 
@@ -31,8 +32,7 @@ import org.openvpms.web.echo.text.TextField;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractPropertyComponentFactory
-        implements PropertyComponentFactory {
+public abstract class AbstractPropertyComponentFactory implements PropertyComponentFactory {
 
     /**
      * The style name to use.
@@ -41,7 +41,7 @@ public abstract class AbstractPropertyComponentFactory
 
 
     /**
-     * Creates a new <tt>AbstractPropertyComponentFactory</tt>.
+     * Constructs an {@link AbstractPropertyComponentFactory}.
      *
      * @param style the style name to use
      */
@@ -53,19 +53,24 @@ public abstract class AbstractPropertyComponentFactory
      * Creates components for boolean, string, numeric and date properties.
      *
      * @param property the property
-     * @return a new component, or <tt>null</tt> if the property isn't supported
+     * @return a new component, or {@code null} if the property isn't supported
      */
     public Component create(Property property) {
+        Component result = null;
         if (property.isBoolean()) {
-            return createBoolean(property);
+            result = createBoolean(property);
         } else if (property.isString()) {
-            return createString(property);
+            if (property.isPassword()) {
+                result = createPassword(property);
+            } else {
+                result = createString(property);
+            }
         } else if (property.isNumeric()) {
-            return createNumeric(property);
+            result = createNumeric(property);
         } else if (property.isDate()) {
-            return createDate(property);
+            result = createDate(property);
         }
-        return null;
+        return result;
     }
 
     /**
@@ -142,6 +147,18 @@ public abstract class AbstractPropertyComponentFactory
         DateField result = BoundDateFieldFactory.create(property);
         ComponentFactory.setStyle(result, getStyle());
         ComponentFactory.setStyle(result.getTextField(), getStyle());
+        return result;
+    }
+
+    /**
+     * Returns a component bound to a password property.
+     *
+     * @param property the property to bind
+     * @return a new component
+     */
+    protected Component createPassword(Property property) {
+        PasswordField result = BoundTextComponentFactory.createPassword(property);
+        ComponentFactory.setStyle(result, getStyle());
         return result;
     }
 

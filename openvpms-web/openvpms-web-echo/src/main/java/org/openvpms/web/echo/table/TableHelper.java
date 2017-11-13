@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.table;
 
+import echopointng.LabelEx;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Alignment;
@@ -49,7 +50,7 @@ public class TableHelper {
 
     /**
      * Helper to return an {@code XhtmlFragment} for text.
-     * <p/>
+     * <p>
      * Any XML characters are escaped.
      *
      * @param text the text. May be {@code null}
@@ -66,7 +67,7 @@ public class TableHelper {
 
     /**
      * Helper to return an {@code XhtmlFragment} for an object, using its {@code toString()} method.
-     * <p/>
+     * <p>
      * Any XML characters are escaped.
      *
      * @param object the object. May be {@code null}
@@ -74,6 +75,15 @@ public class TableHelper {
      */
     public static XhtmlFragment createFragment(Object object) {
         return createFragment(object != null ? object.toString() : null);
+    }
+
+    /**
+     * Creates an empty label to act as spacer.
+     *
+     * @return a new label
+     */
+    public static Label createSpacer() {
+        return new LabelEx(createFragment(null));
     }
 
     /**

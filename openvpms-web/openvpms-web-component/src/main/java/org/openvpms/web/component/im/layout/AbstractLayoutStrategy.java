@@ -691,6 +691,21 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         }
 
         @Override
+        public ArchetypeNodes excludeStringLongerThan(long length) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes excludePassword(boolean exclude) {
+            return super.excludePassword(exclude);
+        }
+
+        @Override
+        public ArchetypeNodes hidden(boolean hidden) {
+            return super.hidden(hidden);
+        }
+
+        @Override
         public ArchetypeNodes order(String node1, String node2) {
             throw new UnsupportedOperationException();
         }

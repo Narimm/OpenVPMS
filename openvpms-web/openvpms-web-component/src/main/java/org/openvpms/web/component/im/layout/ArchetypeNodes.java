@@ -93,6 +93,11 @@ public class ArchetypeNodes {
     private long excludeStringLongerThan = -1;
 
     /**
+     * Determines if password nodes should be excluded.
+     */
+    private boolean excludePassword = false;
+
+    /**
      * Determines if hidden nodes should be included.
      */
     private boolean hidden;
@@ -139,6 +144,7 @@ public class ArchetypeNodes {
         this.excludeIfEmpty = new HashSet<>(nodes.excludeIfEmpty);
         this.excludeStringLongerThan = nodes.excludeStringLongerThan;
         this.hidden = nodes.hidden;
+        this.excludePassword = nodes.excludePassword;
         this.order = new ArrayList<>(nodes.order);
     }
 
@@ -243,6 +249,17 @@ public class ArchetypeNodes {
      */
     public ArchetypeNodes hidden(boolean hidden) {
         this.hidden = hidden;
+        return this;
+    }
+
+    /**
+     * Determines if password nodes should be excluded.
+     *
+     * @param exclude if {@code true} exclude password nodes, otherwise include them
+     * @return this instance
+     */
+    public ArchetypeNodes excludePassword(boolean exclude) {
+        this.excludePassword = exclude;
         return this;
     }
 
@@ -385,7 +402,9 @@ public class ArchetypeNodes {
                    && exclude.equals(nodes.exclude)
                    && excludeIfEmpty.equals(nodes.excludeIfEmpty)
                    && excludeStringLongerThan == nodes.excludeStringLongerThan
-                   && hidden == nodes.hidden;
+                   && hidden == nodes.hidden
+                   && excludePassword == nodes.excludePassword;
+
         }
         return false;
     }
@@ -429,7 +448,7 @@ public class ArchetypeNodes {
 
     /**
      * Creates a new instance that selects no nodes.
-     * <p/>
+     * <p>
      * Nodes must be explicitly added.
      *
      * @return a new instance
@@ -693,7 +712,8 @@ public class ArchetypeNodes {
             boolean result = false;
             String name = descriptor.getName();
             if ((hidden || !descriptor.isHidden()) && !exclude.contains(name)) {
-                result = !excludeIfEmpty(descriptor) && (!descriptor.isString() || includeString(descriptor));
+                result = !excludeIfEmpty(descriptor) && (!descriptor.isString() || includeString(descriptor))
+                         && (!excludePassword || !descriptor.containsAssertionType("password"));
             }
             return result;
         }
