@@ -168,7 +168,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         buttons.setEnabled(CLAIM_ID, enable && TypeHelper.isA(object, InsuranceArchetypes.POLICY));
         buttons.setEnabled(POST_ID, enable && getActions().canPost(object));
         buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
-        buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
+        buttons.setEnabled(CANCEL_CLAIM_ID, enable && getActions().canCancelClaim(object));
         enablePrintPreview(buttons, enable && TypeHelper.isA(object, InsuranceArchetypes.CLAIM));
     }
 
@@ -304,7 +304,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     protected void onCancelClaim() {
         final Act object = IMObjectHelper.reload(getObject());
-        if (getActions().canCancelClaim(object)) {
+        if (object != null && getActions().canCancelClaim(object)) {
             final Claim claim = getClaim(object);
             Party insurer = claim.getPolicy().getInsurer();
             final InsuranceService service = getInsuranceService(insurer);
@@ -378,6 +378,23 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     private static class InsuranceActions extends ActActions<Act> {
 
         public static final InsuranceActions INSTANCE = new InsuranceActions();
+
+        /**
+         * Determines if an act can be edited.
+         *
+         * @param act the act to check
+         * @return {@code true} if the act isn't locked
+         */
+        @Override
+        public boolean canEdit(Act act) {
+            boolean result;
+            if (TypeHelper.isA(act, InsuranceArchetypes.CLAIM)) {
+                result = Status.PENDING.isA(act.getStatus());
+            } else {
+                result = super.canEdit(act);
+            }
+            return result;
+        }
 
         /**
          * Determines if an act can be deleted.

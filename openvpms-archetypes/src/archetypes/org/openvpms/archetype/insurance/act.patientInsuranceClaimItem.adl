@@ -24,7 +24,7 @@
         <node name="reason" displayName="Diagnosis" path="/reason" type="java.lang.String" minCardinality="1">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
-                <property name="source" value="lookup.diagnosisVeNom"/>
+                <property name="source" value="lookup.diagnosis*"/>
             </assertion>
         </node>
         <node displayName="Treatment Start" name="startTime" path="/activityStartTime" type="java.util.Date"

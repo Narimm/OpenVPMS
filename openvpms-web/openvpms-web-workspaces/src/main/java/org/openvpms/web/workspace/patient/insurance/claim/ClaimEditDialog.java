@@ -29,7 +29,7 @@ public class ClaimEditDialog extends EditDialog {
     /**
      * Generate attachments button identifier.
      */
-    private static final String GENERATE_ID = "button.generateAttachments";
+    private static final String GENERATE_ID = "button.generateattachments";
 
     /**
      * The buttons to display.
