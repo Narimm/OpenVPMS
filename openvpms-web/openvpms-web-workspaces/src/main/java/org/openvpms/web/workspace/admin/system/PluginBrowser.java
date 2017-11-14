@@ -26,6 +26,8 @@ import nextapp.echo2.app.filetransfer.UploadListener;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -47,6 +49,10 @@ import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -89,9 +95,39 @@ public class PluginBrowser extends AbstractTabComponent {
     private PagedIMTable<Bundle> plugins;
 
     /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PluginBrowser.class);
+
+    /**
      * Configuration archetype.
      */
     private static final String PLUGIN_CONFIGURATION = "entity.pluginConfiguration";
+
+    /**
+     * Start plugin button identifier.
+     */
+    private static final String START_ID = "button.start";
+
+    /**
+     * Stop plugin button identifier.
+     */
+    private static final String STOP_ID = "button.stop";
+
+    /**
+     * Install plugin button identifier.
+     */
+    private static final String INSTALL_ID = "button.install";
+
+    /**
+     * Refresh display button identifier.
+     */
+    private static final String REFRESH_ID = "button.refresh";
+
+    /**
+     * Configure plugin manager button identifier.
+     */
+    private static final String CONFIGURE_ID = "button.configure";
 
     /**
      * Constructs a {@link PluginBrowser}.
@@ -102,17 +138,42 @@ public class PluginBrowser extends AbstractTabComponent {
         super(help);
         status = LabelFactory.create(Styles.BOLD);
         plugins = new PagedIMTable<>(new PluginTableModel());
+        plugins.getTable().addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                enableButtons();
+            }
+        });
         component = ColumnFactory.create(Styles.INSET,
                                          ColumnFactory.create(Styles.WIDE_CELL_SPACING, status,
                                                               plugins.getComponent()));
         manager = ServiceHelper.getBean(PluginManager.class);
-        getButtonSet().add("button.install", new ActionListener() {
+        ButtonSet buttons = getButtonSet();
+        buttons.add(START_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onStart();
+            }
+        });
+        buttons.add(STOP_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onStop();
+            }
+        });
+        buttons.add(INSTALL_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
                 onInstall();
             }
         });
-        getButtonSet().add("button.configure", new ActionListener() {
+        buttons.add(REFRESH_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                refresh();
+            }
+        });
+        buttons.add(CONFIGURE_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
                 onConfigure();
@@ -143,10 +204,26 @@ public class PluginBrowser extends AbstractTabComponent {
     }
 
     /**
+     * Enables/disables buttons.
+     */
+    private void enableButtons() {
+        ButtonSet buttons = getButtonSet();
+        Bundle selected = plugins.getSelected();
+        boolean started = manager.isStarted();
+        boolean enable = started && selected != null && selected.getBundleId() != Constants.SYSTEM_BUNDLE_ID;
+        // don't allow the system bundle to be restarted
+        buttons.setEnabled(INSTALL_ID, started);
+        buttons.setEnabled(START_ID, enable);
+        buttons.setEnabled(STOP_ID, enable);
+        buttons.setEnabled(REFRESH_ID, started);
+    }
+
+    /**
      * Refreshes the display.
      */
     private void refresh() {
         int active = 0;
+        Bundle selected = plugins.getSelected();
         Bundle[] bundles = manager.getBundles();
         for (Bundle bundle : bundles) {
             if (bundle.getState() == Bundle.ACTIVE) {
@@ -154,10 +231,97 @@ public class PluginBrowser extends AbstractTabComponent {
             }
         }
         status.setText(Messages.format("admin.system.plugin.active", active, bundles.length));
-        ResultSet<Bundle> set = new ListResultSet<>(Arrays.asList(bundles), 20);
+        int pageSize = 20;
+        ResultSet<Bundle> set = new ListResultSet<>(Arrays.asList(bundles), pageSize);
         plugins.setResultSet(set);
+        if (selected != null) {
+            for (int i = 0; i < bundles.length; ++i) {
+                if (bundles[i].getBundleId() == selected.getBundleId()) {
+                    plugins.getModel().setPage(i / pageSize);
+                    plugins.setSelected(bundles[i]);
+                    break;
+                }
+            }
+        }
+
+        enableButtons();
     }
 
+    /**
+     * Starts a plugin.
+     */
+    private void onStart() {
+        Bundle selected = plugins.getSelected();
+        if (selected != null && selected.getState() != Bundle.ACTIVE
+            && selected.getBundleId() != Constants.SYSTEM_BUNDLE_ID) {
+            String title = Messages.get("admin.system.plugin.start.title");
+            String message = Messages.format("admin.system.plugin.start.message", getName(selected));
+            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    start(selected);
+                }
+            });
+        }
+        refresh();
+    }
+
+    /**
+     * Starts a plugin.
+     *
+     * @param plugin the plugin
+     */
+    private void start(Bundle plugin) {
+        try {
+            plugin.start();
+        } catch (Throwable exception) {
+            log.warn("Failed to start bundle=" + getName(plugin), exception);
+            ErrorDialog.show(Messages.get("admin.system.plugin.start.title"),
+                             Messages.format("admin.system.plugin.start.error", getName(plugin),
+                                             exception.getMessage()));
+        }
+    }
+
+    /**
+     * Stops a plugin.
+     */
+    private void onStop() {
+        final Bundle selected = plugins.getSelected();
+        if (selected != null && selected.getState() != Bundle.RESOLVED
+            && selected.getBundleId() != Constants.SYSTEM_BUNDLE_ID) {
+            String title = Messages.get("admin.system.plugin.stop.title");
+            String message = Messages.format("admin.system.plugin.stop.message", getName(selected));
+            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    stop(selected);
+                }
+            });
+        } else {
+            refresh();
+        }
+    }
+
+    /**
+     * Stops a plugin.
+     *
+     * @param plugin the plugin
+     */
+    private void stop(Bundle plugin) {
+        try {
+            plugin.stop();
+        } catch (Throwable exception) {
+            log.warn("Failed to stop bundle=" + getName(plugin), exception);
+            ErrorDialog.show(Messages.get("admin.system.plugin.stop.title"),
+                             Messages.format("admin.system.plugin.stop.error", getName(plugin),
+                                             exception.getMessage()));
+        }
+        refresh();
+    }
+
+    /**
+     * Installs a plugin.
+     */
     private void onInstall() {
         UploadListener listener = new AbstractUploadListener() {
             @Override
@@ -174,6 +338,9 @@ public class PluginBrowser extends AbstractTabComponent {
         dialog.show();
     }
 
+    /**
+     * Configures the plugin manager.
+     */
     private void onConfigure() {
         ArchetypeQuery query = new ArchetypeQuery(PLUGIN_CONFIGURATION, false, false);
         query.add(Constraints.sort("id"));
@@ -204,6 +371,20 @@ public class PluginBrowser extends AbstractTabComponent {
             }
         });
         dialog.show();
+    }
+
+    /**
+     * Returns a bundle name.
+     *
+     * @param bundle the bundle
+     * @return the bundle name
+     */
+    private static Object getName(Bundle bundle) {
+        String result = bundle.getHeaders().get(Constants.BUNDLE_NAME);
+        if (result == null) {
+            result = bundle.getSymbolicName();
+        }
+        return result;
     }
 
     private static class PluginTableModel extends AbstractIMTableModel<Bundle> {
@@ -253,10 +434,7 @@ public class PluginBrowser extends AbstractTabComponent {
                     result = object.getBundleId();
                     break;
                 case NAME_INDEX:
-                    result = object.getHeaders().get(Constants.BUNDLE_NAME);
-                    if (result == null) {
-                        result = object.getSymbolicName();
-                    }
+                    result = getName(object);
                     break;
                 case VERSION_INDEX:
                     result = object.getVersion().toString();
