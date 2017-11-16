@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -55,9 +55,19 @@ import java.util.Map;
 public class ArchetypeService implements IArchetypeService {
 
     /**
-     * Define a logger for this class
+     * The listeners, keyed on archetype short name.
      */
-    private static final Log log = LogFactory.getLog(ArchetypeService.class);
+    private final Map<String, List<IArchetypeServiceListener>> listeners = new HashMap<>();
+
+    /**
+     * The object factory.
+     */
+    private final IMObjectFactory factory;
+
+    /**
+     * The validator.
+     */
+    private final IMObjectValidator validator;
 
     /**
      * A reference to the archetype descriptor cache
@@ -76,20 +86,9 @@ public class ArchetypeService implements IArchetypeService {
     private IRuleEngine ruleEngine;
 
     /**
-     * The listeners, keyed on archetype short name.
+     * Define a logger for this class
      */
-    private final Map<String, List<IArchetypeServiceListener>> listeners
-            = new HashMap<String, List<IArchetypeServiceListener>>();
-
-    /**
-     * The object factory.
-     */
-    private final IMObjectFactory factory;
-
-    /**
-     * The validator.
-     */
-    private final IMObjectValidator validator;
+    private static final Log log = LogFactory.getLog(ArchetypeService.class);
 
 
     /**
@@ -322,8 +321,21 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if the query fails
      */
     public IMObject get(IMObjectReference reference) {
+        return get(reference, false);
+    }
+
+    /**
+     * Retrieves an object given its reference.
+     *
+     * @param reference  the object reference
+     * @param activeOnly if {@code true}, only return the object if it is active
+     * @return the corresponding object, or {@code null} if none is found
+     * @throws ArchetypeServiceException if the query fails
+     */
+    @Override
+    public IMObject get(IMObjectReference reference, boolean activeOnly) {
         try {
-            return dao.get(reference);
+            return dao.get(reference, activeOnly);
         } catch (Exception exception) {
             String message = "select " + reference;
             throw new ArchetypeServiceException(
@@ -332,8 +344,8 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.system.common.query.ArchetypeQuery)
-     */
+         * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.system.common.query.ArchetypeQuery)
+         */
     public IPage<IMObject> get(IArchetypeQuery query) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.get: query " + query);
@@ -351,7 +363,7 @@ public class ArchetypeService implements IArchetypeService {
      * criteria.<p/>
      * This may be used to selectively load parts of object graphs to improve
      * performance.
-     * <p/>
+     * <p>
      * All simple properties of the returned objects are populated - the
      * <code>nodes</code> argument is used to specify which collection nodes to
      * populate. If empty, no collections will be loaded, and the behaviour of
@@ -608,7 +620,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /**
      * Adds a listener to receive notification of changes.
-     * <p/>
+     * <p>
      * In a transaction, notifications occur on successful commit.
      *
      * @param shortName the archetype short to receive events for. May contain
@@ -621,7 +633,7 @@ public class ArchetypeService implements IArchetypeService {
             for (String name : getArchetypeShortNames(shortName, false)) {
                 List<IArchetypeServiceListener> list = listeners.get(name);
                 if (list == null) {
-                    list = new ArrayList<IArchetypeServiceListener>();
+                    list = new ArrayList<>();
                     listeners.put(name, list);
                 }
                 list.add(listener);

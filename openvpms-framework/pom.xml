@@ -117,7 +117,8 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>
-                            org.openvpms.component.business.domain.*,org.openvpms.component.business.service.archetype.helper.*,org.openvpms.component.system.common.i18n;version="${project.version}",
+                            org.openvpms.component.business.domain.*,
+                            org.openvpms.component.system.common.i18n;version="${project.version}",
                         </Export-Package>
                     </instructions>
                 </configuration>

@@ -177,10 +177,11 @@ public interface IMObjectDAO {
      * Returns an object with the specified reference.
      *
      * @param reference the object reference
+     * @param activeOnly if {@code true}, only return the object if it is active
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    IMObject get(IMObjectReference reference);
+    IMObject get(IMObjectReference reference, boolean activeOnly);
 
     /**
      * Executes a get using the specified named query, the query

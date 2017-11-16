@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -204,6 +204,16 @@ public interface IArchetypeService {
     IMObject get(IMObjectReference reference);
 
     /**
+     * Retrieves an object given its reference.
+     *
+     * @param reference  the object reference
+     * @param activeOnly if {@code true}, only return the object if it is active
+     * @return the corresponding object, or {@code null} if none is found
+     * @throws ArchetypeServiceException if the query fails
+     */
+    IMObject get(IMObjectReference reference, boolean activeOnly);
+
+    /**
      * Retrieves the objects matching the query.
      *
      * @param query the archetype query
@@ -215,7 +225,7 @@ public interface IArchetypeService {
     /**
      * Retrieves partially populated objects that match the query.
      * This may be used to selectively load parts of object graphs to improve performance.
-     * <p/>
+     * <p>
      * All simple properties of the returned objects are populated - the {@code nodes} argument is used to specify which
      * collection nodes to populate. If empty, no collections will be loaded, and the behaviour of accessing them is
      * undefined.
@@ -303,7 +313,7 @@ public interface IArchetypeService {
 
     /**
      * Adds a listener to receive notification of changes.
-     * <p/>
+     * <p>
      * In a transaction, notifications occur on successful commit.
      *
      * @param shortName the archetype short to receive events for. May contain wildcards.

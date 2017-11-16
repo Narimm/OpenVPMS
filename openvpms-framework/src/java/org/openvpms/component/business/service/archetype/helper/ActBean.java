@@ -217,7 +217,7 @@ public class ActBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public ActRelationship addNodeRelationship(String name, Act target) {
-        String shortName = getRelationshipShortName(name, target, "target");
+        String shortName = getRelationshipArchetype(name, target, "target");
         return addRelationship(shortName, target);
     }
 
@@ -249,7 +249,7 @@ public class ActBean extends IMObjectBean {
         List<Act> result = new ArrayList<Act>();
         Act act = getAct();
         for (ActRelationship r : act.getSourceActRelationships()) {
-            Act child = (Act) resolve(r.getTarget());
+            Act child = (Act) resolve(r.getTarget(), false);
             if (child != null) {
                 result.add(child);
             }
@@ -271,7 +271,7 @@ public class ActBean extends IMObjectBean {
         for (ActRelationship r : act.getSourceActRelationships()) {
             IMObjectReference target = r.getTarget();
             if (TypeHelper.isA(target, shortName)) {
-                Act child = (Act) resolve(target);
+                Act child = (Act) resolve(target, false);
                 if (child != null) {
                     result.add(child);
                 }
@@ -492,7 +492,7 @@ public class ActBean extends IMObjectBean {
      */
     public Entity getParticipant(String shortName) {
         IMObjectReference ref = getParticipantRef(shortName);
-        return (Entity) resolve(ref);
+        return (Entity) resolve(ref, false);
     }
 
     /**
@@ -553,7 +553,7 @@ public class ActBean extends IMObjectBean {
      */
     public Entity getNodeParticipant(String name) {
         IMObjectReference ref = getNodeParticipantRef(name);
-        return (Entity) resolve(ref);
+        return (Entity) resolve(ref, false);
     }
 
     /**
@@ -611,7 +611,7 @@ public class ActBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public Participation addNodeParticipation(String name, IMObjectReference target) {
-        String shortName = getRelationshipShortName(name, target, "entity");
+        String shortName = getRelationshipArchetype(name, target, "entity");
         return addParticipation(shortName, target);
     }
 
@@ -646,7 +646,7 @@ public class ActBean extends IMObjectBean {
             }
         }
         if (child != null) {
-            return (Act) resolve(child);
+            return (Act) resolve(child, false);
         }
         return null;
     }

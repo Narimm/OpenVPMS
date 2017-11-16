@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -271,6 +271,19 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     @Override
     public IMObject get(IMObjectReference reference) {
         return service.get(reference);
+    }
+
+    /**
+     * Retrieves an object given its reference.
+     *
+     * @param reference  the object reference
+     * @param activeOnly if {@code true}, only return the object if it is active
+     * @return the corresponding object, or {@code null} if none is found
+     * @throws ArchetypeServiceException if the query fails
+     */
+    @Override
+    public IMObject get(IMObjectReference reference, boolean activeOnly) {
+        return service.get(reference, activeOnly);
     }
 
     /**

@@ -16,10 +16,10 @@
 
 package org.openvpms.plugin.service.archetype;
 
+import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.Collection;
 
