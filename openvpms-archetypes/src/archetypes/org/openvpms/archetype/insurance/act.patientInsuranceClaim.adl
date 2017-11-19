@@ -25,8 +25,9 @@
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()" readOnly="true"/>
-        <node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0"
-              hidden="true"/>
+        <node displayName="Completed Date" name="endTime" path="/activityEndTime" type="java.util.Date"
+              minCardinality="0"
+              readOnly="true"/>
         <node name="policy" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
               minCardinality="1" maxCardinality="1" filter="actRelationship.insuranceClaimPolicy" readOnly="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
@@ -64,6 +65,7 @@
                     <property name="ACCEPTED" value="Accepted"/>
                     <property name="SETTLED" value="Settled"/>
                     <property name="DECLINED" value="Declined"/>
+                    <property name="CANCELLING" value="Cancelling"/>
                     <property name="CANCELLED" value="Cancelled"/>
                 </propertyList>
             </assertion>

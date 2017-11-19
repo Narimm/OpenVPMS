@@ -152,7 +152,7 @@ public class InsuranceRules {
     }
 
     /**
-     * Creates an <em>act.TWPPlan</em> query for a patient.
+     * Creates a policy query for a patient.
      *
      * @param patient the patient
      * @return the query

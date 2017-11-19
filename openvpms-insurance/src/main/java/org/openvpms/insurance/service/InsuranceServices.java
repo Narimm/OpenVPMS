@@ -18,7 +18,7 @@ package org.openvpms.insurance.service;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.exception.InsuranceException;
 
 /**
  * Locates {@link InsuranceService}.
@@ -28,27 +28,29 @@ import org.openvpms.insurance.claim.Claim;
 public interface InsuranceServices {
 
     /**
-     * Determines if claim can be submitted via an {@link InsuranceService}.
+     * Determines if claims can be submitted to an insurer via an {@link InsuranceService}.
      *
-     * @param claim the claim
-     * @return {@code true} if the claim can be submitted
+     * @param insurer the insurer
+     * @return {@code true} if insurer accepts claims via an {@link InsuranceService}
      */
-    boolean canSubmit(Claim claim);
-
-    /**
-     * Returns the insurance service for the specified <em>entity.insuranceService*</em> configuration.
-     *
-     * @param service the service configuration
-     * @return the insurance service, or {@code null} if none is found
-     */
-    InsuranceService getService(Entity service);
+    boolean canSubmit(Party insurer);
 
     /**
      * Returns the insurance service for the specified insurer.
      *
      * @param insurer the insurer
-     * @return the insurance service, or {@code null} if none is found
+     * @return the insurance service, or {@code null} if the insurer is not associated with an insurance service
+     * @throws InsuranceException if the service is unavailable
      */
-    InsuranceService getServiceForInsurer(Party insurer);
+    InsuranceService getService(Party insurer);
+
+    /**
+     * Returns the insurance service for the specified <em>entity.insuranceService*</em> configuration.
+     *
+     * @param config the service configuration
+     * @return the insurance service
+     * @throws InsuranceException if the service is unavailable
+     */
+    InsuranceService getServiceForConfiguration(Entity config);
 
 }

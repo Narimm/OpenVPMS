@@ -20,7 +20,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.exception.InsuranceException;
+import org.openvpms.insurance.i18n.InsuranceMessages;
 import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.plugin.manager.PluginManager;
@@ -54,31 +55,34 @@ public class InsuranceServicesImpl implements InsuranceServices {
     }
 
     /**
-     * Determines if claim can be submitted via an {@link InsuranceService}.
+     * Determines if claims can be submitted to an insurer via an {@link InsuranceService}.
      *
-     * @param claim the claim
-     * @return {@code true} if the claim can be submitted
+     * @param insurer the insurer
+     * @return {@code true} if insurer accepts claims via an {@link InsuranceService}
      */
-    public boolean canSubmit(Claim claim) {
-        Party insurer = claim.getPolicy().getInsurer();
+    public boolean canSubmit(Party insurer) {
         return getConfig(insurer) != null;
     }
 
     /**
      * Returns the insurance service for the specified <em>entity.insuranceService*</em> configuration.
      *
-     * @param service the service configuration
-     * @return the insurance service, or {@code null} if none is found
+     * @param config the service configuration
+     * @return the insurance service
+     * @throws InsuranceException if the service is unavailable
      */
     @Override
-    public InsuranceService getService(Entity service) {
+    public InsuranceService getServiceForConfiguration(Entity config) {
         InsuranceService result = null;
-        String archetype = service.getArchetypeId().getShortName();
+        String archetype = config.getArchetypeId().getShortName();
         for (InsuranceService insuranceService : manager.getServices(InsuranceService.class)) {
             if (archetype.equals(insuranceService.getArchetype())) {
                 result = insuranceService;
                 break;
             }
+        }
+        if (result == null) {
+            throw new InsuranceException(InsuranceMessages.serviceUnavailable(config.getName()));
         }
         return result;
     }
@@ -87,14 +91,15 @@ public class InsuranceServicesImpl implements InsuranceServices {
      * Returns the insurance service for the specified insurer.
      *
      * @param insurer the insurer
-     * @return the insurance service, or {@code null} if none is found
+     * @return the insurance service, or {@code null} if the insurer is not associated with an insurance service
+     * @throws InsuranceException if the service is unavailable
      */
     @Override
-    public InsuranceService getServiceForInsurer(Party insurer) {
+    public InsuranceService getService(Party insurer) {
         InsuranceService result = null;
         Entity config = getConfig(insurer);
         if (config != null) {
-            result = getService(config);
+            result = getServiceForConfiguration(config);
         }
         return result;
     }
@@ -107,6 +112,6 @@ public class InsuranceServicesImpl implements InsuranceServices {
      */
     private Entity getConfig(Party insurer) {
         IMObjectBean bean = new IMObjectBean(insurer, service);
-        return (Entity) bean.getNodeTargetObject("service");
+        return bean.getTarget("service", Entity.class);
     }
 }

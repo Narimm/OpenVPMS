@@ -77,6 +77,11 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
             }
 
             @Override
+            public void save(Collection<? extends IMObject> objects) {
+                PluginArchetypeServiceImpl.this.save(objects);
+            }
+
+            @Override
             public IMObject create(String shortName) {
                 return PluginArchetypeServiceImpl.this.create(shortName);
             }
@@ -114,12 +119,7 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
     @Override
     public IMObject create(final String archetype) {
         final IMObject[] result = new IMObject[1];
-        run(new Runnable() {
-            @Override
-            public void run() {
-                result[0] = service.create(archetype);
-            }
-        });
+        run(() -> result[0] = service.create(archetype));
         return result[0];
     }
 
@@ -130,12 +130,7 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
      */
     @Override
     public void save(final IMObject object) {
-        run(new Runnable() {
-            @Override
-            public void run() {
-                service.save(object);
-            }
-        });
+        run(() -> service.save(object));
     }
 
     /**
@@ -145,12 +140,7 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
      */
     @Override
     public void save(final Collection<? extends IMObject> objects) {
-        run(new Runnable() {
-            @Override
-            public void run() {
-                service.save(objects);
-            }
-        });
+        run(() -> service.save(objects));
     }
 
     /**
@@ -160,12 +150,7 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
      */
     @Override
     public void remove(final IMObject object) {
-        run(new Runnable() {
-            @Override
-            public void run() {
-                service.remove(object);
-            }
-        });
+        run(() -> service.remove(object));
     }
 
     /**

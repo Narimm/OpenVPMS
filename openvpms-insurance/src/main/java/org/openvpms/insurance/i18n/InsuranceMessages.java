@@ -31,22 +31,53 @@ public class InsuranceMessages {
      */
     private static Messages messages = new Messages("INS", InsuranceMessages.class.getName());
 
+    /**
+     * Message indicating that a claim has the wrong status for finalisation.
+     *
+     * @param status the claim status
+     * @return a new message
+     */
     public static Message cannotFinaliseClaimWithStatus(String status) {
         return messages.getMessage(1, status);
     }
 
+    /**
+     * Message indicating that a claim cannot be finalised as an attachment is in error.
+     *
+     * @param fileName the attachment file name
+     * @return a new message
+     */
     public static Message cannotFinaliseClaimAttachmentError(String fileName) {
         return messages.getMessage(2, fileName);
     }
 
+    /**
+     * Message indicating that a claim cannot be finalised as an attachment has no content.
+     *
+     * @param fileName the attachment file name
+     * @return a new message
+     */
     public static Message cannotFinaliseClaimNoAttachment(String fileName) {
         return messages.getMessage(3, fileName);
     }
 
+    /**
+     * Message indicating that a claim could not be finalised.
+     *
+     * @param message the cause
+     * @return a new message
+     */
     public static Message failedToFinaliseClaim(String message) {
         return messages.getMessage(4, message);
     }
 
+    /**
+     * Message indicating that the claim identifier archetype cannot be changed.
+     *
+     * @param current the current archetype
+     * @param other   the other archetype
+     * @return a new message
+     */
     public static Message differentClaimIdentifierArchetype(String current, String other) {
         return messages.getMessage(5, current, other);
     }
@@ -106,4 +137,13 @@ public class InsuranceMessages {
         return messages.getMessage(34);
     }
 
+    /**
+     * Message indicating that an insurance service is unavailable.
+     *
+     * @param name the service configuration name
+     * @return a new message
+     */
+    public static Message serviceUnavailable(String name) {
+        return messages.getMessage(40, name);
+    }
 }

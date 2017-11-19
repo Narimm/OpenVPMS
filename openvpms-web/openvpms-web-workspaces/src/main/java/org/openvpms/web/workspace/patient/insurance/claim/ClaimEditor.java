@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.echo.dialog.ErrorDialog;
@@ -102,12 +103,19 @@ public class ClaimEditor extends AbstractClaimEditor {
 
         Editors editors = getEditors();
         if (!canSubmitClaim(act)) {
-            // users can't submit the claim via an InsuranceService, so allow the insurerId to be edited
+            // users can't submit the claim via an InsuranceService, so allow the insurerId to be edited, and make it
+            // mandatory.
             CollectionProperty property = getCollectionProperty("insurerId");
             if (property.getValues().isEmpty()) {
                 IMObject identity = IMObjectCreator.create(InsuranceArchetypes.CLAIM_IDENTITY);
                 property.add(identity);
             }
+            property = new DelegatingProperty(property) {
+                @Override
+                public int getMinCardinality() {
+                    return 1;
+                }
+            };
             insurerId = new SingleIdentityCollectionEditor(property, act, context);
             editors.add(insurerId);
         }
@@ -203,7 +211,7 @@ public class ClaimEditor extends AbstractClaimEditor {
      */
     private boolean canSubmitClaim(Act act) {
         Claim claim = ServiceHelper.getBean(InsuranceFactory.class).createClaim(act);
-        return ServiceHelper.getBean(InsuranceServices.class).canSubmit(claim);
+        return ServiceHelper.getBean(InsuranceServices.class).canSubmit(claim.getPolicy().getInsurer());
     }
 
 }

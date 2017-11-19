@@ -19,6 +19,7 @@ package org.openvpms.insurance.service;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.exception.InsuranceException;
+import org.openvpms.insurance.policy.Policy;
 
 /**
  * The service for managing insurance claims.
@@ -63,6 +64,37 @@ public interface InsuranceService {
     Declaration getDeclaration();
 
     /**
+     * Determines if the service supports policy validation.
+     *
+     * @return {@code true} if the service supports policy validation
+     */
+    boolean canValidatePolicies();
+
+    /**
+     * Validate a policy.
+     *
+     * @param policy the policy
+     * @throws InsuranceException if the policy is invalid
+     */
+    void validate(Policy policy);
+
+    /**
+     * Determines if the service supports claim validation.
+     *
+     * @return {@code true} if the service supports claim validation
+     */
+    boolean canValidateClaims();
+
+    /**
+     * Validate a claim, prior to its submission.
+     *
+     * @param claim the claim
+     * @throws InsuranceException            if the claim is invalid
+     * @throws UnsupportedOperationException if the operation is not supported
+     */
+    void validate(Claim claim);
+
+    /**
      * Submit a claim.
      * <p>
      * The claim status must be {@link Claim.Status#POSTED}. On successful submission, it will be updated to:
@@ -81,10 +113,25 @@ public interface InsuranceService {
     void submit(Claim claim);
 
     /**
-     * Cancels a claim.
+     * Determines if the service can cancel a claim.
      *
      * @param claim the claim
+     * @return {@code true} if the service can cancel the claim
+     */
+    boolean canCancel(Claim claim);
+
+    /**
+     * Cancels a claim.
+     * <p>
+     * The claim must have {@link Claim.Status#PENDING}, {@link Claim.Status#POSTED}, {@link Claim.Status#SUBMITTED}
+     * or {@link Claim.Status#ACCEPTED} status.
+     * <p>
+     * Services that support synchronous cancellation set the status to {@link Claim.Status#CANCELLED}.<br/>
+     * Services that support asynchronous cancellation should set the status to {@link Claim.Status#CANCELLING}
+     *
+     * @param claim   the claim
+     * @param message a reason for the cancellation. This will update the <em>message</em> on the claim
      * @throws InsuranceException for any error
      */
-    void cancel(Claim claim);
+    void cancel(Claim claim, String message);
 }

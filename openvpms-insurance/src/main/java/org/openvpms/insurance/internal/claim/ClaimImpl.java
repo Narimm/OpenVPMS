@@ -189,6 +189,28 @@ public class ClaimImpl implements Claim {
     }
 
     /**
+     * Returns the date when the claim was created.
+     *
+     * @return the date
+     */
+    @Override
+    public Date getCreated() {
+        return claim.getDate("startTime");
+    }
+
+    /**
+     * Returns the date when the claim was completed.
+     * <p>
+     * This represents the date when the claim was cancelled, settled, or declined.
+     *
+     * @return the date, or {@code null} if the claim hasn't been completed
+     */
+    @Override
+    public Date getCompleted() {
+        return claim.getDate("endTime");
+    }
+
+    /**
      * Returns the animal that the claim applies to.
      *
      * @return the animal
@@ -228,7 +250,7 @@ public class ClaimImpl implements Claim {
      */
     @Override
     public void setStatus(Status status) {
-        claim.setStatus(status.name());
+        changeStatus(status);
         claim.save();
     }
 
@@ -240,7 +262,7 @@ public class ClaimImpl implements Claim {
      */
     @Override
     public void setStatus(Status status, String message) {
-        claim.setStatus(status.name());
+        changeStatus(status);
         updateMessage(message);
         claim.save();
     }
@@ -350,6 +372,19 @@ public class ClaimImpl implements Claim {
     }
 
     /**
+     * Determines if this claim can be cancelled.
+     *
+     * @return {@code true} if the claim is {@link Status#PENDING}, {@link Status#POSTED}, {@link Status#SUBMITTED}
+     * or {@link Status#ACCEPTED}.
+     */
+    @Override
+    public boolean canCancel() {
+        Status status = getStatus();
+        return (status == Status.PENDING || status == Status.POSTED || status == Status.SUBMITTED
+                || Status.ACCEPTED == status);
+    }
+
+    /**
      * Finalises the claim prior to submission.
      * <p>
      * The claim can only be finalised if it has {@link Status#PENDING PENDING} status, and all attachments have
@@ -455,6 +490,21 @@ public class ClaimImpl implements Claim {
      */
     protected ActIdentity getIdentity() {
         return claim.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
+    }
+
+    /**
+     * Changes the claim status. If the status represents a terminal state (CANCELLED, ACCEPTED, DECLINED), the
+     * end date will be updated with the current time, otherwise it will be cleared.
+     *
+     * @param status the status
+     */
+    private void changeStatus(Status status) {
+        claim.setStatus(status.name());
+        if (status == Status.CANCELLED || status == Status.SETTLED || status == Status.DECLINED) {
+            claim.setValue("endTime", new Date());
+        } else {
+            claim.setValue("endTime", null);
+        }
     }
 
     /**

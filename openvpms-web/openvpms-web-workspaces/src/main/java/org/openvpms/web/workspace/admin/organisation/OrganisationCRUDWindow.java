@@ -29,7 +29,6 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
@@ -101,21 +100,16 @@ public class OrganisationCRUDWindow extends ResultSetCRUDWindow<Entity> {
         Entity object = getObject();
         if (TypeHelper.isA(object, INSURANCE_SERVICES)) {
             InsuranceServices insuranceServices = ServiceHelper.getBean(InsuranceServices.class);
-            InsuranceService service = insuranceServices.getService(object);
-            if (service != null) {
-                Changes<Party> changes = service.synchroniseInsurers();
-                List<Changes.Change<Party>> list = changes.getChanges();
-                if (list.isEmpty()) {
-                    InformationDialog.show(Messages.get("admin.organisation.insurer.sync.title"),
-                                           Messages.format("admin.organisation.insurer.sync.nochanges",
-                                                           object.getName()));
-                } else {
-                    InsurerChanges popup = new InsurerChanges(list);
-                    popup.show();
-                }
+            InsuranceService service = insuranceServices.getServiceForConfiguration(object);
+            Changes<Party> changes = service.synchroniseInsurers();
+            List<Changes.Change<Party>> list = changes.getChanges();
+            if (list.isEmpty()) {
+                InformationDialog.show(Messages.get("admin.organisation.insurer.sync.title"),
+                                       Messages.format("admin.organisation.insurer.sync.nochanges",
+                                                       object.getName()));
             } else {
-                ErrorDialog.show(Messages.get("admin.organisation.insurer.sync.title"),
-                                 Messages.format("admin.organisation.insurer.sync.noservice", object.getName()));
+                InsurerChanges popup = new InsurerChanges(list);
+                popup.show();
             }
         }
     }

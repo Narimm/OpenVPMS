@@ -77,7 +77,7 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
     /**
      * Add problem button id.
      */
-    private static final String ADD_PROBLEM = "button.addProblem";
+    private static final String ADD_PROBLEM = "button.addproblem";
 
     /**
      * Constructs a {@link ClaimItemCollectionEditor}.

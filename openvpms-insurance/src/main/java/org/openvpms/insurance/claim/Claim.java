@@ -21,6 +21,7 @@ import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,13 +32,14 @@ import java.util.List;
 public interface Claim {
 
     enum Status {
-        PENDING,
-        POSTED,
-        SUBMITTED,
-        ACCEPTED,
-        SETTLED,
-        DECLINED,
-        CANCELLED;
+        PENDING,    // claim is pending. User can make changes
+        POSTED,     // claim is finalised. No further changes may be made prior to submission.
+        SUBMITTED,  // claim has been submitted to the insurer
+        ACCEPTED,   // claim has been accepted, and is being processed
+        SETTLED,    // claim has been settled by the insurer
+        DECLINED,   // claim has been declined by the insurer
+        CANCELLING, // claim is in the process of being cancelled
+        CANCELLED;  // claim has been cancelled
 
         public boolean isA(String status) {
             return name().equals(status);
@@ -69,6 +71,22 @@ public interface Claim {
      * @throws InsuranceException if the identifier cannot be set
      */
     void setInsurerId(String archetype, String id);
+
+    /**
+     * Returns the date when the claim was created.
+     *
+     * @return the date
+     */
+    Date getCreated();
+
+    /**
+     * Returns the date when the claim was completed.
+     * <p>
+     * This represents the date when the claim was cancelled, settled, or declined.
+     *
+     * @return the date, or {@code null} if the claim hasn't been completed
+     */
+    Date getCompleted();
 
     /**
      * Returns the animal that the claim applies to.
@@ -155,6 +173,14 @@ public interface Claim {
      * @return the message. May be {@code null}
      */
     String getMessage();
+
+    /**
+     * Determines if this claim can be cancelled.
+     *
+     * @return {@code true} if the claim is {@link Status#PENDING}, {@link Status#POSTED}, {@link Status#SUBMITTED}
+     * or {@link Status#ACCEPTED}.
+     */
+    boolean canCancel();
 
     /**
      * Finalises the claim prior to submission.
