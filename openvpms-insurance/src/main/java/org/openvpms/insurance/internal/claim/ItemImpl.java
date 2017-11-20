@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance.internal.claim;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -123,7 +124,10 @@ public class ItemImpl implements Item {
      */
     @Override
     public BigDecimal getDiscountTax() {
-        return BigDecimal.ZERO;
+        BigDecimal total = getTotal();
+        BigDecimal tax = getTotalTax();
+        BigDecimal discount = getDiscount();
+        return !MathRules.isZero(total) ? MathRules.divide(tax.multiply(discount), total, 2) : BigDecimal.ZERO;
     }
 
     /**

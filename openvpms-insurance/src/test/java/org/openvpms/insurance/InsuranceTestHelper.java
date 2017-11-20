@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -98,7 +99,8 @@ public class InsuranceTestHelper {
      * @param items        the claim items. A list of <em>act.patientInsuranceClaimItem</em>
      * @return a new claim
      */
-    public static Act createClaim(Act policy, Party location, User clinician, User claimHandler, Act... items) {
+    public static Act createClaim(Act policy, Party location, User clinician, User claimHandler,
+                                  FinancialAct... items) {
         Act claim = (Act) create(InsuranceArchetypes.CLAIM);
         ActBean bean = new ActBean(claim);
         ActBean policyBean = new ActBean(policy);
@@ -108,9 +110,15 @@ public class InsuranceTestHelper {
         bean.setNodeParticipant("location", location);
         bean.setNodeParticipant("user", claimHandler);
         bean.addNodeRelationship("policy", policy);
-        for (Act item : items) {
+        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.ZERO;
+        for (FinancialAct item : items) {
             bean.addNodeRelationship("items", item);
+            total = total.add(item.getTotal());
+            tax = tax.add(item.getTaxAmount());
         }
+        bean.setValue("amount", total);
+        bean.setValue("tax", tax);
         return claim;
     }
 
@@ -124,17 +132,23 @@ public class InsuranceTestHelper {
      * @param invoiceItems the invoice items being claimed
      * @return a new claim item
      */
-    public static Act createClaimItem(String diagnosis, Date startTime, Date endTime, User author,
-                                      Act... invoiceItems) {
-        Act item = (Act) create(InsuranceArchetypes.CLAIM_ITEM);
+    public static FinancialAct createClaimItem(String diagnosis, Date startTime, Date endTime, User author,
+                                               FinancialAct... invoiceItems) {
+        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.ZERO;
+        FinancialAct item = (FinancialAct) create(InsuranceArchetypes.CLAIM_ITEM);
         ActBean bean = new ActBean(item);
         item.setReason(TestHelper.getLookup("lookup.diagnosisVeNom", diagnosis).getCode());
         item.setActivityStartTime(startTime);
         item.setActivityEndTime(endTime);
         bean.setNodeParticipant("author", author);
-        for (Act invoiceItem : invoiceItems) {
+        for (FinancialAct invoiceItem : invoiceItems) {
+            total = total.add(invoiceItem.getTotal());
+            tax = tax.add(invoiceItem.getTaxAmount());
             bean.addNodeRelationship("items", invoiceItem);
         }
+        bean.setValue("amount", total);
+        bean.setValue("tax", tax);
         return item;
     }
 
@@ -174,15 +188,18 @@ public class InsuranceTestHelper {
     /**
      * Verifies an invoice matches that expected.
      *
-     * @param invoice  the invoice to check
-     * @param id       the expected id
-     * @param discount the expected discount
-     * @param tax      the expected tax
-     * @param total    the expected total
+     * @param invoice     the invoice to check
+     * @param id          the expected id
+     * @param discount    the expected discount
+     * @param discountTax the expected discount tax
+     * @param tax         the expected tax
+     * @param total       the expected total
      */
-    public static void checkInvoice(Invoice invoice, long id, BigDecimal discount, BigDecimal tax, BigDecimal total) {
+    public static void checkInvoice(Invoice invoice, long id, BigDecimal discount,
+                                    BigDecimal discountTax, BigDecimal tax, BigDecimal total) {
         assertEquals(id, invoice.getId());
         checkEquals(discount, invoice.getDiscount());
+        checkEquals(discountTax, invoice.getDiscountTax());
         checkEquals(tax, invoice.getTotalTax());
         checkEquals(total, invoice.getTotal());
     }
@@ -190,20 +207,22 @@ public class InsuranceTestHelper {
     /**
      * Verifies an invoice item matches that expected.
      *
-     * @param item     the invoice item to check
-     * @param id       the expected id
-     * @param date     the expected date
-     * @param product  the expected product
-     * @param discount the expected discount
-     * @param tax      the expected tax
-     * @param total    the expected total
+     * @param item        the invoice item to check
+     * @param id          the expected id
+     * @param date        the expected date
+     * @param product     the expected product
+     * @param discount    the expected discount
+     * @param discountTax the expected discount tax
+     * @param tax         the expected tax
+     * @param total       the expected total
      */
-    public static void checkItem(Item item, long id, Date date, Product product, BigDecimal discount, BigDecimal tax,
-                                 BigDecimal total) {
+    public static void checkItem(Item item, long id, Date date, Product product, BigDecimal discount,
+                                 BigDecimal discountTax, BigDecimal tax, BigDecimal total) {
         assertEquals(id, item.getId());
         assertEquals(date, item.getDate());
         assertEquals(product, item.getProduct());
         checkEquals(discount, item.getDiscount());
+        checkEquals(discountTax, item.getDiscountTax());
         checkEquals(tax, item.getTotalTax());
         checkEquals(total, item.getTotal());
     }

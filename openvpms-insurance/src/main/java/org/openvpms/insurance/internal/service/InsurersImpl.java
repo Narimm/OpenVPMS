@@ -96,6 +96,7 @@ public class InsurersImpl implements Insurers {
      * @return the insurers
      */
     @Override
+    @SuppressWarnings("unchecked")
     public List<Party> getInsurers(String archetype, boolean activeOnly) {
         if (!TypeHelper.matches(archetype, "entityIdentity.insurer*")) {
             throw new IllegalStateException("Invalid insurer identity archetype: " + archetype);
@@ -113,12 +114,13 @@ public class InsurersImpl implements Insurers {
      * @param archetype        the insurer identity archetype
      * @param insurerId        the insurer identifier. This must be unique
      * @param name             the insurer name
+     * @param description      the insurer description. May be {@code null}
      * @param insuranceService the service that manages claims for this insurer
      * @return a new insurer
      */
     @Override
     public Party createInsurer(final String archetype, final String insurerId, final String name,
-                               final Entity insuranceService) {
+                               String description, final Entity insuranceService) {
         TransactionTemplate template = new TransactionTemplate(transactionManager);
         return template.execute(new TransactionCallback<Party>() {
             @Override

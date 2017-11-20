@@ -52,10 +52,11 @@ public interface Insurers {
      * @param archetype        the insurer identity archetype
      * @param insurerId        the insurer identifier. This must be unique
      * @param name             the insurer name
+     * @param description      the insurer description. May be {@code null}
      * @param insuranceService the service that manages claims for this insurer
      * @return a new insurer
      */
-    Party createInsurer(String archetype, String insurerId, String name, Entity insuranceService);
+    Party createInsurer(String archetype, String insurerId, String name, String description, Entity insuranceService);
 
     /**
      * Returns the insurer identifier.

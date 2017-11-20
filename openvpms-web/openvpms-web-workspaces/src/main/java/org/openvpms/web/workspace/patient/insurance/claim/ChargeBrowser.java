@@ -42,6 +42,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
+import org.openvpms.insurance.claim.Claim;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
@@ -291,20 +292,23 @@ public class ChargeBrowser {
      * Determines if a charge item has been claimed already by another insurance claim.
      *
      * @param item the charge item
-     * @return {@code true} if the charge item has a relationship to an insurance claim that isn't CANCELLED
+     * @return {@code true} if the charge item has a relationship to an insurance claim that isn't CANCELLED or DECLINED
      */
     private boolean isClaimed(FinancialAct item) {
+        boolean result = false;
         ActBean chargeBean = new ActBean(item, cachingService);
         for (Act claimItem : chargeBean.getSourceActs(InsuranceArchetypes.CLAIM_INVOICE_ITEM)) {
             ActBean bean = new ActBean(claimItem, cachingService);
             Act claim = (Act) bean.getNodeSourceObject("claim");
             if (claim != null) {
-                if (!ActStatus.CANCELLED.equals(claim.getStatus())) {
-                    return true;
+                String status = claim.getStatus();
+                if (!Claim.Status.CANCELLED.isA(status) && !Claim.Status.DECLINED.isA(status)) {
+                    result = true;
+                    break;
                 }
             }
         }
-        return false;
+        return result;
     }
 
 

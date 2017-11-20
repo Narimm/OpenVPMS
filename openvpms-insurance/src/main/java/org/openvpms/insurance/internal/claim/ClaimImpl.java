@@ -51,6 +51,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -208,6 +209,54 @@ public class ClaimImpl implements Claim {
     @Override
     public Date getCompleted() {
         return claim.getDate("endTime");
+    }
+
+    /**
+     * Returns the discount amount, including tax.
+     *
+     * @return the discount amount
+     */
+    @Override
+    public BigDecimal getDiscount() {
+        BigDecimal result = BigDecimal.ZERO;
+        for (Condition condition : getConditions()) {
+            result = result.add(condition.getDiscount());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the discount tax amount.
+     *
+     * @return the discount tax amount
+     */
+    @Override
+    public BigDecimal getDiscountTax() {
+        BigDecimal result = BigDecimal.ZERO;
+        for (Condition condition : getConditions()) {
+            result = result.add(condition.getDiscountTax());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the total amount being claimed, including tax.
+     *
+     * @return the total amount
+     */
+    @Override
+    public BigDecimal getTotal() {
+        return claim.getBigDecimal("amount", BigDecimal.ZERO);
+    }
+
+    /**
+     * Returns the total tax amount.
+     *
+     * @return the tax amount
+     */
+    @Override
+    public BigDecimal getTotalTax() {
+        return claim.getBigDecimal("tax", BigDecimal.ZERO);
     }
 
     /**

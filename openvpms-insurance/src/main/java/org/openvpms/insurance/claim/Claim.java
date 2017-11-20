@@ -21,6 +21,7 @@ import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -87,6 +88,35 @@ public interface Claim {
      * @return the date, or {@code null} if the claim hasn't been completed
      */
     Date getCompleted();
+
+    /**
+     * Returns the discount amount, including tax.
+     *
+     * @return the discount amount
+     */
+    BigDecimal getDiscount();
+
+    /**
+     * Returns the discount tax amount.
+     *
+     * @return the discount tax amount
+     */
+    BigDecimal getDiscountTax();
+
+    /**
+     * Returns the total amount being claimed, including tax.
+     *
+     * @return the total amount
+     */
+    BigDecimal getTotal();
+
+    /**
+     * Returns the total tax amount.
+     *
+     * @return the tax amount
+     */
+    BigDecimal getTotalTax();
+
 
     /**
      * Returns the animal that the claim applies to.

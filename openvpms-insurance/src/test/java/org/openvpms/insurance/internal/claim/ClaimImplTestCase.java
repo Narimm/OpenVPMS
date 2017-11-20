@@ -178,11 +178,13 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         Product product3 = TestHelper.createProduct();
         Date itemDate1 = getDatetime("2017-09-27 10:00:00");
         BigDecimal discount1 = new BigDecimal("0.10");
+        BigDecimal discountTax1 = new BigDecimal("0.01");
         BigDecimal tax1 = new BigDecimal("0.08");
         BigDecimal total1 = new BigDecimal("0.90");
         FinancialAct invoiceItem1 = createInvoiceItem(itemDate1, product1, ONE, ONE, discount1, tax1);
         Date itemDate2 = getDatetime("2017-09-27 11:00:00");
         BigDecimal discount2 = BigDecimal.ZERO;
+        BigDecimal discountTax2 = BigDecimal.ZERO;
         BigDecimal tax2 = new BigDecimal("0.91");
         BigDecimal total2 = BigDecimal.TEN;
         FinancialAct invoiceItem2 = createInvoiceItem(itemDate2, product2, ONE, TEN, discount2, tax2);
@@ -191,6 +193,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
 
         Date itemDate3 = getDatetime("2017-09-28 15:00:00");
         BigDecimal discount3 = BigDecimal.ZERO;
+        BigDecimal discountTax3 = BigDecimal.ZERO;
         BigDecimal tax3 = new BigDecimal("0.91");
         BigDecimal total3 = BigDecimal.TEN;
         FinancialAct invoiceItem3 = createInvoiceItem(itemDate3, product3, new BigDecimal("2"), new BigDecimal("5"),
@@ -198,8 +201,8 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         List<FinancialAct> invoice2Acts = createInvoice(getDate("2017-09-28"), invoiceItem3);
         save(invoice2Acts);
 
-        Act item1Act = createClaimItem("VENOM_328", treatFrom1, treatTo1, clinician, invoiceItem1, invoiceItem2,
-                                       invoiceItem3);
+        FinancialAct item1Act = createClaimItem("VENOM_328", treatFrom1, treatTo1, clinician, invoiceItem1,
+                                                invoiceItem2, invoiceItem3);
         Act claimAct = createClaim(policyAct, location, clinician, user, item1Act);
         claimAct.addIdentity(createActIdentity("actIdentity.insuranceClaim", "CLM987654"));
         save(policyAct, claimAct, item1Act);
@@ -220,21 +223,26 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
 
         // check the first invoice
         Invoice invoice1 = condition1.getInvoices().get(0);
-        checkInvoice(invoice1, invoice1Acts.get(0).getId(), discount1.add(discount2), tax1.add(tax2),
-                     total1.add(total2));
+        checkInvoice(invoice1, invoice1Acts.get(0).getId(), discount1.add(discount2), discountTax1.add(discountTax2),
+                     tax1.add(tax2), total1.add(total2));
 
         List<Item> items1 = invoice1.getItems();
         assertEquals(2, items1.size());
-        checkItem(items1.get(0), invoiceItem1.getId(), itemDate1, product1, discount1, tax1, total1);
-        checkItem(items1.get(1), invoiceItem2.getId(), itemDate2, product2, discount2, tax2, total2);
+        checkItem(items1.get(0), invoiceItem1.getId(), itemDate1, product1, discount1, discountTax1, tax1, total1);
+        checkItem(items1.get(1), invoiceItem2.getId(), itemDate2, product2, discount2, discountTax2, tax2, total2);
 
         // check the second invoice
         Invoice invoice2 = condition1.getInvoices().get(1);
-        checkInvoice(invoice2, invoice2Acts.get(0).getId(), discount3, tax3, total3);
+        checkInvoice(invoice2, invoice2Acts.get(0).getId(), discount3, discountTax3, tax3, total3);
 
         List<Item> items2 = invoice2.getItems();
         assertEquals(1, items2.size());
-        checkItem(items2.get(0), invoiceItem3.getId(), itemDate3, product3, discount3, tax3, total3);
+        checkItem(items2.get(0), invoiceItem3.getId(), itemDate3, product3, discount3, discountTax3, tax3, total3);
+
+        assertEquals(total1.add(total2).add(total3), claim.getTotal());
+        assertEquals(tax1.add(tax2).add(tax3), claim.getTotalTax());
+        assertEquals(discount1.add(discount2).add(discount3), claim.getDiscount());
+        assertEquals(discountTax1.add(discountTax2).add(discountTax3), claim.getDiscountTax());
 
         // check the history
         List<Note> history = claim.getClinicalHistory();
