@@ -58,10 +58,11 @@ public interface InsuranceService {
     /**
      * Returns the declaration that users must accept, before submitting a claim.
      *
+     * @param claim the claim
      * @return the declaration, or {@code null}, if no declaration is required
      * @throws InsuranceException for any error
      */
-    Declaration getDeclaration();
+    Declaration getDeclaration(Claim claim);
 
     /**
      * Determines if the service supports policy validation.
@@ -107,10 +108,11 @@ public interface InsuranceService {
      * to add any missing details, and throw an {@link InsuranceException} containing the reason for the rejection.
      * <ul>
      *
-     * @param claim the claim to submit
+     * @param claim       the claim to submit
+     * @param declaration the declaration the user accepted. May be {@code null} if no declaration was required
      * @throws InsuranceException for any error
      */
-    void submit(Claim claim);
+    void submit(Claim claim, Declaration declaration);
 
     /**
      * Determines if the service can cancel a claim.

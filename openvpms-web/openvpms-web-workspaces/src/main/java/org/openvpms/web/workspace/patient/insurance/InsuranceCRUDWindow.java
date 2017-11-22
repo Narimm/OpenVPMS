@@ -448,7 +448,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      * @param service the service to submit to
      */
     private void submitWithDeclaration(final Claim claim, final InsuranceService service) {
-        Declaration declaration = service.getDeclaration();
+        Declaration declaration = service.getDeclaration(claim);
         if (declaration != null) {
             String text = declaration.getText();
             ConfirmationDialog.show(Messages.get("patient.insurance.declaration.title"), text,
@@ -456,23 +456,13 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
                         @Override
                         public void onAction(String action) {
                             if (ACCEPT_ID.equals(action)) {
-                                submit(claim, service);
+                                service.submit(claim, declaration);
                             }
                         }
                     });
         } else {
-            submit(claim, service);
+            service.submit(claim, null);
         }
-    }
-
-    /**
-     * Submits a claim to an {@link InsuranceService}.
-     *
-     * @param claim   the claim
-     * @param service the service to submit to
-     */
-    private void submit(Claim claim, InsuranceService service) {
-        service.submit(claim);
     }
 
     private static class InsuranceActions extends ActActions<Act> {

@@ -29,8 +29,6 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.insurance.service.Insurers;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
@@ -121,26 +119,24 @@ public class InsurersImpl implements Insurers {
     public Party createInsurer(final String archetype, final String insurerId, final String name,
                                String description, final Entity insuranceService) {
         TransactionTemplate template = new TransactionTemplate(transactionManager);
-        return template.execute(new TransactionCallback<Party>() {
-            @Override
-            public Party doInTransaction(TransactionStatus transactionStatus) {
-                Party existing = getInsurer(archetype, insurerId);
-                if (existing != null) {
-                    throw new IllegalStateException("An insurer already exists with insurerId=" + insurerId);
-                }
-                Party insurer = (Party) service.create(SupplierArchetypes.INSURER);
-                EntityIdentity identity = (EntityIdentity) service.create(archetype);
-                if (identity == null) {
-                    throw new IllegalStateException("Invalid archetype: " + archetype);
-                }
-                identity.setIdentity(insurerId);
-                insurer.setName(name);
-                insurer.addIdentity(identity);
-                IMObjectBean bean = service.getBean(insurer);
-                bean.addTarget("service", insuranceService);
-                bean.save();
-                return insurer;
+        return template.execute(transactionStatus -> {
+            Party existing = getInsurer(archetype, insurerId);
+            if (existing != null) {
+                throw new IllegalStateException("An insurer already exists with insurerId=" + insurerId);
             }
+            Party insurer = (Party) service.create(SupplierArchetypes.INSURER);
+            EntityIdentity identity = (EntityIdentity) service.create(archetype);
+            if (identity == null) {
+                throw new IllegalStateException("Invalid archetype: " + archetype);
+            }
+            identity.setIdentity(insurerId);
+            insurer.setName(name);
+            insurer.setDescription(description);
+            insurer.addIdentity(identity);
+            IMObjectBean bean = service.getBean(insurer);
+            bean.addTarget("service", insuranceService);
+            bean.save();
+            return insurer;
         });
     }
 
