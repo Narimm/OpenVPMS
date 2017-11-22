@@ -17,11 +17,12 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.component.business.domain.bean.Policies;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
@@ -29,7 +30,6 @@ import org.openvpms.insurance.claim.Item;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +50,7 @@ public class ConditionImpl implements Condition {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * The invoices being claimed for the condition.
@@ -63,7 +63,7 @@ public class ConditionImpl implements Condition {
      * @param act     the condition act
      * @param service the archetype service
      */
-    public ConditionImpl(Act act, IArchetypeService service) {
+    public ConditionImpl(Act act, IArchetypeRuleService service) {
         this.condition = new ActBean(act, service);
         this.service = service;
     }
@@ -194,12 +194,12 @@ public class ConditionImpl implements Condition {
      */
     private List<Invoice> collectInvoices() {
         List<Invoice> result = new ArrayList<>();
-        List<Act> claimItems = condition.getNodeActs("items");
+        List<Act> claimItems = condition.getTargets("items", Act.class, Policies.any());
         Map<IMObjectReference, Act> invoicesByRef = new HashMap<>();
         Map<IMObjectReference, List<Item>> itemsByInvoice = new HashMap<>();
         for (Act item : claimItems) {
             ActBean bean = new ActBean(item, service);
-            IMObjectReference ref = bean.getNodeSourceObjectRef("invoice");
+            IMObjectReference ref = bean.getSourceRef("invoice");
             Act invoice = invoicesByRef.get(ref);
             if (invoice == null) {
                 invoice = (Act) service.get(ref);
@@ -220,20 +220,10 @@ public class ConditionImpl implements Condition {
         for (Map.Entry<IMObjectReference, Act> entry : invoicesByRef.entrySet()) {
             Act invoice = entry.getValue();
             List<Item> items = itemsByInvoice.get(entry.getKey());
-            Collections.sort(items, new Comparator<Item>() {
-                @Override
-                public int compare(Item o1, Item o2) {
-                    return DateRules.compareTo(o1.getDate(), o2.getDate());
-                }
-            });
+            Collections.sort(items, (o1, o2) -> DateRules.compareTo(o1.getDate(), o2.getDate()));
             result.add(new InvoiceImpl(invoice, items));
         }
-        Collections.sort(result, new Comparator<Invoice>() {
-            @Override
-            public int compare(Invoice o1, Invoice o2) {
-                return DateRules.compareTo(o1.getDate(), o2.getDate());
-            }
-        });
+        Collections.sort(result, (o1, o2) -> DateRules.compareTo(o1.getDate(), o2.getDate()));
         return result;
     }
 }

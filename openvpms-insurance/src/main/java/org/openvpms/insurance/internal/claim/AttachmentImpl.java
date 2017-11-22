@@ -16,7 +16,6 @@
 
 package org.openvpms.insurance.internal.claim;
 
-import org.apache.commons.collections.PredicateUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -206,6 +205,6 @@ public class AttachmentImpl implements Attachment {
      * @return the claim identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return act.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return act.getObject("insurerId", ActIdentity.class);
     }
 }

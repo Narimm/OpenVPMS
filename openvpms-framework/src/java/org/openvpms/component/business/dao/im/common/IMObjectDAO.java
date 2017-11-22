@@ -75,7 +75,7 @@ public interface IMObjectDAO {
      * Retrieves partially populated objects that match the query.
      * This may be used to selectively load parts of object graphs to improve
      * performance.
-     * <p/>
+     * <p>
      * All simple properties of the returned objects are populated - the
      * <code>nodes</code> argument is used to specify which collection nodes to
      * populate. If empty, no collections will be loaded, and the behaviour of
@@ -111,15 +111,15 @@ public interface IMObjectDAO {
      * Retrieves the objects that match the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
-     * <p/>
+     * <p>
      * All parameters are optional and can either denote an exact or partial
      * match semantics. If a parameter has a '*' at the start or end of the
      * value then it will perform a wildcard match.  If not '*' is specified in
      * the value then it will only return objects with the exact value.
-     * <p/>
+     * <p>
      * If two or more parameters are specified then it will return entities
      * that matching all criteria.
-     * <p/>
+     * <p>
      * The results will be returned in a {@link Page} object, which may contain
      * a subset of the total result set. The caller can then use the context
      * information in the {@link Page} object to make subsequent calls.
@@ -133,11 +133,11 @@ public interface IMObjectDAO {
      * @param firstResult  the first result to retrieve
      * @param maxResults   the maximum number of results to return
      * @return IPage<IMObject>
-     *         the results and associated context information
+     * the results and associated context information
      * @throws IMObjectDAOException a runtime exception if the request cannot
      *                              complete
      * @deprecated replaced by {@link #get(String, String, String, boolean,
-     *             int, int)}
+     * int, int)}
      */
     @Deprecated
     IPage<IMObject> get(String rmName, String entityName, String conceptName,
@@ -148,15 +148,15 @@ public interface IMObjectDAO {
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
-     * <p/>
+     * <p>
      * All parameters are optional and can either denote an exact or partial
      * match semantics. If a parameter has a '*' at the start or end of the
      * value then it will perform a wildcard match.  If not '*' is specified in
      * the value then it will only return objects with the exact value.
-     * <p/>
+     * <p>
      * If two or more parameters are specified then it will return entities
      * that matching all criteria.
-     * <p/>
+     * <p>
      * The results will be returned in a {@link Page} object, which may contain
      * a subset of the total result set. The caller can then use the context
      * information in the {@link Page} object to make subsequent calls.
@@ -177,11 +177,21 @@ public interface IMObjectDAO {
      * Returns an object with the specified reference.
      *
      * @param reference the object reference
-     * @param activeOnly if {@code true}, only return the object if it is active
+     * @return the corresponding object, or <tt>null</tt> if none exists. The object may be active or inactive
+     * @throws IMObjectDAOException for any error
+     */
+    IMObject get(IMObjectReference reference);
+
+    /**
+     * Returns an object with the specified reference.
+     *
+     * @param reference the object reference
+     * @param active    if {@code true}, only return the object if it is active. If {@code false}, only return the
+     *                  object if it is inactive
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    IMObject get(IMObjectReference reference, boolean activeOnly);
+    IMObject get(IMObjectReference reference, boolean active);
 
     /**
      * Executes a get using the specified named query, the query

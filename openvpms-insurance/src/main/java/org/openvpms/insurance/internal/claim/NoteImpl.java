@@ -17,6 +17,7 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.component.business.domain.bean.Policies;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -127,7 +128,7 @@ public class NoteImpl implements Note {
      */
     protected List<Note> collectAddenda() {
         List<Note> result = new ArrayList<>();
-        List<Act> acts = note.getNodeActs("addenda");
+        List<Act> acts = note.getTargets("addenda", Act.class, Policies.any());
         Collections.sort(acts, ActComparator.ascending());
         for (Act act : acts) {
             result.add(new NoteImpl(act, service));

@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.InsuranceTestHelper;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.Condition;
@@ -51,7 +52,9 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.finance.account.FinancialTestHelper.createChargesInvoice;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createAddendum;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createEvent;
@@ -64,7 +67,6 @@ import static org.openvpms.insurance.InsuranceTestHelper.checkCondition;
 import static org.openvpms.insurance.InsuranceTestHelper.checkInvoice;
 import static org.openvpms.insurance.InsuranceTestHelper.checkItem;
 import static org.openvpms.insurance.InsuranceTestHelper.checkNote;
-import static org.openvpms.insurance.InsuranceTestHelper.createClaim;
 import static org.openvpms.insurance.InsuranceTestHelper.createClaimItem;
 import static org.openvpms.insurance.InsuranceTestHelper.createInsurer;
 import static org.openvpms.insurance.InsuranceTestHelper.createPolicy;
@@ -125,6 +127,11 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
     private User user;
 
     /**
+     * The policy.
+     */
+    private Act policyAct;
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -160,6 +167,14 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
 
         // diagnosis codes
         InsuranceTestHelper.createDiagnosis("VENOM_328", "Abcess", "328");
+
+        // insurer
+        Party insurer = createInsurer(TestHelper.randomName("ZInsurer-"));
+
+        // policy
+        policyAct = createPolicy(customer, patient, insurer,
+                                 createActIdentity("actIdentity.insurancePolicy", "POL123456"));
+        save(policyAct);
     }
 
     /**
@@ -167,9 +182,6 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testClaim() {
-        Party insurer = createInsurer(TestHelper.randomName("ZInsurer-"));
-        Act policyAct = createPolicy(customer, patient, insurer,
-                                     createActIdentity("actIdentity.insurancePolicy", "POL123456"));
 
         Date treatFrom1 = getDate("2017-09-27");
         Date treatTo1 = getDate("2017-09-29");
@@ -203,12 +215,11 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
 
         FinancialAct item1Act = createClaimItem("VENOM_328", treatFrom1, treatTo1, clinician, invoiceItem1,
                                                 invoiceItem2, invoiceItem3);
-        Act claimAct = createClaim(policyAct, location, clinician, user, item1Act);
+        Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
         claimAct.addIdentity(createActIdentity("actIdentity.insuranceClaim", "CLM987654"));
         save(policyAct, claimAct, item1Act);
 
-        Claim claim = new ClaimImpl(claimAct, getArchetypeService(), customerRules, patientRules, handlers,
-                                    getLookupService(), transactionManager);
+        Claim claim = createClaim(claimAct);
         assertEquals(claimAct.getId(), claim.getId());
         assertEquals("CLM987654", claim.getInsurerId());
         assertEquals(Claim.Status.PENDING, claim.getStatus());
@@ -252,6 +263,55 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         Note note3 = checkNote(history.get(2), getDate("2015-07-01"), clinician, "Note 3", 2);
         checkNote(note3.getNotes().get(0), getDate("2015-07-03"), clinician, "Note 3 addendum 1", 0);
         checkNote(note3.getNotes().get(1), getDate("2015-07-04"), clinician, "Note 3 addendum 2", 0);
+    }
+
+    /**
+     * Tests the {@link Claim#canCancel()} method.
+     */
+    @Test
+    public void testCancel() {
+        Product product1 = TestHelper.createProduct();
+        Date itemDate1 = getDatetime("2017-09-27 10:00:00");
+        BigDecimal discount1 = new BigDecimal("0.10");
+        BigDecimal tax1 = new BigDecimal("0.08");
+        FinancialAct invoiceItem1 = createInvoiceItem(itemDate1, product1, ONE, ONE, discount1, tax1);
+        List<FinancialAct> invoice1Acts = createInvoice(getDate("2017-09-27"), invoiceItem1);
+        save(invoice1Acts);
+
+        FinancialAct item1Act = createClaimItem("VENOM_328", itemDate1, itemDate1, clinician, invoiceItem1);
+        Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
+        save(claimAct, item1Act);
+
+        Claim claim = new ClaimImpl(claimAct, (IArchetypeRuleService) getArchetypeService(), customerRules,
+                                    patientRules, handlers, getLookupService(), transactionManager);
+        assertEquals(Claim.Status.PENDING, claim.getStatus());
+        assertTrue(claim.canCancel());
+
+        claim.setStatus(Claim.Status.POSTED);
+        assertTrue(claim.canCancel());
+
+        claim.setStatus(Claim.Status.SUBMITTED);
+        assertTrue(claim.canCancel());
+
+        claim.setStatus(Claim.Status.ACCEPTED);
+        assertTrue(claim.canCancel());
+
+        claim.setStatus(Claim.Status.SETTLED);
+        assertFalse(claim.canCancel());
+
+        claim.setStatus(Claim.Status.DECLINED);
+        assertFalse(claim.canCancel());
+
+        claim.setStatus(Claim.Status.CANCELLING);
+        assertFalse(claim.canCancel());
+
+        claim.setStatus(Claim.Status.CANCELLED);
+        assertFalse(claim.canCancel());
+    }
+
+    private Claim createClaim(Act claimAct) {
+        return new ClaimImpl(claimAct, (IArchetypeRuleService) getArchetypeService(), customerRules, patientRules,
+                             handlers, getLookupService(), transactionManager);
     }
 
     /**

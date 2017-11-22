@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.claim.ClaimImpl;
@@ -38,7 +38,7 @@ public class InsuranceFactory {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * The customer rules.
@@ -75,7 +75,7 @@ public class InsuranceFactory {
      * @param lookups            the lookup  service
      * @param transactionManager the transaction manager
      */
-    public InsuranceFactory(IArchetypeService service, CustomerRules customerRules, PatientRules patientRules,
+    public InsuranceFactory(IArchetypeRuleService service, CustomerRules customerRules, PatientRules patientRules,
                             DocumentHandlers handlers, ILookupService lookups,
                             PlatformTransactionManager transactionManager) {
         this.service = service;

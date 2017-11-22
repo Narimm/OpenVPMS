@@ -28,6 +28,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.InsuranceTestHelper;
 import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
@@ -81,7 +82,7 @@ public class PolicyImplTestCase extends ArchetypeServiceTest {
         Act act = InsuranceTestHelper.createPolicy(customer, patient, insurer,
                                                    createActIdentity("actIdentity.insurancePolicy", "123456"));
 
-        Policy policy = new PolicyImpl(act, getArchetypeService(), customerRules, patientRules);
+        Policy policy = new PolicyImpl(act, (IArchetypeRuleService) getArchetypeService(), customerRules, patientRules);
         assertEquals("123456", policy.getInsurerId());
         assertEquals(act.getActivityEndTime(), policy.getExpiryDate());
 

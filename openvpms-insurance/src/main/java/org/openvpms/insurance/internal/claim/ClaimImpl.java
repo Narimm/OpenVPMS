@@ -16,12 +16,12 @@
 
 package org.openvpms.insurance.internal.claim;
 
-import org.apache.commons.collections.PredicateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.component.business.domain.bean.Policies;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -29,9 +29,9 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -76,7 +76,7 @@ public class ClaimImpl implements Claim {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * The customer rules.
@@ -134,7 +134,7 @@ public class ClaimImpl implements Claim {
      * @param lookups            the lookups
      * @param transactionManager the transaction manager
      */
-    public ClaimImpl(Act claim, IArchetypeService service, CustomerRules customerRules, PatientRules patientRules,
+    public ClaimImpl(Act claim, IArchetypeRuleService service, CustomerRules customerRules, PatientRules patientRules,
                      DocumentHandlers handlers, ILookupService lookups, PlatformTransactionManager transactionManager) {
         this.claim = new ActBean(claim, service, lookups);
         this.customerRules = customerRules;
@@ -277,7 +277,7 @@ public class ClaimImpl implements Claim {
     @Override
     public Policy getPolicy() {
         if (policy == null) {
-            policy = new PolicyImpl((Act) claim.getNodeTargetObject("policy"), service, customerRules, patientRules);
+            policy = new PolicyImpl(claim.getTarget("policy", Act.class), service, customerRules, patientRules);
         }
         return policy;
     }
@@ -486,7 +486,7 @@ public class ClaimImpl implements Claim {
      */
     protected List<Condition> collectConditions() {
         List<Condition> result = new ArrayList<>();
-        for (Act act : claim.getNodeActs("items")) {
+        for (Act act : claim.getTargets("items", Act.class, Policies.any())) {
             result.add(new ConditionImpl(act, service));
         }
         return result;
@@ -526,7 +526,7 @@ public class ClaimImpl implements Claim {
      */
     protected List<Attachment> collectAttachments() {
         List<Attachment> result = new ArrayList<>();
-        for (DocumentAct act : claim.getNodeTargetObjects("attachments", DocumentAct.class)) {
+        for (DocumentAct act : claim.getTargets("attachments", DocumentAct.class, Policies.any())) {
             result.add(new AttachmentImpl(act, service, handlers));
         }
         return result;
@@ -538,7 +538,7 @@ public class ClaimImpl implements Claim {
      * @return the claim identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return claim.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return claim.getObject("insurerId", ActIdentity.class);
     }
 
     /**

@@ -321,21 +321,22 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if the query fails
      */
     public IMObject get(IMObjectReference reference) {
-        return get(reference, false);
+        return dao.get(reference);
     }
 
     /**
      * Retrieves an object given its reference.
      *
-     * @param reference  the object reference
-     * @param activeOnly if {@code true}, only return the object if it is active
+     * @param reference the object reference
+     * @param active    if {@code true}, only return the object if it is active. If {@code false}, only return the
+     *                  object if it is inactive
      * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public IMObject get(IMObjectReference reference, boolean activeOnly) {
+    public IMObject get(IMObjectReference reference, boolean active) {
         try {
-            return dao.get(reference, activeOnly);
+            return dao.get(reference, active);
         } catch (Exception exception) {
             String message = "select " + reference;
             throw new ArchetypeServiceException(

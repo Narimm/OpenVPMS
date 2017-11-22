@@ -17,9 +17,9 @@
 package org.openvpms.insurance.internal.policy;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.policy.Animal;
 
 import java.util.Date;
@@ -53,9 +53,9 @@ public class AnimalImpl implements Animal {
      * @param service      the archetype service
      * @param patientRules the patient rules
      */
-    public AnimalImpl(Party patient, IArchetypeService service, PatientRules patientRules) {
+    public AnimalImpl(Party patient, IArchetypeRuleService service, PatientRules patientRules) {
         this.patient = patient;
-        bean = new IMObjectBean(patient, service);
+        bean = service.getBean(patient);
         this.patientRules = patientRules;
     }
 

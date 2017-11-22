@@ -198,7 +198,7 @@ public interface IArchetypeService {
      * Retrieves an object given its reference.
      *
      * @param reference the object reference
-     * @return the corresponding object, or {@code null} if none is found
+     * @return the corresponding object, or {@code null} if none is found. The object may be active or inactive
      * @throws ArchetypeServiceException if the query fails
      */
     IMObject get(IMObjectReference reference);
@@ -206,12 +206,13 @@ public interface IArchetypeService {
     /**
      * Retrieves an object given its reference.
      *
-     * @param reference  the object reference
-     * @param activeOnly if {@code true}, only return the object if it is active
+     * @param reference the object reference
+     * @param active    if {@code true}, only return the object if it is active. If {@code false}, only return the
+     *                  object if it is inactive
      * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
-    IMObject get(IMObjectReference reference, boolean activeOnly);
+    IMObject get(IMObjectReference reference, boolean active);
 
     /**
      * Retrieves the objects matching the query.

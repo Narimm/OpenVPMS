@@ -277,13 +277,13 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * Retrieves an object given its reference.
      *
      * @param reference  the object reference
-     * @param activeOnly if {@code true}, only return the object if it is active
+     * @param active if {@code true}, only return the object if it is active
      * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public IMObject get(IMObjectReference reference, boolean activeOnly) {
-        return service.get(reference, activeOnly);
+    public IMObject get(IMObjectReference reference, boolean active) {
+        return service.get(reference, active);
     }
 
     /**

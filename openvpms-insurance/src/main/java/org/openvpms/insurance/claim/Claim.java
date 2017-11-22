@@ -117,7 +117,6 @@ public interface Claim {
      */
     BigDecimal getTotalTax();
 
-
     /**
      * Returns the animal that the claim applies to.
      *

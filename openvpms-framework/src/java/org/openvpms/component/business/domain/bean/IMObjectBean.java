@@ -245,19 +245,35 @@ public interface IMObjectBean {
     /**
      * Returns the object at the specified node.
      * <p>
-     * If the named object is an {@link IMObjectReference}, it will be
-     * resolved.
+     * If the named object is an {@link IMObjectReference}, it will be resolved.
+     * <p>
+     * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
+     * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
      *
      * @param name the node name
-     * @return the node value
+     * @return the node value, or {@code null} if no value exists. Returned objects may be inactive
      */
     IMObject getObject(String name);
+
+    /**
+     * Returns the object at the specified node.
+     * <p>
+     * If the named object is an {@link IMObjectReference}, it will be resolved.
+     * <p>
+     * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
+     * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
+     *
+     * @param name the node name
+     * @param type the object type
+     * @return the node value, or {@code null} if no value exists. Returned objects may be inactive
+     */
+    <T extends IMObject> T getObject(String name, Class<T> type);
 
     /**
      * Returns the value of a node.
      *
      * @param name the node name
-     * @return the value of the node
+     * @return the value of the node. May be {@code null}
      */
     Object getValue(String name);
 
@@ -315,42 +331,6 @@ public interface IMObjectBean {
     <T extends IMObject> List<T> getValues(String name, Class<T> type, Predicate<T> predicate);
 
     /**
-     * Returns the first value of a collection node.
-     *
-     * @param name the node name
-     * @return the first object in the collection, or {@code null} if none is found
-     */
-    IMObject getFirst(String name);
-
-    /**
-     * Returns the first value of a collection node.
-     *
-     * @param name the node name
-     * @param type the object type
-     * @return the first object in the collection, or {@code null} if none is found
-     */
-    <T extends IMObject> T getFirst(String name, Class<T> type);
-
-    /**
-     * Returns the first value of a collection node that matches the supplied predicate.
-     *
-     * @param name      the node name
-     * @param predicate the predicate
-     * @return the first object matching the predicate, or {@code null} if none is found
-     */
-    IMObject getFirst(String name, Predicate<IMObject> predicate);
-
-    /**
-     * Returns the first value of a collection node that matches the supplied predicate.
-     *
-     * @param name      the node name
-     * @param type      the expected object type
-     * @param predicate the predicate
-     * @return the first object matching the predicate, or {@code null} if none is found
-     */
-    <T extends IMObject> T getFirst(String name, Class<T> type, Predicate<T> predicate);
-
-    /**
      * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
      * specified relationship node.
      *
@@ -370,54 +350,23 @@ public interface IMObjectBean {
     <T extends IMObject> T getSource(String name, Class<T> type);
 
     /**
-     * Returns the source object from the first {@link IMObjectRelationship} for the specified node.
-     * <p>
-     * Where an active object is required, the first active relationship with an active source will be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
+     * Returns the source object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship and source object must be active
+     * @param policy the policy for relationship selection and object retrieval
      * @return the source object, or {@code null} if none is found
      */
-    IMObject getSource(String name, boolean active);
+    <R extends IMObjectRelationship> IMObject getSource(String name, Policy<R> policy);
 
     /**
-     * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
-     * specified relationship node.
+     * Returns the source object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
      * @param type   the object type
-     * @param active determines if the relationship and source object must be active
+     * @param policy the policy for relationship selection and object retrieval
      * @return the source object, or {@code null} if none is found
      */
-    <T extends IMObject> T getSource(String name, boolean active, Class<T> type);
-
-    /**
-     * Returns the source object from the first {@link IMObjectRelationship} matching the predicate, with active source
-     * object.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the source object, or {@code null} if none is found
-     */
-    IMObject getSource(String name, Predicate<IMObjectRelationship> predicate);
-
-    /**
-     * Returns the source object from the first {@link IMObjectRelationship} matching the predicate, subject to
-     * the specified active constraint.
-     * <p>
-     * Where an active object is required, the first relationship matching the predicate with an active source will
-     * be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
-     *
-     * @param name      the relationship node name
-     * @param active    determines if the object must be active or not
-     * @param predicate the predicate
-     * @return the source object, or {@code null} if none is found
-     */
-    IMObject getSource(String name, boolean active, Predicate<IMObjectRelationship> predicate);
+    <T extends IMObject, R extends IMObjectRelationship> T getSource(String name, Class<T> type, Policy<R> policy);
 
     /**
      * Returns the target object from the first active {@link IMObjectRelationship} with active target object, for the
@@ -439,64 +388,30 @@ public interface IMObjectBean {
     <T extends IMObject> T getTarget(String name, Class<T> type);
 
     /**
-     * Returns the target object from the first {@link IMObjectRelationship} for the specified node.
-     * <p>
-     * Where an active object is required, the first active relationship with an active target will be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
+     * Returns the target object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship and target object must be active
+     * @param policy the policy for relationship selection and object retrieval
      * @return the target object, or {@code null} if none is found
      */
-    IMObject getTarget(String name, boolean active);
+    <R extends IMObjectRelationship> IMObject getTarget(String name, Policy<R> policy);
 
     /**
-     * Returns the target object from the first {@link IMObjectRelationship} for the specified node.
-     * <p>
-     * Where an active object is required, the first active relationship with an active target will be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
+     * Returns the target object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship and target object must be active
      * @param type   the object type
+     * @param policy the policy for relationship selection and object retrieval
      * @return the target object, or {@code null} if none is found
      */
-    <T extends IMObject> T getTarget(String name, boolean active, Class<T> type);
-
-    /**
-     * Returns the target object from the first {@link IMObjectRelationship} matching the predicate, with active target
-     * object.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the target object, or {@code null} if none is found
-     */
-    IMObject getTarget(String name, Predicate<IMObjectRelationship> predicate);
-
-    /**
-     * Returns the target object from the first {@link IMObjectRelationship} matching the predicate, subject to
-     * the specified active constraint.
-     * <p>
-     * Where an active object is required, the first relationship matching the predicate with an active target will
-     * be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
-     *
-     * @param name      the relationship node name
-     * @param active    determines if the object must be active or not
-     * @param predicate the predicate
-     * @return the target object, or {@code null} if none is found
-     */
-    IMObject getTarget(String name, boolean active, Predicate<IMObjectRelationship> predicate);
+    <T extends IMObject, R extends IMObjectRelationship> T getTarget(String name, Class<T> type, Policy<R> policy);
 
     /**
      * Returns the active source objects from each active {@link IMObjectRelationship} for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
-     * @param name the relationship node
+     * @param name the relationship node name
      * @return a list of active source objects
      */
     List<IMObject> getSources(String name);
@@ -506,58 +421,42 @@ public interface IMObjectBean {
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
-     * @param name the relationship node
+     * @param name the relationship node name
      * @param type the object type
      * @return a list of active source objects
      */
     <T extends IMObject> List<T> getSources(String name, Class<T> type);
 
     /**
-     * Returns the active source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the source objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param predicate the predicate
-     * @return a list of active source objects
+     * @param name   the relationship node name
+     * @param policy the policy for relationship selection and object retrieval
+     * @return a list of source objects matching the policy
      */
-    List<IMObject> getSources(String name, Predicate<IMObjectRelationship> predicate);
+    <R extends IMObjectRelationship> List<IMObject> getSources(String name, Policy<R> policy);
 
     /**
-     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the source objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param predicate the predicate
-     * @return a list of source objects. May contain inactive objects, if {@code active} is {@code false}
+     * @param name   the relationship node name
+     * @param type   the object type
+     * @param policy the policy for relationship selection and object retrieval
+     * @return a list of source objects matching the policy
      */
-    List<IMObject> getSources(String name, boolean active, Predicate<IMObjectRelationship> predicate);
+    <T extends IMObject, R extends IMObjectRelationship> List<T> getSources(String name, Class<T> type,
+                                                                            Policy<R> policy);
 
     /**
-     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
-     * <br/>
-     * If a source reference cannot be resolved, it will be ignored.
-     *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param type      the object type
-     * @param predicate the predicate
-     * @return a list of source objects. May contain inactive objects, if {@code active} is {@code false}
-     */
-    <T extends IMObject> List<T> getSources(String name, boolean active, Class<T> type,
-                                            Predicate<IMObjectRelationship> predicate);
-
-    /**
-     * Returns the active source objects from each active {@link IMObjectRelationship} for the specified node.
+     * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name the relationship node
+     * @param name the relationship node name
      * @return a list of active target objects
      */
     List<IMObject> getTargets(String name);
@@ -567,62 +466,35 @@ public interface IMObjectBean {
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name the relationship node
+     * @param name the relationship node name
      * @param type the object type
      * @return a list of active target objects
      */
     <T extends IMObject> List<T> getTargets(String name, Class<T> type);
 
     /**
-     * Returns the active target objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
-     *
-     * @param name      the relationship node
-     * @param predicate the predicate
-     * @return a list of target objects
-     */
-    List<IMObject> getTargets(String name, Predicate<IMObjectRelationship> predicate);
-
-    /**
-     * Returns the active target objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the target objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param type      the object type
-     * @param predicate the predicate
-     * @return a list of active target objects
+     * @param name   the relationship node name
+     * @param policy the policy for relationship selection and object retrieval
+     * @return a list of target objects matching the policy
      */
-    <T extends IMObject> List<T> getTargets(String name, Class<T> type, Predicate<IMObjectRelationship> predicate);
+    <R extends IMObjectRelationship> List<IMObject> getTargets(String name, Policy<R> policy);
 
     /**
-     * Returns the target objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the target objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param predicate the predicate
-     * @return a list of target objects. May contain inactive objects, if {@code active} is {@code false}
+     * @param name   the relationship node name
+     * @param type   the object type
+     * @param policy the policy for relationship selection and object retrieval
+     * @return a list of target objects matching the policy
      */
-    List<IMObject> getTargets(String name, boolean active, Predicate<IMObjectRelationship> predicate);
-
-    /**
-     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
-     * <br/>
-     * If a target reference cannot be resolved, it will be ignored.
-     *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param type      the object type
-     * @param predicate the predicate
-     * @return a list of target objects. May contain inactive objects, if {@code active} is {@code false}
-     */
-    <T extends IMObject> List<T> getTargets(String name, boolean active, Class<T> type,
-                                            Predicate<IMObjectRelationship> predicate);
+    <T extends IMObject, R extends IMObjectRelationship> List<T> getTargets(String name, Class<T> type,
+                                                                            Policy<R> policy);
 
     /**
      * Returns the source object reference from the first active {@link IMObjectRelationship} for the specified
@@ -634,41 +506,31 @@ public interface IMObjectBean {
     IMObjectReference getSourceRef(String name);
 
     /**
-     * Returns the source object reference from the first {@link IMObjectRelationship} for the specified
-     * relationship node.
+     * Returns the source object reference from the first {@link IMObjectRelationship} for the specified node matching
+     * the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship must be active
+     * @param policy the policy for relationship selection and object retrieval
      * @return the source object reference, or {@code null} if none is found
      */
-    IMObjectReference getSourceRef(String name, boolean active);
-
-    /**
-     * Returns the source object reference from the {@link IMObjectRelationship} matching the predicate.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the source object reference, or {@code null} if none is found
-     */
-    IMObjectReference getSourceRef(String name, Predicate<IMObjectRelationship> predicate);
+    <R extends IMObjectRelationship> IMObjectReference getSourceRef(String name, Policy<R> policy);
 
     /**
      * Returns the source object references from each active {@link IMObjectRelationship} for the specified node.
      *
-     * @param name the relationship node
+     * @param name the relationship node name
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     List<IMObjectReference> getSourceRefs(String name);
 
     /**
-     * Returns the source object references from each for the specified node that matches the
-     * supplied predicate.
+     * Returns the source object references from each for the specified node that matches the supplied policy.
      *
-     * @param name      the relationship node
-     * @param predicate the predicate
+     * @param name   the relationship node name
+     * @param policy the policy for relationship selection and object retrieval
      * @return a list of source object references. May contain references to both active and inactive objects
      */
-    List<IMObjectReference> getSourceRefs(String name, Predicate<IMObjectRelationship> predicate);
+    <R extends IMObjectRelationship> List<IMObjectReference> getSourceRefs(String name, Policy<R> policy);
 
     /**
      * Returns the target object reference from the first active {@link IMObjectRelationship} for the specified
@@ -684,43 +546,33 @@ public interface IMObjectBean {
      * relationship node.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship must be active
+     * @param policy the policy for relationship selection and object retrieval
      * @return the target object reference, or {@code null} if none is found
      */
-    IMObjectReference getTargetRef(String name, boolean active);
-
-    /**
-     * Returns the target object reference from the {@link IMObjectRelationship} matching the predicate.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the target object reference, or {@code null} if none is found
-     */
-    IMObjectReference getTargetRef(String name, Predicate<IMObjectRelationship> predicate);
+    <R extends IMObjectRelationship> IMObjectReference getTargetRef(String name, Policy<R> policy);
 
     /**
      * Returns the target object references from each active {@link IMObjectRelationship} for the specified node.
      *
-     * @param name the relationship node
+     * @param name the relationship node name
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     List<IMObjectReference> getTargetRefs(String name);
 
     /**
-     * Returns the target object references from each {@link IMObjectRelationship} for the specified node that matches
-     * the supplied predicate.
+     * Returns the target object references from each for the specified node that matches the supplied policy.
      *
-     * @param name      the relationship node
-     * @param predicate the predicate
+     * @param name   the relationship node name
+     * @param policy the policy for relationship selection and object retrieval
      * @return a list of target object references. May contain references to both active and inactive objects
      */
-    List<IMObjectReference> getTargetRefs(String name, Predicate<IMObjectRelationship> predicate);
+    <R extends IMObjectRelationship> List<IMObjectReference> getTargetRefs(String name, Policy<R> policy);
 
     /**
      * Determines if there is an active {@link IMObjectRelationship} with {@code object} as its source, for the node
      * {@code node}.
      *
-     * @param name   the relationship node
+     * @param name   the relationship node name
      * @param object the target object
      * @return {@code true} if there is an active relationship to {@code object}
      */
@@ -730,7 +582,7 @@ public interface IMObjectBean {
      * Determines if there is an active {@link PeriodRelationship} with {@code object} as its target, for the node
      * {@code node}.
      *
-     * @param name   the relationship node
+     * @param name   the relationship node name
      * @param object the target object
      * @return {@code true} if there is an active relationship to {@code object}
      */
@@ -847,6 +699,16 @@ public interface IMObjectBean {
      * @return the new relationship
      */
     IMObjectRelationship addTarget(String name, String archetype, IMObjectReference target);
+
+    /**
+     * Adds a bidirectional relationship between the current object (the source) and the supplied target.
+     *
+     * @param sourceName the source node name
+     * @param target     the target
+     * @param targetName the target node name
+     * @return a new relationship
+     */
+    IMObjectRelationship addTarget(String sourceName, IMObject target, String targetName);
 
     /**
      * Evaluates the default value if a node, if it has one.

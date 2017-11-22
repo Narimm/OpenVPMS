@@ -16,10 +16,10 @@
 
 package org.openvpms.insurance.internal.service;
 
+import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.i18n.InsuranceMessages;
 import org.openvpms.insurance.service.InsuranceService;
@@ -41,7 +41,7 @@ public class InsuranceServicesImpl implements InsuranceServices {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * Constructs a {@link InsuranceServicesImpl}.
@@ -49,7 +49,7 @@ public class InsuranceServicesImpl implements InsuranceServices {
      * @param manager the plugin manager.
      * @param service the archetype service
      */
-    public InsuranceServicesImpl(PluginManager manager, IArchetypeService service) {
+    public InsuranceServicesImpl(PluginManager manager, IArchetypeRuleService service) {
         this.manager = manager;
         this.service = service;
     }
@@ -111,7 +111,7 @@ public class InsuranceServicesImpl implements InsuranceServices {
      * @return the configuration, or {@code null} if none exists or is inactive
      */
     private Entity getConfig(Party insurer) {
-        IMObjectBean bean = new IMObjectBean(insurer, service);
+        IMObjectBean bean = service.getBean(insurer);
         return bean.getTarget("service", Entity.class);
     }
 }

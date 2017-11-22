@@ -17,12 +17,12 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.claim.Item;
 
 import java.math.BigDecimal;
@@ -43,7 +43,7 @@ public class ItemImpl implements Item {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * Constructs a {@link ItemImpl}.
@@ -51,7 +51,7 @@ public class ItemImpl implements Item {
      * @param item    the invoice item
      * @param service the archetype service
      */
-    public ItemImpl(Act item, IArchetypeService service) {
+    public ItemImpl(Act item, IArchetypeRuleService service) {
         this.item = new ActBean(item, service);
         this.service = service;
     }
@@ -93,8 +93,8 @@ public class ItemImpl implements Item {
      */
     @Override
     public Entity getProductType() {
-        IMObjectBean bean = new IMObjectBean(getProduct(), service);
-        return (Entity) bean.getNodeTargetObject("type");
+        IMObjectBean bean = service.getBean(getProduct());
+        return bean.getTarget("type", Entity.class);
     }
 
     /**

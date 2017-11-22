@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.common.PeriodRelationship;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
 import java.util.function.Function;
@@ -32,7 +33,7 @@ import java.util.function.Predicate;
  *
  * @author Tim Anderson
  */
-public final class Relationships {
+public final class Predicates {
 
     /**
      * Predicate that determines if relationships are active as at the time
@@ -109,6 +110,16 @@ public final class Relationships {
     }
 
     /**
+     * Returns a predicate that determines if an object is one of the specified set of archetypes.
+     *
+     * @param archetypes the archetypes
+     * @return a new predicate
+     */
+    public static <T extends IMObject> Predicate<T> isA(String... archetypes) {
+        return object -> TypeHelper.isA(object, archetypes);
+    }
+
+    /**
      * Returns a predicate that determines if the target of an {@link IMObjectRelationship} is that of the supplied
      * reference.
      *
@@ -160,7 +171,7 @@ public final class Relationships {
         }
 
         /**
-         * Creates a new {@code Relationships} that evaluates {@code true}
+         * Creates a new {@code Predicates} that evaluates {@code true}
          * for all relationships that are active at the specified time.
          *
          * @param time the time to compare against. If {@code -1}, indicates to use the system time at evaluation
@@ -203,7 +214,7 @@ public final class Relationships {
         private final Date to;
 
         /**
-         * Constructs an {@link Relationships.IsActiveRange}.
+         * Constructs an {@link Predicates.IsActiveRange}.
          *
          * @param from the from date. May be {@code null}
          * @param to   the to date. May be {@code null}

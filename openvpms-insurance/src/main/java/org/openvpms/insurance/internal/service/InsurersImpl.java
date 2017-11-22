@@ -16,14 +16,13 @@
 
 package org.openvpms.insurance.internal.service;
 
-import org.apache.commons.collections.PredicateUtils;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -50,7 +49,7 @@ public class InsurersImpl implements Insurers {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * The transaction manager.
@@ -63,7 +62,7 @@ public class InsurersImpl implements Insurers {
      * @param service            the archetype service
      * @param transactionManager the transaction manager
      */
-    public InsurersImpl(IArchetypeService service, PlatformTransactionManager transactionManager) {
+    public InsurersImpl(IArchetypeRuleService service, PlatformTransactionManager transactionManager) {
         this.service = service;
         this.transactionManager = transactionManager;
     }
@@ -137,8 +136,8 @@ public class InsurersImpl implements Insurers {
                 identity.setIdentity(insurerId);
                 insurer.setName(name);
                 insurer.addIdentity(identity);
-                IMObjectBean bean = new IMObjectBean(insurer, service);
-                bean.addNodeTarget("service", insuranceService);
+                IMObjectBean bean = service.getBean(insurer);
+                bean.addTarget("service", insuranceService);
                 bean.save();
                 return insurer;
             }
@@ -153,8 +152,8 @@ public class InsurersImpl implements Insurers {
      */
     @Override
     public String getInsurerId(Party insurer) {
-        IMObjectBean bean = new IMObjectBean(insurer, service);
-        EntityIdentity id = bean.getValue("insurerId", PredicateUtils.truePredicate(), EntityIdentity.class);
+        IMObjectBean bean = service.getBean(insurer);
+        EntityIdentity id = bean.getObject("insurerId", EntityIdentity.class);
         return id != null ? id.getIdentity() : null;
     }
 }

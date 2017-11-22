@@ -23,11 +23,11 @@
 
     <bean id="insuranceServices" class="org.openvpms.insurance.internal.service.InsuranceServicesImpl">
         <constructor-arg ref="pluginManager"/>
-        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
     <bean id="insuranceFactory" class="org.openvpms.insurance.internal.InsuranceFactory">
-        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="documentHandlers"/>
@@ -37,7 +37,7 @@
 
     <bean id="insurers" class="org.openvpms.insurance.internal.service.InsurersImpl">
         <plugin:service/>
-        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="txnManager"/>
     </bean>
 

@@ -17,13 +17,13 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.PredicateUtils;
-import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.bean.Relationships;
+import org.openvpms.component.business.domain.bean.Policies;
+import org.openvpms.component.business.domain.bean.Policy;
+import org.openvpms.component.business.domain.bean.Predicates;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -35,9 +35,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
-import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -57,10 +55,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
-import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
-import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
+import static org.openvpms.component.business.domain.bean.Policies.active;
+import static org.openvpms.component.business.domain.bean.Policies.any;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 
@@ -86,7 +84,6 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * Used to convert node values to a particular type.
      */
     private NodePropertySet properties;
-
 
     /**
      * Constructs an {@link IMObjectBean}.
@@ -418,19 +415,48 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     /**
      * Returns the object at the specified node.
      * <p>
-     * If the named object is an {@link IMObjectReference}, it will be
-     * resolved.
+     * If the named object is an {@link IMObjectReference}, it will be resolved.
+     * <p>
+     * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
+     * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
      *
      * @param name the node name
-     * @return the node value
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return the node value, or {@code null} if no value exists. Returned objects may be inactive
      */
+    @Override
     public IMObject getObject(String name) {
-        Object value = getValue(name);
-        if (value instanceof IMObjectReference) {
-            return resolve((IMObjectReference) value, false);
+        IMObject result;
+        NodeDescriptor node = toNode(name);
+        if (node.isCollection()) {
+            List<IMObject> values = getValues(node);
+            result = !values.isEmpty() ? values.get(0) : null;
+        } else {
+            Object value = getValue(node);
+            if (value instanceof IMObjectReference) {
+                result = resolve((IMObjectReference) value, Policy.State.ANY);
+            } else {
+                result = (IMObject) value;
+            }
         }
-        return (IMObject) value;
+        return result;
+    }
+
+    /**
+     * Returns the object at the specified node.
+     * <p>
+     * If the named object is an {@link IMObjectReference}, it will be resolved.
+     * <p>
+     * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
+     * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
+     *
+     * @param name the node name
+     * @param type the object type
+     * @return the node value, or {@code null} if no value exists. Returned objects may be inactive
+     */
+    @Override
+    public <T extends IMObject> T getObject(String name, Class<T> type) {
+        IMObject result = getObject(name);
+        return type.cast(result);
     }
 
     /**
@@ -440,9 +466,10 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return the value of the node
      * @throws IMObjectBeanException if the node doesn't exist
      */
+
     public Object getValue(String name) {
         NodeDescriptor node = toNode(name);
-        return node.getValue(getObject());
+        return getValue(node);
     }
 
     /**
@@ -454,7 +481,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     public List<IMObject> getValues(String name) {
         NodeDescriptor node = toNode(name);
-        return node.getChildren(getObject());
+        return getValues(node);
     }
 
     /**
@@ -520,68 +547,15 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     }
 
     /**
-     * Returns the first value of a collection node.
-     *
-     * @param name the node name
-     * @return the first object in the collection, or {@code null} if none is found
-     * @throws IMObjectBeanException if the node doesn't exist
-     */
-    @Override
-    public IMObject getFirst(String name) {
-        List<IMObject> values = getValues(name);
-        return !values.isEmpty() ? values.get(0) : null;
-    }
-
-    /**
-     * Returns the first value of a collection node.
-     *
-     * @param name the node name
-     * @param type the object type
-     * @return the first object in the collection, or {@code null} if none is found
-     */
-    @Override
-    public <T extends IMObject> T getFirst(String name, Class<T> type) {
-        return type.cast(getFirst(name));
-    }
-
-    /**
-     * Returns the first value of a collection node that matches the supplied predicate.
-     *
-     * @param name      the node name
-     * @param predicate the predicate
-     * @return the first object matching the predicate, or {@code null} if none is found
-     * @throws IMObjectBeanException if the node doesn't exist
-     */
-    @Override
-    public IMObject getFirst(String name, java.util.function.Predicate<IMObject> predicate) {
-        return getFirst(name, IMObject.class, predicate);
-    }
-
-    /**
-     * Returns the first value of a collection node that matches the supplied predicate.
-     *
-     * @param name      the node name
-     * @param type      the expected object type
-     * @param predicate the predicate
-     * @return the first object matching the predicate, or {@code null} if none is found
-     * @throws IMObjectBeanException if the node doesn't exist
-     */
-    @Override
-    public <T extends IMObject> T getFirst(String name, Class<T> type, java.util.function.Predicate<T> predicate) {
-        return getValues(name, type).stream().filter(predicate).findFirst().get();
-    }
-
-    /**
      * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
      * specified relationship node.
      *
      * @param name the relationship node name
      * @return the source object, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
     public IMObject getSource(String name) {
-        return getSource(name, true);
+        return getSource(name, IMObject.class);
     }
 
     /**
@@ -594,69 +568,33 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public <T extends IMObject> T getSource(String name, Class<T> type) {
-        return getSource(name, true, type);
+        return getSource(name, type, active());
     }
 
     /**
-     * Returns the source object from the first {@link IMObjectRelationship} for the specified node.
-     * <p>
-     * Where an active object is required, the first active relationship with an active source will be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
+     * Returns the source object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship and source object must be active
+     * @param policy the policy for relationship selection and object retrieval
      * @return the source object, or {@code null} if none is found
      */
     @Override
-    public IMObject getSource(String name, boolean active) {
-        return getSource(name, active, getPredicate(active));
+    public <R extends IMObjectRelationship> IMObject getSource(String name, Policy<R> policy) {
+        return getSource(name, IMObject.class, policy);
     }
 
     /**
-     * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
-     * specified relationship node.
+     * Returns the source object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship and source object must be active
      * @param type   the object type
+     * @param policy the policy for relationship selection and object retrieval
      * @return the source object, or {@code null} if none is found
      */
     @Override
-    public <T extends IMObject> T getSource(String name, boolean active, Class<T> type) {
-        return type.cast(getSource(name, active, getPredicate(active)));
-    }
-
-    /**
-     * Returns the source object from the first {@link IMObjectRelationship} matching the predicate, with active source
-     * object.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the source object, or {@code null} if none is found
-     */
-    @Override
-    public IMObject getSource(String name, java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getSource(name, true, predicate);
-    }
-
-    /**
-     * Returns the source object from the first {@link IMObjectRelationship} matching the predicate, subject to
-     * the specified active constraint.
-     * <p>
-     * Where an active object is required, the first relationship matching the predicate with an active source will
-     * be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
-     *
-     * @param name      the relationship node name
-     * @param active    determines if the object must be active or not
-     * @param predicate the predicate  @return the source object, or {@code null} if none is found
-     */
-    @Override
-    public IMObject getSource(String name, boolean active,
-                              java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedObject(name, active, predicate, true);
+    public <T extends IMObject, R extends IMObjectRelationship> T getSource(String name, Class<T> type,
+                                                                            Policy<R> policy) {
+        return type.cast(getRelatedObject(name, policy, true));
     }
 
     /**
@@ -668,7 +606,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public IMObject getTarget(String name) {
-        return getTarget(name, true);
+        return getTarget(name, IMObject.class);
     }
 
     /**
@@ -681,73 +619,33 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public <T extends IMObject> T getTarget(String name, Class<T> type) {
-        return type.cast(getTarget(name, true));
+        return getTarget(name, type, Policies.active());
     }
 
     /**
-     * Returns the target object from the first {@link IMObjectRelationship} for the specified node.
-     * <p>
-     * Where an active object is required, the first active relationship with an active target will be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
+     * Returns the target object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship and target object must be active
+     * @param policy the policy for relationship selection and object retrieval
      * @return the target object, or {@code null} if none is found
      */
     @Override
-    public IMObject getTarget(String name, boolean active) {
-        return getTarget(name, active, getPredicate(active));
+    public <R extends IMObjectRelationship> IMObject getTarget(String name, Policy<R> policy) {
+        return getTarget(name, IMObject.class, policy);
     }
 
     /**
-     * Returns the target object from the first {@link IMObjectRelationship} for the specified node.
-     * <p>
-     * Where an active object is required, the first active relationship with an active target will be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
+     * Returns the target object from the first {@link IMObjectRelationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship and target object must be active
      * @param type   the object type
+     * @param policy the policy for relationship selection and object retrieval
      * @return the target object, or {@code null} if none is found
      */
     @Override
-    public <T extends IMObject> T getTarget(String name, boolean active, Class<T> type) {
-        return type.cast(getTarget(name, active));
-    }
-
-    /**
-     * Returns the target object from the first {@link IMObjectRelationship} matching the predicate, with active target
-     * object.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the target object, or {@code null} if none is found
-     */
-    @Override
-    public IMObject getTarget(String name, java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getTarget(name, true, predicate);
-    }
-
-    /**
-     * Returns the target object from the first {@link IMObjectRelationship} matching the predicate, subject to
-     * the specified active constraint.
-     * <p>
-     * Where an active object is required, the first relationship matching the predicate with an active target will
-     * be used.<br/>
-     * If an active object is not required, but a relationship matching the predicate exists and has an active object,
-     * it will be returned over an inactive one.
-     *
-     * @param name      the relationship node name
-     * @param active    determines if the object must be active or not
-     * @param predicate the predicate
-     * @return the target object, or {@code null} if none is found
-     */
-    @Override
-    public IMObject getTarget(String name, boolean active,
-                              java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedObject(name, active, predicate, false);
+    public <T extends IMObject, R extends IMObjectRelationship> T getTarget(String name, Class<T> type,
+                                                                            Policy<R> policy) {
+        return type.cast(getRelatedObject(name, policy, false));
     }
 
     /**
@@ -769,7 +667,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public IMObjectRelationship setTarget(String name, IMObjectReference target) {
-        IMObjectRelationship relationship = getFirst(name, IMObjectRelationship.class);
+        IMObjectRelationship relationship = getObject(name, IMObjectRelationship.class);
         if (relationship == null) {
             if (target != null) {
                 relationship = addTarget(name, target);
@@ -816,6 +714,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
 
     /**
      * Returns the active source objects from each active {@link IMObjectRelationship} for the specified node.
+     * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
      * @param name the relationship node
@@ -824,51 +723,37 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public <T extends IMObject> List<T> getSources(String name, Class<T> type) {
-        return getSources(name, true, type, Relationships.activeNow());
+        return getSources(name, type, Policies.active());
     }
 
     /**
-     * Returns the active source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the source objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
+     * <br/>
+     * If a source reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param predicate the predicate
-     * @return a list of source objects
+     * @param name   the relationship node
+     * @param policy the policy
+     * @return a list of source objects matching the policy
      */
     @Override
-    public List<IMObject> getSources(String name, java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getSources(name, true, predicate);
+    public <R extends IMObjectRelationship> List<IMObject> getSources(String name, Policy<R> policy) {
+        return getSources(name, IMObject.class, policy);
     }
 
     /**
-     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the source objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
+     * <br/>
+     * If a source reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param predicate the predicate
-     * @return a list of source objects. May contain inactive objects, if {@code active} is {@code false}
+     * @param name   the relationship node
+     * @param type   the object type
+     * @param policy the policy
+     * @return a list of source objects matching the policy
      */
     @Override
-    public List<IMObject> getSources(String name, boolean active,
-                                     java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getSources(name, active, IMObject.class, predicate);
-    }
-
-    /**
-     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
-     *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param type      the object type
-     * @param predicate the predicate
-     * @return a list of source objects. May contain inactive objects, if {@code active} is {@code false}
-     */
-    @Override
-    public <T extends IMObject> List<T> getSources(String name, boolean active, Class<T> type,
-                                                   java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedObjects(name, active, type, predicate, true, null);
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getSources(String name, Class<T> type,
+                                                                                   Policy<R> policy) {
+        return getRelatedObjects(name, type, policy, true);
     }
 
     /**
@@ -893,72 +778,37 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public <T extends IMObject> List<T> getTargets(String name, Class<T> type) {
-        return getTargets(name, true, type, Relationships.activeNow());
+        return getTargets(name, type, active());
     }
 
     /**
-     * Returns the active target objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
-     *
-     * @param name      the relationship node
-     * @param predicate the predicate
-     * @return a list of target objects
-     */
-    @Override
-    public List<IMObject> getTargets(String name, java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getTargets(name, true, IMObject.class, predicate);
-    }
-
-    /**
-     * Returns the active target objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the target objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param type      the object type
-     * @param predicate the predicate
-     * @return a list of active target objects
+     * @param name   the relationship node
+     * @param policy the policy
+     * @return a list of target objects matching the policy
      */
     @Override
-    public <T extends IMObject> List<T> getTargets(String name, Class<T> type,
-                                                   java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getTargets(name, true, type, predicate);
+    public <R extends IMObjectRelationship> List<IMObject> getTargets(String name, Policy<R> policy) {
+        return getTargets(name, IMObject.class, policy);
     }
 
     /**
-     * Returns the target objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
+     * Returns the target objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param predicate the predicate
-     * @return a list of target objects. May contain inactive objects, if {@code active} is {@code false}
+     * @param name   the relationship node
+     * @param type   the object type
+     * @param policy the policy
+     * @return a list of target objects matching the policy
      */
     @Override
-    public List<IMObject> getTargets(String name, boolean active,
-                                     java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getTargets(name, active, IMObject.class, predicate);
-    }
-
-    /**
-     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
-     * specified predicate.
-     * <br/>
-     * If a target reference cannot be resolved, it will be ignored.
-     *
-     * @param name      the relationship node
-     * @param active    determines if the objects must be active
-     * @param type      the object type
-     * @param predicate the predicate
-     * @return a list of target objects. May contain inactive objects, if {@code active} is {@code false}
-     */
-    @Override
-    public <T extends IMObject> List<T> getTargets(String name, boolean active, Class<T> type,
-                                                   java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedObjects(name, active, type, predicate, false, null);
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getTargets(String name, Class<T> type,
+                                                                                   Policy<R> policy) {
+        return getRelatedObjects(name, type, policy, false);
     }
 
     /**
@@ -971,33 +821,20 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public IMObjectReference getSourceRef(String name) {
-        return getSourceRef(name, true);
+        return getSourceRef(name, active());
     }
 
     /**
-     * Returns the source object reference from the first {@link IMObjectRelationship} for the specified
-     * relationship node.
+     * Returns the source object reference from the first {@link IMObjectRelationship} for the specified node matching
+     * the policy.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship must be active
+     * @param policy the policy
      * @return the source object reference, or {@code null} if none is found
      */
     @Override
-    public IMObjectReference getSourceRef(String name, boolean active) {
-        return getSourceRef(name, getPredicate(active));
-    }
-
-    /**
-     * Returns the source object reference from the \{@link IMObjectRelationship} matching the predicate.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the source object reference, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    @Override
-    public IMObjectReference getSourceRef(String name, java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedRef(name, predicate, true);
+    public <R extends IMObjectRelationship> IMObjectReference getSourceRef(String name, Policy<R> policy) {
+        return getRelatedRef(name, policy, true);
     }
 
     /**
@@ -1008,21 +845,19 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public List<IMObjectReference> getSourceRefs(String name) {
-        return getSourceRefs(name, Relationships.activeNow());
+        return getSourceRefs(name, active());
     }
 
     /**
-     * Returns the source object references from each for the specified node that matches the
-     * supplied predicate.
+     * Returns the source object references from each for the specified node that matches the supplied policy.
      *
-     * @param name      the relationship node
-     * @param predicate the predicate
+     * @param name   the relationship node name
+     * @param policy the policy
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     @Override
-    public List<IMObjectReference> getSourceRefs(String name,
-                                                 java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedObjectRefs(name, predicate, true, null);
+    public <R extends IMObjectRelationship> List<IMObjectReference> getSourceRefs(String name, Policy<R> policy) {
+        return getRelatedRefs(name, policy, true);
     }
 
     /**
@@ -1034,32 +869,20 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public IMObjectReference getTargetRef(String name) {
-        return getTargetRef(name, true);
+        return getTargetRef(name, active());
     }
 
     /**
-     * Returns the target object reference from the first {@link IMObjectRelationship} for the specified
-     * relationship node.
+     * Returns the target object reference from the first {@link IMObjectRelationship} for the specified relationship
+     * node.
      *
      * @param name   the relationship node name
-     * @param active determines if the relationship must be active
+     * @param policy the policy
      * @return the target object reference, or {@code null} if none is found
      */
     @Override
-    public IMObjectReference getTargetRef(String name, boolean active) {
-        return getTargetRef(name, getPredicate(active));
-    }
-
-    /**
-     * Returns the target object reference from the {@link IMObjectRelationship} matching the predicate.
-     *
-     * @param name      the relationship node name
-     * @param predicate the predicate
-     * @return the target object reference, or {@code null} if none is found
-     */
-    @Override
-    public IMObjectReference getTargetRef(String name, java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedRef(name, predicate, false);
+    public <R extends IMObjectRelationship> IMObjectReference getTargetRef(String name, Policy<R> policy) {
+        return getRelatedRef(name, policy, false);
     }
 
     /**
@@ -1070,21 +893,20 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public List<IMObjectReference> getTargetRefs(String name) {
-        return getTargetRefs(name, Relationships.activeNow());
+        return getTargetRefs(name, active());
     }
 
     /**
      * Returns the target object references from each {@link IMObjectRelationship} for the specified node that matches
      * the supplied predicate.
      *
-     * @param name      the relationship node
-     * @param predicate the predicate
+     * @param name   the relationship node
+     * @param policy the predicate
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     @Override
-    public List<IMObjectReference> getTargetRefs(String name,
-                                                 java.util.function.Predicate<IMObjectRelationship> predicate) {
-        return getRelatedObjectRefs(name, predicate, false, null);
+    public <R extends IMObjectRelationship> List<IMObjectReference> getTargetRefs(String name, Policy<R> policy) {
+        return getRelatedRefs(name, policy, false);
     }
 
     /**
@@ -1186,6 +1008,102 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     }
 
     /**
+     * Adds a bidirectional relationship between the current object (the source) and the supplied target.
+     *
+     * @param sourceName the source node name
+     * @param target     the target
+     * @param targetName the target node name
+     * @return a new relationship
+     */
+    @Override
+    public IMObjectRelationship addTarget(String sourceName, IMObject target, String targetName) {
+        IMObjectRelationship relationship = addTarget(sourceName, target);
+        getBean(target).addValue(targetName, relationship);
+        return relationship;
+    }
+
+    /**
+     * Returns the related objects from each active {@link IMObjectRelationship} for the specified node.
+     * <p>
+     * This will return the target of the relationships if this is the source, or the source of the relationships
+     * if this is the target.
+     * <br/>
+     * If a reference cannot be resolved, it will be ignored.
+     *
+     * @param name the relationship node name
+     * @return a list of active related objects
+     */
+    public List<IMObject> getRelated(String name) {
+        return getRelated(name, IMObject.class);
+    }
+
+    /**
+     * Returns the related objects from each active {@link IMObjectRelationship} for the specified node.
+     * <p>
+     * This will return the target of the relationships if this is the source, or the source of the relationships
+     * if this is the target.
+     * <br/>
+     * If a reference cannot be resolved, it will be ignored.
+     *
+     * @param name the relationship node name
+     * @param type the object type
+     * @return a list of active related objects
+     */
+    public <T extends IMObject> List<T> getRelated(String name, Class<T> type) {
+        return getRelated(name, type, active());
+    }
+
+    /**
+     * Returns the related objects from each active {@link IMObjectRelationship} for the specified node.
+     * <p>
+     * This will return the target of the relationships if this is the source, or the source of the relationships
+     * if this is the target.
+     * <br/>
+     * If a reference cannot be resolved, it will be ignored.
+     *
+     * @param name   the relationship node name
+     * @param policy the policy for relationship selection and object retrieval
+     * @return a list of active related objects
+     */
+    public <R extends IMObjectRelationship> List<IMObject> getRelated(String name, Policy<R> policy) {
+        return getRelated(name, IMObject.class, policy);
+    }
+
+    /**
+     * Returns the related objects from each active {@link IMObjectRelationship} for the specified node.
+     * <p>
+     * This will return the target of the relationships if this is the source, or the source of the relationships
+     * if this is the target.
+     * <br/>
+     * If a reference cannot be resolved, it will be ignored.
+     *
+     * @param name   the relationship node name
+     * @param type   the object type
+     * @param policy the policy for relationship selection and object retrieval
+     * @return a list of active related objects
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getRelated(String name, Class<T> type,
+                                                                                   Policy<R> policy) {
+        List<T> result = new ArrayList<>();
+        IMObjectReference ref = getReference();
+        java.util.function.Predicate<R> predicate = policy.getPredicate();
+        Comparator<R> comparator = policy.getComparator();
+        List<R> relationships = (predicate != null) ? getValues(name, policy.getType(), predicate)
+                                                    : getValues(name, policy.getType());
+        if (comparator != null) {
+            Collections.sort(relationships, comparator);
+        }
+        Policy.State state = policy.getState();
+        for (IMObjectRelationship relationship : relationships) {
+            IMObject related = getSourceOrTarget(relationship, ref, state);
+            if (related != null) {
+                result.add(type.cast(related));
+            }
+        }
+        return result;
+    }
+
+    /**
      * Saves the object, and those supplied, in a single transaction.
      *
      * @param objects the other objects to save
@@ -1226,7 +1144,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public List<IMObject> getValues(String name, Predicate predicate) {
-        return select(getValues(name), predicate);
+        return getValues(name, (java.util.function.Predicate<IMObject>) predicate::evaluate);
     }
 
     /**
@@ -1239,7 +1157,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public <T extends IMObject> List<T> getValues(String name, Predicate predicate, Class<T> type) {
-        return select(getValues(name, type), predicate);
+        return getValues(name, type, predicate::evaluate);
     }
 
     /**
@@ -1298,7 +1216,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, boolean active) {
-        return getSource(node, active);
+        return (active) ? getSource(node) : getSource(node, any());
     }
 
     /**
@@ -1311,7 +1229,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, Predicate predicate) {
-        return getSource(node, predicate::evaluate);
+        return getNodeSourceObject(node, predicate, true);
     }
 
     /**
@@ -1324,7 +1242,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, Predicate predicate, boolean active) {
-        return getSource(node, active, predicate::evaluate);
+        return getSource(node, Policies.match(active, predicate::evaluate));
     }
 
     /**
@@ -1348,7 +1266,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, boolean active) {
-        return getTarget(node, active);
+        return (active) ? getTarget(node) : getTarget(node, any());
     }
 
     /**
@@ -1361,7 +1279,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, Predicate predicate) {
-        return getTarget(node, predicate::evaluate);
+        return getNodeTargetObject(node, predicate, true);
     }
 
     /**
@@ -1374,7 +1292,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, Predicate predicate, boolean active) {
-        return getTarget(node, active, predicate::evaluate);
+        return getTarget(node, Policies.match(active, predicate::evaluate));
     }
 
     /**
@@ -1388,7 +1306,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, Date time) {
-        return getSource(node, Relationships.activeAt(time));
+        return getSource(node, active(time));
     }
 
     /**
@@ -1403,7 +1321,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, Date time, boolean active) {
-        return getSource(node, active, Relationships.activeAt(time));
+        return getSource(node, active(time, active));
     }
 
     /**
@@ -1417,7 +1335,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, Date time) {
-        return getTarget(node, true, Relationships.activeAt(time));
+        return getTarget(node, active(time));
     }
 
     /**
@@ -1432,7 +1350,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, Date time, boolean active) {
-        return getTarget(node, active, Relationships.activeAt(time));
+        return getTarget(node, active(time, active));
     }
 
     /**
@@ -1470,7 +1388,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeSourceObjects(String node, Date time) {
-        return getSources(node, Relationships.activeAt(time));
+        return getSources(node, active(time));
     }
 
     /**
@@ -1484,7 +1402,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Date time, Class<T> type) {
-        return getSources(node, true, type, Relationships.activeAt(time));
+        return getSources(node, type, active(time));
     }
 
     /**
@@ -1498,7 +1416,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeSourceObjects(String node, Date time, boolean active) {
-        return getSources(node, active, Relationships.activeAt(time));
+        return getSources(node, active(time, active));
     }
 
     /**
@@ -1513,7 +1431,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Date time, boolean active, Class<T> type) {
-        return getSources(node, active, type, Relationships.activeAt(time));
+        return getSources(node, type, active(time, active));
     }
 
     /**
@@ -1526,7 +1444,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeSourceObjects(String node, Predicate predicate) {
-        return getSources(node, true, predicate::evaluate);
+        return getNodeSourceObjects(node, predicate, true);
     }
 
     /**
@@ -1540,7 +1458,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeSourceObjects(String node, Predicate predicate, boolean active) {
-        return getSources(node, active, IMObject.class, predicate::evaluate);
+        return getNodeSourceObjects(node, predicate, active, IMObject.class);
     }
 
     /**
@@ -1556,7 +1474,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Predicate predicate, boolean active,
                                                              Class<T> type) {
-        return getSources(node, active, type, predicate::evaluate);
+        return getSources(node, type, Policies.match(active, predicate::evaluate));
     }
 
     /**
@@ -1574,7 +1492,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     }
 
     /**
-     * Returns the active source objects from each {@link IMObjectRelationship} for the specified node, keyed
+     * Returns the source objects from each {@link IMObjectRelationship} for the specified node, keyed
      * on their relationship.
      *
      * @param node             the relationship node
@@ -1586,7 +1504,8 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeSourceObjects(
             String node, Class<T> type, Class<R> relationshipType, boolean active) {
         List<R> relationships = getValues(node, relationshipType);
-        return getRelationshipObjects(relationships, getDefaultPredicate(active), SOURCE, active, type);
+        Policy<R> policy = active ? active(relationshipType) : any(relationshipType);
+        return getRelationshipObjects(relationships, type, policy, true);
     }
 
     /**
@@ -1652,7 +1571,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeTargetObjects(String node, Date time) {
-        return getTargets(node, Relationships.activeAt(time));
+        return getTargets(node, active(time));
     }
 
     /**
@@ -1666,7 +1585,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Date time, Class<T> type) {
-        return getTargets(node, true, type, Relationships.activeAt(time));
+        return getNodeTargetObjects(node, time, true, type);
     }
 
     /**
@@ -1680,7 +1599,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeTargetObjects(String node, Date time, boolean active) {
-        return getTargets(node, active, IMObject.class, Relationships.activeAt(time));
+        return getNodeTargetObjects(node, time, active, IMObject.class);
     }
 
     /**
@@ -1695,7 +1614,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Date time, boolean active, Class<T> type) {
-        return getTargets(node, active, type, Relationships.activeAt(time));
+        return getTargets(node, type, active(time, active));
     }
 
     /**
@@ -1708,7 +1627,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeTargetObjects(String node, Predicate predicate) {
-        return getTargets(node, predicate::evaluate);
+        return getTargets(node, active(predicate::evaluate));
     }
 
     /**
@@ -1722,7 +1641,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Predicate predicate, Class<T> type) {
-        return getTargets(node, true, type, predicate::evaluate);
+        return getTargets(node, type, active(predicate::evaluate));
     }
 
     /**
@@ -1736,7 +1655,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeTargetObjects(String node, Predicate predicate, boolean active) {
-        return getTargets(node, active, predicate::evaluate);
+        return getNodeTargetObjects(node, predicate, active, IMObject.class);
     }
 
     /**
@@ -1752,7 +1671,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Predicate predicate, boolean active,
                                                              Class<T> type) {
-        return getTargets(node, active, type, predicate::evaluate);
+        return getTargets(node, type, Policies.match(active, predicate::evaluate));
     }
 
     /**
@@ -1767,9 +1686,11 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of target objects. May  contain inactive objects
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public <T extends IMObject, R extends IMObjectRelationship> List<T> getNodeTargetObjects(
             String node, Predicate predicate, boolean active, Class<T> type, Comparator<R> comparator) {
-        return getRelatedObjects(node, predicate, TARGET, active, type, comparator);
+        Policy policy = Policies.match(active, predicate::evaluate, (Comparator) comparator);
+        return getRelatedObjects(node, type, policy, false);
     }
 
     /**
@@ -1799,7 +1720,8 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeTargetObjects(
             String node, Class<T> type, Class<R> relationshipType, boolean active) {
         List<R> relationships = getValues(node, relationshipType);
-        return getRelationshipObjects(relationships, getDefaultPredicate(active), TARGET, active, type);
+        Policy<R> policy = active ? active(relationshipType) : any(relationshipType);
+        return getRelationshipObjects(relationships, type, policy, false);
     }
 
     /**
@@ -1824,7 +1746,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getNodeSourceObjectRef(String node, boolean active) {
-        return getSourceRef(node, active);
+        return getSourceRef(node, active ? active() : any());
     }
 
     /**
@@ -1846,7 +1768,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeSourceObjectRefs(String node, Date time) {
-        return getSourceRefs(node, Relationships.activeAt(time));
+        return getSourceRefs(node, active(time));
     }
 
     /**
@@ -1858,7 +1780,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeSourceObjectRefs(String node, Predicate predicate) {
-        return getSourceRefs(node, predicate::evaluate);
+        return getSourceRefs(node, any(predicate::evaluate));
     }
 
     /**
@@ -1891,7 +1813,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getNodeTargetObjectRef(String node, boolean active) {
-        return getTargetRef(node, active);
+        return getTargetRef(node, active ? active() : any());
     }
 
     /**
@@ -1903,7 +1825,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeTargetObjectRefs(String node, Date time) {
-        return getTargetRefs(node, Relationships.activeAt(time));
+        return getTargetRefs(node, active(time));
     }
 
     /**
@@ -1915,7 +1837,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeTargetObjectRefs(String node, Predicate predicate) {
-        return getTargetRefs(node, predicate::evaluate);
+        return getTargetRefs(node, any(predicate::evaluate));
     }
 
     /**
@@ -1955,11 +1877,14 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @param type          the expected object type
      * @return a list of source objects that match the given criteria
      */
+    @SuppressWarnings("unchecked")
     public <T extends IMObject, R extends IMObjectRelationship> List<T> getSourceObjects(Collection<R> relationships,
                                                                                          String[] shortNames,
                                                                                          boolean active,
                                                                                          Class<T> type) {
-        return getRelatedObjects(relationships, getActiveIsA(active, shortNames), SOURCE, active, type);
+        Policy<IMObjectRelationship> match = Policies.match(active, getActiveIsA(active, shortNames));
+        List<R> list = (relationships instanceof List) ? (List<R>) relationships : new ArrayList<>(relationships);
+        return getRelatedObjects((List) list, type, match, true);
     }
 
     /**
@@ -2002,11 +1927,14 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of target objects that match the given criteria
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public <T extends IMObject, R extends IMObjectRelationship> List<T> getTargetObjects(Collection<R> relationships,
                                                                                          String[] shortNames,
                                                                                          boolean active,
                                                                                          Class<T> type) {
-        return getRelatedObjects(relationships, getActiveIsA(active, shortNames), TARGET, active, type);
+        Policy<IMObjectRelationship> policy = Policies.match(active, getActiveIsA(active, shortNames));
+        List<R> list = (relationships instanceof List) ? (List<R>) relationships : new ArrayList<>(relationships);
+        return getRelatedObjects((List) list, type, policy, false);
     }
 
     /**
@@ -2058,9 +1986,12 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames,
                                                                      boolean active) {
-        return getRelatedObject(relationships, getActiveIsA(active, shortNames), SOURCE, active);
+        Policy<IMObjectRelationship> policy = Policies.match(active, getActiveIsA(active, shortNames));
+        List<R> list = (relationships instanceof List) ? (List<R>) relationships : new ArrayList<>(relationships);
+        return getRelatedObject((List) list, policy, true);
     }
 
     /**
@@ -2112,9 +2043,12 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return the target object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames,
                                                                      boolean active) {
-        return getRelatedObject(relationships, getActiveIsA(active, shortNames), TARGET, active);
+        Policy<IMObjectRelationship> policy = Policies.match(active, getActiveIsA(active, shortNames));
+        List<R> list = (relationships instanceof List) ? (List<R>) relationships : new ArrayList<>(relationships);
+        return getRelatedObject((List) list, policy, false);
     }
 
     /**
@@ -2178,9 +2112,12 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public <R extends PeriodRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames,
                                                                    Date time, boolean active) {
-        return getRelatedObject(relationships, getIsActiveRelationship(time, shortNames), SOURCE, active);
+        Policy<IMObjectRelationship> policy = Policies.match(active, getIsActiveRelationship(time, shortNames));
+        List<R> list = (relationships instanceof List) ? (List<R>) relationships : new ArrayList<>(relationships);
+        return getRelatedObject((List) list, policy, true);
     }
 
     /**
@@ -2246,9 +2183,12 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public <R extends PeriodRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames,
                                                                    Date time, boolean active) {
-        return getRelatedObject(relationships, getIsActiveRelationship(time, shortNames), TARGET, active);
+        Policy<IMObjectRelationship> policy = Policies.match(active, getIsActiveRelationship(time, shortNames));
+        List<R> list = (relationships instanceof List) ? (List<R>) relationships : new ArrayList<>(relationships);
+        return getRelatedObject((List) list, policy, false);
     }
 
     /**
@@ -2289,7 +2229,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     public <R extends IMObjectRelationship> IMObjectReference getSourceObjectRef(Collection<R> relationships,
                                                                                  String[] shortNames, boolean active) {
-        return getObjectRef(relationships, shortNames, active, SOURCE);
+        return getObjectRef(relationships, shortNames, active, true);
     }
 
     /**
@@ -2330,7 +2270,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
                                                                                  String[] shortNames, boolean active) {
-        return getObjectRef(relationships, shortNames, active, TARGET);
+        return getObjectRef(relationships, shortNames, active, false);
     }
 
     /**
@@ -2544,16 +2484,16 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     /**
      * Resolves a reference, verifying the object is of the expected type.
      *
-     * @param ref    the reference to resolve
-     * @param type   the expected object type
-     * @param active determines if the object must be active
+     * @param ref   the reference to resolve
+     * @param type  the expected object type
+     * @param state the expected object state
      * @return the resolved object, or {@code null} if it cannot be found or doesn't match the active criteria
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if an object isn't of the expected type
      */
     @SuppressWarnings("unchecked")
-    protected <T extends IMObject> T resolve(IMObjectReference ref, Class<T> type, boolean active) {
-        IMObject object = resolve(ref, active);
+    protected <T extends IMObject> T resolve(IMObjectReference ref, Class<T> type, Policy.State state) {
+        IMObject object = resolve(ref, state);
         if (object != null) {
             if (!type.isInstance(object)) {
                 throw new IMObjectBeanException(InvalidClassCast, type.getName(), object.getClass().getName());
@@ -2565,15 +2505,21 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     /**
      * Helper to resolve a reference.
      *
-     * @param ref        the reference. May be {@code null}
-     * @param activeOnly if {@code true}, only return the object if it is active
+     * @param ref   the reference. May be {@code null}
+     * @param state the expected object state
      * @return the object corresponding to the reference or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObject resolve(IMObjectReference ref, boolean activeOnly) {
+    protected IMObject resolve(IMObjectReference ref, Policy.State state) {
         IMObject result = null;
         if (ref != null) {
-            result = getArchetypeService().get(ref, activeOnly);
+            IArchetypeService service = getArchetypeService();
+            if (state == Policy.State.ANY) {
+                result = service.get(ref);
+            } else {
+                boolean active = state == Policy.State.ACTIVE;
+                result = service.get(ref, active);
+            }
         }
         return result;
     }
@@ -2607,86 +2553,42 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     /**
      * Returns all objects for the specified relationship node that match the specified criteria.
      *
-     * @param node       the relationship node
-     * @param predicate  the criteria to filter relationships
-     * @param accessor   the object accessor
-     * @param active     determines if the objects must be active
-     * @param type       the expected object type
-     * @param comparator if non-null, specifies a comparator to sort relationships
+     * @param node   the relationship node name
+     * @param type   the expected object type
+     * @param policy the policy
+     * @param source if {@code true}, return the source of the relationship, otherwise return the target
      * @return a list of objects
      * @throws ArchetypeServiceException for any archetype service error
      */
     @SuppressWarnings("unchecked")
     protected <T extends IMObject, R extends IMObjectRelationship> List<T> getRelatedObjects(
-            String node, Predicate predicate, RelationshipRef accessor, boolean active, Class<T> type,
-            Comparator<R> comparator) {
-        List<IMObjectReference> refs = getRelatedObjectRefs(node, predicate, accessor, comparator);
-        return resolve(refs, type, active);
-    }
-
-    /**
-     * Returns all related references for the specified node that match the specified criteria.
-     *
-     * @param node       the relationship node
-     * @param predicate  the criteria
-     * @param accessor   the object accessor
-     * @param comparator if non-null, specifies a comparator to sort relationships
-     * @return the matching references
-     */
-    @SuppressWarnings("unchecked")
-    protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedObjectRefs(
-            String node, Predicate predicate, RelationshipRef accessor, Comparator<R> comparator) {
-        List<R> relationships = (List<R>) getValues(node, IMObjectRelationship.class);
-        if (comparator != null) {
-            Collections.sort(relationships, comparator);
-        }
-        return getRelatedRefs(relationships, predicate, accessor);
-    }
-
-    /**
-     * Returns all object references from the supplied relationships that match the specified criteria.
-     *
-     * @param relationships the relationships
-     * @param predicate     the criteria
-     * @param accessor      the object accessor
-     * @return the matching references
-     */
-    protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedRefs(
-            Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
-        List<IMObjectReference> result = new ArrayList<>();
-        relationships = select(relationships, predicate);
-        for (R relationship : relationships) {
-            IMObjectReference ref = accessor.transform(relationship);
-            if (ref != null) {
-                result.add(ref);
-            }
-        }
-        return result;
+            String node, Class<T> type, Policy<R> policy, boolean source) {
+        List<IMObjectReference> refs = getRelatedRefs(node, policy, source);
+        return resolve(refs, type, policy.getState());
     }
 
     /**
      * Returns all objects for the specified relationships that match the specified criteria.
      *
      * @param relationships the relationships to search
-     * @param predicate     the criteria to filter relationships
-     * @param accessor      the object accessor
-     * @param active        determines if the objects must be active
      * @param type          the expected object type
+     * @param policy        the policy
+     * @param source        if {@code true}, return the source of the relationship, otherwise return the target
      * @return a list of objects
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if an object isn't of the expected type
      */
     protected <R extends IMObjectRelationship, T extends IMObject> Map<R, T> getRelationshipObjects(
-            Collection<R> relationships, Predicate predicate, RelationshipRef accessor, boolean active,
-            Class<T> type) {
+            Collection<R> relationships, Class<T> type, Policy<R> policy, boolean source) {
         Map<R, T> result;
-        Map<R, IMObjectReference> refs = getRelationshipRefs(relationships, predicate, accessor);
+        Map<R, IMObjectReference> refs = getRelationshipRefs(relationships, policy, source);
         if (refs.isEmpty()) {
             result = Collections.emptyMap();
         } else {
             result = new HashMap<>();
+            Policy.State state = policy.getState();
             for (Map.Entry<R, IMObjectReference> entry : refs.entrySet()) {
-                T object = resolve(entry.getValue(), type, active);
+                T object = resolve(entry.getValue(), type, state);
                 if (object != null) {
                     result.put(entry.getKey(), object);
                 }
@@ -2700,18 +2602,21 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * on their relationship.
      *
      * @param relationships the relationships
-     * @param predicate     the criteria
-     * @param accessor      the object accessor
+     * @param policy        the policy
+     * @param source        if {@code true}, return the source of the relationship, otherwise return the target
      * @return the matching references
      */
     protected <R extends IMObjectRelationship> Map<R, IMObjectReference> getRelationshipRefs(
-            Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
+            Collection<R> relationships, Policy<R> policy, boolean source) {
         Map<R, IMObjectReference> result = new HashMap<>();
-        relationships = select(relationships, predicate);
+        Function<IMObjectRelationship, IMObjectReference> accessor = getAccessor(source);
+        java.util.function.Predicate<R> predicate = policy.getPredicate();
         for (R relationship : relationships) {
-            IMObjectReference ref = accessor.transform(relationship);
-            if (ref != null) {
-                result.put(relationship, ref);
+            if (predicate == null || predicate.test(relationship)) {
+                IMObjectReference ref = accessor.apply(relationship);
+                if (ref != null) {
+                    result.put(relationship, ref);
+                }
             }
         }
         return result;
@@ -2720,17 +2625,14 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     /**
      * Returns the object from the first relationship for the specified node that matches the specified criteria.
      *
-     * @param node      the relationship node
-     * @param active    determines if the object must be active
-     * @param predicate the criteria
-     * @param source    if {@code true}, return the source of the relationship, otherwise return the target
+     * @param node   the relationship node
+     * @param policy the criteria
+     * @param source if {@code true}, return the source of the relationship, otherwise return the target
      * @return the first object, or {@code null} if none is found
      */
-    @SuppressWarnings("unchecked")
-    protected IMObject getRelatedObject(String node, boolean active,
-                                        java.util.function.Predicate<IMObjectRelationship> predicate, boolean source) {
+    protected <R extends IMObjectRelationship> IMObject getRelatedObject(String node, Policy<R> policy, boolean source) {
         List<IMObject> relationships = getValues(node);
-        return getRelatedObject(relationships, predicate, active, source);
+        return getRelatedObject(relationships, policy, source);
     }
 
     /**
@@ -2741,54 +2643,55 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * If active is {@code false}, then an active object will be returned in preference to an inactive one.
      *
      * @param relationships the relationships
-     * @param predicate     the predicate
-     * @param active        determines if the object must be active or not
+     * @param policy        the policy
      * @param source        if {@code true}, return the source of the relationship, otherwise return the target
      * @return the first object matching the criteria or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObject getRelatedObject(List<IMObject> relationships,
-                                        java.util.function.Predicate<IMObjectRelationship> predicate,
-                                        boolean active, boolean source) {
-        Function<IMObjectRelationship, IMObjectReference> accessor
-                = (source) ? IMObjectRelationship::getSource : IMObjectRelationship::getTarget;
-        IMObject inactive = null;
+    protected <R extends IMObjectRelationship> IMObject getRelatedObject(List<IMObject> relationships, Policy<R> policy,
+                                                                         boolean source) {
+        IMObject result = null;
+        Function<IMObjectRelationship, IMObjectReference> accessor = getAccessor(source);
+        Class<R> type = policy.getType();
+        java.util.function.Predicate<R> predicate = policy.getPredicate();
+        Policy.State state = policy.getState();
+
         for (IMObject r : relationships) {
-            IMObjectRelationship relationship = IMObjectRelationship.class.cast(r);
-            if (predicate.test(relationship)) {
+            R relationship = type.cast(r);
+            if (predicate == null || predicate.test(relationship)) {
                 IMObjectReference ref = accessor.apply(relationship);
-                IMObject object = resolve(ref, active);
+                IMObject object = resolve(ref, state);
                 if (object != null) {
-                    if (object.isActive()) {
+                    if (object.isActive() || state == Policy.State.INACTIVE) {
                         // found a match, so return it
-                        return object;
-                    } else if (!active) {
-                        // can return inactive, but keep looking for an active
-                        // match
-                        inactive = object;
+                        result = object;
+                        break;
+                    } else if (result == null) {
+                        // can return inactive, but keep looking for an active  match
+                        result = object;
                     }
                 }
             }
         }
-        // no active match found
-        return (!active && inactive != null) ? inactive : null;
+        return result;
     }
 
     /**
      * Returns the first object reference from the supplied relationship node that matches the specified criteria.
      *
-     * @param name      the node name
-     * @param predicate the criteria
-     * @param source    if {@code true}, return the source of the relationship, otherwise return the target
+     * @param name   the node name
+     * @param policy the policy
+     * @param source if {@code true}, return the source of the relationship, otherwise return the target
      * @return the matching reference, or {@code null}
      */
-    protected IMObjectReference getRelatedRef(String name, java.util.function.Predicate<IMObjectRelationship> predicate,
-                                              boolean source) {
-        Function<IMObjectRelationship, IMObjectReference> accessor
-                = (source) ? IMObjectRelationship::getSource : IMObjectRelationship::getTarget;
+    protected <R extends IMObjectRelationship> IMObjectReference getRelatedRef(
+            String name, Policy<R> policy, boolean source) {
+        Function<IMObjectRelationship, IMObjectReference> accessor = getAccessor(source);
+        java.util.function.Predicate<R> predicate = policy.getPredicate();
+        Class<R> type = policy.getType();
         for (IMObject object : getValues(name)) {
-            IMObjectRelationship relationship = IMObjectRelationship.class.cast(object);
-            if (predicate.test(relationship)) {
+            R relationship = type.cast(object);
+            if (predicate == null || predicate.test(relationship)) {
                 IMObjectReference reference = accessor.apply(relationship);
                 if (reference != null) {
                     return reference;
@@ -2799,57 +2702,40 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     }
 
     /**
-     * Returns all objects for the specified relationship node that match the specified criteria.
-     *
-     * @param node       the relationship node
-     * @param active     determines if the objects must be active
-     * @param type       the expected object type
-     * @param predicate  the criteria to filter relationships
-     * @param source     if {@code true}, return the source of the relationship, otherwise return the target
-     * @param comparator if non-null, specifies a comparator to sort relationships  @return a list of objects
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    @SuppressWarnings("unchecked")
-    protected <T extends IMObject, R extends IMObjectRelationship> List<T> getRelatedObjects(
-            String node, boolean active, Class<T> type, java.util.function.Predicate<R> predicate, boolean source,
-            Comparator<R> comparator) {
-        List<IMObjectReference> refs = getRelatedObjectRefs(node, predicate, source, comparator);
-        return resolve(refs, type, active);
-    }
-
-    /**
      * Returns all related references for the specified node that match the specified criteria.
      *
-     * @param node       the relationship node
-     * @param predicate  the criteria
-     * @param source     if {@code true}, return the source of the relationship, otherwise return the target
-     * @param comparator if non-null, specifies a comparator to sort relationships  @return the matching references
+     * @param node   the relationship node name
+     * @param policy the policy
+     * @param source if {@code true}, return the source of the relationship, otherwise return the target
      */
-    @SuppressWarnings("unchecked")
-    protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedObjectRefs(
-            String node, java.util.function.Predicate predicate, boolean source, Comparator<R> comparator) {
-        List<R> relationships = (List<R>) getValues(node, IMObjectRelationship.class);
+    protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedRefs(
+            String node, Policy<R> policy, boolean source) {
+        List<R> relationships = getValues(node, policy.getType());
+        Comparator<R> comparator = policy.getComparator();
         if (comparator != null) {
             Collections.sort(relationships, comparator);
         }
-        return getRelatedRefs(relationships, predicate, source);
+        return getRelatedRefs(relationships, policy, source);
     }
 
     /**
      * Returns all object references from the supplied relationships that match the specified criteria.
      *
      * @param relationships the relationships
-     * @param predicate     the criteria
+     * @param policy        the policy
      * @param source        if {@code true}, return the source of the relationship, otherwise return the target
      * @return the matching references
      */
     protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedRefs(
-            Collection<R> relationships, java.util.function.Predicate<R> predicate,
-            boolean source) {
-        Function<IMObjectRelationship, IMObjectReference> accessor
-                = (source) ? IMObjectRelationship::getSource : IMObjectRelationship::getTarget;
+            Collection<R> relationships, Policy<R> policy, boolean source) {
+        Function<IMObjectRelationship, IMObjectReference> accessor = getAccessor(source);
         List<IMObjectReference> result = new ArrayList<>();
-        relationships.stream().filter(predicate).forEach(r -> {
+        Stream<R> stream = relationships.stream();
+        java.util.function.Predicate<R> predicate = policy.getPredicate();
+        if (predicate != null) {
+            stream = stream.filter(predicate);
+        }
+        stream.forEach(r -> {
             IMObjectReference reference = accessor.apply(r);
             if (reference != null) {
                 result.add(reference);
@@ -2862,84 +2748,67 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * Returns all objects for the specified relationships that match the specified criteria.
      *
      * @param relationships the relationships to search
-     * @param predicate     the criteria to filter relationships
-     * @param accessor      the object accessor
-     * @param active        determines if the objects must be active
      * @param type          the expected object type
+     * @param policy        the policy
+     * @param source        if {@code true}, return the source of the relationship, otherwise return the target
      * @return a list of objects
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if an object isn't of the expected type
      */
     protected <R extends IMObjectRelationship, T extends IMObject> List<T> getRelatedObjects(
-            Collection<R> relationships, Predicate predicate, RelationshipRef accessor, boolean active,
-            Class<T> type) {
-        List<IMObjectReference> refs = getRelatedRefs(relationships, predicate, accessor);
-        return resolve(refs, type, active);
+            Collection<R> relationships, Class<T> type, Policy<R> policy, boolean source) {
+        List<IMObjectReference> refs = getRelatedRefs(relationships, policy, source);
+        return resolve(refs, type, policy.getState());
     }
 
     /**
      * Resolves references.
      * <p>
-     * If an object cannot be resolved, or doesn't match the active criteria, it is ignored.
+     * If an object cannot be resolved, or doesn't match the state criteria, it is ignored.
      *
-     * @param refs   the references to resolve
-     * @param type   the expected object type
-     * @param active determines if the objects must be active
+     * @param refs  the references to resolve
+     * @param type  the expected object type
+     * @param state the expected object state
      * @return a list of objects
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if an object isn't of the expected type
      */
-    protected <T extends IMObject> List<T> resolve(List<IMObjectReference> refs, Class<T> type, boolean active) {
+    protected <T extends IMObject> List<T> resolve(List<IMObjectReference> refs, Class<T> type, Policy.State state) {
+        List<T> result;
         if (refs.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<T> result = new ArrayList<>();
-        for (IMObjectReference ref : refs) {
-            T object = resolve(ref, type, active);
-            if (object != null) {
-                result.add(object);
+            result = Collections.emptyList();
+        } else {
+            result = new ArrayList<>();
+            for (IMObjectReference ref : refs) {
+                T object = resolve(ref, type, state);
+                if (object != null) {
+                    result.add(object);
+                }
             }
         }
         return result;
     }
 
     /**
-     * Returns the source or target from the first relationship matching the specified criteria.
-     * <p>
-     * If active is {@code true} the object must be active in order to be returned.
-     * <p>
-     * If active is {@code false}, then an active object will be returned in preference to an inactive one.
+     * Returns the source or target of a relationship that is not the same as the supplied reference.
      *
-     * @param relationships the relationships
-     * @param predicate     the predicate
-     * @param accessor      the relationship reference accessor
-     * @param active        determines if the object must be active or not
-     * @return the first object matching the criteria or {@code null} if none
-     * is found
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param relationship the relationship
+     * @param ref          the reference
+     * @param state        the expected object state
+     * @return the source or target, or {@code null}
      */
-    protected <R extends IMObjectRelationship> IMObject getRelatedObject(Collection<R> relationships,
-                                                                         Predicate predicate, RelationshipRef accessor,
-                                                                         boolean active) {
-        IMObject inactive = null;
-        for (R relationship : relationships) {
-            if (predicate.evaluate(relationship)) {
-                IMObjectReference ref = accessor.transform(relationship);
-                IMObject object = resolve(ref, false);
-                if (object != null) {
-                    if (object.isActive()) {
-                        // found a match, so return it
-                        return object;
-                    } else if (!active) {
-                        // can return inactive, but keep looking for an active
-                        // match
-                        inactive = object;
-                    }
-                }
+    protected IMObject getSourceOrTarget(IMObjectRelationship relationship, IMObjectReference ref, Policy.State state) {
+        IMObjectReference target = relationship.getTarget();
+        IMObjectReference related = null;
+        if (target != null && !target.equals(ref)) {
+            related = target;
+        } else {
+            IMObjectReference source = relationship.getSource();
+            if (source != null && !source.equals(ref)) {
+                related = source;
             }
         }
-        // no active match found
-        return (!active && inactive != null) ? inactive : null;
+        return (related != null) ? resolve(related, state) : null;
     }
 
     /**
@@ -2996,14 +2865,15 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      *
      * @param relationships the relationships
      * @param predicate     the criteria. May be {@code null}
-     * @param accessor      the relationship reference accessor
+     * @param source        if {@code true}, return the source of the relationship, otherwise return the target
      * @return the matching reference, or {@code null}
      */
     protected <R extends IMObjectRelationship> IMObjectReference getRelatedRef(
-            Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
+            Collection<R> relationships, java.util.function.Predicate<R> predicate, boolean source) {
+        Function<IMObjectRelationship, IMObjectReference> accessor = getAccessor(source);
         for (R relationship : relationships) {
-            if (predicate == null || predicate.evaluate(relationship)) {
-                IMObjectReference reference = accessor.transform(relationship);
+            if (predicate == null || predicate.test(relationship)) {
+                IMObjectReference reference = accessor.apply(relationship);
                 if (reference != null) {
                     return reference;
                 }
@@ -3018,15 +2888,17 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @param relationships the relationships
      * @param shortNames    the short names
      * @param active        determines if the relationship must be active
-     * @param accessor      the object accessor
+     * @param source        if {@code true}, return the source of the relationship, otherwise return the target
      * @return the first matching reference,or {@code null}
      */
+    @SuppressWarnings("unchecked")
     protected <R extends IMObjectRelationship> IMObjectReference getObjectRef(Collection<R> relationships,
                                                                               String[] shortNames, boolean active,
-                                                                              RelationshipRef accessor) {
-        IMObjectReference ref = getRelatedRef(relationships, getActiveIsA(shortNames), accessor);
+                                                                              boolean source) {
+        java.util.function.Predicate<IMObjectRelationship> predicate = getActiveIsA(shortNames);
+        IMObjectReference ref = getRelatedRef((Collection) relationships, predicate, source);
         if (ref == null && !active) {
-            ref = getRelatedRef(relationships, new IsA(shortNames), accessor);
+            ref = getRelatedRef(relationships, Predicates.isA(shortNames), source);
         }
         return ref;
     }
@@ -3038,10 +2910,10 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @param predicate the predicate
      * @return the objects matching the predicate
      */
-    protected <T> List<T> select(Collection<T> objects, Predicate predicate) {
+    protected <T> List<T> select(Collection<T> objects, java.util.function.Predicate<T> predicate) {
         List<T> result = new ArrayList<>();
         for (T object : objects) {
-            if (predicate.evaluate(object)) {
+            if (predicate.test(object)) {
                 result.add(object);
             }
         }
@@ -3072,8 +2944,9 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @param shortNames the relationship short names to match
      * @return a new predicate
      */
-    protected Predicate getIsActiveRelationship(Date time, String... shortNames) {
-        return new AndPredicate(isActive(time), new IsA(shortNames));
+    protected java.util.function.Predicate<IMObjectRelationship> getIsActiveRelationship(
+            Date time, String... shortNames) {
+        return Predicates.activeAt(time).and(Predicates.isA(shortNames));
     }
 
     /**
@@ -3085,9 +2958,10 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @param shortNames the relationship short names to match
      * @return a new predicate
      */
-    protected Predicate getActiveIsA(boolean active, String... shortNames) {
-        IsA isA = new IsA(shortNames);
-        return (active) ? new AndPredicate(IsActiveRelationship.isActiveNow(), isA) : isA;
+    protected <R extends IMObjectRelationship> java.util.function.Predicate<R> getActiveIsA(boolean active,
+                                                                                            String... shortNames) {
+        java.util.function.Predicate<R> isA = Predicates.isA(shortNames);
+        return (active) ? Predicates.<R>activeNow().and(isA) : isA;
     }
 
     /**
@@ -3097,22 +2971,8 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @param shortNames the relationship short names to match
      * @return a new predicate
      */
-    protected Predicate getActiveIsA(String... shortNames) {
-        return new AndPredicate(IsActiveRelationship.isActiveNow(), new IsA(shortNames));
-    }
-
-    /**
-     * Helper to return the default predicate for evaluating relationships.
-     *
-     * @param active determines if the relationship must be active
-     * @return the default predicate
-     */
-    protected Predicate getDefaultPredicate(boolean active) {
-        return (active) ? IsActiveRelationship.isActiveNow() : PredicateUtils.truePredicate();
-    }
-
-    protected <R extends IMObjectRelationship> java.util.function.Predicate<R> getPredicate(boolean active) {
-        return active ? Relationships.activeNow() : x -> true;
+    protected java.util.function.Predicate<IMObjectRelationship> getActiveIsA(String... shortNames) {
+        return Predicates.activeNow().and(Predicates.isA(shortNames));
     }
 
     /**
@@ -3124,6 +2984,18 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     protected NodeDescriptor toNode(String name) {
         return properties.getNode(name);
+    }
+
+    private Object getValue(NodeDescriptor node) {
+        return node.getValue(getObject());
+    }
+
+    private List<IMObject> getValues(NodeDescriptor node) {
+        return node.getChildren(getObject());
+    }
+
+    private <R extends IMObjectRelationship> Function<R, IMObjectReference> getAccessor(boolean source) {
+        return (source) ? R::getSource : R::getTarget;
     }
 
     /**

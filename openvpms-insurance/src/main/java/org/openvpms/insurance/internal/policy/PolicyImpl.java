@@ -16,14 +16,13 @@
 
 package org.openvpms.insurance.internal.policy;
 
-import org.apache.commons.collections.PredicateUtils;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.i18n.InsuranceMessages;
 import org.openvpms.insurance.policy.Animal;
@@ -47,7 +46,7 @@ public class PolicyImpl implements Policy {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * The customer rules.
@@ -83,7 +82,8 @@ public class PolicyImpl implements Policy {
      * @param customerRules the customer rules
      * @param patientRules  the patient rules
      */
-    public PolicyImpl(Act policy, IArchetypeService service, CustomerRules customerRules, PatientRules patientRules) {
+    public PolicyImpl(Act policy, IArchetypeRuleService service, CustomerRules customerRules,
+                      PatientRules patientRules) {
         this.policy = new ActBean(policy, service);
         this.service = service;
         this.customerRules = customerRules;
@@ -200,7 +200,7 @@ public class PolicyImpl implements Policy {
      * @return the policy identity, or {@code null} if none is registered
      */
     protected ActIdentity getIdentity() {
-        return policy.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
+        return policy.getObject("insurerId", ActIdentity.class);
     }
 
 }
