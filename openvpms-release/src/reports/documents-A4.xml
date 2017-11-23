@@ -127,6 +127,13 @@
               mimeType="text/xml" docType="document.other"/>
     <template name="Insurance Claim Items" archetype="SUBREPORT" reportType="PATIENT" description="Patient insurance claim items"
               path="Patient/Insurance/A4/Insurance Claim Items.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Insurance Claim Invoice" archetype="INSURANCE_CLAIM_INVOICE" reportType="PATIENT"
+              description="Invoice for attachment to patient insurance claims"
+              path="Patient/Insurance/A4/Insurance Claim Invoice.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Insurance Claim Invoice Items" archetype="SUBREPORT" reportType="PATIENT"
+              description="Invoice Items for attachment to patient insurance claims"
+              path="Patient/Insurance/A4/Insurance Claim Invoice Items.jrxml" mimeType="text/xml" docType="document.other"/>
 
     <!-- Reminder documents -->
     <template name="Grouped Reminders Report" archetype="GROUPED_REMINDERS" reportType="PATIENT"

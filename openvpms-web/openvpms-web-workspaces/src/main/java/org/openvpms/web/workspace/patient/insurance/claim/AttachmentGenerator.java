@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -45,6 +46,7 @@ import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.history.PatientHistoryFilter;
@@ -54,6 +56,7 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Generates attachments for a claim.
@@ -66,6 +69,11 @@ class AttachmentGenerator {
      * The patient.
      */
     private final Party patient;
+
+    /**
+     * The charges being claimed.
+     */
+    private final Charges charges;
 
     /**
      * The context.
@@ -82,8 +90,9 @@ class AttachmentGenerator {
      *
      * @param context the context
      */
-    public AttachmentGenerator(Party customer, Party patient, Context context) {
+    public AttachmentGenerator(Party customer, Party patient, Charges charges, Context context) {
         this.patient = patient;
+        this.charges = charges;
         LocalContext local = new LocalContext(context);
         local.setCustomer(customer);
         local.setPatient(patient);
@@ -99,23 +108,17 @@ class AttachmentGenerator {
     /**
      * Generates attachments.
      *
+     * @param claim       the claim
      * @param attachments the attachments editor
      * @return {@code true} if all attachments were successfully generated
      */
-    public boolean generate(AttachmentCollectionEditor attachments) {
+    public boolean generate(Act claim, AttachmentCollectionEditor attachments) {
         boolean result = true;
-        Act history = null;
+        addMissingHistory(attachments);
+        addMissingInvoices(attachments);
+
         for (Act attachment : attachments.getCurrentActs()) {
-            if (isHistory(attachment)) {
-                history = attachment;
-                break;
-            }
-        }
-        if (history == null) {
-            attachments.add(createHistory());
-        }
-        for (Act attachment : attachments.getCurrentActs()) {
-            if (!generate(attachment)) {
+            if (!generate(attachment, claim)) {
                 result = false;
                 break;
             }
@@ -126,12 +129,55 @@ class AttachmentGenerator {
     }
 
     /**
+     * Adds the history attachment, if none is present.
+     *
+     * @param attachments the attachments editor
+     */
+    private void addMissingHistory(AttachmentCollectionEditor attachments) {
+        Act history = null;
+        for (Act attachment : attachments.getCurrentActs()) {
+            if (isHistory(attachment)) {
+                history = attachment;
+                break;
+            }
+        }
+        if (history == null) {
+            attachments.add(createHistory());
+        }
+    }
+
+    /**
+     * Adds missing invoice attachments.
+     *
+     * @param attachments the attachments editor
+     */
+    private void addMissingInvoices(AttachmentCollectionEditor attachments) {
+        Set<IMObjectReference> expectedInvoices = charges.getInvoiceRefs();
+        for (Act attachment : attachments.getCurrentActs()) {
+            if (isInvoice(attachment)) {
+                ActBean bean = new ActBean(attachment);
+                IMObjectReference invoice = bean.getTargetRef("original");
+                if (invoice != null) {
+                    expectedInvoices.remove(invoice);
+                }
+            }
+        }
+        for (IMObjectReference ref : expectedInvoices) {
+            FinancialAct invoice = (FinancialAct) IMObjectHelper.getObject(ref);
+            if (invoice != null) {
+                attachments.addInvoice(invoice);
+            }
+        }
+    }
+
+    /**
      * Generates an attachment.
      *
      * @param attachment the attachment
+     * @param claim      the claim
      * @return {@code true} if the attachment was successfully generated
      */
-    private boolean generate(Act attachment) {
+    private boolean generate(Act attachment, Act claim) {
         boolean result = false;
         ActBean bean = new ActBean(attachment);
         String type = bean.getString("type");
@@ -140,7 +186,7 @@ class AttachmentGenerator {
         } else if (bean.getReference("document") == null) {
             Act original = (Act) bean.getNodeTargetObject("original");
             if (TypeHelper.isA(original, CustomerAccountArchetypes.INVOICE)) {
-                result = generateInvoice(bean, original);
+                result = generateInvoice(bean, original, claim);
             } else if (TypeHelper.isA(original, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
                 result = generateInvestigation(bean, (DocumentAct) original);
             } else if (original instanceof DocumentAct) {
@@ -206,16 +252,28 @@ class AttachmentGenerator {
     }
 
     /**
+     * Determines if an attachment is an invoice attachment.
+     *
+     * @param attachment the attachment
+     * @return {@code true} if the attachment is a invoice attachment
+     */
+    private boolean isInvoice(Act attachment) {
+        return CustomerAccountArchetypes.INVOICE.equals(new ActBean(attachment).getString("type"));
+    }
+
+    /**
      * Generates an invoice, storing it in an attachment.
      *
      * @param bean     the attachment
      * @param original the invoice
+     * @param claim    the claim
      * @return {@code true} if it was saved
      */
-    private boolean generateInvoice(ActBean bean, Act original) {
+    private boolean generateInvoice(ActBean bean, Act original, Act claim) {
         ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
-        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(original, context);
+        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator("INSURANCE_CLAIM_INVOICE", context);
         Reporter<Act> reporter = factory.create(original, locator, TemplatedReporter.class);
+        reporter.getParameters().put("claim", claim);
         return save(bean, reporter);
     }
 

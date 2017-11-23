@@ -413,9 +413,8 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     /**
      * Tests the {@link IMObjectBean#getSources(String),
      * {@link IMObjectBean#getSources(String, Class)},
-     * {@link IMObjectBean#getSources(String, Policy)}
-     * {@link IMObjectBean#getSources(String, Class, Policy)}
-     * and {@link IMObjectBean#hasSource(String, IMObject)} methods.
+     * {@link IMObjectBean#getSources(String, Policy)} and
+     * {@link IMObjectBean#getSources(String, Class, Policy)} methods.
      */
     @Test
     public void testGetSources() {
@@ -434,18 +433,12 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         IMObjectBean bean = new IMObjectBean(patient);
         checkEquals(bean.getSources("customers"), customer1, customer2, customer3);
         checkEquals(bean.getSources("customers", Party.class), customer1, customer2, customer3);
-        assertTrue(bean.hasSource("customers", customer1));
-        assertTrue(bean.hasSource("customers", customer2));
-        assertTrue(bean.hasSource("customers", customer3));
 
         // set the relationship times to the past verify it is filtered out
         rel1.setActiveStartTime(start1);
         rel1.setActiveEndTime(end1);
         checkEquals(bean.getSources("customers", Policies.active(now)), customer2, customer3);
         checkEquals(bean.getSources("customers", Party.class, Policies.active(now)), customer2, customer3);
-        assertFalse(bean.hasSource("customers", customer1));
-        assertTrue(bean.hasSource("customers", customer2));
-        assertTrue(bean.hasSource("customers", customer3));
 
         customer3.setActive(false);
         save(customer3);
@@ -459,9 +452,8 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     /**
      * Tests the {@link IMObjectBean#getTargets(String)},
      * {@link IMObjectBean#getTargets(String, Class)},
-     * {@link IMObjectBean#getTargets(String, Policy)} )},
-     * {@link IMObjectBean#getTargets(String, Class, Policy)}  and
-     * {@link IMObjectBean#hasTarget(String, IMObject)} methods.
+     * {@link IMObjectBean#getTargets(String, Policy)} and
+     * {@link IMObjectBean#getTargets(String, Class, Policy)} methods.
      */
     @Test
     public void testGetTargets() {
@@ -481,25 +473,16 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         checkEquals(bean.getTargets("patients"), patient1, patient2, patient3);
         checkEquals(bean.getTargets("patients", Party.class), patient1, patient2, patient3);
 
-        assertTrue(bean.hasTarget("patients", patient1));
-        assertTrue(bean.hasTarget("patients", patient2));
-        assertTrue(bean.hasTarget("patients", patient3));
-
         // set the relationship times to the past verify it is filtered out
         rel1.setActiveStartTime(start1);
         rel1.setActiveEndTime(end1);
         checkEquals(bean.getTargets("patients", Policies.active(now)), patient2, patient3);
         checkEquals(bean.getTargets("patients", Party.class, Policies.active(now)), patient2, patient3);
 
-        assertFalse(bean.hasTarget("patients", patient1));
-        assertTrue(bean.hasTarget("patients", patient2));
-        assertTrue(bean.hasTarget("patients", patient3));
-
         patient3.setActive(false);
         save(patient3);
         checkEquals(bean.getTargets("patients", Policies.active(now)), patient2);
         checkEquals(bean.getTargets("patients", Policies.active(now, false)), patient2, patient3);
-        assertTrue(bean.hasTarget("patients", patient3)); // don't care if the target is inactive
 
         checkEquals(bean.getTargets("patients", Party.class, Policies.active(now, false)), patient2, patient3);
     }

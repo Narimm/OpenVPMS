@@ -26,6 +26,7 @@ import org.openvpms.archetype.function.contact.PhoneFunctions;
 import org.openvpms.archetype.function.date.DateFunctions;
 import org.openvpms.archetype.function.expression.ExpressionFunctions;
 import org.openvpms.archetype.function.history.HistoryFunctions;
+import org.openvpms.archetype.function.insurance.InsuranceFunctions;
 import org.openvpms.archetype.function.list.ListFunctions;
 import org.openvpms.archetype.function.lookup.LookupFunctions;
 import org.openvpms.archetype.function.math.MathFunctions;
@@ -121,6 +122,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         } else {
             library.addFunctions(new UserFunctions(service, practiceService, lookups, library));
         }
+        library.addFunctions(create("insurance", new InsuranceFunctions(service)));
         library.addFunctions(create("word", WordUtils.class));
         return library;
     }

@@ -910,32 +910,6 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     }
 
     /**
-     * Determines if there is an active {@link IMObjectRelationship} with {@code object} as its source, for the node
-     * {@code node}.
-     *
-     * @param name   the relationship node
-     * @param object the target object
-     * @return {@code true} if there is an active relationship to {@code object}
-     */
-    @Override
-    public boolean hasSource(String name, IMObject object) {
-        return getSourceRefs(name).contains(object.getObjectReference());
-    }
-
-    /**
-     * Determines if there is an active {@link PeriodRelationship} with {@code object} as its target, for the node
-     * {@code node}.
-     *
-     * @param name   the relationship node
-     * @param object the target object
-     * @return {@code true} if there is an active relationship to {@code object}
-     */
-    @Override
-    public boolean hasTarget(String name, IMObject object) {
-        return getTargetRefs(name).contains(object.getObjectReference());
-    }
-
-    /**
      * Adds a new relationship between the current object (the source), and the supplied target.
      * <p>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
@@ -2282,7 +2256,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return {@code true} if there is an active relationship to {@code object}
      */
     public boolean hasNodeTarget(String node, IMObject object) {
-        return hasTarget(node, object);
+        return getNodeTargetObjectRefs(node).contains(object.getObjectReference());
     }
 
     /**
@@ -2307,7 +2281,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return {@code true} if there is an active relationship to {@code object}
      */
     public boolean hasNodeSource(String node, IMObject object) {
-        return hasSource(node, object);
+        return getNodeSourceObjectRefs(node).contains(object.getObjectReference());
     }
 
     /**

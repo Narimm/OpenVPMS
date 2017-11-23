@@ -35,8 +35,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.DelegatingProperty;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -120,20 +118,26 @@ public class ClaimEditor extends AbstractClaimEditor {
             editors.add(insurerId);
         }
         attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, context);
+        Charges charges = new Charges();
         items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, customer, patient,
-                                              new Charges(), attachments, context);
+                                              charges, attachments, context);
         editors.add(attachments);
         editors.add(items);
 
-        generator = new AttachmentGenerator(customer, patient, context.getContext());
-        items.addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onItemsChanged();
-            }
-        });
+        generator = new AttachmentGenerator(customer, patient, charges, context.getContext());
+        items.addModifiableListener(modifiable -> onItemsChanged());
+
+        // The following forces all of the invoice items to be added to charges.
+        for (Act item :items.getCurrentActs()) {
+            items.getEditor(item);
+        }
     }
 
+    /**
+     * Returns the patient.
+     *
+     * @return the patient. May be {@code null}
+     */
     public Party getPatient() {
         return (Party) getParticipant("patient");
     }
@@ -154,7 +158,7 @@ public class ClaimEditor extends AbstractClaimEditor {
      * @return {@code true} if all attachments were successfully generated
      */
     public boolean generateAttachments() {
-        boolean generate = generator.generate(attachments);
+        boolean generate = generator.generate(getObject(), attachments);
         if (!generate) {
             ClaimLayoutStrategy strategy = (ClaimLayoutStrategy) getView().getLayout();
             strategy.selectAttachments();

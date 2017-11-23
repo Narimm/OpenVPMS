@@ -18,9 +18,12 @@ package org.openvpms.web.workspace.patient.insurance.claim;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Tracks charges across a claim.
@@ -78,5 +81,22 @@ class Charges {
      */
     public boolean contains(IMObjectReference reference) {
         return charges.containsKey(reference);
+    }
+
+    /**
+     * Returns the references of each invoice associated with a charge.
+     *
+     * @return the invoice references
+     */
+    public Set<IMObjectReference> getInvoiceRefs() {
+        Set<IMObjectReference> invoices = new HashSet<>();
+        for (Act item : charges.values()) {
+            ActBean bean = new ActBean(item);
+            IMObjectReference invoiceRef = bean.getSourceRef("invoice");
+            if (invoiceRef != null) {
+                invoices.add(invoiceRef);
+            }
+        }
+        return invoices;
     }
 }

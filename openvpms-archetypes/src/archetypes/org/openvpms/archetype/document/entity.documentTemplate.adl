@@ -72,6 +72,7 @@
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
                     <property name="PATIENT_MAILING_LABELS" value="Patient Mailing Labels"/>
+                    <property name="INSURANCE_CLAIM_INVOICE" value="Insurance Claim Invoice"/>
                 </propertyList>
             </assertion>
         </node>

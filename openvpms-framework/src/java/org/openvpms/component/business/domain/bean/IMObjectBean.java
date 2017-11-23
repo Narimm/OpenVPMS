@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
@@ -567,26 +566,6 @@ public interface IMObjectBean {
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     <R extends IMObjectRelationship> List<IMObjectReference> getTargetRefs(String name, Policy<R> policy);
-
-    /**
-     * Determines if there is an active {@link IMObjectRelationship} with {@code object} as its source, for the node
-     * {@code node}.
-     *
-     * @param name   the relationship node name
-     * @param object the target object
-     * @return {@code true} if there is an active relationship to {@code object}
-     */
-    boolean hasSource(String name, IMObject object);
-
-    /**
-     * Determines if there is an active {@link PeriodRelationship} with {@code object} as its target, for the node
-     * {@code node}.
-     *
-     * @param name   the relationship node name
-     * @param object the target object
-     * @return {@code true} if there is an active relationship to {@code object}
-     */
-    boolean hasTarget(String name, IMObject object);
 
     /**
      * Sets the value of a node.
