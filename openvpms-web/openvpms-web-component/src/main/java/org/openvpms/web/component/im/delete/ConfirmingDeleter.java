@@ -85,7 +85,8 @@ public class ConfirmingDeleter<T extends IMObject> extends AbstractIMObjectDelet
         T object = handler.getObject();
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.format("imobject.deactivate.title", type);
-        String message = Messages.format("imobject.deactivate.message", handler.getObject());
+        String name = (object.getName() != null) ? object.getName() : type;
+        String message = Messages.format("imobject.deactivate.message", name);
         final ConfirmationDialog dialog = new ConfirmationDialog(title, message, true, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
