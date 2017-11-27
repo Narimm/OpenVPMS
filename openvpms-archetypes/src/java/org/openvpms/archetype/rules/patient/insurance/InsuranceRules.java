@@ -17,9 +17,11 @@
 package org.openvpms.archetype.rules.patient.insurance;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -124,7 +126,7 @@ public class InsuranceRules {
      * Returns the insurer associated with a policy or claim.
      *
      * @param act the policy or claim
-     * @return the insurer
+     * @return the insurer, or {@code null} if the insurer cannot be found
      */
     public Party getInsurer(Act act) {
         Party insurer = null;
@@ -138,6 +140,22 @@ public class InsuranceRules {
             }
         }
         return insurer;
+    }
+
+    /**
+     * Creates a new claim, linked to a policy.
+     *
+     * @param policy the policy
+     * @return a new claim
+     */
+    public FinancialAct createClaim(Act policy) {
+        FinancialAct claim = (FinancialAct) service.create(InsuranceArchetypes.CLAIM);
+        if (claim == null) {
+            throw new IllegalStateException("Failed to create " + InsuranceArchetypes.CLAIM);
+        }
+        IMObjectBean bean = new IMObjectBean(claim, service);
+        bean.addTarget("policy", policy, "claims");
+        return claim;
     }
 
     /**

@@ -128,7 +128,7 @@ public class ClaimEditor extends AbstractClaimEditor {
         items.addModifiableListener(modifiable -> onItemsChanged());
 
         // The following forces all of the invoice items to be added to charges.
-        for (Act item :items.getCurrentActs()) {
+        for (Act item : items.getCurrentActs()) {
             items.getEditor(item);
         }
     }
@@ -145,11 +145,17 @@ public class ClaimEditor extends AbstractClaimEditor {
     /**
      * Creates a new instance of the editor, with the latest instance of the object to edit.
      *
-     * @return {@code null}
+     * @return a new instance of the editor, or {@code null} if the object no longer has {@code PENDING} status.
+     * @throws IllegalStateException if the object no longer exists
      */
     @Override
     public IMObjectEditor newInstance() {
-        return new ClaimEditor((FinancialAct) reload(getObject()), getParent(), getLayoutContext());
+        ClaimEditor editor = null;
+        FinancialAct act = (FinancialAct) reload(getObject());
+        if (Claim.Status.PENDING.isA(act.getStatus())) {
+            editor = new ClaimEditor(act, getParent(), getLayoutContext());
+        }
+        return editor;
     }
 
     /**
@@ -158,12 +164,15 @@ public class ClaimEditor extends AbstractClaimEditor {
      * @return {@code true} if all attachments were successfully generated
      */
     public boolean generateAttachments() {
-        boolean generate = generator.generate(getObject(), attachments);
-        if (!generate) {
-            ClaimLayoutStrategy strategy = (ClaimLayoutStrategy) getView().getLayout();
-            strategy.selectAttachments();
-        }
-        return generate;
+        return generator.generate(getObject(), attachments);
+    }
+
+    /**
+     * Displays the attachments tabs.
+     */
+    public void showAttachments() {
+        ClaimLayoutStrategy strategy = (ClaimLayoutStrategy) getView().getLayout();
+        strategy.selectAttachments();
     }
 
     /**

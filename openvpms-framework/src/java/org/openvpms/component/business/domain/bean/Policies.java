@@ -128,6 +128,17 @@ public class Policies {
     }
 
     /**
+     * Returns a policy that matches all relationships, and both active and inactive objects.
+     * <p>
+     * This is synonymous with {@link #any()}, but makes more sense in terms of collection nodes.
+     *
+     * @return the policy
+     */
+    public static Policy<IMObjectRelationship> all() {
+        return ANY;
+    }
+
+    /**
      * Returns a policy that selects all relationships, and returns active or inactive objects.
      *
      * @param type the relationship type

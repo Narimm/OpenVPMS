@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -88,6 +89,38 @@ public class ClaimItemEditor extends AbstractClaimEditor {
         if (!charges.isClaimed(charge)) {
             charges.add(charge);
         }
+    }
+
+    /**
+     * Invoked when the start time changes. Sets the value to end time if
+     * start time > end time.
+     */
+    @Override
+    protected void onStartTimeChanged() {
+        Date start = getStartTime();
+        if (start != null) {
+            Date now = new Date();
+            if (start.compareTo(now) > 0) {
+                setStartTime(now);
+            }
+        }
+        super.onStartTimeChanged();
+    }
+
+    /**
+     * Invoked when the end time changes. Sets the value to start time if
+     * end time < start time.
+     */
+    @Override
+    protected void onEndTimeChanged() {
+        Date end = getEndTime();
+        if (end != null) {
+            Date now = new Date();
+            if (end.compareTo(now) > 0) {
+                setEndTime(now);
+            }
+        }
+        super.onEndTimeChanged();
     }
 
     /**
