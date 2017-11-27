@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
-import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -50,7 +49,6 @@ import org.openvpms.web.component.print.DefaultBatchPrinter;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -376,20 +374,11 @@ public class ClaimSubmitter {
                 break;
             }
         }
-        String title = Messages.get("printdialog.title");
         String message = null;
         if (missingAttachment != 0) {
             message = Messages.format("patient.insurance.print.noattachment", missingAttachment);
         }
-        final BatchPrintDialog dialog = new BatchPrintDialog(title, message, BatchPrintDialog.OK_CANCEL, objects, help);
-        dialog.getButtons().add(MAIL_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                List<IMObject> selected = dialog.getSelected();
-                if (!selected.isEmpty()) {
-                    mail(claim, selected, listener);
-                }
-            }
-        });
+        final ClaimPrintDialog dialog = new ClaimPrintDialog(claim, message, objects, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -435,7 +424,14 @@ public class ClaimSubmitter {
         return result;
     }
 
-    private void mail(Claim claim, List<IMObject> list, Consumer<Throwable> listener) {
+    /**
+     * Creates a {@link MailDialog} to email a claim.
+     *
+     * @param claim the claim
+     * @param list the attachments
+     * @return a new dialog
+     */
+    private MailDialog mail(Claim claim, List<IMObject> list) {
         HelpContext email = help.subtopic("email");
         MailContext mailContext = createMailContext(claim);
         MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
@@ -457,13 +453,7 @@ public class ClaimSubmitter {
                 editor.addAttachment(document);
             }
         }
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            @Override
-            public void onClose(WindowPaneEvent event) {
-                listener.accept(null);
-            }
-        });
-        dialog.show();
+        return dialog;
     }
 
     /**
@@ -578,6 +568,60 @@ public class ClaimSubmitter {
         public InsuranceService getService() {
             return service;
         }
+    }
+
+    private class ClaimPrintDialog extends BatchPrintDialog {
+
+        private final Claim claim;
+
+        /**
+         * Constructs a {@link ClaimPrintDialog}.
+         *
+         * @param claim   the claim
+         * @param message the message to display. May be {@code null}
+         * @param objects the objects to print. The boolean value indicates if the object should be selected by default
+         * @param help    the help context
+         */
+        public ClaimPrintDialog(Claim claim, String message, List<IMObject> objects, HelpContext help) {
+            super(Messages.get("printdialog.title"), message, new String[]{OK_ID, CANCEL_ID, MAIL_ID}, objects, help);
+            this.claim = claim;
+        }
+
+        /**
+         * Invoked when the mail button is pressed. Displays the selected documents in a mail editor.
+         */
+        protected void onMail() {
+            List<IMObject> selected = getSelected();
+            if (!selected.isEmpty()) {
+                final MailDialog mailer = mail(claim, selected);
+                mailer.addWindowPaneListener(new WindowPaneListener() {
+                    @Override
+                    public void onClose(WindowPaneEvent event) {
+                        if (MailDialog.SEND_ID.equals(mailer.getAction())) {
+                            ClaimPrintDialog.this.close(MAIL_ID);
+                        }
+                    }
+                });
+                mailer.show();
+            }
+        }
+
+        /**
+         * Invoked when a button is pressed. This delegates to the appropriate
+         * on*() method for the button if it is known, else sets the action to
+         * the button identifier and closes the window.
+         *
+         * @param button the button identifier
+         */
+        @Override
+        protected void onButton(String button) {
+            if (MAIL_ID.equals(button)) {
+                onMail();
+            } else {
+                super.onButton(button);
+            }
+        }
+
     }
 }
 

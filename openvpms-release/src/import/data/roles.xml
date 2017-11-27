@@ -389,6 +389,49 @@
           description="Authority to Remove Patient Customer Note"
           serviceName="archetypeService" method="remove" archetypeShortName="act.patientCustomerNote"/>
 
+    <!-- Patient Insurance Policy Authorities -->
+    <data id="CPATINSP" archetype="security.archetypeAuthority" name="Patient Insurance Policy Create"
+          description="Authority to create Patient Insurance Policy"
+          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsurancePolicy"/>
+    <data id="SPATINSP" archetype="security.archetypeAuthority" name="Patient Insurance Policy Save"
+          description="Authority to create Patient Insurance Policy"
+          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsurancePolicy"/>
+    <data id="RPATINSP" archetype="security.archetypeAuthority" name="Patient Insurance Policy remove"
+          description="Authority to create Patient Insurance Policy"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsurancePolicy"/>
+
+    <!-- Patient Insurance Claim Authorities -->
+    <data id="CPATINSC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Create"
+          description="Authority to create Patient Insurance Claim"
+          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsuranceClaim"/>
+    <data id="SPATINSC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Save"
+          description="Authority to save Patient Insurance Claim"
+          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsuranceClaim"/>
+    <data id="RPATINSC" archetype="security.archetypeAuthority" name="Patient Insurance Claim remove"
+          description="Authority to remove Patient Insurance Claim"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsuranceClaim"/>
+
+    <!-- Patient Insurance Claim Condition Authorities -->
+    <data id="CPATINSCC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Condition Create"
+          description="Authority to create Patient Insurance Claim Condition"
+          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsuranceClaimItem"/>
+    <data id="SPATINSCC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Condition Save"
+          description="Authority to save Patient Insurance Claim Condition"
+          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsuranceClaimItem"/>
+    <data id="RPATINSCC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Condition Remove"
+          description="Authority to remove Patient Insurance Claim Condition"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsuranceClaimItem"/>
+
+    <!-- Patient Insurance Claim Attachment Authorities -->
+    <data id="CPATINSCA" archetype="security.archetypeAuthority" name="Patient Insurance Claim Attachment Create"
+          description="Authority to create Patient Insurance Claim Attachment"
+          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsuranceClaimAttachment"/>
+    <data id="SPATINSCA" archetype="security.archetypeAuthority" name="Patient Insurance Claim Attachment Save"
+          description="Authority to save Patient Insurance Claim Attachment "
+          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsuranceClaimAttachment"/>
+    <data id="RPATINSCA" archetype="security.archetypeAuthority" name="Patient Insurance Claim Attachment Remove"
+          description="Authority to remove Patient Insurance Claim Attachment "
+          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsuranceClaimAttachment"/>
 
     <!-- Supplier Authorities -->
     <!-- Supplier Party Authorities -->
@@ -745,6 +788,22 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SACTREL"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPARTIC"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPARTIC"/>
+    </data>
+
+    <data id="ROLE_INSURANCE" archetype="security.role" name="Patient Insurance"
+          description="Role for creating patient insurance policies and claims">
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSP"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSP"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSP"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSC"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSC"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSC"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSCC"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSCC"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSCC"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSCA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSCA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSCA"/>
     </data>
 
 </archetype>

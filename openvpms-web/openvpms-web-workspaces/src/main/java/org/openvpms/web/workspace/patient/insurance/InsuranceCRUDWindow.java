@@ -216,7 +216,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     protected void cancelClaim(Act object) {
         if (getActions().canCancelClaim(object)) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext().subtopic("cancel"));
             submitter.cancel(object, createRefreshAction(object, "patient.insurance.cancel.title"));
         }
     }
@@ -228,7 +228,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     protected void settleClaim(Act object) {
         if (getActions().canSettleClaim(object)) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext().subtopic("settle"));
             submitter.settle(object, createRefreshAction(object, "patient.insurance.settle.title"));
         }
     }
@@ -238,7 +238,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     protected void declineClaim(Act object) {
         if (getActions().canDeclineClaim(object)) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext().subtopic("decline"));
             submitter.decline(object, createRefreshAction(object, "patient.insurance.decline.title"));
         }
     }

@@ -208,7 +208,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
                                        createPrescriptionBrowser(patient, layout));
         communication = createCommunicationBrowser(patient, context, help);
         communicationIndex = addBrowser(Messages.get("button.communication"), communication);
-        insurance = createInsuranceBrowser(patient, context, help);
+        insurance = createInsuranceBrowser(patient, context, help.subtopic("insurance"));
         insuranceIndex = addBrowser(Messages.get("button.insurance"), insurance);
     }
 
@@ -251,7 +251,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         } else if (index == communicationIndex) {
             result = new PatientCommunicationCRUDWindow(context, help);
         } else if (index == insuranceIndex) {
-            result = new InsuranceCRUDWindow(context, help);
+            result = new InsuranceCRUDWindow(context, help.subtopic("insurance"));
         } else {
             result = createHistoryCRUDWindow(context, help);
         }
