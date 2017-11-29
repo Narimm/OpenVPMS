@@ -760,6 +760,9 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPREF"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPREF"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPREF"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSP"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSP"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSP"/>
     </data>
 
     <data id="ROLE_S" archetype="security.role" name="Stock Control">
@@ -790,11 +793,8 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPARTIC"/>
     </data>
 
-    <data id="ROLE_INSURANCE" archetype="security.role" name="Patient Insurance"
-          description="Role for creating patient insurance policies and claims">
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSP"/>
+    <data id="ROLE_INSURANCE" archetype="security.role" name="Insurance Claims"
+          description="Role for creating patient insurance claims">
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSC"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSC"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSC"/>

@@ -128,11 +128,10 @@ public class InsuranceTestHelper {
      * @param diagnosis    the VeNom diagnosis code
      * @param startTime    the treatment start time
      * @param endTime      the treatment end time
-     * @param author       the author of the claim item
      * @param invoiceItems the invoice items being claimed
      * @return a new claim item
      */
-    public static FinancialAct createClaimItem(String diagnosis, Date startTime, Date endTime, User author,
+    public static FinancialAct createClaimItem(String diagnosis, Date startTime, Date endTime,
                                                FinancialAct... invoiceItems) {
         BigDecimal total = BigDecimal.ZERO;
         BigDecimal tax = BigDecimal.ZERO;
@@ -141,7 +140,7 @@ public class InsuranceTestHelper {
         item.setReason(TestHelper.getLookup("lookup.diagnosisVeNom", diagnosis).getCode());
         item.setActivityStartTime(startTime);
         item.setActivityEndTime(endTime);
-        bean.setNodeParticipant("author", author);
+        bean.setValue("notes", "some notes");
         for (FinancialAct invoiceItem : invoiceItems) {
             total = total.add(invoiceItem.getTotal());
             tax = tax.add(invoiceItem.getTaxAmount());

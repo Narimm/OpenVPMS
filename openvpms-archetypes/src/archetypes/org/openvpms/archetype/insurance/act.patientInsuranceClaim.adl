@@ -19,7 +19,8 @@
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Insurance Claim">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="insurerId" displayName="Claim Number" path="/identities" type="java.util.HashSet"
-              baseName="Identity" minCardinality="0" maxCardinality="1" filter="actIdentity.insuranceClaim*"/>
+              baseName="Identity" minCardinality="0" maxCardinality="1" filter="actIdentity.insuranceClaim*"
+              readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" readOnly="true"
               defaultValue="'Insurance Claim'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>

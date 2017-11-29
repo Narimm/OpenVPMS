@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -29,12 +28,8 @@ import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.identity.SingleIdentityCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -63,10 +58,6 @@ public class ClaimEditor extends AbstractClaimEditor {
      */
     private final AttachmentGenerator generator;
 
-    /**
-     * The insurerId node editor, for non-eClaims.
-     */
-    private SingleIdentityCollectionEditor insurerId;
 
     /**
      * Constructs an {@link ClaimEditor}.
@@ -100,23 +91,6 @@ public class ClaimEditor extends AbstractClaimEditor {
         }
 
         Editors editors = getEditors();
-        if (!canSubmitClaim(act)) {
-            // users can't submit the claim via an InsuranceService, so allow the insurerId to be edited, and make it
-            // mandatory.
-            CollectionProperty property = getCollectionProperty("insurerId");
-            if (property.getValues().isEmpty()) {
-                IMObject identity = IMObjectCreator.create(InsuranceArchetypes.CLAIM_IDENTITY);
-                property.add(identity);
-            }
-            property = new DelegatingProperty(property) {
-                @Override
-                public int getMinCardinality() {
-                    return 1;
-                }
-            };
-            insurerId = new SingleIdentityCollectionEditor(property, act, context);
-            editors.add(insurerId);
-        }
         attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, context);
         Charges charges = new Charges();
         items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, customer, patient,
@@ -203,7 +177,7 @@ public class ClaimEditor extends AbstractClaimEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new ClaimLayoutStrategy(getPatient(), insurerId, items, attachments);
+        return new ClaimLayoutStrategy(getPatient(), items, attachments);
     }
 
     /**

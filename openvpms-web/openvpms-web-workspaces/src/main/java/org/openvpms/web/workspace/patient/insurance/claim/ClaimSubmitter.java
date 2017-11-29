@@ -17,9 +17,11 @@
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -35,9 +37,11 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
@@ -383,12 +387,7 @@ public class ClaimSubmitter {
             @Override
             public void onOK() {
                 List<IMObject> selected = dialog.getSelected();
-                BatchPrinter printer = new DefaultBatchPrinter<IMObject>(selected, context, help) {
-                    @Override
-                    protected void completed() {
-                        listener.accept(null);
-                    }
-                };
+                BatchPrinter printer = new ClaimBatchPrinter(claim, selected, listener);
                 printer.print();
             }
 
@@ -428,7 +427,7 @@ public class ClaimSubmitter {
      * Creates a {@link MailDialog} to email a claim.
      *
      * @param claim the claim
-     * @param list the attachments
+     * @param list  the attachments
      * @return a new dialog
      */
     private MailDialog mail(Claim claim, List<IMObject> list) {
@@ -446,7 +445,7 @@ public class ClaimSubmitter {
                     editor.addAttachment(document);
                 }
             } else {
-                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+                DocumentTemplateLocator locator = getDocumentTemplateLocator(claim, object);
                 Reporter<IMObject> reporter = reporterFactory.create(object, locator, Reporter.class);
                 reporter.setFields(ReportContextFactory.create(context));
                 Document document = reporter.getDocument(Reporter.DEFAULT_MIME_TYPE, true);
@@ -454,6 +453,25 @@ public class ClaimSubmitter {
             }
         }
         return dialog;
+    }
+
+    /**
+     * Returns a document template locator for an object.
+     *
+     * @param claim  the claim
+     * @param object the object
+     * @return a new template locator
+     */
+    private DocumentTemplateLocator getDocumentTemplateLocator(Claim claim, IMObject object) {
+        if (TypeHelper.isA(object, InsuranceArchetypes.CLAIM)) {
+            Party supplier = claim.getPolicy().getInsurer();
+            IMObjectBean bean = new IMObjectBean(supplier);
+            Entity template = bean.getTarget("template", Entity.class);
+            if (template != null) {
+                return new StaticDocumentTemplateLocator(new DocumentTemplate(template, ServiceHelper.getArchetypeService()));
+            }
+        }
+        return new ContextDocumentTemplateLocator(object, context);
     }
 
     /**
@@ -622,6 +640,39 @@ public class ClaimSubmitter {
             }
         }
 
+    }
+
+    private class ClaimBatchPrinter extends DefaultBatchPrinter<IMObject> {
+
+        private final Claim claim;
+
+        private final Consumer<Throwable> listener;
+
+        public ClaimBatchPrinter(Claim claim, List<IMObject> selected, Consumer<Throwable> listener) {
+            super(selected, context, help);
+            this.claim = claim;
+            this.listener = listener;
+        }
+
+        /**
+         * Creates a new document template locator to locate the template for the object being printed.
+         *
+         * @param object  the object to print
+         * @param context the context
+         * @return a new document template locator
+         */
+        @Override
+        protected DocumentTemplateLocator createDocumentTemplateLocator(IMObject object, Context context) {
+            return getDocumentTemplateLocator(claim, object);
+        }
+
+        /**
+         * Invoked when printing completes.
+         */
+        @Override
+        protected void completed() {
+            listener.accept(null);
+        }
     }
 }
 

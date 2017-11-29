@@ -17,14 +17,13 @@
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Component;
-import org.apache.commons.collections.PredicateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.edit.identity.SingleIdentityCollectionEditor;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectTabPane;
 import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
@@ -41,6 +40,8 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 
 import java.util.List;
 
+import static org.openvpms.component.business.domain.bean.Policies.any;
+
 /**
  * Layout strategy for <em>act.patientInsuranceClaim</em>.
  *
@@ -54,11 +55,6 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     private final Party patient;
 
     /**
-     * The insurerId editor.
-     */
-    private final SingleIdentityCollectionEditor insurerId;
-
-    /**
      * The items editor.
      */
     private final ClaimItemCollectionEditor items;
@@ -68,6 +64,9 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      */
     private final AttachmentCollectionEditor attachments;
 
+    /**
+     * The tab pane.
+     */
     private IMObjectTabPane pane;
 
     /**
@@ -79,27 +78,25 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     /**
      * The nodes to display
      */
-    private static final ArchetypeNodes NODES = ArchetypeNodes.all().excludeIfEmpty(MESSAGE);
+    private static final ArchetypeNodes NODES = ArchetypeNodes.all().excludeIfEmpty(MESSAGE, "insurerId");
 
     /**
      * Default constructor, used for viewing claims.
      */
     public ClaimLayoutStrategy() {
-        this(null, null, null, null);
+        this(null, null, null);
     }
 
     /**
      * Constructor, used for editing claims.
      *
      * @param patient     the patient
-     * @param insurerId   the insurerId editor. May be {@code null}
      * @param items       the claim items
      * @param attachments the attachments editor
      */
-    public ClaimLayoutStrategy(Party patient, SingleIdentityCollectionEditor insurerId,
+    public ClaimLayoutStrategy(Party patient,
                                ClaimItemCollectionEditor items, AttachmentCollectionEditor attachments) {
         super(NODES);
-        this.insurerId = insurerId;
         this.items = items;
         this.attachments = attachments;
         this.patient = patient;
@@ -129,23 +126,9 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
 
-        CollectionProperty id = (CollectionProperty) properties.get("insurerId");
         if (context.isEdit()) {
-            if (insurerId != null) {
-                addComponent(new ComponentState(insurerId));
-            } else {
-                if (id.isEmpty()) {
-                    addComponent(createDummyInsurerId(object, id, factory));
-                } else {
-                    addComponent(factory.create(createReadOnly(id), object));
-                }
-            }
             addComponent(new ComponentState(items));
             addComponent(new ComponentState(attachments));
-        } else {
-            if (id.isEmpty()) {
-                addComponent(createDummyInsurerId(object, id, factory));
-            }
         }
 
         Property message = properties.get(MESSAGE);
@@ -222,7 +205,7 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
             ActBean bean = new ActBean(policy);
             Party insurer = (Party) bean.getNodeParticipant("insurer");
             String insurerName = (insurer != null) ? insurer.getName() : null;
-            ActIdentity identity = bean.getValue("insurerId", PredicateUtils.truePredicate(), ActIdentity.class);
+            ActIdentity identity = bean.getObject("insurerId", ActIdentity.class);
             String insurerId = (identity != null) ? identity.getIdentity() : null;
             value = Messages.format("patient.insurance.policy", insurerName, insurerId);
         } else {
@@ -241,8 +224,8 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      * @return the policy, or {@code null} if none exists
      */
     private Act getPolicy(Act claim) {
-        ActBean claimBean = new ActBean(claim);
-        return (Act) claimBean.getNodeTargetObject("policy");
+        IMObjectBean bean = new IMObjectBean(claim);
+        return bean.getTarget("policy", Act.class, any());
     }
 
 }

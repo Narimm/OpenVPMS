@@ -213,7 +213,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         List<FinancialAct> invoice2Acts = createInvoice(getDate("2017-09-28"), invoiceItem3);
         save(invoice2Acts);
 
-        FinancialAct item1Act = createClaimItem("VENOM_328", treatFrom1, treatTo1, clinician, invoiceItem1,
+        FinancialAct item1Act = createClaimItem("VENOM_328", treatFrom1, treatTo1, invoiceItem1,
                                                 invoiceItem2, invoiceItem3);
         Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
         claimAct.addIdentity(createActIdentity("actIdentity.insuranceClaim", "CLM987654"));
@@ -278,7 +278,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         List<FinancialAct> invoice1Acts = createInvoice(getDate("2017-09-27"), invoiceItem1);
         save(invoice1Acts);
 
-        FinancialAct item1Act = createClaimItem("VENOM_328", itemDate1, itemDate1, clinician, invoiceItem1);
+        FinancialAct item1Act = createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
         Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
         save(claimAct, item1Act);
 
