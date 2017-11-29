@@ -48,7 +48,7 @@ public interface BookingService {
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     Response create(Booking booking, @Context UriInfo uriInfo);
 
     /**

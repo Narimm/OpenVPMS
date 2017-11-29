@@ -45,6 +45,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
@@ -221,11 +222,13 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         BookingService service = createBookingService(acts);
         Response response1 = service.create(booking, createUriInfo());
         assertEquals(201, response1.getStatus());
+        assertEquals("text/plain", response1.getHeaderString(HttpHeaders.CONTENT_TYPE));
         assertEquals(1, acts.size());
         Act appointment = acts.get(0);
         assertEquals(AppointmentStatus.PENDING, appointment.getStatus());
 
         String reference = (String) response1.getEntity();
+        assertEquals(appointment.getId() + ":" + appointment.getLinkId(), reference);
         Response response2 = service.cancel(reference);
         assertEquals(204, response2.getStatus());
 
@@ -395,6 +398,7 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         final List<Act> acts = new ArrayList<>();
         BookingService service = createBookingService(acts);
         Response response = service.create(booking, createUriInfo());
+        assertEquals("text/plain", response.getHeaderString(HttpHeaders.CONTENT_TYPE));
         assertEquals(201, response.getStatus());
         assertEquals(1, acts.size());
         return acts.get(0);
