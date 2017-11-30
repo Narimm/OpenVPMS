@@ -220,7 +220,7 @@ public class BookingServiceImpl implements BookingService {
         // service
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(reference);
-        return Response.created(builder.build()).type(MediaType.APPLICATION_JSON_TYPE).entity(reference).build();
+        return Response.created(builder.build()).type(MediaType.TEXT_PLAIN).entity(reference).build();
     }
 
     /**
