@@ -228,7 +228,7 @@
 				</reportElement>
 			</line>
 			<staticText>
-				<reportElement key="staticText-11" positionType="Float" x="330" y="3" width="146" height="12" isRemoveLineWhenBlank="true" uuid="7714da17-0312-499a-a5ad-b37db0a22336">
+				<reportElement key="staticText-11" positionType="Float" x="330" y="3" width="112" height="12" isRemoveLineWhenBlank="true" uuid="7714da17-0312-499a-a5ad-b37db0a22336">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
 				</reportElement>
@@ -242,10 +242,10 @@
 					<font size="9" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Invoice Total]]></text>
+				<text><![CDATA[Order Total]]></text>
 			</staticText>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="478" y="3" width="63" height="12" isRemoveLineWhenBlank="true" uuid="9305f56f-926e-4389-b2cb-db257d600826">
+				<reportElement key="textField-6" positionType="Float" x="453" y="3" width="88" height="12" isRemoveLineWhenBlank="true" uuid="9305f56f-926e-4389-b2cb-db257d600826">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
@@ -263,7 +263,7 @@
 				<textFieldExpression><![CDATA[$V{SUM_target.total}.subtract( $V{SUM_taxR} )]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-11" positionType="Float" x="330" y="15" width="146" height="12" isRemoveLineWhenBlank="true" uuid="92c6a641-8685-4014-ade8-09881ee14d3d">
+				<reportElement key="staticText-11" positionType="Float" x="330" y="15" width="112" height="12" isRemoveLineWhenBlank="true" uuid="92c6a641-8685-4014-ade8-09881ee14d3d">
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -279,7 +279,7 @@
 				<text><![CDATA[Tax Total]]></text>
 			</staticText>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="478" y="15" width="63" height="12" isRemoveLineWhenBlank="true" uuid="14832fba-a3b2-4536-9405-71bf697fda5d">
+				<reportElement key="textField-6" positionType="Float" x="453" y="15" width="88" height="12" isRemoveLineWhenBlank="true" uuid="14832fba-a3b2-4536-9405-71bf697fda5d">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[!$P{incTax}]]></printWhenExpression>
@@ -297,7 +297,7 @@
 				<textFieldExpression><![CDATA[$V{SUM_taxR}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-11" positionType="Float" x="330" y="27" width="146" height="13" uuid="c9e4f940-ed4c-4132-92dd-de3504216550"/>
+				<reportElement key="staticText-11" positionType="Float" x="330" y="27" width="112" height="13" uuid="c9e4f940-ed4c-4132-92dd-de3504216550"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -311,7 +311,7 @@
 				<text><![CDATA[TOTAL]]></text>
 			</staticText>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="478" y="27" width="63" height="13" uuid="04bb2dca-fe7b-4f30-9dc2-2db98bc3f698"/>
+				<reportElement key="textField-6" positionType="Float" x="453" y="27" width="88" height="13" uuid="04bb2dca-fe7b-4f30-9dc2-2db98bc3f698"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -325,8 +325,8 @@
 				<textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-11" positionType="Float" x="279" y="40" width="197" height="12" isRemoveLineWhenBlank="true" uuid="498ba627-e849-4789-b942-4aeda4502dd4">
-					<printWhenExpression><![CDATA[$P{incTax}]]></printWhenExpression>
+				<reportElement key="staticText-11" positionType="Float" x="279" y="40" width="163" height="12" isRemoveLineWhenBlank="true" uuid="498ba627-e849-4789-b942-4aeda4502dd4">
+					<printWhenExpression><![CDATA[$P{incTax} && (!$R{text.taxName}.equals("NONE"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -341,8 +341,8 @@
 				<textFieldExpression><![CDATA["Total includes "+$R{text.taxName}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-6" positionType="Float" x="478" y="40" width="63" height="12" isRemoveLineWhenBlank="true" uuid="b0d07e61-3e36-4d7d-a410-5cec1124ca32">
-					<printWhenExpression><![CDATA[$P{incTax}]]></printWhenExpression>
+				<reportElement key="textField-6" positionType="Float" x="453" y="40" width="88" height="12" isRemoveLineWhenBlank="true" uuid="b0d07e61-3e36-4d7d-a410-5cec1124ca32">
+					<printWhenExpression><![CDATA[$P{incTax} && (!$R{text.taxName}.equals("NONE"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
