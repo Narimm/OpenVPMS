@@ -355,7 +355,7 @@ ORDER BY
 				<text><![CDATA[Reference/Notes/Reversal]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="145" y="3" width="43" height="13" uuid="6fc2f815-8b91-4605-8a14-a123dc405c9b"/>
+				<reportElement x="135" y="3" width="53" height="13" uuid="6fc2f815-8b91-4605-8a14-a123dc405c9b"/>
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -443,7 +443,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{refNotes2}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="145" y="1" width="43" height="12" uuid="d26a33be-fa1e-489f-bfb9-61685cb9e925"/>
+				<reportElement x="135" y="1" width="53" height="12" uuid="d26a33be-fa1e-489f-bfb9-61685cb9e925"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
