@@ -121,7 +121,21 @@
               path="Patient/Medical Records/A4/Prescription.odt" mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
 
-<!-- Reminder documents -->
+    <template name="Insurance Claim" archetype="act.patientInsuranceClaim" reportType="PATIENT"
+              description="Patient insurance claim"
+              path="Patient/Insurance/Letter/Insurance Claim.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Insurance Claim Items" archetype="SUBREPORT" reportType="PATIENT" description="Patient insurance claim items"
+              path="Patient/Insurance/Letter/Insurance Claim Items.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Insurance Claim Invoice" archetype="INSURANCE_CLAIM_INVOICE" reportType="PATIENT"
+              description="Invoice for attachment to patient insurance claims"
+              path="Patient/Insurance/Letter/Insurance Claim Invoice.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Insurance Claim Invoice Items" archetype="SUBREPORT" reportType="PATIENT"
+              description="Invoice Items for attachment to patient insurance claims"
+              path="Patient/Insurance/Letter/Insurance Claim Invoice Items.jrxml" mimeType="text/xml" docType="document.other"/>
+
+    <!-- Reminder documents -->
     <template name="Grouped Reminders Report" archetype="GROUPED_REMINDERS" reportType="PATIENT"
               description="Used by Reporting|Reminders|Print &#038; Send All buttons for Grouped Reminders" 
               path="Reporting/Reminders/Letter/Grouped Reminders.jrxml"
