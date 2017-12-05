@@ -59,6 +59,7 @@ import java.util.stream.Stream;
 
 import static org.openvpms.component.business.domain.bean.Policies.active;
 import static org.openvpms.component.business.domain.bean.Policies.any;
+import static org.openvpms.component.business.domain.bean.Predicates.targetEquals;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 
@@ -812,6 +813,22 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     }
 
     /**
+     * Returns the target objects for all relationships, active or inactive.
+     * <br/>
+     * If a target reference cannot be resolved, it will be ignored.
+     * <p>
+     * This is shorthand for: {@code getTargets(name, type, Policies.all())}
+     *
+     * @param name the relationship node name
+     * @param type the object type
+     * @return a list of target objects
+     */
+    @Override
+    public <T extends IMObject> List<T> getAllTargets(String name, Class<T> type) {
+        return getTargets(name, type, Policies.all());
+    }
+
+    /**
      * Returns the source object reference from the first active {@link IMObjectRelationship} for the specified
      * relationship node.
      *
@@ -994,6 +1011,25 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
         IMObjectRelationship relationship = addTarget(sourceName, target);
         getBean(target).addValue(targetName, relationship);
         return relationship;
+    }
+
+    /**
+     * Removes all bidirectional relationships between the current object (the source), and the supplied target.
+     *
+     * @param sourceName the source node name
+     * @param target     the target
+     * @param targetName the target node name
+     */
+    @Override
+    public void removeTargets(String sourceName, IMObject target, String targetName) {
+        List<IMObjectRelationship> relationships = getValues(sourceName, IMObjectRelationship.class, targetEquals(target));
+        if (!relationships.isEmpty()) {
+            IMObjectBean targetBean = getBean(target);
+            for (IMObjectRelationship relationship : relationships) {
+                removeValue(sourceName, relationship);
+                targetBean.removeValue(targetName, relationship);
+            }
+        }
     }
 
     /**

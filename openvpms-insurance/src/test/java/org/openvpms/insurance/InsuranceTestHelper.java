@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -99,9 +100,9 @@ public class InsuranceTestHelper {
      * @param items        the claim items. A list of <em>act.patientInsuranceClaimItem</em>
      * @return a new claim
      */
-    public static Act createClaim(Act policy, Party location, User clinician, User claimHandler,
-                                  FinancialAct... items) {
-        Act claim = (Act) create(InsuranceArchetypes.CLAIM);
+    public static FinancialAct createClaim(Act policy, Party location, User clinician, User claimHandler,
+                                           FinancialAct... items) {
+        FinancialAct claim = (FinancialAct) create(InsuranceArchetypes.CLAIM);
         ActBean bean = new ActBean(claim);
         ActBean policyBean = new ActBean(policy);
         bean.setNodeParticipant("patient", policyBean.getNodeParticipantRef("patient"));
@@ -149,6 +150,21 @@ public class InsuranceTestHelper {
         bean.setValue("amount", total);
         bean.setValue("tax", tax);
         return item;
+    }
+
+    /**
+     * Creates an insurance claim attachment.
+     *
+     * @param document the document to link to
+     * @return a new attachment
+     */
+    public static DocumentAct createAttachment(DocumentAct document) {
+        DocumentAct result = (DocumentAct) create(InsuranceArchetypes.ATTACHMENT);
+        ActBean bean = new ActBean(result);
+        bean.setValue("name", document.getName());
+        bean.addNodeRelationship("original", document);
+        save(result, document);
+        return result;
     }
 
     /**

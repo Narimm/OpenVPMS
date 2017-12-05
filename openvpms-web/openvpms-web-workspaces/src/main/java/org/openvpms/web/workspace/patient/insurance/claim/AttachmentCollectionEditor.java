@@ -20,9 +20,16 @@ import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Deletable;
+import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -31,6 +38,7 @@ import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.document.CustomerPatientDocumentBrowser;
 
 /**
@@ -38,7 +46,7 @@ import org.openvpms.web.workspace.customer.document.CustomerPatientDocumentBrows
  *
  * @author Tim Anderson
  */
-class AttachmentCollectionEditor extends ActRelationshipCollectionEditor {
+class AttachmentCollectionEditor extends ActRelationshipCollectionEditor implements Deletable {
 
     /**
      * Constructs an {@link AttachmentCollectionEditor}.
@@ -49,6 +57,17 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor {
      */
     public AttachmentCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
+        getCollectionPropertyEditor().setRemoveHandler(new CollectionPropertyEditor.RemoveHandler() {
+            @Override
+            public void remove(IMObject object) {
+                AttachmentCollectionEditor.this.remove((DocumentAct) object);
+            }
+
+            @Override
+            public void remove(IMObjectEditor editor) {
+                remove(editor.getObject());
+            }
+        });
     }
 
     /**
@@ -93,6 +112,47 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Perform deletion.
+     */
+    @Override
+    public void delete() {
+        IMObjectBean bean = new IMObjectBean(getObject());
+        boolean updated = false;
+        // need to remove relationships to the parent claim item and save it, before removing this
+        for (Act act : getCurrentActs()) {
+            bean.removeTargets("attachments", act, "item");
+            updated = true;
+        }
+        if (updated) {
+            bean.save();
+
+            // remove the attachments
+            for (Act act : getCurrentActs()) {
+                remove((DocumentAct) act);
+            }
+        }
+    }
+
+    /**
+     * Removes an attachment, and its associated document, if any.
+     *
+     * @param object the attachment act
+     */
+    protected void remove(DocumentAct object) {
+        IMObjectReference reference = object.getDocument();
+        IArchetypeRuleService service = ServiceHelper.getArchetypeService();
+        if (!object.isNew()) {
+            service.remove(object);
+        }
+        if (!reference.isNew()) {
+            Document document = (Document) service.get(reference);
+            if (document != null) {
+                service.remove(document);
+            }
+        }
     }
 
     /**

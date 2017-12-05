@@ -496,6 +496,19 @@ public interface IMObjectBean {
                                                                             Policy<R> policy);
 
     /**
+     * Returns the target objects for all relationships, active or inactive.
+     * <br/>
+     * If a target reference cannot be resolved, it will be ignored.
+     * <p>
+     * This is shorthand for: {@code getTargets(name, type, Policies.all())}
+     *
+     * @param name the relationship node name
+     * @param type the object type
+     * @return a list of target objects
+     */
+    <T extends IMObject> List<T> getAllTargets(String name, Class<T> type);
+
+    /**
      * Returns the source object reference from the first active {@link IMObjectRelationship} for the specified
      * relationship node.
      *
@@ -688,6 +701,15 @@ public interface IMObjectBean {
      * @return a new relationship
      */
     IMObjectRelationship addTarget(String sourceName, IMObject target, String targetName);
+
+    /**
+     * Removes all bidirectional relationships between the current object (the source), and the supplied target.
+     *
+     * @param sourceName the source node name
+     * @param target     the target
+     * @param targetName the target node name
+     */
+    void removeTargets(String sourceName, IMObject target, String targetName);
 
     /**
      * Evaluates the default value if a node, if it has one.

@@ -19,6 +19,7 @@ package org.openvpms.insurance.internal.claim;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.CustomerRules;
@@ -29,10 +30,13 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.InsuranceTestHelper;
 import org.openvpms.insurance.claim.Claim;
@@ -54,6 +58,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.finance.account.FinancialTestHelper.createChargesInvoice;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createAddendum;
@@ -309,8 +314,61 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         assertFalse(claim.canCancel());
     }
 
-    private Claim createClaim(Act claimAct) {
-        return new ClaimImpl(claimAct, (IArchetypeRuleService) getArchetypeService(), customerRules, patientRules,
+    /**
+     * Verifies that when an <em>act.patientInsuranceClaim</em> is deleted, related items and their attachments are
+     * deleted, but charges and original documents are retained.
+     */
+    @Test
+    public void testDeleteClaim() {
+        Product product1 = TestHelper.createProduct();
+        Date itemDate1 = getDatetime("2017-09-27 10:00:00");
+        BigDecimal discount1 = new BigDecimal("0.10");
+        BigDecimal tax1 = new BigDecimal("0.08");
+        FinancialAct invoiceItem1 = createInvoiceItem(itemDate1, product1, ONE, ONE, discount1, tax1);
+        List<FinancialAct> invoice1Acts = createInvoice(getDate("2017-09-27"), invoiceItem1);
+        save(invoice1Acts);
+
+        FinancialAct item1Act = createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
+
+        Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
+        ActBean bean = new ActBean(claimAct);
+        DocumentAct documentAct = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
+        DocumentAct attachment = InsuranceTestHelper.createAttachment(documentAct);
+        Document content = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
+        content.setName(documentAct.getName());
+        attachment.setDocument(content.getObjectReference());
+        bean.addNodeRelationship("attachments", attachment);
+        save(claimAct, item1Act, attachment, content);
+
+        remove(claimAct);
+        assertNull(get(claimAct));
+        assertNull(get(item1Act));
+        assertNull(get(attachment));
+
+        // NOTE: the document content is NOT deleted when the act is deleted.
+        // It would be possible to set up .drl rules to handle claim deletion but it would likely interfere with
+        // deletion from editors+
+        assertNotNull(get(content));
+
+        // verify the original document hasn't been deleted
+        assertNotNull(get(documentAct));
+
+        // verify the policy hasn't been deleted
+        assertNotNull(get(policyAct));
+
+        // verify the invoice hasn't been deleted
+        assertNotNull(get(invoiceItem1));
+        assertNotNull(get(invoice1Acts.get(0)));
+    }
+
+    /**
+     * Creates a claim.
+     *
+     * @param act the claim act
+     * @return a new claim
+     */
+    private Claim createClaim(Act act) {
+        return new ClaimImpl(act, (IArchetypeRuleService) getArchetypeService(), customerRules, patientRules,
                              handlers, getLookupService(), transactionManager);
     }
 

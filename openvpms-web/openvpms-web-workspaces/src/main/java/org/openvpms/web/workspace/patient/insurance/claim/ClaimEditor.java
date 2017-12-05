@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.InsuranceFactory;
@@ -168,6 +169,50 @@ public class ClaimEditor extends AbstractClaimEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the claim items editor
+     *
+     * @return the claim items editor
+     */
+    protected ClaimItemCollectionEditor getItems() {
+        return items;
+    }
+
+    /**
+     * Returns the attachments editor.
+     *
+     * @return the attachments editor
+     */
+    protected AttachmentCollectionEditor getAttachments() {
+        return attachments;
+    }
+
+    /**
+     * Save any edits.
+     * <p>
+     * This uses {@link #saveObject()} to save the object prior to saving any children with {@link #saveChildren()}.
+     * <p>
+     * This is necessary to avoid stale object exceptions when related acts are deleted.
+     *
+     * @throws OpenVPMSException if the save fails
+     */
+    @Override
+    protected void doSave() {
+        saveObject();
+        saveChildren();
+    }
+
+    /**
+     * Invoked when layout has completed.
+     * <p>
+     * This can be used to perform processing that requires all editors to be created.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        attachments.getComponent();  // force rendering of the component so deletion works
     }
 
     /**

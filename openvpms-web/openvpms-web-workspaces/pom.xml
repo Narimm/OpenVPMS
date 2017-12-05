@@ -246,6 +246,13 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-insurance</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-macro</artifactId>
             <version>${project.version}</version>
             <classifier>tests</classifier>

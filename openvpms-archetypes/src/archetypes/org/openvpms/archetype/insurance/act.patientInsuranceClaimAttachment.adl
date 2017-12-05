@@ -47,5 +47,8 @@
         <node name="original" path="/sourceActRelationships" type="java.util.HashSet"
               baseName="SourceActRelationship" minCardinality="0" maxCardinality="1" hidden="true"
               filter="actRelationship.insuranceClaimDocument"/>
+        <node name="item" path="/targetActRelationships" type="java.util.HashSet"
+              baseName="TargetActRelationship" minCardinality="0" maxCardinality="1" hidden="true"
+              filter="actRelationship.insuranceClaimAttachment"/>
     </archetype>
 </archetypes>
