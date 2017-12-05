@@ -147,7 +147,8 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
         if (!object.isNew()) {
             service.remove(object);
         }
-        if (!reference.isNew()) {
+        if (reference != null && !reference.isNew()) {
+            // TODO - would be improved by OBF-247
             Document document = (Document) service.get(reference);
             if (document != null) {
                 service.remove(document);

@@ -40,9 +40,8 @@
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node displayName="Attachment" name="document" path="/document" minCardinality="0"
-              maxCardinality="1" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
-        <node name="docReference" path="/document" minCardinality="0" hidden="true"
-              maxCardinality="1" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
+              maxCardinality="1" type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              readOnly="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
