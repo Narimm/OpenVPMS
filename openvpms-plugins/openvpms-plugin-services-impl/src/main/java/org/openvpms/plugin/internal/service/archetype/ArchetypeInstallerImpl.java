@@ -146,14 +146,15 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
             ArchetypeDescriptor cached = service.getArchetypeDescriptor(shortName);
             if (persistent != null && cached != null
                 && (persistent.getId() != cached.getId() || comparator.compare(persistent, cached) != null)) {
-                // the database has been updated outside of OpenVPMS. Force the cached instance to refresh
+                // the database has been updated outside of OpenVPMS, so force the cached instance to refresh.
+                // NOTE that this only occurs on transaction commit.
                 pluginService.save(persistent);
-                cached = service.getArchetypeDescriptor(shortName);
+                cached = null;
             }
             if (persistent != null || cached != null) {
                 // only replace the archetype if it hasn't changed
                 if (persistent != null && comparator.compare(persistent, descriptor) != null) {
-                    replace(cached, descriptor);
+                    replace(persistent, descriptor);
                 } else if ((cached != null && comparator.compare(cached, descriptor) != null)) {
                     replace(cached, descriptor);
                 }
