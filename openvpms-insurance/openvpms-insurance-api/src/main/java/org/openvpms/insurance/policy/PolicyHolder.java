@@ -19,7 +19,7 @@ package org.openvpms.insurance.policy;
 import org.openvpms.component.business.domain.im.party.Contact;
 
 /**
- * Insurance policy holder..
+ * Insurance policy holder.
  *
  * @author Tim Anderson
  */

@@ -28,7 +28,7 @@ import java.util.Collection;
  *
  * @author Tim Anderson
  */
-public interface PluginArchetypeService {
+public interface ArchetypeService {
 
     /**
      * Returns the {@link ArchetypeDescriptor} for the given archetype.

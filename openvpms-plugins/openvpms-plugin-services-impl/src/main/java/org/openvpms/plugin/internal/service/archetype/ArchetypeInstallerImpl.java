@@ -25,7 +25,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.plugin.service.archetype.ArchetypeInstaller;
-import org.openvpms.plugin.service.archetype.PluginArchetypeService;
+import org.openvpms.plugin.service.archetype.ArchetypeService;
 import org.openvpms.tools.archetype.comparator.ArchetypeComparator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -48,14 +48,14 @@ import java.util.List;
 public class ArchetypeInstallerImpl implements ArchetypeInstaller {
 
     /**
-     * The archetype service. Only required as the PluginArchetypeService does not yet provide query support. TODO
+     * The archetype service. Only required as the ArchetypeService does not yet provide query support. TODO
      */
     private final IArchetypeService service;
 
     /**
      * The plugin archetype service.
      */
-    private final PluginArchetypeService pluginService;
+    private final ArchetypeService pluginService;
 
     /**
      * The transaction manager.
@@ -79,7 +79,7 @@ public class ArchetypeInstallerImpl implements ArchetypeInstaller {
      * @param pluginService the plugin archetype service
      * @param txnManager    the transaction manager
      */
-    public ArchetypeInstallerImpl(IArchetypeService service, PluginArchetypeService pluginService,
+    public ArchetypeInstallerImpl(IArchetypeService service, ArchetypeService pluginService,
                                   PlatformTransactionManager txnManager) {
         this.service = service;
         this.pluginService = pluginService;

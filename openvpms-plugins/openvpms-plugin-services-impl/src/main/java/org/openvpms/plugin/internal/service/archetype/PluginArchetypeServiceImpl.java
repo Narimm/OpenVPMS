@@ -27,16 +27,16 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.security.RunAs;
-import org.openvpms.plugin.service.archetype.PluginArchetypeService;
+import org.openvpms.plugin.service.archetype.ArchetypeService;
 
 import java.util.Collection;
 
 /**
- * Default implementation of the {@link PluginArchetypeService}.
+ * Default implementation of the {@link ArchetypeService}.
  *
  * @author Tim Anderson
  */
-public class PluginArchetypeServiceImpl implements PluginArchetypeService {
+public class PluginArchetypeServiceImpl implements ArchetypeService {
 
     /**
      * The archetype service.
@@ -178,7 +178,7 @@ public class PluginArchetypeServiceImpl implements PluginArchetypeService {
         User user = practiceService.getServiceUser();
         if (user == null) {
             throw new IllegalStateException(
-                    "Cannot invoke PluginArchetypeService operation as no Service User has been configured");
+                    "Cannot invoke ArchetypeService operation as no Service User has been configured");
         }
         RunAs.run(user, runnable);
     }
