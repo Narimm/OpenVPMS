@@ -98,7 +98,7 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-insurance</artifactId>
+            <artifactId>openvpms-insurance-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
