@@ -17,6 +17,9 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -33,6 +36,7 @@ import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.i18n.InsuranceMessages;
 
 import java.io.InputStream;
+import java.util.Date;
 
 /**
  * Default implementation of the {@link Attachment} interface.
@@ -44,7 +48,7 @@ public class AttachmentImpl implements Attachment {
     /**
      * The act.
      */
-    private final ActBean act;
+    private final IMObjectBean act;
 
     /**
      * The archetype service.
@@ -104,13 +108,23 @@ public class AttachmentImpl implements Attachment {
     }
 
     /**
+     * Returns the date when the attachment was created.
+     *
+     * @return the date
+     */
+    @Override
+    public Date getDate() {
+        return getAct().getActivityStartTime();
+    }
+
+    /**
      * Returns the attachment file name.
      *
      * @return the attachment file name
      */
     @Override
     public String getFileName() {
-        return ((DocumentAct) act.getAct()).getFileName();
+        return getAct().getFileName();
     }
 
     /**
@@ -120,7 +134,7 @@ public class AttachmentImpl implements Attachment {
      */
     @Override
     public String getMimeType() {
-        return ((DocumentAct) act.getAct()).getMimeType();
+        return getAct().getMimeType();
     }
 
     /**
@@ -131,7 +145,7 @@ public class AttachmentImpl implements Attachment {
     @Override
     public long getSize() {
         long size = 0;
-        IMObjectReference document = ((DocumentAct) act.getAct()).getDocument();
+        IMObjectReference document = getAct().getDocument();
         if (document != null) {
             ArchetypeQuery query = new ArchetypeQuery(document);
             query.getArchetypeConstraint().setAlias("doc");
@@ -152,7 +166,7 @@ public class AttachmentImpl implements Attachment {
      */
     @Override
     public boolean hasContent() {
-        IMObjectReference reference = ((DocumentAct) act.getAct()).getDocument();
+        IMObjectReference reference = getAct().getDocument();
         return reference != null;
     }
 
@@ -160,11 +174,12 @@ public class AttachmentImpl implements Attachment {
      * Returns the attachment contents.
      *
      * @return the attachment contents
+     * @throws InsuranceException if the content cannot be retrieved
      */
     @Override
     public InputStream getContent() {
         InputStream result = null;
-        DocumentAct documentAct = (DocumentAct) act.getAct();
+        DocumentAct documentAct = getAct();
         IMObjectReference reference = documentAct.getDocument();
         if (reference != null) {
             Document document = (Document) service.get(reference);
@@ -185,7 +200,7 @@ public class AttachmentImpl implements Attachment {
      */
     @Override
     public Status getStatus() {
-        return Status.valueOf(act.getStatus());
+        return Status.valueOf(getAct().getStatus());
     }
 
     /**
@@ -195,8 +210,34 @@ public class AttachmentImpl implements Attachment {
      */
     @Override
     public void setStatus(Status status) {
-        act.setStatus(status.name());
+        getAct().setStatus(status.name());
         act.save();
+    }
+
+    /**
+     * Returns the type of the attachment.
+     *
+     * @return the type of the attachment
+     */
+    @Override
+    public Type getType() {
+        Type result = Type.DOCUMENT;
+        String type = act.getString("type");
+        if (PatientArchetypes.CLINICAL_EVENT.equals(type)) {
+            result = Type.CLINICAL_HISTORY;
+        } else if (CustomerAccountArchetypes.INVOICE.equals(type)) {
+            result = Type.INVOICE;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the underlying act.
+     *
+     * @return the act
+     */
+    protected DocumentAct getAct() {
+        return (DocumentAct) act.getObject();
     }
 
     /**

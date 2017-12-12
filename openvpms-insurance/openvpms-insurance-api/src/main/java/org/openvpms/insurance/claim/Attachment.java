@@ -19,6 +19,7 @@ package org.openvpms.insurance.claim;
 import org.openvpms.insurance.exception.InsuranceException;
 
 import java.io.InputStream;
+import java.util.Date;
 
 /**
  * Claim attachment.
@@ -39,6 +40,12 @@ public interface Attachment {
         }
     }
 
+    enum Type {
+        INVOICE,
+        CLINICAL_HISTORY,
+        DOCUMENT
+    }
+
     /**
      * Returns the attachment identifier, issued by the insurer.
      *
@@ -56,6 +63,13 @@ public interface Attachment {
      * @param id        the claim identifier
      */
     void setInsurerId(String archetype, String id);
+
+    /**
+     * Returns the date when the attachment was created.
+     *
+     * @return the date
+     */
+    Date getDate();
 
     /**
      * Returns the attachment file name.
@@ -106,5 +120,12 @@ public interface Attachment {
      * @param status the attachment status
      */
     void setStatus(Status status);
+
+    /**
+     * Returns the type of the attachment.
+     *
+     * @return the type of the attachment
+     */
+    Type getType();
 
 }
