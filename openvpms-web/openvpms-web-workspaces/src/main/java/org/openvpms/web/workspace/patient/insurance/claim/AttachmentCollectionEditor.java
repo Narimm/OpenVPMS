@@ -219,7 +219,7 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", original.getActivityStartTime());
         bean.setValue("name", name);
-        bean.setValue("type", act.getArchetypeId().getShortName());
+        bean.setValue("type", original.getArchetypeId().getShortName());
         bean.addNodeRelationship("original", original);
         return bean;
     }
