@@ -16,18 +16,21 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+
+import java.util.function.Consumer;
 
 /**
  * Edit dialog for <em>act.patientInsuranceClaim</em>.
@@ -37,9 +40,14 @@ import org.openvpms.web.resource.i18n.Messages;
 public class ClaimEditDialog extends EditDialog {
 
     /**
-     * The mail context.
+     * The claim.
      */
-    private MailContext mailContext;
+    private FinancialAct claim;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ClaimEditDialog.class);
 
     /**
      * Generate attachments button identifier.
@@ -64,15 +72,7 @@ public class ClaimEditDialog extends EditDialog {
      */
     public ClaimEditDialog(ClaimEditor editor, Context context) {
         super(editor, BUTTONS, true, context);
-    }
-
-    /**
-     * Sets the mail context.
-     *
-     * @param mailContext the mail context. May be {@code null}
-     */
-    public void setMailContext(MailContext mailContext) {
-        this.mailContext = mailContext;
+        this.claim = (FinancialAct) editor.getObject();
     }
 
     /**
@@ -90,6 +90,18 @@ public class ClaimEditDialog extends EditDialog {
      */
     public void submit() {
         onSubmit();
+    }
+
+    /**
+     * Saves the current object, if saving is enabled, and closes the editor.
+     */
+    @Override
+    protected void onOK() {
+        if (getEditor() != null) {
+            super.onOK();
+        } else {
+            close(OK_ID);
+        }
     }
 
     /**
@@ -124,28 +136,34 @@ public class ClaimEditDialog extends EditDialog {
     }
 
     /**
-     * Submits a claom.
+     * Submits a claim.
      */
     protected void onSubmit() {
-        if (save()) {
-            FinancialAct act = (FinancialAct) getEditor().getObject();
-            try {
-                HelpContext help = getHelpContext();
-                ClaimSubmitter submitter = new ClaimSubmitter(getContext(), help);
-                final ClaimEditor editor = getEditor();
-                FinancialAct object = (FinancialAct) editor.getObject();
-                submitter.submit(editor, exception -> {
-                    if (exception != null || !Claim.Status.SUBMITTED.isA(editor.getStatus())) {
-                        reloadOnSubmitFailure(object, exception);
-
-                    } else {
-                        setAction(SUBMIT_ID);
-                        close();
-                    }
-                });
-            } catch (Throwable exception) {
-                reloadOnSubmitFailure(act, exception);
+        Consumer<Throwable> listener = exception -> {
+            if (exception != null || !Claim.Status.SUBMITTED.isA(claim.getStatus())) {
+                reloadOnSubmitFailure(exception);
+            } else {
+                setAction(SUBMIT_ID);
+                close();
             }
+        };
+        if (Claim.Status.PENDING.isA(claim.getStatus())) {
+            if (save()) {
+                try {
+                    ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+                    submitter.submit(getEditor(), listener);
+                } catch (Throwable exception) {
+                    reloadOnSubmitFailure(exception);
+                }
+            }
+        } else if (Claim.Status.POSTED.isA(claim.getStatus())) {
+            // claim was partially submitted before, but failed
+            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+            submitter.submit(claim, listener);
+        } else {
+            // claim has already been submitted
+            setAction(SUBMIT_ID);
+            close();
         }
     }
 
@@ -155,25 +173,26 @@ public class ClaimEditDialog extends EditDialog {
      * This reloads the claim, and either re-instates the editor if the claim is still editable, or replaces it with
      * a viewer, if it isn't.
      *
-     * @param object    the claim
      * @param exception the exception encountered during claim submission. May be {@code null}
      */
-    private void reloadOnSubmitFailure(FinancialAct object, Throwable exception) {
-        IMObjectEditor editor = getEditor();
+    private void reloadOnSubmitFailure(Throwable exception) {
         HelpContext help = getHelpContext();
         // the claim wasn't submitted. Reload to make sure the latest instance is being used,
         // and check the attachments
-        FinancialAct claim = IMObjectHelper.reload(object);
-        if (claim != null) {
-            if (Claim.Status.PENDING.isA(claim.getStatus())) {
-                ClaimEditor newEditor = new ClaimEditor(claim, null,
-                                                        new DefaultLayoutContext(true, getContext(), help));
+        FinancialAct act = IMObjectHelper.reload(claim);
+        if (act != null) {
+            claim = act;
+            if (Claim.Status.PENDING.isA(act.getStatus())) {
+                ClaimEditor newEditor = new ClaimEditor(act, null, new DefaultLayoutContext(true, getContext(), help));
                 setEditor(newEditor);
                 if (!newEditor.checkAttachments()) {
                     newEditor.showAttachments();
                 }
             } else {
-                view(object, help);
+                // can no longer edit the claim, so view it
+                setEditor(null);
+                IMObjectViewer viewer = new IMObjectViewer(claim, new DefaultLayoutContext(getContext(), help));
+                setComponent(viewer.getComponent(), viewer.getFocusGroup(), help);
             }
         } else {
             // claim has been deleted externally
@@ -181,15 +200,9 @@ public class ClaimEditDialog extends EditDialog {
             saveFailed();
         }
         if (exception != null) {
-            ErrorHelper.show(Messages.get("patient.insurance.submit.title"), editor.getDisplayName(), object,
-                             exception);
+            log.error("Failed to submit claim", exception);
+            ErrorHelper.show(Messages.get("patient.insurance.submit.title"), DescriptorHelper.getDisplayName(claim),
+                             claim, exception);
         }
-    }
-
-    private void view(FinancialAct claim, HelpContext help) {
-        setEditor(null);
-        IMObjectViewer viewer = new IMObjectViewer(claim,
-                                                   new DefaultLayoutContext(getContext(), help));
-        setComponent(viewer.getComponent(), viewer.getFocusGroup(), help);
     }
 }

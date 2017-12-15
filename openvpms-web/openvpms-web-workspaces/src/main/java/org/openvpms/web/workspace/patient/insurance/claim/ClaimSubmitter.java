@@ -310,6 +310,7 @@ public class ClaimSubmitter {
         String title = Messages.get("patient.insurance.settle.title");
         if (insuranceServices.canSubmit(insurer)) {
             InformationDialog.show(title, Messages.format("patient.insurance.settle.online", insurer.getName()));
+            listener.accept(null);
         } else {
             ConfirmationDialog.show(title, Messages.format("patient.insurance.settle.offline", insurer.getName()),
                                     ConfirmationDialog.YES_NO, new PopupDialogListener() {
@@ -340,6 +341,7 @@ public class ClaimSubmitter {
         String title = Messages.get("patient.insurance.decline.title");
         if (insuranceServices.canSubmit(insurer)) {
             InformationDialog.show(title, Messages.format("patient.insurance.decline.online", insurer.getName()));
+            listener.accept(null);
         } else {
             ConfirmationDialog.show(title, Messages.format("patient.insurance.decline.offline", insurer.getName()),
                                     ConfirmationDialog.YES_NO, new PopupDialogListener() {
@@ -482,7 +484,7 @@ public class ClaimSubmitter {
      *                 the argument. If the operation is successful, the argument will be {@code null}
      */
     private void submitOfflineClaim(ClaimState state, Consumer<Throwable> listener) {
-        runProtected(listener, () -> {
+        runProtected(listener, false, () -> {
             Claim claim = state.getClaim();
             claim.finalise();
             claim.setStatus(Claim.Status.SUBMITTED);
@@ -499,7 +501,7 @@ public class ClaimSubmitter {
      *                 be {@code null}
      */
     private void submitOnlineClaim(ClaimState state, Consumer<Throwable> listener) {
-        runProtected(listener, () -> {
+        runProtected(listener, false, () -> {
             Claim claim = state.getClaim();
             claim.finalise();
             submitWithDeclaration(claim, state.getService(), listener);
@@ -513,7 +515,7 @@ public class ClaimSubmitter {
      * @param service the service to submit to
      */
     private void submitWithDeclaration(Claim claim, InsuranceService service, Consumer<Throwable> listener) {
-        runProtected(listener, () -> {
+        runProtected(listener, false, () -> {
             Declaration declaration = service.getDeclaration(claim);
             if (declaration != null) {
                 String text = declaration.getText();
@@ -530,14 +532,34 @@ public class ClaimSubmitter {
                         });
             } else {
                 service.submit(claim, null);
+                listener.accept(null);
             }
         });
     }
 
+    /**
+     * Executes a {@code Runnable}.
+     *
+     * @param listener the listener to notify
+     * @param runnable the {@code Runnable} to execute
+     */
     private void runProtected(Consumer<Throwable> listener, Runnable runnable) {
+        runProtected(listener, true, runnable);
+    }
+
+    /**
+     * Executes a {@code Runnable}.
+     *
+     * @param listener        the listener to notify
+     * @param notifyOnSuccess if {@code true}, notify the listener on success, otherwise only notify on failure
+     * @param runnable        the {@code Runnable} to execute
+     */
+    private void runProtected(Consumer<Throwable> listener, boolean notifyOnSuccess, Runnable runnable) {
         try {
             runnable.run();
-            listener.accept(null);
+            if (notifyOnSuccess) {
+                listener.accept(null);
+            }
         } catch (Throwable exception) {
             listener.accept(exception);
         }

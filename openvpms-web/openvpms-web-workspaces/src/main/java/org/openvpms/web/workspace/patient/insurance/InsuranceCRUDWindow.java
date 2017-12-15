@@ -60,6 +60,11 @@ import static org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes
 public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
+     * New policy button identifier.
+     */
+    private static final String NEW_ID = "button.newpolicy";
+
+    /**
      * Claim button identifier.
      */
     private static final String CLAIM_ID = "button.claim";
@@ -109,6 +114,20 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         buttons.add(run(SETTLE_CLAIM_ID, CLAIM, this::settleClaim, "patient.insurance.settle.title"));
         buttons.add(run(DECLINE_CLAIM_ID, CLAIM, this::declineClaim, "patient.insurance.decline.title"));
         buttons.add(createPrintButton());
+    }
+
+    /**
+     * Helper to create a new button with id {@link #NEW_ID} linked to {@link #create()} to create policies.
+     *
+     * @return a new button
+     */
+    @Override
+    protected Button createNewButton() {
+        return ButtonFactory.create(NEW_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                create();
+            }
+        });
     }
 
     /**
@@ -184,7 +203,6 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
             HelpContext edit = createEditTopic(object);
             LayoutContext context = createLayoutContext(edit);
             ClaimEditDialog dialog = (ClaimEditDialog) edit(createEditor(object, context));
-            dialog.setMailContext(getMailContext());
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 @Override
                 public void onClose(WindowPaneEvent event) {

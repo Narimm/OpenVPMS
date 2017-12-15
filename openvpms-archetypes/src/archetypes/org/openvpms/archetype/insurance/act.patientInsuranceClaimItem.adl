@@ -45,7 +45,8 @@
                 <errorMessage>Value must be >= 0.0</errorMessage>
             </assertion>
         </node>
-        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'UNRESOLVED'">
+        <node name="status" displayName="Treatment Status" path="/status" type="java.lang.String" minCardinality="1"
+              defaultValue="'UNRESOLVED'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="UNRESOLVED" value="Ongoing"/>
@@ -61,7 +62,8 @@
         </node>
         <node name="euthanasiaReason" path="/details/euthanasiaReason" type="java.lang.String" minCardinality="0"
               maxLength="255"/>
-        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="1" maxLength="5000"/>
+        <node name="notes" displayName="Condition Notes" path="/details/notes" type="java.lang.String"
+              minCardinality="1" maxLength="5000"/>
         <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="false()" readOnly="true"
               hidden="true"/>
         <node name="items" displayName="Charges" path="/sourceActRelationships" type="java.util.HashSet"
