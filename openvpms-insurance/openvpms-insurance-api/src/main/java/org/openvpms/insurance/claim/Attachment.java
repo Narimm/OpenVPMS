@@ -47,6 +47,13 @@ public interface Attachment {
     }
 
     /**
+     * Returns the OpenVPMS identifier for this attachment.
+     *
+     * @return the identifier
+     */
+    long getId();
+
+    /**
      * Returns the attachment identifier, issued by the insurer.
      *
      * @return the attachment identifier, or {@code null} if none has been issued
