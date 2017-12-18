@@ -227,6 +227,13 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
+     * Displays the insurance tab.
+     */
+    public void showInsurance() {
+        setSelectedBrowser(insuranceIndex);
+    }
+
+    /**
      * Creates a {@link CRUDWindow} for the current browser.
      *
      * @param context the context

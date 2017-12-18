@@ -24,16 +24,13 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.insurance.claim.Claim;
-import org.openvpms.insurance.internal.InsuranceFactory;
-import org.openvpms.insurance.service.InsuranceService;
-import org.openvpms.insurance.service.InsuranceServices;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -63,12 +60,12 @@ public class ClaimEditor extends AbstractClaimEditor {
     /**
      * Constructs an {@link ClaimEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent object. May be {@code null}
-     * @param context the layout context
+     * @param act           the act to edit
+     * @param parent        the parent object. May be {@code null}
+     * @param layoutContext the layout context
      */
-    public ClaimEditor(FinancialAct act, IMObject parent, LayoutContext context) {
-        super(act, parent, "amount", context);
+    public ClaimEditor(FinancialAct act, IMObject parent, LayoutContext layoutContext) {
+        super(act, parent, "amount", layoutContext);
 
         ActBean claimBean = new ActBean(act);
         Act policy = (Act) claimBean.getNodeTargetObject("policy");
@@ -81,10 +78,12 @@ public class ClaimEditor extends AbstractClaimEditor {
             throw new IllegalStateException("Policy has no customer");
         }
 
+        Context context = layoutContext.getContext();
         if (act.isNew()) {
-            initParticipant("patient", context.getContext().getPatient());
-            initParticipant("location", context.getContext().getLocation());
-            initParticipant("clinician", context.getContext().getClinician());
+            initParticipant("patient", context.getPatient());
+            initParticipant("location", context.getLocation());
+            initParticipant("clinician", context.getClinician());
+            initParticipant("user", context.getUser());
         }
         Party patient = getPatient();
         if (patient == null) {
@@ -92,14 +91,14 @@ public class ClaimEditor extends AbstractClaimEditor {
         }
 
         Editors editors = getEditors();
-        attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, context);
+        attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, layoutContext);
         Charges charges = new Charges();
         items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, customer, patient,
-                                              charges, attachments, context);
+                                              charges, attachments, layoutContext);
         editors.add(attachments);
         editors.add(items);
 
-        generator = new AttachmentGenerator(customer, patient, charges, context.getContext());
+        generator = new AttachmentGenerator(customer, patient, charges, context);
         items.addModifiableListener(modifiable -> onItemsChanged());
 
         // The following forces all of the invoice items to be added to charges.
@@ -233,17 +232,6 @@ public class ClaimEditor extends AbstractClaimEditor {
     @Override
     protected List<Act> getItemActs() {
         return items.getActs();
-    }
-
-    /**
-     * Determines if a claim can be submitted via an {@link InsuranceService}.
-     *
-     * @param act the claim act
-     * @return {@code true} if the claim can be submitted
-     */
-    private boolean canSubmitClaim(Act act) {
-        Claim claim = ServiceHelper.getBean(InsuranceFactory.class).createClaim(act);
-        return ServiceHelper.getBean(InsuranceServices.class).canSubmit(claim.getPolicy().getInsurer());
     }
 
 }

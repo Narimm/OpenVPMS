@@ -146,6 +146,16 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     }
 
     /**
+     * Returns the browser.
+     *
+     * @return the browser, or {@code null} if none has been registered
+     */
+    @Override
+    public RecordBrowser getBrowser() {
+        return (RecordBrowser) super.getBrowser();
+    }
+
+    /**
      * Returns the latest version of the current context object.
      *
      * @return the latest version of the context object, or {@link #getObject()} if they are the same
@@ -240,16 +250,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         // force component creation now to avoid lazy creation problems when laying out workspace
         browser.getComponent();
         return browser;
-    }
-
-    /**
-     * Returns the browser.
-     *
-     * @return the browser, or {@code null} if none has been registered
-     */
-    @Override
-    protected RecordBrowser getBrowser() {
-        return (RecordBrowser) super.getBrowser();
     }
 
     /**

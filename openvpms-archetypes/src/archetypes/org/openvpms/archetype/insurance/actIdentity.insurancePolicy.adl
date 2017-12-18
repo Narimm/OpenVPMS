@@ -16,8 +16,9 @@
 
 <archetypes>
     <archetype name="actIdentity.insurancePolicy.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.ActIdentity">
+               type="org.openvpms.component.business.domain.im.act.ActIdentity" displayName="Policy Identity">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="identity" path="/identity" type="java.lang.String" minCardinality="1" maxLenth="100"/>
+        <node name="identity" displayName="Policy Number" path="/identity" type="java.lang.String"
+              minCardinality="1" maxLenth="100"/>
     </archetype>
 </archetypes>

@@ -29,6 +29,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -439,21 +440,27 @@ public class PatientSummary extends PartySummary {
      */
     protected void addInsurancePolicy(Party patient, Grid grid) {
         Label title = LabelFactory.create("patient.insurance");
-
-        Label value = LabelFactory.create();
         Act policy = insuranceRules.getPolicy(patient);
+        String name;
         if (policy == null) {
-            value.setText(Messages.get("patient.insurance.none"));
+            name = Messages.get("patient.insurance.none");
         } else if (policy.getActivityEndTime().compareTo(new Date()) < 0) {
-            value.setText(Messages.get("patient.insurance.expired"));
+            name = Messages.get("patient.insurance.expired");
         } else {
             Party insurer = insuranceRules.getInsurer(policy);
-            if (insurer != null) {
-                value.setText(insurer.getName());
-            }
+            name = (insurer != null) ? insurer.getName() : Messages.get("patient.insurance.none");
         }
+
+        Button button = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
+                instance.switchTo(InsuranceArchetypes.POLICY);
+            }
+        });
+        button.setText(name);
+
         grid.add(title);
-        grid.add(value);
+        grid.add(button);
     }
 
     /**

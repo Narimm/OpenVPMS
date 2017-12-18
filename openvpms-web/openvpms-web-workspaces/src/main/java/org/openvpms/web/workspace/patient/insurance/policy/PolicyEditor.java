@@ -16,12 +16,16 @@
 
 package org.openvpms.web.workspace.patient.insurance.policy;
 
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+
+import java.util.Date;
 
 /**
  * Editor for <em>act.patientInsurancePolicy</em>.
@@ -44,6 +48,20 @@ public class PolicyEditor extends AbstractActEditor {
             initParticipant("patient", context.getContext().getPatient());
         }
         addStartEndTimeListeners();
+    }
+
+    /**
+     * Invoked when the start time changes. Sets the value to end time if
+     * start time > end time.
+     * The end time is set to startTime + 1 year.
+     */
+    @Override
+    protected void onStartTimeChanged() {
+        super.onStartTimeChanged();
+        Date startTime = getStartTime();
+        if (startTime != null) {
+            setEndTime(DateRules.getDate(startTime, 1, DateUnits.YEARS));
+        }
     }
 
     /**
