@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -114,6 +115,16 @@ public class ClaimEditor extends AbstractClaimEditor {
      */
     public Party getPatient() {
         return (Party) getParticipant("patient");
+    }
+
+
+    /**
+     * Returns the claim amount.
+     *
+     * @return the claim amount
+     */
+    public BigDecimal getAmount() {
+        return getProperty("amount").getBigDecimal(BigDecimal.ZERO);
     }
 
     /**

@@ -172,6 +172,11 @@ public class ChargeCollectionEditor extends IMObjectTableCollectionEditor {
         return null;
     }
 
+    /**
+     * Adds charges.
+     *
+     * @param browser the charge browser
+     */
     protected void addSelections(ChargeBrowser browser) {
         List<Act> selected = browser.getSelectedItems();
         for (Act object : selected) {

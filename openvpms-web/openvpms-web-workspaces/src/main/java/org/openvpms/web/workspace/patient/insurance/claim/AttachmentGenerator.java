@@ -147,7 +147,7 @@ class AttachmentGenerator {
     }
 
     /**
-     * Adds missing invoice attachments.
+     * Adds missing invoice attachments, and removes those that are no longer relevant.
      *
      * @param attachments the attachments editor
      */
@@ -157,8 +157,12 @@ class AttachmentGenerator {
             if (isInvoice(attachment)) {
                 ActBean bean = new ActBean(attachment);
                 IMObjectReference invoice = bean.getTargetRef("original");
+                boolean present = false;
                 if (invoice != null) {
-                    expectedInvoices.remove(invoice);
+                    present = expectedInvoices.remove(invoice);
+                }
+                if (!present) {
+                    attachments.remove(attachment);
                 }
             }
         }

@@ -50,6 +50,7 @@ import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.BatchPrintDialog;
 import org.openvpms.web.component.print.BatchPrinter;
 import org.openvpms.web.component.print.DefaultBatchPrinter;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -59,6 +60,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.insurance.CancelClaimDialog;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -410,17 +412,22 @@ public class ClaimSubmitter {
      */
     protected ClaimState prepare(ClaimEditor editor) {
         ClaimState result = null;
-        if (editor.generateAttachments()) {
-            Claim claim = factory.createClaim(editor.getObject());
-            Party insurer = claim.getPolicy().getInsurer();
-            InsuranceService service = null;
-            if (insuranceServices.canSubmit(insurer)) {
-                service = getInsuranceService(insurer);
-                if (service.canValidateClaims()) {
-                    service.validate(claim);
+        if (editor.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+            if (editor.generateAttachments()) {
+                Claim claim = factory.createClaim(editor.getObject());
+                Party insurer = claim.getPolicy().getInsurer();
+                InsuranceService service = null;
+                if (insuranceServices.canSubmit(insurer)) {
+                    service = getInsuranceService(insurer);
+                    if (service.canValidateClaims()) {
+                        service.validate(claim);
+                    }
                 }
+                result = new ClaimState(editor.getObject(), claim, service);
             }
-            result = new ClaimState(editor.getObject(), claim, service);
+        } else {
+            ErrorHelper.show(Messages.get("patient.insurance.submit.title"),
+                             Messages.get("patient.insurance.noinvoice"));
         }
         return result;
     }
