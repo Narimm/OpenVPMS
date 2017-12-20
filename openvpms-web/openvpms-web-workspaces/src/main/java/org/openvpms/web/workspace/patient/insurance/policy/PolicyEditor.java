@@ -46,22 +46,9 @@ public class PolicyEditor extends AbstractActEditor {
         if (act.isNew()) {
             initParticipant("customer", context.getContext().getCustomer());
             initParticipant("patient", context.getContext().getPatient());
+            calculateEndTime();
         }
         addStartEndTimeListeners();
-    }
-
-    /**
-     * Invoked when the start time changes. Sets the value to end time if
-     * start time > end time.
-     * The end time is set to startTime + 1 year.
-     */
-    @Override
-    protected void onStartTimeChanged() {
-        super.onStartTimeChanged();
-        Date startTime = getStartTime();
-        if (startTime != null) {
-            setEndTime(DateRules.getDate(startTime, 1, DateUnits.YEARS));
-        }
     }
 
     /**
@@ -75,6 +62,17 @@ public class PolicyEditor extends AbstractActEditor {
     }
 
     /**
+     * Invoked when the start time changes. Sets the value to end time if
+     * start time > end time.
+     * The end time is set to startTime + 1 year.
+     */
+    @Override
+    protected void onStartTimeChanged() {
+        super.onStartTimeChanged();
+        calculateEndTime();
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -82,6 +80,16 @@ public class PolicyEditor extends AbstractActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new PolicyLayoutStrategy();
+    }
+
+    /**
+     * Calculates the policy end time as 1 year after the start time.
+     */
+    private void calculateEndTime() {
+        Date startTime = getStartTime();
+        if (startTime != null) {
+            setEndTime(DateRules.getDate(startTime, 1, DateUnits.YEARS));
+        }
     }
 
 }

@@ -17,18 +17,25 @@
 package org.openvpms.web.workspace.patient.insurance.policy;
 
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.insurance.claim.Claim;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
+import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +74,24 @@ public class PolicyLayoutStrategy extends AbstractLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         CollectionProperty claims = (CollectionProperty) properties.get("claims");
         if (!claims.isEmpty()) {
+            if (context.isEdit()) {
+                // if a claim exists that isn't PENDING, make the policy number read-only
+                IMObjectBean bean = new IMObjectBean(object);
+                boolean pending = true;
+                for (Act claim : bean.getSources("claims", Act.class)) {
+                    if (!Claim.Status.PENDING.isA(claim.getStatus())) {
+                        pending = false;
+                        break;
+                    }
+                }
+                if (!pending) {
+                    Property insurerId = properties.get("insurerId");
+                    LayoutContext subContext = new DefaultLayoutContext(context);
+                    ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(subContext, Styles.EDIT);
+                    subContext.setComponentFactory(factory);
+                    addComponent(factory.create(insurerId, object));
+                }
+            }
             ClaimViewer viewer = new ClaimViewer(claims, object, context);
             addComponent(new ComponentState(viewer.getComponent(), viewer.getProperty()));
         }
