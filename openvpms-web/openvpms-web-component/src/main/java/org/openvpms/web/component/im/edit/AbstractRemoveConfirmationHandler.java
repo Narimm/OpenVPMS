@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -24,7 +24,7 @@ import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * Abstract implementation of {@link RemoveConfirmationHandler}.
- * <p>
+ * <p/>
  * This only prompts for confirmation if the object is saved.
  *
  * @author Tim Anderson
@@ -33,34 +33,24 @@ public abstract class AbstractRemoveConfirmationHandler implements RemoveConfirm
 
     /**
      * Confirms removal of an object from a collection.
-     * <p>
+     * <p/>
      * If approved, it performs the removal.
      *
-     * @param object     the object to remove
+     *  @param object     the object to remove
      * @param collection the collection to remove the object from, if approved
      */
     @Override
     public void remove(final IMObject object, final IMObjectCollectionEditor collection) {
         if (object.isNew()) {
-            apply(object, collection);
+            collection.remove(object);
         } else {
             confirmRemove(object, collection);
         }
     }
 
     /**
-     * Removes the object from the collection.
-     *
-     * @param object     the object to remove
-     * @param collection the collection
-     */
-    protected void apply(IMObject object, IMObjectCollectionEditor collection) {
-        collection.remove(object);
-    }
-
-    /**
      * Displays a confirmation dialog to confirm removal of an object from a collection.
-     * <p>
+     * <p/>
      * If approved, it performs the removal.
      *
      * @param object     the object to remove
@@ -74,7 +64,7 @@ public abstract class AbstractRemoveConfirmationHandler implements RemoveConfirm
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onYes() {
-                apply(object, collection);
+                collection.remove(object);
             }
         });
         dialog.show();

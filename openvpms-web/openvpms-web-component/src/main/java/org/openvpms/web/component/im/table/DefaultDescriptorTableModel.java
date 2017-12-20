@@ -11,16 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Default implementation of the {@link DescriptorTableModel}.
@@ -31,9 +34,15 @@ public class DefaultDescriptorTableModel<T extends IMObject>
         extends DescriptorTableModel<T> {
 
     /**
-     * The nodes to display.
+     * The node names to include in the table. If empty, all simple nodes
+     * will be displayed.
      */
-    private final ArchetypeNodes nodes;
+    private final String[] nodeNames;
+
+    /**
+     * Determines if the active nodes is displayed.
+     */
+    private final boolean showActive;
 
     /**
      * Constructs a {@link DefaultDescriptorTableModel}.
@@ -67,25 +76,50 @@ public class DefaultDescriptorTableModel<T extends IMObject>
      */
     public DefaultDescriptorTableModel(String[] shortNames, Query<T> query, LayoutContext context, String... names) {
         super(context);
-        if (names.length == 0) {
-            nodes = allSimpleNodesMinusIdAndLongText();
-        } else {
-            nodes = ArchetypeNodes.onlySimple(names);
-        }
-        boolean showActive = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
-        if (!showActive) {
-            nodes.exclude("active");
-        }
+        this.nodeNames = names;
+        showActive = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createColumnModel(shortNames, context));
     }
 
     /**
-     * Returns an {@link ArchetypeNodes} that determines what nodes appear in the table.
+     * Returns a column, given its node name.
      *
-     * @return the nodes to include
+     * @param name the node name
+     * @return the descriptor column, or {@code null} if none exists
      */
     @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return nodes;
+    public DescriptorTableColumn getColumn(String name) {
+        return super.getColumn(name);
+    }
+
+    /**
+     * Returns a list of descriptor names to include in the table.
+     *
+     * @return the list of descriptor names to include in the table
+     */
+    @Override
+    protected String[] getNodeNames() {
+        return nodeNames;
+    }
+
+    /**
+     * Returns the node names for a set of archetypes.
+     * <p/>
+     * If {@link #getNodeNames()} returns a non-empty list, then
+     * these names will be used, otherwise the node names common to each
+     * archetype will be returned.
+     *
+     * @param archetypes the archetype descriptors
+     * @param context    the layout context
+     * @return the node names for the archetypes
+     */
+    @Override
+    protected List<String> getNodeNames(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
+        List<String> names = super.getNodeNames(archetypes, context);
+        if (!showActive && names.contains("active")) {
+            names = new ArrayList<String>(names); // Arrays.asList() creates fixed size list
+            names.remove("active");
+        }
+        return names;
     }
 }

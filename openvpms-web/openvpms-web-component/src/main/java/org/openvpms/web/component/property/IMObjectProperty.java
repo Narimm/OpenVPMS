@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -254,16 +254,6 @@ public class IMObjectProperty extends AbstractProperty
      */
     public boolean isLookup() {
         return descriptor.isLookup();
-    }
-
-    /**
-     * Determines if the property is a password.
-     *
-     * @return {@code true} if it is a password
-     */
-    @Override
-    public boolean isPassword() {
-        return descriptor.containsAssertionType("password");
     }
 
     /**

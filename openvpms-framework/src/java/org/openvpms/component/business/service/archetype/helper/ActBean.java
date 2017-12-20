@@ -11,14 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.openvpms.component.business.domain.bean.Policies;
-import org.openvpms.component.business.domain.bean.Policy;
-import org.openvpms.component.business.domain.bean.Predicates;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -27,12 +24,13 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 
 
 /**
@@ -59,17 +57,6 @@ public class ActBean extends IMObjectBean {
      */
     public ActBean(Act act, IArchetypeService service) {
         super(act, service);
-    }
-
-    /**
-     * Constructs a {@link ActBean}.
-     *
-     * @param act     the act
-     * @param service the archetype service
-     * @param lookups the lookup service
-     */
-    public ActBean(Act act, IArchetypeService service, ILookupService lookups) {
-        super(act, service, lookups);
     }
 
     /**
@@ -204,7 +191,7 @@ public class ActBean extends IMObjectBean {
      * @return a list of all relationships matching the short name
      */
     public List<ActRelationship> getRelationships(String shortName) {
-        return select(getAct().getActRelationships(), Predicates.isA(shortName));
+        return select(getAct().getActRelationships(), new IsA(shortName));
     }
 
     /**
@@ -218,7 +205,7 @@ public class ActBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public ActRelationship addNodeRelationship(String name, Act target) {
-        String shortName = getRelationshipArchetype(name, target, "target");
+        String shortName = getRelationshipShortName(name, target, "target");
         return addRelationship(shortName, target);
     }
 
@@ -232,7 +219,8 @@ public class ActBean extends IMObjectBean {
      * @throws IMObjectBeanException     if {@code name} is an invalid node
      */
     public void removeNodeRelationships(String name, Act target) {
-        List<ActRelationship> relationships = getValues(name, ActRelationship.class, Predicates.targetEquals(target));
+        List<ActRelationship> relationships = getValues(name, RefEquals.getTargetEquals(target.getObjectReference()),
+                                                        ActRelationship.class);
         for (ActRelationship relationship : relationships) {
             removeRelationship(relationship);
             target.removeTargetActRelationship(relationship);
@@ -246,10 +234,10 @@ public class ActBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service
      */
     public List<Act> getActs() {
-        List<Act> result = new ArrayList<>();
+        List<Act> result = new ArrayList<Act>();
         Act act = getAct();
         for (ActRelationship r : act.getSourceActRelationships()) {
-            Act child = (Act) resolve(r.getTarget(), Policy.State.ANY);
+            Act child = (Act) resolve(r.getTarget());
             if (child != null) {
                 result.add(child);
             }
@@ -266,18 +254,32 @@ public class ActBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Act> getActs(String shortName) {
-        List<Act> result = new ArrayList<>();
+        List<Act> result = new ArrayList<Act>();
         Act act = getAct();
         for (ActRelationship r : act.getSourceActRelationships()) {
             IMObjectReference target = r.getTarget();
             if (TypeHelper.isA(target, shortName)) {
-                Act child = (Act) resolve(target, Policy.State.ANY);
+                Act child = (Act) resolve(target);
                 if (child != null) {
                     result.add(child);
                 }
             }
         }
         return result;
+    }
+
+    /**
+     * Resolves and returns a list of the child acts for the specified node.
+     *
+     * @param name the node name
+     * @return a list of the child acts
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the node doesn't exist
+     * @deprecated use {@link #getNodeActs} instead
+     */
+    @Deprecated
+    public List<Act> getActsForNode(String name) {
+        return getNodeActs(name);
     }
 
     /**
@@ -300,8 +302,20 @@ public class ActBean extends IMObjectBean {
      * @return a list of the child acts
      * @throws IMObjectBeanException if the node doesn't exist or an element is of the wrong type
      */
+    @SuppressWarnings("unchecked")
     public <T extends Act> List<T> getNodeActs(String name, Class<T> type) {
-        return getRelated(name, type, Policies.any());
+        List<T> result = new ArrayList<T>();
+        IMObjectReference ref = getReference();
+        for (ActRelationship relationship : getValues(name, ActRelationship.class)) {
+            Act child = getSourceOrTarget(relationship, ref);
+            if (child != null) {
+                if (!type.isInstance(child)) {
+                    throw new IMObjectBeanException(InvalidClassCast, type.getName(), child.getClass().getName());
+                }
+                result.add((T) child);
+            }
+        }
+        return result;
     }
 
     /**
@@ -466,7 +480,7 @@ public class ActBean extends IMObjectBean {
      */
     public Entity getParticipant(String shortName) {
         IMObjectReference ref = getParticipantRef(shortName);
-        return (Entity) resolve(ref, Policy.State.ANY);
+        return (Entity) resolve(ref);
     }
 
     /**
@@ -527,7 +541,7 @@ public class ActBean extends IMObjectBean {
      */
     public Entity getNodeParticipant(String name) {
         IMObjectReference ref = getNodeParticipantRef(name);
-        return (Entity) resolve(ref, Policy.State.ANY);
+        return (Entity) resolve(ref);
     }
 
     /**
@@ -585,7 +599,7 @@ public class ActBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public Participation addNodeParticipation(String name, IMObjectReference target) {
-        String shortName = getRelationshipArchetype(name, target, "entity");
+        String shortName = getRelationshipShortName(name, target, "entity");
         return addParticipation(shortName, target);
     }
 
@@ -598,6 +612,31 @@ public class ActBean extends IMObjectBean {
     public Participation getNodeParticipation(String name) {
         List<Participation> values = getValues(name, Participation.class);
         return !values.isEmpty() ? values.get(0) : null;
+    }
+
+    /**
+     * Returns the source or target of a relationship that is not the same
+     * as the supplied reference.
+     *
+     * @param relationship the relationship
+     * @param ref          the reference
+     * @return the source or target, or {@code null}
+     */
+    private Act getSourceOrTarget(ActRelationship relationship, IMObjectReference ref) {
+        IMObjectReference target = relationship.getTarget();
+        IMObjectReference child = null;
+        if (target != null && !target.equals(ref)) {
+            child = target;
+        } else {
+            IMObjectReference source = relationship.getSource();
+            if (source != null && !source.equals(ref)) {
+                child = source;
+            }
+        }
+        if (child != null) {
+            return (Act) resolve(child);
+        }
+        return null;
     }
 
 }

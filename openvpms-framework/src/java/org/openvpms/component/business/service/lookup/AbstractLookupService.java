@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -230,7 +230,17 @@ public abstract class AbstractLookupService implements ILookupService {
      */
     public Lookup getLookup(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object, service);
-        return bean.getLookup(node, false);
+        NodeDescriptor descriptor = bean.getDescriptor(node);
+        if (descriptor == null) {
+            throw new IllegalArgumentException("Invalid node name: " + node);
+        }
+        Lookup result = null;
+        Object value = descriptor.getValue(object);
+        if (value != null) {
+            LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, this);
+            result = assertion.getLookup(object, value.toString());
+        }
+        return result;
     }
 
     /**

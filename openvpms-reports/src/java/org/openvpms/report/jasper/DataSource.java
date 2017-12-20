@@ -45,15 +45,6 @@ public interface DataSource extends JRDataSource {
     Object evaluate(String expression);
 
     /**
-     * Evaluates an xpath expression against an object.
-     *
-     * @param object     the object
-     * @param expression the expression
-     * @return the result of the expression. May be {@code null}
-     */
-    Object evaluate(Object object, String expression);
-
-    /**
      * Returns a data source for a collection node.
      *
      * @param name the collection node name

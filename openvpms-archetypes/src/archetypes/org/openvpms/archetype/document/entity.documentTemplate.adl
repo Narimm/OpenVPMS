@@ -47,7 +47,6 @@
                     <property name="act.patientReminder" value="Reminder Report"/>
                     <property name="act.patientClinicalEvent" value="Patient Visit"/>
                     <property name="act.patientClinicalProblem" value="Patient Problem"/>
-                    <property name="act.patientInsuranceClaim" value="Insurance Claim"/>
                     <property name="act.tillBalance" value="Till Balance"/>
                     <property name="act.bankDeposit" value="Bank Deposit"/>
                     <property name="act.customerAccountOpeningBalance" value="Customer Statement"/>
@@ -72,8 +71,6 @@
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
                     <property name="PATIENT_MAILING_LABELS" value="Patient Mailing Labels"/>
-                    <property name="INSURANCE_CLAIM_INVOICE" value="Insurance Claim Invoice"/>
-                    <property name="INSURANCE_CLAIM" value="Insurance Claim - Custom"/>
                 </propertyList>
             </assertion>
         </node>

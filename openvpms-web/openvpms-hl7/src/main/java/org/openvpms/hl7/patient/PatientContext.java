@@ -412,7 +412,7 @@ public class PatientContext {
      * @return the customer address. May be {@code null}
      */
     public Contact getAddress() {
-        return (customer != null) ? customerRules.getAddressContact(customer, ContactArchetypes.HOME_PURPOSE) : null;
+        return (customer != null) ? customerRules.getContact(customer, ContactArchetypes.LOCATION, "HOME") : null;
     }
 
     /**

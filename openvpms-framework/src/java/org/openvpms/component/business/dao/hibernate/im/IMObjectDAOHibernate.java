@@ -430,24 +430,28 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * Returns an object with the specified reference.
      *
      * @param reference the object reference
-     * @return the corresponding object, or <tt>null</tt> if none exists. The object may be active or inactive
-     * @throws IMObjectDAOException for any error
-     */
-    @Override
-    public IMObject get(IMObjectReference reference) {
-        return getObject(reference, null);
-    }
-
-    /**
-     * Returns an object with the specified reference.
-     *
-     * @param reference the object reference
-     * @param active    if {@code true}, only return the object if it is active
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    public IMObject get(final IMObjectReference reference, boolean active) {
-        return getObject(reference, active);
+    public IMObject get(final IMObjectReference reference) {
+        // first determine if the object is cached in the transaction context
+        IMObject result = execute(new HibernateCallback<IMObject>() {
+            public IMObject doInHibernate(Session session) {
+                Context context = getContext(session);
+                DOState state = context.getCached(reference);
+                return (state != null) ? state.getSource() : null;
+            }
+        });
+        if (result == null && !reference.isNew()) {
+            // no cached object. If the reference indicates the object is 
+            // committed, try and query it
+            ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
+                    reference.getArchetypeId());
+            if (desc != null) {
+                result = get(desc.getClassName(), reference);
+            }
+        }
+        return result;
     }
 
     /**
@@ -534,6 +538,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.springframework.orm.hibernate3.support.HibernateDaoSupport#createHibernateTemplate(org.hibernate.SessionFactory)
+    */
+
     @Override
     protected HibernateTemplate createHibernateTemplate(
             SessionFactory sessionFactory) {
@@ -546,35 +556,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         template.setExposeNativeSession(true);
 
         return template;
-    }
-
-    /**
-     * Returns an object given its reference.
-     *
-     * @param reference the reference
-     * @param active    if {@code true}, only return the object if it is active. If {@code false}, only return the object
-     *                  if it is inactive. If {@code null}, return active or inactive objects.
-     * @return the object, or {@code null}
-     */
-    private IMObject getObject(IMObjectReference reference, Boolean active) {
-        IMObject result = null;
-        // first determine if the object is cached in the transaction context
-        IMObject cached = execute(session -> {
-            Context context = getContext(session);
-            DOState state = context.getCached(reference);
-            return (state != null) ? state.getSource() : null;
-        });
-        if (cached != null) {
-            result = (active != null && active != cached.isActive()) ? null : cached;
-        } else if (!reference.isNew()) {
-            // no cached object. If the reference indicates the object is
-            // committed, try and query it
-            ArchetypeDescriptor desc = cache.getArchetypeDescriptor(reference.getArchetypeId());
-            if (desc != null) {
-                result = getObject(desc.getClassName(), reference, active);
-            }
-        }
-        return result;
     }
 
     /**
@@ -759,11 +740,9 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      *
      * @param clazz     the object's class
      * @param reference the object reference
-     * @param active    if {@code true}, only return the object if it is active. If {@code false}, only return the
-     *                  object if it is inactive. If {@code null}, return active or inactive objects.
-     * @return the corresponding object, or {@code null} if none is found
+     * @return the corresponding object, or <tt>null</tt> if none is found
      */
-    private IMObject getObject(String clazz, final IMObjectReference reference, Boolean active) {
+    private IMObject get(String clazz, final IMObjectReference reference) {
         clazz = assembler.getDOClassName(clazz);
         if (clazz == null) {
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
@@ -773,18 +752,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         queryString.append("select entity from ");
         queryString.append(clazz);
         queryString.append(" as entity where entity.id = :id and entity.archetypeId.shortName = :shortName");
-        if (active != null) {
-            queryString.append(" and entity.active = :active");
-        }
 
         return execute(new HibernateCallback<IMObject>() {
             public IMObject doInHibernate(Session session) throws HibernateException {
                 Query query = session.createQuery(queryString.toString());
                 query.setParameter("id", reference.getId());
                 query.setParameter("shortName", reference.getArchetypeId().getShortName());
-                if (active != null) {
-                    query.setParameter("active", active);
-                }
                 List results = query.list();
                 if (results.size() == 0) {
                     return null;

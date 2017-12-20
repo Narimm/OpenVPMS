@@ -30,7 +30,7 @@ import java.lang.reflect.Constructor;
 
 /**
  * Factory for {@link IMObjectCollectionEditor} instances.
- * <p>
+ * <p/>
  * This uses two configuration files:
  * <ol>
  * <li>EditableIMObjectCollectionEditorFactory.properties - used for implementations of
@@ -40,7 +40,7 @@ import java.lang.reflect.Constructor;
  * </ol>
  * The former is used if the collection property returns {@code true} for
  * {@link CollectionProperty#isParentChild()}, indicating that the collection items are editable.
- * <p>
+ * <p/>
  * NOTE: default implementations for EditableIMObjectCollectionEditor instances can be registered in a
  * <em>DefaultEditableIMObjectCollectionEditorFactory.properties</em>; these are overridden by
  * <em>EditableIMObjectCollectionEditorFactory.properties</em>.
@@ -82,11 +82,6 @@ public class IMObjectCollectionEditorFactory {
     public static IMObjectCollectionEditor create(CollectionProperty property, IMObject object, LayoutContext context) {
         IMObjectCollectionEditor result = null;
         String[] shortNames = property.getArchetypeRange();
-        if (shortNames.length == 0) {
-            throw new IllegalStateException("Node=" + property.getName() + " of archetype="
-                                            + object.getArchetypeId().getShortName()
-                                            + " has an invalid archetype range");
-        }
 
         if (property.isParentChild()) {
             ArchetypeHandler<EditableIMObjectCollectionEditor> handler = getEditable().getHandler(shortNames);

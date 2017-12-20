@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -71,7 +71,6 @@ public class DateRange {
      * The all-dates component.
      */
     private ComponentState allDates;
-
     /**
      * The from-date component.
      */
@@ -300,14 +299,6 @@ public class DateRange {
     }
 
     /**
-     * Invoked when the 'all dates' check box changes.
-     */
-    protected void onAllDatesChanged() {
-        boolean enabled = !getAllDates();
-        setDateFieldsEnabled(enabled);
-    }
-
-    /**
      * Invoked when the 'from' date changes. Sets the 'to' date = 'from' if 'from' is greater.
      */
     private void onFromChanged() {
@@ -327,6 +318,14 @@ public class DateRange {
         if (from != null && to != null && DateRules.compareDates(from, to) > 0) {
             setFrom(to);
         }
+    }
+
+    /**
+     * Invoked when the 'all dates' check box changes.
+     */
+    protected void onAllDatesChanged() {
+        boolean enabled = !getAllDates();
+        setDateFieldsEnabled(enabled);
     }
 
     /**

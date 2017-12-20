@@ -141,8 +141,5 @@
         <node name="event" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
               filter="actRelationship.patientClinicalEventChargeItem" hidden="true"/>
-        <node name="invoice" path="/targetActRelationships"
-              type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
-              filter="actRelationship.customerAccountInvoiceItem" hidden="true"/>
     </archetype>
 </archetypes>

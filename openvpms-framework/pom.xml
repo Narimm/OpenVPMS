@@ -113,12 +113,10 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
+                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
-                        <Export-Package>
-                            org.openvpms.component.business.domain.*,
-                            org.openvpms.component.system.common.i18n;version="${project.version}",
+                        <Export-Package>org.openvpms.component.*,org.openvpms.tools.*;version="${project.version}"
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -275,13 +273,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
             <version>${spring.version}</version>
-            <exclusions>
-                <exclusion>
-                    <!-- using the servicemix spring-tx -->
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-tx</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -310,10 +301,9 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <!-- servicemix bundle of org.springframework:spring-tx -->
-            <groupId>org.apache.servicemix.bundles</groupId>
-            <artifactId>org.apache.servicemix.bundles.spring-tx</artifactId>
-            <version>${servicemix.spring.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

@@ -59,16 +59,6 @@ public class MailHeader extends AbstractModifiable {
     private final MailContext mailContext;
 
     /**
-     * The focus group.
-     */
-    private final FocusGroup focus;
-
-    /**
-     * The listeners.
-     */
-    private final ModifiableListeners listeners = new ModifiableListeners();
-
-    /**
      * The to address.
      */
     private ToAddressSelector to;
@@ -98,12 +88,22 @@ public class MailHeader extends AbstractModifiable {
      */
     private Component component;
 
+    /**
+     * The focus group.
+     */
+    private final FocusGroup focus;
+
+    /**
+     * The listeners.
+     */
+    private final ModifiableListeners listeners = new ModifiableListeners();
+
 
     /**
      * Constructs a {@link MailHeader}.
      *
      * @param mailContext the mail context
-     * @param preferredTo the preferred to address. May be {@code null}
+     * @param preferredTo the preferred to address
      * @param context     the layout context
      */
     public MailHeader(MailContext mailContext, Contact preferredTo, LayoutContext context) {
@@ -124,9 +124,6 @@ public class MailHeader extends AbstractModifiable {
         cc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context, "mail.cc");
         bcc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context, "mail.bcc");
 
-        if (preferredTo == null) {
-            preferredTo = mailContext.getPreferredToAddress();
-        }
         if (preferredTo != null) {
             setTo(preferredTo);
         }
@@ -276,7 +273,7 @@ public class MailHeader extends AbstractModifiable {
 
     /**
      * Adds a listener to be notified when this changes.
-     * <p>
+     * <p/>
      * Listeners will be notified in the order they were registered.
      *
      * @param listener the listener to add

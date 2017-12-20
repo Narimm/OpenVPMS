@@ -186,8 +186,4 @@ public class PatientArchetypes {
      */
     public static final String PET_TAG = "entityIdentity.petTag";
 
-    /**
-     * VeNom diagnosis archetype.
-     */
-    public static final String DIAGNOSIS_VENOM = "lookup.diagnosisVeNom";
 }

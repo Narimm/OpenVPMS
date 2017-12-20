@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,7 +31,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 
@@ -69,8 +69,8 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
      * @return the row of controls
      */
     @Override
-    protected ButtonRow createControls(FocusGroup focus) {
-        ButtonRow row = super.createControls(focus);
+    protected Row createControls(FocusGroup focus) {
+        Row row = super.createControls(focus);
         if (filter.needsFilter()) {
             row.add(filter.getComponent());
             filter.setListener(new ActionListener() {

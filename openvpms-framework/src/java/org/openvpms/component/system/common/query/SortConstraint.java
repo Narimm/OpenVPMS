@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.query;
@@ -30,6 +30,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public abstract class SortConstraint implements IConstraint {
 
     /**
+     * The type alias. May be {@code null}.
+     */
+    private String alias;
+
+    /**
      * Determines whether to sort in ascending or descending order.
      */
     private boolean ascending;
@@ -39,9 +44,11 @@ public abstract class SortConstraint implements IConstraint {
      * Construct an instance of this constraint indicating whether to sort
      * in ascending or descending order.
      *
+     * @param alias     the type alias. May be {@code null}
      * @param ascending true if sorting in ascending order
      */
-    protected SortConstraint(boolean ascending) {
+    protected SortConstraint(String alias, boolean ascending) {
+        this.alias = alias;
         this.ascending = ascending;
     }
 
@@ -50,7 +57,9 @@ public abstract class SortConstraint implements IConstraint {
      *
      * @return the type alias. May be {@code null}
      */
-    public abstract String getAlias();
+    public String getAlias() {
+        return alias;
+    }
 
     /**
      * Determines if the sort is ascending.
@@ -85,7 +94,7 @@ public abstract class SortConstraint implements IConstraint {
 
         SortConstraint rhs = (SortConstraint) obj;
         return new EqualsBuilder()
-                .append(getAlias(), rhs.getAlias())
+                .append(alias, rhs.alias)
                 .append(ascending, rhs.ascending)
                 .isEquals();
     }
@@ -96,7 +105,7 @@ public abstract class SortConstraint implements IConstraint {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("alias", getAlias())
+                .append("alias", alias)
                 .append("ascending", ascending)
                 .toString();
     }

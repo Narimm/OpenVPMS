@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.rule;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.DelegatingArchetypeService;
@@ -152,17 +151,6 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
                 getService().remove(object);
             }
         });
-    }
-
-    /**
-     * Returns a bean for an object.
-     *
-     * @param object the object
-     * @return the bean
-     */
-    @Override
-    public IMObjectBean getBean(IMObject object) {
-        return new org.openvpms.component.business.service.archetype.helper.IMObjectBean(object, this);
     }
 
     /**

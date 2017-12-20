@@ -21,6 +21,6 @@
         <node name="identity" path="/identity" type="java.lang.String" minCardinality="1" maxlength="36"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="0" derived="true"
               derivedValue="/identity"/>
-        <node name="description" type="java.lang.String" path="/description" minCardinality="0" hidden="true"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
     </archetype>
 </archetypes>

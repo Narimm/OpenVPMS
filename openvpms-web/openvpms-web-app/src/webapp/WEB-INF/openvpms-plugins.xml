@@ -21,42 +21,30 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://openvpms.org/schema/plugin/spring http://openvpms.org/schema/plugin/spring/plugin.xsd">
 
-    <bean name="pluginServiceProvider"
-          class="org.openvpms.plugin.internal.manager.spring.PluginServiceProviderFactoryBean"/>
+    <bean name="pluginServiceProvider" class="org.openvpms.plugin.manager.spring.PluginServiceProviderFactoryBean"/>
 
-    <bean id="pluginManager" class="org.openvpms.plugin.internal.manager.ConfigurablePluginManager">
+    <bean id="pluginManager" class="org.openvpms.plugin.manager.ConfigurablePluginManager">
         <constructor-arg ref="pluginServiceProvider"/>
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <bean id="pluginArchetypeService" class="org.openvpms.plugin.internal.service.archetype.PluginArchetypeServiceImpl">
+    <bean id="pluginArchetypeService" class="org.openvpms.plugin.service.internal.archetype.PluginArchetypeServiceImpl">
         <plugin:service/>
         <constructor-arg ref="archetypeRuleService"/>
-        <constructor-arg ref="lookupService"/>
         <constructor-arg ref="practiceService"/>
     </bean>
 
     <bean id="pluginConfigurationService"
-          class="org.openvpms.plugin.internal.service.config.PluginConfigurationService">
+          class="org.openvpms.plugin.service.internal.config.PluginConfigurationServiceImpl">
         <plugin:service/>
         <constructor-arg ref="archetypeRuleService"/>
-        <constructor-arg ref="pluginManager"/>
+        <constructor-arg ref="pluginArchetypeService"/>
     </bean>
 
-    <bean class="org.openvpms.plugin.internal.service.archetype.IMObjectListenerNotifier">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="pluginManager"/>
-    </bean>
-
-    <bean id="archetypeInstaller" class="org.openvpms.plugin.internal.service.archetype.ArchetypeInstallerImpl">
+    <bean id="archetypeInstaller" class="org.openvpms.plugin.service.internal.archetype.ArchetypeInstallerImpl">
         <plugin:service/>
-        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="pluginArchetypeService"/>
         <constructor-arg ref="txnManager"/>
-    </bean>
-
-    <bean id="version" class="org.openvpms.plugin.internal.service.version.VersionImpl">
-        <plugin:service/>
     </bean>
 
 </beans>

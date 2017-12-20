@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -31,6 +31,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
+import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
+import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 
 
@@ -106,14 +109,14 @@ public class EntityBean extends IMObjectBean {
 
     /**
      * Adds a new relationship between the current entity (the source), and the supplied target.
-     * <p>
+     * <p/>
      * If the relationship is an {@link EntityRelationship}, it will also be added to the target.
      *
      * @param name   the name
      * @param target the target
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the relationship archetype is not found
+     * @throws IMObjectBeanException if the relationship archetype is not found
      */
     @Override
     public IMObjectRelationship addNodeTarget(String name, IMObject target) {
@@ -140,7 +143,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param target the target entity
      * @return the first entity relationship with {@code target} as its
-     * target or {@code null} if none is found
+     *         target or {@code null} if none is found
      */
     public EntityRelationship getRelationship(IMObjectReference target) {
         Entity entity = getEntity();
@@ -515,6 +518,21 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
+     * Returns the source entity references from each relationship that is active at the specified time, for the
+     * specified node.
+     *
+     * @param node   the entity relationship node
+     * @param time   the time
+     * @param active determines if the relationships must be active
+     * @return a list of source entity references. May contain references to both active and inactive entities
+     * @deprecated use {@link #getNodeSourceEntities(String, Date)}
+     */
+    @Deprecated
+    public List<IMObjectReference> getNodeSourceEntityRefs(String node, Date time, boolean active) {
+        return getRelatedObjectRefs(node, isActive(time), SOURCE, null);
+    }
+
+    /**
      * Returns the source entity references from each relationship for the specified node that matches the supplied
      * predicate.
      *
@@ -546,6 +564,22 @@ public class EntityBean extends IMObjectBean {
      */
     public List<IMObjectReference> getNodeTargetEntityRefs(String node, Date time) {
         return getNodeTargetObjectRefs(node, time);
+    }
+
+    /**
+     * Returns the target entity references from each relationship that is
+     * active at the specified time, for the specified node.
+     *
+     * @param node   the entity relationship node
+     * @param time   the time
+     * @param active determines if the relationships must be active
+     * @return a list of target entity references. May contain references to
+     *         both active and inactive entities
+     * @deprecated use {@link #getNodeTargetEntityRefs(String, Date)}
+     */
+    @Deprecated
+    public List<IMObjectReference> getNodeTargetEntityRefs(String node, Date time, boolean active) {
+        return getRelatedObjectRefs(node, isActive(time), TARGET, null);
     }
 
     /**

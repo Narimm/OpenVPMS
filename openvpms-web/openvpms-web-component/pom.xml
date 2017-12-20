@@ -117,11 +117,6 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-version</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-subscription-core</artifactId>
             <version>1.0-beta-1</version>
         </dependency>

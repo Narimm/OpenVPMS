@@ -378,18 +378,6 @@
     <data id="RPATMED" archetype="security.archetypeAuthority" name="Patient Medication Remove"
           description="Authority to Remove Medication"
           serviceName="archetypeService" method="remove" archetypeShortName="act.patientMedication"/>
-
-    <!-- Patient Prescription Authorities -->
-    <data id="CPATPRE" archetype="security.archetypeAuthority" name="Patient Prescription Create"
-          description="Authority to Create Prescription"
-          serviceName="archetypeService" method="create" archetypeShortName="act.patientPrescription"/>
-    <data id="SPATPRE" archetype="security.archetypeAuthority" name="Patient Prescription Save"
-          description="Authority to Save Prescription"
-          serviceName="archetypeService" method="save" archetypeShortName="act.patientPrescription"/>
-    <data id="RPATPRE" archetype="security.archetypeAuthority" name="Patient Prescription Remove"
-          description="Authority to Remove Prescription"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.patientPrescription"/>
-
     <!-- Patient Customer Note Authorities -->
     <data id="CPATCUSN" archetype="security.archetypeAuthority" name="Patient Customer Note Create"
           description="Authority to Create Patient Customer Note"
@@ -401,60 +389,6 @@
           description="Authority to Remove Patient Customer Note"
           serviceName="archetypeService" method="remove" archetypeShortName="act.patientCustomerNote"/>
 
-    <!-- Patient Insurance Policy Authorities -->
-    <data id="CPATINSP" archetype="security.archetypeAuthority" name="Patient Insurance Policy Create"
-          description="Authority to Create Patient Insurance Policy"
-          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsurancePolicy"/>
-    <data id="SPATINSP" archetype="security.archetypeAuthority" name="Patient Insurance Policy Save"
-          description="Authority to Save Patient Insurance Policy"
-          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsurancePolicy"/>
-    <data id="RPATINSP" archetype="security.archetypeAuthority" name="Patient Insurance Policy Remove"
-          description="Authority to Remove Patient Insurance Policy"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsurancePolicy"/>
-
-    <!-- Patient Insurance Claim Authorities -->
-    <data id="CPATINSC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Create"
-          description="Authority to Create Patient Insurance Claim"
-          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsuranceClaim"/>
-    <data id="SPATINSC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Save"
-          description="Authority to Save Patient Insurance Claim"
-          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsuranceClaim"/>
-    <data id="RPATINSC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Remove"
-          description="Authority to Remove Patient Insurance Claim"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsuranceClaim"/>
-
-    <!-- Patient Insurance Claim Condition Authorities -->
-    <data id="CPATINSCC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Condition Create"
-          description="Authority to Create Patient Insurance Claim Condition"
-          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsuranceClaimItem"/>
-    <data id="SPATINSCC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Condition Save"
-          description="Authority to Save Patient Insurance Claim Condition"
-          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsuranceClaimItem"/>
-    <data id="RPATINSCC" archetype="security.archetypeAuthority" name="Patient Insurance Claim Condition Remove"
-          description="Authority to Remove Patient Insurance Claim Condition"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsuranceClaimItem"/>
-
-    <!-- Patient Insurance Claim Attachment Authorities -->
-    <data id="CPATINSCA" archetype="security.archetypeAuthority" name="Patient Insurance Claim Attachment Create"
-          description="Authority to Create Patient Insurance Claim Attachment"
-          serviceName="archetypeService" method="create" archetypeShortName="act.patientInsuranceClaimAttachment"/>
-    <data id="SPATINSCA" archetype="security.archetypeAuthority" name="Patient Insurance Claim Attachment Save"
-          description="Authority to Save Patient Insurance Claim Attachment"
-          serviceName="archetypeService" method="save" archetypeShortName="act.patientInsuranceClaimAttachment"/>
-    <data id="RPATINSCA" archetype="security.archetypeAuthority" name="Patient Insurance Claim Attachment Remove"
-          description="Authority to Remove Patient Insurance Claim Attachment"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.patientInsuranceClaimAttachment"/>
-
-    <!-- Patient Weight Authorities -->
-    <data id="CPATWEI" archetype="security.archetypeAuthority" name="Patient Weight Create"
-          description="Authority to Create Weight"
-          serviceName="archetypeService" method="create" archetypeShortName="act.patientWeight"/>
-    <data id="SPATWEI" archetype="security.archetypeAuthority" name="Patient Weight Save"
-          description="Authority to Save Weight"
-          serviceName="archetypeService" method="save" archetypeShortName="act.patientWeight"/>
-    <data id="RPATWEI" archetype="security.archetypeAuthority" name="Patient Weight Remove"
-          description="Authority to Remove Weight"
-          serviceName="archetypeService" method="remove" archetypeShortName="act.patientWeight"/>
 
     <!-- Supplier Authorities -->
     <!-- Supplier Party Authorities -->
@@ -732,42 +666,12 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CCUSPAR"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SCUSPAR"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RCUSPAR"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATALL"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATALL"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATALL"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATPAR"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATPAR"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATPAR"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATALE"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATALE"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATALE"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATCLI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATCLI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATCLI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINV"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINV"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINV"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATDOC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATDOC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATDOC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATREM"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATREM"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATREM"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATREMI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATREMI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATREMI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATMED"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATMED"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATMED"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATPRE"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATPRE"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATPRE"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATCUSN"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATCUSN"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATCUSN"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATWEI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATWEI"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATWEI"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPROPRO"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPROPRO"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPROBA"/>
@@ -813,9 +717,6 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPREF"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPREF"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPREF"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSP"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSP"/>
     </data>
 
     <data id="ROLE_S" archetype="security.role" name="Stock Control">
@@ -844,19 +745,6 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SACTREL"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPARTIC"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPARTIC"/>
-    </data>
-
-    <data id="ROLE_INSURANCE" archetype="security.role" name="Insurance Claims"
-          description="Role for creating patient insurance claims">
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSCC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSCC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSCC"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CPATINSCA"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SPATINSCA"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RPATINSCA"/>
     </data>
 
 </archetype>

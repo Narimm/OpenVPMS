@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.functor.ActComparator;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -67,7 +66,7 @@ public abstract class ActFilter<T extends Act> {
      * @return the comparator
      */
     protected Comparator<T> getComparator(boolean ascending) {
-        return ascending ? ActComparator.<T>ascending() : ActComparator.<T>descending();
+        return ascending ? ActHelper.<T>ascending() : ActHelper.<T>descending();
     }
 
 }

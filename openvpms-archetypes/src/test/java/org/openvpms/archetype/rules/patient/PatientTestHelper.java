@@ -77,33 +77,6 @@ public class PatientTestHelper {
     }
 
     /**
-     * Creates a new patient.
-     *
-     * @param name        the patient name
-     * @param species     the patient species code
-     * @param breed       the patient breed code
-     * @param sex         the patient sex
-     * @param dateOfBirth the patient's date of birth. May be {@code null}
-     * @param microchip   the microchip. May be {@code nul}
-     * @param colour      the colour. May be {@code null}
-     * @param owner       the patient owner
-     * @return a new patient
-     */
-    public static Party createPatient(String name, String species, String breed, String sex, Date dateOfBirth,
-                                      String microchip, String colour, Party owner) {
-        Party patient = createPatient(name, species, breed, dateOfBirth, owner);
-        IMObjectBean bean = new IMObjectBean(patient);
-        bean.setValue("sex", sex);
-        if (microchip != null) {
-            patient.addIdentity(TestHelper.createEntityIdentity(PatientArchetypes.MICROCHIP, microchip));
-        }
-        bean.setValue("colour", colour);
-        bean.save();
-        return patient;
-    }
-
-
-    /**
      * Helper to create an <em>act.patientMedication</em>.
      *
      * @param patient the patient
@@ -163,7 +136,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -176,7 +149,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -190,7 +163,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p>
+     * <p/>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -216,7 +189,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p>
+     * <p/>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -230,7 +203,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p>
+     * <p/>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -274,24 +247,7 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createNote(Date startTime, Party patient, User clinician) {
-        return createNote(startTime, patient, clinician, null);
-    }
-
-    /**
-     * Creates an <em>act.patientClinicalNote</em>.
-     *
-     * @param startTime the act start time
-     * @param patient   the patient
-     * @param clinician the clinician. May be {@code null}
-     * @param note      the note. May be {@code null}
-     * @return a new act
-     */
-    public static Act createNote(Date startTime, Party patient, User clinician, String note) {
         Act act = createAct(PatientArchetypes.CLINICAL_NOTE, startTime, patient, clinician);
-        if (note != null) {
-            ActBean bean = new ActBean(act);
-            bean.setValue("note", note);
-        }
         save(act);
         return act;
     }
@@ -299,8 +255,7 @@ public class PatientTestHelper {
     /**
      * Adds an <em>act.patientClinicalAddendum</em> to another act.
      *
-     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an
-     *                 <em>act.patientMedication</em>
+     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an <em>act.patientMedication</em>
      * @param addendum the addendum
      */
     public static void addAddendum(Act act, Act addendum) {
@@ -318,24 +273,7 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createAddendum(Date startTime, Party patient, User clinician) {
-        return createAddendum(startTime, patient, clinician, null);
-    }
-
-    /**
-     * Creates an <em>act.patientClinicalAddendum</em>.
-     *
-     * @param startTime the act start time
-     * @param patient   the patient
-     * @param clinician the clinician. May be {@code null}
-     * @param note      the note. May be {@code null}
-     * @return a new act
-     */
-    public static Act createAddendum(Date startTime, Party patient, User clinician, String note) {
         Act act = createAct(PatientArchetypes.CLINICAL_ADDENDUM, startTime, patient, clinician);
-        if (note != null) {
-            ActBean bean = new ActBean(act);
-            bean.setValue("note", note);
-        }
         save(act);
         return act;
     }

@@ -11,14 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -33,10 +31,7 @@ import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
-import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,60 +46,52 @@ import java.util.Map;
 public class BatchPrintDialog extends PopupDialog {
 
     /**
-     * The message to display. May be {@code null}
-     */
-    private final String message;
-
-    /**
      * The table of objects to print.
      */
     private final IMTable<IMObject> table;
 
 
     /**
-     * Constructs a {@link BatchPrintDialog}.
+     * Constructs a {@code BatchPrintDialog}.
      *
      * @param title   the window title
      * @param objects the objects to print
      * @param help    the help context
      */
     public BatchPrintDialog(String title, List<IMObject> objects, HelpContext help) {
-        this(title, null, OK_CANCEL, objects, help);
+        this(title, OK_CANCEL, objects, help);
     }
 
     /**
-     * Constructs a {@link BatchPrintDialog}.
+     * Constructs a {@code BatchPrintDialog}.
      *
      * @param title   the window title
-     * @param message the message to display. May be {@code null}
      * @param buttons the buttons to display
      * @param objects the objects to print
      * @param help    the help context
      */
-    public BatchPrintDialog(String title, String message, String[] buttons, List<IMObject> objects, HelpContext help) {
+    public BatchPrintDialog(String title, String[] buttons, List<IMObject> objects, HelpContext help) {
         super(title, buttons, help);
-        this.message = message;
         setModal(true);
-        table = new IMObjectTable<>(new PrintTableModel());
+        table = new IMObjectTable<IMObject>(new PrintTableModel());
         table.setObjects(objects);
+        getLayout().add(table);
     }
 
     /**
-     * Constructs a {@link BatchPrintDialog}.
+     * Constructs a {@code BatchPrintDialog}.
      *
      * @param title   the window title
-     * @param message the message to display. May be {@code null}
      * @param buttons the buttons to display
      * @param objects the objects to print. The boolean value indicates if the object should be selected by default
      * @param help    the help context
      */
-    public BatchPrintDialog(String title, String message, String[] buttons, Map<IMObject, Boolean> objects,
-                            HelpContext help) {
+    public BatchPrintDialog(String title, String[] buttons, Map<IMObject, Boolean> objects, HelpContext help) {
         super(title, buttons, help);
-        this.message = message;
         setModal(true);
-        table = new IMObjectTable<>(new PrintTableModel(new ArrayList<>(objects.values())));
-        table.setObjects(new ArrayList<>(objects.keySet()));
+        table = new IMObjectTable<IMObject>(new PrintTableModel(new ArrayList<Boolean>(objects.values())));
+        table.setObjects(new ArrayList<IMObject>(objects.keySet()));
+        getLayout().add(table);
     }
 
     /**
@@ -117,43 +104,17 @@ public class BatchPrintDialog extends PopupDialog {
         return model.getSelected();
     }
 
-    /**
-     * Invoked when the 'OK' button is pressed. This sets the action and closes the window if objects are selected.
-     */
-    @Override
-    protected void onOK() {
-        if (!getSelected().isEmpty()) {
-            super.onOK();
-        }
-    }
-
-    /**
-     * Lays out the component prior to display.
-     */
-    @Override
-    protected void doLayout() {
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING);
-        if (message != null) {
-            Label label = LabelFactory.create(true, true);
-            label.setStyleName(Styles.BOLD);
-            label.setText(message);
-            column.add(label);
-        }
-        column.add(table);
-        getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
-    }
-
     private static class PrintTableModel extends BaseIMObjectTableModel<IMObject> {
+
+        /**
+         * The print check boxes.
+         */
+        private List<CheckBox> print = new ArrayList<CheckBox>();
 
         /**
          * The print column.
          */
         private final int PRINT_INDEX = NEXT_INDEX;
-
-        /**
-         * The print check boxes.
-         */
-        private List<CheckBox> print = new ArrayList<>();
 
         /**
          * Determines the initial selections.
@@ -185,7 +146,7 @@ public class BatchPrintDialog extends PopupDialog {
          * @return the objects to print
          */
         public List<IMObject> getSelected() {
-            List<IMObject> result = new ArrayList<>();
+            List<IMObject> result = new ArrayList<IMObject>();
             for (int i = 0; i < print.size(); ++i) {
                 CheckBox check = print.get(i);
                 if (check.isSelected()) {
@@ -203,7 +164,7 @@ public class BatchPrintDialog extends PopupDialog {
         @Override
         public void setObjects(List<IMObject> objects) {
             super.setObjects(objects);
-            print = new ArrayList<>();
+            print = new ArrayList<CheckBox>();
             int size = objects.size();
             for (int i = 0; i < size; ++i) {
                 boolean selected = (selections != null && i < selections.size()) ? selections.get(i) : true;

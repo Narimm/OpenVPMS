@@ -62,14 +62,16 @@ public interface LayoutContext {
     /**
      * Determines if this is an edit context.
      *
-     * @return {@code true} if this is an edit context; {@code false} if it is a view context. Defaults to {@code false}
+     * @return <code>true</code> if this is an edit context; <code>false</code>
+     *         if it is a view context. Defaults to <code>false</code>
      */
     boolean isEdit();
 
     /**
      * Sets if this is an edit context.
      *
-     * @param edit if {@code true} this is an edit context; if {@code false} it is a view context.
+     * @param edit if <code>true</code> this is an edit context; if
+     *             <code>false</code> it is a view context.
      */
     void setEdit(boolean edit);
 
@@ -90,14 +92,14 @@ public interface LayoutContext {
     /**
      * Returns the default filter.
      *
-     * @return the default filter. May be {@code null}
+     * @return the default filter. May be <code>null</code>
      */
     NodeFilter getDefaultNodeFilter();
 
     /**
      * Sets the default filter.
      *
-     * @param filter the default filter. May be {@code null}
+     * @param filter the default filter. May be <code>null</code>
      */
     void setNodeFilter(NodeFilter filter);
 
@@ -118,7 +120,8 @@ public interface LayoutContext {
     /**
      * Returns the layout depth.
      *
-     * @return the layout depth. If unset, defaults to {@code 0}
+     * @return the layout depth. If unset, defaults to <code>0</code>
+     *         s
      */
     int getLayoutDepth();
 

@@ -191,15 +191,4 @@ public class IMObjectDataSource extends AbstractDataSource {
         return evaluator.evaluate(expression);
     }
 
-    /**
-     * Evaluates an xpath expression against an object.
-     *
-     * @param object     the object
-     * @param expression the expression
-     * @return the result of the expression. May be {@code null}
-     */
-    @Override
-    public Object evaluate(Object object, String expression) {
-        return evaluator.evaluate(object, expression);
-    }
 }

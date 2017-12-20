@@ -451,7 +451,7 @@ public class PatientRules {
 
     /**
      * Returns the age of the patient.
-     * <p>
+     * <p/>
      * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param patient the patient
@@ -464,7 +464,7 @@ public class PatientRules {
 
     /**
      * Returns the age of the patient as of the specified date.
-     * <p>
+     * <p/>
      * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param patient the patient
@@ -529,17 +529,6 @@ public class PatientRules {
     }
 
     /**
-     * Returns the patient's colour.
-     *
-     * @param patient the patient
-     * @return the colour. May be {@code null}
-     */
-    public String getPatientColour(Party patient) {
-        IMObjectBean bean = new IMObjectBean(patient, service);
-        return bean.getString("colour");
-    }
-
-    /**
      * Returns the description node of the most recent
      * <em>act.patientWeight</em> for a patient.
      *
@@ -573,7 +562,7 @@ public class PatientRules {
 
     /**
      * Returns the patient's weight.
-     * <p>
+     * <p/>
      * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient
@@ -696,7 +685,7 @@ public class PatientRules {
 
     /**
      * Returns all IN_PROGRESS allergy alerts for a patient, active at the specified date.
-     * <p>
+     * <p/>
      * An alert is considered an allergy allert if it has an alert type coded as {@link #ALLERGY_ALERT_TYPE}.
      *
      * @param patient the patient
@@ -738,7 +727,7 @@ public class PatientRules {
 
     /**
      * Determines if a patient is aggressive.
-     * <p>
+     * <p/>
      * A patient is aggressive if there is an IN_PROGRESS act.patientAlert active at the current time, with an
      * alert type coded as {@link #AGGRESSION_ALERT_TYPE}.
      *
@@ -751,6 +740,7 @@ public class PatientRules {
         IMObjectQueryIterator<Act> alerts = new IMObjectQueryIterator<>(service, query);
         return alerts.hasNext();
     }
+
 
     /**
      * Returns the source of a patient relationship closest to the specified start time.

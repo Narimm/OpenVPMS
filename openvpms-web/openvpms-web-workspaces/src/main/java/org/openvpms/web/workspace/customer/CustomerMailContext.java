@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -19,13 +19,12 @@ package org.openvpms.web.workspace.customer;
 import org.apache.commons.collections.ComparatorUtils;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
@@ -118,30 +117,6 @@ public class CustomerMailContext extends ContextMailContext {
     }
 
     /**
-     * Returns the available 'to' email addresses.
-     *
-     * @return the 'to' email addresses
-     */
-    public List<Contact> getToAddresses() {
-        List<Contact> contacts = new ArrayList<>();
-        getToAddresses(contacts);
-        if (contacts.size() > 1) {
-            sort(contacts);
-        }
-        return contacts;
-    }
-
-    /**
-     * Returns a formatter to format 'to' addresses.
-     *
-     * @return the 'to' address formatter
-     */
-    @Override
-    public AddressFormatter getToAddressFormatter() {
-        return new ReferringAddressFormatter();
-    }
-
-    /**
      * Creates a new mail context if the specified act has a customer or patient participation.
      *
      * @param act     the act
@@ -177,29 +152,30 @@ public class CustomerMailContext extends ContextMailContext {
     }
 
     /**
-     * Collects to available 'to' email addresses.
+     * Returns the available 'to' email addresses.
      *
-     * @param addresses the list to collect addresses in
+     * @return the 'to' email addresses
      */
-    protected void getToAddresses(List<Contact> addresses) {
-        addresses.addAll(ContactHelper.getEmailContacts(getContext().getCustomer()));
+    public List<Contact> getToAddresses() {
+        List<Contact> result = new ArrayList<>();
+        result.addAll(ContactHelper.getEmailContacts(getContext().getCustomer()));
         Party patient = getContext().getPatient();
         if (patient != null) {
             EntityBean bean = new EntityBean(patient);
             Set<IMObjectReference> practices = new HashSet<>();
             // tracks processed practices to avoid retrieving them more than once
 
-            for (IMObject referral : bean.getTargets("referrals")) {
+            for (Entity referral : bean.getNodeTargetEntities("referrals")) {
                 if (referral instanceof Party) {
-                    addresses.addAll(ContactHelper.getEmailContacts((Party) referral));
+                    result.addAll(ContactHelper.getEmailContacts((Party) referral));
                     if (TypeHelper.isA(referral, SupplierArchetypes.SUPPLIER_VET)) {
                         // add any contacts of the practices that the vet belongs to
-                        IMObjectBean vet = new IMObjectBean(referral);
-                        for (IMObjectReference ref : vet.getSourceRefs("practices")) {
+                        EntityBean vet = new EntityBean(referral);
+                        for (IMObjectReference ref : vet.getNodeSourceEntityRefs("practices")) {
                             if (!practices.contains(ref)) {
                                 Party practice = (Party) IMObjectHelper.getObject(ref, getContext());
                                 if (practice != null) {
-                                    addresses.addAll(ContactHelper.getEmailContacts(practice));
+                                    result.addAll(ContactHelper.getEmailContacts(practice));
                                     practices.add(ref);
                                 }
                             }
@@ -208,6 +184,20 @@ public class CustomerMailContext extends ContextMailContext {
                 }
             }
         }
+        if (result.size() > 1) {
+            sort(result);
+        }
+        return result;
+    }
+
+    /**
+     * Returns a formatter to format 'to' addresses.
+     *
+     * @return the 'to' address formatter
+     */
+    @Override
+    public AddressFormatter getToAddressFormatter() {
+        return new ReferringAddressFormatter();
     }
 
     /**

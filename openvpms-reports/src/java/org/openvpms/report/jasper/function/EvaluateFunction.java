@@ -19,6 +19,7 @@ package org.openvpms.report.jasper.function;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.functions.AbstractFunctionSupport;
+import net.sf.jasperreports.functions.annotations.Function;
 import net.sf.jasperreports.functions.annotations.FunctionCategories;
 import net.sf.jasperreports.functions.annotations.FunctionParameter;
 import net.sf.jasperreports.functions.annotations.FunctionParameters;
@@ -35,27 +36,11 @@ public class EvaluateFunction extends AbstractFunctionSupport {
     /**
      * Evaluates an xpath expression.
      *
-     * @param object     the object
      * @param expression the expression to evaluate
      * @return the result of the evaluation. May be {@code null}
      */
-    @FunctionParameters({
-            @FunctionParameter("object"),
-            @FunctionParameter("expression")})
-    public Object EVALUATE(Object object, String expression) {
-        JRDataSource dataSource = (JRDataSource) getContext().getParameterValue(JRParameter.REPORT_DATA_SOURCE, true);
-        if (dataSource instanceof DataSource) {
-            return ((DataSource) dataSource).evaluate(object, expression);
-        }
-        return null;
-    }
-
-    /**
-     * Evaluates an xpath expression.
-     *
-     * @param expression the expression to evaluate
-     * @return the result of the evaluation. May be {@code null}
-     */
+    @Function("EVALUATE")
+    @FunctionParameters({@FunctionParameter("expression")})
     public Object EVALUATE(String expression) {
         JRDataSource dataSource = (JRDataSource) getContext().getParameterValue(JRParameter.REPORT_DATA_SOURCE, true);
         if (dataSource instanceof DataSource) {

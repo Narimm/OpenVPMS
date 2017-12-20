@@ -41,12 +41,14 @@
         <felix.http.bridge.version>3.0.8</felix.http.bridge.version>
         <felix.fileinstall.version>3.6.0</felix.fileinstall.version>
         <felix.http.proxy.version>3.0.2</felix.http.proxy.version>
-        <felix.scr.version>2.0.12</felix.scr.version>
+        <aries.util.version>1.1.3</aries.util.version>
+        <aries.proxy.version>1.1.1</aries.proxy.version>
+        <blueprint.api.version>1.0.1</blueprint.api.version>
+        <blueprint.cm.version>1.1.0</blueprint.cm.version>
+        <blueprint.core.version>1.8.1</blueprint.core.version>
         <osgi.version>6.0.0</osgi.version>
+        <felix.shell.version>1.4.3</felix.shell.version>
         <felix.shell.remote.version>1.2.0</felix.shell.remote.version>
-        <felix.gogo.runtime.version>1.0.8</felix.gogo.runtime.version>
-        <felix.gogo.shell.version>1.0.0</felix.gogo.shell.version>
-        <felix.gogo.command.version>1.0.2</felix.gogo.command.version>
     </properties>
 
     <dependencyManagement>
@@ -81,8 +83,6 @@
         <module>openvpms-felix</module>
         <module>openvpms-plugin-manager</module>
         <module>openvpms-plugin-services</module>
-        <module>openvpms-plugin-services-impl</module>
-        <module>openvpms-plugin-manager-impl</module>
     </modules>
 
 </project>

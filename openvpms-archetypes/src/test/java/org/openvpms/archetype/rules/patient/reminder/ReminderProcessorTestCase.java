@@ -566,7 +566,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      * @param contact the contact
      */
     private void addReminderPurpose(Contact contact) {
-        contact.addClassification(TestHelper.getLookup(ContactArchetypes.PURPOSE, ContactArchetypes.REMINDER_PURPOSE));
+        contact.addClassification(TestHelper.getLookup(ContactArchetypes.PURPOSE, ReminderProcessor.REMINDER_PURPOSE));
     }
 
 }

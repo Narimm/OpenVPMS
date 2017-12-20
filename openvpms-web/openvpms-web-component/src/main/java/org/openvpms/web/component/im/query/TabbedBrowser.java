@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -367,17 +367,9 @@ public class TabbedBrowser<T> implements Browser<T> {
      * @return the tab index
      */
     protected int addTab(String displayName, Browser<T> browser) {
-        String text;
         int result = model.size();
         int shortcut = result + 1;
-        if (shortcut <= 10) {
-            if (shortcut == 10) {
-                shortcut = 0;
-            }
-            text = "&" + shortcut + " " + displayName;
-        } else {
-            text = displayName;
-        }
+        String text = "&" + shortcut + " " + displayName;
         model.addTab(browser, text, new Label());
         return result;
     }

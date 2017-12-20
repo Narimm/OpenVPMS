@@ -47,7 +47,6 @@ import java.util.Set;
 import static org.openvpms.archetype.rules.party.ContactArchetypes.EMAIL;
 import static org.openvpms.archetype.rules.party.ContactArchetypes.LOCATION;
 import static org.openvpms.archetype.rules.party.ContactArchetypes.PHONE;
-import static org.openvpms.archetype.rules.party.ContactArchetypes.REMINDER_PURPOSE;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoContactsForRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderCount;
@@ -60,6 +59,11 @@ import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorExc
  * @author Tim Anderson
  */
 public class ReminderProcessor {
+
+    /**
+     * Reminder contact purpose.
+     */
+    public static final String REMINDER_PURPOSE = "REMINDER";
 
     /**
      * The date to use to determine if reminders should be cancelled.

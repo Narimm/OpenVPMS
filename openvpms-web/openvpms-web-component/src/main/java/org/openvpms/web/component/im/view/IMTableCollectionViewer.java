@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -209,9 +209,7 @@ public abstract class IMTableCollectionViewer<T>
             box.removeAll();
         }
         component.add(box); // add even if present due to bug in GroupBox removal code
-        LayoutContext viewContext = new DefaultLayoutContext(context);
-        viewContext.setComponentFactory(new ReadOnlyComponentFactory(viewContext));
-        IMObjectViewer viewer = new IMObjectViewer(object, getObject(), viewContext);
+        IMObjectViewer viewer = new IMObjectViewer(object, getObject(), context);
         box.setTitle(viewer.getTitle());
         Component child = viewer.getComponent();
         if (LayoutHelper.needsInset(child)) {

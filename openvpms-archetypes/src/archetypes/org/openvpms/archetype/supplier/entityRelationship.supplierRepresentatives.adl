@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="entityRelationship.supplierRepresentatives.1.0"
@@ -38,9 +38,6 @@
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName" value="party.supplierManufacturer"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="party.supplierInsurer"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

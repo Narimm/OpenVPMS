@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -85,14 +85,10 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
     public PatientHistoryQuery(Party patient, Preferences preferences) {
         super(patient, SHORT_NAMES, preferences);
 
-        boolean charges = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showCharges", true);
-        init(charges);
-    }
-
-    protected void init(boolean charges) {
         String[] actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
         String[] shortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
         setItemShortNames(shortNames);
+        boolean charges = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showCharges", true);
         if (charges) {
             setSelectedItemShortNames((String[]) ArrayUtils.add(shortNames, CustomerAccountArchetypes.INVOICE_ITEM));
         } else {
@@ -107,17 +103,6 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
                 onQuery();
             }
         });
-    }
-
-    /**
-     * Constructs a {@link PatientHistoryQuery}.
-     *
-     * @param patient     the patient to query
-     * @param charges if {@code true}, include charges
-     */
-    public PatientHistoryQuery(Party patient, boolean charges) {
-        super(patient, SHORT_NAMES, null);
-        init(charges);
     }
 
     /**
@@ -217,9 +202,6 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
         updateSelectedShortNames();
 
         // update session preferences
-        Preferences preferences = getPreferences();
-        if (preferences != null) {
-            preferences.setPreference(PreferenceArchetypes.HISTORY, "showCharges", includeCharges.isSelected());
-        }
+        getPreferences().setPreference(PreferenceArchetypes.HISTORY, "showCharges", includeCharges.isSelected());
     }
 }

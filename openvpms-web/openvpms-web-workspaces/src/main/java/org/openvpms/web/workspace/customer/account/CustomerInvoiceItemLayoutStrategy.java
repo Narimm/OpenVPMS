@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
@@ -53,11 +53,6 @@ public class CustomerInvoiceItemLayoutStrategy extends AbstractLayoutStrategy {
     private static final String REMINDERS = "reminders";
 
     /**
-     * The alerts node name.
-     */
-    private static final String ALERTS = "alerts";
-
-    /**
      * Apply the layout strategy.
      * <p/>
      * This renders an object in a {@code Component}, using a factory to
@@ -72,7 +67,7 @@ public class CustomerInvoiceItemLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         ActBean bean = new ActBean((Act) object);
-        List<String> exclude = new ArrayList<>();
+        List<String> exclude = new ArrayList<String>();
         if (bean.getValues(DISPENSING).isEmpty()) {
             exclude.add(DISPENSING);
         }
@@ -82,12 +77,9 @@ public class CustomerInvoiceItemLayoutStrategy extends AbstractLayoutStrategy {
         if (bean.getValues(REMINDERS).isEmpty()) {
             exclude.add(REMINDERS);
         }
-        if (bean.getValues(ALERTS).isEmpty()) {
-            exclude.add(ALERTS);
-        }
         ArchetypeNodes nodes;
         if (!exclude.isEmpty()) {
-            nodes = ArchetypeNodes.all().exclude(exclude);
+            nodes = new ArchetypeNodes().exclude(exclude);
         } else {
             nodes = DEFAULT_NODES;
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -153,7 +153,7 @@ public class CustomerAccountRules {
 
     /**
      * Calculates a definitive outstanding balance for a customer.
-     * <p>
+     * <p/>
      * This sums total amounts for <em>all</em> POSTED acts associated with the
      * customer, rather than just using unallocated acts, and can be used
      * to detect account balance errors.
@@ -206,7 +206,7 @@ public class CustomerAccountRules {
      * This is the sum of unallocated amounts in associated debits that have a
      * date less than the specified date less the overdue days.
      * The overdue days are specified in the customer's type node.
-     * <p>
+     * <p/>
      * NOTE: this method may not be used to determine an historical overdue
      * balance. For this, use {@link #getOverdueBalance(Party, Date, Date)
      * getOverdueBalance(Party customer, Date date, Date overdueDate)}.
@@ -223,7 +223,7 @@ public class CustomerAccountRules {
 
     /**
      * Calculates the overdue balance for a customer as of a particular date.
-     * <p>
+     * <p/>
      * This sums any POSTED debits prior to <em>overdueDate</em> that had
      * not been fully allocated by credits as of <em>date</em>.
      *
@@ -375,7 +375,7 @@ public class CustomerAccountRules {
 
     /**
      * Reverses an act.
-     * <p>
+     * <p/>
      * If the act to be reversed is an invoice, charge items and medication acts will be unlinked from patient history.
      * Reminders and investigations will be retained.
      *
@@ -394,7 +394,7 @@ public class CustomerAccountRules {
 
     /**
      * Reverses an act.
-     * <p>
+     * <p/>
      * If the act to be reversed is an invoice, charge items and medication acts will be unlinked from patient history.
      * Reminders and investigations will be retained.
      *
@@ -464,16 +464,6 @@ public class CustomerAccountRules {
     }
 
     /**
-     * Determines if the act has been fully allocated.
-     *
-     * @param act the act
-     * @return {@code true} if the act has been full allocated
-     */
-    public boolean isAllocated(FinancialAct act) {
-        return calculator.isAllocated(act);
-    }
-
-    /**
      * Sets the hidden state of a reversed/reversal act.
      *
      * @param act  the act
@@ -503,7 +493,7 @@ public class CustomerAccountRules {
 
     /**
      * Determines if an act can be hidden in customer statements.
-     * <p>
+     * <p/>
      * Note that this doesn't take into account the hidden state of related acts.
      *
      * @param act the act
@@ -515,7 +505,7 @@ public class CustomerAccountRules {
 
     /**
      * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} invoice for a customer.
-     * <p>
+     * <p/>
      * Invoices with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
      *
      * @param customer the customer
@@ -527,7 +517,7 @@ public class CustomerAccountRules {
 
     /**
      * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} invoice for a customer.
-     * <p>
+     * <p/>
      * Invoices with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
      *
      * @param customer the customer
@@ -539,7 +529,7 @@ public class CustomerAccountRules {
 
     /**
      * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} credit for a customer.
-     * <p>
+     * <p/>
      * Credits with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
      *
      * @param customer the customer
@@ -551,7 +541,7 @@ public class CustomerAccountRules {
 
     /**
      * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} credit for a customer.
-     * <p>
+     * <p/>
      * Credits with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
      *
      * @param customer the customer

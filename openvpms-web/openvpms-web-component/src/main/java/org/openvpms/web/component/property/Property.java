@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -270,13 +270,6 @@ public interface Property extends Modifiable {
     boolean isLookup();
 
     /**
-     * Determines if the property is a password.
-     *
-     * @return {@code true} if it is a password
-     */
-    boolean isPassword();
-
-    /**
      * Determines if the property is a collection.
      *
      * @return {@code true} if it is a collection
@@ -285,7 +278,7 @@ public interface Property extends Modifiable {
 
     /**
      * Returns the archetype short names that this property may support.
-     * <p>
+     * <p/>
      * Wildcards are expanded.
      *
      * @return the archetype short names

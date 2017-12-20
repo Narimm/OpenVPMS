@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -30,6 +30,7 @@ import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
@@ -69,11 +70,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     private final PreferenceMonitor monitor;
 
     /**
-     * The current help context.
-     */
-    private HelpContext currentHelp;
-
-    /**
      * Constructs a {@link PatientRecordWorkspace}.
      *
      * @param context     the context
@@ -110,7 +106,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     @Override
     public Component getSummary() {
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getRootHelpContext(),
+        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
                                                                               preferences);
         return summary.getSummary(getObject());
     }
@@ -126,33 +122,12 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when user preferences have changed.
-     * <p>
+     * <p/>
      * This is only invoked when the workspace is being shown.
      */
     @Override
     public void preferencesChanged() {
         checkPreferences();
-    }
-
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    @Override
-    public HelpContext getHelpContext() {
-        HelpContext result = currentHelp;
-        return (result == null) ? getRootHelpContext() : result;
-    }
-
-    /**
-     * Returns the browser.
-     *
-     * @return the browser, or {@code null} if none has been registered
-     */
-    @Override
-    public RecordBrowser getBrowser() {
-        return (RecordBrowser) super.getBrowser();
     }
 
     /**
@@ -207,9 +182,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        CRUDWindow<Act> window = getBrowser().createCRUDWindow(getContext(), getRootHelpContext());
-        currentHelp = window.getHelpContext();
-        return window;
+        return getBrowser().createCRUDWindow(getContext(), getHelpContext());
     }
 
     /**
@@ -230,8 +203,12 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
         RecordBrowser browser = createRecordBrowser(getObject(), (PatientHistoryQuery) query, getContext(),
-                                                    getRootHelpContext());
-        browser.setListener(this::changeCRUDWindow);
+                                                    getHelpContext());
+        browser.setListener(new TabbedBrowserListener() {
+            public void onBrowserChanged() {
+                changeCRUDWindow();
+            }
+        });
         return browser;
     }
 
@@ -253,8 +230,18 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     }
 
     /**
+     * Returns the browser.
+     *
+     * @return the browser, or {@code null} if none has been registered
+     */
+    @Override
+    protected RecordBrowser getBrowser() {
+        return (RecordBrowser) super.getBrowser();
+    }
+
+    /**
      * Invoked when an act is selected.
-     * <p>
+     * <p/>
      * This implementation edits the selected act, if the current view is a history view and it has been double
      * clicked on.
      *
@@ -279,7 +266,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when a browser object is viewed (aka 'browsed').
-     * <p>
+     * <p/>
      * This implementation sets the object in the CRUD window.
      *
      * @param object the selected object
@@ -292,7 +279,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when the object has been deleted.
-     * <p>
+     * <p/>
      * If the current window is a history view, this implementation attempts to select the next object in the browser,
      * or the prior object if there is no next object. This is so that when the browser is refreshed, the selection will
      * be retained.
@@ -316,7 +303,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when the browser is queried.
-     * <p>
+     * <p/>
      * This implementation selects the first available object and determines the associated event, if any.
      */
     @Override
@@ -339,22 +326,12 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     }
 
     /**
-     * Returns the root help context.
-     *
-     * @return the root help context
-     */
-    protected HelpContext getRootHelpContext() {
-        return super.getHelpContext();
-    }
-
-    /**
      * Changes the CRUD window depending on the current browser view.
      */
     @SuppressWarnings("unchecked")
     private void changeCRUDWindow() {
         RecordBrowser browser = getBrowser();
-        CRUDWindow<Act> window = browser.createCRUDWindow(getContext(), getRootHelpContext());
-        currentHelp = window.getHelpContext();
+        CRUDWindow<Act> window = browser.createCRUDWindow(getContext(), getHelpContext());
 
         Act selected = browser.getSelected();
         if (selected != null) {
@@ -366,7 +343,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Updates the current selection.
-     * <p>
+     * <p/>
      * TODO - this needs to be cleaned up. The CRUD window needs to be hooked directly into the browsers.
      * Main limitation at present is that CRUD window is created independently of the browser, and the workspace
      * acts as the intermediary. Should be refactored along the lines of VisitEditor

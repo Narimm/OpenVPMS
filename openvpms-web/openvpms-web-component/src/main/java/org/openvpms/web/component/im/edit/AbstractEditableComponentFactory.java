@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -99,11 +99,7 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
             } else if (property.isBoolean()) {
                 editor = createBooleanEditor(property);
             } else if (property.isString()) {
-                if (property.isPassword()) {
-                    editor = createPasswordEditor(property);
-                } else {
-                    editor = createStringEditor(property);
-                }
+                editor = createStringEditor(property);
             } else if (property.isNumeric()) {
                 editor = createNumericEditor(property);
             } else if (property.isDate()) {
@@ -194,22 +190,11 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
     /**
      * Returns an editor for a text property.
      *
-     * @param property the property
+     * @param property the boolean property
      * @return a new editor for {@code property}
      */
     protected Editor createStringEditor(Property property) {
         Component component = createString(property);
-        return createPropertyEditor(property, component);
-    }
-
-    /**
-     * Returns an editor for a password property.
-     *
-     * @param property the property
-     * @return a new editor for {@code property}
-     */
-    protected Editor createPasswordEditor(Property property) {
-        Component component = createPassword(property);
         return createPropertyEditor(property, component);
     }
 

@@ -264,11 +264,6 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <bean id="insuranceRules" class="org.openvpms.archetype.rules.patient.insurance.InsuranceRules">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="txnManager"/>
-    </bean>
-
     <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
         <constructor-arg ref="archetypeService"/>
     </bean>

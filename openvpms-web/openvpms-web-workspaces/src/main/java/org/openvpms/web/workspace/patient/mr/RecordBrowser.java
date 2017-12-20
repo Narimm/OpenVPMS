@@ -17,7 +17,6 @@
 package org.openvpms.web.workspace.patient.mr;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -50,9 +49,6 @@ import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
-import org.openvpms.web.workspace.patient.insurance.InsuranceBrowser;
-import org.openvpms.web.workspace.patient.insurance.InsuranceCRUDWindow;
-import org.openvpms.web.workspace.patient.insurance.InsuranceQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
@@ -63,7 +59,7 @@ import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PAR
 
 /**
  * Patient record browser.
- * <p>
+ * <p/>
  * TODO - refactor along the lines of {@link VisitEditor}.
  *
  * @author Tim Anderson
@@ -96,11 +92,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private final Browser<Act> communication;
 
     /**
-     * The insurance act browser.
-     */
-    private final Browser<Act> insurance;
-
-    /**
      * History browser tab index.
      */
     private final int historyIndex;
@@ -108,48 +99,45 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     /**
      * Problem browser tab index.
      */
-    private final int problemIndex;
+    private int problemIndex;
 
     /**
      * Reminder browser tab index.
      */
-    private final int remindersIndex;
+    private int remindersIndex;
 
     /**
      * Alert browser tab index.
      */
-    private final int alertsIndex;
+    private int alertsIndex;
 
     /**
      * Document browser tab index.
      */
-    private final int documentsIndex;
+    private int documentsIndex;
 
     /**
      * Charges browser tab index.
      */
-    private final int chargesIndex;
+    private int chargesIndex;
 
     /**
      * Prescription browser tab index.
      */
-    private final int prescriptionIndex;
+    private int prescriptionIndex;
 
     /**
      * The communication browser tab index.
      */
-    private final int communicationIndex;
-
-    /**
-     * The insurance browser tab index.
-     */
-    private final int insuranceIndex;
+    private int communicationIndex = -1;
 
     /**
      * Patient charges shortnames supported by the workspace.
      */
-    private static final String[] CHARGES_SHORT_NAMES = {CustomerAccountArchetypes.INVOICE_ITEM,
-                                                         CustomerAccountArchetypes.CREDIT_ITEM};
+    private static final String[] CHARGES_SHORT_NAMES = {
+            "act.customerAccountInvoiceItem",
+            "act.customerAccountCreditItem"
+    };
 
     /**
      * The default sort constraint.
@@ -171,6 +159,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * The problem statuses to query.
      */
     private static final ActStatuses PROBLEM_STATUSES;
+
+    static {
+        PROBLEM_STATUSES = new ActStatuses(PatientArchetypes.CLINICAL_PROBLEM);
+        PROBLEM_STATUSES.setDefault((String) null);
+    }
 
     /**
      * Constructs a {@link RecordBrowser}.
@@ -208,8 +201,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
                                        createPrescriptionBrowser(patient, layout));
         communication = createCommunicationBrowser(patient, context, help);
         communicationIndex = addBrowser(Messages.get("button.communication"), communication);
-        insurance = createInsuranceBrowser(patient, context, help.subtopic("insurance"));
-        insuranceIndex = addBrowser(Messages.get("button.insurance"), insurance);
     }
 
     /**
@@ -224,13 +215,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     public void showProblems() {
         setSelectedBrowser(problemIndex);
-    }
-
-    /**
-     * Displays the insurance tab.
-     */
-    public void showInsurance() {
-        setSelectedBrowser(insuranceIndex);
     }
 
     /**
@@ -257,8 +241,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
             result = createPrescriptionCRUDWindow(context, help);
         } else if (index == communicationIndex) {
             result = new PatientCommunicationCRUDWindow(context, help);
-        } else if (index == insuranceIndex) {
-            result = new InsuranceCRUDWindow(context, help.subtopic("insurance"));
         } else {
             result = createHistoryCRUDWindow(context, help);
         }
@@ -267,7 +249,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
 
     /**
      * Returns the event associated with the current selected browser act.
-     * <p>
+     * <p/>
      * Only applies if the history or problem browser is visible.
      *
      * @param act the current selected act. May be {@code null}
@@ -468,6 +450,17 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
+     * Creates a browser for prescriptions.
+     *
+     * @param patient the payment
+     * @param layout  the layout context
+     * @return a new browser
+     */
+    private Browser<Act> createPrescriptionBrowser(Party patient, LayoutContext layout) {
+        return BrowserFactory.create(new PatientPrescriptionQuery(patient), layout);
+    }
+
+    /**
      * Creates a {@link CRUDWindow} for the prescriptions browser.
      *
      * @param context the context
@@ -481,7 +474,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     /**
      * Creates the communication browser.
      *
-     * @param patient the patient to browse communication logs for
+     * @param patient the patient to browser communication logs for
      * @param context the context
      * @param help    the help context
      * @return a new browser
@@ -492,21 +485,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Creates the insurance browser.
-     *
-     * @param patient the patient to browse insurance for
-     * @param context the context
-     * @param help    the help context
-     * @return a new browser
-     */
-    protected Browser<Act> createInsuranceBrowser(Party patient, Context context, HelpContext help) {
-        ActQuery<Act> query = new InsuranceQuery(patient);
-        return new InsuranceBrowser(query, new DefaultLayoutContext(context, help));
-    }
-
-    /**
      * Invoked when a browser is selected.
-     * <p>
+     * <p/>
      * This notifies any registered listener.
      *
      * @param selected the selected index
@@ -521,7 +501,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
 
     /**
      * Follow a hyperlink.
-     * <p>
+     * <p/>
      * If the object is a:
      * <ul>
      * <li>problem, the Problems tab will be shown, and the problem selected</li>
@@ -536,17 +516,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
             showEvent((Act) object);
         }
-    }
-
-    /**
-     * Creates a browser for prescriptions.
-     *
-     * @param patient the payment
-     * @param layout  the layout context
-     * @return a new browser
-     */
-    private Browser<Act> createPrescriptionBrowser(Party patient, LayoutContext layout) {
-        return BrowserFactory.create(new PatientPrescriptionQuery(patient), layout);
     }
 
     /**
@@ -567,11 +536,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private void showProblem(Act object) {
         showProblems();
         problems.setSelected(object, true);
-    }
-
-    static {
-        PROBLEM_STATUSES = new ActStatuses(PatientArchetypes.CLINICAL_PROBLEM);
-        PROBLEM_STATUSES.setDefault((String) null);
     }
 
 }

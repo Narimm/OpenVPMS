@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.user;
@@ -170,6 +170,22 @@ public class UserEditor extends AbstractIMObjectEditor {
      * Layout strategy that adds a 'confirm password' field after the password.
      */
     private class LayoutStrategy extends UserLayoutStrategy {
+
+        /**
+         * Creates a component for a property.
+         *
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <tt>property</tt>
+         */
+        @Override
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+            if (property.getName().equals("password")) {
+                return new ComponentState(BoundTextComponentFactory.createPassword(property), property);
+            }
+            return super.createComponent(property, parent, context);
+        }
 
         /**
          * Creates a set of components to be rendered from the supplied descriptors.

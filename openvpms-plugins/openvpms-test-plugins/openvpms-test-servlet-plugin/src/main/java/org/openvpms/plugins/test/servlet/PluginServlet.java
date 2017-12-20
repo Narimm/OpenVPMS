@@ -16,10 +16,6 @@
 
 package org.openvpms.plugins.test.servlet;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
-
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,9 +26,6 @@ import java.io.IOException;
  *
  * @author Tim Anderson
  */
-@Component(service = Servlet.class,
-        immediate = true,
-        property = HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN + "=/org/openvpms/test/servlet")
 public class PluginServlet extends javax.servlet.http.HttpServlet {
 
     /**

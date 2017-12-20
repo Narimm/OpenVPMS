@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -95,8 +94,7 @@ public class ActEditorInitAuthorTestCase extends AbstractAppTest {
     @Test
     public void testInitAuthor() {
         String[] exclusions = {CustomerAccountArchetypes.INVOICE_ITEM, CustomerAccountArchetypes.CREDIT_ITEM,
-                               CustomerAccountArchetypes.COUNTER_ITEM, EstimateArchetypes.ESTIMATE_ITEM,
-                               InsuranceArchetypes.CLAIM};
+                               CustomerAccountArchetypes.COUNTER_ITEM, EstimateArchetypes.ESTIMATE_ITEM};
         // archetypes to excluse as their editors have special construction requirements
 
         IArchetypeService service = ServiceHelper.getArchetypeService();

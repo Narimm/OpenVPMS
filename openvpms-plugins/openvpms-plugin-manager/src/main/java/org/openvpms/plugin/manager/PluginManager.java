@@ -17,7 +17,6 @@
 package org.openvpms.plugin.manager;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
 import java.io.InputStream;
@@ -45,13 +44,6 @@ public interface PluginManager {
      * @return the services implementing the interface
      */
     <T> List<T> getServices(Class<T> type);
-
-    /**
-     * Returns the bundle context, or {@code null} if the manager is not running.
-     *
-     * @return the bundle context. May be {@code null}
-     */
-    BundleContext getBundleContext();
 
     /**
      * Returns a list of all installed bundles.
@@ -95,17 +87,4 @@ public interface PluginManager {
      */
     void install(String location, InputStream stream) throws BundleException;
 
-    /**
-     * Adds a listener to be notified of plugin manager events.
-     *
-     * @param listener the listener to notify
-     */
-    void addListener(PluginManagerListener listener);
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    void removeListener(PluginManagerListener listener);
 }

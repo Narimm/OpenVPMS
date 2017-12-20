@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -74,10 +74,8 @@ public class IMObjectViewer extends AbstractIMObjectView {
         this.context = new DefaultLayoutContext(context);
         // don't increase the layout depth
         this.context.setLayoutDepth(context.getLayoutDepth());
-        if (!(this.context.getComponentFactory() instanceof AbstractReadOnlyComponentFactory)) {
-            IMObjectComponentFactory factory = new ReadOnlyComponentFactory(this.context);
-            this.context.setComponentFactory(factory);
-        }
+        IMObjectComponentFactory factory = new ReadOnlyComponentFactory(this.context);
+        this.context.setComponentFactory(factory);
     }
 
     /**
