@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -50,6 +50,7 @@ import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.echo.button.ButtonRow;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GroupBoxFactory;
@@ -72,6 +73,21 @@ import java.beans.PropertyChangeListener;
  * @author Tim Anderson
  */
 public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjectCollectionEditor {
+
+    /**
+     * The no. of rows to display.
+     */
+    protected static final int ROWS = 15;
+
+    /**
+     * Listener for component change events.
+     */
+    private final PropertyChangeListener componentListener;
+
+    /**
+     * The listener for editor events.
+     */
+    private final ModifiableListener editorListener;
 
     /**
      * The container.
@@ -104,24 +120,14 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     private FocusGroup editorFocusGroup;
 
     /**
-     * Listener for component change events.
-     */
-    private final PropertyChangeListener componentListener;
-
-    /**
-     * The listener for editor events.
-     */
-    private final ModifiableListener editorListener;
-
-    /**
      * Determines if the current editor has been modified since being displayed.
      */
     private boolean editorModified;
 
     /**
-     * The no. of rows to display.
+     * The buttons.
      */
-    protected static final int ROWS = 15;
+    private ButtonRow buttons;
 
     /**
      * The logger.
@@ -147,11 +153,6 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * The 'next' button identifier.
      */
     private static final String NEXT_ID = "next";
-
-    /**
-     * The buttons.
-     */
-    private ButtonRow buttons;
 
 
     /**
@@ -393,7 +394,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         table = new PagedIMTable<>(createTableModel(context));
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
-                onEdit();
+                onSelected();
             }
         });
 
@@ -425,7 +426,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * @param focus the focus group
      * @return the row of controls
      */
-    protected Row createControls(FocusGroup focus) {
+    protected ButtonRow createControls(FocusGroup focus) {
         String[] range = getCollectionPropertyEditor().getArchetypeRange();
         range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
 
@@ -553,9 +554,10 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     }
 
     /**
-     * Edits the selected object.
+     * Invoked when an object is selected in the table.
+     * This implementation edits the selected object.
      */
-    protected void onEdit() {
+    protected void onSelected() {
         IMObject object = getSelected();
         if (object != null) {
             if (addCurrentEdits(new DefaultValidator())) {
@@ -740,8 +742,6 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Enable/disables the buttons.
-     * <p>
-     * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
      */
@@ -753,33 +753,46 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * Enable/disables the buttons.
      * <p>
      * This allows the Add button to be enabled independently of the other buttons.
-     * <p>
-     * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable    if {@code true}, enable buttons (subject to criteria), otherwise disable them
      * @param enableAdd if {@code true}, enable the add button (subject to criteria), otherwise disable it
      */
     protected void enableNavigation(boolean enable, boolean enableAdd) {
         if (buttons != null) {
-            boolean add = enableAdd;
-            boolean delete = getCurrentEditor() != null || getSelected() != null;
-            boolean previous = enable;
-            boolean next = enable;
-            if (enable) {
-                TableNavigator navigator = getTable().getNavigator();
-                previous = navigator.hasPreviousRow();
-                next = navigator.hasNextRow();
-            }
-            if (add) {
-                CollectionProperty property = getCollection();
-                int maxSize = property.getMaxCardinality();
-                add = (maxSize == -1 || property.size() < maxSize);
-            }
-            buttons.getButtons().setEnabled(ADD_ID, add);
-            buttons.getButtons().setEnabled(DELETE_ID, delete);
-            buttons.getButtons().setEnabled(PREVIOUS_ID, previous);
-            buttons.getButtons().setEnabled(NEXT_ID, next);
+            enableNavigation(buttons.getButtons(), enable, enableAdd);
         }
+    }
+
+    /**
+     * Enable/disables the buttons.
+     * <p>
+     * This allows the Add button to be enabled independently of the other buttons.
+     * <p>
+     * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
+     *
+     * @param buttons   the buttons
+     * @param enable    if {@code true}, enable buttons (subject to criteria), otherwise disable them
+     * @param enableAdd if {@code true}, enable the add button (subject to criteria), otherwise disable it
+     */
+    protected void enableNavigation(ButtonSet buttons, boolean enable, boolean enableAdd) {
+        boolean add = enableAdd;
+        boolean delete = getCurrentEditor() != null || getSelected() != null;
+        boolean previous = enable;
+        boolean next = enable;
+        if (enable) {
+            TableNavigator navigator = getTable().getNavigator();
+            previous = navigator.hasPreviousRow();
+            next = navigator.hasNextRow();
+        }
+        if (add) {
+            CollectionProperty property = getCollection();
+            int maxSize = property.getMaxCardinality();
+            add = (maxSize == -1 || property.size() < maxSize);
+        }
+        buttons.setEnabled(ADD_ID, add);
+        buttons.setEnabled(DELETE_ID, delete);
+        buttons.setEnabled(PREVIOUS_ID, previous);
+        buttons.setEnabled(NEXT_ID, next);
     }
 
     /**
@@ -839,7 +852,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             IMObject object = getSelectionTarget(selection.getObject());
             setSelected(object);
             if (object != null && ObjectUtils.equals(object, IMTableCollectionEditor.this.getSelected())) {
-                onEdit();
+                onSelected();
                 result = true;
             }
             return result;

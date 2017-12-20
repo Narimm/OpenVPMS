@@ -50,29 +50,9 @@
             <version>${felix.fileinstall.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.aries</groupId>
-            <artifactId>org.apache.aries.util</artifactId>
-            <version>${aries.util.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.aries.proxy</groupId>
-            <artifactId>org.apache.aries.proxy</artifactId>
-            <version>${aries.proxy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.aries.blueprint</groupId>
-            <artifactId>org.apache.aries.blueprint.api</artifactId>
-            <version>${blueprint.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.aries.blueprint</groupId>
-            <artifactId>org.apache.aries.blueprint.cm</artifactId>
-            <version>${blueprint.cm.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.aries.blueprint</groupId>
-            <artifactId>org.apache.aries.blueprint.core</artifactId>
-            <version>${blueprint.core.version}</version>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr</artifactId>
+            <version>${felix.scr.version}</version>
         </dependency>
         <!-- TODO - the following require servlet API 3.1.0 which requires Tomcat 8 -->
         <!--dependency>
@@ -90,10 +70,28 @@
             <artifactId>org.apache.felix.http.bridge</artifactId>
             <version>${felix.http.bridge.version}</version>
         </dependency-->
-        <dependency>
+
+        <!-- Felix legacy shell support -->
+        <!--dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.shell</artifactId>
             <version>${felix.shell.version}</version>
+        </dependency-->
+
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.gogo.command</artifactId>
+            <version>${felix.gogo.command.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.gogo.runtime</artifactId>
+            <version>${felix.gogo.runtime.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.gogo.shell</artifactId>
+            <version>${felix.gogo.shell.version}</version>
         </dependency>
 
         <!-- NOTE: this provides telnet access to Felix, so should not be enabled by default -->

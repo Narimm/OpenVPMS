@@ -1,0 +1,144 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<project>
+
+    <!-- scales files -->
+    <macrodef name="scale-to">
+        <attribute name="size"/>
+        <attribute name="src"/>
+        <attribute name="dst"/>
+        <sequential>
+            <java classname="org.openvpms.jasperreports.Scaler" fork="true" failonerror="true">
+                <classpath>
+                    <pathelement path="${compile_classpath}"/>
+                </classpath>
+                <arg value="-@{size}"/>
+                <arg value="-f"/>
+                <arg value="-m"/>
+                <arg value="-o"/>
+                <arg value="-v"/>
+                <arg value="@{src}"/>
+                <arg value="@{dst}"/>
+            </java>
+        </sequential>
+    </macrodef>
+
+    <!-- scales files to letter, performing token replacement  -->
+    <!-- TODO - this should be avoid by using resource bundles -->
+    <macrodef name="scale-to-letter">
+        <attribute name="src"/>
+        <attribute name="dst"/>
+        <sequential>
+            <java classname="org.openvpms.jasperreports.Scaler" fork="true" failonerror="true">
+                <classpath>
+                    <pathelement path="${compile_classpath}"/>
+                </classpath>
+                <arg value="-LETTER"/>
+                <arg value="-f"/>
+                <arg value="-m"/>
+                <arg value="-o"/>
+                <arg value="-v"/>
+                <arg line="-r src/conf/reports/replaceUS.properties"/>
+                <arg value="@{src}"/>
+                <arg value="@{dst}"/>
+            </java>
+        </sequential>
+    </macrodef>
+
+    <!-- scales all files in a directory from A4 to another size -->
+    <macrodef name="scale-all">
+        <attribute name="size"/>
+        <attribute name="src"/>
+        <attribute name="target" default="@{size}"/>
+        <sequential>
+            <scale-to size="@{size}" src="@{src}/A4" dst="@{src}/@{target}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- scales all files in a directory from A4 to A5 -->
+    <macrodef name="scale-A5">
+        <attribute name="src"/>
+        <sequential>
+            <scale-all src="@{src}" size="A5"/>
+        </sequential>
+    </macrodef>
+
+    <!-- scales all files in a directory from A4 to LETTER -->
+    <macrodef name="scale-letter">
+        <attribute name="src"/>
+        <sequential>
+            <scale-to-letter src="@{src}/A4" dst="@{src}/Letter"/>
+        </sequential>
+    </macrodef>
+
+    <!-- scales all files in a directory from A4 to both A5 and LETTER -->
+    <macrodef name="scale-both">
+        <attribute name="src"/>
+        <sequential>
+            <scale-A5 src="@{src}"/>
+            <scale-letter src="@{src}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- scales all templates -->
+    <target name="scale">
+        <!-- Letterhead is a special case. -->
+        <scale-to-letter src="src/reports/Letterhead/A4/Letterhead.jrxml"
+                         dst="src/reports/Letterhead/Letter/Letterhead.jrxml"/>
+        <scale-to size="A5" src="src/reports/Letterhead/A4/Letterhead.jrxml"
+                  dst="src/reports/Letterhead/A5/Letterhead-A5.jrxml"/>
+
+        <scale-both src="src/reports/Customer/Counter Sale"/>
+        <scale-both src="src/reports/Customer/Credit"/>
+        <scale-both src="src/reports/Customer/Credit Adjustment"/>
+        <scale-both src="src/reports/Customer/Debit Adjustment"/>
+        <scale-both src="src/reports/Customer/Estimate"/>
+        <scale-both src="src/reports/Customer/Invoice"/>
+        <scale-both src="src/reports/Customer/Receipt"/>
+        <scale-both src="src/reports/Customer/Refund"/>
+        <scale-both src="src/reports/Patient/Documents"/>
+        <scale-both src="src/reports/Patient/Medical Records"/>
+        <scale-both src="src/reports/Patient/Insurance"/>
+        <scale-both src="src/reports/Product/Stock Adjustment"/>
+        <scale-both src="src/reports/Product/Stock Transfer"/>
+        <scale-both src="src/reports/Reporting/Debtors"/>
+        <scale-both src="src/reports/Reporting/Debtors/Statement"/>
+        <scale-both src="src/reports/Reporting/Deposits"/>
+        <scale-both src="src/reports/Reporting/Reminders"/>
+        <scale-letter src="src/reports//Reporting/Reports/Customer"/>
+        <scale-letter src="src/reports//Reporting/Reports/Financial"/>
+        <scale-letter src="src/reports//Reporting/Reports/HL7"/>
+        <scale-letter src="src/reports//Reporting/Reports/Patient"/>
+        <scale-letter src="src/reports//Reporting/Reports/Product"/>
+        <scale-both src="src/reports/Reporting/Till Balancing"/>
+        <scale-both src="src/reports/Reporting/Work In Progress"/>
+        <scale-both src="src/reports/Supplier/Credit"/>
+        <scale-both src="src/reports/Supplier/Delivery"/>
+        <scale-both src="src/reports/Supplier/Invoice"/>
+        <scale-both src="src/reports/Supplier/Order"/>
+        <scale-both src="src/reports/Supplier/Refund"/>
+        <scale-both src="src/reports/Supplier/Remittance"/>
+        <scale-both src="src/reports/Supplier/Return"/>
+        <scale-both src="src/reports/Workflow/Appointment"/>
+        <scale-both src="src/reports/Workflow/Customer Order/Pharmacy Order"/>
+        <scale-both src="src/reports/Workflow/Customer Order/Pharmacy Return"/>
+        <scale-both src="src/reports/Workflow/Message"/>
+        <scale-both src="src/reports/Workflow/Task"/>
+        <scale-both src="src/reports/Sample"/>
+    </target>
+
+</project>

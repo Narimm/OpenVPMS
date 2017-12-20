@@ -11,19 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
-import org.apache.commons.collections4.comparators.ReverseComparator;
+
 import org.openvpms.archetype.rules.act.ActCalculator;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.functor.ActComparator;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.system.ServiceHelper;
@@ -33,13 +33,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 
 /**
  * Act helper.
@@ -49,52 +47,13 @@ import java.util.Set;
 public class ActHelper {
 
     /**
-     * Comparator to order acts on start time, oldest first.
-     */
-    public static final Comparator<Act> ASCENDING = new Comparator<Act>() {
-        @Override
-        public int compare(Act o1, Act o2) {
-            int result = DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime());
-            if (result == 0) {
-                result = o1.getId() < o2.getId() ? -1 : ((o1.getId() == o2.getId()) ? 0 : 1);
-            }
-            return result;
-        }
-    };
-
-    /**
-     * Comparator to order acts on start time, most recent first.
-     */
-    public static final ReverseComparator<Act> DESCENDING = new ReverseComparator<Act>(ASCENDING);
-
-    /**
-     * Returns a comparator to sort acts on ascending start time.
-     *
-     * @return the comparator
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Act> Comparator<T> ascending() {
-        return (Comparator<T>) ASCENDING;
-    }
-
-    /**
-     * Returns a comparator to sort acts on descending start time.
-     *
-     * @return the comparator
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Act> Comparator<T> descending() {
-        return (Comparator<T>) DESCENDING;
-    }
-
-    /**
      * Sorts acts on ascending timestamp.
      *
      * @param acts the acts to sort. Note: this list is modified
      * @return the sorted acts
      */
     public static <T extends Act> List<T> sort(List<T> acts) {
-        Collections.sort(acts, ascending());
+        Collections.sort(acts, ActComparator.ascending());
         return acts;
     }
 
@@ -142,14 +101,14 @@ public class ActHelper {
 
     /**
      * Returns the target acts in a list of relationships.
-     * <p/>
+     * <p>
      * This uses a single archetype query, to improve performance.
      *
      * @param relationships the relationships
      * @return the target acts in the relationships
      */
     public static List<Act> getTargetActs(Collection<ActRelationship> relationships) {
-        List<IMObjectReference> refs = new ArrayList<IMObjectReference>();
+        List<IMObjectReference> refs = new ArrayList<>();
         for (ActRelationship relationship : relationships) {
             IMObjectReference target = relationship.getTarget();
             if (target != null) {
@@ -162,17 +121,17 @@ public class ActHelper {
 
     /**
      * Returns acts given their references
-     * <p/>
+     * <p>
      * This uses a single archetype query, to improve performance.
      *
      * @param references the act references
      * @return the associated acts
      */
     public static List<Act> getActs(Collection<IMObjectReference> references) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         if (!references.isEmpty()) {
-            Set<String> shortNames = new HashSet<String>();
-            List<Long> ids = new ArrayList<Long>();
+            Set<String> shortNames = new HashSet<>();
+            List<Long> ids = new ArrayList<>();
             for (IMObjectReference ref : references) {
                 ids.add(ref.getId());
                 shortNames.add(ref.getArchetypeId().getShortName());
@@ -190,14 +149,14 @@ public class ActHelper {
 
     /**
      * Returns acts given their references in a map.
-     * <p/>
+     * <p>
      * This uses a single archetype query, to improve performance.
      *
      * @param references the act references
      * @return the associated acts
      */
     public static Map<IMObjectReference, Act> getActMap(Collection<IMObjectReference> references) {
-        Map<IMObjectReference, Act> result = new HashMap<IMObjectReference, Act>();
+        Map<IMObjectReference, Act> result = new HashMap<>();
         for (Act act : getActs(references)) {
             result.put(act.getObjectReference(), act);
         }

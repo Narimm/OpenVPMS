@@ -20,9 +20,13 @@ import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.WordUtils;
+import org.openvpms.archetype.function.contact.AddressFunctions;
+import org.openvpms.archetype.function.contact.EmailFunctions;
+import org.openvpms.archetype.function.contact.PhoneFunctions;
 import org.openvpms.archetype.function.date.DateFunctions;
 import org.openvpms.archetype.function.expression.ExpressionFunctions;
 import org.openvpms.archetype.function.history.HistoryFunctions;
+import org.openvpms.archetype.function.insurance.InsuranceFunctions;
 import org.openvpms.archetype.function.list.ListFunctions;
 import org.openvpms.archetype.function.lookup.LookupFunctions;
 import org.openvpms.archetype.function.math.MathFunctions;
@@ -107,6 +111,9 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(create("math", new MathFunctions()));
         library.addFunctions(create("openvpms", new ArchetypeServiceFunctions(service, lookups)));
         library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules, addressFormatter)));
+        library.addFunctions(create("address", new AddressFunctions(customerRules)));
+        library.addFunctions(create("email", new EmailFunctions(customerRules, service)));
+        library.addFunctions(create("phone", new PhoneFunctions(customerRules)));
         library.addFunctions(new ProductFunctions(new ProductPriceRules(service), practiceService, service));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
         library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
@@ -115,6 +122,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         } else {
             library.addFunctions(new UserFunctions(service, practiceService, lookups, library));
         }
+        library.addFunctions(create("insurance", new InsuranceFunctions(service)));
         library.addFunctions(create("word", WordUtils.class));
         return library;
     }

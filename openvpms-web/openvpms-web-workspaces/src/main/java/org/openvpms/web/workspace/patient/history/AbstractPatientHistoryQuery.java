@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -76,13 +76,14 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
      *
      * @param patient     the patient to query
      * @param shortNames  the act short names
-     * @param preferences the user preferences
+     * @param preferences the user preferences. May be {@code null}
      */
     public AbstractPatientHistoryQuery(Party patient, String[] shortNames, Preferences preferences) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, shortNames, Act.class);
         this.preferences = preferences;
         setAuto(true);
-        setSortAscending(isSortAscending(preferences));
+        boolean ascending = (preferences == null) || isSortAscending(preferences);
+        setSortAscending(ascending);
     }
 
     /**
@@ -143,7 +144,9 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
             setSortIcon();
         }
         // update session preferences
-        preferences.setPreference(PreferenceArchetypes.HISTORY, "sort", ascending ? "ASC" : "DESC");
+        if (preferences != null) {
+            preferences.setPreference(PreferenceArchetypes.HISTORY, "sort", ascending ? "ASC" : "DESC");
+        }
     }
 
     /**
@@ -158,7 +161,7 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
     /**
      * Returns the user preferences.
      *
-     * @return the preferences
+     * @return the preferences. May be {@code null}
      */
     protected Preferences getPreferences() {
         return preferences;

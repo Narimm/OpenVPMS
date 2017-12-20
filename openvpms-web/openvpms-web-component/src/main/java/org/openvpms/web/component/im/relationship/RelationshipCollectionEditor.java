@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
 import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
@@ -26,6 +25,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
@@ -147,8 +147,8 @@ public class RelationshipCollectionEditor
      * @return the row of controls
      */
     @Override
-    protected Row createControls(FocusGroup focus) {
-        Row row = super.createControls(focus);
+    protected ButtonRow createControls(FocusGroup focus) {
+        ButtonRow row = super.createControls(focus);
         String name = getProperty().getDisplayName();
         String label = Messages.format("relationship.hide.inactive", name);
         hideInactive = CheckBoxFactory.create(null, true);
