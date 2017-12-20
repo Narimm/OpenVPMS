@@ -11,22 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.ObjectNotFoundException;
-import org.hibernate.StaleObjectStateException;
-import org.hibernate.pretty.MessageHelper;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.component.error.ExceptionHelper;
 import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -35,8 +32,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.io.Serializable;
 
 /**
  * Helper to manage saving editors within transactions.
@@ -153,30 +148,7 @@ public class IMObjectEditorSaver {
     protected void failed(IMObjectEditor editor, Throwable exception) {
         String displayName = editor.getDisplayName();
         String title = Messages.format("imobject.save.failed", displayName);
-        Throwable cause = ExceptionHelper.getRootCause(exception);
-        if (isModifiedExternally(cause)) {
-            // Don't propagate the exception
-            String message;
-            if (cause instanceof ObjectNotFoundException) {
-                ObjectNotFoundException notFoundException = (ObjectNotFoundException) cause;
-                IMObject object = editor.getObject();
-                Serializable identifier = notFoundException.getIdentifier();
-                if (identifier != null && Long.toString(object.getId()).equals(identifier.toString())) {
-                    // really need to look at the entity name, to ensure they are of the correct type. TODO
-                    message = Messages.format("imobject.notfound", displayName);
-                } else {
-                    // TODO - really want an IMObjectReference to get the display name.
-                    message = Messages.format("imobject.notfound",
-                                              MessageHelper.infoString(notFoundException.getEntityName(), identifier));
-                }
-            } else {
-                message = ErrorFormatter.format(cause, displayName);
-            }
-            ErrorHandler.getInstance().error(title, message, null, null);
-        } else {
-            String message = ErrorFormatter.format(exception, displayName);
-            ErrorHandler.getInstance().error(title, message, exception, null);
-        }
+        ErrorHelper.show(title, displayName, editor.getObject(), exception);
     }
 
     /**
@@ -201,7 +173,7 @@ public class IMObjectEditorSaver {
      * @return {@code true} if the object was modified externally
      */
     protected boolean isModifiedExternally(Throwable exception) {
-        return exception instanceof StaleObjectStateException || exception instanceof ObjectNotFoundException;
+        return ExceptionHelper.isModifiedExternally(exception);
     }
 
     /**

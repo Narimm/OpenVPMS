@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -48,6 +48,11 @@ public class SupplierArchetypes {
      * Manufacturer short name.
      */
     public static final String MANUFACTURER = "party.supplierManufacturer";
+
+    /**
+     * Insurer archetype.
+     */
+    public static final String INSURER = "party.supplierInsurer";
 
     /**
      * Supplier order act short name.

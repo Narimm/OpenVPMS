@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -22,15 +22,21 @@ import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
- * An {@link EvalTask} task that pops up a Yes/No/Cancel or OK/Cancel
- * confirmation dialog.
- * <p/>
+ * An {@link EvalTask} task that pops up a confirmation dialog.
+ * <p>
  * It evaluates {@code true} if Yes/OK is selected, or {@code false}
  * if No is selected. Selecting Cancel cancels the task.
  *
  * @author Tim Anderson
  */
 public class ConfirmationTask extends AbstractConfirmationTask {
+
+    /**
+     * The type of confirmation dialog.
+     */
+    public enum Type {
+        YES_NO_CANCEL, YES_NO, OK_CANCEL
+    }
 
     /**
      * The dialog title.
@@ -43,10 +49,9 @@ public class ConfirmationTask extends AbstractConfirmationTask {
     private final String message;
 
     /**
-     * Determines if the No button should be displayed.
+     * The type of dialog to display.
      */
-    private final boolean displayNo;
-
+    private final Type type;
 
     /**
      * Constructs a {@link ConfirmationTask}.
@@ -68,10 +73,22 @@ public class ConfirmationTask extends AbstractConfirmationTask {
      * @param help      the help context
      */
     public ConfirmationTask(String title, String message, boolean displayNo, HelpContext help) {
+        this(title, message, displayNo ? Type.YES_NO_CANCEL : Type.OK_CANCEL, help);
+    }
+
+    /**
+     * Constructs a {@code ConfirmationTask}.
+     *
+     * @param title   the dialog title
+     * @param message the dialog message
+     * @param type    the type of confirmation dialog to display
+     * @param help    the help context
+     */
+    public ConfirmationTask(String title, String message, Type type, HelpContext help) {
         super(help);
         this.title = title;
         this.message = message;
-        this.displayNo = displayNo;
+        this.type = type;
     }
 
     /**
@@ -83,7 +100,14 @@ public class ConfirmationTask extends AbstractConfirmationTask {
      */
     @Override
     protected ConfirmationDialog createConfirmationDialog(TaskContext context, HelpContext help) {
-        String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL : PopupDialog.OK_CANCEL;
+        String[] buttons;
+        if (type == Type.YES_NO_CANCEL) {
+            buttons = PopupDialog.YES_NO_CANCEL;
+        } else if (type == Type.YES_NO) {
+            buttons = PopupDialog.YES_NO;
+        } else {
+            buttons = PopupDialog.OK_CANCEL;
+        }
         return new ConfirmationDialog(title, message, buttons, help);
     }
 }

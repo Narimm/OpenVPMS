@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.supplier;
 
@@ -21,19 +21,19 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -47,11 +47,11 @@ import org.openvpms.web.system.ServiceHelper;
 public class SupplierStockLocationRelationshipESCIEditor extends EntityRelationshipEditor {
 
     /**
-     * Constructs an <tt>SupplierStockLocationRelationshipESCIEditor</tt>.
+     * Constructs a {@link SupplierStockLocationRelationshipESCIEditor}.
      *
      * @param object        the object to edit. An <em>entity.ESCIConfigurationSOAP</em>.
-     * @param parent        the parent object. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
+     * @param parent        the parent object. May be {@code null}
+     * @param layoutContext the layout context. May be {@code null}.
      */
     public SupplierStockLocationRelationshipESCIEditor(EntityRelationship object, IMObject parent,
                                                        LayoutContext layoutContext) {
@@ -67,13 +67,10 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new LayoutStrategy() {
             @Override
-            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-                if ("serviceURL".equals(property.getName())) {
-                    return createServiceURLComponent(property, parent, context);
-                } else if ("password".equals(property.getName())) {
-                    return createPassword(property);
-                }
-                return super.createComponent(property, parent, context);
+            public ComponentState apply(IMObject object, PropertySet properties, IMObject parent,
+                                        LayoutContext context) {
+                addComponent(createServiceURLComponent(getProperty("serviceURL"), parent, context));
+                return super.apply(object, properties, parent, context);
             }
         };
     }
@@ -96,19 +93,8 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
         });
         FocusGroup focus = state.getFocusGroup();
         focus.add(test);
-        Component container = RowFactory.create("CellSpacing", field, test);
+        Component container = RowFactory.create(Styles.CELL_SPACING, field, test);
         return new ComponentState(container, property, focus);
-    }
-
-    /**
-     * Creates a component for the password property.
-     *
-     * @param property the password property
-     * @return a new component
-     */
-    private ComponentState createPassword(Property property) {
-        TextField password = BoundTextComponentFactory.createPassword(property);
-        return new ComponentState(password, property);
     }
 
     /**
@@ -116,9 +102,9 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
      */
     private void onTest() {
         try {
-            String url = (String) getProperty("serviceURL").getValue();
-            String user = (String) getProperty("username").getValue();
-            String password = (String) getProperty("password").getValue();
+            String url = getProperty("serviceURL").getString();
+            String user = getProperty("username").getString();
+            String password = getProperty("password").getString();
             SupplierServiceLocator locator = ServiceHelper.getSupplierServiceLocator();
             locator.getOrderService(url, user, password);
             InformationDialog.show(Messages.get("supplier.esci.connection.OK"));

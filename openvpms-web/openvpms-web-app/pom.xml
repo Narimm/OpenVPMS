@@ -256,6 +256,12 @@
                     </httpConnector>
                     <stopPort>9091</stopPort>
                     <stopKey>stop</stopKey>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>catalina.base</name>
+                            <value>${project.build.directory}/tmp</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -299,12 +305,12 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-plugin-manager</artifactId>
+            <artifactId>openvpms-plugin-manager-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-plugin-services</artifactId>
+            <artifactId>openvpms-plugin-services-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.util;
@@ -19,10 +19,17 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.ObjectNotFoundException;
+import org.hibernate.pretty.MessageHelper;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.error.ErrorFormatter;
+import org.openvpms.web.component.error.ExceptionHelper;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+
+import java.io.Serializable;
 
 
 /**
@@ -97,7 +104,7 @@ public class ErrorHelper {
      * @param error       the error
      */
     public static void show(String title, String displayName, Throwable error) {
-        show(title, displayName, null, error);
+        show(title, displayName, (String) null, error);
     }
 
     /**
@@ -183,6 +190,43 @@ public class ErrorHelper {
         String message = ErrorFormatter.format(error);
         log.error(message, error);
         ErrorHandler.getInstance().error(null, message, error, listener);
+    }
+
+    /**
+     * Shows an error related to an object.
+     *
+     * @param title       the title. May be {@code null}
+     * @param displayName the display name to include in the message. May be {@code null}
+     * @param object      the object
+     * @param error       the error
+     */
+    public static void show(String title, String displayName, IMObject object, Throwable error) {
+        Throwable cause = ExceptionHelper.getRootCause(error);
+        if (displayName == null) {
+            displayName = DescriptorHelper.getDisplayName(object);
+        }
+        if (ExceptionHelper.isModifiedExternally(cause)) {
+            // Don't propagate the exception
+            String message;
+            if (cause instanceof ObjectNotFoundException) {
+                ObjectNotFoundException notFoundException = (ObjectNotFoundException) cause;
+                Serializable identifier = notFoundException.getIdentifier();
+                if (identifier != null && Long.toString(object.getId()).equals(identifier.toString())) {
+                    // really need to look at the entity name, to ensure they are of the correct type. TODO
+                    message = Messages.format("imobject.notfound", displayName);
+                } else {
+                    // TODO - really want an IMObjectReference to get the display name.
+                    message = Messages.format("imobject.notfound",
+                                              MessageHelper.infoString(notFoundException.getEntityName(), identifier));
+                }
+            } else {
+                message = ErrorFormatter.format(cause, displayName);
+            }
+            ErrorHandler.getInstance().error(title, message, null, null);
+        } else {
+            String message = ErrorFormatter.format(error, displayName);
+            ErrorHandler.getInstance().error(title, message, error, null);
+        }
     }
 
 }

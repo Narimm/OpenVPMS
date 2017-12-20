@@ -11,25 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.supplier.delivery;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 
-import java.util.List;
-
 /**
  * Table model for <em>act.supplierDeliveryItem</em>s.
- * <p/>
+ * <p>
  * This suppresses the supplierInvoiceLineId if the parent act is supplied and the supplierInvoiceId node is empty.
  *
  * @author Tim Anderson
@@ -37,9 +35,9 @@ import java.util.List;
 public class DeliveryItemTableModel extends DescriptorTableModel<Act> {
 
     /**
-     * Determines if the supplierInvoiceId node should be displayed.
+     * The nodes to display.
      */
-    private final boolean showSupplierInvoiceLineId;
+    private final ArchetypeNodes nodes;
 
     /**
      * Constructs an {@link DeliveryItemTableModel}.
@@ -59,34 +57,23 @@ public class DeliveryItemTableModel extends DescriptorTableModel<Act> {
      */
     public DeliveryItemTableModel(String[] shortNames, IMObject parent, LayoutContext context) {
         super(context);
+        nodes = allSimpleNodesMinusIdAndLongText();
         if (TypeHelper.isA(parent, SupplierArchetypes.DELIVERY)) {
             IMObjectBean bean = new IMObjectBean(parent);
-            showSupplierInvoiceLineId = !StringUtils.isEmpty(bean.getString("supplierInvoiceId"));
-        } else {
-            showSupplierInvoiceLineId = true;
+            if (StringUtils.isEmpty(bean.getString("supplierInvoiceId"))) {
+                nodes.exclude("supplierInvoiceLineId");
+            }
         }
         setTableColumnModel(createColumnModel(shortNames, context));
     }
 
-
     /**
-     * Returns the node names for a set of archetypes.
-     * <p/>
-     * If {@link #getNodeNames()} returns a non-empty list, then
-     * these names will be used, otherwise the node names common to each
-     * archetype will be returned.
+     * Returns an {@link ArchetypeNodes} that determines what nodes appear in the table.
      *
-     * @param archetypes the archetype descriptors
-     * @param context    the layout context
-     * @return the node names for the archetypes
+     * @return the nodes to include
      */
     @Override
-    protected List<String> getNodeNames(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
-        List<String> names = super.getNodeNames(archetypes, context);
-        if (!showSupplierInvoiceLineId) {
-            names.remove("supplierInvoiceLineId");
-        }
-        return names;
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
     }
-
 }

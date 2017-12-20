@@ -188,6 +188,18 @@ public class IMObjectCollectionDataSource extends AbstractDataSource implements 
     }
 
     /**
+     * Evaluates an xpath expression against an object.
+     *
+     * @param object     the object
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    @Override
+    public Object evaluate(Object object, String expression) {
+        return current != null ? current.evaluate(object, expression) : null;
+    }
+
+    /**
      * Moves back to the first element in the data source.
      */
     @Override

@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
 
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workspace.AbstractWorkspaces;
@@ -32,6 +33,11 @@ import org.openvpms.web.workspace.patient.mr.PatientRecordWorkspace;
 public class PatientWorkspaces extends AbstractWorkspaces {
 
     /**
+     * The records workspace.
+     */
+    private final PatientRecordWorkspace records;
+
+    /**
      * Constructs a {@link PatientWorkspaces}.
      *
      * @param context     the context
@@ -40,7 +46,8 @@ public class PatientWorkspaces extends AbstractWorkspaces {
     public PatientWorkspaces(Context context, Preferences preferences) {
         super("patient");
         addWorkspace(new InformationWorkspace(context, preferences));
-        addWorkspace(new PatientRecordWorkspace(context, preferences));
+        records = new PatientRecordWorkspace(context, preferences);
+        addWorkspace(records);
     }
 
     /**
@@ -53,17 +60,24 @@ public class PatientWorkspaces extends AbstractWorkspaces {
      */
     @Override
     public Workspace getWorkspaceForArchetype(String shortName) {
-        Workspace fallback = null;
-        for (Workspace workspace : getWorkspaces()) {
-            if (workspace.canUpdate(shortName)) {
-                if (workspace instanceof PatientRecordWorkspace) {
-                    return workspace;
-                } else {
-                    fallback = workspace;
+        Workspace result = null;
+        if (InsuranceArchetypes.POLICY.equals(shortName)) {
+            result = records;
+            records.getComponent();
+            records.getBrowser().showInsurance();
+        } else {
+            for (Workspace workspace : getWorkspaces()) {
+                if (workspace.canUpdate(shortName)) {
+                    if (workspace instanceof PatientRecordWorkspace) {
+                        result = workspace;
+                        break;
+                    } else {
+                        result = workspace;
+                    }
                 }
             }
         }
-        return fallback;
+        return result;
     }
 
 }

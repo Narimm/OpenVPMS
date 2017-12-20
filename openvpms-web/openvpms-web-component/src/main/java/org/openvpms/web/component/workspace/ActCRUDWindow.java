@@ -174,7 +174,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      */
     protected ConfirmationDialog createPostConfirmationDialog(Act act) {
         HelpContext help = getHelpContext().subtopic("post");
-        String displayName = getArchetypes().getDisplayName();
+        String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.format("act.post.title", displayName);
         String message = Messages.format("act.post.message", displayName);
         return new ConfirmationDialog(title, message, help);
@@ -199,7 +199,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     /**
      * Invoked when posting of an act is complete, either by saving the act
      * with <em>POSTED</em> status, or invoking {@link #onPost()}.
-     * <p/>
+     * <p>
      * This implementation does nothing.
      *
      * @param act the act

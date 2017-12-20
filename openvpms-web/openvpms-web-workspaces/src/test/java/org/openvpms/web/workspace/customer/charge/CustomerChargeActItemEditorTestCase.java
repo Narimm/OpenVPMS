@@ -620,7 +620,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertTrue(editContext.getEditorQueue().getCurrent() instanceof EditDialog);
         EditDialog dialog = (EditDialog) editContext.getEditorQueue().getCurrent();
         IMObjectEditor microchip = dialog.getEditor();
-        microchip.getProperty("microchip").setValue("123456789");
+        microchip.getProperty("identity").setValue("123456789");
         checkSavePopup(editContext.getEditorQueue(), PatientArchetypes.MICROCHIP, false);
         checkSave(charge, editor);
 
