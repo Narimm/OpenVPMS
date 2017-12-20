@@ -75,16 +75,17 @@ public class PolicyLayoutStrategy extends AbstractLayoutStrategy {
         CollectionProperty claims = (CollectionProperty) properties.get("claims");
         if (!claims.isEmpty()) {
             if (context.isEdit()) {
-                // if a claim exists that isn't PENDING, make the policy number read-only
+                // if a claim exists that isn't PENDING or POSTED, make the policy number read-only
                 IMObjectBean bean = new IMObjectBean(object);
-                boolean pending = true;
+                boolean pendingOrPosted = true;
                 for (Act claim : bean.getSources("claims", Act.class)) {
-                    if (!Claim.Status.PENDING.isA(claim.getStatus())) {
-                        pending = false;
+                    String status = claim.getStatus();
+                    if (!Claim.Status.PENDING.isA(status) && !Claim.Status.POSTED.isA(status)) {
+                        pendingOrPosted = false;
                         break;
                     }
                 }
-                if (!pending) {
+                if (!pendingOrPosted) {
                     Property insurerId = properties.get("insurerId");
                     LayoutContext subContext = new DefaultLayoutContext(context);
                     ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(subContext, Styles.EDIT);

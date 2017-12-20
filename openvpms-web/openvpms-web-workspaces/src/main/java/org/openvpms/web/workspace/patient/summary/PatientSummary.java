@@ -444,11 +444,14 @@ public class PatientSummary extends PartySummary {
         String name;
         if (policy == null) {
             name = Messages.get("patient.insurance.none");
-        } else if (policy.getActivityEndTime().compareTo(new Date()) < 0) {
-            name = Messages.get("patient.insurance.expired");
         } else {
-            Party insurer = insuranceRules.getInsurer(policy);
-            name = (insurer != null) ? insurer.getName() : Messages.get("patient.insurance.none");
+            Date endTime = policy.getActivityEndTime();
+            if (endTime != null && endTime.compareTo(new Date()) < 0) {
+                name = Messages.get("patient.insurance.expired");
+            } else {
+                Party insurer = insuranceRules.getInsurer(policy);
+                name = (insurer != null) ? insurer.getName() : Messages.get("patient.insurance.none");
+            }
         }
 
         Button button = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {

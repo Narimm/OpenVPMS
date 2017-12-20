@@ -47,6 +47,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.insurance.claim.ClaimEditDialog;
 import org.openvpms.web.workspace.patient.insurance.claim.ClaimSubmitter;
 
+import java.util.Date;
 import java.util.function.Consumer;
 
 import static org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes.CLAIM;
@@ -179,17 +180,18 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      * @param policy the policy
      */
     protected void claim(Act policy) {
-        if (!getActions().hasExistingClaims(policy)) {
-            createClaim(policy);
-        } else {
-            ConfirmationDialog.show(Messages.get("patient.insurance.claim.existing.title"),
-                                    Messages.get("patient.insurance.claim.existing.message"),
+        Date expiryDate = policy.getActivityEndTime();
+        if (expiryDate != null && expiryDate.compareTo(new Date()) <= 0) {
+            ConfirmationDialog.show(Messages.get("patient.insurance.policy.expired.title"),
+                                    Messages.get("patient.insurance.policy.expired.message"),
                                     ConfirmationDialog.YES_NO, new PopupDialogListener() {
                         @Override
                         public void onYes() {
-                            createClaim(policy);
+                            checkExistingClaims(policy);
                         }
                     });
+        } else {
+            checkExistingClaims(policy);
         }
     }
 
@@ -258,6 +260,24 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         if (getActions().canDeclineClaim(object)) {
             ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext().subtopic("decline"));
             submitter.decline(object, createRefreshAction(object, "patient.insurance.decline.title"));
+        }
+    }
+
+    /**
+     * Checks if a policy has existing outstanding claims before creating a new one.
+     */
+    protected void checkExistingClaims(Act policy) {
+        if (!getActions().hasExistingClaims(policy)) {
+            createClaim(policy);
+        } else {
+            ConfirmationDialog.show(Messages.get("patient.insurance.claim.existing.title"),
+                                    Messages.get("patient.insurance.claim.existing.message"),
+                                    ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                        @Override
+                        public void onYes() {
+                            createClaim(policy);
+                        }
+                    });
         }
     }
 
