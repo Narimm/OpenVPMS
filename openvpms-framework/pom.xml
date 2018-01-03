@@ -228,6 +228,11 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>

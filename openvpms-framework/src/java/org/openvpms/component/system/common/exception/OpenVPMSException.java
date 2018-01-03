@@ -25,21 +25,13 @@ package org.openvpms.component.system.common.exception;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public abstract class OpenVPMSException extends RuntimeException implements
+public abstract class OpenVPMSException extends org.openvpms.component.exception.OpenVPMSException implements
         IOpenVPMSException {
 
     /**
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Default constructor, which delegates to the super class
-     */
-    public OpenVPMSException() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
 
     /**
      * Delegate to the super class
@@ -70,6 +62,6 @@ public abstract class OpenVPMSException extends RuntimeException implements
      *            the exception
      */
     public OpenVPMSException(Throwable exception) {
-        super(exception);
+        super(exception.getMessage(), exception);
     }
 }

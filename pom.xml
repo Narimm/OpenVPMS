@@ -629,6 +629,7 @@
     </profiles>
 
     <modules>
+        <module>openvpms-core</module>
         <module>openvpms-framework</module>
         <module>maven-plugins</module>
         <module>openvpms-archetypes</module>
