@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -45,7 +45,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -893,10 +892,10 @@ public class PatientRules {
     private EntityIdentity getEntityIdentity(Party patient, String shortName) {
         EntityIdentity result = null;
         if (patient != null) {
-            for (EntityIdentity identity : patient.getIdentities()) {
-                if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
+            for (org.openvpms.component.model.entity.EntityIdentity identity : patient.getIdentities()) {
+                if (identity.isActive() && identity.isA(shortName)) {
                     if (result == null || result.getId() < identity.getId()) {
-                        result = identity;
+                        result = (EntityIdentity) identity;
                     }
                 }
             }
@@ -917,9 +916,9 @@ public class PatientRules {
     private Collection<EntityIdentity> getIdentities(Party patient, String shortName) {
         TreeMap<Long, EntityIdentity> result = new TreeMap<>(ComparatorUtils.reversedComparator(
                 ComparatorUtils.NATURAL_COMPARATOR));
-        for (EntityIdentity identity : patient.getIdentities()) {
-            if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
-                result.put(identity.getId(), identity);
+        for (org.openvpms.component.model.entity.EntityIdentity identity : patient.getIdentities()) {
+            if (identity.isActive() && identity.isA(shortName)) {
+                result.put(identity.getId(), (EntityIdentity) identity);
             }
         }
         return result.values();

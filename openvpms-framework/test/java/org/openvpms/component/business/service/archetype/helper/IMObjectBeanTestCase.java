@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -306,13 +306,13 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     /**
      * Tests the {@link IMObjectBean#getValues(String)},
      * {@link IMObjectBean#getValues(String, Predicate)},
-     * {@link IMObjectBean#addValue(String, IMObject)} and
-     * {@link IMObjectBean#removeValue(String, IMObject)} methods.
+     * {@link IMObjectBean#addValue(String, org.openvpms.component.model.object.IMObject)} and
+     * {@link IMObjectBean#removeValue(String, org.openvpms.component.model.object.IMObject)} methods.
      */
     @Test
     public void testCollection() {
         IMObjectBean bean = createBean("party.customerperson");
-        List<IMObject> values = bean.getValues("contacts");
+        List<org.openvpms.component.model.object.IMObject> values = bean.getValues("contacts");
         assertNotNull(values);
         assertEquals(0, values.size());
         IMObjectBean locationBean = createBean("contact.location");
@@ -345,7 +345,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     @Test
     public void testGetValuesTypeSafeCast() {
         IMObjectBean bean = createBean("party.customerperson");
-        List<IMObject> values = bean.getValues("contacts");
+        List<org.openvpms.component.model.object.IMObject>  values = bean.getValues("contacts");
         assertNotNull(values);
         assertEquals(0, values.size());
         IMObjectBean locationBean = createBean("contact.location");
@@ -508,7 +508,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         IMObjectBean bean = new IMObjectBean(customer);
         Policy<SequencedRelationship> active = Policies.active(SequencedRelationship.class,
                                                                SequenceComparator.INSTANCE);
-        List<IMObject> patients1 = bean.getTargets("patients", active);
+        List<org.openvpms.component.model.object.IMObject> patients1 = bean.getTargets("patients", active);
         checkOrder(patients1, patient3, patient2, patient1);
 
         List<Party> patients2 = bean.getTargets("patients", Party.class, active);
@@ -560,7 +560,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     }
 
     /**
-     * Tests the {@link IMObjectBean#addTarget(String, IMObject)} method.
+     * Tests the {@link IMObjectBean#addTarget(String, org.openvpms.component.model.object.IMObject)} method.
      */
     @Test
     public void testAddTarget() {
@@ -589,7 +589,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     }
 
     /**
-     * Tests the {@link IMObjectBean#addTarget(String, IMObject, String)} method.
+     * Tests the {@link IMObjectBean#addTarget(String, org.openvpms.component.model.object.IMObject, String)} method.
      */
     @Test
     public void testAddTargetBidirectional() {
@@ -865,8 +865,8 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
      * {@link IMObjectBean#getNodeTargetObjects(String, Predicate, boolean, Class)}
      * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class)},
      * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class, boolean)}
-     * {@link IMObjectBean#hasNodeTarget(String, IMObject)}}, and
-     * {@link IMObjectBean#hasNodeTarget(String, IMObject, Date)} methods.
+     * {@link IMObjectBean#hasNodeTarget(String, org.openvpms.component.model.object.IMObject)} and
+     * {@link IMObjectBean#hasNodeTarget(String, org.openvpms.component.model.object.IMObject, Date)} methods.
      */
     @Test
     public void testGetNodeTargetObjects() {

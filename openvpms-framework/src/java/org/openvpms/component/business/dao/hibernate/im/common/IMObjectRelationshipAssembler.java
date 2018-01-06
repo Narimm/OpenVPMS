@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
@@ -21,14 +19,14 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 import org.hibernate.Hibernate;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.model.object.Reference;
 
 
 /**
  * Assembles {@link IMObjectRelationship} from {@link IMObjectRelationshipDO}s
  * and vice-versa.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class IMObjectRelationshipAssembler
         <T extends IMObjectRelationship, DO extends IMObjectRelationshipDO>
@@ -106,7 +104,7 @@ public abstract class IMObjectRelationshipAssembler
      */
     private void assembleSource(final DO result, final T source,
                                 DOState state, Context context) {
-        final IMObjectReference sourceRef = source.getSource();
+        Reference sourceRef = source.getSource();
         if (sourceRef != null) {
             DOState sourceDO = get(sourceRef, endType, endTypeImpl, context);
             if (sourceDO != null) {
@@ -123,7 +121,7 @@ public abstract class IMObjectRelationshipAssembler
             }
             if (sourceRef.isNew()) {
                 new ReferenceUpdater(state, sourceRef) {
-                    protected void doUpdate(IMObjectReference updated) {
+                    protected void doUpdate(Reference updated) {
                         source.setSource(updated);
                     }
                 };
@@ -141,9 +139,8 @@ public abstract class IMObjectRelationshipAssembler
      * @param state   the relationship state
      * @param context the assembly context
      */
-    private void assembleTarget(final DO result, final T source, DOState state,
-                                Context context) {
-        final IMObjectReference targetRef = source.getTarget();
+    private void assembleTarget(final DO result, final T source, DOState state, Context context) {
+        Reference targetRef = source.getTarget();
         if (targetRef != null) {
             DOState targetDO = get(targetRef, endType, endTypeImpl, context);
             if (targetDO != null) {
@@ -160,7 +157,7 @@ public abstract class IMObjectRelationshipAssembler
             }
             if (targetRef.isNew()) {
                 new ReferenceUpdater(state, targetRef) {
-                    protected void doUpdate(IMObjectReference updated) {
+                    protected void doUpdate(Reference updated) {
                         source.setTarget(updated);
                     }
                 };

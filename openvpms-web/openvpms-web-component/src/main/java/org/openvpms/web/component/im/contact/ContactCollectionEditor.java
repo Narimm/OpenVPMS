@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -116,7 +116,8 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
             Contact current = (Contact) editor.getObject();
             Property property = editor.getProperty(PREFERRED);
             if (property != null && property.getBoolean()) {
-                for (Contact contact : ((Party) getObject()).getContacts()) {
+                for (org.openvpms.component.model.party.Contact c : ((Party) getObject()).getContacts()) {
+                    Contact contact = (Contact) c;
                     if (!current.equals(contact) && current.getArchetypeId().equals(contact.getArchetypeId())) {
                         IMObjectEditor contactEditor = getEditor(contact);
                         if (contactEditor != null) {

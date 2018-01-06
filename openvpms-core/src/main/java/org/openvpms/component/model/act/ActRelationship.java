@@ -22,12 +22,13 @@ import org.openvpms.component.model.object.PeriodRelationship;
  * Describes a relationship between two {@link Act}s.
  *
  * @author Tim Anderson
+ * @author Jim Alateras
  */
 public interface ActRelationship extends PeriodRelationship {
 
-
     /**
      * Determines if this is a parent/child relationship between two acts.
+     * <p>
      * If {@code true} it indicates that the parent act is the owner of the
      * relationship and is responsible for managing its lifecycle. When the
      * parent act is deleted, then the child act must also be deleted.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -106,9 +106,10 @@ public abstract class AbstractNodePropertySet extends AbstractPropertySet {
      */
     public ArchetypeDescriptor getArchetype() {
         if (archetype == null) {
-            archetype = DescriptorHelper.getArchetypeDescriptor(object, getArchetypeService());
+            String type = object.getArchetype();
+            archetype = getArchetypeService().getArchetypeDescriptor(type);
             if (archetype == null) {
-                throw new IMObjectBeanException(ArchetypeNotFound, object.getArchetypeId().getShortName());
+                throw new IMObjectBeanException(ArchetypeNotFound, type);
             }
         }
         return archetype;
@@ -124,7 +125,7 @@ public abstract class AbstractNodePropertySet extends AbstractPropertySet {
     public NodeDescriptor getNode(String name) {
         NodeDescriptor node = getArchetype().getNodeDescriptor(name);
         if (node == null) {
-            String shortName = object.getArchetypeId().getShortName();
+            String shortName = object.getArchetype();
             throw new IMObjectBeanException(NodeDescriptorNotFound, name, shortName);
         }
         return node;

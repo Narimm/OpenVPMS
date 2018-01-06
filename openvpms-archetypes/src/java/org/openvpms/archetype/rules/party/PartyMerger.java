@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
@@ -25,8 +24,6 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.common.PeriodRelationship;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -35,6 +32,9 @@ import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectC
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.PeriodRelationship;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
@@ -132,10 +132,10 @@ public abstract class PartyMerger {
         merged.add(to);
         merged.addAll(participations);
 
-        for (EntityRelationship relationship : from.getEntityRelationships()) {
-            Entity other = getRelated(from, to, relationship);
+        for (Relationship relationship : from.getEntityRelationships()) {
+            Entity other = getRelated(from, to, (EntityRelationship) relationship);
             if (other != null) {
-                other.removeEntityRelationship(relationship);
+                other.removeEntityRelationship((EntityRelationship) relationship);
                 merged.add(other);
             }
         }
@@ -178,8 +178,8 @@ public abstract class PartyMerger {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected void copyEntityRelationships(Party from, Party to) {
-        for (EntityRelationship relationship : from.getEntityRelationships()) {
-            EntityRelationship copy = copyEntityRelationship(relationship, from, to);
+        for (Relationship relationship : from.getEntityRelationships()) {
+            EntityRelationship copy = copyEntityRelationship((EntityRelationship) relationship, from, to);
             if (!exists(copy, to.getEntityRelationships())) {
                 to.addEntityRelationship(copy);
             }
@@ -195,8 +195,8 @@ public abstract class PartyMerger {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected void copyEntityLinks(Party from, Party to) {
-        for (EntityLink relationship : from.getEntityLinks()) {
-            EntityLink copy = copyEntityLink(relationship, from, to);
+        for (Relationship relationship : from.getEntityLinks()) {
+            EntityLink copy = copyEntityLink((EntityLink) relationship, from, to);
             if (!exists(copy, to.getEntityLinks())) {
                 to.addEntityLink(copy);
             }
@@ -263,8 +263,8 @@ public abstract class PartyMerger {
     protected void copyIdentities(Party from, Party to) {
         IMObjectCopier copier = new IMObjectCopier(
                 new DefaultIMObjectCopyHandler(), service);
-        for (EntityIdentity identity : from.getIdentities()) {
-            List<IMObject> objects = copier.apply(identity);
+        for (org.openvpms.component.model.entity.EntityIdentity identity : from.getIdentities()) {
+            List<IMObject> objects = copier.apply((EntityIdentity) identity);
             EntityIdentity copy = (EntityIdentity) objects.get(0);
             to.addIdentity(copy);
         }
@@ -338,11 +338,11 @@ public abstract class PartyMerger {
      */
     protected boolean exists(PeriodRelationship relationship, Set<? extends PeriodRelationship> relationships) {
         boolean result = false;
-        ArchetypeId id = relationship.getArchetypeId();
+        String archetype = relationship.getArchetype();
         for (PeriodRelationship r : relationships) {
             if (ObjectUtils.equals(r.getSource(), relationship.getSource())
                 && ObjectUtils.equals(r.getTarget(), relationship.getTarget())
-                && r.getArchetypeId().equals(id)
+                && r.getArchetype().equals(archetype)
                 && r.getActiveEndTime() == null
                 && relationship.getActiveEndTime() == null) {
                 result = true;

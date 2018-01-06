@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -19,6 +19,8 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
 
 import java.io.Serializable;
 
@@ -30,7 +32,7 @@ import java.io.Serializable;
  * @author Jim Alateras
  * @author Tim Anderson
  */
-public class IMObjectReference implements Serializable, Cloneable {
+public class IMObjectReference implements Reference, Serializable, Cloneable {
 
     /**
      * Serialisation version identifier.
@@ -155,6 +157,16 @@ public class IMObjectReference implements Serializable, Cloneable {
     }
 
     /**
+     * Return the archetype.
+     *
+     * @return the archetype
+     */
+    @Override
+    public String getArchetype() {
+        return (archetypeId != null) ? archetypeId.getShortName() : null;
+    }
+
+    /**
      * Returns the archetype identifier.
      *
      * @return the archetype identifier
@@ -232,6 +244,40 @@ public class IMObjectReference implements Serializable, Cloneable {
     @Override
     public String toString() {
         return archetypeId.getShortName() + ':' + id + ((linkId != null) ? ':' + linkId : "");
+    }
+
+    /**
+     * Determines if the reference is to an instance of a particular archetype.
+     *
+     * @param archetype the archetype short name. May contain wildcards
+     * @return {@code true} if the object is an instance of {@code archetype}
+     */
+    @Override
+    public boolean isA(String archetype) {
+        return TypeHelper.isA(this, archetype);
+    }
+
+    /**
+     * Determines if the reference is to an object of one of a set of archetypes.
+     *
+     * @param archetypes the archetype short names. May contain wildcards
+     * @return {@code true} if object is one of {@code archetypes}
+     */
+    @Override
+    public boolean isA(String... archetypes) {
+        return TypeHelper.isA(this, archetypes);
+    }
+
+    /**
+     * Determines if an archetype and link identifier match this.
+     *
+     * @param archetype the archetype
+     * @param linkId    the link identifier
+     * @return {@code true} if they match, otherwise {@code false}
+     */
+    @Override
+    public boolean equals(String archetype, String linkId) {
+        return ObjectUtils.equals(this.linkId, linkId) && ObjectUtils.equals(getArchetype(), archetype);
     }
 
     /**

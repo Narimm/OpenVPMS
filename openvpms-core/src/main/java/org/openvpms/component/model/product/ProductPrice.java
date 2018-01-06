@@ -24,8 +24,9 @@ import java.util.Date;
 import java.util.Set;
 
 /**
- * .
+ * Represents the price of a {@link Product}.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface ProductPrice extends IMObject {

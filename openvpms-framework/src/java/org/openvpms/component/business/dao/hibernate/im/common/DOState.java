@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
@@ -23,6 +21,7 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +78,7 @@ public class DOState {
      * The reference update reverters, used to revert reference updates
      * on transaction rollback
      */
-    private Map<IMObjectReference, ReferenceUpdater> reverters;
+    private Map<Reference, ReferenceUpdater> reverters;
 
     /**
      * Child states of this state.
@@ -178,7 +177,7 @@ public class DOState {
      */
     public void addState(DOState state) {
         if (states == null) {
-            states = new LinkedHashMap<String, DOState>();
+            states = new LinkedHashMap<>();
         } else if (!state.isUninitialised()) {
             // remove any existing mapping for the state. Only relevant if
             // the object has been loaded subsequent to the state being added
@@ -221,7 +220,7 @@ public class DOState {
      */
     public void addDeferred(DeferredAssembler assembler) {
         if (deferred == null) {
-            deferred = new ArrayList<DeferredAssembler>();
+            deferred = new ArrayList<>();
         }
         deferred.add(assembler);
     }
@@ -253,7 +252,7 @@ public class DOState {
      */
     public void addReferenceUpdater(ReferenceUpdater updater) {
         if (updaters == null) {
-            updaters = new ArrayList<ReferenceUpdater>();
+            updaters = new ArrayList<>();
         }
         updaters.add(updater);
     }
@@ -312,8 +311,7 @@ public class DOState {
      */
     public void update(IMObject source) {
         if (source.getVersion() != object.getVersion()) {
-            throw new StaleObjectStateException(object.getClass().getName(),
-                                                object.getId());
+            throw new StaleObjectStateException(object.getClass().getName(), object.getId());
         }
         this.source = source;
         if (deferred != null) {
@@ -321,7 +319,7 @@ public class DOState {
         }
         if (updaters != null) {
             if (reverters == null) {
-                reverters = new HashMap<IMObjectReference, ReferenceUpdater>();
+                reverters = new HashMap<>();
             }
             for (ReferenceUpdater updater : updaters) {
                 if (!reverters.containsKey(updater.getReference())) {
@@ -393,7 +391,7 @@ public class DOState {
         /**
          * The visited states, used to avoid visiting a state more than once.
          */
-        private Set<String> visited = new HashSet<String>();
+        private Set<String> visited = new HashSet<>();
 
         /**
          * Visits each state reachable from the specified state, invoking
@@ -578,7 +576,7 @@ public class DOState {
             List<DeferredAssembler> deferred = state.deferred;
             if (deferred != null && !state.deferred.isEmpty()) {
                 if (assemblers == null) {
-                    assemblers = new LinkedHashSet<DeferredAssembler>();
+                    assemblers = new LinkedHashSet<>();
                 }
                 assemblers.addAll(deferred);
             }
@@ -630,8 +628,7 @@ public class DOState {
             if (updaters != null) {
                 updaters.clear();
             }
-            Map<IMObjectReference, ReferenceUpdater> reverters
-                    = state.reverters;
+            Map<Reference, ReferenceUpdater> reverters = state.reverters;
             if (reverters != null) {
                 reverters.clear();
             }
@@ -651,8 +648,7 @@ public class DOState {
         /**
          * The collected objects.
          */
-        private final Map<String, IMObjectDO> objects
-                = new LinkedHashMap<String, IMObjectDO>();
+        private final Map<String, IMObjectDO> objects = new LinkedHashMap<>();
 
         /**
          * Returns the collected objects.

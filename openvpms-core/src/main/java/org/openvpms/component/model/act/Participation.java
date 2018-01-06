@@ -21,8 +21,10 @@ import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.object.Relationship;
 
 /**
- * Describes a relationship between an {@link Act} and a {@link Entity}.
+ * Describes a participation relationship between an {@link Act} and a {@link Entity}.
+ * i.e. the entity is the participant in the activity.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface Participation extends Relationship {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -541,7 +541,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     private void addChargeItem(Act event, FinancialAct item) {
         ActBean itemBean = new ActBean(item);
-        for (IMObject object : itemBean.getValues("event")) {
+        for (IMObject object : itemBean.getValues("event", IMObject.class)) {
             itemBean.removeValue("event", object);
         }
         ActBean bean = new ActBean(event);

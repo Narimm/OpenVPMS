@@ -17,15 +17,17 @@
 package org.openvpms.component.model.entity;
 
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.Set;
 
 /**
- * .
+ * An entity represents all named things in the business.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
-public interface Entity {
+public interface Entity extends IMObject {
 
     /**
      * Adds an identity for this entity.
@@ -50,71 +52,75 @@ public interface Entity {
     Set<EntityIdentity> getIdentities();
 
     /**
-     * Returns the relationships where this is the source entity.
+     * Returns the relationships where this entity is the source.
      *
      * @return the source entity relationships
      */
     Set<EntityRelationship> getSourceEntityRelationships();
 
     /**
-     * Returns the relationships where this is the target entity.
-     *
-     * @return the target entity relationships
-     */
-    Set<EntityRelationship> getTargetEntityRelationships();
-
-    /**
-     * Add a relationship to this entity. It will determine whether it is a
-     * source or target relationship before adding it.
-     *
-     * @param relationship the entity relationship to add
-     */
-    public void addEntityRelationship(EntityRelationship relationship);
-
-    /**
-     * Remove a relationship to this entity. It will determine whether it is a
-     * source or target relationship before removing it.
-     *
-     * @param entityRel the entity relationship to remove
-     */
-    void removeEntityRelationship(EntityRelationship entityRel);
-
-    /**
-     * Add a source {@link EntityRelationship} to this entity.
+     * Add a relationship where this entity is the source.
      *
      * @param relationship the entity relationship to add
      */
     void addSourceEntityRelationship(EntityRelationship relationship);
 
     /**
-     * Remove the source {@link EntityRelationship} from this entity.
+     * Removes a relationship where this entity is the source.
      *
      * @param relationship the entity relationship to remove
      */
     void removeSourceEntityRelationship(EntityRelationship relationship);
 
     /**
-     * Add a target {@link EntityRelationship} to this entity.
+     * Returns the relationships where this entity is the target.
+     *
+     * @return the target entity relationships
+     */
+    Set<EntityRelationship> getTargetEntityRelationships();
+
+    /**
+     * Add a relationship where this entity is the target.
      *
      * @param relationship the entity relationship to add
      */
     void addTargetEntityRelationship(EntityRelationship relationship);
 
     /**
-     * Remove the target {@link EntityRelationship} from this entity.
+     * Removes a relationship where this entity is the target.
      *
      * @param relationship the entity relationship to remove
      */
     void removeTargetEntityRelationship(EntityRelationship relationship);
 
     /**
-     * Return all the entity relationships. Do not use the returned set to
-     * add and remove entity relationships. Instead use {@link #addEntityRelationship(EntityRelationship)}
-     * and {@link #removeEntityRelationship(EntityRelationship)} repsectively.
+     * Return all the relationships that the entity has.
+     * <p>
+     * NOTE: the returned set cannot be used to add or remove relationships.
      *
-     * @return Set<EntityRelationship>
+     * @return the relationships
      */
     Set<EntityRelationship> getEntityRelationships();
+
+    /**
+     * Adds a relationship between this entity and another.
+     * <p>
+     * It will determine if this is a source or target of the relationship and invoke
+     * {@link #addSourceEntityRelationship} or {@link #addTargetEntityRelationship} accordingly.
+     *
+     * @param relationship the entity relationship to add
+     */
+    void addEntityRelationship(EntityRelationship relationship);
+
+    /**
+     * Remove a relationship between this activity and another.
+     * <p>
+     * It will determine if this is a source or target of the relationship and invoke
+     * {@link #removeSourceEntityRelationship} or {@link #removeTargetEntityRelationship} accordingly.
+     *
+     * @param relationship the entity relationship to remove
+     */
+    void removeEntityRelationship(EntityRelationship relationship);
 
     /**
      * Adds an entity link.

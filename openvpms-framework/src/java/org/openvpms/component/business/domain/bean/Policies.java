@@ -11,12 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.bean;
 
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.model.object.Relationship;
 
 import java.util.Comparator;
 import java.util.Date;
@@ -32,21 +32,20 @@ public class Policies {
     /**
      * A policy that matches any relationship, and both active and inactive objects.
      */
-    private static final Policy<IMObjectRelationship> ANY
-            = new DefaultPolicy<>(Policy.State.ANY, IMObjectRelationship.class, null);
+    private static final Policy<Relationship> ANY = new DefaultPolicy<>(Policy.State.ANY, Relationship.class, null);
 
     /**
      * A policy that matches active relationships, and active objects.
      */
-    private static final Policy<IMObjectRelationship> ACTIVE
-            = new DefaultPolicy<>(Policy.State.ACTIVE, IMObjectRelationship.class, Predicates.activeNow());
+    private static final Policy<Relationship> ACTIVE
+            = new DefaultPolicy<>(Policy.State.ACTIVE, Relationship.class, Predicates.activeNow());
 
     /**
      * Returns a policy that matches active relationships, and returns active objects.
      *
      * @return the policy
      */
-    public static Policy<IMObjectRelationship> active() {
+    public static Policy<Relationship> active() {
         return ACTIVE;
     }
 
@@ -56,7 +55,7 @@ public class Policies {
      * @param time the time
      * @return a new policy
      */
-    public static Policy<IMObjectRelationship> active(Date time) {
+    public static Policy<Relationship> active(Date time) {
         return active(time, true);
     }
 
@@ -67,8 +66,8 @@ public class Policies {
      * @param active if {@code true}, returns active objects, otherwise returns active and inactive objects
      * @return a new policy
      */
-    public static Policy<IMObjectRelationship> active(Date time, boolean active) {
-        return new DefaultPolicy<>(active, IMObjectRelationship.class, Predicates.activeAt(time));
+    public static Policy<Relationship> active(Date time, boolean active) {
+        return new DefaultPolicy<>(active, Relationship.class, Predicates.activeAt(time));
     }
 
     /**
@@ -77,8 +76,8 @@ public class Policies {
      * @param predicate the predicate
      * @return a new policy
      */
-    public static Policy<IMObjectRelationship> active(Predicate<IMObjectRelationship> predicate) {
-        return new DefaultPolicy<>(Policy.State.ACTIVE, IMObjectRelationship.class, predicate);
+    public static Policy<Relationship> active(Predicate<Relationship> predicate) {
+        return new DefaultPolicy<>(Policy.State.ACTIVE, Relationship.class, predicate);
     }
 
     /**
@@ -87,7 +86,7 @@ public class Policies {
      * @param type the relationship type
      * @return a new policy
      */
-    public static <R extends IMObjectRelationship> Policy<R> active(Class<R> type) {
+    public static <R extends Relationship> Policy<R> active(Class<R> type) {
         return new DefaultPolicy<>(Policy.State.ACTIVE, type, Predicates.activeNow());
     }
 
@@ -100,7 +99,7 @@ public class Policies {
      * @param comparator the relationship comparator
      * @return a new policy
      */
-    public static <R extends IMObjectRelationship> Policy<R> active(Class<R> type, Comparator<R> comparator) {
+    public static <R extends Relationship> Policy<R> active(Class<R> type, Comparator<R> comparator) {
         return new DefaultPolicy<>(Policy.State.ACTIVE, type, Predicates.activeNow(), comparator);
     }
 
@@ -113,7 +112,7 @@ public class Policies {
      * @param comparator the relationship comparator
      * @return a new policy
      */
-    public static <R extends IMObjectRelationship> Policy<R> active(Date time, Class<R> type,
+    public static <R extends Relationship> Policy<R> active(Date time, Class<R> type,
                                                                     Comparator<R> comparator) {
         return new DefaultPolicy<>(Policy.State.ACTIVE, type, Predicates.activeAt(time), comparator);
     }
@@ -123,7 +122,7 @@ public class Policies {
      *
      * @return the policy
      */
-    public static Policy<IMObjectRelationship> any() {
+    public static Policy<Relationship> any() {
         return ANY;
     }
 
@@ -134,7 +133,7 @@ public class Policies {
      *
      * @return the policy
      */
-    public static Policy<IMObjectRelationship> all() {
+    public static Policy<Relationship> all() {
         return ANY;
     }
 
@@ -144,7 +143,7 @@ public class Policies {
      * @param type the relationship type
      * @return a new policy
      */
-    public static <R extends IMObjectRelationship> Policy<R> any(Class<R> type) {
+    public static <R extends Relationship> Policy<R> any(Class<R> type) {
         return new DefaultPolicy<>(Policy.State.ANY, type, null);
     }
 
@@ -154,8 +153,8 @@ public class Policies {
      * @param predicate the predicate
      * @return a new policy
      */
-    public static Policy<IMObjectRelationship> any(Predicate<IMObjectRelationship> predicate) {
-        return new DefaultPolicy<>(Policy.State.ANY, IMObjectRelationship.class, predicate);
+    public static Policy<Relationship> any(Predicate<Relationship> predicate) {
+        return new DefaultPolicy<>(Policy.State.ANY, Relationship.class, predicate);
     }
 
     /**
@@ -165,8 +164,8 @@ public class Policies {
      * @param predicate the predicate used to select relationships
      * @return a new policy
      */
-    public static Policy<IMObjectRelationship> match(boolean active, Predicate<IMObjectRelationship> predicate) {
-        return new DefaultPolicy<>(active, IMObjectRelationship.class, predicate);
+    public static Policy<Relationship> match(boolean active, Predicate<Relationship> predicate) {
+        return new DefaultPolicy<>(active, Relationship.class, predicate);
     }
 
     /**
@@ -176,9 +175,9 @@ public class Policies {
      * @param predicate the predicate used to select relationships
      * @return a new policy
      */
-    public static Policy<IMObjectRelationship> match(boolean active, Predicate<IMObjectRelationship> predicate,
-                                                     Comparator<IMObjectRelationship> comparator) {
-        return new DefaultPolicy<>(active, IMObjectRelationship.class, predicate, comparator);
+    public static Policy<Relationship> match(boolean active, Predicate<Relationship> predicate,
+                                             Comparator<Relationship> comparator) {
+        return new DefaultPolicy<>(active, Relationship.class, predicate, comparator);
     }
 
     /**
@@ -188,12 +187,12 @@ public class Policies {
      * @param predicate the predicate used to select relationships
      * @return a new policy
      */
-    public static <R extends IMObjectRelationship> Policy<R> match(boolean active, Class<R> type,
+    public static <R extends Relationship> Policy<R> match(boolean active, Class<R> type,
                                                                    Predicate<R> predicate) {
         return new DefaultPolicy<>(active, type, predicate);
     }
 
-    static class DefaultPolicy<R extends IMObjectRelationship> implements Policy<R> {
+    static class DefaultPolicy<R extends Relationship> implements Policy<R> {
 
         private final Predicate<R> predicate;
 

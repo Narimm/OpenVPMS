@@ -21,18 +21,18 @@ import org.openvpms.component.model.object.IMObject;
 import java.util.Map;
 
 /**
- * .
+ * The archetype descriptor is used to describe an archetype.
  *
  * @author Tim Anderson
  */
-interface ArchetypeDescriptor extends IMObject {
+public interface ArchetypeDescriptor extends IMObject {
 
     /**
      * Returns the archetype type.
      *
      * @return the archetype type
      */
-    String getType();
+    String getArchetypeType();
 
     /**
      * Returns the java class name.

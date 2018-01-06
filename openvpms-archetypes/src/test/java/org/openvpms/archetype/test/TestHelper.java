@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -44,6 +44,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -179,7 +180,7 @@ public class TestHelper {
     /**
      * Creates and saves a new customer, with the specified contacts.
      *
-     * @param titleCode   the <em>lookup.personTitle</em> code. May be {@code null}
+     * @param titleCode the <em>lookup.personTitle</em> code. May be {@code null}
      * @param firstName the customer's first name
      * @param lastName  the customer's surname
      * @param contacts  the contacts
@@ -886,7 +887,7 @@ public class TestHelper {
     public static Lookup getLookup(String shortName, String code, String name, Lookup source,
                                    String relationshipShortName) {
         Lookup target = getLookup(shortName, code, name, true);
-        for (LookupRelationship relationship : source.getLookupRelationships()) {
+        for (Relationship relationship : source.getLookupRelationships()) {
             if (relationship.getTarget().equals(target.getObjectReference())) {
                 return target;
             }

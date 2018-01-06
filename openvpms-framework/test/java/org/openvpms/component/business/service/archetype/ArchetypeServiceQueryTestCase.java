@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -50,7 +50,6 @@ import org.springframework.test.context.ContextConfiguration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -274,7 +273,7 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         assertEquals("0123456789",
                      contact.getDetails().get("telephoneNumber"));
         assertEquals(1, contact.getClassificationsAsArray().length);
-        purpose = contact.getClassificationsAsArray()[0];
+        purpose = (Lookup) contact.getClassificationsAsArray()[0];
         assertEquals("Home", purpose.getName());
     }
 
@@ -310,8 +309,7 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         // contacts node has been loaded.
         assertEquals(1, page.getResults().size());
         Party person2 = (Party) page.getResults().get(0);
-        Set<Contact> contacts = person2.getContacts();
-        assertEquals(1, contacts.size());
+        assertEquals(1, person2.getContacts().size());
 
         // verify the values of the simple nodes. Note that although details
         // is a collection, it is treated as a simple node by hibernate as it
@@ -325,12 +323,12 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         // verify the values of the contact node. If the classification hasn't
         // been loaded, a LazyInitializationException will be raised by
         // hibernate
-        Contact contact2 = contacts.toArray(new Contact[contacts.size()])[0];
+        Contact contact2 = (Contact) person.getContacts().iterator().next();
         assertEquals("03", contact2.getDetails().get("areaCode"));
         assertEquals("0123456789",
                      contact2.getDetails().get("telephoneNumber"));
         assertEquals(1, contact2.getClassificationsAsArray().length);
-        Lookup purpose2 = contact2.getClassificationsAsArray()[0];
+        Lookup purpose2 = (Lookup) contact2.getClassificationsAsArray()[0];
         assertEquals(purpose.getCode(), purpose2.getCode());
     }
 

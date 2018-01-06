@@ -23,6 +23,7 @@ import org.openvpms.component.model.object.SequencedRelationship;
  * <p>
  * This is used by {@link Entity} to establish uni-directional links where both the source and targets may be queried.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface EntityLink extends SequencedRelationship {

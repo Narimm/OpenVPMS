@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.im.common;
 
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -33,8 +33,7 @@ import java.util.Map;
  * This interface provides data access object (DAO) support for objects of
  * type {@link IMObject}, which is the most generic type of object in the model.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 public interface IMObjectDAO {
 
@@ -69,7 +68,7 @@ public interface IMObjectDAO {
      * @return a page of objects that match the query criteria
      * @throws IMObjectDAOException for any error
      */
-    public IPage<IMObject> get(IArchetypeQuery query);
+    IPage<IMObject> get(IArchetypeQuery query);
 
     /**
      * Retrieves partially populated objects that match the query.
@@ -180,7 +179,7 @@ public interface IMObjectDAO {
      * @return the corresponding object, or <tt>null</tt> if none exists. The object may be active or inactive
      * @throws IMObjectDAOException for any error
      */
-    IMObject get(IMObjectReference reference);
+    IMObject get(Reference reference);
 
     /**
      * Returns an object with the specified reference.
@@ -191,7 +190,7 @@ public interface IMObjectDAO {
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    IMObject get(IMObjectReference reference, boolean active);
+    IMObject get(Reference reference, boolean active);
 
     /**
      * Executes a get using the specified named query, the query

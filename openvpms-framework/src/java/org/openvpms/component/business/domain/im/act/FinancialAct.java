@@ -1,26 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.domain.im.act;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 import java.math.BigDecimal;
 
@@ -30,10 +27,9 @@ import java.math.BigDecimal;
  * name a few. It extends the {@link Act} class and adds additional
  * attributes
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
-public class FinancialAct extends Act {
+public class FinancialAct extends Act implements org.openvpms.component.model.act.FinancialAct {
 
     /**
      * Serialisation version identifier.
@@ -48,37 +44,37 @@ public class FinancialAct extends Act {
     /**
      * Fixed amount or fee.
      */
-    private Money fixedAmount;
+    private BigDecimal fixedAmount;
 
     /**
      * Unit amount or fee.
      */
-    private Money unitAmount;
+    private BigDecimal unitAmount;
 
     /**
      * The fixed cost.
      */
-    private Money fixedCost;
+    private BigDecimal fixedCost;
 
     /**
      * The unit cost.
      */
-    private Money unitCost;
+    private BigDecimal unitCost;
 
     /**
      * Tax amount.
      */
-    private Money taxAmount;
+    private BigDecimal taxAmount;
 
     /**
      * The total for this act.
      */
-    private Money total;
+    private BigDecimal total;
 
     /**
      * The allocated amount.
      */
-    private Money allocatedAmount;
+    private BigDecimal allocatedAmount;
 
     /**
      * Determines if this financial transaction is a credit or debit.
@@ -123,7 +119,7 @@ public class FinancialAct extends Act {
      *
      * @return the fixed amount
      */
-    public Money getFixedAmount() {
+    public BigDecimal getFixedAmount() {
         return fixedAmount;
     }
 
@@ -132,7 +128,7 @@ public class FinancialAct extends Act {
      *
      * @param fixedAmount the fixed amount
      */
-    public void setFixedAmount(Money fixedAmount) {
+    public void setFixedAmount(BigDecimal fixedAmount) {
         this.fixedAmount = fixedAmount;
     }
 
@@ -141,7 +137,7 @@ public class FinancialAct extends Act {
      *
      * @param fixedCost the fixed cost
      */
-    public void setFixedCost(Money fixedCost) {
+    public void setFixedCost(BigDecimal fixedCost) {
         this.fixedCost = fixedCost;
     }
 
@@ -150,7 +146,7 @@ public class FinancialAct extends Act {
      *
      * @return the fixed cost.
      */
-    public Money getFixedCost() {
+    public BigDecimal getFixedCost() {
         return fixedCost;
     }
 
@@ -159,7 +155,7 @@ public class FinancialAct extends Act {
      *
      * @param unitCost the unit cost
      */
-    public void setUnitCost(Money unitCost) {
+    public void setUnitCost(BigDecimal unitCost) {
         this.unitCost = unitCost;
     }
 
@@ -168,7 +164,7 @@ public class FinancialAct extends Act {
      *
      * @return the unit cost
      */
-    public Money getUnitCost() {
+    public BigDecimal getUnitCost() {
         return unitCost;
     }
 
@@ -213,7 +209,7 @@ public class FinancialAct extends Act {
      *
      * @return the tax amount
      */
-    public Money getTaxAmount() {
+    public BigDecimal getTaxAmount() {
         return taxAmount;
     }
 
@@ -222,7 +218,7 @@ public class FinancialAct extends Act {
      *
      * @param taxAmount the tax amount
      */
-    public void setTaxAmount(Money taxAmount) {
+    public void setTaxAmount(BigDecimal taxAmount) {
         this.taxAmount = taxAmount;
     }
 
@@ -231,7 +227,7 @@ public class FinancialAct extends Act {
      *
      * @return the total
      */
-    public Money getTotal() {
+    public BigDecimal getTotal() {
         return total;
     }
 
@@ -240,7 +236,7 @@ public class FinancialAct extends Act {
      *
      * @param total the total
      */
-    public void setTotal(Money total) {
+    public void setTotal(BigDecimal total) {
         this.total = total;
     }
 
@@ -249,7 +245,7 @@ public class FinancialAct extends Act {
      *
      * @return the unit amount.
      */
-    public Money getUnitAmount() {
+    public BigDecimal getUnitAmount() {
         return unitAmount;
     }
 
@@ -258,7 +254,7 @@ public class FinancialAct extends Act {
      *
      * @param unitAmount the unit amount
      */
-    public void setUnitAmount(Money unitAmount) {
+    public void setUnitAmount(BigDecimal unitAmount) {
         this.unitAmount = unitAmount;
     }
 
@@ -276,7 +272,7 @@ public class FinancialAct extends Act {
      *
      * @return the allocated amount
      */
-    public Money getAllocatedAmount() {
+    public BigDecimal getAllocatedAmount() {
         return allocatedAmount;
     }
 
@@ -286,7 +282,7 @@ public class FinancialAct extends Act {
      * @param amount the allocated amount
      * @see #getAllocatedAmount
      */
-    public void setAllocatedAmount(Money amount) {
+    public void setAllocatedAmount(BigDecimal amount) {
         allocatedAmount = amount;
     }
 

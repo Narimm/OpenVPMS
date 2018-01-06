@@ -21,6 +21,7 @@ import org.openvpms.component.model.object.Identity;
 /**
  * An identity for an {@link Entity}.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface EntityIdentity extends Identity {

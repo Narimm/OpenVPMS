@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
@@ -32,8 +30,7 @@ import java.util.Set;
  * {@link IMObjectDO}s, and vice-versa.
  * *
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
         extends AbstractAssembler {
@@ -70,35 +67,6 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
     }
 
     /**
-     * Creates a new assembler.
-     * <p/>
-     * Use this when the set owns the objects it contains.
-     *
-     * @param type   the object type
-     * @param typeDO the data object implementation type
-     * @return a new assembler
-     */
-    public static <T extends IMObject, DO extends IMObjectDO>
-    SetAssembler<T, DO> create(Class<T> type, Class typeDO) {
-        return create(type, typeDO, false);
-    }
-
-    /**
-     * Creates a new assembler.
-     *
-     * @param type       the object type
-     * @param typeDO     the data object implementation type
-     * @param referenced if <t>true</tt>, objects are referenced by the set,
-     *                   otherwise they are owned by it
-     * @return a new assembler
-     */
-    public static <T extends IMObject, DO extends IMObjectDO>
-    SetAssembler<T, DO> create(Class<T> type, Class typeDO,
-                               boolean referenced) {
-        return new SetAssembler<T, DO>(type, typeDO, referenced);
-    }
-
-    /**
      * Assembles a set containing <tt>IMObjectDO</tt>s from a set containing
      * <tt>IMObject</tt>s.
      *
@@ -116,9 +84,7 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
                 state.addState(result);
             }
         } else if (source.isEmpty()) {
-            if (!target.isEmpty()) {
-                target.clear();
-            }
+            target.clear();
         } else {
             Assembler assembler = context.getAssembler();
             Map<IMObjectReference, DO> targetMap = getDO(target);
@@ -167,13 +133,40 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
     }
 
     /**
+     * Creates a new assembler.
+     * <p>
+     * Use this when the set owns the objects it contains.
+     *
+     * @param type   the object type
+     * @param typeDO the data object implementation type
+     * @return a new assembler
+     */
+    public static <T extends IMObject, DO extends IMObjectDO> SetAssembler<T, DO> create(Class<T> type, Class typeDO) {
+        return create(type, typeDO, false);
+    }
+
+    /**
+     * Creates a new assembler.
+     *
+     * @param type       the object type
+     * @param typeDO     the data object implementation type
+     * @param referenced if <t>true</tt>, objects are referenced by the set,
+     *                   otherwise they are owned by it
+     * @return a new assembler
+     */
+    public static <T extends IMObject, DO extends IMObjectDO> SetAssembler<T, DO> create(Class<T> type, Class typeDO,
+                                                                                         boolean referenced) {
+        return new SetAssembler<>(type, typeDO, referenced);
+    }
+
+    /**
      * Helper to return a map of objects keyed on reference.
      *
      * @param set the set of objects
      * @return the objects keyed on their references
      */
     private Map<IMObjectReference, T> get(Set<T> set) {
-        Map<IMObjectReference, T> result = new HashMap<IMObjectReference, T>();
+        Map<IMObjectReference, T> result = new HashMap<>();
         for (T object : set) {
             result.put(object.getObjectReference(), object);
         }
@@ -187,8 +180,7 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
      * @return the data objects keyed on their references
      */
     private Map<IMObjectReference, DO> getDO(Set<DO> set) {
-        Map<IMObjectReference, DO> result
-                = new HashMap<IMObjectReference, DO>();
+        Map<IMObjectReference, DO> result = new HashMap<>();
         for (DO object : set) {
             result.put(object.getObjectReference(), object);
         }
@@ -205,8 +197,7 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
      */
     private Collection<DO> getRemoved(Map<IMObjectReference, DO> target,
                                       Map<IMObjectReference, DO> retained) {
-        Map<IMObjectReference, DO> result = new HashMap<IMObjectReference, DO>(
-                target);
+        Map<IMObjectReference, DO> result = new HashMap<>(target);
         result.keySet().removeAll(retained.keySet());
         return result.values();
     }
@@ -219,11 +210,9 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
      * @param source the source map
      * @return the objects in the target that have keys in the source
      */
-    private Map<IMObjectReference, DO> getRetained(
-            Map<IMObjectReference, DO> target,
-            Map<IMObjectReference, T> source) {
-        Map<IMObjectReference, DO> result
-                = new HashMap<IMObjectReference, DO>(target);
+    private Map<IMObjectReference, DO> getRetained(Map<IMObjectReference, DO> target,
+                                                   Map<IMObjectReference, T> source) {
+        Map<IMObjectReference, DO> result = new HashMap<>(target);
         result.keySet().retainAll(source.keySet());
         return result;
     }
@@ -237,8 +226,7 @@ public class SetAssembler<T extends IMObject, DO extends IMObjectDO>
      */
     private Collection<T> getAdded(Map<IMObjectReference, DO> retained,
                                    Map<IMObjectReference, T> source) {
-        Map<IMObjectReference, T> result
-                = new HashMap<IMObjectReference, T>(source);
+        Map<IMObjectReference, T> result = new HashMap<>(source);
         result.keySet().removeAll(retained.keySet());
         return result.values();
     }

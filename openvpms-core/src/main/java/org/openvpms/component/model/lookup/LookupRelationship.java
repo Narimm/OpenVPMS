@@ -21,6 +21,7 @@ import org.openvpms.component.model.object.Relationship;
 /**
  * Describes a relationship between two {@link Lookup}s.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface LookupRelationship extends Relationship {

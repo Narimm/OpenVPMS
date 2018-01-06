@@ -19,19 +19,21 @@ package org.openvpms.component.i18n;
 import java.text.MessageFormat;
 
 /**
- * .
+ * A {@code Message} contains a localised formatted string, obtained from {@link Messages}.
+ * <p>
+ * Each message has a unique identifier which may be used to trace a message back to its source.
  *
  * @author Tim Anderson
  */
 public class Message {
 
     /**
-     * The group that the message belongs to.
+     * The group that the message belongs to. May be {@code null}
      */
     private String groupId;
 
     /**
-     * The message code within the group.
+     * The message code within the group, or {@code -1} if this didn't come from a resource bundle.
      */
     private int code;
 
@@ -42,7 +44,7 @@ public class Message {
 
 
     /**
-     * Constructs a <tt>Message</tt>.
+     * Constructs a {@link Message}.
      *
      * @param groupId the group that the message belongs to
      * @param code    the message code. This is unique withing the group
@@ -56,9 +58,9 @@ public class Message {
 
     /**
      * Returns the message id.
-     * <p/>
+     * <p>
      * This is obtained by concatenating the {@link #getGroupId() project} and {@link #getCode() code}.
-     * <p/>
+     * <p>
      * The message id is unique.
      *
      * @return the message id
@@ -69,7 +71,7 @@ public class Message {
 
     /**
      * Returns the identifier of the group that the message belongs to.
-     * <p/>
+     * <p>
      * This is ideally between 3 to 5 characters (e.g it could be the associated JIRA project identifier)
      * and must be unique across all groups.
      *
@@ -103,8 +105,7 @@ public class Message {
      * @return the id and message
      */
     public String toString() {
-        return getId() + ": " + message;
+        return (code != -1) ? getId() + ": " + message : message;
     }
-
 
 }

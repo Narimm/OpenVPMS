@@ -16,32 +16,34 @@
 
 package org.openvpms.component.model.archetype;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
- * .
+ * A list of named properties.
  *
  * @author Tim Anderson
  */
 public interface PropertyList extends NamedProperty {
 
     /**
-     * @return Returns the properties.
+     * Returns the properties.
+     *
+     * @return the properties
      */
-    Set<NamedProperty> getProperties();
+    Collection<NamedProperty> getProperties();
 
     /**
-     * Add the specified property to the list
+     * Adds a property to the list.
      *
      * @param property the property to add
      */
-    public void addProperty(NamedProperty property);
+    void addProperty(NamedProperty property);
 
     /**
-     * Remove the specified property from the list
+     * Removes a property from the list.
      *
      * @param property the property to remove
      */
-    public void removeProperty(NamedProperty property);
+    void removeProperty(NamedProperty property);
 
 }

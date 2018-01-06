@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.entity.EntityRelationship;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
@@ -41,8 +41,7 @@ public class PatientRelationshipRules {
      * @param patient the patient
      */
     public static void checkRelationships(Party patient) {
-        Map<String, EntityRelationship> currentActives
-                = new HashMap<String, EntityRelationship>();
+        Map<String, EntityRelationship> currentActives = new HashMap<>();
         EntityRelationship currentActive;
 
         // Loop through all the patient relationships.
@@ -55,7 +54,7 @@ public class PatientRelationshipRules {
         for (EntityRelationship rel : patient.getEntityRelationships()) {
             if (rel.isActive()) {
                 if (rel.getActiveEndTime() == null) {
-                    String shortname = rel.getArchetypeId().getShortName();
+                    String shortname = rel.getArchetype();
                     currentActive = currentActives.get(shortname);
                     if (rel.isNew()) {
                         if (currentActive == null) {

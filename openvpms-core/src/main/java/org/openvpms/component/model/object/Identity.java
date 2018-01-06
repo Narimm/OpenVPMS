@@ -21,6 +21,7 @@ package org.openvpms.component.model.object;
  * <p>
  * These are used to assign internal and external identifiers to objects.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface Identity extends IMObject {

@@ -21,5 +21,61 @@ package org.openvpms.component.model.object;
  *
  * @author Tim Anderson
  */
-public class Reference {
+public interface Reference {
+
+    /**
+     * Return the object's archetype.
+     *
+     * @return the archetype
+     */
+    String getArchetype();
+
+    /**
+     * Returns the object's persistent identifier.
+     *
+     * @return the object's persistent identifier, or {@code -1} if the object is not persistent.
+     */
+    long getId();
+
+    /**
+     * Returns the object link identifier.
+     * <p>
+     * This is a UUID that is used to link objects until they can be made
+     * persistent, and to provide support for object equality.
+     *
+     * @return the link identifier. May be {@code null}
+     */
+    String getLinkId();
+
+    /**
+     * Determines if the object is new. A new object is one that has not been made persistent.
+     *
+     * @return {@code true} if the object is new, {@code false} if it has been made persistent
+     */
+    boolean isNew();
+
+    /**
+     * Determines if the reference is to an instance of a particular archetype.
+     *
+     * @param archetype the archetype short name. May contain wildcards
+     * @return {@code true} if the object is an instance of {@code archetype}
+     */
+    boolean isA(String archetype);
+
+    /**
+     * Determines if the reference is to an object of one of a set of archetypes.
+     *
+     * @param archetypes the archetype short names. May contain wildcards
+     * @return {@code true} if object is one of {@code archetypes}
+     */
+    boolean isA(String... archetypes);
+
+    /**
+     * Determines if an archetype and link identifier match this.
+     *
+     * @param archetype the archetype
+     * @param linkId    the link identifier
+     * @return {@code true} if they match, otherwise {@code false}
+     */
+    boolean equals(String archetype, String linkId);
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -296,8 +295,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
         boolean valid = true;
         Product product = (Product) getObject();
         List<ProductPrice> unitPrices = new ArrayList<>();
-        for (ProductPrice price : product.getProductPrices()) {
-            if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
+        for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
+            ProductPrice price = (ProductPrice) p;
+            if (price.isA(ProductArchetypes.UNIT_PRICE)) {
                 unitPrices.add(price);
             }
         }

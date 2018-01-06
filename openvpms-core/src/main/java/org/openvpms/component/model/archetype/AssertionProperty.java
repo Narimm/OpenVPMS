@@ -17,19 +17,24 @@
 package org.openvpms.component.model.archetype;
 
 /**
- * .
+ * A named property for an {@link AssertionDescriptor} that includes the type of the property.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface AssertionProperty extends NamedProperty {
 
     /**
-     * @return Returns the type.
+     * Returns the property type.
+     *
+     * @return a fully qualified class name indicating the type of the property
      */
     String getType();
 
     /**
-     * @param type The type to set.
+     * Sets the property type.
+     *
+     * @param type a fully qualified class name indicating the type of the property
      */
     void setType(String type);
 

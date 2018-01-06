@@ -11,18 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.service;
 
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.bean.IMObjectBean;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -81,8 +82,8 @@ public class InsurersImpl implements Insurers {
         query.add(join("insurerId", shortName(archetype, false)).add(eq("identity", insurerId)));
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
-        IMObjectQueryIterator<Party> iterator = new IMObjectQueryIterator<>(service, query);
-        return iterator.hasNext() ? iterator.next() : null;
+        IMObjectQueryIterator<IMObject> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? (Party) iterator.next() : null;
     }
 
     /**

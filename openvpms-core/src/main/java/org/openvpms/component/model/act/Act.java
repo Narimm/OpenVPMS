@@ -19,79 +19,106 @@ package org.openvpms.component.model.act;
 import org.openvpms.component.model.object.IMObject;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * .
+ * An act represents an activity that is being done, has been done, can be done, or is intended or requested to be done.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
-interface Act extends IMObject {
+public interface Act extends IMObject {
 
     /**
-     * @return Returns the activityEndTime.
-     */
-    Date getActivityEndTime();
-
-    /**
-     * @param activityEndTime The activityEndTime to set.
-     */
-    void setActivityEndTime(Date activityEndTime);
-
-    /**
-     * @return Returns the activityStartTime.
+     * Returns the activity start time.
+     *
+     * @return the start time. May be {@code null}.
      */
     Date getActivityStartTime();
 
     /**
-     * @param activityStartTime The activityStartTime to set.
+     * Sets the activity start time.
+     *
+     * @param time the start time. May be {@code null}
      */
-    void setActivityStartTime(Date activityStartTime);
+    void setActivityStartTime(Date time);
 
     /**
-     * @return Returns the reason.
+     * Returns the activity end time.
+     *
+     * @return the end time. May be {@code null}.
+     */
+    Date getActivityEndTime();
+
+    /**
+     * Sets the activity end time.
+     *
+     * @param time the end time. May be {@code null}
+     */
+    void setActivityEndTime(Date time);
+
+    /**
+     * Returns the reason for the activity.
+     *
+     * @return the reason. May be {@code null}
      */
     String getReason();
 
     /**
-     * @param reason The reason to set.
+     * Sets the reason for the activity.
+     *
+     * @param reason the reason. May be {@code null}
      */
     void setReason(String reason);
 
     /**
-     * @return Returns the status.
+     * Returns the status of the activity.
+     *
+     * @return the status. May be {@code null}
      */
     String getStatus();
 
     /**
-     * @param status The status to set.
+     * Sets the status of the activity.
+     *
+     * @param status the status. May be {@code null}
      */
     void setStatus(String status);
 
     /**
-     * Returns the secondary status.
+     * Returns the secondary status of the activity.
      *
      * @return the secondary status. May be {@code null}
      */
     String getStatus2();
 
     /**
-     * Sets the secondary status.
+     * Sets the secondary status of the activity.
      *
      * @param status2 the secondary status. May be {@code null}
      */
     void setStatus2(String status2);
 
     /**
-     * @return Returns the title.
+     * Returns the activity title.
+     *
+     * @return the title. May be {@code null}
      */
     String getTitle();
 
     /**
-     * @param title The title to set.
+     * Sets the activity title.
+     *
+     * @param title the title. May be {@code null}
      */
     void setTitle(String title);
+
+    /**
+     * Returns the identities for this activity.
+     *
+     * @return the identities
+     */
+    Set<ActIdentity> getIdentities();
 
     /**
      * Adds an identity.
@@ -104,99 +131,101 @@ interface Act extends IMObject {
      * Removes an identity.
      *
      * @param identity the identity to remove
-     * @return {@code true} if the identity was removed
      */
-    boolean removeIdentity(ActIdentity identity);
+    void removeIdentity(ActIdentity identity);
 
     /**
-     * Returns the identities.
+     * Returns the relationships where this activity is the source.
      *
-     * @return the identities
-     */
-    Set<ActIdentity> getIdentities();
-
-    /**
-     * @return Returns the sourceActRelationships.
+     * @return the relationships
      */
     Set<ActRelationship> getSourceActRelationships();
 
     /**
-     * Add a source {@link ActRelationship}.
+     * Add a relationship where this activity is the source.
      *
-     * @param source
+     * @param relationship the relationship to add
      */
-    void addSourceActRelationship(ActRelationship source);
+    void addSourceActRelationship(ActRelationship relationship);
 
     /**
-     * Remove a source {@link ActRelationship}.
+     * Removes a relationship where this activity is the source.
      *
-     * @param source
+     * @param relationship the relationship to remove
      */
-    void removeSourceActRelationship(ActRelationship source);
+    void removeSourceActRelationship(ActRelationship relationship);
 
     /**
-     * @return Returns the targetActRelationships.
+     * Returns the relationships where this activity is the target.
+     *
+     * @return the relationships
      */
     Set<ActRelationship> getTargetActRelationships();
 
     /**
-     * Add a target {@link ActRelationship}.
+     * Add a relationship where this activity is the target.
      *
-     * @param target add a new target.
+     * @param relationship the relationship to add
      */
-    void addTargetActRelationship(ActRelationship target);
+    void addTargetActRelationship(ActRelationship relationship);
 
     /**
-     * Remove a target {@link ActRelationship}.
+     * Removes a relationship where this activity is the target.
      *
-     * @param target
+     * @param relationship the relationship to remove
      */
-    void removeTargetActRelationship(ActRelationship target);
+    void removeTargetActRelationship(ActRelationship relationship);
 
     /**
-     * Add a relationship to this act. It will determine whether it is a
-     * source or target relationship before adding it.
+     * Adds a relationship between this activity and another.
+     * <p>
+     * It will determine if this is a source or target of the relationship and invoke
+     * {@link #addSourceActRelationship} or {@link #addTargetActRelationship} accordingly.
      *
-     * @param actRel the act relationship to add
+     * @param relationship the relationship to add
      */
-    void addActRelationship(ActRelationship actRel);
+    void addActRelationship(ActRelationship relationship);
 
     /**
-     * Remove a relationship to this act. It will determine whether it is a
-     * source or target relationship before removing it.
+     * Remove a relationship between this activity and another.
+     * <p>
+     * It will determine if this is a source or target of the relationship and invoke
+     * {@link #removeSourceActRelationship} or {@link #removeTargetActRelationship} accordingly.
      *
-     * @param actRel the act relationship to remove
+     * @param relationship the act relationship to remove
      */
-    void removeActRelationship(ActRelationship actRel);
+    void removeActRelationship(ActRelationship relationship);
 
     /**
-     * Return all the act relationships. Do not use the returned set to
-     * add and remove act relationships. Instead use {@link #addActRelationship(ActRelationship)}
-     * and {@link #removeActRelationship(ActRelationship)} repsectively.
+     * Return all the relationships that the activity has.
+     * <p>
+     * NOTE: the returned set cannot be used to add or remove relationships.
      *
-     * @return Set<ActRelationship>
+     * @return the relationships
      */
     Set<ActRelationship> getActRelationships();
 
     /**
-     * Return the associated {@link Participation} instances.
+     * Returns the participation relationships for the activity.
+     * <p>
+     * These determine the entities participating in the activity.
      *
-     * @return Participation
+     * @return the participation relationhsips
      */
     Set<Participation> getParticipations();
 
     /**
-     * Add a {@link Participation}.
+     * Adds a participation relationship.
      *
-     * @param participation
+     * @param participation the participation to add
      */
     void addParticipation(Participation participation);
 
     /**
-     * Remove a {@link Participation}.
+     * Removes a participation relationship.
      *
-     * @param participation
+     * @param participation the participation to remove
      */
     void removeParticipation(Participation participation);
-    
+
 }

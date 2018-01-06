@@ -11,12 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.bean;
 
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.model.object.Relationship;
 
 import java.util.Comparator;
 import java.util.function.Predicate;
@@ -26,7 +26,7 @@ import java.util.function.Predicate;
  *
  * @author Tim Anderson
  */
-public interface Policy<R extends IMObjectRelationship> {
+public interface Policy<R extends Relationship> {
 
     enum State {
         ACTIVE,     // the object must be active

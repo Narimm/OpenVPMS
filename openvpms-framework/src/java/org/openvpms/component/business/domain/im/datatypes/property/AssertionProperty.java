@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.domain.im.datatypes.property;
 
@@ -28,7 +28,8 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  *
  * @author Jim Alateras
  */
-public class AssertionProperty extends NamedProperty {
+public class AssertionProperty extends NamedProperty
+        implements org.openvpms.component.model.archetype.AssertionProperty {
 
     /**
      * Default SUID

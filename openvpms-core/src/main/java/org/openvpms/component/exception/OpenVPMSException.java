@@ -17,33 +17,46 @@
 package org.openvpms.component.exception;
 
 import org.openvpms.component.i18n.Message;
-import org.openvpms.component.i18n.Messages;
 
 /**
- * .
+ * This is the base exception for all OpenVPMS exceptions.
  *
  * @author Tim Anderson
  */
-public class OpenVPMSException extends RuntimeException {
+public abstract class OpenVPMSException extends RuntimeException {
 
+    /**
+     * The exception message.
+     */
     private final Message message;
 
-    public OpenVPMSException(String message) {
-        this(Messages.create(message));
-    }
-
-    public OpenVPMSException(String message, Throwable cause) {
-        this(Messages.create(message), cause);
-    }
-
+    /**
+     * Constructs a {@link OpenVPMSException}.
+     *
+     * @param message the exception message
+     */
     public OpenVPMSException(Message message) {
         super(message.toString());
         this.message = message;
     }
 
+    /**
+     * Constructs a {@link OpenVPMSException}.
+     *
+     * @param message the exception message
+     * @param cause   the cause
+     */
     public OpenVPMSException(Message message, Throwable cause) {
         super(message.toString(), cause);
         this.message = message;
     }
 
+    /**
+     * Returns the internalisation message.
+     *
+     * @return the message
+     */
+    public Message getI18nMessage() {
+        return message;
+    }
 }

@@ -19,29 +19,31 @@ package org.openvpms.component.model.archetype;
 import java.util.Map;
 
 /**
- * .
+ * A map of named properties.
  *
  * @author Tim Anderson
  */
 public interface PropertyMap extends NamedProperty {
 
     /**
-     * @return Returns the properties.
+     * Returns the properties.
+     *
+     * @return the properties
      */
-    public Map<String, NamedProperty> getProperties();
+    Map<String, NamedProperty> getProperties();
 
     /**
-     * Add the specified property to the list
+     * Add a property to the map.
      *
      * @param property the property to add
      */
-    public void addProperty(NamedProperty property);
+    void addProperty(NamedProperty property);
 
     /**
-     * Remove the specified property from the list
+     * Removes a specified property from the map.
      *
      * @param property the property to remove
      */
-    public void removeProperty(NamedProperty property);
+    void removeProperty(NamedProperty property);
 
 }

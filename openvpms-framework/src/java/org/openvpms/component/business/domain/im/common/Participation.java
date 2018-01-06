@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -21,6 +19,7 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 import java.util.Map;
@@ -29,10 +28,9 @@ import java.util.Map;
 /**
  * A class representing an {@link Entity}'s participantion in an {@link Act}.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
-public class Participation extends IMObject {
+public class Participation extends IMObject implements org.openvpms.component.model.act.Participation {
 
     /**
      * Serial version identifier.
@@ -213,9 +211,73 @@ public class Participation extends IMObject {
     }
 
     /**
+     * Sets the act reference.
+     * <p>
+     * This is synonymous with {@link #setSource(Reference)}.
+     *
+     * @param act the act reference
+     */
+    @Override
+    public void setAct(Reference act) {
+        setAct((IMObjectReference) act);
+    }
+
+    /**
      * @param entity The entity to set.
      */
     public void setEntity(IMObjectReference entity) {
         this.entity = entity;
+    }
+
+    /**
+     * Sets the entity reference.
+     * <p>
+     * This is synonymous with {@link #setTarget(Reference)}.
+     *
+     * @param entity the entity reference
+     */
+    @Override
+    public void setEntity(Reference entity) {
+        setEntity((IMObjectReference) entity);
+    }
+
+    /**
+     * Returns a reference to the source object.
+     *
+     * @return the source object reference
+     */
+    @Override
+    public Reference getSource() {
+        return getAct();
+    }
+
+    /**
+     * Sets the source object reference.
+     *
+     * @param source the source object reference
+     */
+    @Override
+    public void setSource(Reference source) {
+        setAct(source);
+    }
+
+    /**
+     * Returns a reference to the target object.
+     *
+     * @return the target object reference
+     */
+    @Override
+    public Reference getTarget() {
+        return getEntity();
+    }
+
+    /**
+     * Sets the target object reference.
+     *
+     * @param target the target object reference
+     */
+    @Override
+    public void setTarget(Reference target) {
+        setEntity(target);
     }
 }

@@ -20,8 +20,9 @@ import org.openvpms.component.model.object.Reference;
 
 
 /**
- * .
+ * A document-specific activity.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface DocumentAct extends Act {
@@ -29,44 +30,56 @@ public interface DocumentAct extends Act {
     /**
      * Returns the document reference.
      *
-     * @return the document reference, or <tt>null</tt> if none is set
+     * @return the document reference. May be {@code null}
      */
     Reference getDocument();
 
     /**
      * Sets the document reference.
      *
-     * @param reference the document reference. May be <tt>null</tt>
+     * @param reference the document reference. May be {@code null}
      */
     void setDocument(Reference reference);
 
     /**
-     * @return Returns the fileName.
+     * Returns the document file name.
+     *
+     * @return the file name. May be {@code null}
      */
     String getFileName();
 
     /**
-     * @param fileName The fileName to set.
+     * Sets the document file name.
+     *
+     * @param fileName the file name. May be {@code null}
      */
     void setFileName(String fileName);
 
     /**
-     * @return Returns the mimeType.
+     * Returns the mime type of the document.
+     *
+     * @return the mime type. May be {@code null}
      */
     String getMimeType();
 
     /**
-     * @param mimeType The mimeType to set.
+     * Sets the mime type of the document.
+     *
+     * @param mimeType the mime type. May be {@code null}
      */
     void setMimeType(String mimeType);
 
     /**
-     * @return Returns the printed.
+     * Determines if the document has been printed.
+     *
+     * @return {@code true} if the document has been printed
      */
     boolean isPrinted();
 
     /**
-     * @param printed The printed to set.
+     * Determines if the document has been printed.
+     *
+     * @param printed ifi {@code true}, indicates the document has been printed
      */
     void setPrinted(boolean printed);
 

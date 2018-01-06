@@ -21,8 +21,22 @@ import org.openvpms.component.model.object.IMObject;
 import java.util.Set;
 
 /**
- * .
+ * A lookup represents a piece of static data such as a Species, Breed, Country, or PostCode etc.
+ * <p>
+ * A lookup has a <em>code</em>, <em>name</em> and <em>description</em>.
+ * The <em>code</em> is mandatory, used to uniquely identify the lookup within
+ * its domain. The other attributes are optional.
+ * <br/>
+ * The convention for alphabetic codes are that they appear all in uppercase,
+ * with words separated by an underscore.
+ * E.g, CANINE, COMPLETED, IN_PROGRESS.
+ * <br/>
+ * The <em>name</em> is used for display purposes. If not specified, it is derived from <em>code</em>.
+ * <br/>
+ * The <em>description</em> is used for display purposes, and defaults to {@code null}.
+ * <p>
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface Lookup extends IMObject {
@@ -63,71 +77,74 @@ public interface Lookup extends IMObject {
     void setDefaultLookup(boolean defaultLookup);
 
     /**
-     * Returns the the source lookup relationships.
+     * Returns the relationships where this lookup is the source.
      *
      * @return the source lookup relationships
      */
     Set<LookupRelationship> getSourceLookupRelationships();
 
     /**
-     * Add a source {@link LookupRelationship}.
+     * Add a relationship where this lookup is the source.
      *
-     * @param source the relationship to add
+     * @param relationship the relationship to add
      */
-    void addSourceLookupRelationship(LookupRelationship source);
+    void addSourceLookupRelationship(LookupRelationship relationship);
 
     /**
-     * Remove a source {@link LookupRelationship}.
+     * Removes a relationship where this lookup is the source.
      *
-     * @param source the relationship to remove
+     * @param relationship the relationship to remove
      */
-    void removeSourceLookupRelationship(LookupRelationship source);
+    void removeSourceLookupRelationship(LookupRelationship relationship);
 
     /**
-     * Returns the target lookup relationships.
+     * Returns the relationships where this lookup is the target.
      *
      * @return the target lookup relationships
      */
     Set<LookupRelationship> getTargetLookupRelationships();
 
     /**
-     * Adds a target {@link LookupRelationship}.
+     * Add a relationship where this lookup is the target.
      *
-     * @param target the relationship to add
+     * @param relationship the relationship to add
      */
-    void addTargetLookupRelationship(LookupRelationship target);
+    void addTargetLookupRelationship(LookupRelationship relationship);
 
     /**
-     * Removes a target {@link LookupRelationship}.
+     * Removes a relationship where this lookup is the target.
      *
-     * @param target the relationship to remove
+     * @param relationship the relationship to remove
      */
-    void removeTargetLookupRelationship(LookupRelationship target);
+    void removeTargetLookupRelationship(LookupRelationship relationship);
 
     /**
-     * Add a relationship to this lookup. It will determine whether it is a
-     * source or target relationship before adding it.
+     * Return all the relationships that the lookup has.
+     * <p>
+     * NOTE: the returned set cannot be used to add or remove relationships.
      *
-     * @param rel the relationship to add
-     */
-    void addLookupRelationship(LookupRelationship rel);
-
-    /**
-     * Remove a relationship from this lookup. It will determine whether it is a
-     * source or target relationship before removing it.
-     *
-     * @param rel the lookup relationship to remove
-     */
-    void removeLookupRelationship(LookupRelationship rel);
-
-    /**
-     * Returns all the lookup relationships. Do not use the returned set to
-     * add and remove lookup relationships.
-     * Instead use {@link #addLookupRelationship(LookupRelationship)}
-     * and {@link #removeLookupRelationship(LookupRelationship)} repsectively.
-     *
-     * @return the set of all lookup relationships
+     * @return the relationships
      */
     Set<LookupRelationship> getLookupRelationships();
+
+    /**
+     * Adds a relationship between this lookup and another.
+     * <p>
+     * It will determine if this is a source or target of the relationship and invoke
+     * {@link #addSourceLookupRelationship} or {@link #addTargetLookupRelationship} accordingly.
+     *
+     * @param relationship the entity relationship to add
+     */
+    void addLookupRelationship(LookupRelationship relationship);
+
+    /**
+     * Remove a relationship between this lookup and another.
+     * <p>
+     * It will determine if this is a source or target of the relationship and invoke
+     * {@link #removeSourceLookupRelationship} or {@link #removeTargetLookupRelationship} accordingly.
+     *
+     * @param relationship the entity relationship to remove
+     */
+    void removeLookupRelationship(LookupRelationship relationship);
 
 }

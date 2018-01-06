@@ -1,32 +1,30 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 
 /**
  * A <tt>DeferredAssembler</tt> is used to delay assembly of an
  * {@link IMObjectDO} until an {@link IMObjectReference} can be resolved.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class DeferredAssembler extends AbstractAssembler {
 
@@ -38,7 +36,7 @@ public abstract class DeferredAssembler extends AbstractAssembler {
     /**
      * The reference that the data object is dependent on.
      */
-    private IMObjectReference reference;
+    private Reference reference;
 
     /**
      * Creates a new <tt>DeferredAssembler</tt>.
@@ -46,7 +44,7 @@ public abstract class DeferredAssembler extends AbstractAssembler {
      * @param state     the data object state
      * @param reference the reference that the data object is dependent on
      */
-    public DeferredAssembler(DOState state, IMObjectReference reference) {
+    public DeferredAssembler(DOState state, Reference reference) {
         this.state = state;
         this.reference = reference;
         state.addDeferred(this);
@@ -66,7 +64,7 @@ public abstract class DeferredAssembler extends AbstractAssembler {
      *
      * @return the reference
      */
-    public IMObjectReference getReference() {
+    public Reference getReference() {
         return reference;
     }
 

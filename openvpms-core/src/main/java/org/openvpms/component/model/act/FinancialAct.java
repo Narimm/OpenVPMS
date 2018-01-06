@@ -19,8 +19,9 @@ package org.openvpms.component.model.act;
 import java.math.BigDecimal;
 
 /**
- * .
+ * The financial act is used to model financial activities or transactions, such as invoices, payments and refunds.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface FinancialAct extends Act {
@@ -94,6 +95,7 @@ public interface FinancialAct extends Act {
      * @param unitAmount the unit amount
      */
     void setUnitAmount(BigDecimal unitAmount);
+
     /**
      * Returns the quantity.
      *
@@ -138,14 +140,12 @@ public interface FinancialAct extends Act {
 
     /**
      * Returns the allocated amount.
-     * <p>For debits, it is the amount of credits
-     * that have been allocated against the total amount. If allocated = total
-     * then the debt is fully paid.
+     * <p>For debits, it is the amount of credits that have been allocated against the total amount.
+     * If allocated = total, then the debt is fully paid.
      * </p>
      * <p/>
-     * For credits, it is the amount of the credit that has been allocated
-     * against a debit. If allocated = total then credit has been fully
-     * allocated.
+     * For credits, it is the amount of the credit that has been allocated against a debit.
+     * If allocated = total then credit has been fully allocated.
      * </p>
      *
      * @return the allocated amount

@@ -21,30 +21,32 @@ import org.openvpms.component.model.entity.Entity;
 import java.util.Set;
 
 /**
- * .
+ * Represents a product that may be bought or sold.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface Product extends Entity {
 
     /**
-     * @return Returns the productPrices.
+     * Returns the product prices.
+     *
+     * @return the product prices.
      */
     Set<ProductPrice> getProductPrices();
 
     /**
-     * Add the specified {@link ProductPrice} to the set.
+     * Adds a price.
      *
-     * @param productPrice the product price to add
+     * @param price the product price to add
      */
-    void addProductPrice(ProductPrice productPrice);
+    void addProductPrice(ProductPrice price);
 
     /**
-     * Remove the specified {@link ProductPrice} from the set.
+     * Remoces a price.
      *
-     * @param productPrice
-     *            the product price to remove
+     * @param price the product price to add
      */
-    void removeProductPrice(ProductPrice productPrice);
+    void removeProductPrice(ProductPrice price);
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -87,6 +87,7 @@ class IMObjectValidator {
      * @param object the object to validate
      * @param errors the list to add validation errors to
      */
+    @SuppressWarnings("unchecked")
     protected void validate(IMObject object, List<ValidationError> errors) {
         ArchetypeId id = object.getArchetypeId();
         if (log.isDebugEnabled()) {
@@ -101,9 +102,10 @@ class IMObjectValidator {
         } else {
             // if there are nodes attached to the archetype then validate the
             // associated assertions
-            if (archetype.getNodeDescriptors().size() > 0) {
+            Map nodeDescriptors = archetype.getNodeDescriptors();
+            if (nodeDescriptors.size() > 0) {
                 JXPathContext context = JXPathHelper.newContext(object);
-                validateNodes(object, context, archetype, archetype.getNodeDescriptors(), errors);
+                validateNodes(object, context, archetype, (Map<String, NodeDescriptor>) nodeDescriptors, errors);
             }
         }
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -883,7 +882,7 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
     }
 
     /**
-     * Tests the {@link EntityBean#addNodeTarget(String, IMObject)} method.
+     * Tests the {@link EntityBean#addNodeTarget(String, org.openvpms.component.model.object.IMObject)} method.
      */
     @Test
     public void testAddNodeTarget() {

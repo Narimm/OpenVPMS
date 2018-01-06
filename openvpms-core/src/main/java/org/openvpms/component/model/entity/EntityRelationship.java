@@ -21,6 +21,7 @@ import org.openvpms.component.model.object.SequencedRelationship;
 /**
  * Describes a relationship between two {@link Entity} instances.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface EntityRelationship extends SequencedRelationship {

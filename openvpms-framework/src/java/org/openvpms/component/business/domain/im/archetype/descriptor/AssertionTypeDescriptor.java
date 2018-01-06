@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
@@ -35,13 +32,13 @@ import java.util.TreeSet;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AssertionTypeDescriptor extends Descriptor {
+public class AssertionTypeDescriptor extends Descriptor
+        implements org.openvpms.component.model.archetype.AssertionTypeDescriptor {
 
     /**
-     * A list of well known actions which may be supported by assertions
+     * A list of well known actions which may be supported by assertions.
      */
-    public enum Actions {
-
+    enum Actions {
         create, validate, set
     }
 
@@ -59,7 +56,7 @@ public class AssertionTypeDescriptor extends Descriptor {
     /**
      * A list of actions associated with this assertion type
      */
-    private Set<ActionTypeDescriptor> actionTypes = new HashSet<ActionTypeDescriptor>();
+    private Set<org.openvpms.component.model.archetype.ActionTypeDescriptor> actionTypes = new HashSet<>();
 
     /**
      * Default constructor
@@ -71,7 +68,7 @@ public class AssertionTypeDescriptor extends Descriptor {
     /**
      * @return Returns the actionTypes.
      */
-    public Set<ActionTypeDescriptor> getActionTypes() {
+    public Set<org.openvpms.component.model.archetype.ActionTypeDescriptor> getActionTypes() {
         return actionTypes;
     }
 
@@ -80,7 +77,7 @@ public class AssertionTypeDescriptor extends Descriptor {
      *
      * @param actionTypes the action types
      */
-    public void setActionTypes(Set<ActionTypeDescriptor> actionTypes) {
+    public void setActionTypes(Set<org.openvpms.component.model.archetype.ActionTypeDescriptor> actionTypes) {
         this.actionTypes = actionTypes;
     }
 
@@ -122,12 +119,13 @@ public class AssertionTypeDescriptor extends Descriptor {
      * @return ActionTypeDescriptor
      */
     public ActionTypeDescriptor getActionType(String name) {
-        for (ActionTypeDescriptor actionType : actionTypes) {
-            if (actionType.getName().equals(name)) {
-                return actionType;
+        if (name != null) {
+            for (org.openvpms.component.model.archetype.ActionTypeDescriptor actionType : actionTypes) {
+                if (actionType.getName().equals(name)) {
+                    return (ActionTypeDescriptor) actionType;
+                }
             }
         }
-
         return null;
     }
 
@@ -173,7 +171,7 @@ public class AssertionTypeDescriptor extends Descriptor {
      */
     public Object evaluateAction(String action, Object target, IMObject parent, NodeDescriptor node,
                                  AssertionDescriptor assertion) {
-        ActionTypeDescriptor descriptor = getActionTypeDescriptorByName(action);
+        ActionTypeDescriptor descriptor = getActionType(action);
         if (descriptor == null) {
             throw new AssertionException(
                     AssertionException.ErrorCode.ActionNotSupportedByAssertion,
@@ -276,33 +274,11 @@ public class AssertionTypeDescriptor extends Descriptor {
     @Override
     public Object clone() throws CloneNotSupportedException {
         AssertionTypeDescriptor copy = (AssertionTypeDescriptor) super.clone();
-        copy.actionTypes = new TreeSet<ActionTypeDescriptor>(this.actionTypes);
+        copy.actionTypes = new TreeSet<>(this.actionTypes);
         copy.propertyArchetype = this.propertyArchetype;
 
         return copy;
     }
 
-    /**
-     * Return the {@link ActionTypeDescriptor} with the specified name or null
-     * if one does not exist.
-     *
-     * @param action the name of the action
-     * @return ActionTypeDescriptor
-     */
-    private ActionTypeDescriptor getActionTypeDescriptorByName(String action) {
-        if (StringUtils.isEmpty(action)) {
-            return null;
-        }
-
-        ActionTypeDescriptor descriptor = null;
-        for (ActionTypeDescriptor atype : actionTypes) {
-            if (atype.getName().equals(action)) {
-                descriptor = atype;
-                break;
-            }
-        }
-
-        return descriptor;
-    }
 
 }

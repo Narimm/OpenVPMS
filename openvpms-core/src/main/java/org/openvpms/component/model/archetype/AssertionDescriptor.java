@@ -19,25 +19,16 @@ package org.openvpms.component.model.archetype;
 import org.openvpms.component.model.object.IMObject;
 
 /**
- * .
+ * An {@code AssertionDescriptor} describes an assertion on a {@link NodeDescriptor}, and is used to configure the
+ * behaviour of its associated {@link AssertionTypeDescriptor}.
+ * <br/>
+ * By convention, the {@code AssertionTypeDescriptor} should have the same name as the {@code AssertionDescriptor} -
+ * this is used to establish the association.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface AssertionDescriptor extends IMObject {
-
-    /**
-     * Returns the error message.
-     *
-     * @return the error message
-     */
-    String getErrorMessage();
-
-    /**
-     * Sets the error message.
-     *
-     * @param errorMessage the error message to set
-     */
-    void setErrorMessage(String errorMessage);
 
     /**
      * Return the assertion properties.
@@ -45,13 +36,6 @@ public interface AssertionDescriptor extends IMObject {
      * @return the properties
      */
     PropertyMap getPropertyMap();
-
-    /**
-     * Sets the assertion properties.
-     *
-     * @param properties the properties
-     */
-    void setPropertyMap(PropertyMap properties);
 
     /**
      * Adds an assertion property.
@@ -78,8 +62,7 @@ public interface AssertionDescriptor extends IMObject {
      * Returns the assertion property by name.
      *
      * @param name the property name
-     * @return the corresponding assertion property, or <tt>null</tt> if none
-     *         is found
+     * @return the corresponding assertion property, or {@code null} if none is found
      */
     NamedProperty getProperty(String name);
 
@@ -97,4 +80,27 @@ public interface AssertionDescriptor extends IMObject {
      */
     void setIndex(int index);
 
+    /**
+     * Returns the error message.
+     *
+     * @return the error message
+     */
+    String getErrorMessage();
+
+    /**
+     * Sets the error message.
+     *
+     * @param errorMessage the error message to set
+     */
+    void setErrorMessage(String errorMessage);
+
+    /**
+     * Evaluates the validation action type of the associated assertion type descriptor, if one is defined.
+     *
+     * @param value  the value to validate
+     * @param parent the parent object
+     * @param node   the node descriptor
+     * @return {@code true} if the value is valid, otherwise {@code false}
+     */
+    boolean validate(Object value, IMObject parent, NodeDescriptor node);
 }

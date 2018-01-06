@@ -21,8 +21,9 @@ import org.openvpms.component.model.entity.Entity;
 import java.util.Set;
 
 /**
- * .
+ * The base class of all party types including real world entities.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface Party extends Entity {

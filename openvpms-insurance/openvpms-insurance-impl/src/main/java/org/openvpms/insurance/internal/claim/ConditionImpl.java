@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.claim;
@@ -19,10 +19,10 @@ package org.openvpms.insurance.internal.claim;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.bean.Policies;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
@@ -195,11 +195,11 @@ public class ConditionImpl implements Condition {
     private List<Invoice> collectInvoices() {
         List<Invoice> result = new ArrayList<>();
         List<Act> claimItems = condition.getTargets("items", Act.class, Policies.any());
-        Map<IMObjectReference, Act> invoicesByRef = new HashMap<>();
-        Map<IMObjectReference, List<Item>> itemsByInvoice = new HashMap<>();
+        Map<Reference, Act> invoicesByRef = new HashMap<>();
+        Map<Reference, List<Item>> itemsByInvoice = new HashMap<>();
         for (Act item : claimItems) {
             ActBean bean = new ActBean(item, service);
-            IMObjectReference ref = bean.getSourceRef("invoice");
+            Reference ref = bean.getSourceRef("invoice");
             Act invoice = invoicesByRef.get(ref);
             if (invoice == null) {
                 invoice = (Act) service.get(ref);
@@ -217,7 +217,7 @@ public class ConditionImpl implements Condition {
             itemsForInvoice.add(new ItemImpl(item, service));
         }
 
-        for (Map.Entry<IMObjectReference, Act> entry : invoicesByRef.entrySet()) {
+        for (Map.Entry<Reference, Act> entry : invoicesByRef.entrySet()) {
             Act invoice = entry.getValue();
             List<Item> items = itemsByInvoice.get(entry.getKey());
             Collections.sort(items, (o1, o2) -> DateRules.compareTo(o1.getDate(), o2.getDate()));

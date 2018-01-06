@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -31,8 +31,8 @@ import static org.junit.Assert.assertTrue;
 public class EntityTestCase {
 
     /**
-     * Tests the {@link Entity#addEntityRelationship(EntityRelationship)} and
-     * {@link Entity#removeEntityRelationship(EntityRelationship)} methods.
+     * Tests the {@link Entity#addEntityRelationship(org.openvpms.component.model.entity.EntityRelationship)} and
+     * {@link Entity#removeEntityRelationship(org.openvpms.component.model.entity.EntityRelationship)} methods.
      */
     @Test
     public void testAddRemoveRelationship() {
@@ -63,8 +63,8 @@ public class EntityTestCase {
 
 
     /**
-     * Verifies that {@link Entity#addEntityRelationship(EntityRelationship)} throws an exception if the relationship
-     * doesn't have a source or target specified.
+     * Verifies that {@link Entity#addEntityRelationship(org.openvpms.component.model.entity.EntityRelationship)}
+     * throws an exception if the relationship doesn't have a source or target specified.
      */
     @Test
     public void testAddRelationshipForNullSourceOrTarget() {
@@ -78,8 +78,8 @@ public class EntityTestCase {
     }
 
     /**
-     * Tests the {@link Entity#addSourceEntityRelationship(EntityRelationship)}
-     * and {@link Entity#removeSourceEntityRelationship(EntityRelationship)}.
+     * Tests the {@link Entity#addSourceEntityRelationship(org.openvpms.component.model.entity.EntityRelationship)}
+     * and {@link Entity#removeSourceEntityRelationship(org.openvpms.component.model.entity.EntityRelationship)}.
      */
     @Test
     public void testAddRemoveSourceRelationship() {
@@ -97,8 +97,8 @@ public class EntityTestCase {
     }
 
     /**
-     * Tests the {@link Entity#addTargetEntityRelationship(EntityRelationship)}
-     * and {@link Entity#removeTargetEntityRelationship(EntityRelationship)}.
+     * Tests the {@link Entity#addTargetEntityRelationship(org.openvpms.component.model.entity.EntityRelationship)}
+     * and {@link Entity#removeTargetEntityRelationship(org.openvpms.component.model.entity.EntityRelationship)}.
      */
     @Test
     public void testAddRemoveTargetRelationship() {
@@ -116,7 +116,8 @@ public class EntityTestCase {
     }
 
     /**
-     * Tests the {@link Entity#addEntityLink(EntityLink)} and {@link Entity#removeEntityLink(EntityLink)}  methods.
+     * Tests the {@link Entity#addEntityLink(org.openvpms.component.model.entity.EntityLink)} and
+     * {@link Entity#removeEntityLink(org.openvpms.component.model.entity.EntityLink)}  methods.
      */
     @Test
     public void testAddRemoveEntityLink() {

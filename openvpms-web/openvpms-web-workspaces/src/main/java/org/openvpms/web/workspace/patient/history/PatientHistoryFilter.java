@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.patient.history;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -30,14 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 /**
  * Filters patient history.
- * <p/>
+ * <p>
  * This:
  * <ul>
  * <li>enables specific event items to by included by archetype</li>
@@ -61,7 +58,7 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
 
     /**
      * Constructs a {@link PatientHistoryFilter}.
-     * <p/>
+     * <p>
      * Items are sorted on ascending timestamp.
      *
      * @param shortNames the history item short names to include
@@ -117,7 +114,7 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
 
     /**
      * Determines if a child act should be included.
-     * <p/>
+     * <p>
      * This implementation excludes children of <em>act.patientClinicalProblem</em> acts that are linked to an event
      * different to the root.
      *
@@ -145,7 +142,7 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      * @return the filtered relationships
      */
     @Override
-    protected Collection<ActRelationship> getRelationships(Act act) {
+    protected Collection<org.openvpms.component.model.act.ActRelationship> getRelationships(Act act) {
         String[] acts = shortNames.toArray(new String[shortNames.size()]);
         return getRelationships(act.getSourceActRelationships(), createIsA(acts, true));
     }
@@ -160,14 +157,8 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     private List<Act> filterInvoiceItems(Act event, List<Act> children) {
         List<Act> result;
         result = new ArrayList<>(children);
-        Set<IMObjectReference> chargeItemRefs = new HashSet<>();
         ActBean bean = new ActBean(event);
-        for (ActRelationship relationship : bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
-            IMObjectReference target = relationship.getTarget();
-            if (target != null) {
-                chargeItemRefs.add(target);
-            }
-        }
+        List<IMObjectReference> chargeItemRefs = bean.getNodeTargetObjectRefs("chargeItems");
         if (!chargeItemRefs.isEmpty()) {
             for (int i = 0; i < children.size() && !chargeItemRefs.isEmpty(); ++i) {
                 Act act = children.get(i);

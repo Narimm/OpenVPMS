@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
@@ -74,7 +73,8 @@ public abstract class AbstractIMObjectBeanTestCase extends AbstractArchetypeServ
      * @param objects  the actual objects
      * @param expected the expected object, in order
      */
-    protected <T extends IMObject> void checkOrder(List<T> objects, IMObject... expected) {
+    protected <T extends org.openvpms.component.model.object.IMObject> void checkOrder(
+            List<T> objects, org.openvpms.component.model.object.IMObject... expected) {
         assertEquals(objects.size(), expected.length);
         for (int i = 0; i < expected.length; ++i) {
             assertEquals(objects.get(i), expected[i]);

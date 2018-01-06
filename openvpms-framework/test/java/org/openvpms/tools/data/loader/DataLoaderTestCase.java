@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.tools.data.loader;
@@ -19,14 +19,11 @@ package org.openvpms.tools.data.loader;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
@@ -34,6 +31,8 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.act.ActRelationship;
+import org.openvpms.component.model.entity.EntityRelationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.Constraints;
@@ -54,7 +53,6 @@ import static org.junit.Assert.assertTrue;
  * Tests the {@link DataLoader} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 @ContextConfiguration("/org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml")
 public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
@@ -93,7 +91,7 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
         Party customer = checkCustomer(cache, "C1", "MR", "Foo", "F", "Bar");
         Party patient = checkPatient(cache, "P1", "Spot", "CANINE",
                                      "GERMAN_SHEPHERD_DOG");
-        Set<Contact> contacts = customer.getContacts();
+        Set<org.openvpms.component.model.party.Contact> contacts = customer.getContacts();
         assertEquals(2, contacts.size());
         checkContact(contacts, "contact.phoneNumber", "(03) 98754312");
         checkContact(contacts, "contact.location",
@@ -301,10 +299,11 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
      * @param shortName   the contact short  name
      * @param description the contact description
      */
-    private void checkContact(Set<Contact> contacts, String shortName, String description) {
-        Contact found = null;
-        for (Contact contact : contacts) {
-            if (TypeHelper.isA(contact, shortName)) {
+    private void checkContact(Set<org.openvpms.component.model.party.Contact> contacts, String shortName,
+                              String description) {
+        org.openvpms.component.model.party.Contact found = null;
+        for (org.openvpms.component.model.party.Contact contact : contacts) {
+            if (contact.isA(shortName)) {
                 found = contact;
                 break;
             }

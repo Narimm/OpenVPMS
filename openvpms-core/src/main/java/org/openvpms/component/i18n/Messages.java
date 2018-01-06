@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
 
 /**
  * Factory for {@link Message}s.
- * <p/>
+ * <p>
  * Messages are obtained from a resource bundle, with each message having a numeric code.
  *
  * @author Tim Anderson
@@ -52,7 +52,7 @@ public class Messages {
 
 
     /**
-     * Constructs a <tt>Message</tt>.
+     * Constructs a {@code Message}.
      *
      * @param groupId    the group that the messages belong to
      * @param bundlePath the resource bundle path
@@ -64,7 +64,7 @@ public class Messages {
 
     /**
      * Creates a new {@link Message} instance for the default locale, containing the formatted message with id
-     * <tt>code</tt>, from the resource bundle.
+     * {@code code}, from the resource bundle.
      *
      * @param code the message code, corresponding to an entry in the resource bundle
      * @param args the format arguments
@@ -76,7 +76,7 @@ public class Messages {
 
     /**
      * Creates a new {@link Message} instance for the specified locale, containing the formatted message with id
-     * <tt>code</tt>, from the resource bundle.
+     * {@code code}, from the resource bundle.
      *
      * @param code   the message code, corresponding to an entry in the resource bundle
      * @param locale the locale
@@ -99,7 +99,7 @@ public class Messages {
     }
 
     /**
-     * Formats a string using the string with id <tt>key</tt>, for the specified locale, from the resource bundle.
+     * Formats a string using the string with id {@code key}, for the specified locale, from the resource bundle.
      *
      * @param key    the message key, corresponding to an entry in the resource bundle
      * @param locale the locale
@@ -126,7 +126,7 @@ public class Messages {
      *
      * @param key    the key for the desired string
      * @param locale the locale for which a string is desired
-     * @return the corresponding value, or <tt>null</tt> if its not found
+     * @return the corresponding value, or {@code null} if its not found
      */
     protected String getValue(String key, Locale locale) {
         ResourceBundle bundle = getResourceBundle(locale);
@@ -181,7 +181,7 @@ public class Messages {
     }
 
     /**
-     * Formats a message when it cannot be formattted by <tt>MessageFormat</tt> due to an exception.
+     * Formats a message when it cannot be formattted by {@code MessageFormat} due to an exception.
      * <p>
      * This is to help return some message to the user, in the case where the resource bundle is not in sync with
      * the code that generates the message.

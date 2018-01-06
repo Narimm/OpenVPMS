@@ -11,19 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.bean;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
+import org.openvpms.component.model.archetype.ArchetypeDescriptor;
+import org.openvpms.component.model.archetype.NodeDescriptor;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -49,7 +47,7 @@ public interface IMObjectBean {
      *
      * @return the reference
      */
-    IMObjectReference getReference();
+    Reference getReference();
 
     /**
      * Determines if the object is one of a set of archetypes.
@@ -94,7 +92,6 @@ public interface IMObjectBean {
      *
      * @param name the node name
      * @return the node display name
-     * @throws IMObjectBeanException if the node doesn't exist
      */
     String getDisplayName(String name);
 
@@ -200,23 +197,6 @@ public interface IMObjectBean {
     BigDecimal getBigDecimal(String name, BigDecimal defaultValue);
 
     /**
-     * Returns the {@code Money} value of a node.
-     *
-     * @param name the node name
-     * @return the value of the node. May be {@code null}
-     */
-    Money getMoney(String name);
-
-    /**
-     * Returns the {@code Money} value of a node.
-     *
-     * @param name         the node name
-     * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or {@code defaultValue} if it is null
-     */
-    Money getMoney(String name, Money defaultValue);
-
-    /**
      * Returns the {@code Date} value of a node.
      *
      * @param name the node name
@@ -239,12 +219,12 @@ public interface IMObjectBean {
      * @param name the node name
      * @return the value of the node. May be {@code null}
      */
-    IMObjectReference getReference(String name);
+    Reference getReference(String name);
 
     /**
      * Returns the object at the specified node.
      * <p>
-     * If the named object is an {@link IMObjectReference}, it will be resolved.
+     * If the named object is an {@link Reference}, it will be resolved.
      * <p>
      * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
      * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
@@ -257,7 +237,7 @@ public interface IMObjectBean {
     /**
      * Returns the object at the specified node.
      * <p>
-     * If the named object is an {@link IMObjectReference}, it will be resolved.
+     * If the named object is an {@link Reference}, it will be resolved.
      * <p>
      * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
      * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
@@ -330,7 +310,7 @@ public interface IMObjectBean {
     <T extends IMObject> List<T> getValues(String name, Class<T> type, Predicate<T> predicate);
 
     /**
-     * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
+     * Returns the source object from the first active {@link Relationship} with active source object, for the
      * specified relationship node.
      *
      * @param name the relationship node name
@@ -339,7 +319,7 @@ public interface IMObjectBean {
     IMObject getSource(String name);
 
     /**
-     * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
+     * Returns the source object from the first active {@link Relationship} with active source object, for the
      * specified relationship node.
      *
      * @param name the relationship node name
@@ -349,26 +329,26 @@ public interface IMObjectBean {
     <T extends IMObject> T getSource(String name, Class<T> type);
 
     /**
-     * Returns the source object from the first {@link IMObjectRelationship} for the specified node matching the policy.
+     * Returns the source object from the first {@link Relationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
      * @param policy the policy for relationship selection and object retrieval
      * @return the source object, or {@code null} if none is found
      */
-    <R extends IMObjectRelationship> IMObject getSource(String name, Policy<R> policy);
+    <R extends Relationship> IMObject getSource(String name, Policy<R> policy);
 
     /**
-     * Returns the source object from the first {@link IMObjectRelationship} for the specified node matching the policy.
+     * Returns the source object from the first {@link Relationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
      * @param type   the object type
      * @param policy the policy for relationship selection and object retrieval
      * @return the source object, or {@code null} if none is found
      */
-    <T extends IMObject, R extends IMObjectRelationship> T getSource(String name, Class<T> type, Policy<R> policy);
+    <T extends IMObject, R extends Relationship> T getSource(String name, Class<T> type, Policy<R> policy);
 
     /**
-     * Returns the target object from the first active {@link IMObjectRelationship} with active target object, for the
+     * Returns the target object from the first active {@link Relationship} with active target object, for the
      * specified relationship node.
      *
      * @param name the relationship node name
@@ -377,7 +357,7 @@ public interface IMObjectBean {
     IMObject getTarget(String name);
 
     /**
-     * Returns the target object from the first active {@link IMObjectRelationship} with active target object, for the
+     * Returns the target object from the first active {@link Relationship} with active target object, for the
      * specified relationship node.
      *
      * @param name the relationship node name
@@ -387,26 +367,26 @@ public interface IMObjectBean {
     <T extends IMObject> T getTarget(String name, Class<T> type);
 
     /**
-     * Returns the target object from the first {@link IMObjectRelationship} for the specified node matching the policy.
+     * Returns the target object from the first {@link Relationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
      * @param policy the policy for relationship selection and object retrieval
      * @return the target object, or {@code null} if none is found
      */
-    <R extends IMObjectRelationship> IMObject getTarget(String name, Policy<R> policy);
+    <R extends Relationship> IMObject getTarget(String name, Policy<R> policy);
 
     /**
-     * Returns the target object from the first {@link IMObjectRelationship} for the specified node matching the policy.
+     * Returns the target object from the first {@link Relationship} for the specified node matching the policy.
      *
      * @param name   the relationship node name
      * @param type   the object type
      * @param policy the policy for relationship selection and object retrieval
      * @return the target object, or {@code null} if none is found
      */
-    <T extends IMObject, R extends IMObjectRelationship> T getTarget(String name, Class<T> type, Policy<R> policy);
+    <T extends IMObject, R extends Relationship> T getTarget(String name, Class<T> type, Policy<R> policy);
 
     /**
-     * Returns the active source objects from each active {@link IMObjectRelationship} for the specified node.
+     * Returns the active source objects from each active {@link Relationship} for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
@@ -416,7 +396,7 @@ public interface IMObjectBean {
     List<IMObject> getSources(String name);
 
     /**
-     * Returns the active source objects from each active {@link IMObjectRelationship} for the specified node.
+     * Returns the active source objects from each active {@link Relationship} for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
@@ -427,7 +407,7 @@ public interface IMObjectBean {
     <T extends IMObject> List<T> getSources(String name, Class<T> type);
 
     /**
-     * Returns the source objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
+     * Returns the source objects from each {@link Relationship} matching the policy, for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
@@ -435,10 +415,10 @@ public interface IMObjectBean {
      * @param policy the policy for relationship selection and object retrieval
      * @return a list of source objects matching the policy
      */
-    <R extends IMObjectRelationship> List<IMObject> getSources(String name, Policy<R> policy);
+    <R extends Relationship> List<IMObject> getSources(String name, Policy<R> policy);
 
     /**
-     * Returns the source objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
+     * Returns the source objects from each {@link Relationship} matching the policy, for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
@@ -447,11 +427,10 @@ public interface IMObjectBean {
      * @param policy the policy for relationship selection and object retrieval
      * @return a list of source objects matching the policy
      */
-    <T extends IMObject, R extends IMObjectRelationship> List<T> getSources(String name, Class<T> type,
-                                                                            Policy<R> policy);
+    <T extends IMObject, R extends Relationship> List<T> getSources(String name, Class<T> type, Policy<R> policy);
 
     /**
-     * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node.
+     * Returns the active target objects from each active {@link Relationship} for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
@@ -461,7 +440,7 @@ public interface IMObjectBean {
     List<IMObject> getTargets(String name);
 
     /**
-     * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node.
+     * Returns the active target objects from each active {@link Relationship} for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
@@ -472,7 +451,7 @@ public interface IMObjectBean {
     <T extends IMObject> List<T> getTargets(String name, Class<T> type);
 
     /**
-     * Returns the target objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
+     * Returns the target objects from each {@link Relationship} matching the policy, for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
@@ -480,10 +459,10 @@ public interface IMObjectBean {
      * @param policy the policy for relationship selection and object retrieval
      * @return a list of target objects matching the policy
      */
-    <R extends IMObjectRelationship> List<IMObject> getTargets(String name, Policy<R> policy);
+    <R extends Relationship> List<IMObject> getTargets(String name, Policy<R> policy);
 
     /**
-     * Returns the target objects from each {@link IMObjectRelationship} matching the policy, for the specified node.
+     * Returns the target objects from each {@link Relationship} matching the policy, for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
@@ -492,7 +471,7 @@ public interface IMObjectBean {
      * @param policy the policy for relationship selection and object retrieval
      * @return a list of target objects matching the policy
      */
-    <T extends IMObject, R extends IMObjectRelationship> List<T> getTargets(String name, Class<T> type,
+    <T extends IMObject, R extends Relationship> List<T> getTargets(String name, Class<T> type,
                                                                             Policy<R> policy);
 
     /**
@@ -509,31 +488,31 @@ public interface IMObjectBean {
     <T extends IMObject> List<T> getAllTargets(String name, Class<T> type);
 
     /**
-     * Returns the source object reference from the first active {@link IMObjectRelationship} for the specified
+     * Returns the source object reference from the first active {@link Relationship} for the specified
      * relationship node.
      *
      * @param name the relationship node name
      * @return the source object reference, or {@code null} if none is found
      */
-    IMObjectReference getSourceRef(String name);
+    Reference getSourceRef(String name);
 
     /**
-     * Returns the source object reference from the first {@link IMObjectRelationship} for the specified node matching
+     * Returns the source object reference from the first {@link Relationship} for the specified node matching
      * the policy.
      *
      * @param name   the relationship node name
      * @param policy the policy for relationship selection and object retrieval
      * @return the source object reference, or {@code null} if none is found
      */
-    <R extends IMObjectRelationship> IMObjectReference getSourceRef(String name, Policy<R> policy);
+    <R extends Relationship> Reference getSourceRef(String name, Policy<R> policy);
 
     /**
-     * Returns the source object references from each active {@link IMObjectRelationship} for the specified node.
+     * Returns the source object references from each active {@link Relationship} for the specified node.
      *
      * @param name the relationship node name
      * @return a list of source object references. May contain references to both active and inactive objects
      */
-    List<IMObjectReference> getSourceRefs(String name);
+    List<Reference> getSourceRefs(String name);
 
     /**
      * Returns the source object references from each for the specified node that matches the supplied policy.
@@ -542,34 +521,34 @@ public interface IMObjectBean {
      * @param policy the policy for relationship selection and object retrieval
      * @return a list of source object references. May contain references to both active and inactive objects
      */
-    <R extends IMObjectRelationship> List<IMObjectReference> getSourceRefs(String name, Policy<R> policy);
+    <R extends Relationship> List<Reference> getSourceRefs(String name, Policy<R> policy);
 
     /**
-     * Returns the target object reference from the first active {@link IMObjectRelationship} for the specified
+     * Returns the target object reference from the first active {@link Relationship} for the specified
      * relationship node.
      *
      * @param name the relationship node name
      * @return the target object reference, or {@code null} if none is found
      */
-    IMObjectReference getTargetRef(String name);
+    Reference getTargetRef(String name);
 
     /**
-     * Returns the target object reference from the first {@link IMObjectRelationship} for the specified
+     * Returns the target object reference from the first {@link Relationship} for the specified
      * relationship node.
      *
      * @param name   the relationship node name
      * @param policy the policy for relationship selection and object retrieval
      * @return the target object reference, or {@code null} if none is found
      */
-    <R extends IMObjectRelationship> IMObjectReference getTargetRef(String name, Policy<R> policy);
+    <R extends Relationship> Reference getTargetRef(String name, Policy<R> policy);
 
     /**
-     * Returns the target object references from each active {@link IMObjectRelationship} for the specified node.
+     * Returns the target object references from each active {@link Relationship} for the specified node.
      *
      * @param name the relationship node name
      * @return a list of target object references. May contain references to both active and inactive objects
      */
-    List<IMObjectReference> getTargetRefs(String name);
+    List<Reference> getTargetRefs(String name);
 
     /**
      * Returns the target object references from each for the specified node that matches the supplied policy.
@@ -578,7 +557,7 @@ public interface IMObjectBean {
      * @param policy the policy for relationship selection and object retrieval
      * @return a list of target object references. May contain references to both active and inactive objects
      */
-    <R extends IMObjectRelationship> List<IMObjectReference> getTargetRefs(String name, Policy<R> policy);
+    <R extends Relationship> List<Reference> getTargetRefs(String name, Policy<R> policy);
 
     /**
      * Sets the value of a node.
@@ -621,7 +600,7 @@ public interface IMObjectBean {
      * @param target the target of the relationship. May be {@code null}
      * @return the relationship, or {@code null} if {@code target} is {@code null} and there is no existing relationship
      */
-    IMObjectRelationship setTarget(String name, IMObjectReference target);
+    Relationship setTarget(String name, Reference target);
 
     /**
      * Sets the target of a relationship.
@@ -640,7 +619,7 @@ public interface IMObjectBean {
      * @param target the target of the relationship. May be {@code null}
      * @return the relationship, or {@code null} if {@code target} is {@code null} and there is no existing relationship
      */
-    IMObjectRelationship setTarget(String name, IMObject target);
+    Relationship setTarget(String name, IMObject target);
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
@@ -652,7 +631,7 @@ public interface IMObjectBean {
      * @param target the target
      * @return the new relationship
      */
-    IMObjectRelationship addTarget(String name, IMObjectReference target);
+    Relationship addTarget(String name, Reference target);
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
@@ -664,7 +643,7 @@ public interface IMObjectBean {
      * @param target the target
      * @return the new relationship
      */
-    IMObjectRelationship addTarget(String name, IMObject target);
+    Relationship addTarget(String name, IMObject target);
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
@@ -677,7 +656,7 @@ public interface IMObjectBean {
      * @param target    the target
      * @return the new relationship
      */
-    IMObjectRelationship addTarget(String name, String archetype, IMObject target);
+    Relationship addTarget(String name, String archetype, IMObject target);
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
@@ -690,7 +669,7 @@ public interface IMObjectBean {
      * @param target    the target
      * @return the new relationship
      */
-    IMObjectRelationship addTarget(String name, String archetype, IMObjectReference target);
+    Relationship addTarget(String name, String archetype, Reference target);
 
     /**
      * Adds a bidirectional relationship between the current object (the source) and the supplied target.
@@ -700,7 +679,7 @@ public interface IMObjectBean {
      * @param targetName the target node name
      * @return a new relationship
      */
-    IMObjectRelationship addTarget(String sourceName, IMObject target, String targetName);
+    Relationship addTarget(String sourceName, IMObject target, String targetName);
 
     /**
      * Removes all bidirectional relationships between the current object (the source), and the supplied target.

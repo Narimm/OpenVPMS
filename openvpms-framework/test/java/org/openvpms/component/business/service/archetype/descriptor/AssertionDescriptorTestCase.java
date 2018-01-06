@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -234,9 +234,9 @@ public class AssertionDescriptorTestCase extends AbstractJUnit4SpringContextTest
         assertNotNull(archetype1);
         NodeDescriptor node1 = archetype1.getNodeDescriptor("title");
         assertNotNull(node1);
-        AssertionDescriptor assertion = node1.getAssertionDescriptor("lookup.local");
+        AssertionDescriptor assertion = (AssertionDescriptor) node1.getAssertionDescriptor("lookup.local");
         assertNotNull(assertion);
-        NamedProperty entries1 = assertion.getPropertyMap().getProperties().get("entries");
+        NamedProperty entries1 = (NamedProperty) assertion.getPropertyMap().getProperties().get("entries");
         assertTrue(entries1 instanceof PropertyList);
         PropertyList list1 = (PropertyList) entries1;
         NamedProperty[] properties1 = list1.getPropertiesAsArray();
@@ -250,7 +250,7 @@ public class AssertionDescriptorTestCase extends AbstractJUnit4SpringContextTest
         assertNotNull(archetype2);
         NodeDescriptor node2 = archetype2.getNodeDescriptor("title");
         assertNotNull(node2);
-        NamedProperty entries2 = assertion.getPropertyMap().getProperties().get("entries");
+        NamedProperty entries2 = (NamedProperty) assertion.getPropertyMap().getProperties().get("entries");
         assertTrue(entries2 instanceof PropertyList);
         PropertyList list2 = (PropertyList) entries2;
         assertEquals(size - 1, list2.getProperties().size());

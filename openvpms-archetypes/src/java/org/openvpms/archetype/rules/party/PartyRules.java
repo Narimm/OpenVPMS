@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -21,7 +21,6 @@ import org.openvpms.archetype.rules.contact.AddressFormatter;
 import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -30,6 +29,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.entity.EntityIdentity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -147,8 +147,8 @@ public class PartyRules {
      * @return a new set of default contacts
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Set<Contact> getDefaultContacts() {
-        Set<Contact> contacts = new HashSet<>();
+    public Set<org.openvpms.component.model.party.Contact> getDefaultContacts() {
+        Set<org.openvpms.component.model.party.Contact> contacts = new HashSet<>();
         Contact phone = (Contact) service.create(ContactArchetypes.PHONE);
         Contact location = (Contact) service.create(ContactArchetypes.LOCATION);
         service.deriveValues(phone);
@@ -169,7 +169,7 @@ public class PartyRules {
      */
     public String getPreferredContacts(Party party) {
         StringBuilder result = new StringBuilder();
-        for (Contact contact : Contacts.sort(party.getContacts())) {
+        for (org.openvpms.component.model.party.Contact contact : Contacts.sort(party.getContacts())) {
             IMObjectBean bean = new IMObjectBean(contact, service);
             if (bean.hasNode("preferred")) {
                 boolean preferred = bean.getBoolean("preferred");
@@ -196,7 +196,7 @@ public class PartyRules {
         StringBuilder result = new StringBuilder();
         IMObjectBean bean = new IMObjectBean(contact, service);
         if (bean.hasNode("purposes")) {
-            List<IMObject> list = bean.getValues("purposes");
+            List<IMObject> list = bean.getValues("purposes", IMObject.class);
             if (!list.isEmpty()) {
                 result.append("(");
                 result.append(getValues(list, "name"));
@@ -733,8 +733,7 @@ public class PartyRules {
      * @return the matching contact or {@code null}
      */
     private Contact getContact(Party party, ContactMatcher matcher) {
-        List<Contact> contacts = Contacts.sort(party.getContacts());
-        return Contacts.find(contacts, matcher);
+        return Contacts.find(Contacts.sort(party.getContacts()), matcher);
     }
 
 }

@@ -18,11 +18,10 @@ package org.openvpms.component.model.archetype;
 
 import org.openvpms.component.model.object.IMObject;
 
-import java.util.List;
 import java.util.Map;
 
 /**
- * .
+ * Describes a node in an archetype.
  *
  * @author Tim Anderson
  */
@@ -138,8 +137,7 @@ public interface NodeDescriptor extends IMObject {
     /**
      * Sets the maximum cardinality.
      *
-     * @param cardinality the maximum cardinality. Use {@link #UNBOUNDED} to
-     *                    indicate an unbounded cardinality
+     * @param cardinality the maximum cardinality. Use {@link #UNBOUNDED} to indicate an unbounded cardinality
      */
     void setMaxCardinality(int cardinality);
 
@@ -186,7 +184,7 @@ public interface NodeDescriptor extends IMObject {
     void setMinLength(int length);
 
     /**
-     * Returns the path.
+     * Returns the node path.
      *
      * @return the path
      */
@@ -282,7 +280,7 @@ public interface NodeDescriptor extends IMObject {
     /**
      * Returns the assertion descriptors.
      *
-     * @return the assertion descriptors, keyed on name
+     * @return the assertion descriptors
      */
     Map<String, AssertionDescriptor> getAssertionDescriptors();
 
@@ -328,27 +326,9 @@ public interface NodeDescriptor extends IMObject {
     String[] getArchetypeRange();
 
     /**
-     * Return the children {@link IMObject} instances that are part of
-     * a collection. If the NodeDescriptor does not denote a collection then
-     * a null list is returned.
-     * <p>
-     * Furthermore if this is a collection and the filter attribute has been
-     * specified then return a subset of the children; those matching the
-     * filter.
-     *
-     * @param target the target object.
-     * @return List<IMObject>
-     * the list of children, an empty list or  null
-     */
-    @SuppressWarnings("unchecked")
-    List<IMObject> getChildren(IMObject target);
-
-
-    /**
      * Returns the class for the specified type.
      *
-     * @return the class, or {@code null} if {@link #getType()} returns
-     * empty/null
+     * @return the class, or {@code null} if {@link #getType()} returns empty/null
      */
     Class getClazz();
 

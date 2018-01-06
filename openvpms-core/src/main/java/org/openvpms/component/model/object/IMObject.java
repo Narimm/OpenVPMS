@@ -22,6 +22,7 @@ package org.openvpms.component.model.object;
  * on the object. These constraints are the foundation of archetypes and
  * archetype languages such as ADL
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface IMObject {
@@ -116,6 +117,22 @@ public interface IMObject {
      * @return {@code true} if the object is new, {@code false} if it has been made persistent
      */
     boolean isNew();
+
+    /**
+     * Determines if this is an instance of a particular archetype.
+     *
+     * @param archetype the archetype short name. May contain wildcards
+     * @return {@code true} if the object is an instance of {@code archetype}
+     */
+    boolean isA(String archetype);
+
+    /**
+     * Determines if an object is one of a set of archetypes.
+     *
+     * @param archetypes the archetype short names. May contain wildcards
+     * @return {@code true} if object is one of {@code archetypes}
+     */
+    boolean isA(String... archetypes);
 
 }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.user;
@@ -19,7 +19,6 @@ package org.openvpms.archetype.rules.user;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -28,6 +27,7 @@ import org.openvpms.component.business.service.archetype.functor.SequenceCompara
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -159,7 +159,7 @@ public class UserRules {
     public boolean isA(User user, String userType) {
         if (TypeHelper.isA(user, UserArchetypes.USER)) {
             for (Lookup lookup : user.getClassifications()) {
-                if (TypeHelper.isA(lookup, "lookup.userType") && userType.equals(lookup.getCode())) {
+                if (lookup.isA("lookup.userType") && userType.equals(lookup.getCode())) {
                     return true;
                 }
             }

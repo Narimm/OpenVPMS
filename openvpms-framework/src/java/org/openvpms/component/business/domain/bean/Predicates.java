@@ -11,17 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.bean;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.domain.im.common.PeriodRelationship;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.PeriodRelationship;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 
 import java.util.Date;
 import java.util.function.Function;
@@ -29,7 +28,7 @@ import java.util.function.Predicate;
 
 
 /**
- * Predicates for {@link IMObjectRelationship} instances.
+ * Predicates for {@link Relationship} instances.
  *
  * @author Tim Anderson
  */
@@ -47,24 +46,24 @@ public final class Predicates {
      * @return a predicate that returns {@code true} if a relationship is active at time of evaluation
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObjectRelationship> Predicate<T> activeNow() {
+    public static <T extends Relationship> Predicate<T> activeNow() {
         return (Predicate<T>) ACTIVE_NOW;
     }
 
     /**
-     * Creates a new predicate that evaluates {@code true} if an {@link IMObjectRelationship} or
+     * Creates a new predicate that evaluates {@code true} if an {@link Relationship} or
      * {@link PeriodRelationship} is active.
      * The {@link PeriodRelationship} must be active at the specified time.
      *
      * @param time the time
      * @return a new predicate
      */
-    public static <T extends IMObjectRelationship> Predicate<T> activeAt(Date time) {
+    public static <T extends Relationship> Predicate<T> activeAt(Date time) {
         return new IsActiveAt<>(time);
     }
 
     /**
-     * Creates a new predicate that evaluates {@code true} if an {@link IMObjectRelationship} or
+     * Creates a new predicate that evaluates {@code true} if an {@link Relationship} or
      * {@link PeriodRelationship} is active.
      * The {@link PeriodRelationship} must be active within the specified time range.
      *
@@ -72,41 +71,41 @@ public final class Predicates {
      * @param to   the to date. May be {@code null}
      * @return a new predicate
      */
-    public static <T extends IMObjectRelationship> Predicate<T> active(Date from, Date to) {
+    public static <T extends Relationship> Predicate<T> active(Date from, Date to) {
         return new IsActiveRange<>(from, to);
     }
 
     /**
-     * Returns a predicate that determines if the source of an {@link IMObjectRelationship} is that of the supplied
+     * Returns a predicate that determines if the source of an {@link Relationship} is that of the supplied
      * object.
      *
      * @param object the object. May be {@code null}
      * @return a predicate
      */
-    public static <T extends IMObjectRelationship> Predicate<T> sourceEquals(IMObject object) {
-        return new RefEquals<>(object, IMObjectRelationship::getSource);
+    public static <T extends Relationship> Predicate<T> sourceEquals(IMObject object) {
+        return new RefEquals<>(object, Relationship::getSource);
     }
 
     /**
-     * Returns a predicate that determines if the source of an {@link IMObjectRelationship} is that of the supplied
+     * Returns a predicate that determines if the source of an {@link Relationship} is that of the supplied
      * reference.
      *
      * @param object the object. May be {@code null}
      * @return a predicate
      */
-    public static <T extends IMObjectRelationship> Predicate<T> sourceEquals(IMObjectReference object) {
-        return new RefEquals<>(object, IMObjectRelationship::getSource);
+    public static <T extends Relationship> Predicate<T> sourceEquals(Reference object) {
+        return new RefEquals<>(object, Relationship::getSource);
     }
 
     /**
-     * Returns a predicate that determines if the target of an {@link IMObjectRelationship} is that of the supplied
+     * Returns a predicate that determines if the target of an {@link Relationship} is that of the supplied
      * object.
      *
      * @param object the object. May be {@code null}
      * @return a predicate
      */
-    public static <T extends IMObjectRelationship> Predicate<T> targetEquals(IMObject object) {
-        return new RefEquals<>(object, IMObjectRelationship::getTarget);
+    public static <T extends Relationship> Predicate<T> targetEquals(IMObject object) {
+        return new RefEquals<>(object, Relationship::getTarget);
     }
 
     /**
@@ -116,21 +115,21 @@ public final class Predicates {
      * @return a new predicate
      */
     public static <T extends IMObject> Predicate<T> isA(String... archetypes) {
-        return object -> TypeHelper.isA(object, archetypes);
+        return object -> object.isA(archetypes);
     }
 
     /**
-     * Returns a predicate that determines if the target of an {@link IMObjectRelationship} is that of the supplied
+     * Returns a predicate that determines if the target of an {@link Relationship} is that of the supplied
      * reference.
      *
      * @param object the object. May be {@code null}
      * @return a predicate
      */
-    public static <T extends IMObjectRelationship> Predicate<T> targetEquals(IMObjectReference object) {
-        return new RefEquals<>(object, IMObjectRelationship::getTarget);
+    public static <T extends Relationship> Predicate<T> targetEquals(Reference object) {
+        return new RefEquals<>(object, Relationship::getTarget);
     }
 
-    private static class IsActive<T extends IMObjectRelationship> implements Predicate<T> {
+    private static class IsActive<T extends Relationship> implements Predicate<T> {
         /**
          * Determines if a relationship is active.
          *
@@ -144,7 +143,7 @@ public final class Predicates {
 
     }
 
-    private static class IsActiveAt<T extends IMObjectRelationship> extends IsActive<T> {
+    private static class IsActiveAt<T extends Relationship> extends IsActive<T> {
 
         /**
          * The time to compare with. If {@code -1}, indicates to use the
@@ -184,7 +183,7 @@ public final class Predicates {
         /**
          * Determines if a relationship is active.
          *
-         * @param relationship the object to evaluate. Must be an {@code IMObjectRelationship}
+         * @param relationship the object to evaluate. Must be an {@code Relationship}
          *                     or {@code PeriodRelationship}
          * @return {@code true} if the relationship is active, otherwise {@code false}
          */
@@ -201,7 +200,7 @@ public final class Predicates {
         }
     }
 
-    private static class IsActiveRange<T extends IMObjectRelationship> extends IsActive<T> {
+    private static class IsActiveRange<T extends Relationship> extends IsActive<T> {
 
         /**
          * The from date. May be {@code null}
@@ -244,19 +243,19 @@ public final class Predicates {
 
     }
 
-    private static class RefEquals<T extends IMObjectRelationship> implements Predicate<T> {
+    private static class RefEquals<T extends Relationship> implements Predicate<T> {
         /**
          * The reference to compare.
          */
-        private final IMObjectReference ref;
+        private final Reference ref;
 
-        private Function<T, IMObjectReference> accessor;
+        private Function<T, Reference> accessor;
 
-        public RefEquals(IMObject object, Function<T, IMObjectReference> accessor) {
+        public RefEquals(IMObject object, Function<T, Reference> accessor) {
             this(object != null ? object.getObjectReference() : null, accessor);
         }
 
-        public RefEquals(IMObjectReference ref, Function<T, IMObjectReference> accessor) {
+        public RefEquals(Reference ref, Function<T, Reference> accessor) {
             this.ref = ref;
             this.accessor = accessor;
         }

@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.exception;
 
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.i18n.Message;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.i18n.Message;
 
 /**
  * Insurance exception.
@@ -32,7 +32,7 @@ public class InsuranceException extends OpenVPMSException {
      * @param message the message
      */
     public InsuranceException(Message message) {
-        super(message.toString());
+        super(message);
     }
 
     /**
@@ -42,6 +42,6 @@ public class InsuranceException extends OpenVPMSException {
      * @param cause   the root cause
      */
     public InsuranceException(Message message, Throwable cause) {
-        super(message.toString(), cause);
+        super(message, cause);
     }
 }

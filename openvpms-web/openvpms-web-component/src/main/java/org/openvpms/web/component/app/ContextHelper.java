@@ -1,28 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
 
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -53,8 +53,8 @@ public class ContextHelper {
             if (patient != null) {
                 IMObjectReference ref = patient.getObjectReference();
                 boolean found = false;
-                for (EntityRelationship relationship : customer.getEntityRelationships()) {
-                    IMObjectReference target = relationship.getTarget();
+                for (Relationship relationship : customer.getEntityRelationships()) {
+                    Reference target = relationship.getTarget();
                     if (target != null && target.equals(ref)) {
                         found = true;
                         break;
@@ -81,9 +81,8 @@ public class ContextHelper {
             boolean found = false;
             if (customer != null) {
                 IMObjectReference ref = customer.getObjectReference();
-                for (EntityRelationship relationship :
-                    patient.getEntityRelationships()) {
-                    IMObjectReference source = relationship.getSource();
+                for (Relationship relationship : patient.getEntityRelationships()) {
+                    Reference source = relationship.getSource();
                     if (source != null && source.equals(ref)) {
                         found = true;
                         break;
@@ -92,11 +91,9 @@ public class ContextHelper {
             }
             if (!found) {
                 // look for an active patient-owner relationship
-                for (EntityRelationship relationship :
-                    patient.getEntityRelationships()) {
-                    IMObjectReference source = relationship.getSource();
-                    if (TypeHelper.isA(relationship, OWNER)
-                        && relationship.isActive()) {
+                for (Relationship relationship : patient.getEntityRelationships()) {
+                    Reference source = relationship.getSource();
+                    if (relationship.isA(OWNER) && relationship.isActive()) {
                         Party owner = (Party) IMObjectHelper.getObject(source, context);
                         if (owner != null) {
                             context.setCustomer(owner);

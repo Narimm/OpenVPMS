@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -100,7 +100,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // now save with a custom unit price, and verify it doesn't get
         // overwritten when the product saves.
-        Set<ProductPrice> prices = product.getProductPrices();
+        Set<org.openvpms.component.model.product.ProductPrice> prices = product.getProductPrices();
         ProductPrice unit = prices.toArray(new ProductPrice[prices.size()])[0];
         unit.setPrice(new BigDecimal("1.35"));
         save(product);
@@ -431,7 +431,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     private void checkPrice(Product product, BigDecimal cost,
                             BigDecimal price) {
         product = get(product); // reload product
-        Set<ProductPrice> prices = product.getProductPrices();
+        Set<org.openvpms.component.model.product.ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
         ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
         IMObjectBean bean = new IMObjectBean(p);

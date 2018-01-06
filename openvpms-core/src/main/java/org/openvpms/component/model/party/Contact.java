@@ -23,31 +23,40 @@ import java.util.Date;
 import java.util.Set;
 
 /**
- * .
+ * Defines a contact for a {@link Party}.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
 public interface Contact extends IMObject {
 
     /**
-     * @return Returns the activeEndTime.
-     */
-    Date getActiveEndTime();
-
-    /**
-     * @param activeEndTime The activeEndTime to set.
-     */
-    void setActiveEndTime(Date activeEndTime);
-
-    /**
-     * @return Returns the activeStartTime.
+     * Returns the time when the contact is active from.
+     *
+     * @return the start time. May be {@code null}.
      */
     Date getActiveStartTime();
 
     /**
-     * @param activeStartTime The activeStartTime to set.
+     * Sets the time when the contact is active from.
+     *
+     * @param time the start time. May be {@code null}.
      */
-    void setActiveStartTime(Date activeStartTime);
+    void setActiveStartTime(Date time);
+
+    /**
+     * Returns the time when the contact is active to.
+     *
+     * @return the end time. May be {@code null}.
+     */
+    Date getActiveEndTime();
+
+    /**
+     * Sets the time when the contact is active to.
+     *
+     * @param time the end time. May be {@code null}.
+     */
+    void setActiveEndTime(Date time);
 
     /**
      * Returns the classifications for this contact.

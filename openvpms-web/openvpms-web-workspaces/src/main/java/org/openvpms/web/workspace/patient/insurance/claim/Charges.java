@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +35,7 @@ class Charges {
     /**
      * The charges, keyed on reference.
      */
-    private Map<IMObjectReference, Act> charges = new HashMap<>();
+    private Map<Reference, Act> charges = new HashMap<>();
 
 
     /**
@@ -79,7 +79,7 @@ class Charges {
      * @param reference the charge item reference
      * @return {@code true} if the charge item exists
      */
-    public boolean contains(IMObjectReference reference) {
+    public boolean contains(Reference reference) {
         return charges.containsKey(reference);
     }
 
@@ -88,11 +88,11 @@ class Charges {
      *
      * @return the invoice references
      */
-    public Set<IMObjectReference> getInvoiceRefs() {
-        Set<IMObjectReference> invoices = new HashSet<>();
+    public Set<Reference> getInvoiceRefs() {
+        Set<Reference> invoices = new HashSet<>();
         for (Act item : charges.values()) {
             ActBean bean = new ActBean(item);
-            IMObjectReference invoiceRef = bean.getSourceRef("invoice");
+            Reference invoiceRef = bean.getSourceRef("invoice");
             if (invoiceRef != null) {
                 invoices.add(invoiceRef);
             }

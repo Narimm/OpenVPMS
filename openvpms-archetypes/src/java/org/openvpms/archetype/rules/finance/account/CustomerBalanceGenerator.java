@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -51,16 +50,11 @@ import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchet
 
 /**
  * Generates account balances for a customer.
- * <p/>
+ * <p>
  * This replaces any existing balance participations and account allocations.
  * Opening and closing balances are updated if the
  */
 public class CustomerBalanceGenerator {
-
-    /**
-     * The customer.
-     */
-    private Party customer;
 
     /**
      * The archetype service.
@@ -86,14 +80,19 @@ public class CustomerBalanceGenerator {
             = new HashMap<FinancialAct, Long>();
 
     /**
-     * Total no. of acts
-     */
-    private int acts;
-
-    /**
      * The balance updater.
      */
     private final CustomerBalanceUpdater updater;
+
+    /**
+     * The customer.
+     */
+    private Party customer;
+
+    /**
+     * Total no. of acts
+     */
+    private int acts;
 
 
     /**
@@ -131,7 +130,7 @@ public class CustomerBalanceGenerator {
                 }
                 if (!MathRules.equals(total.abs(), expectedTotal)
                     || act.isCredit() != expectedCredit) {
-                    act.setTotal(new Money(expectedTotal));
+                    act.setTotal(expectedTotal);
                     act.setCredit(expectedCredit);
                     modified(act);
                     changed(act, total, runningTotal);
@@ -147,28 +146,6 @@ public class CustomerBalanceGenerator {
         }
         save();
         return runningTotal;
-    }
-
-    /**
-     * Returns the customer.
-     *
-     * @return the customer
-     */
-    protected Party getCustomer() {
-        return customer;
-    }
-
-    /**
-     * Invoked when an act is changed.
-     * <p/>
-     * This method is a no-op.
-     *
-     * @param act       the act
-     * @param fromTotal the original total
-     * @param toTotal   the new total
-     */
-    protected void changed(FinancialAct act, BigDecimal fromTotal,
-                           BigDecimal toTotal) {
     }
 
     /**
@@ -190,18 +167,40 @@ public class CustomerBalanceGenerator {
     }
 
     /**
+     * Returns the customer.
+     *
+     * @return the customer
+     */
+    protected Party getCustomer() {
+        return customer;
+    }
+
+    /**
+     * Invoked when an act is changed.
+     * <p>
+     * This method is a no-op.
+     *
+     * @param act       the act
+     * @param fromTotal the original total
+     * @param toTotal   the new total
+     */
+    protected void changed(FinancialAct act, BigDecimal fromTotal,
+                           BigDecimal toTotal) {
+    }
+
+    /**
      * Adds an act to the balance.
      *
      * @param act the act to add
      */
     private void addToBalance(FinancialAct act) {
-        Money allocated = act.getAllocatedAmount();
-        if (allocated == null || allocated.compareTo(Money.ZERO) != 0) {
-            act.setAllocatedAmount(Money.ZERO);
+        BigDecimal allocated = act.getAllocatedAmount();
+        if (allocated == null || allocated.compareTo(BigDecimal.ZERO) != 0) {
+            act.setAllocatedAmount(BigDecimal.ZERO);
             modified(act);
         }
         if (act.getTotal() == null) {
-            act.setTotal(Money.ZERO);
+            act.setTotal(BigDecimal.ZERO);
             modified(act);
         }
         ActBean bean = new ActBean(act, service);
@@ -235,7 +234,7 @@ public class CustomerBalanceGenerator {
 
     /**
      * Marks an act as being modified.
-     * <p/>
+     * <p>
      * If it is a debit/credit act, adds it to the list of unallocated acts.
      *
      * @param act the act

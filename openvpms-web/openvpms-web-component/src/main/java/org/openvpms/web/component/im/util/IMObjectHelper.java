@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -70,7 +71,7 @@ public class IMObjectHelper {
      * @param reference the object reference. May be {@code null}
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
-    public static IMObject getObject(IMObjectReference reference) {
+    public static IMObject getObject(Reference reference) {
         return getObject(reference, (Context) null);
     }
 
@@ -87,7 +88,7 @@ public class IMObjectHelper {
      * @param context   the context to use. If {@code null} accesses the archetype service
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
-    public static IMObject getObject(IMObjectReference reference, Context context) {
+    public static IMObject getObject(Reference reference, Context context) {
         IMObject result = null;
         if (reference != null) {
             if (context != null) {
@@ -273,7 +274,8 @@ public class IMObjectHelper {
      * @param objects   the list of objects. May contain nulls.
      * @return the corresponding object, or {@code null} if none is found
      */
-    public static <T extends IMObject> T getObject(IMObjectReference reference, Collection<T> objects) {
+    public static <T extends org.openvpms.component.model.object.IMObject> T getObject(
+            IMObjectReference reference, Collection<T> objects) {
         if (reference != null) {
             for (T object : objects) {
                 if (object != null && ObjectUtils.equals(object.getObjectReference(), reference)) {

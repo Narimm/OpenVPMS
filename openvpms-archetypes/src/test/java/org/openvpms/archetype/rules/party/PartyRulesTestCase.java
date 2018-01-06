@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -88,7 +88,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testDefaultContacts() {
-        Set<Contact> contacts = rules.getDefaultContacts();
+        Set<org.openvpms.component.model.party.Contact> contacts = rules.getDefaultContacts();
         assertNotNull(contacts);
         assertEquals(2, contacts.size());
 
@@ -527,10 +527,10 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * @param shortName contact short name
      * @return the associated short name or {@code null}
      */
-    private Contact getContact(Collection<Contact> contacts, String shortName) {
-        for (Contact contact : contacts) {
+    private Contact getContact(Collection<org.openvpms.component.model.party.Contact> contacts, String shortName) {
+        for (org.openvpms.component.model.party.Contact contact : contacts) {
             if (TypeHelper.isA(contact, shortName)) {
-                return contact;
+                return (Contact) contact;
             }
         }
         return null;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -28,9 +28,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 
@@ -47,7 +50,7 @@ public class ActBean extends IMObjectBean {
      *
      * @param act the act
      */
-    public ActBean(Act act) {
+    public ActBean(org.openvpms.component.business.domain.im.act.Act act) {
         this(act, null);
     }
 
@@ -57,7 +60,7 @@ public class ActBean extends IMObjectBean {
      * @param act     the act
      * @param service the archetype service
      */
-    public ActBean(Act act, IArchetypeService service) {
+    public ActBean(org.openvpms.component.business.domain.im.act.Act act, IArchetypeService service) {
         super(act, service);
     }
 
@@ -68,7 +71,8 @@ public class ActBean extends IMObjectBean {
      * @param service the archetype service
      * @param lookups the lookup service
      */
-    public ActBean(Act act, IArchetypeService service, ILookupService lookups) {
+    public ActBean(org.openvpms.component.business.domain.im.act.Act act, IArchetypeService service,
+                   ILookupService lookups) {
         super(act, service, lookups);
     }
 
@@ -129,10 +133,10 @@ public class ActBean extends IMObjectBean {
      */
     public ActRelationship getRelationship(Act target) {
         Act act = getAct();
-        IMObjectReference ref = target.getObjectReference();
-        for (ActRelationship r : act.getSourceActRelationships()) {
+        Reference ref = target.getObjectReference();
+        for (Relationship r : act.getSourceActRelationships()) {
             if (ref.equals(r.getTarget())) {
-                return r;
+                return (ActRelationship) r;
             }
         }
         return null;
@@ -158,7 +162,7 @@ public class ActBean extends IMObjectBean {
      * @param target    the target act reference
      * @return {@code true} if a relationship exists with the specified short name and target
      */
-    public boolean hasRelationship(String shortName, IMObjectReference target) {
+    public boolean hasRelationship(String shortName, Reference target) {
         for (ActRelationship relationship : getRelationships(shortName)) {
             if (relationship.getTarget().equals(target)) {
                 return true;
@@ -184,7 +188,7 @@ public class ActBean extends IMObjectBean {
      * @return the relationship or {@code null} if none is found
      */
     public ActRelationship getRelationship(String shortName) {
-        return selectFirst(getAct().getActRelationships(), new IsA(shortName));
+        return (ActRelationship) selectFirst(getAct().getActRelationships(), new IsA(shortName));
     }
 
     /**
@@ -203,8 +207,10 @@ public class ActBean extends IMObjectBean {
      * @param shortName the short name
      * @return a list of all relationships matching the short name
      */
+    @SuppressWarnings("unchecked")
     public List<ActRelationship> getRelationships(String shortName) {
-        return select(getAct().getActRelationships(), Predicates.isA(shortName));
+        Set set = getAct().getActRelationships();
+        return select((Set<ActRelationship>) set, Predicates.isA(shortName));
     }
 
     /**
@@ -248,7 +254,7 @@ public class ActBean extends IMObjectBean {
     public List<Act> getActs() {
         List<Act> result = new ArrayList<>();
         Act act = getAct();
-        for (ActRelationship r : act.getSourceActRelationships()) {
+        for (Relationship r : act.getSourceActRelationships()) {
             Act child = (Act) resolve(r.getTarget(), Policy.State.ANY);
             if (child != null) {
                 result.add(child);
@@ -268,9 +274,9 @@ public class ActBean extends IMObjectBean {
     public List<Act> getActs(String shortName) {
         List<Act> result = new ArrayList<>();
         Act act = getAct();
-        for (ActRelationship r : act.getSourceActRelationships()) {
-            IMObjectReference target = r.getTarget();
-            if (TypeHelper.isA(target, shortName)) {
+        for (Relationship r : act.getSourceActRelationships()) {
+            Reference target = r.getTarget();
+            if (target.isA(shortName)) {
                 Act child = (Act) resolve(target, Policy.State.ANY);
                 if (child != null) {
                     result.add(child);
@@ -408,7 +414,7 @@ public class ActBean extends IMObjectBean {
      * @return the new participation
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Participation addParticipation(String shortName, IMObjectReference entity) {
+    public Participation addParticipation(String shortName, Reference entity) {
         Act act = getAct();
         Participation p = (Participation) getArchetypeService().create(shortName);
         if (p == null) {
@@ -427,7 +433,7 @@ public class ActBean extends IMObjectBean {
      * @return the participation or {@code null}if none is found
      */
     public Participation getParticipation(String shortName) {
-        return selectFirst(getAct().getParticipations(), new IsA(shortName));
+        return (Participation) selectFirst(getAct().getParticipations(), new IsA(shortName));
     }
 
     /**
@@ -465,7 +471,7 @@ public class ActBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getParticipant(String shortName) {
-        IMObjectReference ref = getParticipantRef(shortName);
+        Reference ref = getParticipantRef(shortName);
         return (Entity) resolve(ref, Policy.State.ANY);
     }
 
@@ -491,7 +497,7 @@ public class ActBean extends IMObjectBean {
      * @return the participation
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Participation setParticipant(String shortName, IMObjectReference entity) {
+    public Participation setParticipant(String shortName, Reference entity) {
         Participation p = getParticipation(shortName);
         if (p == null) {
             p = addParticipation(shortName, entity);
@@ -548,7 +554,7 @@ public class ActBean extends IMObjectBean {
      * @param entity the entity reference. May be {@code null}
      * @return the participation
      */
-    public Participation setNodeParticipant(String name, IMObjectReference entity) {
+    public Participation setNodeParticipant(String name, Reference entity) {
         Participation p = getNodeParticipation(name);
         if (p == null) {
             if (entity != null) {
@@ -584,7 +590,7 @@ public class ActBean extends IMObjectBean {
      * @throws IMObjectBeanException     if {@code name} is an invalid node, there is no relationship that supports
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
-    public Participation addNodeParticipation(String name, IMObjectReference target) {
+    public Participation addNodeParticipation(String name, Reference target) {
         String shortName = getRelationshipArchetype(name, target, "entity");
         return addParticipation(shortName, target);
     }

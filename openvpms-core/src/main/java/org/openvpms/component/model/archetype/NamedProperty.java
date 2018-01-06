@@ -16,24 +16,27 @@
 
 package org.openvpms.component.model.archetype;
 
+import org.openvpms.component.model.object.IMObject;
+
 /**
- * .
+ * Represents a property that is named.
  *
+ * @author Jim Alateras
  * @author Tim Anderson
  */
-public interface NamedProperty {
+public interface NamedProperty extends IMObject {
 
     /**
-     * Return the value of this property.
+     * Returns the value of this property.
      *
-     * @return Object
+     * @return the value. May be {@code null}
      */
     Object getValue();
 
     /**
-     * Set the value of the property.
+     * Sets the value of the property.
      *
-     * @param value the value
+     * @param value the value. May be {@code null}
      */
     void setValue(Object value);
 
