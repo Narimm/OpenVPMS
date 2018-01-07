@@ -11,15 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.plugin.internal.service.archetype;
 
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.DelegatingArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -27,6 +25,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.security.RunAs;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.plugin.service.archetype.ArchetypeService;
 
 import java.util.Collection;
@@ -72,18 +72,19 @@ public class PluginArchetypeServiceImpl implements ArchetypeService {
         this.practiceService = practiceService;
         writable = new DelegatingArchetypeService(service) {
             @Override
-            public void save(final IMObject object) {
+            public void save(org.openvpms.component.business.domain.im.common.IMObject object) {
                 PluginArchetypeServiceImpl.this.save(object);
             }
 
             @Override
-            public void save(Collection<? extends IMObject> objects) {
+            public void save(Collection<? extends org.openvpms.component.business.domain.im.common.IMObject> objects) {
                 PluginArchetypeServiceImpl.this.save(objects);
             }
 
             @Override
-            public IMObject create(String shortName) {
-                return PluginArchetypeServiceImpl.this.create(shortName);
+            public org.openvpms.component.business.domain.im.common.IMObject create(String shortName) {
+                return (org.openvpms.component.business.domain.im.common.IMObject)
+                        PluginArchetypeServiceImpl.this.create(shortName);
             }
         };
     }
@@ -106,7 +107,7 @@ public class PluginArchetypeServiceImpl implements ArchetypeService {
      * @return the bean
      */
     @Override
-    public IMObjectBean getBean(IMObject object) {
+    public IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
         return new IMObjectBean(object, writable, lookups);
     }
 
@@ -130,7 +131,7 @@ public class PluginArchetypeServiceImpl implements ArchetypeService {
      */
     @Override
     public void save(final IMObject object) {
-        run(() -> service.save(object));
+        run(() -> service.save((org.openvpms.component.business.domain.im.common.IMObject) object));
     }
 
     /**
@@ -139,8 +140,10 @@ public class PluginArchetypeServiceImpl implements ArchetypeService {
      * @param objects the objects to insert or update
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void save(final Collection<? extends IMObject> objects) {
-        run(() -> service.save(objects));
+        run(() -> service.save((Collection<org.openvpms.component.business.domain.im.common.IMObject>)
+                                       (Collection) objects));
     }
 
     /**
@@ -150,7 +153,7 @@ public class PluginArchetypeServiceImpl implements ArchetypeService {
      */
     @Override
     public void remove(final IMObject object) {
-        run(() -> service.remove(object));
+        run(() -> service.remove((org.openvpms.component.business.domain.im.common.IMObject) object));
     }
 
     /**
@@ -160,7 +163,7 @@ public class PluginArchetypeServiceImpl implements ArchetypeService {
      */
     @Override
     public void validate(IMObject object) {
-        service.validateObject(object);
+        service.validateObject((org.openvpms.component.business.domain.im.common.IMObject) object);
     }
 
     /**
@@ -170,7 +173,7 @@ public class PluginArchetypeServiceImpl implements ArchetypeService {
      * @return the object, or {@code null} if none is found
      */
     @Override
-    public IMObject get(IMObjectReference reference) {
+    public IMObject get(Reference reference) {
         return service.get(reference);
     }
 

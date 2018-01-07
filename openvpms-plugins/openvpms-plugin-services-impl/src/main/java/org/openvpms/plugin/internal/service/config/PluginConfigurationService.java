@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.plugin.internal.service.config;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -64,7 +64,7 @@ public class PluginConfigurationService extends IMObjectUpdateNotifier<Configura
              * @param object the saved object
              */
             @Override
-            public void saved(IMObject object) {
+            public void saved(org.openvpms.component.business.domain.im.common.IMObject object) {
                 onSaved(object, service);
             }
 
@@ -74,7 +74,7 @@ public class PluginConfigurationService extends IMObjectUpdateNotifier<Configura
              * @param object the removed object
              */
             @Override
-            public void removed(IMObject object) {
+            public void removed(org.openvpms.component.business.domain.im.common.IMObject object) {
                 onRemoved(object, service);
             }
         };
@@ -105,7 +105,7 @@ public class PluginConfigurationService extends IMObjectUpdateNotifier<Configura
         if (inactive) {
             // the configuration is inactive. Get an active configuration, if one is available, and the service
             // hasn't updated subsequently
-            IMObject config = getConfig(object.getArchetypeId().getShortName());
+            IMObject config = getConfig(object.getArchetype());
             synchronized (service) {
                 IMObject current = service.getConfiguration();
                 if (current == null || current.getId() == object.getId()) {
@@ -125,7 +125,7 @@ public class PluginConfigurationService extends IMObjectUpdateNotifier<Configura
         synchronized (service) {
             IMObject current = service.getConfiguration();
             if (current != null && current.getId() == object.getId()) {
-                service.setConfiguration(getConfig(object.getArchetypeId().getShortName()));
+                service.setConfiguration(getConfig(object.getArchetype()));
             }
         }
     }
@@ -140,7 +140,8 @@ public class PluginConfigurationService extends IMObjectUpdateNotifier<Configura
         ArchetypeQuery query = new ArchetypeQuery(archetype, true);
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
-        IMObjectQueryIterator<IMObject> iterator = new IMObjectQueryIterator<>(getService(), query);
+        IMObjectQueryIterator<org.openvpms.component.business.domain.im.common.IMObject> iterator
+                = new IMObjectQueryIterator<>(getService(), query);
         return (iterator.hasNext()) ? iterator.next() : null;
     }
 }

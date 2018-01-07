@@ -16,10 +16,10 @@
 
 package org.openvpms.plugin.service.archetype;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.archetype.ArchetypeDescriptor;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Collection;
 
@@ -88,5 +88,5 @@ public interface ArchetypeService {
      * @param reference the reference
      * @return the object, or {@code null} if none is found
      */
-    IMObject get(IMObjectReference reference);
+    IMObject get(Reference reference);
 }
