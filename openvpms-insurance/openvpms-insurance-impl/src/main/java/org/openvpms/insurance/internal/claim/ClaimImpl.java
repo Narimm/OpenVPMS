@@ -21,17 +21,14 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.bean.Policies;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -71,7 +68,12 @@ public class ClaimImpl implements Claim {
     /**
      * The claim.
      */
-    private final ActBean claim;
+    private final IMObjectBean claim;
+
+    /**
+     * The claim act.
+     */
+    private final Act act;
 
     /**
      * The archetype service.
@@ -131,12 +133,12 @@ public class ClaimImpl implements Claim {
      * @param customerRules      the customer rules
      * @param patientRules       the patient rules
      * @param handlers           the document handlers
-     * @param lookups            the lookups
      * @param transactionManager the transaction manager
      */
     public ClaimImpl(Act claim, IArchetypeRuleService service, CustomerRules customerRules, PatientRules patientRules,
-                     DocumentHandlers handlers, ILookupService lookups, PlatformTransactionManager transactionManager) {
-        this.claim = new ActBean(claim, service, lookups);
+                     DocumentHandlers handlers, PlatformTransactionManager transactionManager) {
+        this.claim = service.getBean(claim);
+        this.act = claim;
         this.customerRules = customerRules;
         this.patientRules = patientRules;
         this.service = service;
@@ -181,7 +183,7 @@ public class ClaimImpl implements Claim {
         if (identity == null) {
             identity = (ActIdentity) service.create(archetype);
             claim.addValue("insurerId", identity);
-        } else if (!TypeHelper.isA(identity, archetype)) {
+        } else if (!identity.isA(archetype)) {
             throw new InsuranceException(InsuranceMessages.differentClaimIdentifierArchetype(
                     identity.getArchetypeId().getShortName(), archetype));
         }
@@ -277,7 +279,7 @@ public class ClaimImpl implements Claim {
     @Override
     public Policy getPolicy() {
         if (policy == null) {
-            policy = new PolicyImpl(claim.getTarget("policy", Act.class), service, customerRules, patientRules);
+            policy = new PolicyImpl(claim.getAnyTarget("policy", Act.class), service, customerRules, patientRules);
         }
         return policy;
     }
@@ -289,7 +291,7 @@ public class ClaimImpl implements Claim {
      */
     @Override
     public Status getStatus() {
-        return Status.valueOf(claim.getStatus());
+        return Status.valueOf(act.getStatus());
     }
 
     /**
@@ -362,7 +364,7 @@ public class ClaimImpl implements Claim {
      */
     @Override
     public User getClinician() {
-        return (User) claim.getNodeParticipant("clinician");
+        return claim.getAnyTarget("clinician", User.class);
     }
 
     /**
@@ -373,8 +375,8 @@ public class ClaimImpl implements Claim {
     @Override
     public ClaimHandler getClaimHandler() {
         if (handler == null) {
-            final User user = (User) claim.getNodeParticipant("user");
-            final Party location = (Party) claim.getNodeParticipant("location");
+            final User user = claim.getAnyTarget("user", User.class);
+            final Party location = claim.getAnyTarget("location", Party.class);
             if (user == null) {
                 throw new IllegalStateException("Claim has no user");
             }
@@ -486,7 +488,7 @@ public class ClaimImpl implements Claim {
      */
     protected List<Condition> collectConditions() {
         List<Condition> result = new ArrayList<>();
-        for (Act act : claim.getTargets("items", Act.class, Policies.any())) {
+        for (Act act : claim.getAllTargets("items", Act.class)) {
             result.add(new ConditionImpl(act, service));
         }
         return result;
@@ -501,7 +503,7 @@ public class ClaimImpl implements Claim {
         List<Note> result = new ArrayList<>();
         Party patient = ((PolicyImpl) getPolicy()).getPatient();
         ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("note", PatientArchetypes.CLINICAL_NOTE));
-        Date startTime = claim.getAct().getActivityStartTime();
+        Date startTime = act.getActivityStartTime();
         query.add(join("event", "e").add(
                 join("source", "event")
                         .add(join("patient").add(eq("entity", patient)))
@@ -526,7 +528,7 @@ public class ClaimImpl implements Claim {
      */
     protected List<Attachment> collectAttachments() {
         List<Attachment> result = new ArrayList<>();
-        for (DocumentAct act : claim.getTargets("attachments", DocumentAct.class, Policies.any())) {
+        for (DocumentAct act : claim.getAllTargets("attachments", DocumentAct.class)) {
             result.add(new AttachmentImpl(act, service, handlers));
         }
         return result;
@@ -548,7 +550,7 @@ public class ClaimImpl implements Claim {
      * @param status the status
      */
     private void changeStatus(Status status) {
-        claim.setStatus(status.name());
+        act.setStatus(status.name());
         if (status == Status.CANCELLED || status == Status.SETTLED || status == Status.DECLINED) {
             claim.setValue("endTime", new Date());
         } else {

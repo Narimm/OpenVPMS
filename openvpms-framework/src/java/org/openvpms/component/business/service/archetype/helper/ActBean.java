@@ -16,9 +16,6 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.openvpms.component.business.domain.bean.Policies;
-import org.openvpms.component.business.domain.bean.Policy;
-import org.openvpms.component.business.domain.bean.Predicates;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -28,6 +25,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.bean.Policy;
+import org.openvpms.component.model.bean.Predicates;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.object.Relationship;
 
@@ -224,7 +224,7 @@ public class ActBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public ActRelationship addNodeRelationship(String name, Act target) {
-        String shortName = getRelationshipArchetype(name, target, "target");
+        String shortName = getRelationshipArchetype(name, target);
         return addRelationship(shortName, target);
     }
 
@@ -515,12 +515,7 @@ public class ActBean extends IMObjectBean {
      * @return the entity reference, or {@code null}if none is found
      */
     public IMObjectReference getNodeParticipantRef(String name) {
-        for (Participation p : getValues(name, Participation.class)) {
-            if (p.getEntity() != null) {
-                return p.getEntity();
-            }
-        }
-        return null;
+        return getAnyTargetRef(name);
     }
 
     /**
@@ -532,8 +527,7 @@ public class ActBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeParticipant(String name) {
-        IMObjectReference ref = getNodeParticipantRef(name);
-        return (Entity) resolve(ref, Policy.State.ANY);
+        return getAnyTarget(name, Entity.class);
     }
 
     /**
@@ -544,7 +538,7 @@ public class ActBean extends IMObjectBean {
      * @return the participation
      */
     public Participation setNodeParticipant(String name, Entity entity) {
-        return setNodeParticipant(name, (entity != null) ? entity.getObjectReference() : null);
+        return (Participation) setTarget(name, entity);
     }
 
     /**
@@ -555,15 +549,7 @@ public class ActBean extends IMObjectBean {
      * @return the participation
      */
     public Participation setNodeParticipant(String name, Reference entity) {
-        Participation p = getNodeParticipation(name);
-        if (p == null) {
-            if (entity != null) {
-                p = addNodeParticipation(name, entity);
-            }
-        } else {
-            p.setEntity(entity);
-        }
-        return p;
+        return (Participation) setTarget(name, entity);
     }
 
     /**
@@ -577,7 +563,7 @@ public class ActBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public Participation addNodeParticipation(String name, Entity target) {
-        return addNodeParticipation(name, target.getObjectReference());
+        return (Participation) addTarget(name, target);
     }
 
     /**
@@ -591,19 +577,7 @@ public class ActBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public Participation addNodeParticipation(String name, Reference target) {
-        String shortName = getRelationshipArchetype(name, target, "entity");
-        return addParticipation(shortName, target);
-    }
-
-    /**
-     * Returns the first participation for the given node.
-     *
-     * @param name the node name
-     * @return the participation, or {@code null} if none is found
-     */
-    public Participation getNodeParticipation(String name) {
-        List<Participation> values = getValues(name, Participation.class);
-        return !values.isEmpty() ? values.get(0) : null;
+        return (Participation) addTarget(name, target);
     }
 
 }

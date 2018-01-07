@@ -16,11 +16,11 @@
 
 package org.openvpms.component.business.service.archetype.rule;
 
-import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.util.Collection;
 

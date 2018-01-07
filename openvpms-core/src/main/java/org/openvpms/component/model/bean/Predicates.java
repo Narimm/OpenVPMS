@@ -14,7 +14,7 @@
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.component.business.domain.bean;
+package org.openvpms.component.model.bean;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.model.object.IMObject;

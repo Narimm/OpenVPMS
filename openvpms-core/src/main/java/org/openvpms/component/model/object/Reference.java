@@ -71,6 +71,18 @@ public interface Reference {
     boolean isA(String... archetypes);
 
     /**
+     * Determines if this reference is equal to another object.
+     * <p>
+     * A reference is equal to another if the {@link #getArchetype() archetype} and {@link #getLinkId() linkId}
+     * are the same.
+     *
+     * @param obj the object
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
+     */
+    @Override
+    boolean equals(Object obj);
+
+    /**
      * Determines if an archetype and link identifier match this.
      *
      * @param archetype the archetype

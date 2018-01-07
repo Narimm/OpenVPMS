@@ -20,9 +20,6 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.bean.Policies;
-import org.openvpms.component.business.domain.bean.Policy;
-import org.openvpms.component.business.domain.bean.Predicates;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,6 +34,9 @@ import org.openvpms.component.business.service.archetype.helper.lookup.LookupAss
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.bean.Policy;
+import org.openvpms.component.model.bean.Predicates;
 import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.object.PeriodRelationship;
 import org.openvpms.component.model.object.Reference;
@@ -57,11 +57,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.openvpms.component.business.domain.bean.Policies.active;
-import static org.openvpms.component.business.domain.bean.Policies.any;
-import static org.openvpms.component.business.domain.bean.Predicates.targetEquals;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
+import static org.openvpms.component.model.bean.Policies.active;
+import static org.openvpms.component.model.bean.Policies.any;
+import static org.openvpms.component.model.bean.Predicates.targetEquals;
 
 
 /**
@@ -69,7 +69,7 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
  *
  * @author Tim Anderson
  */
-public class IMObjectBean implements org.openvpms.component.business.domain.bean.IMObjectBean {
+public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectBean {
 
     /**
      * The archetype service.
@@ -685,6 +685,35 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     }
 
     /**
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <p>
+     * This is shorthand for: {@code getTarget(name, Policies.any())}
+     *
+     * @param name the relationship node name
+     * @return the target object, or {@code null} if none is found
+     */
+    @Override
+    public org.openvpms.component.model.object.IMObject getAnyTarget(String name) {
+        return getTarget(name, Policies.any());
+    }
+
+    /**
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <p>
+     * This is shorthand for: {@code getTarget(name, type, Policies.any())}
+     *
+     * @param name the relationship node name
+     * @param type the object type
+     * @return the target object, or {@code null} if none is found
+     */
+    @Override
+    public <T extends org.openvpms.component.model.object.IMObject> T getAnyTarget(String name, Class<T> type) {
+        return getTarget(name, type, Policies.any());
+    }
+
+    /**
      * Sets the target of a relationship.
      * <p>
      * If no relationship exists and:
@@ -905,8 +934,22 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return the target object reference, or {@code null} if none is found
      */
     @Override
-    public <R extends Relationship> Reference getTargetRef(String name, Policy<R> policy) {
+    public <R extends Relationship> IMObjectReference getTargetRef(String name, Policy<R> policy) {
         return getRelatedRef(name, policy, false);
+    }
+
+    /**
+     * Returns the target object reference from the first {@link Relationship} for the specified relationship node.
+     * <p>
+     * If there are multiple relationships, this will return the reference from an active relationship over an
+     * inactive one.
+     *
+     * @param name the relationship node name
+     * @return the target object reference, or {@code null} if none is found
+     */
+    @Override
+    public IMObjectReference getAnyTargetRef(String name) {
+        return getTargetRef(name, Policies.any());
     }
 
     /**
@@ -944,8 +987,8 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return the new relationship
      */
     @Override
-    public IMObjectRelationship addTarget(String name, Reference target) {
-        String archetype = getRelationshipArchetype(name, target, "target");
+    public Relationship addTarget(String name, Reference target) {
+        String archetype = getRelationshipArchetype(name, target);
         return addTarget(name, archetype, target);
     }
 
@@ -960,7 +1003,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return the new relationship
      */
     @Override
-    public IMObjectRelationship addTarget(String name, org.openvpms.component.model.object.IMObject target) {
+    public Relationship addTarget(String name, org.openvpms.component.model.object.IMObject target) {
         return addTarget(name, target.getObjectReference());
     }
 
@@ -976,8 +1019,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return the new relationship
      */
     @Override
-    public IMObjectRelationship addTarget(String name, String archetype,
-                                          org.openvpms.component.model.object.IMObject target) {
+    public Relationship addTarget(String name, String archetype, org.openvpms.component.model.object.IMObject target) {
         return addTarget(name, archetype, target.getObjectReference());
     }
 
@@ -995,8 +1037,8 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException     if the relationship archetype is not found
      */
     @Override
-    public IMObjectRelationship addTarget(String name, String archetype, Reference target) {
-        IMObjectRelationship r = (IMObjectRelationship) getArchetypeService().create(archetype);
+    public Relationship addTarget(String name, String archetype, Reference target) {
+        Relationship r = (Relationship) getArchetypeService().create(archetype);
         if (r == null) {
             throw new IMObjectBeanException(ArchetypeNotFound, archetype);
         }
@@ -1413,6 +1455,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of active source objects
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public List<IMObject> getNodeSourceObjects(String node, Date time) {
         List<org.openvpms.component.model.object.IMObject> sources = getSources(node, active(time));
         return (List<IMObject>) (List) sources;
@@ -1601,6 +1644,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @return a list of active target objects
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @SuppressWarnings("unchecked")
     public List<IMObject> getNodeTargetObjects(String node, Date time) {
         List<org.openvpms.component.model.object.IMObject> targets = getTargets(node, active(time));
         return (List<IMObject>) (List) targets;
@@ -1855,7 +1899,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getNodeTargetObjectRef(String node, boolean active) {
-        return (IMObjectReference) getTargetRef(node, active ? active() : any());
+        return getTargetRef(node, active ? active() : any());
     }
 
     /**
@@ -2405,7 +2449,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException     if the relationship archetype is not found
      */
     public IMObjectRelationship addNodeTarget(String name, Reference target) {
-        return addTarget(name, target);
+        return (IMObjectRelationship) addTarget(name, target);
     }
 
     /**
@@ -2421,7 +2465,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException     if the relationship archetype is not found
      */
     public IMObjectRelationship addNodeTarget(String name, IMObject target) {
-        return addTarget(name, target);
+        return (IMObjectRelationship) addTarget(name, target);
     }
 
     /**
@@ -2438,7 +2482,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException     if the relationship archetype is not found
      */
     public IMObjectRelationship addNodeTarget(String name, String shortName, IMObject target) {
-        return addTarget(name, shortName, target);
+        return (IMObjectRelationship) addTarget(name, shortName, target);
     }
 
     /**
@@ -2455,7 +2499,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws IMObjectBeanException     if the relationship archetype is not found
      */
     public IMObjectRelationship addNodeTarget(String name, String shortName, Reference target) {
-        return addTarget(name, shortName, target);
+        return (IMObjectRelationship) addTarget(name, shortName, target);
     }
 
     /**
@@ -2513,8 +2557,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @throws ArchetypeServiceException if the object can't be saved
      */
     public void save() {
-        org.openvpms.component.business.domain.im.common.IMObject object
-                = (org.openvpms.component.business.domain.im.common.IMObject) getObject();
+        IMObject object = getObject();
         IArchetypeService service = getArchetypeService();
         service.deriveValues(object);
         service.save(object);
@@ -2528,7 +2571,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      */
     @Override
     public IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
-        return new IMObjectBean((IMObject) object, service, lookups);
+        return new IMObjectBean(object, service, lookups);
     }
 
     /**
@@ -2735,7 +2778,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
      * @param source if {@code true}, return the source of the relationship, otherwise return the target
      * @return the matching reference, or {@code null}
      */
-    protected <R extends Relationship> Reference getRelatedRef(
+    protected <R extends Relationship> IMObjectReference getRelatedRef(
             String name, Policy<R> policy, boolean source) {
         Function<Relationship, Reference> accessor = getAccessor(source);
         java.util.function.Predicate<R> predicate = policy.getPredicate();
@@ -2745,7 +2788,7 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
             if (predicate == null || predicate.test(relationship)) {
                 Reference reference = accessor.apply(relationship);
                 if (reference != null) {
-                    return reference;
+                    return (IMObjectReference) reference;
                 }
             }
         }
@@ -2866,33 +2909,33 @@ public class IMObjectBean implements org.openvpms.component.business.domain.bean
     /**
      * Returns a relationship short name for a specific node that the target may be added to.
      *
-     * @param name       the node name
-     * @param target     the target of the relationship
-     * @param targetName the relationship node name that will reference the target
+     * @param name   the node name
+     * @param target the target of the relationship
      * @return the relationship short name
      * @throws IMObjectBeanException if {@code name} is an invalid node, there is no relationship that supports
      *                               {@code target}, or multiple relationships can support {@code target}
      */
-    protected String getRelationshipArchetype(String name, IMObject target, String targetName) {
-        return getRelationshipArchetype(name, target.getObjectReference(), targetName);
+    protected String getRelationshipArchetype(String name, IMObject target) {
+        return getRelationshipArchetype(name, target.getObjectReference());
     }
 
     /**
      * Returns a relationship short name for a specific node that the target may be added to.
      *
-     * @param name       the node name
-     * @param target     the target of the relationship
-     * @param targetName the relationship node name that will reference the target
+     * @param name   the node name
+     * @param target the target of the relationship
      * @return the relationship short name
      * @throws IMObjectBeanException if {@code name} is an invalid node, there is no relationship that supports
      *                               {@code target}, or multiple relationships can support {@code target}
      */
-    protected String getRelationshipArchetype(String name, Reference target, String targetName) {
+    protected String getRelationshipArchetype(String name, Reference target) {
         String[] range = getArchetypeRange(name);
         IArchetypeService service = getArchetypeService();
         String result = null;
         String archetypeId = target.getArchetype();
         for (String shortName : range) {
+            // NOTE: for historical reasons, participations use "entity" for the target
+            String targetName = (TypeHelper.matches(shortName, "participation.*")) ? "entity" : "target";
             ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(shortName);
             if (descriptor != null) {
                 NodeDescriptor node = descriptor.getNodeDescriptor(targetName);

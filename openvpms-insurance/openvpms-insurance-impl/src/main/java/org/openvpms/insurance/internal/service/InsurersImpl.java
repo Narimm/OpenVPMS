@@ -17,11 +17,11 @@
 package org.openvpms.insurance.internal.service;
 
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
-import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;

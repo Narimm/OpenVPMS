@@ -16,8 +16,8 @@
 
 package org.openvpms.insurance.internal.service;
 
-import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.party.Party;
 import org.openvpms.insurance.exception.InsuranceException;

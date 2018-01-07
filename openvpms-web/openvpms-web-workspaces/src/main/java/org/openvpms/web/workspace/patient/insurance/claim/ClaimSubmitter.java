@@ -65,8 +65,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.openvpms.component.business.domain.bean.Policies.all;
-
 /**
  * Submits insurance claims.
  *
@@ -374,7 +372,7 @@ public class ClaimSubmitter {
         final List<IMObject> objects = new ArrayList<>();
         objects.add(act);
         int missingAttachment = 0;
-        for (DocumentAct attachment : bean.getTargets("attachments", DocumentAct.class, all())) {
+        for (DocumentAct attachment : bean.getAllTargets("attachments", DocumentAct.class)) {
             if (attachment.getDocument() != null) {
                 objects.add(attachment);
             } else {

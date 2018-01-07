@@ -17,11 +17,10 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.product.Product;
 import org.openvpms.insurance.claim.Item;
 
@@ -38,7 +37,12 @@ public class ItemImpl implements Item {
     /**
      * The invoice item.
      */
-    private final ActBean item;
+    private final IMObjectBean item;
+
+    /**
+     * The underlying act.
+     */
+    private final Act act;
 
     /**
      * The archetype service.
@@ -52,7 +56,8 @@ public class ItemImpl implements Item {
      * @param service the archetype service
      */
     public ItemImpl(Act item, IArchetypeRuleService service) {
-        this.item = new ActBean(item, service);
+        this.item = service.getBean(item);
+        this.act = item;
         this.service = service;
     }
 
@@ -63,7 +68,7 @@ public class ItemImpl implements Item {
      */
     @Override
     public long getId() {
-        return item.getObject().getId();
+        return act.getId();
     }
 
     /**
@@ -73,7 +78,7 @@ public class ItemImpl implements Item {
      */
     @Override
     public Date getDate() {
-        return item.getAct().getActivityStartTime();
+        return act.getActivityStartTime();
     }
 
     /**
@@ -83,7 +88,7 @@ public class ItemImpl implements Item {
      */
     @Override
     public Product getProduct() {
-        return (Product) item.getNodeParticipant("product");
+        return item.getAnyTarget("product", Product.class);
     }
 
     /**

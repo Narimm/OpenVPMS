@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.claim;
@@ -19,14 +19,13 @@ package org.openvpms.insurance.internal.claim;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -67,8 +66,8 @@ public class AttachmentImpl implements Attachment {
      * @param service  the archetype service
      * @param handlers the document handlers
      */
-    public AttachmentImpl(DocumentAct act, IArchetypeService service, DocumentHandlers handlers) {
-        this.act = new ActBean(act, service);
+    public AttachmentImpl(DocumentAct act, IArchetypeRuleService service, DocumentHandlers handlers) {
+        this.act = service.getBean(act);
         this.service = service;
         this.handlers = handlers;
     }
@@ -109,7 +108,7 @@ public class AttachmentImpl implements Attachment {
         if (identity == null) {
             identity = (ActIdentity) service.create(archetype);
             act.addValue("insurerId", identity);
-        } else if (!TypeHelper.isA(identity, archetype)) {
+        } else if (!identity.isA(archetype)) {
             throw new IllegalArgumentException(
                     "Argument 'archetype' must be of the same type as the existing identifier");
         }

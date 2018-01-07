@@ -14,7 +14,7 @@
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.component.business.domain.bean;
+package org.openvpms.component.model.bean;
 
 import org.openvpms.component.model.archetype.ArchetypeDescriptor;
 import org.openvpms.component.model.archetype.NodeDescriptor;
@@ -386,6 +386,32 @@ public interface IMObjectBean {
     <T extends IMObject, R extends Relationship> T getTarget(String name, Class<T> type, Policy<R> policy);
 
     /**
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <p/>
+     * If there are multiple relationships, this will return the reference from an active relationship over an
+     * inactive one.
+     * <br/>
+     * This is shorthand for: {@code getTarget(name, Policies.any())}
+     *
+     * @param name the relationship node name
+     * @return the target object, or {@code null} if none is found
+     */
+    IMObject getAnyTarget(String name);
+
+    /**
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <p>
+     * This is shorthand for: {@code getTarget(name, type, Policies.any())}
+     *
+     * @param name the relationship node name
+     * @param type the object type
+     * @return the target object, or {@code null} if none is found
+     */
+    <T extends IMObject> T getAnyTarget(String name, Class<T> type);
+
+    /**
      * Returns the active source objects from each active {@link Relationship} for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
@@ -471,8 +497,7 @@ public interface IMObjectBean {
      * @param policy the policy for relationship selection and object retrieval
      * @return a list of target objects matching the policy
      */
-    <T extends IMObject, R extends Relationship> List<T> getTargets(String name, Class<T> type,
-                                                                            Policy<R> policy);
+    <T extends IMObject, R extends Relationship> List<T> getTargets(String name, Class<T> type, Policy<R> policy);
 
     /**
      * Returns the target objects for all relationships, active or inactive.
@@ -541,6 +566,17 @@ public interface IMObjectBean {
      * @return the target object reference, or {@code null} if none is found
      */
     <R extends Relationship> Reference getTargetRef(String name, Policy<R> policy);
+
+    /**
+     * Returns the target object reference from the first {@link Relationship} for the specified relationship node.
+     * <p>
+     * If there are multiple relationships, this will return the reference from an active relationship over an
+     * inactive one.
+     *
+     * @param name the relationship node name
+     * @return the target object reference, or {@code null} if none is found
+     */
+    Reference getAnyTargetRef(String name);
 
     /**
      * Returns the target object references from each active {@link Relationship} for the specified node.

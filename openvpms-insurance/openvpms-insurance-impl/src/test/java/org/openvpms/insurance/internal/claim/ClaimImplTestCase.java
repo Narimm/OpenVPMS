@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.claim;
@@ -288,7 +288,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         save(claimAct, item1Act);
 
         Claim claim = new ClaimImpl(claimAct, (IArchetypeRuleService) getArchetypeService(), customerRules,
-                                    patientRules, handlers, getLookupService(), transactionManager);
+                                    patientRules, handlers, transactionManager);
         assertEquals(Claim.Status.PENDING, claim.getStatus());
         assertTrue(claim.canCancel());
 
@@ -369,7 +369,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
      */
     private Claim createClaim(Act act) {
         return new ClaimImpl(act, (IArchetypeRuleService) getArchetypeService(), customerRules, patientRules,
-                             handlers, getLookupService(), transactionManager);
+                             handlers, transactionManager);
     }
 
     /**
