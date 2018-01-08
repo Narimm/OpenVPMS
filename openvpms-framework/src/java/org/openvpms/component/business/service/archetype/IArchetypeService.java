@@ -81,6 +81,15 @@ public interface IArchetypeService {
      * through the assertions.
      *
      * @param object the object to validate
+     * @return any validation errors
+     */
+    List<org.openvpms.component.service.archetype.ValidationError> validate(IMObject object);
+
+    /**
+     * Validate the specified {@link IMObject}. To validate the object it will retrieve the archetype and iterate
+     * through the assertions.
+     *
+     * @param object the object to validate
      * @throws ValidationException if there are validation errors
      */
     void validateObject(IMObject object);

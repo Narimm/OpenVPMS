@@ -33,8 +33,7 @@ import java.util.Map;
 /**
  * The archetype descriptor is used to describe an archetype.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 public class ArchetypeDescriptor extends Descriptor
         implements org.openvpms.component.model.archetype.ArchetypeDescriptor {

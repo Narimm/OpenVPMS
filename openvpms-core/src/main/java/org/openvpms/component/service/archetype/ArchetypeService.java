@@ -14,17 +14,19 @@
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.plugin.service.archetype;
+package org.openvpms.component.service.archetype;
 
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.archetype.ArchetypeDescriptor;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.model.object.Reference;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
- * Archetype service for plugins.
+ * The archetype service provides support to create, retrieve, validate, save and remove {@link IMObject}s.
  *
  * @author Tim Anderson
  */
@@ -35,6 +37,7 @@ public interface ArchetypeService {
      *
      * @param archetype the archetype
      * @return the descriptor corresponding to the archetype, or {@code null} if none is found
+     * @throws OpenVPMSException for any error
      */
     ArchetypeDescriptor getArchetypeDescriptor(String archetype);
 
@@ -43,6 +46,7 @@ public interface ArchetypeService {
      *
      * @param object the object
      * @return the bean
+     * @throws OpenVPMSException for any error
      */
     IMObjectBean getBean(IMObject object);
 
@@ -50,7 +54,8 @@ public interface ArchetypeService {
      * Create a domain object given its archetype.
      *
      * @param archetype the archetype name
-     * @return a new object, or {@code null} if there is no corresponding archetype descriptor for {@code shortName}
+     * @return a new object, or {@code null} if there is no corresponding archetype descriptor for {@code archetype}
+     * @throws OpenVPMSException for any error
      */
     IMObject create(String archetype);
 
@@ -58,6 +63,7 @@ public interface ArchetypeService {
      * Saves an object, executing any <em>save</em> rules associated with its archetype.
      *
      * @param object the object to save
+     * @throws OpenVPMSException for any error
      */
     void save(IMObject object);
 
@@ -65,6 +71,7 @@ public interface ArchetypeService {
      * Save a collection of {@link IMObject} instances.
      *
      * @param objects the objects to insert or update
+     * @throws OpenVPMSException for any error
      */
     void save(Collection<? extends IMObject> objects);
 
@@ -72,6 +79,7 @@ public interface ArchetypeService {
      * Remove the specified object.
      *
      * @param object the object to remove
+     * @throws OpenVPMSException for any error
      */
     void remove(IMObject object);
 
@@ -79,14 +87,17 @@ public interface ArchetypeService {
      * Validates an object.
      *
      * @param object the object to validate
+     * @return a list of validation errors, if any
+     * @throws OpenVPMSException for any error
      */
-    void validate(IMObject object);
+    List<ValidationError> validate(IMObject object);
 
     /**
      * Returns an object given its reference.
      *
      * @param reference the reference
      * @return the object, or {@code null} if none is found
+     * @throws OpenVPMSException for any error
      */
     IMObject get(Reference reference);
 }

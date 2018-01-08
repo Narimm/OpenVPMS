@@ -28,20 +28,14 @@ import java.util.Map;
 public interface NodeDescriptor extends IMObject {
 
     /**
-     * The default display length if one is not defined in the node definition.
-     */
-    int DEFAULT_DISPLAY_LENGTH = 50;
-
-    /**
      * The default maximum length if one is not defined in the node definition.
      */
     int DEFAULT_MAX_LENGTH = 255;
 
     /**
-     * Used to identify a max cardinality that is unbounded.
+     * Used to identify a maximum cardinality that is unbounded.
      */
     int UNBOUNDED = -1;
-
 
     /**
      * Returns the default value.

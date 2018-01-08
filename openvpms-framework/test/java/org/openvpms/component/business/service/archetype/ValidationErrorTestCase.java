@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -439,7 +439,7 @@ public class ValidationErrorTestCase {
             fail("Expected ValidationException to be thrown");
         } catch (ValidationException exception) {
             assertEquals(1, exception.getErrors().size());
-            ValidationError error = exception.getErrors().get(0);
+            org.openvpms.component.service.archetype.ValidationError error = exception.getErrors().get(0);
             assertEquals("entity.invalidArchetype", error.getArchetype());
             assertNull(error.getNode());
             assertEquals("No archetype definition for entity.invalidArchetype", error.getMessage());
@@ -457,6 +457,23 @@ public class ValidationErrorTestCase {
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 archFile, assertionFile);
         service = new ArchetypeService(cache);
+    }
+
+    /**
+     * Create a person.
+     *
+     * @param title     the person's title
+     * @param firstName the person's first name
+     * @param lastName  the person's last name
+     * @return Person
+     */
+    public Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party) service.create("party.person");
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
+
+        return person;
     }
 
     /**
@@ -513,23 +530,6 @@ public class ValidationErrorTestCase {
         assertNotNull(result);
         result.setIdentity(identity);
         return result;
-    }
-
-    /**
-     * Create a person.
-     *
-     * @param title     the person's title
-     * @param firstName the person's first name
-     * @param lastName  the person's last name
-     * @return Person
-     */
-    public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party) service.create("party.person");
-        person.getDetails().put("lastName", lastName);
-        person.getDetails().put("firstName", firstName);
-        person.getDetails().put("title", title);
-
-        return person;
     }
 
 }

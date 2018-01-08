@@ -199,13 +199,25 @@ public class ArchetypeService implements IArchetypeService {
         return factory.create(name);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Validate the specified {@link IMObject}. To validate the object it will retrieve the archetype and iterate
+     * through the assertions.
      *
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
+     * @param object the object to validate
+     * @return any validation errors
      */
+    @Override
+    public List<org.openvpms.component.service.archetype.ValidationError> validate(IMObject object) {
+        return validator.validate(object);
+    }
+
+    /*
+         * (non-Javadoc)
+         *
+         * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
+         */
     public void validateObject(IMObject object) {
-        List<ValidationError> errors = validator.validate(object);
+        List<org.openvpms.component.service.archetype.ValidationError> errors = validator.validate(object);
         if (!errors.isEmpty()) {
             throw new ValidationException(
                     errors,

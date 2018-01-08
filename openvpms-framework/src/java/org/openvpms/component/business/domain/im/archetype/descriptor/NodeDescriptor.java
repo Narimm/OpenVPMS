@@ -57,19 +57,9 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
     public static final int DEFAULT_DISPLAY_LENGTH = 50;
 
     /**
-     * The default maximum Length if one is not defined in the node definition
-     */
-    public static final int DEFAULT_MAX_LENGTH = 255;
-
-    /**
      * The name given to the object id node
      */
     public static final String IDENTIFIER_NODE_NAME = "id";
-
-    /**
-     * This is used to identify a max cardinality that is unbounded.
-     */
-    public static final int UNBOUNDED = -1;
 
     /**
      * Representation of max cardinality as a string

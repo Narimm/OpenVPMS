@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.service.archetype.ValidationError;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -99,6 +100,18 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     @Override
     public IMObject create(ArchetypeId id) {
         return service.create(id);
+    }
+
+    /**
+     * Validate the specified {@link IMObject}. To validate the object it will retrieve the archetype and iterate
+     * through the assertions.
+     *
+     * @param object the object to validate
+     * @return any validation errors
+     */
+    @Override
+    public List<ValidationError> validate(IMObject object) {
+        return service.validate(object);
     }
 
     /**
@@ -211,7 +224,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     /**
      * Save a collection of {@link IMObject} instances. executing any  <em>save</em> rules associated with their
      * archetypes.
-     * <p/>
+     * <p>
      * Rules will be executed in the order that the objects are supplied.
      *
      * @param objects the objects to save
@@ -276,8 +289,8 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     /**
      * Retrieves an object given its reference.
      *
-     * @param reference  the object reference
-     * @param active if {@code true}, only return the object if it is active
+     * @param reference the object reference
+     * @param active    if {@code true}, only return the object if it is active
      * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
@@ -301,7 +314,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     /**
      * Retrieves partially populated objects that match the query.
      * This may be used to selectively load parts of object graphs to improve performance.
-     * <p/>
+     * <p>
      * All simple properties of the returned objects are populated - the {@code nodes} argument is used to specify which
      * collection nodes to populate. If empty, no collections will be loaded, and the behaviour of accessing them is
      * undefined.
@@ -414,7 +427,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
 
     /**
      * Adds a listener to receive notification of changes.
-     * <p/>
+     * <p>
      * In a transaction, notifications occur on successful commit.
      *
      * @param shortName the archetype short to receive events for. May contain wildcards.
