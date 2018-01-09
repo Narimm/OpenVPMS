@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -25,6 +25,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 
 import java.util.Comparator;
 import java.util.Date;
@@ -117,11 +119,11 @@ public class EntityBean extends IMObjectBean {
      */
     @Override
     public IMObjectRelationship addNodeTarget(String name, IMObject target) {
-        IMObjectRelationship result = super.addNodeTarget(name, target);
+        Relationship result = super.addNodeTarget(name, target);
         if (target instanceof Entity && result instanceof EntityRelationship) {
             ((Entity) target).addEntityRelationship((EntityRelationship) result);
         }
-        return result;
+        return (IMObjectRelationship) result;
     }
 
     /**
@@ -142,11 +144,11 @@ public class EntityBean extends IMObjectBean {
      * @return the first entity relationship with {@code target} as its
      * target or {@code null} if none is found
      */
-    public EntityRelationship getRelationship(IMObjectReference target) {
+    public EntityRelationship getRelationship(Reference target) {
         Entity entity = getEntity();
-        for (EntityRelationship r : entity.getEntityRelationships()) {
+        for (Relationship r : entity.getEntityRelationships()) {
             if (target.equals(r.getTarget())) {
-                return r;
+                return (EntityRelationship) r;
             }
         }
         return null;
@@ -169,9 +171,10 @@ public class EntityBean extends IMObjectBean {
      * @param active    determines if the relationships must be active or not
      * @return all relationships with the specified short name
      */
+    @SuppressWarnings("unchecked")
     public List<EntityRelationship> getRelationships(String shortName, boolean active) {
-        Set<EntityRelationship> relationships = getEntity().getEntityRelationships();
-        return select(relationships, getActiveIsA(active, shortName));
+        Set relationships = getEntity().getEntityRelationships();
+        return select((Set<EntityRelationship>) relationships, getActiveIsA(active, shortName));
     }
 
     /**
@@ -811,7 +814,7 @@ public class EntityBean extends IMObjectBean {
      * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getSourceEntityRef(String shortName) {
+    public Reference getSourceEntityRef(String shortName) {
         return getSourceObjectRef(getEntity().getEntityRelationships(), shortName);
     }
 
@@ -823,7 +826,7 @@ public class EntityBean extends IMObjectBean {
      * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getSourceEntityRef(String shortName, boolean active) {
+    public Reference getSourceEntityRef(String shortName, boolean active) {
         return getSourceObjectRef(getEntity().getEntityRelationships(), shortName, active);
     }
 
@@ -835,7 +838,7 @@ public class EntityBean extends IMObjectBean {
      * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getSourceEntityRef(String[] shortNames, boolean active) {
+    public Reference getSourceEntityRef(String[] shortNames, boolean active) {
         return getSourceObjectRef(getEntity().getEntityRelationships(), shortNames, active);
     }
 
@@ -846,7 +849,7 @@ public class EntityBean extends IMObjectBean {
      * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getTargetEntityRef(String shortName) {
+    public Reference getTargetEntityRef(String shortName) {
         return getTargetObjectRef(getEntity().getEntityRelationships(), shortName);
     }
 
@@ -858,7 +861,7 @@ public class EntityBean extends IMObjectBean {
      * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getTargetEntityRef(String shortName, boolean active) {
+    public Reference getTargetEntityRef(String shortName, boolean active) {
         return getTargetObjectRef(getEntity().getEntityRelationships(), shortName, active);
     }
 
@@ -870,7 +873,7 @@ public class EntityBean extends IMObjectBean {
      * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getTargetEntityRef(String[] shortNames, boolean active) {
+    public Reference getTargetEntityRef(String[] shortNames, boolean active) {
         return getTargetObjectRef(getEntity().getEntityRelationships(), shortNames, active);
     }
 

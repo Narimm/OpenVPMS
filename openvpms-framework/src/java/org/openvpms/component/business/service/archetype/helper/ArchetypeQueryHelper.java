@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,7 +36,6 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -51,35 +49,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class ArchetypeQueryHelper {
-
-    /**
-     * Return the object with the specified archId and uid.
-     *
-     * @param service the archetype service
-     * @param archId  the archetype id of the object to retrieve
-     * @param id      the id of the object
-     * @return the object of null if one does not exist
-     * @deprecated use {@link IArchetypeService#get(IMObjectReference)}
-     */
-    @Deprecated
-    public static IMObject getByUid(IArchetypeService service,
-                                    ArchetypeId archId, long id) {
-        return service.get(new IMObjectReference(archId, id));
-    }
-
-    /**
-     * Return the object with the specified {@link IMObjectReference}.
-     *
-     * @param service   the archetype service
-     * @param reference the object reference
-     * @return the matching object or null
-     * @deprecated use {@link IArchetypeService#get(IMObjectReference)}
-     */
-    @Deprecated
-    public static IMObject getByObjectReference(IArchetypeService service,
-                                                IMObjectReference reference) {
-        return service.get(reference);
-    }
 
     /**
      * Return a list of {@link Act}s given the following constraints
@@ -239,48 +208,11 @@ public class ArchetypeQueryHelper {
      * Uses the specified criteria to return zero, one or more matching .
      * entities. This is a very generic query which will constrain the
      * result set to one or more of the supplied values.
-     * <p/>
+     * <p>
      * Each of the parameters can denote an exact match or a partial match. If
      * a partial match is required then the last character of the value must be
      * a '*'. In every other case the search will look for an exact match.
-     * <p/>
-     * All the values are optional. In the case where all the values are null
-     * then all the entities will be returned. In the case where two or more
-     * values are specified (i.e. rmName and entityName) then only entities
-     * satisfying both conditions will be returned.
-     *
-     * @param service      a reference to the archetype service
-     * @param rmName       the reference model name (must be complete name)
-     * @param entityName   the name of the entity (partial or complete)
-     * @param conceptName  the concept name (partial or complete)
-     * @param instanceName the particular instance name
-     * @param activeOnly   whether to retrieve only the active objects
-     * @param firstResult  the first result to retrieve
-     * @param maxResults   the no. of results to retrieve
-     * @return IPage<IMObject>
-     * @throws ArchetypeServiceException if there is a problem executing the
-     *                                   service request
-     * @deprecated replaced by {@link #get(IArchetypeService, String, String,
-     *             String, boolean, int, int)}
-     */
-    @Deprecated
-    public static IPage<IMObject> get(IArchetypeService service, String rmName,
-                                      String entityName, String conceptName,
-                                      String instanceName, boolean activeOnly,
-                                      int firstResult, int maxResults) {
-        return get(service, entityName, conceptName, instanceName, activeOnly,
-                   firstResult, maxResults);
-    }
-
-    /**
-     * Uses the specified criteria to return zero, one or more matching .
-     * entities. This is a very generic query which will constrain the
-     * result set to one or more of the supplied values.
-     * <p/>
-     * Each of the parameters can denote an exact match or a partial match. If
-     * a partial match is required then the last character of the value must be
-     * a '*'. In every other case the search will look for an exact match.
-     * <p/>
+     * <p>
      * All the values are optional. In the case where all the values are null
      * then all the entities will be returned. In the case where two or more
      * values are specified (i.e. rmName and entityName) then only entities
@@ -320,7 +252,7 @@ public class ArchetypeQueryHelper {
     /**
      * Retrieve a list of IMObjects that match one or more of the supplied
      * short names. The short names are specified as an array of strings.
-     * <p/>
+     * <p>
      * The short names must be valid short names without wild card characters.
      *
      * @param service     a reference to the archetype service
@@ -349,7 +281,7 @@ public class ArchetypeQueryHelper {
      * @param service    the archetype service
      * @param descriptor the node descriptor
      * @return a list of candidates, or an empty list if the node doesn't have
-     *         a parent/child relationship
+     * a parent/child relationship
      */
     public static List<IMObject> getCandidates(IArchetypeService service,
                                                NodeDescriptor descriptor) {
@@ -362,51 +294,6 @@ public class ArchetypeQueryHelper {
             }
         }
         return Collections.emptyList();
-    }
-
-    /**
-     * This is a static method that will return a list of candidate children
-     * given an reference to the archetype service, the node descriptor for
-     * the node in question and the context object.
-     *
-     * @param service the archetype service
-     * @param ndesc   the node descriptor
-     * @param context the context object
-     * @return List<IMObject>
-     * @deprecated replaced by {@link #getCandidates(IArchetypeService, NodeDescriptor)}.
-     */
-    @Deprecated
-    public static List<IMObject> getCandidateChildren(IArchetypeService service,
-                                                      NodeDescriptor ndesc,
-                                                      IMObject context) {
-
-        // find the node descriptor
-        if (ndesc == null) {
-            return null;
-        }
-
-        // check that the node is a collection and that the parentChild
-        // attribute is set to false
-        if (!(ndesc.isCollection()) ||
-            (ndesc.isParentChild())) {
-            return null;
-        }
-
-        // now there are two ways that candidate children cna be specified
-        // Firstly they can be specified using the candidateChildren assertion
-        // and secondly they can be specified using the archetypeRange
-        // assertion
-        List<IMObject> children = new ArrayList<IMObject>();
-        if (ndesc.containsAssertionType("candidateChildren")) {
-            children = ndesc.getCandidateChildren(context);
-        } else if (ndesc.containsAssertionType("archetypeRange")) {
-            children = get(service,
-                           ndesc.getArchetypeRange(), true, 0,
-                           ArchetypeQuery.ALL_RESULTS)
-                    .getResults();
-        }
-
-        return children;
     }
 
     /**

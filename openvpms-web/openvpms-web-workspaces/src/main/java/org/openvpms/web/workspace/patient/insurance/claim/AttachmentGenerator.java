@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -35,6 +35,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
@@ -152,11 +153,11 @@ class AttachmentGenerator {
      * @param attachments the attachments editor
      */
     private void addMissingInvoices(AttachmentCollectionEditor attachments) {
-        Set<IMObjectReference> expectedInvoices = charges.getInvoiceRefs();
+        Set<Reference> expectedInvoices = charges.getInvoiceRefs();
         for (Act attachment : attachments.getCurrentActs()) {
             if (isInvoice(attachment)) {
                 ActBean bean = new ActBean(attachment);
-                IMObjectReference invoice = bean.getTargetRef("original");
+                Reference invoice = bean.getTargetRef("original");
                 boolean present = false;
                 if (invoice != null) {
                     present = expectedInvoices.remove(invoice);
@@ -166,7 +167,7 @@ class AttachmentGenerator {
                 }
             }
         }
-        for (IMObjectReference ref : expectedInvoices) {
+        for (Reference ref : expectedInvoices) {
             FinancialAct invoice = (FinancialAct) IMObjectHelper.getObject(ref);
             if (invoice != null) {
                 attachments.addInvoice(invoice);

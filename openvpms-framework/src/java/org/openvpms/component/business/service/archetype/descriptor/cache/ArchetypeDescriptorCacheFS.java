@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.xml.sax.InputSource;
 
 import java.io.File;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -214,8 +216,8 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
      *
      * @param descriptors the descriptors to process
      * @throws ArchetypeDescriptorCacheException
-     *
      */
+    @SuppressWarnings("unchecked")
     private void processArchetypeDescriptors(ArchetypeDescriptors descriptors) {
         for (ArchetypeDescriptor descriptor : descriptors
                 .getArchetypeDescriptorsAsArray()) {
@@ -238,8 +240,9 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
             }
 
             // check that the assertions are specified correctly
-            if (descriptor.getNodeDescriptors().size() > 0) {
-                checkAssertionsInNode(descriptor.getNodeDescriptors());
+            Map nodeDescriptors = descriptor.getNodeDescriptors();
+            if (nodeDescriptors.size() > 0) {
+                checkAssertionsInNode((Map<String, NodeDescriptor>) nodeDescriptors);
             }
         }
     }

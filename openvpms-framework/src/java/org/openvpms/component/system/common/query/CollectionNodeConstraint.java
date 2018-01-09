@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -67,24 +65,6 @@ public class CollectionNodeConstraint extends JoinConstraint {
      */
     public CollectionNodeConstraint(String nodeName, ArchetypeId archetypeId, boolean activeOnly) {
         this(nodeName, new ArchetypeIdConstraint(getUnqualifiedName(nodeName), archetypeId, activeOnly));
-    }
-
-    /**
-     * Create an instance of this query specifying one or more elements.
-     * Any of the parameters can be null or may  include the wild card
-     * character.
-     *
-     * @param nodeName    the node name, optionaly prefixed by the type alias
-     * @param rmName      the reference model name (optional)
-     * @param entityName  the entity name (optional)
-     * @param conceptName the concept name (optional)
-     * @param primaryOnly only deal with primary archetypes
-     * @param activeOnly  constraint to active only objects
-     */
-    @Deprecated
-    public CollectionNodeConstraint(String nodeName, String rmName, String entityName, String conceptName,
-                                    boolean primaryOnly, boolean activeOnly) {
-        this(nodeName, new LongNameConstraint(rmName, entityName, conceptName, primaryOnly, activeOnly));
     }
 
     /**

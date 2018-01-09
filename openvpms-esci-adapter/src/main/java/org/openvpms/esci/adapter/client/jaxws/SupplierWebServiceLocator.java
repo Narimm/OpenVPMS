@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.client.jaxws;
 
@@ -23,9 +23,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.i18n.Message;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.InboxService;
 import org.openvpms.esci.service.OrderService;

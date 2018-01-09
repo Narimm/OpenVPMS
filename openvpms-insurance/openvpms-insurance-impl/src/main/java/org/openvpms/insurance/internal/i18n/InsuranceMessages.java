@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.i18n;
 
-import org.openvpms.component.system.common.i18n.Message;
-import org.openvpms.component.system.common.i18n.Messages;
+import org.openvpms.component.i18n.Message;
+import org.openvpms.component.i18n.Messages;
 
 /**
  * Insurance messages.
@@ -38,7 +38,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message cannotFinaliseClaimWithStatus(String status) {
-        return messages.getMessage(1, status);
+        return messages.create(1, status);
     }
 
     /**
@@ -48,7 +48,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message cannotFinaliseClaimAttachmentError(String fileName) {
-        return messages.getMessage(2, fileName);
+        return messages.create(2, fileName);
     }
 
     /**
@@ -58,7 +58,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message cannotFinaliseClaimNoAttachment(String fileName) {
-        return messages.getMessage(3, fileName);
+        return messages.create(3, fileName);
     }
 
     /**
@@ -68,7 +68,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message failedToFinaliseClaim(String message) {
-        return messages.getMessage(4, message);
+        return messages.create(4, message);
     }
 
     /**
@@ -79,7 +79,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message differentClaimIdentifierArchetype(String current, String other) {
-        return messages.getMessage(5, current, other);
+        return messages.create(5, current, other);
     }
 
     /**
@@ -89,7 +89,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message attachmentHasNoContent(String fileName) {
-        return messages.getMessage(20, fileName);
+        return messages.create(20, fileName);
     }
 
     /**
@@ -98,7 +98,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message policyHasNoId() {
-        return messages.getMessage(30);
+        return messages.create(30);
     }
 
     /**
@@ -107,7 +107,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message policyHasNoInsurer() {
-        return messages.getMessage(31);
+        return messages.create(31);
     }
 
     /**
@@ -116,7 +116,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message policyHasNoPatient() {
-        return messages.getMessage(32);
+        return messages.create(32);
     }
 
     /**
@@ -125,7 +125,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message policyHasNoCustomer() {
-        return messages.getMessage(33);
+        return messages.create(33);
     }
 
     /**
@@ -134,7 +134,7 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message policyHasNoExpiryDate() {
-        return messages.getMessage(34);
+        return messages.create(34);
     }
 
     /**
@@ -144,6 +144,6 @@ public class InsuranceMessages {
      * @return a new message
      */
     public static Message serviceUnavailable(String name) {
-        return messages.getMessage(40, name);
+        return messages.create(40, name);
     }
 }

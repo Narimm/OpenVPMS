@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal;
@@ -21,7 +21,6 @@ import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.claim.ClaimImpl;
 import org.openvpms.insurance.internal.policy.PolicyImpl;
@@ -56,11 +55,6 @@ public class InsuranceFactory {
     private final DocumentHandlers handlers;
 
     /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
-    /**
      * The transaction manager.
      */
     private final PlatformTransactionManager transactionManager;
@@ -72,17 +66,15 @@ public class InsuranceFactory {
      * @param customerRules      the customer rules
      * @param patientRules       the patient rules
      * @param handlers           the document handlers
-     * @param lookups            the lookup  service
      * @param transactionManager the transaction manager
      */
     public InsuranceFactory(IArchetypeRuleService service, CustomerRules customerRules, PatientRules patientRules,
-                            DocumentHandlers handlers, ILookupService lookups,
+                            DocumentHandlers handlers,
                             PlatformTransactionManager transactionManager) {
         this.service = service;
         this.customerRules = customerRules;
         this.patientRules = patientRules;
         this.handlers = handlers;
-        this.lookups = lookups;
         this.transactionManager = transactionManager;
     }
 
@@ -103,6 +95,6 @@ public class InsuranceFactory {
      * @return the corresponding claim
      */
     public Claim createClaim(Act claim) {
-        return new ClaimImpl(claim, service, customerRules, patientRules, handlers, lookups, transactionManager);
+        return new ClaimImpl(claim, service, customerRules, patientRules, handlers, transactionManager);
     }
 }

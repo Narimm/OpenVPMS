@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -416,19 +416,16 @@ public class ProductPriceRules {
         IMObjectBean bean = new IMObjectBean(product, service);
         final Date now = new Date();
         final BigDecimal roundedCost = currency.round(cost);
-        Predicate predicate = new Predicate() {
-            @Override
-            public boolean evaluate(Object object) {
-                ProductPrice price = (ProductPrice) object;
-                boolean result = price.isActive() && TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)
-                                 && DateRules.between(now, price.getFromDate(), price.getToDate());
-                if (result && ignoreCostDecrease) {
-                    IMObjectBean bean = new IMObjectBean(price, service);
-                    BigDecimal currentCost = bean.getBigDecimal("cost", BigDecimal.ZERO);
-                    result = currentCost.compareTo(roundedCost) < 0;
-                }
-                return result;
+        Predicate predicate = object -> {
+            ProductPrice price = (ProductPrice) object;
+            boolean result1 = price.isActive() && TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)
+                              && DateRules.between(now, price.getFromDate(), price.getToDate());
+            if (result1 && ignoreCostDecrease) {
+                IMObjectBean bean1 = new IMObjectBean(price, service);
+                BigDecimal currentCost = bean1.getBigDecimal("cost", BigDecimal.ZERO);
+                result1 = currentCost.compareTo(roundedCost) < 0;
             }
+            return result1;
         };
         List<ProductPrice> prices = bean.getValues("prices", predicate, ProductPrice.class);
         if (!prices.isEmpty()) {
@@ -618,7 +615,8 @@ public class ProductPriceRules {
         ProductPrice result = null;
         ProductPrice fallback = null;
         int fallbackMatch = 0;
-        for (ProductPrice price : product.getProductPrices()) {
+        for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
+            ProductPrice price = (ProductPrice) p;
             int match = predicate.matches(price);
             if (match > 0) {
                 if (useDefault) {
@@ -648,7 +646,8 @@ public class ProductPriceRules {
      */
     private List<ProductPrice> findPrices(Product product, ProductPricePredicate predicate) {
         List<ProductPrice> result = null;
-        for (ProductPrice price : product.getProductPrices()) {
+        for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
+            ProductPrice price = (ProductPrice) p;
             if (predicate.evaluate(price)) {
                 if (result == null) {
                     result = new ArrayList<>();

@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.cache;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 
 /**
@@ -43,13 +43,13 @@ public interface IMObjectCache {
 
     /**
      * Returns an object given its reference.
-     * <p/>
+     * <p>
      * If the object isn't cached, it may be retrieved.
      *
      * @param reference the object reference. May be {@code null}
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
-    IMObject get(IMObjectReference reference);
+    IMObject get(Reference reference);
 
     /**
      * Determines if an object is cached.
@@ -57,7 +57,7 @@ public interface IMObjectCache {
      * @param reference the object reference. May be {@code null}
      * @return {@code true} if the object is cached
      */
-    boolean exists(IMObjectReference reference);
+    boolean exists(Reference reference);
 
     /**
      * Clears the cache.

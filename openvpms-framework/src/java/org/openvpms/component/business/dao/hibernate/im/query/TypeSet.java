@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -26,7 +26,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
-import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Arrays;
@@ -37,7 +36,6 @@ import java.util.Set;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.CannotQueryAcrossTypes;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoArchetypeRangeAssertion;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoArchetypesForId;
-import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoMatchingArchetypesForLongName;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoMatchingArchetypesForShortName;
 
 
@@ -212,37 +210,6 @@ class TypeSet {
                                             ArrayUtils.toString(constraint.getShortNames()));
         }
         return new TypeSet(constraint.getAlias(), descriptors, assembler);
-    }
-
-    /**
-     * Creates a new type set from a {@link LongNameConstraint}.
-     *
-     * @param constraint the constraint
-     * @param cache      the archetype descriptor cache
-     * @param assembler  the assembler
-     * @return a new type set
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws QueryBuilderException     if there are no matching archetypes for
-     *                                   the constraint
-     */
-    @Deprecated
-    public static TypeSet create(LongNameConstraint constraint,
-                                 IArchetypeDescriptorCache cache,
-                                 CompoundAssembler assembler) {
-        Set<ArchetypeDescriptor> descriptors
-                = getDescriptors(constraint.getEntityName(),
-                                 constraint.getConceptName(),
-                                 constraint.isPrimaryOnly(),
-                                 cache);
-
-        // check that we have at least one match
-        if (descriptors.isEmpty()) {
-            throw new QueryBuilderException(
-                    NoMatchingArchetypesForLongName, constraint.getRmName(),
-                    constraint.getEntityName(), constraint.getConceptName());
-        }
-        return new TypeSet(constraint.getAlias(), descriptors,
-                           assembler);
     }
 
     /**

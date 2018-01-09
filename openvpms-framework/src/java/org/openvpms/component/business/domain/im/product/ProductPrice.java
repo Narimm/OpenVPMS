@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -31,15 +29,9 @@ import java.util.Set;
 /**
  * Represents the price of a {@link Product}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
-public class ProductPrice extends IMObject {
-
-    /**
-     * Serialisation version identifier.
-     */
-    private static final long serialVersionUID = 2L;
+public class ProductPrice extends IMObject implements org.openvpms.component.model.product.ProductPrice {
 
     /**
      * The product that it refers to.
@@ -70,7 +62,12 @@ public class ProductPrice extends IMObject {
     /**
      * The classifications for the product price.
      */
-    private Set<Lookup> classifications = new HashSet<Lookup>();
+    private Set<org.openvpms.component.model.lookup.Lookup> classifications = new HashSet<>();
+
+    /**
+     * Serialisation version identifier.
+     */
+    private static final long serialVersionUID = 2L;
 
 
     /**
@@ -170,24 +167,6 @@ public class ProductPrice extends IMObject {
     }
 
     /**
-     * @return Returns the thruDate.
-     * @deprecated use {@link #getToDate()}
-     */
-    @Deprecated
-    public Date getThruDate() {
-        return getToDate();
-    }
-
-    /**
-     * @param thruDate The thruDate to set.
-     * @deprecated use {@link #setToDate(Date)}
-     */
-    @Deprecated
-    public void setThruDate(Date thruDate) {
-        setToDate(thruDate);
-    }
-
-    /**
      * Convenience method that return all the classifications as an array.
      *
      * @return the classifications
@@ -201,7 +180,8 @@ public class ProductPrice extends IMObject {
      *
      * @return the clasifications
      */
-    public Set<Lookup> getClassifications() {
+    @Override
+    public Set<org.openvpms.component.model.lookup.Lookup> getClassifications() {
         return classifications;
     }
 
@@ -210,7 +190,7 @@ public class ProductPrice extends IMObject {
      *
      * @param classifications the classifications to set
      */
-    public void setClassifications(Set<Lookup> classifications) {
+    public void setClassifications(Set<org.openvpms.component.model.lookup.Lookup> classifications) {
         this.classifications = classifications;
     }
 
@@ -219,7 +199,8 @@ public class ProductPrice extends IMObject {
      *
      * @param classification the classification to add
      */
-    public void addClassification(Lookup classification) {
+    @Override
+    public void addClassification(org.openvpms.component.model.lookup.Lookup classification) {
         classifications.add(classification);
     }
 
@@ -228,7 +209,8 @@ public class ProductPrice extends IMObject {
      *
      * @param classification the classification to remove
      */
-    public void removeClassification(Lookup classification) {
+    @Override
+    public void removeClassification(org.openvpms.component.model.lookup.Lookup classification) {
         classifications.remove(classification);
     }
 
@@ -238,7 +220,7 @@ public class ProductPrice extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         ProductPrice copy = (ProductPrice) super.clone();
-        copy.classifications = new HashSet<Lookup>(classifications);
+        copy.classifications = new HashSet<>(classifications);
         return copy;
     }
 }

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.cache;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class MapIMObjectCache extends AbstractIMObjectCache {
      * Constructs a {@link MapIMObjectCache}.
      */
     public MapIMObjectCache() {
-        super(new HashMap<IMObjectReference, IMObject>(), null);
+        super(new HashMap<>(), null);
     }
 
     /**
@@ -47,7 +47,7 @@ public class MapIMObjectCache extends AbstractIMObjectCache {
      * @param service the archetype service
      */
     public MapIMObjectCache(IArchetypeService service) {
-        super(new HashMap<IMObjectReference, IMObject>(), service);
+        super(new HashMap<>(), service);
     }
 
     /**
@@ -57,7 +57,7 @@ public class MapIMObjectCache extends AbstractIMObjectCache {
      * @param map     the underlying map
      * @param service the archetype service
      */
-    public MapIMObjectCache(Map<IMObjectReference, IMObject> map, IArchetypeService service) {
+    public MapIMObjectCache(Map<Reference, IMObject> map, IArchetypeService service) {
         super(map, service);
     }
 }

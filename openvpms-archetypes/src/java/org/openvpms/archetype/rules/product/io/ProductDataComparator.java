@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -350,7 +350,8 @@ public class ProductDataComparator {
      * @return {@code true}  if the price is linked from a price template
      */
     private boolean isLinkedPrice(ProductPrice price, Product product) {
-        return !ObjectUtils.equals(price.getProduct(), product);
+        Product priceProduct = price.getProduct();
+        return !ObjectUtils.equals(priceProduct, product);
     }
 
     /**
@@ -361,7 +362,7 @@ public class ProductDataComparator {
      * @return {@code true}  if the price is linked from a price template
      */
     private boolean isLinkedPrice(PriceData price, Product product) {
-        for (ProductPrice productPrice : product.getProductPrices()) {
+        for (org.openvpms.component.model.product.ProductPrice productPrice : product.getProductPrices()) {
             if (productPrice.getId() == price.getId()) {
                 return false;
             }

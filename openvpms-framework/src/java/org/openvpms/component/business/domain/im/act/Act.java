@@ -11,22 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.domain.im.act;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityException;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -38,7 +36,7 @@ import java.util.Set;
  * @author Jim Alateras
  * @author Tim Anderson
  */
-public class Act extends IMObject {
+public class Act extends IMObject implements org.openvpms.component.model.act.Act {
 
     /**
      * The serialization version identifier.
@@ -80,40 +78,28 @@ public class Act extends IMObject {
     /**
      * The identities of this.
      */
-    private Set<ActIdentity> identities = new HashSet<>();
+    private Set<org.openvpms.component.model.act.ActIdentity> identities = new HashSet<>();
 
     /**
      * The {@link Participation}s for this act.
      */
-    private Set<Participation> participations = new HashSet<>();
+    private Set<org.openvpms.component.model.act.Participation> participations = new HashSet<>();
 
     /**
      * Holds all the {@link ActRelationship}s that this act is a source off.
      */
-    private Set<ActRelationship> sourceActRelationships = new HashSet<>();
+    private Set<org.openvpms.component.model.act.ActRelationship> sourceActRelationships = new HashSet<>();
 
     /**
      * Holds all the {@link ActRelationship}s that this act is a target off.
      */
-    private Set<ActRelationship> targetActRelationships = new HashSet<>();
+    private Set<org.openvpms.component.model.act.ActRelationship> targetActRelationships = new HashSet<>();
 
     /**
      * Default constructor.
      */
     public Act() {
         // do nothing
-    }
-
-    /**
-     * Constructs an instance of an act.
-     *
-     * @param archetypeId the archetype id constraining this object
-     * @param details     dynamic details of the act.
-     */
-    @Deprecated
-    public Act(ArchetypeId archetypeId, Map<String, Object> details) {
-        super(archetypeId);
-        setDetails(details);
     }
 
     /**
@@ -124,10 +110,10 @@ public class Act extends IMObject {
     }
 
     /**
-     * @param activityEndTime The activityEndTime to set.
+     * @param time The activityEndTime to set.
      */
-    public void setActivityEndTime(Date activityEndTime) {
-        this.activityEndTime = activityEndTime;
+    public void setActivityEndTime(Date time) {
+        this.activityEndTime = time;
     }
 
     /**
@@ -138,10 +124,10 @@ public class Act extends IMObject {
     }
 
     /**
-     * @param activityStartTime The activityStartTime to set.
+     * @param time The activityStartTime to set.
      */
-    public void setActivityStartTime(Date activityStartTime) {
-        this.activityStartTime = activityStartTime;
+    public void setActivityStartTime(Date time) {
+        this.activityStartTime = time;
     }
 
     /**
@@ -209,8 +195,8 @@ public class Act extends IMObject {
      *
      * @param identity the entity identity to add
      */
-    public void addIdentity(ActIdentity identity) {
-        identity.setAct(this);
+    public void addIdentity(org.openvpms.component.model.act.ActIdentity identity) {
+        ((ActIdentity) identity).setAct(this);
         identities.add(identity);
     }
 
@@ -220,9 +206,9 @@ public class Act extends IMObject {
      * @param identity the identity to remove
      * @return {@code true} if the identity was removed
      */
-    public boolean removeIdentity(ActIdentity identity) {
-        identity.setAct(null);
-        return identities.remove(identity);
+    public void removeIdentity(org.openvpms.component.model.act.ActIdentity identity) {
+        ((ActIdentity) identity).setAct(null);
+        identities.remove(identity);
     }
 
     /**
@@ -230,47 +216,48 @@ public class Act extends IMObject {
      *
      * @return the identities
      */
-    public Set<ActIdentity> getIdentities() {
+    public Set<org.openvpms.component.model.act.ActIdentity> getIdentities() {
         return identities;
     }
 
     /**
      * @return Returns the sourceActRelationships.
      */
-    public Set<ActRelationship> getSourceActRelationships() {
+    public Set<org.openvpms.component.model.act.ActRelationship> getSourceActRelationships() {
         return sourceActRelationships;
     }
+
 
     /**
      * @param sourceActRelationships The sourceActRelationships to set.
      */
     public void setSourceActRelationships(
-            Set<ActRelationship> sourceActRelationships) {
+            Set<org.openvpms.component.model.act.ActRelationship> sourceActRelationships) {
         this.sourceActRelationships = sourceActRelationships;
     }
 
     /**
      * Add a source {@link ActRelationship}.
      *
-     * @param source
+     * @param relationship
      */
-    public void addSourceActRelationship(ActRelationship source) {
-        this.sourceActRelationships.add(source);
+    public void addSourceActRelationship(org.openvpms.component.model.act.ActRelationship relationship) {
+        this.sourceActRelationships.add(relationship);
     }
 
     /**
      * Remove a source {@link ActRelationship}.
      *
-     * @param source
+     * @param relationship
      */
-    public void removeSourceActRelationship(ActRelationship source) {
-        this.sourceActRelationships.remove(source);
+    public void removeSourceActRelationship(org.openvpms.component.model.act.ActRelationship relationship) {
+        this.sourceActRelationships.remove(relationship);
     }
 
     /**
      * @return Returns the targetActRelationships.
      */
-    public Set<ActRelationship> getTargetActRelationships() {
+    public Set<org.openvpms.component.model.act.ActRelationship> getTargetActRelationships() {
         return targetActRelationships;
     }
 
@@ -280,48 +267,46 @@ public class Act extends IMObject {
      * @param targetActRelationships The targetActRelationships to set.
      */
     public void setTargetActRelationships(
-            Set<ActRelationship> targetActRelationships) {
+            Set<org.openvpms.component.model.act.ActRelationship> targetActRelationships) {
         this.targetActRelationships = targetActRelationships;
     }
 
     /**
      * Add a target {@link ActRelationship}.
      *
-     * @param target add a new target.
+     * @param relationship add a new target.
      */
-    public void addTargetActRelationship(ActRelationship target) {
-        this.targetActRelationships.add(target);
+    public void addTargetActRelationship(org.openvpms.component.model.act.ActRelationship relationship) {
+        this.targetActRelationships.add(relationship);
     }
 
     /**
      * Remove a target {@link ActRelationship}.
      *
-     * @param target
+     * @param relationship
      */
-    public void removeTargetActRelationship(ActRelationship target) {
-        this.targetActRelationships.remove(target);
+    public void removeTargetActRelationship(org.openvpms.component.model.act.ActRelationship relationship) {
+        this.targetActRelationships.remove(relationship);
     }
 
     /**
      * Add a relationship to this act. It will determine whether it is a
      * source or target relationship before adding it.
      *
-     * @param actRel the act relationship to add
+     * @param relationship the act relationship to add
      * @throws EntityException if this relationship cannot be added to this act
      */
-    public void addActRelationship(ActRelationship actRel) {
-        if ((actRel.getSource().getLinkId().equals(this.getLinkId())) &&
-            (actRel.getSource().getArchetypeId().equals(
-                    this.getArchetypeId()))) {
-            addSourceActRelationship(actRel);
-        } else if ((actRel.getTarget().getLinkId().equals(this.getLinkId())) &&
-                   (actRel.getTarget().getArchetypeId().equals(
-                           this.getArchetypeId()))) {
-            addTargetActRelationship(actRel);
+    public void addActRelationship(org.openvpms.component.model.act.ActRelationship relationship) {
+        if ((relationship.getSource().getLinkId().equals(getLinkId())) &&
+            (relationship.getSource().getArchetype().equals(getArchetype()))) {
+            addSourceActRelationship(relationship);
+        } else if ((relationship.getTarget().getLinkId().equals(this.getLinkId())) &&
+                   (relationship.getTarget().getArchetype().equals(this.getArchetype()))) {
+            addTargetActRelationship(relationship);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToAddActRelationship,
-                    new Object[]{actRel.getSource(), actRel.getTarget()});
+                    new Object[]{relationship.getSource(), relationship.getTarget()});
         }
     }
 
@@ -329,18 +314,16 @@ public class Act extends IMObject {
      * Remove a relationship to this act. It will determine whether it is a
      * source or target relationship before removing it.
      *
-     * @param actRel the act relationship to remove
+     * @param relationship the act relationship to remove
      * @throws EntityException if this relationship cannot be removed from this act
      */
-    public void removeActRelationship(ActRelationship actRel) {
-        IMObjectReference source = actRel.getSource();
-        IMObjectReference target = actRel.getTarget();
-        if (source.getLinkId().equals(getLinkId())
-            && source.getArchetypeId().equals(getArchetypeId())) {
-            removeSourceActRelationship(actRel);
-        } else if (target.getLinkId().equals(getLinkId())
-                   && target.getArchetypeId().equals(getArchetypeId())) {
-            removeTargetActRelationship(actRel);
+    public void removeActRelationship(org.openvpms.component.model.act.ActRelationship relationship) {
+        Reference source = relationship.getSource();
+        Reference target = relationship.getTarget();
+        if (source.getLinkId().equals(getLinkId()) && source.getArchetype().equals(getArchetype())) {
+            removeSourceActRelationship(relationship);
+        } else if (target.getLinkId().equals(getLinkId()) && target.getArchetype().equals(getArchetype())) {
+            removeTargetActRelationship(relationship);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToRemoveActRelationship,
@@ -349,14 +332,12 @@ public class Act extends IMObject {
     }
 
     /**
-     * Return all the act relationships. Do not use the returned set to
-     * add and remove act relationships. Instead use {@link #addActRelationship(ActRelationship)}
-     * and {@link #removeActRelationship(ActRelationship)} repsectively.
+     * Return all the act relationships.
      *
      * @return Set<ActRelationship>
      */
-    public Set<ActRelationship> getActRelationships() {
-        Set<ActRelationship> relationships = new HashSet<>(sourceActRelationships);
+    public Set<org.openvpms.component.model.act.ActRelationship> getActRelationships() {
+        Set<org.openvpms.component.model.act.ActRelationship> relationships = new HashSet<>(sourceActRelationships);
         relationships.addAll(targetActRelationships);
 
         return relationships;
@@ -367,14 +348,14 @@ public class Act extends IMObject {
      *
      * @return Participation
      */
-    public Set<Participation> getParticipations() {
+    public Set<org.openvpms.component.model.act.Participation> getParticipations() {
         return participations;
     }
 
     /**
      * @param participations The participations to set.
      */
-    public void setParticipations(Set<Participation> participations) {
+    public void setParticipations(Set<org.openvpms.component.model.act.Participation> participations) {
         this.participations = participations;
     }
 
@@ -383,7 +364,7 @@ public class Act extends IMObject {
      *
      * @param participation
      */
-    public void addParticipation(Participation participation) {
+    public void addParticipation(org.openvpms.component.model.act.Participation participation) {
         participations.add(participation);
     }
 
@@ -392,7 +373,7 @@ public class Act extends IMObject {
      *
      * @param participation
      */
-    public void removeParticipation(Participation participation) {
+    public void removeParticipation(org.openvpms.component.model.act.Participation participation) {
         participations.remove(participation);
     }
 

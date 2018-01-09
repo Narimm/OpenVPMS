@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -21,13 +19,10 @@ package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,15 +33,10 @@ import java.util.Map;
 /**
  * The archetype descriptor is used to describe an archetype.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
-public class ArchetypeDescriptor extends Descriptor {
-
-    /**
-     * Serialization version identifier.
-     */
-    private static final long serialVersionUID = 2L;
+public class ArchetypeDescriptor extends Descriptor
+        implements org.openvpms.component.model.archetype.ArchetypeDescriptor {
 
     /**
      * The archetype id is the type.
@@ -86,13 +76,12 @@ public class ArchetypeDescriptor extends Descriptor {
      * A list of {@link NodeDescriptor} that belong to this archetype
      * descriptor.
      */
-    private Map<String, NodeDescriptor> nodeDescriptors =
-            new LinkedHashMap<String, NodeDescriptor>();
+    private Map<String, org.openvpms.component.model.archetype.NodeDescriptor> nodeDescriptors = new LinkedHashMap<>();
 
     /**
-     * The logger.
+     * Serialization version identifier.
      */
-    private final Log log = LogFactory.getLog(ArchetypeDescriptor.class);
+    private static final long serialVersionUID = 2L;
 
 
     /**
@@ -100,22 +89,6 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public ArchetypeDescriptor() {
         setArchetypeId(new ArchetypeId("descriptor.archetype.1.0"));
-    }
-
-    /**
-     * @return Returns the archetypeQName.
-     */
-    @Deprecated
-    public String getArchetypeQName() {
-        return type == null ? null : type.getQualifiedName();
-    }
-
-    /**
-     * @param archetypeQName The archetypeQName to set.
-     */
-    @Deprecated
-    public void setArchetypeQName(String archetypeQName) {
-        setName(archetypeQName);
     }
 
     /* (non-Javadoc)
@@ -132,21 +105,22 @@ public class ArchetypeDescriptor extends Descriptor {
     }
 
     /**
+     * Returns the archetype type.
+     *
+     * @return the archetype type
+     */
+    @Override
+    public String getArchetypeType() {
+        return type == null ? null : type.getQualifiedName();
+    }
+
+    /**
      * Return the archetype id, which is also the type
      *
      * @return String
      */
     public ArchetypeId getType() {
         return type;
-    }
-
-    /**
-     * Set the archetype id
-     *
-     * @param type the archetype id
-     */
-    protected void setType(ArchetypeId type) {
-        this.type = type;
     }
 
     /**
@@ -167,7 +141,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * Returns the class for the specified type.
      *
      * @return the class, or <tt>null</tt> if {@link #getType()} returns
-     *         empty/null
+     * empty/null
      * @throws DescriptorException if the class can't be loaded
      */
     public Class getClazz() {
@@ -213,14 +187,15 @@ public class ArchetypeDescriptor extends Descriptor {
      * @param node the node descriptor to add
      * @throws DescriptorException if we are adding a node descriptor with the same name
      */
-    public void addNodeDescriptor(NodeDescriptor node) {
+    public void addNodeDescriptor(org.openvpms.component.model.archetype.NodeDescriptor node) {
         if (nodeDescriptors.containsKey(node.getName())) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.DuplicateNodeDescriptor,
                     node.getName(), getName());
         }
-        nodeDescriptors.put(node.getName(), node);
-        node.setArchetypeDescriptor(this);
+        NodeDescriptor descriptor = (NodeDescriptor) node;
+        nodeDescriptors.put(node.getName(), descriptor);
+        descriptor.setArchetypeDescriptor(this);
     }
 
     /**
@@ -228,8 +203,8 @@ public class ArchetypeDescriptor extends Descriptor {
      *
      * @param node the node descriptor to remove
      */
-    public void removeNodeDescriptor(NodeDescriptor node) {
-        NodeDescriptor removed = nodeDescriptors.remove(node.getName());
+    public void removeNodeDescriptor(org.openvpms.component.model.archetype.NodeDescriptor node) {
+        NodeDescriptor removed = (NodeDescriptor) nodeDescriptors.remove(node.getName());
         if (removed != null) {
             removed.setArchetypeDescriptor(null);
         }
@@ -244,20 +219,18 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public void removeNodeDescriptor(String nodeName) {
         removeNodeDescriptorWithName(getNodeDescriptors(), nodeName);
-
     }
 
     /**
      * Return the top level  node descriptors. The caller must be aware that
      * a {@link NodeDescriptor can contain other node descriptors.
-     * <p/>
+     * <p>
      * TODO Inconsistent return type...change to List
      *
      * @return NodeDescriptor[]
      */
     public NodeDescriptor[] getNodeDescriptorsAsArray() {
-        return nodeDescriptors.values().toArray(
-                new NodeDescriptor[nodeDescriptors.size()]);
+        return nodeDescriptors.values().toArray(new NodeDescriptor[nodeDescriptors.size()]);
     }
 
     /**
@@ -268,7 +241,7 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public List<NodeDescriptor> getSimpleNodeDescriptors() {
         List<NodeDescriptor> all = getAllNodeDescriptors();
-        List<NodeDescriptor> simple = new ArrayList<NodeDescriptor>();
+        List<NodeDescriptor> simple = new ArrayList<>();
         for (NodeDescriptor node : all) {
             if (!node.isComplexNode()) {
                 simple.add(node);
@@ -286,7 +259,7 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public List<NodeDescriptor> getComplexNodeDescriptors() {
         List<NodeDescriptor> all = getAllNodeDescriptors();
-        List<NodeDescriptor> complex = new ArrayList<NodeDescriptor>();
+        List<NodeDescriptor> complex = new ArrayList<>();
         for (NodeDescriptor node : all) {
             if (node.isComplexNode()) {
                 complex.add(node);
@@ -304,20 +277,9 @@ public class ArchetypeDescriptor extends Descriptor {
      * @return List<NodeDescriptor>
      */
     public List<NodeDescriptor> getAllNodeDescriptors() {
-        List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
+        List<NodeDescriptor> nodes = new ArrayList<>();
         getAllNodeDescriptors(getNodeDescriptorsAsArray(), nodes);
-
         return nodes;
-    }
-
-    /**
-     * Return the total number of node descriptors for this archetype. This
-     * will traverse all the node descriptors.
-     *
-     * @return int
-     */
-    public int getTotalNodeDescriptorCount() {
-        return getTotalNodeDescriptorCount(getNodeDescriptors().values());
     }
 
     /**
@@ -326,23 +288,15 @@ public class ArchetypeDescriptor extends Descriptor {
      *
      * @return Returns the nodeDescriptors.
      */
-    public Map<String, NodeDescriptor> getNodeDescriptors() {
-        return this.nodeDescriptors;
-    }
-
-    /**
-     * @param nodeDescriptors The nodeDescriptors to set.
-     */
-    public void setNodeDescriptors(
-            Map<String, NodeDescriptor> nodeDescriptors) {
-        this.nodeDescriptors = nodeDescriptors;
+    public Map<String, org.openvpms.component.model.archetype.NodeDescriptor> getNodeDescriptors() {
+        return nodeDescriptors;
     }
 
     /**
      * @param nodes The nodeDescriptors to set.
      */
     public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
-        this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
+        this.nodeDescriptors = new LinkedHashMap<>();
         int index = 0;
         for (NodeDescriptor node : nodes) {
             node.setIndex(index++);
@@ -354,7 +308,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * Return the archetype short name .
      *
      * @return String
-     *         the node name
+     * the node name
      */
     public String getShortName() {
         return type == null ? null : type.getShortName();
@@ -365,7 +319,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * return the archtypes short name
      *
      * @return String
-     *         the display name
+     * the display name
      */
     public String getDisplayName() {
         return StringUtils.isEmpty(displayName) ? getShortName() : displayName;
@@ -389,39 +343,13 @@ public class ArchetypeDescriptor extends Descriptor {
     }
 
     /**
-     * Return the node descriptors associated with the specified node names.
-     * This will do a search right down the NodeDescriptor hierarchy.
-     *
-     * @return List<NodeDescriptor>
-     *         a list of matching NodeDescriptors
-     */
-    public List<NodeDescriptor> getNodeDescriptors(String[] names) {
-        List<NodeDescriptor>  result = new ArrayList<NodeDescriptor>();
-
-        // TODO his is an inefficient way of doing it. We need to determine
-        // the access paths and optimise our classes for them.
-        for (String nodeName : names) {
-            NodeDescriptor descriptor = getNodeDescriptor(nodeName);
-            if (descriptor != null) {
-                result.add(descriptor);
-            } else {
-                log.warn("Could not find a node with name " + nodeName);
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * validate the descriptor. The method will return a list of validation
      * errors. An empty list means that the descriptor is valid.
      *
      * @return List<DescriporValidationError>
      */
     public List<DescriptorValidationError> validate() {
-        List<DescriptorValidationError> errors =
-                new ArrayList<DescriptorValidationError>();
-
+        List<DescriptorValidationError> errors = new ArrayList<>();
 
         if (type == null) {
             errors.add(new DescriptorValidationError(
@@ -437,7 +365,7 @@ public class ArchetypeDescriptor extends Descriptor {
 
         // validate that there are no duplicate node descriptor names
         List<NodeDescriptor> nodes = getAllNodeDescriptors();
-        Map<String, NodeDescriptor> names = new HashMap<String, NodeDescriptor>();
+        Map<String, NodeDescriptor> names = new HashMap<>();
 
         for (NodeDescriptor node : nodes) {
             if (names.containsKey(node.getName())) {
@@ -476,6 +404,28 @@ public class ArchetypeDescriptor extends Descriptor {
                 .toString();
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        ArchetypeDescriptor copy = (ArchetypeDescriptor) super.clone();
+        copy.nodeDescriptors = new LinkedHashMap<>(this.nodeDescriptors);
+        copy.primary = this.primary;
+        copy.type = (ArchetypeId) (type == null ? null : this.type.clone());
+
+        return copy;
+    }
+
+    /**
+     * Set the archetype id
+     *
+     * @param type the archetype id
+     */
+    protected void setType(ArchetypeId type) {
+        this.type = type;
+    }
+
     /**
      * Search the node descriptors recursively searching for the
      * specified name
@@ -483,10 +433,9 @@ public class ArchetypeDescriptor extends Descriptor {
      * @param nodes the list of NodeDescriptors to search
      * @param name  the name to search for
      * @return NodeDescriptor
-     *         the node descriptor or null
+     * the node descriptor or null
      */
-    private NodeDescriptor findNodeDescriptorWithName(NodeDescriptor[] nodes,
-                                                      String name) {
+    private NodeDescriptor findNodeDescriptorWithName(NodeDescriptor[] nodes, String name) {
         for (NodeDescriptor node : nodes) {
             if (node.getName().equals(name)) {
                 return node;
@@ -510,110 +459,57 @@ public class ArchetypeDescriptor extends Descriptor {
      *
      * @param nodes    the list of NodeDescriptors to search
      * @param nodeName the name to search for
-     * @return NodeDescriptor
-     *         the node descriptor that was remove or null
      */
-    private NodeDescriptor removeNodeDescriptorWithName(
-            Map<String, NodeDescriptor> nodes,
+    @SuppressWarnings("unchecked")
+    private boolean removeNodeDescriptorWithName(
+            Map<String, org.openvpms.component.model.archetype.NodeDescriptor> nodes,
             String nodeName) {
-        for (String name : nodes.keySet()) {
-            NodeDescriptor node = nodes.get(name);
-            if (node.getName().equals(nodeName)) {
-                return nodes.remove(nodeName);
-            }
-
+        if (nodes.remove(nodeName) != null) {
+            return true;
+        }
+        for (org.openvpms.component.model.archetype.NodeDescriptor n: nodes.values()) {
+            NodeDescriptor node = (NodeDescriptor) n;
             if (node.getNodeDescriptors().size() > 0) {
-                NodeDescriptor result = removeNodeDescriptorWithName(
-                        node.getNodeDescriptors(), nodeName);
-                if (result != null) {
-                    return result;
+                Map map = node.getNodeDescriptors();
+                if (removeNodeDescriptorWithName(
+                        (Map<String, org.openvpms.component.model.archetype.NodeDescriptor>) map, nodeName)) {
+                    return true;
                 }
             }
         }
-
-        return null;
+        return false;
     }
 
     /**
-     * This is a recursive function that returns all the nodes in this archetype
-     * descriptor.
+     * This is a recursive function that returns all the nodes in this archetype descriptor.
      *
-     * @param nodes the node descriptors to process
-     * @param nodes the resultant node array
+     * @param nodes  the node descriptors to process
+     * @param result the resultant node array
      */
-    private void getAllNodeDescriptors(NodeDescriptor[] nodes,
-                                       List<NodeDescriptor> result) {
+    private void getAllNodeDescriptors(NodeDescriptor[] nodes, List<NodeDescriptor> result) {
         Arrays.sort(nodes, new NodeDescriptorIndexComparator());
 
         for (NodeDescriptor node : nodes) {
             result.add(node);
             if (node.getNodeDescriptorsAsArray().length > 0) {
-                getAllNodeDescriptors(node.getNodeDescriptorsAsArray(),
-                                      result);
+                getAllNodeDescriptors(node.getNodeDescriptorsAsArray(), result);
             }
         }
     }
 
     /**
-     * Return the number of node descriptors contained within the specified
-     * node descriptor. If the node has children node descriptors then make sure
-     * you count them as well.
-     *
-     * @param nodes the nodes to count
-     * @return int
+     * This comparator is used to compare the indices of NodeDescriptors
      */
-    private int getTotalNodeDescriptorCount(Collection<NodeDescriptor> nodes) {
-        int total = nodes.size();
+    private static class NodeDescriptorIndexComparator implements Comparator<NodeDescriptor> {
 
-        for (NodeDescriptor node : nodes) {
-            if (node.getNodeDescriptorCount() > 0) {
-                total += getTotalNodeDescriptorCount(
-                        node.getNodeDescriptors().values());
+        /* (non-Javadoc)
+         * @see java.util.Comparator#compare(T, T)
+         */
+        public int compare(NodeDescriptor no1, NodeDescriptor no2) {
+            if (no1 == no2) {
+                return 0;
             }
-        }
-
-        return total;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        ArchetypeDescriptor copy = (ArchetypeDescriptor) super.clone();
-        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(
-                this.nodeDescriptors);
-        copy.primary = this.primary;
-        copy.type = (ArchetypeId) (type == null ? null : this.type.clone());
-
-        return copy;
-    }
-}
-
-
-/**
- * This comparator is used to compare the indices of NodeDescriptors
- */
-class NodeDescriptorIndexComparator implements Comparator<NodeDescriptor> {
-
-    /* (non-Javadoc)
-     * @see java.util.Comparator#compare(T, T)
-     */
-    public int compare(NodeDescriptor no1, NodeDescriptor no2) {
-        if (no1 == no2) {
-            return 0;
-        }
-
-        if (no1.getIndex() == no2.getIndex()) {
-            return 0;
-        } else if (no1.getIndex() > no2.getIndex()) {
-            return 1;
-        } else {
-            return -1;
+            return Integer.compare(no1.getIndex(), no2.getIndex());
         }
     }
 }
-
-
-
-

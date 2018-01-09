@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.query;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.object.PeriodRelationship;
 import org.openvpms.web.component.app.LocalContext;
 
 import java.util.Date;
@@ -151,7 +151,7 @@ public class PatientQueryTestCase extends AbstractEntityQueryTest<Party> {
         Party pet2 = TestHelper.createPatient(customer, false);
 
         // mark the pet1 owner relationship inactive
-        EntityRelationship ownerRelationship = pet1.getEntityRelationships().iterator().next();
+        PeriodRelationship ownerRelationship = pet1.getEntityRelationships().iterator().next();
         ownerRelationship.setActiveEndTime(new Date(System.currentTimeMillis() - 1000));
 
         save(customer, pet1, pet2);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -19,10 +19,10 @@ package org.openvpms.web.component.im.act;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.NotPredicate;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
+import org.openvpms.component.model.act.ActRelationship;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -242,7 +242,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
         Collection<ActRelationship> relationships = getRelationships(act);
         List<IMObjectReference> references = new ArrayList<>();
         for (ActRelationship relationship : relationships) {
-            IMObjectReference target = relationship.getTarget();
+            IMObjectReference target = (IMObjectReference) relationship.getTarget();
             if (target != null) {
                 references.add(target);
             }

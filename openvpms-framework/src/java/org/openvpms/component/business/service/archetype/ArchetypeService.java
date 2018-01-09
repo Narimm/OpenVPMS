@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -27,9 +27,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -40,7 +40,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,13 +198,25 @@ public class ArchetypeService implements IArchetypeService {
         return factory.create(name);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Validate the specified {@link IMObject}. To validate the object it will retrieve the archetype and iterate
+     * through the assertions.
      *
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
+     * @param object the object to validate
+     * @return any validation errors
      */
+    @Override
+    public List<org.openvpms.component.service.archetype.ValidationError> validate(IMObject object) {
+        return validator.validate(object);
+    }
+
+    /*
+         * (non-Javadoc)
+         *
+         * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
+         */
     public void validateObject(IMObject object) {
-        List<ValidationError> errors = validator.validate(object);
+        List<org.openvpms.component.service.archetype.ValidationError> errors = validator.validate(object);
         if (!errors.isEmpty()) {
             throw new ValidationException(
                     errors,
@@ -243,9 +254,10 @@ public class ArchetypeService implements IArchetypeService {
 
         // if there are nodes attached to the archetype then validate the
         // associated assertions
-        if (descriptor.getNodeDescriptors().size() > 0) {
+        Map descriptors = descriptor.getNodeDescriptors();
+        if (descriptors.size() > 0) {
             JXPathContext context = JXPathHelper.newContext(object);
-            deriveValues(context, descriptor.getNodeDescriptors());
+            deriveValues(context, descriptors);
         }
     }
 
@@ -301,18 +313,6 @@ public class ArchetypeService implements IArchetypeService {
         return dCache.getArchetypeDescriptors(shortName);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptorsByRmName(java.lang.String)
-     * @deprecated
-     */
-    @Deprecated
-    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(
-            String rmName) {
-        return Collections.emptyList();
-    }
-
     /**
      * Retrieves an object given its reference.
      *
@@ -320,7 +320,7 @@ public class ArchetypeService implements IArchetypeService {
      * @return the corresponding object, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException if the query fails
      */
-    public IMObject get(IMObjectReference reference) {
+    public IMObject get(Reference reference) {
         return dao.get(reference);
     }
 
@@ -334,7 +334,7 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public IMObject get(IMObjectReference reference, boolean active) {
+    public IMObject get(Reference reference, boolean active) {
         try {
             return dao.get(reference, active);
         } catch (Exception exception) {

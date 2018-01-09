@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -39,8 +39,6 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 
 import java.util.List;
-
-import static org.openvpms.component.business.domain.bean.Policies.any;
 
 /**
  * Layout strategy for <em>act.patientInsuranceClaim</em>.
@@ -225,7 +223,7 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      */
     private Act getPolicy(Act claim) {
         IMObjectBean bean = new IMObjectBean(claim);
-        return bean.getTarget("policy", Act.class, any());
+        return bean.getAnyTarget("policy", Act.class);
     }
 
 }

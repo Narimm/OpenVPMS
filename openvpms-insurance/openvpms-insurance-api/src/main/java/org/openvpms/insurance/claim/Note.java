@@ -11,12 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.claim;
 
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.user.User;
 
 import java.util.Date;
 import java.util.List;

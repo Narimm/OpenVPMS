@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -34,17 +34,18 @@ import java.util.Set;
  *
  * @author Jim Alateras
  */
-public class PropertyList extends NamedProperty implements PropertyCollection {
+public class PropertyList extends NamedProperty implements org.openvpms.component.model.archetype.PropertyList,
+        PropertyCollection {
+
+    /**
+     * The property type is a a fully qualified archetype id.
+     */
+    private Set<org.openvpms.component.model.archetype.NamedProperty> properties = new LinkedHashSet<>();
 
     /**
      * Default SUID.
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The property type is a a fully qualified archetype id.
-     */
-    private Set<NamedProperty> properties = new LinkedHashSet<>();
 
     /**
      * Default constructor
@@ -56,14 +57,14 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
     /**
      * @return Returns the properties.
      */
-    public Set<NamedProperty> getProperties() {
+    public Set<org.openvpms.component.model.archetype.NamedProperty> getProperties() {
         return properties;
     }
 
     /**
      * @param properties The properties to set.
      */
-    public void setProperties(Set<NamedProperty> properties) {
+    public void setProperties(Set<org.openvpms.component.model.archetype.NamedProperty> properties) {
         this.properties = properties;
     }
 
@@ -72,7 +73,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
      *
      * @param property the property to add
      */
-    public void addProperty(NamedProperty property) {
+    public void addProperty(org.openvpms.component.model.archetype.NamedProperty property) {
         properties.add(property);
     }
 
@@ -81,7 +82,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
      *
      * @param property the property to remove
      */
-    public void removeProperty(NamedProperty property) {
+    public void removeProperty(org.openvpms.component.model.archetype.NamedProperty property) {
         properties.remove(property);
     }
 
@@ -93,6 +94,9 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
     }
 
     /**
+     * <br/>
+     * NOTE: this is used by castor serialisation.
+     *
      * @param properties The properties to set.
      */
     public void setPropertiesAsArray(NamedProperty[] properties) {
@@ -122,7 +126,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
     @Override
     @SuppressWarnings("unchecked")
     public void setValue(Object value) {
-        properties = (Set<NamedProperty>) value;
+        properties = (Set<org.openvpms.component.model.archetype.NamedProperty>) value;
     }
 
     /* (non-Javadoc)

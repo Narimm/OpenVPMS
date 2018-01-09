@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.service.archetype;
 
@@ -29,14 +27,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 import java.util.Collection;
-import java.util.Map;
 
 
 /**
  * Abstract implementation of the {@link IMObjectFactory} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractIMObjectFactory implements IMObjectFactory {
 
@@ -72,7 +68,7 @@ public abstract class AbstractIMObjectFactory implements IMObjectFactory {
 
     /**
      * Retrieve the {@link ArchetypeDescriptor} with the specified short name.
-     * <p/>
+     * <p>
      * If there are multiple archetype descriptors with the same name then it will retrieve the first descriptor marked
      * with latest=true.
      *
@@ -83,7 +79,7 @@ public abstract class AbstractIMObjectFactory implements IMObjectFactory {
 
     /**
      * Retrieve the {@link ArchetypeDescriptor} with the specified {@link ArchetypeId}.
-     * <p/>
+     * <p>
      * This implementation delegates to {@link #getArchetypeDescriptor(String)}. Subclasses should take into account
      * any version supplied with the identifier.
      *
@@ -120,7 +116,7 @@ public abstract class AbstractIMObjectFactory implements IMObjectFactory {
             // in the archetype
             JXPathContext context = JXPathHelper.newContext(result);
             context.setFactory(new JXPathGenericObjectCreationFactory());
-            create(context, descriptor.getNodeDescriptors());
+            create(context, descriptor.getNodeDescriptorsAsArray());
         } catch (Exception exception) {
             // rethrow as a runtime exception
             throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToCreateObject,
@@ -137,8 +133,8 @@ public abstract class AbstractIMObjectFactory implements IMObjectFactory {
      * @param nodes   the node descriptors for the archetype
      * @throws ArchetypeServiceException if the create fails
      */
-    private void create(JXPathContext context, Map<String, NodeDescriptor> nodes) {
-        for (NodeDescriptor node : nodes.values()) {
+    private void create(JXPathContext context, NodeDescriptor[] nodes) {
+        for (NodeDescriptor node : nodes) {
             // only create a node if it is a collection, or it has child nodes, or it has a default value
             if (node.isCollection() || node.getNodeDescriptorCount() > 0
                 || !StringUtils.isEmpty(node.getDefaultValue())) {
@@ -157,7 +153,7 @@ public abstract class AbstractIMObjectFactory implements IMObjectFactory {
 
             // if this node has children then process them recursively
             if (node.getNodeDescriptors().size() > 0) {
-                create(context, node.getNodeDescriptors());
+                create(context, node.getNodeDescriptorsAsArray());
             }
         }
     }

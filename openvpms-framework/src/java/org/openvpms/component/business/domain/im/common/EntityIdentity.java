@@ -1,26 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
-import java.util.Map;
 
 
 /**
@@ -33,12 +29,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityIdentity extends IMObject {
-
-    /**
-     * Serialization version identifier.
-     */
-    private static final long serialVersionUID = 2L;
+public class EntityIdentity extends IMObject implements org.openvpms.component.model.entity.EntityIdentity {
 
     /**
      * The system identity
@@ -49,6 +40,11 @@ public class EntityIdentity extends IMObject {
      * Reference the Entity that this object references
      */
     private Entity entity;
+
+    /**
+     * Serialization version identifier.
+     */
+    private static final long serialVersionUID = 2L;
 
 
     /**
@@ -67,23 +63,6 @@ public class EntityIdentity extends IMObject {
     public EntityIdentity(ArchetypeId archetypeId, String identity) {
         super(archetypeId);
         setIdentity(identity);
-    }
-
-    /**
-     * Constructs a valid instance of an entity identity.
-     *
-     * @param archetypeId the archetype id constraining this object
-     * @param identity    the identity
-     * @param details     the details of this entity identity
-     * @throws IllegalArgumentException thrown if the preconditions are not met.
-     */
-    @Deprecated
-    public EntityIdentity(ArchetypeId archetypeId,
-                          String identity, Map<String, Object> details) {
-        this(archetypeId, identity);
-        if (details != null) {
-            setDetails(details);
-        }
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -20,14 +20,14 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
+import org.openvpms.component.model.lookup.LookupRelationship;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -203,7 +203,7 @@ public abstract class AbstractLookupService implements ILookupService {
 
     /**
      * Return a list of lookups for a given object and node value.
-     * <p/>
+     * <p>
      * Inactive lookups will be excluded, unless they are explicitly referred to.<br/>
      * This will limit lookups returned if the node refers to the source or target of a lookup relationship.
      *
@@ -230,7 +230,7 @@ public abstract class AbstractLookupService implements ILookupService {
      */
     public Lookup getLookup(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object, service);
-        return bean.getLookup(node, false);
+        return (Lookup) bean.getLookup(node, false);
     }
 
     /**
@@ -247,7 +247,7 @@ public abstract class AbstractLookupService implements ILookupService {
 
     /**
      * Replaces one lookup with another.
-     * <p/>
+     * <p>
      * Each lookup must be of the same archetype.
      *
      * @param source the lookup to replace
@@ -319,7 +319,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param reference the lookup reference. May be {@code null}
      * @return the corresponding lookup, or {@code null} if none is found. The lookup may be inactive
      */
-    protected Lookup getLookup(IMObjectReference reference) {
+    protected Lookup getLookup(Reference reference) {
         return (reference != null) ? (Lookup) service.get(reference) : null;
     }
 

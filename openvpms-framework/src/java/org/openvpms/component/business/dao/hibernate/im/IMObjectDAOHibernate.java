@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im;
@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -51,6 +50,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -62,8 +62,6 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
@@ -157,11 +155,9 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void save(final IMObject object) {
         try {
-            update(new HibernateCallback<Object>() {
-                public Object doInHibernate(Session session) throws HibernateException {
-                    save(object, session);
-                    return null;
-                }
+            update(session -> {
+                save(object, session);
+                return null;
             });
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToSaveIMObject, exception,
@@ -177,12 +173,9 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void save(final Collection<? extends IMObject> objects) {
         try {
-            update(new HibernateCallback<Object>() {
-                public Object doInHibernate(Session session)
-                        throws HibernateException {
-                    save(objects, session);
-                    return null;
-                }
+            update(session -> {
+                save(objects, session);
+                return null;
             });
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToSaveCollectionOfObjects,
@@ -198,16 +191,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void delete(final IMObject object) {
         try {
-            update(new HibernateCallback<Object>() {
-                public Object doInHibernate(Session session)
-                        throws HibernateException {
-                    Context context = getContext(session);
-                    DeleteHandler handler
-                            = handlerFactory.getHandler(object);
-                    handler.delete(object, session, context);
-                    updateIds(context);
-                    return null;
-                }
+            update(session -> {
+                Context context = getContext(session);
+                DeleteHandler handler
+                        = handlerFactory.getHandler(object);
+                handler.delete(object, session, context);
+                updateIds(context);
+                return null;
             });
         } catch (IMObjectDAOException exception) {
             throw exception;
@@ -270,59 +260,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     public IPage<NodeSet> getNodes(IArchetypeQuery query,
                                    Collection<String> nodes) {
         return getQueryDelegator(query).getNodes(query, nodes);
-    }
-
-    /**
-     * Retrieve the objects that matches the specified search criteria.
-     * This is a very generic method that provides a mechanism to return
-     * objects based on, one or more criteria.
-     * <p>
-     * All parameters are optional and can either denote an exact or partial
-     * match semantics. If a parameter has a '*' at the start or end of the
-     * value then it will perform a wildcard match.  If not '*' is specified in
-     * the value then it will only return objects with the exact value.
-     * <p>
-     * If two or more parameters are specified then it will return entities
-     * that matching all criteria.
-     * <p>
-     * The results will be returned in a {@link Page} object, which may contain
-     * a subset of the total result set. The caller can then use the context
-     * information in the {@link Page} object to make subsequent calls.
-     *
-     * @param rmName       the reference model name
-     * @param entityName   the entity name
-     * @param conceptName  the concept name
-     * @param instanceName the instance name
-     * @param clazz        the fully qualified name of the class to search for
-     * @param activeOnly   indicates whether to return active objects.
-     * @param firstResult  the first result to retrieve
-     * @param maxResults   the maximum number of results to return
-     * @return IPage<IMObject>
-     * the results and associated context information
-     * @throws IMObjectDAOException a runtime exception if the request cannot
-     *                              complete
-     * @deprecated replaced by {@link #get(String, String, String, boolean,
-     * int, int)}
-     */
-    @Deprecated
-    public IPage<IMObject> get(String rmName, String entityName,
-                               String conceptName, String instanceName,
-                               String clazz, boolean activeOnly,
-                               int firstResult, int maxResults) {
-        StringBuilder shortName = new StringBuilder();
-        if (entityName != null) {
-            shortName.append(entityName);
-        } else {
-            shortName.append("*");
-        }
-        shortName.append(".");
-        if (conceptName != null) {
-            shortName.append(conceptName);
-        } else {
-            shortName.append("*");
-        }
-        return get(shortName.toString(), instanceName, clazz, activeOnly,
-                   firstResult, maxResults);
     }
 
     /**
@@ -434,7 +371,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @throws IMObjectDAOException for any error
      */
     @Override
-    public IMObject get(IMObjectReference reference) {
+    public IMObject get(Reference reference) {
         return getObject(reference, null);
     }
 
@@ -446,7 +383,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    public IMObject get(final IMObjectReference reference, boolean active) {
+    public IMObject get(final Reference reference, boolean active) {
         return getObject(reference, active);
     }
 
@@ -522,12 +459,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void replace(final Lookup source, final Lookup target) {
         try {
-            update(new HibernateCallback<Object>() {
-                public Object doInHibernate(Session session) throws HibernateException {
-                    LookupReplacer replacer = new LookupReplacer(cache);
-                    replacer.replace(source, target, session);
-                    return null;
-                }
+            update(session -> {
+                LookupReplacer replacer = new LookupReplacer(cache);
+                replacer.replace(source, target, session);
+                return null;
             });
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToSaveIMObject, exception, source.getId());
@@ -556,7 +491,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      *                  if it is inactive. If {@code null}, return active or inactive objects.
      * @return the object, or {@code null}
      */
-    private IMObject getObject(IMObjectReference reference, Boolean active) {
+    private IMObject getObject(Reference reference, Boolean active) {
         IMObject result = null;
         // first determine if the object is cached in the transaction context
         IMObject cached = execute(session -> {
@@ -569,7 +504,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         } else if (!reference.isNew()) {
             // no cached object. If the reference indicates the object is
             // committed, try and query it
-            ArchetypeDescriptor desc = cache.getArchetypeDescriptor(reference.getArchetypeId());
+            ArchetypeDescriptor desc = cache.getArchetypeDescriptor(reference.getArchetype());
             if (desc != null) {
                 result = getObject(desc.getClassName(), reference, active);
             }
@@ -592,56 +527,53 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                               final HibernateResultCollector collector,
                               final int firstResult, final int maxResults)
             throws Exception {
-        execute(new HibernateCallback<Object>() {
+        execute(session -> {
+            collector.setFirstResult(firstResult);
+            collector.setPageSize(maxResults);
+            collector.setSession(session);
+            Context context = getContext(session);
+            collector.setContext(context);
 
-            public Object doInHibernate(Session session) throws HibernateException {
-                collector.setFirstResult(firstResult);
-                collector.setPageSize(maxResults);
-                collector.setSession(session);
-                Context context = getContext(session);
-                collector.setContext(context);
+            if (maxResults == 0 && countQuery != null) {
+                // only want a count of the results matching the criteria
+                int rowCount = count(countQuery, params, session);
+                collector.setTotalResults(rowCount);
+            } else {
+                Query query = session.createQuery(queryString);
+                params.setParameters(query);
 
-                if (maxResults == 0 && countQuery != null) {
-                    // only want a count of the results matching the criteria
+                // set the first result
+                if (firstResult != 0) {
+                    query.setFirstResult(firstResult);
+                }
+
+                // set the maximum number of rows
+                if (maxResults != ArchetypeQuery.ALL_RESULTS) {
+                    query.setMaxResults(maxResults);
+                    log.debug("The maximum number of rows is " + maxResults);
+                }
+
+                query.setCacheable(true);
+
+                List rows = query.list();
+                if (maxResults == ArchetypeQuery.ALL_RESULTS) {
+                    collector.setTotalResults(rows.size());
+                } else if (countQuery != null) {
                     int rowCount = count(countQuery, params, session);
+                    if (rowCount < rows.size()) {
+                        // rows deleted since initial query
+                        rowCount = rows.size();
+                    }
                     collector.setTotalResults(rowCount);
                 } else {
-                    Query query = session.createQuery(queryString);
-                    params.setParameters(query);
-
-                    // set the first result
-                    if (firstResult != 0) {
-                        query.setFirstResult(firstResult);
-                    }
-
-                    // set the maximum number of rows
-                    if (maxResults != ArchetypeQuery.ALL_RESULTS) {
-                        query.setMaxResults(maxResults);
-                        log.debug("The maximum number of rows is " + maxResults);
-                    }
-
-                    query.setCacheable(true);
-
-                    List rows = query.list();
-                    if (maxResults == ArchetypeQuery.ALL_RESULTS) {
-                        collector.setTotalResults(rows.size());
-                    } else if (countQuery != null) {
-                        int rowCount = count(countQuery, params, session);
-                        if (rowCount < rows.size()) {
-                            // rows deleted since initial query
-                            rowCount = rows.size();
-                        }
-                        collector.setTotalResults(rowCount);
-                    } else {
-                        collector.setTotalResults(-1);
-                    }
-                    for (Object object : rows) {
-                        collector.collect(object);
-                    }
-                    context.resolveDeferredReferences();
+                    collector.setTotalResults(-1);
                 }
-                return null;
+                for (Object object : rows) {
+                    collector.collect(object);
+                }
+                context.resolveDeferredReferences();
             }
+            return null;
         });
     }
 
@@ -661,51 +593,47 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                                    final int firstRow, final int numOfRows,
                                    final HibernateResultCollector collector,
                                    final boolean count) throws Exception {
-        execute(new HibernateCallback<Object>() {
-            @SuppressWarnings("unchecked")
-            public Object doInHibernate(Session session)
-                    throws HibernateException {
-                // session.setFlushMode(FlushMode.MANUAL);
-                Query query = session.getNamedQuery(name);
-                Params p = new Params(params);
-                p.setParameters(query);
+        execute(session -> {
+            // session.setFlushMode(FlushMode.MANUAL);
+            Query query = session.getNamedQuery(name);
+            Params p = new Params(params);
+            p.setParameters(query);
 
-                // set first row
-                if (firstRow != 0) {
-                    query.setFirstResult(firstRow);
-                }
-
-                // set maximum rows
-                if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
-                    query.setMaxResults(numOfRows);
-                    log.debug("The maximum number of rows is " + numOfRows);
-                }
-
-                List<Object> rows = query.list();
-                collector.setFirstResult(firstRow);
-                collector.setPageSize(numOfRows);
-                collector.setSession(session);
-                Context context = getContext(session);
-                collector.setContext(context);
-
-                if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
-                    collector.setTotalResults(rows.size());
-                } else if (count) {
-                    int rowCount = countNamedQuery(name, p, session);
-                    if (rowCount < rows.size()) {
-                        // rows deleted since initial query
-                        rowCount = rows.size();
-                    }
-                    collector.setTotalResults(rowCount);
-                } else {
-                    collector.setTotalResults(-1);
-                }
-                for (Object object : rows) {
-                    collector.collect(object);
-                }
-                context.resolveDeferredReferences();
-                return null;
+            // set first row
+            if (firstRow != 0) {
+                query.setFirstResult(firstRow);
             }
+
+            // set maximum rows
+            if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
+                query.setMaxResults(numOfRows);
+                log.debug("The maximum number of rows is " + numOfRows);
+            }
+
+            List rows = query.list();
+            collector.setFirstResult(firstRow);
+            collector.setPageSize(numOfRows);
+            collector.setSession(session);
+            Context context = getContext(session);
+            collector.setContext(context);
+
+            if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
+                collector.setTotalResults(rows.size());
+            } else if (count) {
+                int rowCount = countNamedQuery(name, p, session);
+                if (rowCount < rows.size()) {
+                    // rows deleted since initial query
+                    rowCount = rows.size();
+                }
+                collector.setTotalResults(rowCount);
+            } else {
+                collector.setTotalResults(-1);
+            }
+            for (Object object : rows) {
+                collector.collect(object);
+            }
+            context.resolveDeferredReferences();
+            return null;
         });
     }
 
@@ -763,12 +691,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      *                  object if it is inactive. If {@code null}, return active or inactive objects.
      * @return the corresponding object, or {@code null} if none is found
      */
-    private IMObject getObject(String clazz, final IMObjectReference reference, Boolean active) {
+    private IMObject getObject(String clazz, final Reference reference, Boolean active) {
         clazz = assembler.getDOClassName(clazz);
         if (clazz == null) {
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
         }
-        final StringBuffer queryString = new StringBuffer();
+        final StringBuilder queryString = new StringBuilder();
 
         queryString.append("select entity from ");
         queryString.append(clazz);
@@ -777,24 +705,22 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             queryString.append(" and entity.active = :active");
         }
 
-        return execute(new HibernateCallback<IMObject>() {
-            public IMObject doInHibernate(Session session) throws HibernateException {
-                Query query = session.createQuery(queryString.toString());
-                query.setParameter("id", reference.getId());
-                query.setParameter("shortName", reference.getArchetypeId().getShortName());
-                if (active != null) {
-                    query.setParameter("active", active);
-                }
-                List results = query.list();
-                if (results.size() == 0) {
-                    return null;
-                } else {
-                    Context context = getContext(session);
-                    IMObjectDO object = (IMObjectDO) results.get(0);
-                    IMObject result = assembler.assemble(object, context);
-                    context.resolveDeferredReferences();
-                    return result;
-                }
+        return execute(session -> {
+            Query query = session.createQuery(queryString.toString());
+            query.setParameter("id", reference.getId());
+            query.setParameter("shortName", reference.getArchetype());
+            if (active != null) {
+                query.setParameter("active", active);
+            }
+            List results = query.list();
+            if (results.size() == 0) {
+                return null;
+            } else {
+                Context context = getContext(session);
+                IMObjectDO object = (IMObjectDO) results.get(0);
+                IMObject result = assembler.assemble(object, context);
+                context.resolveDeferredReferences();
+                return result;
             }
         });
     }
@@ -881,7 +807,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         if (!saveDeferred.isEmpty() && failOnIncomplete) {
             DOState state = saveDeferred.iterator().next();
             Set<DeferredAssembler> deferred = state.getDeferred();
-            IMObjectReference ref = null;
+            Reference ref = null;
             if (!deferred.isEmpty()) { // should never be empty
                 DeferredAssembler assembler = deferred.iterator().next();
                 ref = assembler.getReference();
@@ -975,17 +901,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     private Object update(final HibernateCallback<Object> callback) {
         final HibernateTemplate template = getHibernateTemplate();
         getHibernateTemplate().setExposeNativeSession(true);
-        return txnTemplate.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                return template.execute(new HibernateCallback<Object>() {
-                    public Object doInHibernate(Session session)
-                            throws HibernateException {
-                        checkWriteOperationAllowed(template, session);
-                        return template.execute(callback);
-                    }
-                });
-            }
-        });
+        return txnTemplate.execute(status -> template.execute(session -> {
+            checkWriteOperationAllowed(template, session);
+            return template.execute(callback);
+        }));
     }
 
     /**

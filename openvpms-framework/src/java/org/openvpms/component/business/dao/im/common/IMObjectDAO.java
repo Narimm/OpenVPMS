@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.im.common;
 
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -33,8 +33,7 @@ import java.util.Map;
  * This interface provides data access object (DAO) support for objects of
  * type {@link IMObject}, which is the most generic type of object in the model.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 public interface IMObjectDAO {
 
@@ -69,7 +68,7 @@ public interface IMObjectDAO {
      * @return a page of objects that match the query criteria
      * @throws IMObjectDAOException for any error
      */
-    public IPage<IMObject> get(IArchetypeQuery query);
+    IPage<IMObject> get(IArchetypeQuery query);
 
     /**
      * Retrieves partially populated objects that match the query.
@@ -108,43 +107,6 @@ public interface IMObjectDAO {
     IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes);
 
     /**
-     * Retrieves the objects that match the specified search criteria.
-     * This is a very generic method that provides a mechanism to return
-     * objects based on, one or more criteria.
-     * <p>
-     * All parameters are optional and can either denote an exact or partial
-     * match semantics. If a parameter has a '*' at the start or end of the
-     * value then it will perform a wildcard match.  If not '*' is specified in
-     * the value then it will only return objects with the exact value.
-     * <p>
-     * If two or more parameters are specified then it will return entities
-     * that matching all criteria.
-     * <p>
-     * The results will be returned in a {@link Page} object, which may contain
-     * a subset of the total result set. The caller can then use the context
-     * information in the {@link Page} object to make subsequent calls.
-     *
-     * @param rmName       the reference model name
-     * @param entityName   the entity name
-     * @param conceptName  the concept name
-     * @param instanceName the instance name
-     * @param clazz        the fully qualified name of the class to search for
-     * @param activeOnly   indicates whether to return active objects.
-     * @param firstResult  the first result to retrieve
-     * @param maxResults   the maximum number of results to return
-     * @return IPage<IMObject>
-     * the results and associated context information
-     * @throws IMObjectDAOException a runtime exception if the request cannot
-     *                              complete
-     * @deprecated replaced by {@link #get(String, String, String, boolean,
-     * int, int)}
-     */
-    @Deprecated
-    IPage<IMObject> get(String rmName, String entityName, String conceptName,
-                        String instanceName, String clazz, boolean activeOnly,
-                        int firstResult, int maxResults);
-
-    /**
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
@@ -180,7 +142,7 @@ public interface IMObjectDAO {
      * @return the corresponding object, or <tt>null</tt> if none exists. The object may be active or inactive
      * @throws IMObjectDAOException for any error
      */
-    IMObject get(IMObjectReference reference);
+    IMObject get(Reference reference);
 
     /**
      * Returns an object with the specified reference.
@@ -191,7 +153,7 @@ public interface IMObjectDAO {
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    IMObject get(IMObjectReference reference, boolean active);
+    IMObject get(Reference reference, boolean active);
 
     /**
      * Executes a get using the specified named query, the query

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -28,8 +28,8 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contact helpers.
@@ -88,73 +88,9 @@ public class Contacts {
      * @param party the party
      * @return {@code true} if the party can receive SMS messages
      */
+    @SuppressWarnings("unchecked")
     public boolean canSMS(Party party) {
-        return CollectionUtils.find(party.getContacts(), new SMSPredicate()) != null;
-    }
-
-    /**
-     * Sorts contacts on increasing identifier.
-     * <p/>
-     * Note that this operation modifies the supplied list.
-     *
-     * @param contacts the contacts to sort
-     * @return the sorted contact
-     */
-    public static List<Contact> sort(List<Contact> contacts) {
-        if (contacts.size() > 1) {
-            Collections.sort(contacts, new Comparator<Contact>() {
-                @Override
-                public int compare(Contact o1, Contact o2) {
-                    return o1.getId() < o2.getId() ? -1 : o1.getId() == o2.getId() ? 0 : 1;
-                }
-            });
-        }
-        return contacts;
-    }
-
-    /**
-     * Sorts contacts on increasing identifier.
-     *
-     * @param contacts the contacts to sort
-     * @return the sorted contacts
-     */
-    public static List<Contact> sort(Collection<Contact> contacts) {
-        return sort(new ArrayList<>(contacts));
-    }
-
-    /**
-     * Looks for a contact that matches the criteria.
-     * <p/>
-     * For consistent results over multiple calls, sort the contacts first.
-     *
-     * @param contacts the contacts
-     * @param matcher  the contact matcher
-     * @return the matching contact or {@code null} if none is found
-     */
-    public static Contact find(Collection<Contact> contacts, ContactMatcher matcher) {
-        for (Contact contact : contacts) {
-            if (matcher.matches(contact)) {
-                break;
-            }
-        }
-        return matcher.getMatch();
-    }
-
-    /**
-     * Finds all contacts that match the criteria.
-     *
-     * @param contacts the contacts
-     * @param matcher  the contact matcher
-     * @return the matching contacts
-     */
-    public static List<Contact> findAll(Collection<Contact> contacts, ContactMatcher matcher) {
-        List<Contact> result = new ArrayList<>();
-        for (Contact contact : contacts) {
-            if (matcher.matches(contact)) {
-                result.add(contact);
-            }
-        }
-        return result;
+        return CollectionUtils.find((Set<Contact>) (Set) party.getContacts(), new SMSPredicate()) != null;
     }
 
     /**
@@ -163,7 +99,7 @@ public class Contacts {
      * @param contact the phone contact
      * @return the phone number. May be {@code null}
      */
-    public String getPhone(Contact contact) {
+    public String getPhone(org.openvpms.component.model.party.Contact contact) {
         IMObjectBean bean = new IMObjectBean(contact, service);
         String areaCode = bean.getString("areaCode");
         String phone = bean.getString("telephoneNumber");
@@ -177,6 +113,68 @@ public class Contacts {
             result = phone;
         }
         result = getPhone(result);
+        return result;
+    }
+
+    /**
+     * Sorts contacts on increasing identifier.
+     * <p>
+     * Note that this operation modifies the supplied list.
+     *
+     * @param contacts the contacts to sort
+     * @return the sorted contact
+     */
+    public static <T extends org.openvpms.component.model.party.Contact> List<T> sort(List<T> contacts) {
+        if (contacts.size() > 1) {
+            Collections.sort(contacts, (o1, o2) -> Long.compare(o1.getId(), o2.getId()));
+        }
+        return contacts;
+    }
+
+    /**
+     * Sorts contacts on increasing identifier.
+     *
+     * @param contacts the contacts to sort
+     * @return the sorted contacts
+     */
+    public static <T extends org.openvpms.component.model.party.Contact> List<T> sort(Collection<T> contacts) {
+        return sort(new ArrayList<>(contacts));
+    }
+
+    /**
+     * Looks for a contact that matches the criteria.
+     * <p>
+     * For consistent results over multiple calls, sort the contacts first.
+     *
+     * @param contacts the contacts
+     * @param matcher  the contact matcher
+     * @return the matching contact or {@code null} if none is found
+     */
+    public static Contact find(Collection<org.openvpms.component.model.party.Contact> contacts,
+                               ContactMatcher matcher) {
+        for (org.openvpms.component.model.party.Contact contact : contacts) {
+            if (matcher.matches(contact)) {
+                break;
+            }
+        }
+        return (Contact) matcher.getMatch();
+    }
+
+    /**
+     * Finds all contacts that match the criteria.
+     *
+     * @param contacts the contacts
+     * @param matcher  the contact matcher
+     * @return the matching contacts
+     */
+    public static List<Contact> findAll(Collection<org.openvpms.component.model.party.Contact> contacts,
+                                        ContactMatcher matcher) {
+        List<Contact> result = new ArrayList<>();
+        for (org.openvpms.component.model.party.Contact contact : contacts) {
+            if (matcher.matches(contact)) {
+                result.add((Contact) contact);
+            }
+        }
         return result;
     }
 
@@ -202,15 +200,16 @@ public class Contacts {
      * @param predicate the predicate
      * @return contacts matching the predicate
      */
+    @SuppressWarnings("unchecked")
     public static List<Contact> getContacts(Party party, Predicate<Contact> predicate) {
         List<Contact> result = new ArrayList<>();
-        CollectionUtils.select(party.getContacts(), predicate, result);
+        CollectionUtils.select((Set<Contact>) (Set) party.getContacts(), predicate, result);
         return result;
     }
 
     private class SMSPredicate implements Predicate<Contact> {
 
-        /**+
+        /**
          * Use the specified parameter to perform a test that returns true or false.
          *
          * @param contact the object to evaluate, should not be changed

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -29,13 +29,13 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.party.Contact;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -181,8 +181,7 @@ public class ReminderProcessor {
                 throw new IllegalStateException("Failed to generate SMS");
             }
         } else {
-            throw new IllegalArgumentException("Invalid archetype for contact: "
-                                               + contact.getArchetypeId().getShortName());
+            throw new IllegalArgumentException("Invalid archetype for contact: " + contact.getArchetype());
         }
         if (toSave.size() != 1) {
             throw new IllegalStateException("Failed to generate reminder item");
@@ -224,6 +223,82 @@ public class ReminderProcessor {
 
     protected Date now() {
         return new Date();
+    }
+
+    /**
+     * Generates reminder items for a reminder based on the reminder count rules and available customer contacts.
+     *
+     * @param patient      the patient
+     * @param reminder     the reminder
+     * @param count        the reminder count
+     * @param reminderType the reminder type
+     * @return the acts to save
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected List<Act> generate(Party patient, Act reminder, ReminderCount count, ReminderType reminderType) {
+        Party customer = getCustomer(patient);
+        List<Contact> list = customer != null ? Contacts.sort(customer.getContacts())
+                                              : Collections.<Contact>emptyList();
+        Set<Contact> found = null;
+        DocumentTemplate template = count.getTemplate();
+        ReminderRule matchingRule = null;
+        for (ReminderRule rule : count.getRules()) {
+            Set<Contact> matches = new HashSet<>();
+            if (getContacts(rule, list, matches, template, count, reminderType)) {
+                found = matches;
+                matchingRule = rule;
+                break;
+            }
+        }
+        ActBean bean = new ActBean(reminder, service);
+        List<Act> toSave = new ArrayList<>();
+        Date dueDate = reminder.getActivityStartTime();
+        if (matchingRule != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Found matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
+                          + ", reminderType=" + reminderType.getName() + ", count=" + count.getCount() + ", rule="
+                          + matchingRule + ", contacts=" + toString(found));
+            }
+            ReminderRule.SendTo sendTo = matchingRule.getSendTo();
+            if (sendTo == ReminderRule.SendTo.ALL || sendTo == ReminderRule.SendTo.ANY) {
+                if (matchingRule.canEmail()) {
+                    generateEmail(bean, dueDate, found, count.getCount(), toSave);
+                }
+                if (!disableSMS && matchingRule.canSMS()) {
+                    generateSMS(bean, dueDate, found, count.getCount(), toSave);
+                }
+                if (matchingRule.canPrint()) {
+                    generatePrint(bean, dueDate, found, count.getCount(), toSave);
+                }
+            } else {
+                boolean generated = matchingRule.canEmail() && generateEmail(bean, dueDate, found, count.getCount(),
+                                                                             toSave);
+                if (!generated) {
+                    generated = !disableSMS && matchingRule.canSMS() && generateSMS(bean, dueDate, found,
+                                                                                    count.getCount(), toSave);
+                    if (!generated && matchingRule.canPrint()) {
+                        generatePrint(bean, dueDate, found, count.getCount(), toSave);
+                    }
+                }
+            }
+            if (matchingRule.isExport()) {
+                generateExport(bean, dueDate, found, count.getCount(), toSave);
+            }
+            if (matchingRule.isList()) {
+                generateList(bean, dueDate, count.getCount(), null, toSave);
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("NO matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
+                          + ", reminderType=" + reminderType.getName() + ", count=" + count.getCount()
+                          + ". Reminder will be Listed");
+            }
+            String message = new ReminderProcessorException(NoContactsForRules).getMessage();
+            generateList(bean, dueDate, count.getCount(), message, toSave);
+        }
+        toSave.add(reminder);
+        return toSave;
     }
 
     /**
@@ -287,82 +362,6 @@ public class ReminderProcessor {
             }
         }
         return result;
-    }
-
-    /**
-     * Generates reminder items for a reminder based on the reminder count rules and available customer contacts.
-     *
-     * @param patient      the patient
-     * @param reminder     the reminder
-     * @param count        the reminder count
-     * @param reminderType the reminder type
-     * @return the acts to save
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
-     */
-    protected List<Act> generate(Party patient, Act reminder, ReminderCount count, ReminderType reminderType) {
-        Party customer = getCustomer(patient);
-        List<Contact> list = customer != null
-                             ? Contacts.sort(customer.getContacts()) : Collections.<Contact>emptyList();
-        Set<Contact> found = null;
-        DocumentTemplate template = count.getTemplate();
-        ReminderRule matchingRule = null;
-        for (ReminderRule rule : count.getRules()) {
-            Set<Contact> matches = new HashSet<>();
-            if (getContacts(rule, list, matches, template, count, reminderType)) {
-                found = matches;
-                matchingRule = rule;
-                break;
-            }
-        }
-        ActBean bean = new ActBean(reminder, service);
-        List<Act> toSave = new ArrayList<>();
-        Date dueDate = reminder.getActivityStartTime();
-        if (matchingRule != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Found matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
-                          + ", reminderType=" + reminderType.getName() + ", count=" + count.getCount() + ", rule="
-                          + matchingRule + ", contacts=" + toString(found));
-            }
-            ReminderRule.SendTo sendTo = matchingRule.getSendTo();
-            if (sendTo == ReminderRule.SendTo.ALL || sendTo == ReminderRule.SendTo.ANY) {
-                if (matchingRule.canEmail()) {
-                    generateEmail(bean, dueDate, found, count.getCount(), toSave);
-                }
-                if (!disableSMS && matchingRule.canSMS()) {
-                    generateSMS(bean, dueDate, found, count.getCount(), toSave);
-                }
-                if (matchingRule.canPrint()) {
-                    generatePrint(bean, dueDate, found, count.getCount(), toSave);
-                }
-            } else {
-                boolean generated = matchingRule.canEmail() && generateEmail(bean, dueDate, found, count.getCount(),
-                                                                             toSave);
-                if (!generated) {
-                    generated = !disableSMS && matchingRule.canSMS() && generateSMS(bean, dueDate, found,
-                                                                                    count.getCount(), toSave);
-                    if (!generated && matchingRule.canPrint()) {
-                        generatePrint(bean, dueDate, found, count.getCount(), toSave);
-                    }
-                }
-            }
-            if (matchingRule.isExport()) {
-                generateExport(bean, dueDate, found, count.getCount(), toSave);
-            }
-            if (matchingRule.isList()) {
-                generateList(bean, dueDate, count.getCount(), null, toSave);
-            }
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("NO matching rule for customer=" + toString(customer) + ", patient=" + toString(patient)
-                          + ", reminderType=" + reminderType.getName() + ", count=" + count.getCount()
-                          + ". Reminder will be Listed");
-            }
-            String message = new ReminderProcessorException(NoContactsForRules).getMessage();
-            generateList(bean, dueDate, count.getCount(), message, toSave);
-        }
-        toSave.add(reminder);
-        return toSave;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -28,7 +28,8 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public abstract class PeriodRelationship extends IMObjectRelationship {
+public abstract class PeriodRelationship extends IMObjectRelationship
+        implements org.openvpms.component.model.object.PeriodRelationship {
 
     /**
      * The active end time for the relationship. May be {@code null}.

@@ -11,16 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.delete;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -136,8 +135,8 @@ public abstract class AbstractEntityDeletionHandler<T extends Entity> extends Ab
         if (exclude == null || exclude.length == 0) {
             result = !entity.getSourceEntityRelationships().isEmpty();
         } else {
-            for (EntityRelationship relationship : entity.getSourceEntityRelationships()) {
-                if (!TypeHelper.isA(relationship, exclude)) {
+            for (Relationship relationship : entity.getSourceEntityRelationships()) {
+                if (!relationship.isA(exclude)) {
                     result = true;
                     break;
                 }

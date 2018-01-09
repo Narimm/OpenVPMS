@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -64,8 +64,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static org.openvpms.component.business.domain.bean.Policies.all;
 
 /**
  * Submits insurance claims.
@@ -151,7 +149,7 @@ public class ClaimSubmitter {
                 listener.accept(null);
             } else {
                 final Claim claim = state.getClaim();
-                Party insurer = claim.getPolicy().getInsurer();
+                Party insurer = (Party) claim.getPolicy().getInsurer();
                 String title = Messages.get("patient.insurance.submit.title");
                 InsuranceService service = state.getService();
                 if (service != null) {
@@ -201,7 +199,7 @@ public class ClaimSubmitter {
             throw new IllegalStateException("Claim must have POSTED status");
         }
         final Claim claim = factory.createClaim(act);
-        Party insurer = claim.getPolicy().getInsurer();
+        Party insurer = (Party) claim.getPolicy().getInsurer();
         String title = Messages.get("patient.insurance.submit.title");
         if (insuranceServices.canSubmit(insurer)) {
             final InsuranceService service = insuranceServices.getService(insurer);
@@ -257,7 +255,7 @@ public class ClaimSubmitter {
      */
     public void cancel(Act act, Consumer<Throwable> listener) {
         Claim claim = getClaim(act);
-        Party insurer = claim.getPolicy().getInsurer();
+        Party insurer = (Party) claim.getPolicy().getInsurer();
         String title = Messages.get("patient.insurance.cancel.title");
         if (insuranceServices.canSubmit(insurer)) {
             InsuranceService service = getInsuranceService(insurer);
@@ -308,7 +306,7 @@ public class ClaimSubmitter {
      */
     public void settle(Act act, Consumer<Throwable> listener) {
         Claim claim = getClaim(act);
-        Party insurer = claim.getPolicy().getInsurer();
+        Party insurer = (Party) claim.getPolicy().getInsurer();
         String title = Messages.get("patient.insurance.settle.title");
         if (insuranceServices.canSubmit(insurer)) {
             InformationDialog.show(title, Messages.format("patient.insurance.settle.online", insurer.getName()));
@@ -339,7 +337,7 @@ public class ClaimSubmitter {
      */
     public void decline(Act act, Consumer<Throwable> listener) {
         Claim claim = getClaim(act);
-        Party insurer = claim.getPolicy().getInsurer();
+        Party insurer = (Party) claim.getPolicy().getInsurer();
         String title = Messages.get("patient.insurance.decline.title");
         if (insuranceServices.canSubmit(insurer)) {
             InformationDialog.show(title, Messages.format("patient.insurance.decline.online", insurer.getName()));
@@ -374,7 +372,7 @@ public class ClaimSubmitter {
         final List<IMObject> objects = new ArrayList<>();
         objects.add(act);
         int missingAttachment = 0;
-        for (DocumentAct attachment : bean.getTargets("attachments", DocumentAct.class, all())) {
+        for (DocumentAct attachment : bean.getAllTargets("attachments", DocumentAct.class)) {
             if (attachment.getDocument() != null) {
                 objects.add(attachment);
             } else {
@@ -415,7 +413,7 @@ public class ClaimSubmitter {
         if (editor.getAmount().compareTo(BigDecimal.ZERO) > 0) {
             if (editor.generateAttachments()) {
                 Claim claim = factory.createClaim(editor.getObject());
-                Party insurer = claim.getPolicy().getInsurer();
+                Party insurer = (Party) claim.getPolicy().getInsurer();
                 InsuranceService service = null;
                 if (insuranceServices.canSubmit(insurer)) {
                     service = getInsuranceService(insurer);
@@ -473,7 +471,7 @@ public class ClaimSubmitter {
      */
     private DocumentTemplateLocator getDocumentTemplateLocator(Claim claim, IMObject object) {
         if (TypeHelper.isA(object, InsuranceArchetypes.CLAIM)) {
-            Party supplier = claim.getPolicy().getInsurer();
+            Party supplier = (Party) claim.getPolicy().getInsurer();
             IMObjectBean bean = new IMObjectBean(supplier);
             Entity template = bean.getTarget("template", Entity.class);
             if (template != null) {
@@ -584,7 +582,7 @@ public class ClaimSubmitter {
 
     private MailContext createMailContext(Claim claim) {
         Context local = new LocalContext(context);
-        Party insurer = claim.getPolicy().getInsurer();
+        Party insurer = (Party) claim.getPolicy().getInsurer();
         local.setSupplier(insurer);
         return new InsurerMailContext(local, help);
 

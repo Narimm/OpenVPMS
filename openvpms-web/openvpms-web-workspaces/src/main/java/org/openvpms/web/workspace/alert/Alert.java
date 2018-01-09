@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.echo.colour.ColourHelper;
@@ -153,7 +154,7 @@ public class Alert implements Comparable<Alert> {
         ActBean bean = new ActBean(act);
         IMObject alertType = null;
         if (bean.isA(CustomerArchetypes.ALERT)) {
-            alertType = bean.getLookup("alertType");
+            alertType = (Lookup) bean.getLookup("alertType");
         } else if (bean.isA(PatientArchetypes.ALERT)) {
             alertType = bean.getNodeParticipant("alertType");
         }

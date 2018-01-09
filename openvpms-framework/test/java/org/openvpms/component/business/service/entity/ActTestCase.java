@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.entity;
@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -136,7 +137,7 @@ public class ActTestCase extends AbstractArchetypeServiceTest {
         act1.addSourceActRelationship(createActRelationship(act1, act2));
         save(act1);
         act1 = (Act) get(act1.getObjectReference());
-        for (ActRelationship theRel : act1.getSourceActRelationships()) {
+        for (Relationship theRel : act1.getSourceActRelationships()) {
             act2 = (Act) get(theRel.getTarget());
         }
         save(act2);
@@ -236,7 +237,7 @@ public class ActTestCase extends AbstractArchetypeServiceTest {
         assertNotNull(act);
         assertEquals(1, act.getIdentities().size());
 
-        ActIdentity identity = act.getIdentities().iterator().next();
+        org.openvpms.component.model.act.ActIdentity identity = act.getIdentities().iterator().next();
         assertEquals("12345", identity.getIdentity());
 
         act.removeIdentity(identity);

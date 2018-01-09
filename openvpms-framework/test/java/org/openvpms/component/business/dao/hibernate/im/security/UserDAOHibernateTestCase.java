@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.security;
@@ -28,9 +28,9 @@ import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.party.PartyDO;
 import org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.entity.EntityRelationship;
+import org.openvpms.component.model.party.Contact;
 
 import java.util.List;
 import java.util.Set;

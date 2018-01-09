@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -21,7 +21,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.service.archetype.ValidationError;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -106,6 +107,18 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * through the assertions.
      *
      * @param object the object to validate
+     * @return any validation errors
+     */
+    @Override
+    public List<ValidationError> validate(IMObject object) {
+        return service.validate(object);
+    }
+
+    /**
+     * Validate the specified {@link IMObject}. To validate the object it will retrieve the archetype and iterate
+     * through the assertions.
+     *
+     * @param object the object to validate
      * @throws ValidationException if there are validation errors
      */
     @Override
@@ -160,20 +173,6 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     }
 
     /**
-     * Return all the {@link ArchetypeDescriptor} instance with the specified reference model name.
-     *
-     * @param rmName the reference model name
-     * @return a list of matching archetype descriptors
-     * @throws ArchetypeServiceException for any error
-     * @deprecated no replacement
-     */
-    @Override
-    @Deprecated
-    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName) {
-        return service.getArchetypeDescriptors(rmName);
-    }
-
-    /**
      * Return the {@link AssertionTypeDescriptor} with the specified name.
      *
      * @param name the name of the assertion type
@@ -211,7 +210,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     /**
      * Save a collection of {@link IMObject} instances. executing any  <em>save</em> rules associated with their
      * archetypes.
-     * <p/>
+     * <p>
      * Rules will be executed in the order that the objects are supplied.
      *
      * @param objects the objects to save
@@ -269,20 +268,20 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public IMObject get(IMObjectReference reference) {
+    public IMObject get(Reference reference) {
         return service.get(reference);
     }
 
     /**
      * Retrieves an object given its reference.
      *
-     * @param reference  the object reference
-     * @param active if {@code true}, only return the object if it is active
+     * @param reference the object reference
+     * @param active    if {@code true}, only return the object if it is active
      * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public IMObject get(IMObjectReference reference, boolean active) {
+    public IMObject get(Reference reference, boolean active) {
         return service.get(reference, active);
     }
 
@@ -301,7 +300,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     /**
      * Retrieves partially populated objects that match the query.
      * This may be used to selectively load parts of object graphs to improve performance.
-     * <p/>
+     * <p>
      * All simple properties of the returned objects are populated - the {@code nodes} argument is used to specify which
      * collection nodes to populate. If empty, no collections will be loaded, and the behaviour of accessing them is
      * undefined.
@@ -339,25 +338,6 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     @Override
     public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
         return service.getNodes(query, nodes);
-    }
-
-    /**
-     * Return a list of archetype short names given the specified criteria.
-     *
-     * @param rmName      the reference model name
-     * @param entityName  the entity name
-     * @param conceptName the concept name
-     * @param primaryOnly indicates whether to return primary objects only.
-     * @return a list of short names
-     * @throws ArchetypeServiceException for any error
-     * @see #getArchetypeShortNames(String entityName, String conceptName, boolean primaryOnly)
-     * @deprecated
-     */
-    @Override
-    @Deprecated
-    public List<String> getArchetypeShortNames(String rmName, String entityName, String conceptName,
-                                               boolean primaryOnly) {
-        return service.getArchetypeShortNames(rmName, entityName, conceptName, primaryOnly);
     }
 
     /**
@@ -414,7 +394,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
 
     /**
      * Adds a listener to receive notification of changes.
-     * <p/>
+     * <p>
      * In a transaction, notifications occur on successful commit.
      *
      * @param shortName the archetype short to receive events for. May contain wildcards.

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.i18n;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.i18n.Message;
-import org.openvpms.component.system.common.i18n.Messages;
+import org.openvpms.component.i18n.Message;
+import org.openvpms.component.i18n.Messages;
 
 /**
  * Messages reported by the Smart Flow Sheet interface.
@@ -39,7 +39,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToGetHospitalization(Party patient) {
-        return messages.getMessage(100, patient.getName());
+        return messages.create(100, patient.getName());
     }
 
     /**
@@ -49,7 +49,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToCreateFlowSheet(Party patient) {
-        return messages.getMessage(101, patient.getName());
+        return messages.create(101, patient.getName());
     }
 
     /**
@@ -60,7 +60,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToDownloadPDF(Party patient, String name) {
-        return messages.getMessage(102, patient.getName(), name);
+        return messages.create(102, patient.getName(), name);
     }
 
     /**
@@ -69,7 +69,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message notAuthorised() {
-        return messages.getMessage(103);
+        return messages.create(103);
     }
 
     /**
@@ -81,7 +81,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message cannotConnectUsingSSL(String url) {
-        return messages.getMessage(104, url);
+        return messages.create(104, url);
     }
 
     /**
@@ -90,7 +90,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToGetTemplates() {
-        return messages.getMessage(105);
+        return messages.create(105);
     }
 
     /**
@@ -99,7 +99,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToGetDepartments() {
-        return messages.getMessage(106);
+        return messages.create(106);
     }
 
     /**
@@ -108,7 +108,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToGetInventory() {
-        return messages.getMessage(107);
+        return messages.create(107);
     }
 
     /**
@@ -117,7 +117,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToUpdateInventory() {
-        return messages.getMessage(108);
+        return messages.create(108);
     }
 
     /**
@@ -126,7 +126,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToRemoveInventoryItem(String id, String name) {
-        return messages.getMessage(109, id, name);
+        return messages.create(109, id, name);
     }
 
     /**
@@ -135,7 +135,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToGetMedics() {
-        return messages.getMessage(110);
+        return messages.create(110);
     }
 
     /**
@@ -144,7 +144,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToUpdateMedics() {
-        return messages.getMessage(111);
+        return messages.create(111);
     }
 
     /**
@@ -155,7 +155,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToRemoveMedic(String medicId, String name) {
-        return messages.getMessage(112, medicId, name);
+        return messages.create(112, medicId, name);
     }
 
     /**
@@ -164,7 +164,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToGetServiceBusConfig() {
-        return messages.getMessage(113);
+        return messages.create(113);
     }
 
     /**
@@ -176,7 +176,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToDeserializeMessage(String messageId, String contentType, String reason) {
-        return messages.getMessage(114, messageId, contentType, reason);
+        return messages.create(114, messageId, contentType, reason);
     }
 
     /**
@@ -186,7 +186,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message notConfigured(Party location) {
-        return messages.getMessage(115, location.getName());
+        return messages.create(115, location.getName());
     }
 
     /**
@@ -197,7 +197,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToDischargePatient(Party patient, String reason) {
-        return messages.getMessage(116, patient.getName(), reason);
+        return messages.create(116, patient.getName(), reason);
     }
 
     /**
@@ -207,7 +207,7 @@ public class FlowSheetMessages {
      * @return a new message
      */
     public static Message failedToGetAnaesthetics(Party patient) {
-        return messages.getMessage(117, patient.getName());
+        return messages.create(117, patient.getName());
     }
 
     /**
@@ -216,7 +216,7 @@ public class FlowSheetMessages {
      * @return the message
      */
     public static String cannotDeleteFinalisedNote() {
-        return messages.getMessage(300).getMessage();
+        return messages.create(300).getMessage();
     }
 
     /**
@@ -225,7 +225,7 @@ public class FlowSheetMessages {
      * @return the file name, minus any extension
      */
     public static String reportFileName(String name) {
-        return messages.getMessage(1000, name).getMessage();
+        return messages.create(1000, name).getMessage();
     }
 
     /**
@@ -234,7 +234,7 @@ public class FlowSheetMessages {
      * @return the name, minus any extension
      */
     public static String flowSheetReportName() {
-        return messages.getMessage(1001).getMessage();
+        return messages.create(1001).getMessage();
     }
 
     /**
@@ -243,7 +243,7 @@ public class FlowSheetMessages {
      * @return the name, minus any extension
      */
     public static String medicalRecordsReportName() {
-        return messages.getMessage(1002).getMessage();
+        return messages.create(1002).getMessage();
     }
 
     /**
@@ -252,7 +252,7 @@ public class FlowSheetMessages {
      * @return the name, minus any extension
      */
     public static String billingReportName() {
-        return messages.getMessage(1003).getMessage();
+        return messages.create(1003).getMessage();
     }
 
     /**
@@ -261,7 +261,7 @@ public class FlowSheetMessages {
      * @return the name, minus any extension
      */
     public static String notesReportName() {
-        return messages.getMessage(1004).getMessage();
+        return messages.create(1004).getMessage();
     }
 
     /**
@@ -270,7 +270,7 @@ public class FlowSheetMessages {
      * @return the name, minus any extension
      */
     public static String anaestheticReportName() {
-        return messages.getMessage(1005).getMessage();
+        return messages.create(1005).getMessage();
     }
 
     /**
@@ -279,6 +279,6 @@ public class FlowSheetMessages {
      * @return the name, minus any extension
      */
     public static String anaestheticRecordsReportName() {
-        return messages.getMessage(1006).getMessage();
+        return messages.create(1006).getMessage();
     }
 }

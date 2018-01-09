@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -24,9 +24,9 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.system.ServiceHelper;
@@ -62,21 +62,8 @@ public class PatientHistoryActions extends ActActions<Act> {
     }
 
     /**
-     * Determines if an act needs locking.
-     *
-     * @param act thr act
-     * @return {@code true} if the act needs locking
-     */
-    public static boolean needsLock(Act act) {
-        MedicalRecordRules recordRules = ServiceHelper.getBean(MedicalRecordRules.class);
-        PracticeService practiceService = ServiceHelper.getBean(PracticeService.class);
-        Period period = practiceService.getRecordLockPeriod();
-        return (period != null) && recordRules.needsLock(act, period);
-    }
-
-    /**
      * Determines if an act can be edited.
-     * <p/>
+     * <p>
      * Patient investigations can always be edited, although the editor restricts functionality based on the status.
      *
      * @param act the act to check
@@ -90,7 +77,7 @@ public class PatientHistoryActions extends ActActions<Act> {
 
     /**
      * Determines if an act can be deleted.
-     * <p/>
+     * <p>
      * An act may be deleted if:
      * <ul>
      * <li>isn't {@code POSTED}, locked or an invoice item; and</li>
@@ -115,8 +102,8 @@ public class PatientHistoryActions extends ActActions<Act> {
             return true;
         } else {
             // reject deletion if the item is linked to an invoice
-            for (ActRelationship rel : act.getTargetActRelationships()) {
-                if (TypeHelper.isA(rel.getSource(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+            for (Relationship rel : act.getTargetActRelationships()) {
+                if (rel.getSource().isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
                     return false;
                 }
             }
@@ -126,7 +113,7 @@ public class PatientHistoryActions extends ActActions<Act> {
 
     /**
      * Determines if an act can be posted (i.e finalised).
-     * <p/>
+     * <p>
      * This implementation returns {@code true} if the act isn't an invoice item ant its status isn't {@code POSTED}
      * or {@code CANCELLED}.
      *
@@ -152,7 +139,7 @@ public class PatientHistoryActions extends ActActions<Act> {
 
     /**
      * Determines if an act is locked from editing.
-     * <p/>
+     * <p>
      *
      * @param act the act
      * @return {@code true} if the act status is {@link ActStatus#POSTED}, or {@link #needsLock} returns {@code true}.
@@ -160,6 +147,19 @@ public class PatientHistoryActions extends ActActions<Act> {
     @Override
     public boolean isLocked(Act act) {
         return super.isLocked(act) || needsLock(act);
+    }
+
+    /**
+     * Determines if an act needs locking.
+     *
+     * @param act thr act
+     * @return {@code true} if the act needs locking
+     */
+    public static boolean needsLock(Act act) {
+        MedicalRecordRules recordRules = ServiceHelper.getBean(MedicalRecordRules.class);
+        PracticeService practiceService = ServiceHelper.getBean(PracticeService.class);
+        Period period = practiceService.getRecordLockPeriod();
+        return (period != null) && recordRules.needsLock(act, period);
     }
 
 }

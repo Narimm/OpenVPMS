@@ -1,29 +1,32 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.entity;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.springframework.test.context.ContextConfiguration;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -72,7 +75,7 @@ public class EntityIdentityTestCase extends AbstractArchetypeServiceTest {
         assertNotNull(person);
         assertEquals(2, person.getIdentities().size());
 
-        ident1 = person.getIdentities().iterator().next();
+        ident1 = (EntityIdentity) person.getIdentities().iterator().next();
         person.removeIdentity(ident1);
         assertEquals(1, person.getIdentities().size());
         save(person);
@@ -99,7 +102,7 @@ public class EntityIdentityTestCase extends AbstractArchetypeServiceTest {
         person = (Party) get(person.getObjectReference());
         assertNotNull(person);
         assertEquals(1, person.getIdentities().size());
-        ident1 = person.getIdentities().iterator().next();
+        ident1 = (EntityIdentity) person.getIdentities().iterator().next();
         assertTrue(ident1.getIdentity().equals("jimbo"));
         ident1.setIdentity("jimmya");
         save(person);
@@ -108,7 +111,7 @@ public class EntityIdentityTestCase extends AbstractArchetypeServiceTest {
         person = (Party) get(person.getObjectReference());
         assertNotNull(person);
         assertEquals(1, person.getIdentities().size());
-        ident1 = person.getIdentities().iterator().next();
+        ident1 = (EntityIdentity) person.getIdentities().iterator().next();
         assertTrue(ident1.getIdentity().equals("jimmya"));
     }
 

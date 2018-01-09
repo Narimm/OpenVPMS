@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -614,7 +614,6 @@ public class QueryContext {
                 params.put(varName, getValue(op, parameters[0]));
                 break;
 
-            case IsNULL:
             case IS_NULL:
             case NOT_NULL:
                 clause.appendOperator();
@@ -735,7 +734,6 @@ public class QueryContext {
                 return "<=";
             case NE:
                 return "!=";
-            case IsNULL:
             case IS_NULL:
                 return "is NULL";
             case NOT_NULL:

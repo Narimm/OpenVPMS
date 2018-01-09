@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.rule;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.bean.IMObjectBean;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.DelegatingArchetypeService;
@@ -26,6 +25,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
 import org.openvpms.component.business.service.ruleengine.RuleSetUriHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -161,7 +161,7 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      * @return the bean
      */
     @Override
-    public IMObjectBean getBean(IMObject object) {
+    public IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
         return new org.openvpms.component.business.service.archetype.helper.IMObjectBean(object, this);
     }
 

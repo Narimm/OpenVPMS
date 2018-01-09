@@ -1,27 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: GrantedAuthorityException.java 127 2005-09-22 09:30:20Z jalateras $
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.security;
 
-// commons-resources
 import org.apache.commons.resources.Messages;
-
-// openvpms-framework
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
@@ -29,7 +24,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * authorities for archetypes and archetype services. 
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2005-09-22 19:30:20 +1000 (Thu, 22 Sep 2005) $
  */
 public class GrantedAuthorityException extends OpenVPMSException {
 

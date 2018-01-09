@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
@@ -21,7 +21,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
-import org.openvpms.component.system.common.i18n.Message;
+import org.openvpms.component.i18n.Message;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 
 import javax.net.ssl.SSLHandshakeException;

@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.service;
 
-import org.openvpms.component.business.domain.bean.IMObjectBean;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.i18n.InsuranceMessages;
 import org.openvpms.insurance.service.InsuranceService;
@@ -74,7 +74,7 @@ public class InsuranceServicesImpl implements InsuranceServices {
     @Override
     public InsuranceService getServiceForConfiguration(Entity config) {
         InsuranceService result = null;
-        String archetype = config.getArchetypeId().getShortName();
+        String archetype = config.getArchetype();
         for (InsuranceService insuranceService : manager.getServices(InsuranceService.class)) {
             if (archetype.equals(insuranceService.getArchetype())) {
                 result = insuranceService;

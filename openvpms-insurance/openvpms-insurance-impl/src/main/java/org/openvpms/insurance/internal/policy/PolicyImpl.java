@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.policy;
@@ -21,8 +21,8 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.i18n.InsuranceMessages;
 import org.openvpms.insurance.policy.Animal;
@@ -41,7 +41,12 @@ public class PolicyImpl implements Policy {
     /**
      * The policy.
      */
-    private final ActBean policy;
+    private final IMObjectBean policy;
+
+    /**
+     * The underlying act.
+     */
+    private final Act act;
 
     /**
      * The archetype service.
@@ -84,7 +89,8 @@ public class PolicyImpl implements Policy {
      */
     public PolicyImpl(Act policy, IArchetypeRuleService service, CustomerRules customerRules,
                       PatientRules patientRules) {
-        this.policy = new ActBean(policy, service);
+        this.policy = service.getBean(policy);
+        this.act = policy;
         this.service = service;
         this.customerRules = customerRules;
         this.patientRules = patientRules;
@@ -123,7 +129,7 @@ public class PolicyImpl implements Policy {
      */
     @Override
     public Date getExpiryDate() {
-        Date date = policy.getAct().getActivityEndTime();
+        Date date = act.getActivityEndTime();
         if (date == null) {
             throw new InsuranceException(InsuranceMessages.policyHasNoExpiryDate());
         }
@@ -139,7 +145,7 @@ public class PolicyImpl implements Policy {
     @Override
     public PolicyHolder getPolicyHolder() {
         if (policyHolder == null) {
-            Party customer = (Party) policy.getNodeParticipant("customer");
+            Party customer = policy.getAnyTarget("customer", Party.class);
             if (customer == null) {
                 throw new InsuranceException(InsuranceMessages.policyHasNoCustomer());
             }
@@ -172,7 +178,7 @@ public class PolicyImpl implements Policy {
     @Override
     public Party getInsurer() {
         if (insurer == null) {
-            insurer = (Party) policy.getNodeParticipant("insurer");
+            insurer = policy.getAnyTarget("insurer", Party.class);
             if (insurer == null) {
                 throw new InsuranceException(InsuranceMessages.policyHasNoInsurer());
             }
@@ -187,7 +193,7 @@ public class PolicyImpl implements Policy {
      * @throws InsuranceException for any error
      */
     public Party getPatient() {
-        Party patient = (Party) policy.getNodeParticipant("patient");
+        Party patient = policy.getAnyTarget("patient", Party.class);
         if (patient == null) {
             throw new InsuranceException(InsuranceMessages.policyHasNoPatient());
         }

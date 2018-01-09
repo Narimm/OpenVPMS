@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  *
  * @author Jim Alateras
  */
-public abstract class NamedProperty extends IMObject {
+public abstract class NamedProperty extends IMObject implements org.openvpms.component.model.archetype.NamedProperty {
 
     /**
      * Default SUID

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -219,7 +219,8 @@ class ResendReminderDialog extends PopupDialog {
      */
     private static List<Contact> getContacts(Party customer) {
         List<Contact> result = new ArrayList<>();
-        for (Contact contact : customer.getContacts()) {
+        for (org.openvpms.component.model.party.Contact c : customer.getContacts()) {
+            Contact contact = (Contact) c;
             if (TypeHelper.isA(contact, ContactArchetypes.LOCATION, ContactArchetypes.EMAIL)) {
                 result.add(contact);
             } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {

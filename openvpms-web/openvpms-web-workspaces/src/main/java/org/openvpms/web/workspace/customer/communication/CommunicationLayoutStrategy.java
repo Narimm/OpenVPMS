@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
@@ -345,9 +344,9 @@ public class CommunicationLayoutStrategy extends AbstractMessageLayoutStrategy {
      */
     protected List<Contact> getContacts(Party party) {
         List<Contact> result = new ArrayList<>();
-        for (Contact contact : party.getContacts()) {
-            if (TypeHelper.isA(contact, contacts)) {
-                result.add(contact);
+        for (org.openvpms.component.model.party.Contact contact : party.getContacts()) {
+            if (contact.isA(contacts)) {
+                result.add((Contact) contact);
             }
         }
         return result;

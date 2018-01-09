@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -81,6 +81,15 @@ public interface IArchetypeService {
      * through the assertions.
      *
      * @param object the object to validate
+     * @return any validation errors
+     */
+    List<org.openvpms.component.service.archetype.ValidationError> validate(IMObject object);
+
+    /**
+     * Validate the specified {@link IMObject}. To validate the object it will retrieve the archetype and iterate
+     * through the assertions.
+     *
+     * @param object the object to validate
      * @throws ValidationException if there are validation errors
      */
     void validateObject(IMObject object);
@@ -118,17 +127,6 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException for any error
      */
     List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName);
-
-    /**
-     * Return all the {@link ArchetypeDescriptor} instance with the specified reference model name.
-     *
-     * @param rmName the reference model name
-     * @return a list of matching archetype descriptors
-     * @throws ArchetypeServiceException for any error
-     * @deprecated no replacement
-     */
-    @Deprecated
-    List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName);
 
     /**
      * Return the {@link AssertionTypeDescriptor} with the specified name.
@@ -201,7 +199,7 @@ public interface IArchetypeService {
      * @return the corresponding object, or {@code null} if none is found. The object may be active or inactive
      * @throws ArchetypeServiceException if the query fails
      */
-    IMObject get(IMObjectReference reference);
+    IMObject get(Reference reference);
 
     /**
      * Retrieves an object given its reference.
@@ -212,7 +210,7 @@ public interface IArchetypeService {
      * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
-    IMObject get(IMObjectReference reference, boolean active);
+    IMObject get(Reference reference, boolean active);
 
     /**
      * Retrieves the objects matching the query.
@@ -256,21 +254,6 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException if the query fails
      */
     IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes);
-
-    /**
-     * Return a list of archetype short names given the specified criteria.
-     *
-     * @param rmName      the reference model name
-     * @param entityName  the entity name
-     * @param conceptName the concept name
-     * @param primaryOnly indicates whether to return primary objects only.
-     * @return a list of short names
-     * @throws ArchetypeServiceException for any error
-     * @see #getArchetypeShortNames(String entityName, String conceptName, boolean primaryOnly)
-     * @deprecated
-     */
-    @Deprecated
-    List<String> getArchetypeShortNames(String rmName, String entityName, String conceptName, boolean primaryOnly);
 
     /**
      * Return a list of archetype short names given the specified criteria.

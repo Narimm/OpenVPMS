@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.act;
@@ -30,14 +28,14 @@ import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.model.object.Reference;
 
 
 /**
  * An {@link Assembler} responsible for assembling {@link ParticipationDO}
  * instances from {@link Participation}s and vice-versa.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ParticipationAssembler
         extends IMObjectAssembler<Participation, ParticipationDO> {
@@ -112,7 +110,7 @@ public class ParticipationAssembler
     private void assembleEntity(final ParticipationDO target,
                                 final Participation source,
                                 DOState state, Context context) {
-        final IMObjectReference entityRef = source.getEntity();
+        Reference entityRef = source.getEntity();
         if (entityRef != null) {
             DOState entityDO = get(entityRef, EntityDO.class,
                                    EntityDOImpl.class, context);
@@ -129,7 +127,7 @@ public class ParticipationAssembler
             }
             if (entityRef.isNew()) {
                 new ReferenceUpdater(state, entityRef) {
-                    protected void doUpdate(IMObjectReference updated) {
+                    protected void doUpdate(Reference updated) {
                         source.setEntity(updated);
                     }
                 };
@@ -150,7 +148,7 @@ public class ParticipationAssembler
     private void assembleAct(final ParticipationDO target,
                              final Participation source,
                              DOState state, Context context) {
-        final IMObjectReference actRef = source.getAct();
+        Reference actRef = source.getAct();
         if (actRef != null) {
             DOState actDO = get(actRef, ActDO.class, ActDOImpl.class, context);
             if (actDO != null) {
@@ -166,7 +164,7 @@ public class ParticipationAssembler
             }
             if (actRef.isNew()) {
                 new ReferenceUpdater(state, actRef) {
-                    protected void doUpdate(IMObjectReference updated) {
+                    protected void doUpdate(Reference updated) {
                         source.setAct(updated);
                     }
                 };

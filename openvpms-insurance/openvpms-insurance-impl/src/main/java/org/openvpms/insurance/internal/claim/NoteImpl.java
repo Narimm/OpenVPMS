@@ -11,19 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.bean.Policies;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.ActComparator;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.insurance.claim.Note;
 
 import java.util.ArrayList;
@@ -41,12 +39,17 @@ public class NoteImpl implements Note {
     /**
      * The note.
      */
-    private final ActBean note;
+    private final IMObjectBean note;
+
+    /**
+     * The underlying act.
+     */
+    private final Act act;
 
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * Addenda.
@@ -59,10 +62,11 @@ public class NoteImpl implements Note {
      * @param note    the note or addenda
      * @param service the archetype service.
      */
-    public NoteImpl(Act note, IArchetypeService service) {
-        this.note = new ActBean(note, service);
+    public NoteImpl(Act note, IArchetypeRuleService service) {
+        this.note = service.getBean(note);
+        this.act = note;
         this.service = service;
-        if (TypeHelper.isA(note, PatientArchetypes.CLINICAL_ADDENDUM)) {
+        if (note.isA(PatientArchetypes.CLINICAL_ADDENDUM)) {
             // addendum acts can't have addenda
             addenda = Collections.emptyList();
         }
@@ -75,7 +79,7 @@ public class NoteImpl implements Note {
      */
     @Override
     public Date getDate() {
-        return note.getAct().getActivityStartTime();
+        return act.getActivityStartTime();
     }
 
     /**
@@ -85,7 +89,7 @@ public class NoteImpl implements Note {
      */
     @Override
     public User getAuthor() {
-        return (User) note.getNodeParticipant("author");
+        return note.getAnyTarget("author", User.class);
     }
 
     /**
@@ -95,7 +99,7 @@ public class NoteImpl implements Note {
      */
     @Override
     public User getClinician() {
-        return (User) note.getNodeParticipant("clinician");
+        return note.getAnyTarget("clinician", User.class);
     }
 
     /**
@@ -128,7 +132,7 @@ public class NoteImpl implements Note {
      */
     protected List<Note> collectAddenda() {
         List<Note> result = new ArrayList<>();
-        List<Act> acts = note.getTargets("addenda", Act.class, Policies.any());
+        List<Act> acts = note.getAllTargets("addenda", Act.class);
         Collections.sort(acts, ActComparator.ascending());
         for (Act act : acts) {
             result.add(new NoteImpl(act, service));

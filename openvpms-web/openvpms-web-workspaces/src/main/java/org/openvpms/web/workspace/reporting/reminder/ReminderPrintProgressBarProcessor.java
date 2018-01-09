@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -23,7 +23,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.app.PracticeMailContext;
@@ -284,7 +284,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
                     ContactIds ids = iterator.next();
                     Party customer = (Party) IMObjectHelper.getObject(ids.customerId);
                     if (customer != null) {
-                        Contact contact = IMObjectHelper.getObject(ids.contactId, customer.getContacts());
+                        Contact contact = (Contact) IMObjectHelper.getObject(ids.contactId, customer.getContacts());
                         if (contact != null) {
                             Party patient = (Party) IMObjectHelper.getObject(ids.patientId);
                             Party location = (Party) IMObjectHelper.getObject(ids.locationId);

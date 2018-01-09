@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.policy;
@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.patient.insurance.policy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.policy.Policy;

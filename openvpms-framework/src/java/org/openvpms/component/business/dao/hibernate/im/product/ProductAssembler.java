@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.product;
@@ -25,12 +23,13 @@ import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 
+import java.util.Set;
+
 
 /**
  * Assembles {@link Product}s from {@link ProductDO}s and vice-versa.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
 
@@ -56,11 +55,11 @@ public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(ProductDO target, Product source, DOState state,
-                              Context context) {
+    @SuppressWarnings("unchecked")
+    protected void assembleDO(ProductDO target, Product source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
-        PRICES.assembleDO(target.getProductPrices(), source.getProductPrices(),
-                          state, context);
+        PRICES.assembleDO(target.getProductPrices(), (Set<ProductPrice>) (Set) source.getProductPrices(), state,
+                          context);
     }
 
     /**
@@ -71,12 +70,10 @@ public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
      * @param context the assembly context
      */
     @Override
-    protected void assembleObject(Product target, ProductDO source,
-                                  Context context) {
+    @SuppressWarnings("unchecked")
+    protected void assembleObject(Product target, ProductDO source, Context context) {
         super.assembleObject(target, source, context);
-        PRICES.assembleObject(target.getProductPrices(),
-                              source.getProductPrices(),
-                              context);
+        PRICES.assembleObject((Set<ProductPrice>) (Set) target.getProductPrices(), source.getProductPrices(), context);
     }
 
     /**

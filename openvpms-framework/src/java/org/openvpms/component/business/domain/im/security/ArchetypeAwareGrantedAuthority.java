@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -143,24 +143,6 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
      */
     public void setShortName(String shortName) {
         this.shortName = shortName;
-    }
-
-    /**
-     * Returns the archetype short name.
-     *
-     * @return the archetype short name
-     */
-    @Deprecated
-    public String getArchetypeShortName() {
-        return getShortName();
-    }
-
-    /**
-     * @param archetypeShortName The archetypeShortName to set.
-     */
-    @Deprecated
-    public void setArchetypeShortName(String archetypeShortName) {
-        setShortName(archetypeShortName);
     }
 
     /**

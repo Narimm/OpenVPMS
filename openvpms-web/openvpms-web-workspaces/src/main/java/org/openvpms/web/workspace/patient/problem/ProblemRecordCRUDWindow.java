@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -24,11 +24,12 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -385,9 +386,10 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return the source, or {@code null} if none exists
      */
     private Act getSource(Act act, String shortName) {
-        for (ActRelationship relationship : act.getTargetActRelationships()) {
-            if (TypeHelper.isA(relationship.getSource(), shortName)) {
-                return (Act) IMObjectHelper.getObject(relationship.getSource(), getContext());
+        for (Relationship relationship : act.getTargetActRelationships()) {
+            Reference source = relationship.getSource();
+            if (source.isA(shortName)) {
+                return (Act) IMObjectHelper.getObject(source, getContext());
             }
         }
         return null;

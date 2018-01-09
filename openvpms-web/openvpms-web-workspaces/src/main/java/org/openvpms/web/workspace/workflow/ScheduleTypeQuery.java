@@ -11,17 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
@@ -45,12 +45,6 @@ import java.util.List;
 public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
 
     /**
-     * The <em>party.organisationSchedule</em> or <em>party.organisationWorkList</em> to constraint types to.
-     * May be {@code null}.
-     */
-    private Entity schedule;
-
-    /**
      * The node to use when retrieving appointment or task types from {@link #schedule}.
      */
     private final String scheduleTypesNode;
@@ -59,6 +53,12 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
      * The context.
      */
     private final Context context;
+
+    /**
+     * The <em>party.organisationSchedule</em> or <em>party.organisationWorkList</em> to constraint types to.
+     * May be {@code null}.
+     */
+    private Entity schedule;
 
 
     /**
@@ -169,9 +169,8 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
     private List<Entity> getScheduleTypes(Entity schedule) {
         List<Entity> result = new ArrayList<>();
         EntityBean bean = new EntityBean(schedule);
-        List<IMObject> relationships = bean.getValues(scheduleTypesNode);
-        for (IMObject object : relationships) {
-            EntityRelationship relationship = (EntityRelationship) object;
+        List<Relationship> relationships = bean.getValues(scheduleTypesNode, Relationship.class);
+        for (Relationship relationship : relationships) {
             IMObject type = IMObjectHelper.getObject(relationship.getTarget(), context);
             if (type != null) {
                 result.add((Entity) type);
