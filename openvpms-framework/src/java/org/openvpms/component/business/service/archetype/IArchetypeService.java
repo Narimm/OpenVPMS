@@ -129,17 +129,6 @@ public interface IArchetypeService {
     List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName);
 
     /**
-     * Return all the {@link ArchetypeDescriptor} instance with the specified reference model name.
-     *
-     * @param rmName the reference model name
-     * @return a list of matching archetype descriptors
-     * @throws ArchetypeServiceException for any error
-     * @deprecated no replacement
-     */
-    @Deprecated
-    List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName);
-
-    /**
      * Return the {@link AssertionTypeDescriptor} with the specified name.
      *
      * @param name the name of the assertion type
@@ -265,21 +254,6 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException if the query fails
      */
     IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes);
-
-    /**
-     * Return a list of archetype short names given the specified criteria.
-     *
-     * @param rmName      the reference model name
-     * @param entityName  the entity name
-     * @param conceptName the concept name
-     * @param primaryOnly indicates whether to return primary objects only.
-     * @return a list of short names
-     * @throws ArchetypeServiceException for any error
-     * @see #getArchetypeShortNames(String entityName, String conceptName, boolean primaryOnly)
-     * @deprecated
-     */
-    @Deprecated
-    List<String> getArchetypeShortNames(String rmName, String entityName, String conceptName, boolean primaryOnly);
 
     /**
      * Return a list of archetype short names given the specified criteria.

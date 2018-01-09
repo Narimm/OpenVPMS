@@ -40,7 +40,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -312,18 +311,6 @@ public class ArchetypeService implements IArchetypeService {
      */
     public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName) {
         return dCache.getArchetypeDescriptors(shortName);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptorsByRmName(java.lang.String)
-     * @deprecated
-     */
-    @Deprecated
-    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(
-            String rmName) {
-        return Collections.emptyList();
     }
 
     /**

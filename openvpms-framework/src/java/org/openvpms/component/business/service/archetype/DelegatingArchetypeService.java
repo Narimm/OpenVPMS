@@ -173,20 +173,6 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     }
 
     /**
-     * Return all the {@link ArchetypeDescriptor} instance with the specified reference model name.
-     *
-     * @param rmName the reference model name
-     * @return a list of matching archetype descriptors
-     * @throws ArchetypeServiceException for any error
-     * @deprecated no replacement
-     */
-    @Override
-    @Deprecated
-    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName) {
-        return service.getArchetypeDescriptors(rmName);
-    }
-
-    /**
      * Return the {@link AssertionTypeDescriptor} with the specified name.
      *
      * @param name the name of the assertion type
@@ -352,25 +338,6 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     @Override
     public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
         return service.getNodes(query, nodes);
-    }
-
-    /**
-     * Return a list of archetype short names given the specified criteria.
-     *
-     * @param rmName      the reference model name
-     * @param entityName  the entity name
-     * @param conceptName the concept name
-     * @param primaryOnly indicates whether to return primary objects only.
-     * @return a list of short names
-     * @throws ArchetypeServiceException for any error
-     * @see #getArchetypeShortNames(String entityName, String conceptName, boolean primaryOnly)
-     * @deprecated
-     */
-    @Override
-    @Deprecated
-    public List<String> getArchetypeShortNames(String rmName, String entityName, String conceptName,
-                                               boolean primaryOnly) {
-        return service.getArchetypeShortNames(rmName, entityName, conceptName, primaryOnly);
     }
 
     /**

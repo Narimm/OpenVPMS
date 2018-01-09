@@ -18,7 +18,6 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -50,35 +49,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class ArchetypeQueryHelper {
-
-    /**
-     * Return the object with the specified archId and uid.
-     *
-     * @param service the archetype service
-     * @param archId  the archetype id of the object to retrieve
-     * @param id      the id of the object
-     * @return the object of null if one does not exist
-     * @deprecated use {@link IArchetypeService#get(org.openvpms.component.model.object.Reference)}
-     */
-    @Deprecated
-    public static IMObject getByUid(IArchetypeService service,
-                                    ArchetypeId archId, long id) {
-        return service.get(new IMObjectReference(archId, id));
-    }
-
-    /**
-     * Return the object with the specified {@link IMObjectReference}.
-     *
-     * @param service   the archetype service
-     * @param reference the object reference
-     * @return the matching object or null
-     * @deprecated use {@link IArchetypeService#get(org.openvpms.component.model.object.Reference)}
-     */
-    @Deprecated
-    public static IMObject getByObjectReference(IArchetypeService service,
-                                                IMObjectReference reference) {
-        return service.get(reference);
-    }
 
     /**
      * Return a list of {@link Act}s given the following constraints
@@ -238,48 +208,11 @@ public class ArchetypeQueryHelper {
      * Uses the specified criteria to return zero, one or more matching .
      * entities. This is a very generic query which will constrain the
      * result set to one or more of the supplied values.
-     * <p/>
+     * <p>
      * Each of the parameters can denote an exact match or a partial match. If
      * a partial match is required then the last character of the value must be
      * a '*'. In every other case the search will look for an exact match.
-     * <p/>
-     * All the values are optional. In the case where all the values are null
-     * then all the entities will be returned. In the case where two or more
-     * values are specified (i.e. rmName and entityName) then only entities
-     * satisfying both conditions will be returned.
-     *
-     * @param service      a reference to the archetype service
-     * @param rmName       the reference model name (must be complete name)
-     * @param entityName   the name of the entity (partial or complete)
-     * @param conceptName  the concept name (partial or complete)
-     * @param instanceName the particular instance name
-     * @param activeOnly   whether to retrieve only the active objects
-     * @param firstResult  the first result to retrieve
-     * @param maxResults   the no. of results to retrieve
-     * @return IPage<IMObject>
-     * @throws ArchetypeServiceException if there is a problem executing the
-     *                                   service request
-     * @deprecated replaced by {@link #get(IArchetypeService, String, String,
-     *             String, boolean, int, int)}
-     */
-    @Deprecated
-    public static IPage<IMObject> get(IArchetypeService service, String rmName,
-                                      String entityName, String conceptName,
-                                      String instanceName, boolean activeOnly,
-                                      int firstResult, int maxResults) {
-        return get(service, entityName, conceptName, instanceName, activeOnly,
-                   firstResult, maxResults);
-    }
-
-    /**
-     * Uses the specified criteria to return zero, one or more matching .
-     * entities. This is a very generic query which will constrain the
-     * result set to one or more of the supplied values.
-     * <p/>
-     * Each of the parameters can denote an exact match or a partial match. If
-     * a partial match is required then the last character of the value must be
-     * a '*'. In every other case the search will look for an exact match.
-     * <p/>
+     * <p>
      * All the values are optional. In the case where all the values are null
      * then all the entities will be returned. In the case where two or more
      * values are specified (i.e. rmName and entityName) then only entities
@@ -319,7 +252,7 @@ public class ArchetypeQueryHelper {
     /**
      * Retrieve a list of IMObjects that match one or more of the supplied
      * short names. The short names are specified as an array of strings.
-     * <p/>
+     * <p>
      * The short names must be valid short names without wild card characters.
      *
      * @param service     a reference to the archetype service
@@ -348,7 +281,7 @@ public class ArchetypeQueryHelper {
      * @param service    the archetype service
      * @param descriptor the node descriptor
      * @return a list of candidates, or an empty list if the node doesn't have
-     *         a parent/child relationship
+     * a parent/child relationship
      */
     public static List<IMObject> getCandidates(IArchetypeService service,
                                                NodeDescriptor descriptor) {

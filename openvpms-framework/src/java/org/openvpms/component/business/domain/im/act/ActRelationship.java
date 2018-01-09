@@ -76,15 +76,6 @@ public class ActRelationship extends PeriodRelationship
     }
 
     /**
-     * @return Returns the parentChildRelationship.
-     * @deprecated use {@link #isParentChildRelationship()}
-     */
-    @Deprecated
-    public boolean getParentChildRelationship() {
-        return parentChildRelationship;
-    }
-
-    /**
      * Determines if this is a parent/child relationship between two acts.
      *
      * @param parentChildRelationship if <tt>true</true> it is a parent/child

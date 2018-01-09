@@ -47,7 +47,6 @@ import static org.junit.Assert.fail;
  * Test the {@link org.openvpms.component.business.service.archetype.IArchetypeService}.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceTestCase extends AbstractArchetypeServiceTest {

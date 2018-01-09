@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.model.object.Reference;
 
-import java.util.Date;
 import java.util.Map;
 
 
@@ -35,36 +34,7 @@ public class Participation extends IMObject implements org.openvpms.component.mo
     /**
      * Serial version identifier.
      */
-    private static final long serialVersionUID = 2L;
-
-    /**
-     * An integer representing the relative order of the participantion in
-     * relation to other participations of the same act.
-     */
-    private int sequence;
-
-    /**
-     * Indicates the mode that the {@link Entity} is participating in the
-     * {@link Act}
-     * <p/>
-     * TODO Look at incorporating with the terminology service
-     */
-    private String mode;
-
-    /**
-     * The time that this participation was activitated
-     */
-    private Date activeStartTime;
-
-    /**
-     * The time that this participation was inactivated
-     */
-    private Date activeEndTime;
-
-    /**
-     * The percentage of participation in the specified {@link Act}.
-     */
-    private int percentage;
+    private static final long serialVersionUID = 3L;
 
     /**
      * Reference to the associated entity
@@ -103,75 +73,6 @@ public class Participation extends IMObject implements org.openvpms.component.mo
     }
 
     /**
-     * @return Returns the mode.
-     * @deprecated no replacement
-     */
-    public String getMode() {
-        return mode;
-    }
-
-    /**
-     * @param mode The mode to set.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-
-    /**
-     * @return Returns the sequence.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public int getSequence() {
-        return sequence;
-    }
-
-    /**
-     * @param sequence The sequence to set.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public void setSequence(int sequence) {
-        this.sequence = sequence;
-    }
-
-    /**
-     * @return Returns the activeEndTime.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public Date getActiveEndTime() {
-        return activeEndTime;
-    }
-
-    /**
-     * @param activeEndTime The activeEndTime to set.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public void setActiveEndTime(Date activeEndTime) {
-        this.activeEndTime = activeEndTime;
-    }
-
-    /**
-     * @return <tt>null</tt>
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public Date getActiveStartTime() {
-        return activeStartTime;
-    }
-
-    /**
-     * @param activeStartTime The activeStartTime to set.
-     */
-    public void setActiveStartTime(Date activeStartTime) {
-        this.activeStartTime = activeStartTime;
-    }
-
-    /**
      * @return Returns the act.
      */
     public IMObjectReference getAct() {
@@ -183,24 +84,6 @@ public class Participation extends IMObject implements org.openvpms.component.mo
      */
     public IMObjectReference getEntity() {
         return entity;
-    }
-
-    /**
-     * @return Returns the percentage.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public int getPercentage() {
-        return percentage;
-    }
-
-    /**
-     * @param percentage The percentage to set.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public void setPercentage(int percentage) {
-        this.percentage = percentage;
     }
 
     /**

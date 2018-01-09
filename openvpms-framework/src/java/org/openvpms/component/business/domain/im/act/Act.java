@@ -18,7 +18,6 @@
 package org.openvpms.component.business.domain.im.act;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -26,7 +25,6 @@ import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -102,18 +100,6 @@ public class Act extends IMObject implements org.openvpms.component.model.act.Ac
      */
     public Act() {
         // do nothing
-    }
-
-    /**
-     * Constructs an instance of an act.
-     *
-     * @param archetypeId the archetype id constraining this object
-     * @param details     dynamic details of the act.
-     */
-    @Deprecated
-    public Act(ArchetypeId archetypeId, Map<String, Object> details) {
-        super(archetypeId);
-        setDetails(details);
     }
 
     /**

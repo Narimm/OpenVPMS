@@ -213,7 +213,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-core</artifactId>
+            <artifactId>openvpms-framework-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

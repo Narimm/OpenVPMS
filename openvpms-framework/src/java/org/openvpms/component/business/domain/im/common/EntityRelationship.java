@@ -40,11 +40,6 @@ public class EntityRelationship extends SequencedRelationship
     private EntityIdentity identity;
 
     /**
-     * TODO Definition for reason
-     */
-    private String reason;
-
-    /**
      * Default constructor.
      */
     public EntityRelationship() {
@@ -72,28 +67,10 @@ public class EntityRelationship extends SequencedRelationship
     }
 
     /**
-     * @return Returns the reason.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public String getReason() {
-        return reason;
-    }
-
-    /**
      * @param identity The identity to set.
      */
     public void setIdentity(EntityIdentity identity) {
         this.identity = identity;
-    }
-
-    /**
-     * @param reason The reason to set.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public void setReason(String reason) {
-        this.reason = reason;
     }
 
     /* (non-Javadoc)

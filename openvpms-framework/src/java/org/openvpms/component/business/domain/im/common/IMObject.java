@@ -16,15 +16,12 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.lang.builder.StandardToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 
 import java.io.Serializable;
@@ -94,8 +91,7 @@ public class IMObject implements org.openvpms.component.model.object.IMObject, S
     /**
      * Dynamic details of the object.
      */
-    private Map<String, Object> details
-            = new HashMap<String, Object>();
+    private Map<String, Object> details = new HashMap<>();
 
     /**
      * Serialization version identifier.
@@ -162,24 +158,6 @@ public class IMObject implements org.openvpms.component.model.object.IMObject, S
      */
     public void setId(long id) {
         this.id = id;
-    }
-
-    /**
-     * @return Returns the id.
-     * @deprecated use {@link #getId).
-     */
-    @Deprecated
-    public long getUid() {
-        return getId();
-    }
-
-    /**
-     * @param id The id to set.
-     * @deprecated use {@link #setId(long)}
-     */
-    @Deprecated
-    public void setUid(long id) {
-        setId(id);
     }
 
     /* (non-Javadoc)
@@ -329,53 +307,6 @@ public class IMObject implements org.openvpms.component.model.object.IMObject, S
      */
     public void setDetails(Map<String, Object> details) {
         this.details = details;
-    }
-
-    /**
-     * This method will retrieve a reference to a value collection. If the
-     * returned object is already an instance of a collection then it will
-     * return it as is. If the returned object is an instance of a Map then
-     * it will return the value objects
-     *
-     * @param path a xpath expression in to this object
-     * @return Pointer
-     * a pointer to the location
-     */
-    @Deprecated
-    public Pointer pathToCollection(String path) {
-        Pointer ptr = pathToObject(path);
-        if (ptr != null) {
-            Object obj = ptr.getValue();
-            if (obj instanceof Map) {
-                ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
-            } else if (obj instanceof PropertyCollection) {
-                ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
-            }
-        }
-
-        return ptr;
-    }
-
-    /**
-     * This method will retrieve an attribute of this object
-     * give an xpath
-     *
-     * @param path an xpath expression in to this object
-     * @return Pointer
-     * a pointer ot the object or null.
-     */
-    @Deprecated
-    public Pointer pathToObject(String path) {
-        Pointer ptr = null;
-
-        try {
-            ptr = JXPathHelper.newContext(this).getPointer(path);
-        } catch (Exception exception) {
-            log.warn("No path to: " + path + " for object of type: "
-                     + this.getClass().getName(), exception);
-        }
-
-        return ptr;
     }
 
     /**

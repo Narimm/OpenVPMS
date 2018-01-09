@@ -18,8 +18,6 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
-import java.util.Map;
-
 
 /**
  * A class representing the various internal and external identifiers for a
@@ -34,11 +32,6 @@ import java.util.Map;
 public class EntityIdentity extends IMObject implements org.openvpms.component.model.entity.EntityIdentity {
 
     /**
-     * Serialization version identifier.
-     */
-    private static final long serialVersionUID = 2L;
-
-    /**
      * The system identity
      */
     private String identity;
@@ -47,6 +40,11 @@ public class EntityIdentity extends IMObject implements org.openvpms.component.m
      * Reference the Entity that this object references
      */
     private Entity entity;
+
+    /**
+     * Serialization version identifier.
+     */
+    private static final long serialVersionUID = 2L;
 
 
     /**
@@ -65,23 +63,6 @@ public class EntityIdentity extends IMObject implements org.openvpms.component.m
     public EntityIdentity(ArchetypeId archetypeId, String identity) {
         super(archetypeId);
         setIdentity(identity);
-    }
-
-    /**
-     * Constructs a valid instance of an entity identity.
-     *
-     * @param archetypeId the archetype id constraining this object
-     * @param identity    the identity
-     * @param details     the details of this entity identity
-     * @throws IllegalArgumentException thrown if the preconditions are not met.
-     */
-    @Deprecated
-    public EntityIdentity(ArchetypeId archetypeId,
-                          String identity, Map<String, Object> details) {
-        this(archetypeId, identity);
-        if (details != null) {
-            setDetails(details);
-        }
     }
 
     /**

@@ -176,16 +176,6 @@ public class IMObjectReference implements Reference, Serializable, Cloneable {
     }
 
     /**
-     * Return the archetypeId as a string.
-     *
-     * @return String
-     */
-    @Deprecated
-    public String getArchetypeIdAsString() {
-        return archetypeId.getQualifiedName();
-    }
-
-    /**
      * Returns the object's persistent identifier.
      *
      * @return the object's persistent identifier, or {@code -1} if the object is not persistent.

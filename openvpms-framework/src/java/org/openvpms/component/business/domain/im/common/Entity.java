@@ -17,12 +17,10 @@
 package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -83,30 +81,6 @@ public class Entity extends IMObject implements org.openvpms.component.model.ent
      */
     public Entity(ArchetypeId archetypeId, String name, String description) {
         super(archetypeId, name, description);
-    }
-
-    /**
-     * Constructs an instance of a base entity.
-     *
-     * @param archetypeId the archetype id constraining this object
-     * @param name        the name of the entity.
-     * @param description the description of the archetype
-     * @param details     dynamic details of the act.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public Entity(ArchetypeId archetypeId, String name,
-                  String description, Map<String, Object> details) {
-        super(archetypeId, name, description);
-        if (details != null) {
-            setDetails(details);
-        }
-
-        // check that a name was specified
-        if (StringUtils.isEmpty(name)) {
-            throw new EntityException(
-                    EntityException.ErrorCode.NoNameSpecified);
-        }
     }
 
     /**

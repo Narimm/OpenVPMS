@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.service.jxpath;
@@ -42,7 +42,6 @@ import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -195,22 +194,6 @@ public class JXPathTestCase {
         assertTrue(ctx.getValue(".[1]/details/firstName").equals("Jim"));
         assertTrue(ctx.getValue(".[2]/details/lastName").equals("Feeney"));
         assertTrue(ctx.getValue(".[3]/details/title").equals("MS"));
-    }
-
-    /**
-     * Test that path to collection works
-     */
-    @Test
-    public void testPathToCollection() {
-
-        // retrieve the node descriptor for animal.pet
-        ArchetypeDescriptor adesc = (ArchetypeDescriptor) service.create("descriptor.archetype");
-        assertNotNull(adesc);
-        ArchetypeDescriptor metaDesc = service.getArchetypeDescriptor(adesc.getArchetypeId());
-        TestPage page = new TestPage(adesc, metaDesc);
-        assertTrue(getValue(page,
-                            "pathToCollection(model,  node/nodeDescriptors/nodeDescriptors/path)")
-                           instanceof Collection);
     }
 
     /**
