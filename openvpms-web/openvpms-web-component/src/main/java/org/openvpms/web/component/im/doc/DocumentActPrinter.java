@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -19,7 +19,7 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.PrintException;
@@ -84,7 +84,7 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
      * Returns a document corresponding to that which would be printed.
      *
      * @return a document
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException for any error
+     * @throws org.openvpms.component.exception.OpenVPMSException for any error
      */
     @Override
     public Document getDocument() {

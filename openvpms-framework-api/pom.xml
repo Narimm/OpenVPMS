@@ -42,7 +42,10 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>
-                            org.openvpms.component.exception.*,org.openvpms.component.i18n.*,org.openvpms.component.model.*;version="${project.version}"
+                            org.openvpms.component.exception.*,
+                            org.openvpms.component.i18n.*,
+                            org.openvpms.component.model.*,
+                            org.openvpms.component.service.archetype.*;version="${project.version}"
                         </Export-Package>
                     </instructions>
                 </configuration>

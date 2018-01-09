@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.archetype;
@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -224,8 +225,7 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
      * Loads archetype descriptors from the supplied stream.
      *
      * @param stream the stream to read
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
-     *          for any error
+     * @throws OpenVPMSException for any error
      */
     private void loadArchetypes(InputStream stream) {
         ArchetypeDescriptors descriptors
@@ -249,7 +249,7 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
      * Loads assertion type descriptors from the supplied stream.
      *
      * @param stream the stream to read
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     * @throws org.openvpms.component.exception.OpenVPMSException
      *          for any error
      */
     private void loadAssertions(InputStream stream) {

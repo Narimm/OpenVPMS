@@ -11,13 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.dao.hibernate.im.query;
-
-// commons-resources
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -26,7 +24,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * This exception is thrown by the query builders.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-07-10 15:32:07 +1000 (Tue, 10 Jul 2007) $
  */
 public class QueryBuilderException extends OpenVPMSException {
 

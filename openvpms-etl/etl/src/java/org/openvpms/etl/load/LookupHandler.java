@@ -26,9 +26,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
 import org.openvpms.component.model.archetype.NamedProperty;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -16,8 +16,8 @@
 
 package org.openvpms.sms;
 
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.i18n.Message;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**

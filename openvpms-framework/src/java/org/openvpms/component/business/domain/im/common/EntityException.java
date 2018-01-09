@@ -25,7 +25,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * with entity processing
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
  */
 public class EntityException extends OpenVPMSException {
 

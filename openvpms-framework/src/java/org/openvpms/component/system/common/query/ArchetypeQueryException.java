@@ -17,8 +17,6 @@
 
 package org.openvpms.component.system.common.query;
 
-// commons-resources
-
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
@@ -27,7 +25,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * This exception is thrown by the query API.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
  */
 public class ArchetypeQueryException extends OpenVPMSException {
 
