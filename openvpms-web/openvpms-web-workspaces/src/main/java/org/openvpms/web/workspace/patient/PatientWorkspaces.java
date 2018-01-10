@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -23,6 +23,7 @@ import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.component.workspace.Workspace;
 import org.openvpms.web.workspace.patient.info.InformationWorkspace;
 import org.openvpms.web.workspace.patient.mr.PatientRecordWorkspace;
+import org.openvpms.web.workspace.patient.mr.RecordBrowser;
 
 
 /**
@@ -64,7 +65,10 @@ public class PatientWorkspaces extends AbstractWorkspaces {
         if (InsuranceArchetypes.POLICY.equals(shortName)) {
             result = records;
             records.getComponent();
-            records.getBrowser().showInsurance();
+            RecordBrowser browser = records.getBrowser();
+            if (browser != null) {
+                browser.showInsurance();
+            }
         } else {
             for (Workspace workspace : getWorkspaces()) {
                 if (workspace.canUpdate(shortName)) {

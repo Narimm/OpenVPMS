@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
@@ -47,6 +47,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
@@ -457,6 +458,7 @@ public class PatientSummary extends PartySummary {
         Button button = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
             public void onAction(ActionEvent event) {
                 ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
+                ContextHelper.setPatient(instance.getContext(), patient);
                 instance.switchTo(InsuranceArchetypes.POLICY);
             }
         });
