@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.user;
@@ -25,9 +25,11 @@ import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.ReferenceDataService;
 import org.openvpms.smartflow.client.SyncState;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.prefs.PreferencesDialog;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -54,6 +56,11 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
     private final FlowSheetServiceFactory flowSheetServiceFactory;
 
     /**
+     * Edit preferences button id.
+     */
+    private static final String EDIT_PREFERENCES_ID = "button.editPreferences";
+
+    /**
      * Default preferences button id.
      */
     private static final String DEFAULT_PREFERENCES_ID = "button.defaultPreferences";
@@ -62,6 +69,7 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
      * Reset preferences button id.
      */
     private static final String RESET_PREFERENCES_ID = "button.resetPreferences";
+
 
     /**
      * Synchronise with Smart Flow Sheet button identifier.
@@ -97,6 +105,12 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
                 onDefaultPreferences();
             }
         });
+        buttons.add(EDIT_PREFERENCES_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onEditPreferences();
+            }
+        });
         buttons.add(RESET_PREFERENCES_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -124,6 +138,7 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(DEFAULT_PREFERENCES_ID, getContext().getPractice() != null);
+        buttons.setEnabled(EDIT_PREFERENCES_ID, enable);
         buttons.setEnabled(RESET_PREFERENCES_ID, enable);
     }
 
@@ -132,8 +147,24 @@ public class UserCRUDWindow extends ResultSetCRUDWindow<User> {
      */
     private void onDefaultPreferences() {
         PreferencesDialog dialog = new PreferencesDialog(getContext().getPractice(), null, getContext());
-        dialog.setTitle(Messages.get("admin.user.prefs.title"));
+        dialog.setTitle(Messages.get("admin.user.prefs.default.title"));
         dialog.show();
+    }
+
+    /**
+     * Edits preferences for the selected user.
+     */
+    private void onEditPreferences() {
+        User user = IMObjectHelper.reload(getObject());
+        if (user != null) {
+            Context context = getContext();
+            PreferencesDialog dialog = new PreferencesDialog(user, context.getPractice(), true,
+                                                             new LocalContext(context));
+            dialog.setTitle(Messages.format("admin.user.prefs.edit.title", user.getName()));
+            dialog.show();
+        } else {
+            onRefresh(getObject());
+        }
     }
 
     /**
