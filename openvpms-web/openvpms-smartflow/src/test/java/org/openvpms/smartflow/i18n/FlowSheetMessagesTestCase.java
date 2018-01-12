@@ -61,7 +61,8 @@ public class FlowSheetMessagesTestCase {
     public void testErrorMessages() {
         check(FlowSheetMessages.failedToGetHospitalization(patient),
               "SFS-0100: Failed to get hospitalization for Fido");
-        check(FlowSheetMessages.failedToCreateFlowSheet(patient), "SFS-0101: Failed to create Flow Sheet for Fido");
+        check(FlowSheetMessages.failedToCreateFlowSheet(patient, "foo"),
+              "SFS-0101: Failed to create Flow Sheet for Fido\n\nfoo");
         check(FlowSheetMessages.failedToDownloadPDF(patient, "foo.pdf"),
               "SFS-0102: Failed to download foo.pdf PDF for Fido");
         check(FlowSheetMessages.notAuthorised(), "SFS-0103: Failed to connect to Smart Flow Sheet.\n" +
@@ -104,8 +105,10 @@ public class FlowSheetMessagesTestCase {
               "SFS-0116: Failed to discharge Fido from Smart Flow Sheet: foo");
         check(FlowSheetMessages.failedToGetAnaesthetics(patient),
               "SFS-0117: Failed to get anaesthetics for Fido");
-        check(FlowSheetMessages.accessToDocumentDenied("foo"),
-              "SFS-0118: Failed to download document: foo");
+        check(FlowSheetMessages.accessToDocumentDenied("foo", "bar"),
+              "SFS-0118: Failed to download foo\n\nbar");
+        check(FlowSheetMessages.unsupportedTimeZone("foo"),
+              "SFS-0119: Smart Flow Sheet does not support the system time zone: foo");
     }
 
     /**

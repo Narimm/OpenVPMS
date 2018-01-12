@@ -19,8 +19,8 @@ package org.openvpms.smartflow.client;
 import org.apache.commons.logging.Log;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.openvpms.component.i18n.Message;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 
@@ -34,6 +34,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.Collections;
 import java.util.TimeZone;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -119,18 +120,23 @@ public abstract class FlowSheetService {
      * Creates a JAX-RS client.
      *
      * @return a new JAX-RS client
+     * @throws FlowSheetException if the timezone is unsupported
      */
     protected javax.ws.rs.client.Client getClient() {
+        if (timeZone.getID().startsWith("GMT")) {
+            // see OVPMS-1995
+            throw new FlowSheetException(FlowSheetMessages.unsupportedTimeZone(timeZone.getID()));
+        }
         ObjectMapperContextResolver resolver = new ObjectMapperContextResolver(timeZone);
         ClientConfig config = new ClientConfig()
                 .register(resolver)
                 .register(JacksonFeature.class)
                 .register(new ErrorResponseFilter(resolver.getContext(Object.class)));
-        javax.ws.rs.client.Client resource = ClientBuilder.newClient(config);
         if (log.isDebugEnabled()) {
-            resource.register(new LoggingFilter(new DebugLog(log), true));
+            config.register(new LoggingFeature(new DebugLog(log), Level.INFO, LoggingFeature.Verbosity.PAYLOAD_TEXT,
+                                               null));
         }
-        return resource;
+        return ClientBuilder.newClient(config);
     }
 
     /**
@@ -229,10 +235,20 @@ public abstract class FlowSheetService {
             this.log = log;
         }
 
+        /**
+         * Log a message, with no arguments.
+         * <p>
+         * If the logger is currently enabled for the given message
+         * level then the given message is forwarded to all the
+         * registered output Handler objects.
+         * <p>
+         *
+         * @param level One of the message level identifiers, e.g., SEVERE
+         * @param msg   The string message (or a key in the message catalog)
+         */
         @Override
-        public void info(String msg) {
+        public void log(Level level, String msg) {
             log.debug(msg);
         }
-
     }
 }

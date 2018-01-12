@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.help;
@@ -59,6 +59,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.INSET;
@@ -312,7 +313,8 @@ public class HelpDialog extends ModalDialog {
         version.setText(Messages.format("helpdialog.version", Version.VERSION, Version.REVISION));
 
         Label locale = LabelFactory.create(null, "small");
-        locale.setText(Messages.format("helpdialog.locale", Locale.getDefault().toLanguageTag()));
+        locale.setText(Messages.format("helpdialog.locale", Locale.getDefault().toLanguageTag(),
+                                       TimeZone.getDefault().getID()));
 
         Row labelRow = RowFactory.create("InsetX", RowFactory.create(Styles.CELL_SPACING, version, locale));
         RowLayoutData right = new RowLayoutData();

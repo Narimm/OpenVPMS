@@ -225,7 +225,7 @@ public class HospitalizationService extends FlowSheetService {
 
             @Override
             public Message failed(Exception exception) {
-                return FlowSheetMessages.failedToCreateFlowSheet(context.getPatient());
+                return FlowSheetMessages.failedToCreateFlowSheet(context.getPatient(), exception.getMessage());
             }
         };
         call(Hospitalizations.class, call);
@@ -467,7 +467,7 @@ public class HospitalizationService extends FlowSheetService {
         } catch (Exception exception) {
             checkSSL(exception);
             if (isAccessToDocumentDenied(exception)) {
-                throw new FlowSheetException(FlowSheetMessages.accessToDocumentDenied(exception.getMessage()),
+                throw new FlowSheetException(FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage()),
                                              exception);
             }
             throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name), exception);
@@ -500,7 +500,7 @@ public class HospitalizationService extends FlowSheetService {
             @Override
             public Message failed(Exception exception) {
                 if (isAccessToDocumentDenied(exception)) {
-                    return FlowSheetMessages.accessToDocumentDenied(exception.getMessage());
+                    return FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage());
                 }
                 return FlowSheetMessages.failedToDownloadPDF(patient, name);
             }

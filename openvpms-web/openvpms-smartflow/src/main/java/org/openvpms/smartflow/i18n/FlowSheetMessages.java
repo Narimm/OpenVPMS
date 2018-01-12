@@ -46,10 +46,11 @@ public class FlowSheetMessages {
      * Creates a message indicating that a flow sheet couldn't be created for a patient.
      *
      * @param patient the patient
+     * @param message the cause of the failure
      * @return a new message
      */
-    public static Message failedToCreateFlowSheet(Party patient) {
-        return messages.create(101, patient.getName());
+    public static Message failedToCreateFlowSheet(Party patient, String message) {
+        return messages.create(101, patient.getName(), message);
     }
 
     /**
@@ -214,11 +215,22 @@ public class FlowSheetMessages {
      * Creates a message indicating that access to documents have been denied by documents being turned off on the
      * SFS Settings / Documents management page.
      *
+     * @param name    the document name
      * @param message the SFS error message
      * @return a new message
      */
-    public static Message accessToDocumentDenied(String message) {
-        return messages.create(118, message);
+    public static Message accessToDocumentDenied(String name, String message) {
+        return messages.create(118, name, message);
+    }
+
+    /**
+     * Creates a message indicating the Smart Flow Sheet does not support the specified time zone.
+     *
+     * @param id the time zone identifier
+     * @return a new message
+     */
+    public static Message unsupportedTimeZone(String id) {
+        return messages.create(119, id);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
@@ -196,7 +196,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
             client.add(context, 2, -1, null);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
-            assertEquals("SFS-0101: Failed to create Flow Sheet for Fido", exception.getMessage());
+            assertEquals("SFS-0101: Failed to create Flow Sheet for Fido\n\nHospitalization already exists",
+                         exception.getMessage());
             Throwable cause = exception.getCause();
             assertTrue(cause instanceof BadRequestException);
             assertEquals("Hospitalization already exists", cause.getMessage());

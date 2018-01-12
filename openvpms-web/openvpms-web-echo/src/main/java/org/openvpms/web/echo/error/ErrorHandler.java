@@ -32,28 +32,6 @@ public abstract class ErrorHandler {
     private static ErrorHandler instance = LoggingErrorHandler.INSTANCE;
 
     /**
-     * Registers an instance to handle errors.
-     *
-     * @param handler the handler
-     */
-    public static void setInstance(ErrorHandler handler) {
-        if (handler == null) {
-            throw new IllegalArgumentException("Argument 'handler' is null");
-        }
-        instance = handler;
-    }
-
-    /**
-     * Returns the singleton instance.
-     *
-     * @return the singleton instance
-     */
-    public static ErrorHandler getInstance() {
-        return instance;
-    }
-
-
-    /**
      * Handles an error.
      *
      * @param cause the cause of the error
@@ -73,11 +51,43 @@ public abstract class ErrorHandler {
     /**
      * Handles an error.
      *
+     * @param message  the error message
+     * @param cause    the cause. May be {@code null}
+     * @param listener the listener. May be {@code null}
+     */
+    public void error(String message, Throwable cause, WindowPaneListener listener) {
+        error(null, message, cause, listener);
+    }
+
+    /**
+     * Handles an error.
+     *
      * @param title    the error title. May be {@code null}
      * @param message  the error message
      * @param cause    the cause. May be {@code null}
      * @param listener the listener. May be {@code null}
      */
     public abstract void error(String title, String message, Throwable cause, WindowPaneListener listener);
+
+    /**
+     * Registers an instance to handle errors.
+     *
+     * @param handler the handler
+     */
+    public static void setInstance(ErrorHandler handler) {
+        if (handler == null) {
+            throw new IllegalArgumentException("Argument 'handler' is null");
+        }
+        instance = handler;
+    }
+
+    /**
+     * Returns the singleton instance.
+     *
+     * @return the singleton instance
+     */
+    public static ErrorHandler getInstance() {
+        return instance;
+    }
 
 }
