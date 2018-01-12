@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -105,8 +105,8 @@ public class FlowSheetEditDialog extends PopupDialog {
     public int getDepartmentId() {
         int result = -1;
         Object value = departments.getSelectedItem();
-        if (value instanceof Department) {
-            result = ((Department) value).getDepartmentId();
+        if (value instanceof Integer) {
+            result = (Integer) value;
         }
         return result;
     }
