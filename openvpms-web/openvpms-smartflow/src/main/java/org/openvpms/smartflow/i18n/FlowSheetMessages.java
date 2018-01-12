@@ -74,7 +74,7 @@ public class FlowSheetMessages {
 
     /**
      * Creates a message indicating that SSL handing shaking has failed.
-     * <p/>
+     * <p>
      * This typically indicates that the Start Com certification authority has not been imported into cacerts.
      *
      * @param url the url being connected to
@@ -208,6 +208,17 @@ public class FlowSheetMessages {
      */
     public static Message failedToGetAnaesthetics(Party patient) {
         return messages.create(117, patient.getName());
+    }
+
+    /**
+     * Creates a message indicating that access to documents have been denied by documents being turned off on the
+     * SFS Settings / Documents management page.
+     *
+     * @param message the SFS error message
+     * @return a new message
+     */
+    public static Message accessToDocumentDenied(String message) {
+        return messages.create(118, message);
     }
 
     /**

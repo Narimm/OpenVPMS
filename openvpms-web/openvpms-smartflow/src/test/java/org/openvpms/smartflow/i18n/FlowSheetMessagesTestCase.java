@@ -104,6 +104,8 @@ public class FlowSheetMessagesTestCase {
               "SFS-0116: Failed to discharge Fido from Smart Flow Sheet: foo");
         check(FlowSheetMessages.failedToGetAnaesthetics(patient),
               "SFS-0117: Failed to get anaesthetics for Fido");
+        check(FlowSheetMessages.accessToDocumentDenied("foo"),
+              "SFS-0118: Failed to download document: foo");
     }
 
     /**

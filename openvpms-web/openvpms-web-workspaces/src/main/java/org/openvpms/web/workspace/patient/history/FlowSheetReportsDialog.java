@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -20,6 +20,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.smartflow.client.FlowSheetException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
@@ -27,6 +28,7 @@ import org.openvpms.smartflow.model.Anesthetic;
 import org.openvpms.smartflow.model.Anesthetics;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -40,7 +42,7 @@ import java.util.List;
 
 /**
  * Flow Sheets Reports Import dialog.
- * <p/>
+ * <p>
  * Imports Smart Flow Sheet reports associated with a visit, and links them to the visit.
  *
  * @author Tim Anderson
@@ -51,11 +53,6 @@ public class FlowSheetReportsDialog extends PopupDialog {
      * The patient context.
      */
     private final PatientContext context;
-
-    /**
-     * The hospitalization service.
-     */
-    private HospitalizationService service;
 
     /**
      * The anesthetics.
@@ -86,6 +83,11 @@ public class FlowSheetReportsDialog extends PopupDialog {
      * Determines if the anesthetics report is imported.
      */
     private final CheckBox anestheticsCheckBox;
+
+    /**
+     * The hospitalization service.
+     */
+    private HospitalizationService service;
 
     /**
      * Constructs a {@link FlowSheetReportsDialog}.
@@ -129,39 +131,34 @@ public class FlowSheetReportsDialog extends PopupDialog {
         }
     }
 
-    private List<Anesthetic> getAnesthetics(PatientContext context) {
-        List<Anesthetic> result = Collections.emptyList();
-        Anesthetics anesthetics = service.getAnesthetics(context.getPatient(), context.getVisit());
-        if (anesthetics.getAnesthetics() != null) {
-            result = anesthetics.getAnesthetics();
-        }
-        return result;
-    }
-
     /**
      * Invoked when the 'OK' button is pressed. This sets the action and closes
      * the window.
      */
     @Override
     protected void onOK() {
-        if (medicalRecordsCheckBox.isSelected()) {
-            service.saveMedicalRecords(context);
-        }
-        if (billingCheckBox.isSelected()) {
-            service.saveBillingReport(context);
-        }
-        if (notesCheckBox.isSelected()) {
-            service.saveNotesReport(context);
-        }
-        if (flowSheetCheckBox.isSelected()) {
-            service.saveFlowSheetReport(context);
-        }
-        if (anestheticsCheckBox.isSelected()) {
-            for (Anesthetic anesthetic : anesthetics) {
-                service.saveAnestheticReports(context, anesthetic);
+        try {
+            if (medicalRecordsCheckBox.isSelected()) {
+                service.saveMedicalRecords(context);
             }
+            if (billingCheckBox.isSelected()) {
+                service.saveBillingReport(context);
+            }
+            if (notesCheckBox.isSelected()) {
+                service.saveNotesReport(context);
+            }
+            if (flowSheetCheckBox.isSelected()) {
+                service.saveFlowSheetReport(context);
+            }
+            if (anestheticsCheckBox.isSelected()) {
+                for (Anesthetic anesthetic : anesthetics) {
+                    service.saveAnestheticReports(context, anesthetic);
+                }
+            }
+            super.onOK();
+        } catch (FlowSheetException exception) {
+            ErrorHandler.getInstance().error(exception.getMessage(), exception);
         }
-        super.onOK();
     }
 
     /**
@@ -175,6 +172,15 @@ public class FlowSheetReportsDialog extends PopupDialog {
         Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecordsCheckBox, billingCheckBox, notesCheckBox,
                                              flowSheetCheckBox, anestheticsCheckBox);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
+    }
+
+    private List<Anesthetic> getAnesthetics(PatientContext context) {
+        List<Anesthetic> result = Collections.emptyList();
+        Anesthetics anesthetics = service.getAnesthetics(context.getPatient(), context.getVisit());
+        if (anesthetics.getAnesthetics() != null) {
+            result = anesthetics.getAnesthetics();
+        }
+        return result;
     }
 
     /**

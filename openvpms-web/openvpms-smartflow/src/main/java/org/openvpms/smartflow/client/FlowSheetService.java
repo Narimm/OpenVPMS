@@ -45,6 +45,11 @@ import java.util.logging.Logger;
 public abstract class FlowSheetService {
 
     /**
+     * Empty form.
+     */
+    protected static final Form EMPTY_FORM = new Form();
+
+    /**
      * The Smart Flow Sheet service root URL.
      */
     private final String url;
@@ -68,11 +73,6 @@ public abstract class FlowSheetService {
      * The logger.
      */
     private final Log log;
-
-    /**
-     * Empty form.
-     */
-    protected static final Form EMPTY_FORM = new Form();
 
     /**
      * Constructs a {@link FlowSheetService}.
@@ -173,11 +173,11 @@ public abstract class FlowSheetService {
      * Makes a call to a resource, handling common exceptions.
      *
      * @param resource the resource type
-     * @param call the call to make on the resource
+     * @param call     the call to make on the resource
      * @return the result of the call
      * @throws FlowSheetException for any error
      */
-    protected  <T, R> T call(Class<R> resource, Call<T, R> call) {
+    protected <T, R> T call(Class<R> resource, Call<T, R> call) {
         T result = null;
         javax.ws.rs.client.Client client = getClient();
         try {
@@ -197,7 +197,7 @@ public abstract class FlowSheetService {
         return result;
     }
 
-    protected interface Call<T, R>  {
+    protected interface Call<T, R> {
 
         /**
          * Makes a call to a resource.

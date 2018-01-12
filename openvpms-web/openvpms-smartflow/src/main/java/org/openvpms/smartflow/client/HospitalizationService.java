@@ -52,6 +52,7 @@ import org.openvpms.smartflow.service.Hospitalizations;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -173,7 +174,7 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Adds a hospitalization for a patient.
-     * <p/>
+     * <p>
      * The patient should have a current weight.
      *
      * @param context      the patient context
@@ -392,7 +393,7 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Saves an anaesthetic sheet report and associated anaesthetic records report for a patient.
-     * <p/>
+     * <p>
      * If there are existing reports with the same surgery identifier associated with the patient visit, they will
      * be versioned.
      *
@@ -406,7 +407,7 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Saves an anaesthetic sheet report and associated anaesthetic records report for a patient.
-     * <p/>
+     * <p>
      * If there are existing reports with the same surgery identifier associated with the patient visit, they will
      * be versioned.
      *
@@ -453,8 +454,8 @@ public class HospitalizationService extends FlowSheetService {
      * @param client    the client
      * @throws FlowSheetException for any error
      */
-    private void saveAnaestheticReport(String name, String identity, Party patient, Act visit, User clinician, String path,
-                                       javax.ws.rs.client.Client client) {
+    private void saveAnaestheticReport(String name, String identity, Party patient, Act visit, User clinician,
+                                       String path, javax.ws.rs.client.Client client) {
         try {
             WebTarget target = client.target(path);
             Response response = target.request().headers(getHeaders()).get();
@@ -465,13 +466,17 @@ public class HospitalizationService extends FlowSheetService {
             notAuthorised(exception);
         } catch (Exception exception) {
             checkSSL(exception);
+            if (isAccessToDocumentDenied(exception)) {
+                throw new FlowSheetException(FlowSheetMessages.accessToDocumentDenied(exception.getMessage()),
+                                             exception);
+            }
             throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name), exception);
         }
     }
 
     /**
      * Saves a report to the patient history.
-     * <p/>
+     * <p>
      * If an instance of the report is already present, it will be versioned.
      *
      * @param name      the report name
@@ -494,6 +499,9 @@ public class HospitalizationService extends FlowSheetService {
 
             @Override
             public Message failed(Exception exception) {
+                if (isAccessToDocumentDenied(exception)) {
+                    return FlowSheetMessages.accessToDocumentDenied(exception.getMessage());
+                }
                 return FlowSheetMessages.failedToDownloadPDF(patient, name);
             }
         };
@@ -502,7 +510,7 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Saves a report to the patient history.
-     * <p/>
+     * <p>
      * If an instance of the report is already present, it will be versioned.
      *
      * @param response  the HTTP response
@@ -570,6 +578,18 @@ public class HospitalizationService extends FlowSheetService {
             bean.setNodeParticipant("clinician", clinician);
         }
         return act;
+    }
+
+    /**
+     * Determines if an exception is an {@link WebApplicationException} with a custom 465 http status code indicating
+     * that access to documents have been denied.
+     *
+     * @param exception the exception
+     * @return {@code true} if the exception indicates that access to documents have been denied
+     */
+    private boolean isAccessToDocumentDenied(Throwable exception) {
+        return exception instanceof WebApplicationException
+               && ((WebApplicationException) exception).getResponse().getStatus() == 465;
     }
 
     /**
@@ -665,7 +685,7 @@ public class HospitalizationService extends FlowSheetService {
 
     /**
      * Returns the patient colour.
-     * <p/>
+     * <p>
      * This allows for the fact that some practices use lookups for the colour node.
      *
      * @param bean the patient bean
