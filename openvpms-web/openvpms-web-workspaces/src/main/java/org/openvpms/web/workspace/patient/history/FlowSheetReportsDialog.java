@@ -164,7 +164,6 @@ public class FlowSheetReportsDialog extends PopupDialog {
     /**
      * Lays out the component prior to display.
      * This implementation is a no-op.
-     * +
      */
     @Override
     protected void doLayout() {
@@ -174,6 +173,13 @@ public class FlowSheetReportsDialog extends PopupDialog {
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
     }
 
+    /**
+     * Returns the anaesthetics for a patient.
+     *
+     * @param context the patient context
+     * @return the anaesthetics
+     * @throws FlowSheetException if the sheet cannot be retrieved
+     */
     private List<Anesthetic> getAnesthetics(PatientContext context) {
         List<Anesthetic> result = Collections.emptyList();
         Anesthetics anesthetics = service.getAnesthetics(context.getPatient(), context.getVisit());
