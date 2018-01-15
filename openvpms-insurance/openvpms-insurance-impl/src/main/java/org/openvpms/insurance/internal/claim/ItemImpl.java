@@ -27,6 +27,8 @@ import org.openvpms.insurance.claim.Item;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static org.openvpms.component.model.bean.Policies.active;
+
 /**
  * Default implementation of the {@link Item} interface.
  *
@@ -88,7 +90,7 @@ public class ItemImpl implements Item {
      */
     @Override
     public Product getProduct() {
-        return item.getAnyTarget("product", Product.class);
+        return item.getTarget("product", Product.class);
     }
 
     /**
@@ -99,7 +101,7 @@ public class ItemImpl implements Item {
     @Override
     public Entity getProductType() {
         IMObjectBean bean = service.getBean(getProduct());
-        return bean.getTarget("type", Entity.class);
+        return bean.getTarget("type", Entity.class, active());
     }
 
     /**

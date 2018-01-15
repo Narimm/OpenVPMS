@@ -199,7 +199,7 @@ public class ConditionImpl implements Condition {
      */
     private List<Invoice> collectInvoices() {
         List<Invoice> result = new ArrayList<>();
-        List<Act> claimItems = condition.getAllTargets("items", Act.class);
+        List<Act> claimItems = condition.getTargets("items", Act.class);
         Map<Reference, Act> invoicesByRef = new HashMap<>();
         Map<Reference, List<Item>> itemsByInvoice = new HashMap<>();
         for (Act item : claimItems) {

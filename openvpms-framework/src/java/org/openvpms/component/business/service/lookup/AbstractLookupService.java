@@ -230,7 +230,7 @@ public abstract class AbstractLookupService implements ILookupService {
      */
     public Lookup getLookup(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object, service);
-        return (Lookup) bean.getLookup(node, false);
+        return (Lookup) bean.getLookup(node);
     }
 
     /**

@@ -65,6 +65,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.openvpms.component.model.bean.Policies.active;
+
 /**
  * Submits insurance claims.
  *
@@ -372,7 +374,7 @@ public class ClaimSubmitter {
         final List<IMObject> objects = new ArrayList<>();
         objects.add(act);
         int missingAttachment = 0;
-        for (DocumentAct attachment : bean.getAllTargets("attachments", DocumentAct.class)) {
+        for (DocumentAct attachment : bean.getTargets("attachments", DocumentAct.class)) {
             if (attachment.getDocument() != null) {
                 objects.add(attachment);
             } else {
@@ -473,9 +475,10 @@ public class ClaimSubmitter {
         if (TypeHelper.isA(object, InsuranceArchetypes.CLAIM)) {
             Party supplier = (Party) claim.getPolicy().getInsurer();
             IMObjectBean bean = new IMObjectBean(supplier);
-            Entity template = bean.getTarget("template", Entity.class);
+            Entity template = bean.getTarget("template", Entity.class, active());
             if (template != null) {
-                return new StaticDocumentTemplateLocator(new DocumentTemplate(template, ServiceHelper.getArchetypeService()));
+                return new StaticDocumentTemplateLocator(new DocumentTemplate(template,
+                                                                              ServiceHelper.getArchetypeService()));
             }
         }
         return new ContextDocumentTemplateLocator(object, context);

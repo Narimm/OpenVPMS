@@ -257,21 +257,12 @@ public interface IMObjectBean {
     Object getValue(String name);
 
     /**
-     * Returns an active lookup based on the value of a node.
+     * Returns a lookup based on the value of a node.
      *
      * @param name the node name
-     * @return the value. May be {@code null}
+     * @return the value. May be {@code null}, or be inactive
      */
     Lookup getLookup(String name);
-
-    /**
-     * Returns a lookup based on the value of a node
-     *
-     * @param name   the node name
-     * @param active if {@code true}, only return the lookup if it is active
-     * @return the value. May be {@code null}
-     */
-    Lookup getLookup(String name, boolean active);
 
     /**
      * Returns the values of a collection node.
@@ -310,8 +301,10 @@ public interface IMObjectBean {
     <T extends IMObject> List<T> getValues(String name, Class<T> type, Predicate<T> predicate);
 
     /**
-     * Returns the source object from the first active {@link Relationship} with active source object, for the
-     * specified relationship node.
+     * Returns the source object from the first {@link Relationship} with source object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @return the source object, or {@code null} if none is found
@@ -319,8 +312,10 @@ public interface IMObjectBean {
     IMObject getSource(String name);
 
     /**
-     * Returns the source object from the first active {@link Relationship} with active source object, for the
-     * specified relationship node.
+     * Returns the source object from the first {@link Relationship} with source object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @param type the object type
@@ -348,8 +343,10 @@ public interface IMObjectBean {
     <T extends IMObject, R extends Relationship> T getSource(String name, Class<T> type, Policy<R> policy);
 
     /**
-     * Returns the target object from the first active {@link Relationship} with active target object, for the
-     * specified relationship node.
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @return the target object, or {@code null} if none is found
@@ -357,8 +354,10 @@ public interface IMObjectBean {
     IMObject getTarget(String name);
 
     /**
-     * Returns the target object from the first active {@link Relationship} with active target object, for the
-     * specified relationship node.
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @param type the object type
@@ -386,49 +385,23 @@ public interface IMObjectBean {
     <T extends IMObject, R extends Relationship> T getTarget(String name, Class<T> type, Policy<R> policy);
 
     /**
-     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
-     * node.
-     * <p/>
-     * If there are multiple relationships, this will return the reference from an active relationship over an
-     * inactive one.
-     * <br/>
-     * This is shorthand for: {@code getTarget(name, Policies.any())}
-     *
-     * @param name the relationship node name
-     * @return the target object, or {@code null} if none is found
-     */
-    IMObject getAnyTarget(String name);
-
-    /**
-     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
-     * node.
-     * <p>
-     * This is shorthand for: {@code getTarget(name, type, Policies.any())}
-     *
-     * @param name the relationship node name
-     * @param type the object type
-     * @return the target object, or {@code null} if none is found
-     */
-    <T extends IMObject> T getAnyTarget(String name, Class<T> type);
-
-    /**
-     * Returns the active source objects from each active {@link Relationship} for the specified node.
+     * Returns the source objects from each {@link Relationship} for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
      * @param name the relationship node name
-     * @return a list of active source objects
+     * @return a list of source objects. May be both active and inactive
      */
     List<IMObject> getSources(String name);
 
     /**
-     * Returns the active source objects from each active {@link Relationship} for the specified node.
+     * Returns the source objects from each {@link Relationship} for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
      * @param name the relationship node name
      * @param type the object type
-     * @return a list of active source objects
+     * @return a list of source objects. May be both active and inactive
      */
     <T extends IMObject> List<T> getSources(String name, Class<T> type);
 
@@ -456,23 +429,23 @@ public interface IMObjectBean {
     <T extends IMObject, R extends Relationship> List<T> getSources(String name, Class<T> type, Policy<R> policy);
 
     /**
-     * Returns the active target objects from each active {@link Relationship} for the specified node.
+     * Returns the target objects from each {@link Relationship} for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
      * @param name the relationship node name
-     * @return a list of active target objects
+     * @return a list of target objects. May be both active and inactive
      */
     List<IMObject> getTargets(String name);
 
     /**
-     * Returns the active target objects from each active {@link Relationship} for the specified node.
+     * Returns the target objects from each {@link Relationship} for the specified node.
      * <br/>
      * If a target reference cannot be resolved, it will be ignored.
      *
      * @param name the relationship node name
      * @param type the object type
-     * @return a list of active target objects
+     * @return a list of target objects. May be both active and inactive
      */
     <T extends IMObject> List<T> getTargets(String name, Class<T> type);
 
@@ -500,21 +473,7 @@ public interface IMObjectBean {
     <T extends IMObject, R extends Relationship> List<T> getTargets(String name, Class<T> type, Policy<R> policy);
 
     /**
-     * Returns the target objects for all relationships, active or inactive.
-     * <br/>
-     * If a target reference cannot be resolved, it will be ignored.
-     * <p>
-     * This is shorthand for: {@code getTargets(name, type, Policies.all())}
-     *
-     * @param name the relationship node name
-     * @param type the object type
-     * @return a list of target objects
-     */
-    <T extends IMObject> List<T> getAllTargets(String name, Class<T> type);
-
-    /**
-     * Returns the source object reference from the first active {@link Relationship} for the specified
-     * relationship node.
+     * Returns the source object reference from the first {@link Relationship} for the specified relationship node.
      *
      * @param name the relationship node name
      * @return the source object reference, or {@code null} if none is found
@@ -532,9 +491,9 @@ public interface IMObjectBean {
     <R extends Relationship> Reference getSourceRef(String name, Policy<R> policy);
 
     /**
-     * Returns the source object references from each active {@link Relationship} for the specified node.
+     * Returns the source object references from each {@link Relationship} for the specified node.
      *
-     * @param name the relationship node name
+     * @param name the relationship node
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     List<Reference> getSourceRefs(String name);
@@ -549,8 +508,7 @@ public interface IMObjectBean {
     <R extends Relationship> List<Reference> getSourceRefs(String name, Policy<R> policy);
 
     /**
-     * Returns the target object reference from the first active {@link Relationship} for the specified
-     * relationship node.
+     * Returns the target object reference from the first {@link Relationship} for the specified relationship node.
      *
      * @param name the relationship node name
      * @return the target object reference, or {@code null} if none is found
@@ -568,18 +526,7 @@ public interface IMObjectBean {
     <R extends Relationship> Reference getTargetRef(String name, Policy<R> policy);
 
     /**
-     * Returns the target object reference from the first {@link Relationship} for the specified relationship node.
-     * <p>
-     * If there are multiple relationships, this will return the reference from an active relationship over an
-     * inactive one.
-     *
-     * @param name the relationship node name
-     * @return the target object reference, or {@code null} if none is found
-     */
-    Reference getAnyTargetRef(String name);
-
-    /**
-     * Returns the target object references from each active {@link Relationship} for the specified node.
+     * Returns the target object references from each {@link Relationship} for the specified node.
      *
      * @param name the relationship node name
      * @return a list of target object references. May contain references to both active and inactive objects

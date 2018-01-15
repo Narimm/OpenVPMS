@@ -490,35 +490,20 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns an active lookup based on the value of a node.
+     * Returns a lookup based on the value of a node.
      *
      * @param name the node name
-     * @return the value. May be {@code null}
+     * @return the value. May be {@code null}, or be inactive
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public Lookup getLookup(String name) {
-        return getLookup(name, true);
-    }
-
-    /**
-     * Returns a lookup based on the value of a node
-     *
-     * @param name   the node name
-     * @param active if {@code true}, only return the lookup if it is active
-     * @return the value. May be {@code null}
-     * @throws IMObjectBeanException if the node doesn't exist
-     */
-    public Lookup getLookup(String name, boolean active) {
         NodeDescriptor node = toNode(name);
         Lookup result = null;
         org.openvpms.component.business.domain.im.common.IMObject object = getObject();
         Object value = node.getValue(object);
         if (value != null) {
             LookupAssertion assertion = LookupAssertionFactory.create(node, service, getLookups());
-            Lookup lookup = assertion.getLookup(object, value.toString());
-            if (lookup != null && (!active || lookup.isActive())) {
-                result = lookup;
-            }
+            result = assertion.getLookup(object, value.toString());
         }
         return result;
     }
@@ -553,8 +538,10 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the source object from the first active {@link Relationship} with active source object, for the
-     * specified relationship node.
+     * Returns the source object from the first {@link Relationship} with source object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @return the source object, or {@code null} if none is found
@@ -565,8 +552,10 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the source object from the first active {@link Relationship} with active source object, for the
-     * specified relationship node.
+     * Returns the source object from the first {@link Relationship} with source object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @param type the object type
@@ -574,7 +563,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     @Override
     public <T extends org.openvpms.component.model.object.IMObject> T getSource(String name, Class<T> type) {
-        return getSource(name, type, active());
+        return getSource(name, type, any());
     }
 
     /**
@@ -604,8 +593,10 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the target object from the first active {@link Relationship} with active target object, for the
-     * specified relationship node.
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @return the target object, or {@code null} if none is found
@@ -616,8 +607,10 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the target object from the first active {@link Relationship} with active target object, for the
-     * specified relationship node.
+     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
+     * node.
+     * <br/>
+     * If there are multiple relationships, the first active object will be returned in preference to an inactive one.
      *
      * @param name the relationship node name
      * @param type the object type
@@ -625,7 +618,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     @Override
     public <T extends org.openvpms.component.model.object.IMObject> T getTarget(String name, Class<T> type) {
-        return getTarget(name, type, Policies.active());
+        return getTarget(name, type, Policies.any());
     }
 
     /**
@@ -685,35 +678,6 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
-     * node.
-     * <p>
-     * This is shorthand for: {@code getTarget(name, Policies.any())}
-     *
-     * @param name the relationship node name
-     * @return the target object, or {@code null} if none is found
-     */
-    @Override
-    public org.openvpms.component.model.object.IMObject getAnyTarget(String name) {
-        return getTarget(name, Policies.any());
-    }
-
-    /**
-     * Returns the target object from the first {@link Relationship} with target object, for the specified relationship
-     * node.
-     * <p>
-     * This is shorthand for: {@code getTarget(name, type, Policies.any())}
-     *
-     * @param name the relationship node name
-     * @param type the object type
-     * @return the target object, or {@code null} if none is found
-     */
-    @Override
-    public <T extends org.openvpms.component.model.object.IMObject> T getAnyTarget(String name, Class<T> type) {
-        return getTarget(name, type, Policies.any());
-    }
-
-    /**
      * Sets the target of a relationship.
      * <p>
      * If no relationship exists and:
@@ -736,11 +700,12 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the active source objects from each active {@link Relationship} for the specified node.
+     * Returns the source objects from each {@link Relationship} for the specified node.
+     * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
      * @param name the relationship node
-     * @return a list of active source objects
+     * @return a list of source objects. May be both active and inactive
      */
     @Override
     public List<org.openvpms.component.model.object.IMObject> getSources(String name) {
@@ -748,17 +713,17 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the active source objects from each active {@link Relationship} for the specified node.
+     * Returns the source objects from each {@link Relationship} for the specified node.
      * <br/>
      * If a source reference cannot be resolved, it will be ignored.
      *
      * @param name the relationship node
      * @param type the object type
-     * @return a list of active source objects
+     * @return a list of source objects. May be both active and inactive
      */
     @Override
     public <T extends org.openvpms.component.model.object.IMObject> List<T> getSources(String name, Class<T> type) {
-        return getSources(name, type, Policies.active());
+        return getSources(name, type, Policies.any());
     }
 
     /**
@@ -793,11 +758,12 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the active target objects from each active {@link Relationship} for the specified node. If a
-     * target reference cannot be resolved, it will be ignored.
+     * Returns the target objects from each {@link Relationship} for the specified node.
+     * <br/>
+     * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name the relationship node
-     * @return a list of active target objects
+     * @param name the relationship node name
+     * @return a list of target objects. May be both active and inactive
      */
     @Override
     public List<org.openvpms.component.model.object.IMObject> getTargets(String name) {
@@ -805,16 +771,17 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the active target objects from each active {@link Relationship} for the specified node. If a
-     * target reference cannot be resolved, it will be ignored.
+     * Returns the target objects from each {@link Relationship} for the specified node.
+     * <br/>
+     * If a target reference cannot be resolved, it will be ignored.
      *
-     * @param name the relationship node
+     * @param name the relationship node name
      * @param type the object type
-     * @return a list of active target objects
+     * @return a list of target objects. May be both active and inactive
      */
     @Override
     public <T extends org.openvpms.component.model.object.IMObject> List<T> getTargets(String name, Class<T> type) {
-        return getTargets(name, type, active());
+        return getTargets(name, type, any());
     }
 
     /**
@@ -849,24 +816,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the target objects for all relationships, active or inactive.
-     * <br/>
-     * If a target reference cannot be resolved, it will be ignored.
-     * <p>
-     * This is shorthand for: {@code getTargets(name, type, Policies.all())}
-     *
-     * @param name the relationship node name
-     * @param type the object type
-     * @return a list of target objects
-     */
-    @Override
-    public <T extends org.openvpms.component.model.object.IMObject> List<T> getAllTargets(String name, Class<T> type) {
-        return getTargets(name, type, Policies.all());
-    }
-
-    /**
-     * Returns the source object reference from the first active {@link Relationship} for the specified
-     * relationship node.
+     * Returns the source object reference from the first {@link Relationship} for the specified relationship node.
      *
      * @param name the relationship node name
      * @return the source object reference, or {@code null} if none is found
@@ -874,7 +824,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     @Override
     public Reference getSourceRef(String name) {
-        return getSourceRef(name, active());
+        return getSourceRef(name, any());
     }
 
     /**
@@ -891,14 +841,14 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the source object references from each active {@link Relationship} for the specified node.
+     * Returns the source object references from each {@link Relationship} for the specified node.
      *
      * @param name the relationship node
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     @Override
     public List<Reference> getSourceRefs(String name) {
-        return getSourceRefs(name, active());
+        return getSourceRefs(name, any());
     }
 
     /**
@@ -914,15 +864,14 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the target object reference from the first active {@link Relationship} for the specified
-     * relationship node.
+     * Returns the target object reference from the first {@link Relationship} for the specified relationship node.
      *
      * @param name the relationship node name
      * @return the target object reference, or {@code null} if none is found
      */
     @Override
     public Reference getTargetRef(String name) {
-        return getTargetRef(name, active());
+        return getTargetRef(name, any());
     }
 
     /**
@@ -939,28 +888,14 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
-     * Returns the target object reference from the first {@link Relationship} for the specified relationship node.
-     * <p>
-     * If there are multiple relationships, this will return the reference from an active relationship over an
-     * inactive one.
+     * Returns the target object references from each {@link Relationship} for the specified node.
      *
      * @param name the relationship node name
-     * @return the target object reference, or {@code null} if none is found
-     */
-    @Override
-    public IMObjectReference getAnyTargetRef(String name) {
-        return getTargetRef(name, Policies.any());
-    }
-
-    /**
-     * Returns the target object references from each active {@link Relationship} for the specified node.
-     *
-     * @param name the relationship node
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     @Override
     public List<Reference> getTargetRefs(String name) {
-        return getTargetRefs(name, active());
+        return getTargetRefs(name, any());
     }
 
     /**
@@ -1270,7 +1205,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node) {
-        return getSource(node);
+        return getNodeSourceObject(node, true);
     }
 
     /**
@@ -1282,7 +1217,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, boolean active) {
-        return (active) ? getSource(node) : getSource(node, any());
+        return (active) ? getSource(node, active()) : getSource(node);
     }
 
     /**
@@ -1320,7 +1255,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node) {
-        return getTarget(node);
+        return getNodeTargetObject(node, true);
     }
 
     /**
@@ -1332,7 +1267,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, boolean active) {
-        return (active) ? getTarget(node) : getTarget(node, any());
+        return (active) ? getTarget(node, active()) : getTarget(node);
     }
 
     /**
@@ -1429,7 +1364,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     @SuppressWarnings("unchecked")
     public List<IMObject> getNodeSourceObjects(String node) {
-        List<org.openvpms.component.model.object.IMObject> sources = getSources(node);
+        List<org.openvpms.component.model.object.IMObject> sources = getSources(node, active());
         return (List<IMObject>) (List) sources;
     }
 
@@ -1443,7 +1378,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Class<T> type) {
-        return getSources(node, type);
+        return getSources(node, type, active());
     }
 
     /**
@@ -1590,7 +1525,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     @SuppressWarnings("unchecked")
     public List<IMObject> getNodeTargetObjects(String node) {
-        List<org.openvpms.component.model.object.IMObject> targets = getTargets(node);
+        List<org.openvpms.component.model.object.IMObject> targets = getTargets(node, active());
         return (List<IMObject>) (List) targets;
     }
 
@@ -1617,7 +1552,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Class<T> type) {
-        return getTargets(node, type);
+        return getTargets(node, type, active());
     }
 
     /**
@@ -1811,7 +1746,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getNodeSourceObjectRef(String node) {
-        return (IMObjectReference) getSourceRef(node);
+        return getNodeSourceObjectRef(node, true);
     }
 
     /**
@@ -1835,7 +1770,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     @SuppressWarnings("unchecked")
     public List<IMObjectReference> getNodeSourceObjectRefs(String node) {
-        List<Reference> result = getSourceRefs(node);
+        List<Reference> result = getSourceRefs(node, active());
         return (List<IMObjectReference>) (List) result;
     }
 
@@ -1875,7 +1810,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     @SuppressWarnings("unchecked")
     public List<IMObjectReference> getNodeTargetObjectRefs(String node) {
-        List<Reference> result = getTargetRefs(node);
+        List<Reference> result = getTargetRefs(node, active());
         return (List<IMObjectReference>) (List) result;
     }
 
@@ -1887,7 +1822,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getNodeTargetObjectRef(String node) {
-        return (IMObjectReference) getTargetRef(node);
+        return getTargetRef(node, active());
     }
 
     /**

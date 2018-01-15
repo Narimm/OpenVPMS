@@ -145,7 +145,7 @@ public class PolicyImpl implements Policy {
     @Override
     public PolicyHolder getPolicyHolder() {
         if (policyHolder == null) {
-            Party customer = policy.getAnyTarget("customer", Party.class);
+            Party customer = policy.getTarget("customer", Party.class);
             if (customer == null) {
                 throw new InsuranceException(InsuranceMessages.policyHasNoCustomer());
             }
@@ -178,7 +178,7 @@ public class PolicyImpl implements Policy {
     @Override
     public Party getInsurer() {
         if (insurer == null) {
-            insurer = policy.getAnyTarget("insurer", Party.class);
+            insurer = policy.getTarget("insurer", Party.class);
             if (insurer == null) {
                 throw new InsuranceException(InsuranceMessages.policyHasNoInsurer());
             }
@@ -193,7 +193,7 @@ public class PolicyImpl implements Policy {
      * @throws InsuranceException for any error
      */
     public Party getPatient() {
-        Party patient = policy.getAnyTarget("patient", Party.class);
+        Party patient = policy.getTarget("patient", Party.class);
         if (patient == null) {
             throw new InsuranceException(InsuranceMessages.policyHasNoPatient());
         }

@@ -279,7 +279,7 @@ public class ClaimImpl implements Claim {
     @Override
     public Policy getPolicy() {
         if (policy == null) {
-            policy = new PolicyImpl(claim.getAnyTarget("policy", Act.class), service, customerRules, patientRules);
+            policy = new PolicyImpl(claim.getTarget("policy", Act.class), service, customerRules, patientRules);
         }
         return policy;
     }
@@ -364,7 +364,7 @@ public class ClaimImpl implements Claim {
      */
     @Override
     public User getClinician() {
-        return claim.getAnyTarget("clinician", User.class);
+        return claim.getTarget("clinician", User.class);
     }
 
     /**
@@ -375,8 +375,8 @@ public class ClaimImpl implements Claim {
     @Override
     public ClaimHandler getClaimHandler() {
         if (handler == null) {
-            final User user = claim.getAnyTarget("user", User.class);
-            final Party location = claim.getAnyTarget("location", Party.class);
+            final User user = claim.getTarget("user", User.class);
+            final Party location = claim.getTarget("location", Party.class);
             if (user == null) {
                 throw new IllegalStateException("Claim has no user");
             }
@@ -488,7 +488,7 @@ public class ClaimImpl implements Claim {
      */
     protected List<Condition> collectConditions() {
         List<Condition> result = new ArrayList<>();
-        for (Act act : claim.getAllTargets("items", Act.class)) {
+        for (Act act : claim.getTargets("items", Act.class)) {
             result.add(new ConditionImpl(act, service));
         }
         return result;
@@ -528,7 +528,7 @@ public class ClaimImpl implements Claim {
      */
     protected List<Attachment> collectAttachments() {
         List<Attachment> result = new ArrayList<>();
-        for (DocumentAct act : claim.getAllTargets("attachments", DocumentAct.class)) {
+        for (DocumentAct act : claim.getTargets("attachments", DocumentAct.class)) {
             result.add(new AttachmentImpl(act, service, handlers));
         }
         return result;

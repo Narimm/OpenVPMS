@@ -18,6 +18,7 @@ package org.openvpms.insurance.internal.service;
 
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.party.Party;
 import org.openvpms.insurance.exception.InsuranceException;
@@ -112,6 +113,6 @@ public class InsuranceServicesImpl implements InsuranceServices {
      */
     private Entity getConfig(Party insurer) {
         IMObjectBean bean = service.getBean(insurer);
-        return bean.getTarget("service", Entity.class);
+        return bean.getTarget("service", Entity.class, Policies.active());
     }
 }

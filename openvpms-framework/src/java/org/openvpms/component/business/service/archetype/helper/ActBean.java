@@ -515,7 +515,7 @@ public class ActBean extends IMObjectBean {
      * @return the entity reference, or {@code null}if none is found
      */
     public IMObjectReference getNodeParticipantRef(String name) {
-        return getAnyTargetRef(name);
+        return (IMObjectReference) getTargetRef(name);
     }
 
     /**
@@ -527,7 +527,7 @@ public class ActBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeParticipant(String name) {
-        return getAnyTarget(name, Entity.class);
+        return getTarget(name, Entity.class);
     }
 
     /**

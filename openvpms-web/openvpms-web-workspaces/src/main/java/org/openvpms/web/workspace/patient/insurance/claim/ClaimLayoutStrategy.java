@@ -223,7 +223,7 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      */
     private Act getPolicy(Act claim) {
         IMObjectBean bean = new IMObjectBean(claim);
-        return bean.getAnyTarget("policy", Act.class);
+        return bean.getTarget("policy", Act.class);
     }
 
 }

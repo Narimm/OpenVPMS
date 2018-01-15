@@ -49,6 +49,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.component.model.bean.Policies.active;
+
 
 /**
  * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practice location or
@@ -189,7 +191,7 @@ public class CustomerMailContext extends ContextMailContext {
             Set<Reference> practices = new HashSet<>();
             // tracks processed practices to avoid retrieving them more than once
 
-            for (IMObject referral : bean.getTargets("referrals")) {
+            for (IMObject referral : bean.getTargets("referrals", active())) {
                 if (referral instanceof Party) {
                     addresses.addAll(ContactHelper.getEmailContacts((Party) referral));
                     if (TypeHelper.isA(referral, SupplierArchetypes.SUPPLIER_VET)) {

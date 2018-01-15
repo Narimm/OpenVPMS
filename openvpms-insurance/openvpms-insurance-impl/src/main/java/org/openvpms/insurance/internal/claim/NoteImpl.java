@@ -89,7 +89,7 @@ public class NoteImpl implements Note {
      */
     @Override
     public User getAuthor() {
-        return note.getAnyTarget("author", User.class);
+        return note.getTarget("author", User.class);
     }
 
     /**
@@ -99,7 +99,7 @@ public class NoteImpl implements Note {
      */
     @Override
     public User getClinician() {
-        return note.getAnyTarget("clinician", User.class);
+        return note.getTarget("clinician", User.class);
     }
 
     /**
@@ -132,7 +132,7 @@ public class NoteImpl implements Note {
      */
     protected List<Note> collectAddenda() {
         List<Note> result = new ArrayList<>();
-        List<Act> acts = note.getAllTargets("addenda", Act.class);
+        List<Act> acts = note.getTargets("addenda", Act.class);
         Collections.sort(acts, ActComparator.ascending());
         for (Act act : acts) {
             result.add(new NoteImpl(act, service));

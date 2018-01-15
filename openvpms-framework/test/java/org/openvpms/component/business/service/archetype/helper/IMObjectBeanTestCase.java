@@ -532,8 +532,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     }
 
     /**
-     * Tests the {@link IMObjectBean#getSourceRef(String)}, {@link IMObjectBean#getTargetRef(String)}
-     * and {@link IMObjectBean#getAnyTargetRef(String)} methods.
+     * Tests the {@link IMObjectBean#getSourceRef(String)} and {@link IMObjectBean#getTargetRef(String)}.
      */
     @Test
     public void testGetSourceTargetRef() {
@@ -550,7 +549,6 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         EntityRelationship rel1 = addOwnerRelationship(customer, patient1);
         assertEquals(patient1.getObjectReference(), custBean.getTargetRef("patients"));
         assertEquals(customer.getObjectReference(), patBean.getSourceRef("customers"));
-        assertEquals(patient1.getObjectReference(), custBean.getAnyTargetRef("patients"));
 
         Date now = new Date();
         Date start1 = new Date(now.getTime() - 60 * 1000);
@@ -560,9 +558,10 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         rel1.setActiveStartTime(start1);
         rel1.setActiveEndTime(end1);
 
-        assertNull(custBean.getTargetRef("patients"));
-        assertNull(patBean.getSourceRef("customers"));
-        assertEquals(patient1.getObjectReference(), custBean.getAnyTargetRef("patients"));
+        assertNull(custBean.getTargetRef("patients", Policies.active()));
+        assertEquals(patient1.getObjectReference(), custBean.getTargetRef("patients"));
+        assertNull(patBean.getSourceRef("customers", Policies.active()));
+        assertEquals(customer.getObjectReference(), patBean.getSourceRef("customers"));
     }
 
     /**
@@ -616,8 +615,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
 
     /**
      * Tests the {@link IMObjectBean#getTarget}, {@link IMObjectBean#getTarget(String, Class)},
-     * {@link IMObjectBean#getTarget(String, Class, Policy)}, {@link IMObjectBean#getAnyTarget(String)}
-     * and {@link IMObjectBean#getAnyTarget(String, Class)} methods.
+     *  and {@link IMObjectBean#getTarget(String, Class, Policy)} methods.
      */
     @Test
     public void testGetTarget() {
@@ -632,8 +630,6 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         assertEquals(patient, bean.getTarget("owns"));
         assertEquals(patient, bean.getTarget("owns", Party.class));
         assertEquals(patient, bean.getTarget("owns", IMObject.class, Policies.active()));
-        assertEquals(patient, bean.getAnyTarget("owns"));
-        assertEquals(patient, bean.getAnyTarget("owns", Party.class));
 
         Date start1 = new Date(now.getTime() - 60 * 1000);
         Date end1 = new Date(now.getTime() - 50 * 1000);
@@ -642,12 +638,10 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         owns.setActiveStartTime(start1);
         owns.setActiveEndTime(end1);
 
-        assertNull(bean.getTarget("owns"));
-        assertNull(bean.getTarget("owns", Party.class));
+        assertEquals(patient, bean.getTarget("owns"));
+        assertEquals(patient, bean.getTarget("owns", Party.class));
         assertNull(bean.getTarget("owns", Party.class, Policies.active()));
         assertEquals(patient, bean.getTarget("owns", Party.class, Policies.any()));
-        assertEquals(patient, bean.getAnyTarget("owns"));
-        assertEquals(patient, bean.getAnyTarget("owns", Party.class));
     }
 
     /**
