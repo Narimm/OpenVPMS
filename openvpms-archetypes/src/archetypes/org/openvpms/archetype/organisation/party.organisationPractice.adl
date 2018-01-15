@@ -109,6 +109,8 @@
               type="java.lang.Boolean" defaultValue="false()"/>
         <node name="followUpAtCheckOut" path="/details/followUpAtCheckOut" minCardinality="0" maxCardinality="1"
               type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="useLoggedInClinician" path="/details/useLoggedInClinician" minCardinality="0" maxCardinality="1"
+              type="java.lang.Boolean" defaultValue="true()"/>
         <node name="shortUserNameFormat" path="/details/shortUserNameFormat"
               type="java.lang.String" minCardinality="0" defaultValue="'NAME'">
             <assertion name="lookup">

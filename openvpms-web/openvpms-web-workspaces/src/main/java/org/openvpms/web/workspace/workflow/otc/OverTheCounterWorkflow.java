@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.delete.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.delete.IMObjectDeletionHandlerFactory;
 import org.openvpms.web.component.im.delete.SilentIMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -133,7 +134,9 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
                 parent.setTill(context.getTill());
-                parent.setClinician(context.getClinician());
+                if (!UserHelper.useLoggedInClinician(context)) {
+                    parent.setClinician(context.getClinician());
+                }
             }
         });
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -437,7 +437,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
     /**
      * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes an invoice and its item.
-     * <p/>
+     * <p>
      * If any pharmacy or lab orders have been created, these are cancelled.
      */
     @Test
@@ -1291,6 +1291,50 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
                                   ONE, ZERO, new BigDecimal("0.091"), ONE, null, 1);
         checkChargeEventNote(item1, patient, "template 1 notes");
         checkChargeEventNote(item2, patient2, "template 2 notes");
+    }
+
+    /**
+     * Verifies that if a clinician is set before template expansion, this appears on all acts produced by the template
+     * expansion.
+     */
+    @Test
+    public void testSetClinicianBeforeTemplateExpansion() {
+        User clinician2 = TestHelper.createClinician();
+        Product template = ProductTestHelper.createTemplate("templateA");
+        Product product1 = createProduct(MEDICATION);
+        Product product2 = createProduct(MEDICATION);
+        Product product3 = createProduct(MEDICATION);
+        ProductTestHelper.addInclude(template, product1, 1, false);
+        ProductTestHelper.addInclude(template, product2, 2, false);
+        ProductTestHelper.addInclude(template, product3, 3, false);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        EditorQueue queue = editor.getQueue();
+
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = editor.addItem();
+        itemEditor.setClinician(clinician2);
+        setItem(editor, itemEditor, patient, template, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        charge = get(charge);
+        ActBean bean = new ActBean(charge);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(3, items.size());
+
+        checkItem(items, patient, product1, template, author, clinician2, ONE, ONE, ZERO, ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, null, 1);
+        BigDecimal two = BigDecimal.valueOf(2);
+        checkItem(items, patient, product2, template, author, clinician2, two, two, ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, ZERO, null, 1);
+
+        BigDecimal three = BigDecimal.valueOf(3);
+        checkItem(items, patient, product3, template, author, clinician2, three, three, ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, ZERO, null, 1);
     }
 
     /**

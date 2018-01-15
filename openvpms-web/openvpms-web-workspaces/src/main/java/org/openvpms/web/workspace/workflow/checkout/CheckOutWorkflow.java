@@ -45,6 +45,7 @@ import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.component.retry.Retryable;
 import org.openvpms.web.component.retry.Retryer;
@@ -213,7 +214,15 @@ public class CheckOutWorkflow extends WorkflowImpl {
             throw new ContextException(ContextException.ErrorCode.NoPatient);
         }
 
-        User clinician = external.getClinician();
+        User clinician;
+        if (UserHelper.useLoggedInClinician(external)) {
+            clinician = external.getUser();
+        } else {
+            clinician = (User) bean.getNodeParticipant("clinician");
+            if (clinician == null) {
+                clinician = external.getClinician();
+            }
+        }
 
         initial = new DefaultTaskContext(help);
         initial.addObject(act);

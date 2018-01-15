@@ -694,6 +694,7 @@ public class TestHelper {
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("currency", currency.getCode());
         bean.setValue("useLocationProducts", false);
+        bean.setValue("useLoggedInClinician", true);
         bean.save();
         return party;
     }

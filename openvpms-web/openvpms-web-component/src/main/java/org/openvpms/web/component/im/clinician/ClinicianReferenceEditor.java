@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.clinician;
@@ -20,9 +20,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.property.Property;
 
 /**
@@ -54,7 +56,10 @@ public class ClinicianReferenceEditor extends AbstractIMObjectReferenceEditor<Us
      */
     @Override
     public boolean setObject(User object) {
-        getLayoutContext().getContext().setClinician(object);
+        Context context = getLayoutContext().getContext();
+        if (!UserHelper.useLoggedInClinician(context)) {
+            context.setClinician(object);
+        }
         return super.setObject(object);
     }
 

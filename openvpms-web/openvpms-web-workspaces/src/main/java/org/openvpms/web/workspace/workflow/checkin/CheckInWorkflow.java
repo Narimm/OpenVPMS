@@ -38,6 +38,7 @@ import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityQuery;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
@@ -148,7 +149,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         ActBean bean = new ActBean(appointment);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = (User) bean.getParticipant("participation.clinician");
+        User clinician = UserHelper.useLoggedInClinician(context) ? context.getUser()
+                                                                  : (User) bean.getNodeParticipant("clinician");
 
         ArchetypeServiceFunctions functions = ServiceHelper.getBean(ArchetypeServiceFunctions.class);
         String reason = functions.lookup(appointment, "reason", "Appointment");

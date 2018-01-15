@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
@@ -82,16 +83,14 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
      *
      * @param patient    the patient
      * @param fixedPrice the fixed price
-     * @param clinician  the clinician. May be {@code null}
      * @return the edit dialog
      */
-    public EditDialog addInvoiceItem(Party patient, BigDecimal fixedPrice, User clinician) {
+    public EditDialog addInvoiceItem(Party patient, BigDecimal fixedPrice) {
         EditIMObjectTask task = getEditTask();
         EditDialog dialog = task.getEditDialog();
 
         // get the editor and add an item
         CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
-        editor.setClinician(clinician);
         Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         ChargeItemRelationshipCollectionEditor items = editor.getItems();
         addItem(editor, patient, product, BigDecimal.ONE, items.getEditorQueue());
@@ -101,14 +100,13 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     /**
      * Verifies that the current task is an EditInvoiceTask, and adds invoice item, closing the dialog.
      *
-     * @param patient   the patient
-     * @param clinician the clinician. May be {@code null}
-     * @param post      if {@code true} post the invoice
+     * @param patient the patient
+     * @param post    if {@code true} post the invoice
      * @return the invoice total
      */
-    public BigDecimal addInvoice(Party patient, User clinician, boolean post) {
+    public BigDecimal addInvoice(Party patient, boolean post) {
         BigDecimal fixedPrice = new BigDecimal("18.18");
-        EditDialog dialog = addInvoiceItem(patient, fixedPrice, clinician);
+        EditDialog dialog = addInvoiceItem(patient, fixedPrice);
         if (post) {
             CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
             editor.setStatus(ActStatus.POSTED);
@@ -120,16 +118,19 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     /**
      * Verifies that the invoice matches the specified details.
      *
-     * @param status the expected status
-     * @param amount the expected amount
+     * @param status    the expected status
+     * @param amount    the expected amount
+     * @param clinician the expected clinician. May be {@code null}
      */
-    public void checkInvoice(String status, BigDecimal amount) {
+    public void checkInvoice(String status, BigDecimal amount, User clinician) {
         FinancialAct act = get(getInvoice());
         assertEquals(act.getStatus(), status);
         assertTrue(amount.compareTo(act.getTotal()) == 0);
         ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
         BigDecimal itemTotal = calc.sum(act, "total");
         assertTrue(amount.compareTo(itemTotal) == 0);
+        ActBean bean = new ActBean(act);
+        assertEquals(clinician, bean.getNodeParticipant("clinician"));
     }
 
     /**
@@ -137,12 +138,11 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
      *
      * @param patient    the patient
      * @param fixedPrice the product fixed price
-     * @param clinician  the clinician. May be {@code null}
      * @return the item editor
      */
-    public CustomerChargeActItemEditor addVisitInvoiceItem(Party patient, BigDecimal fixedPrice, User clinician) {
+    public CustomerChargeActItemEditor addVisitInvoiceItem(Party patient, BigDecimal fixedPrice) {
         Product product = createProduct(ProductArchetypes.SERVICE, fixedPrice);
-        return addVisitInvoiceItem(patient, clinician, product);
+        return addVisitInvoiceItem(patient, product);
     }
 
     /**
@@ -156,12 +156,11 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     /**
      * Verifies that the current task is an {@link EditVisitTask}, and adds invoice item for the specified product.
      *
-     * @param patient   the patient
-     * @param clinician the clinician. May be {@code null}
-     * @param product   the product
+     * @param patient the patient
+     * @param product the product
      * @return the item editor
      */
-    public VisitChargeItemEditor addVisitInvoiceItem(Party patient, User clinician, Product product) {
+    public VisitChargeItemEditor addVisitInvoiceItem(Party patient, Product product) {
         TestEditVisitTask task = (TestEditVisitTask) getTask();
         VisitEditorDialog dialog = task.getVisitDialog();
 
@@ -169,7 +168,6 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         VisitEditor visitEditor = dialog.getEditor();
         VisitChargeEditor editor = visitEditor.getChargeEditor();
         assertNotNull(editor);
-        editor.setClinician(clinician);
         return (VisitChargeItemEditor) addItem(editor, patient, product, BigDecimal.ONE, task.getQueue());
     }
 

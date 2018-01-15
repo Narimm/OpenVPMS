@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -36,6 +36,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
@@ -151,7 +152,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
     /**
      * Tests the check-in workflow when launched from an appointment with a patient.
-     * <p/>
+     * <p>
      * No patient selection dialog should be displayed.
      */
     @Test
@@ -161,7 +162,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Act appointment = createAppointment(startTime, customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(arrivalTime);
-        runCheckInToVisit(workflow);
+        runCheckInToVisit(workflow, clinician);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
@@ -398,7 +399,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
     /**
      * Performs a check in, one day after a patient was invoiced but using the same invoice.
-     * <p/>
+     * <p>
      * This verifies the fix for OVPMS-1302.
      */
     @Test
@@ -444,11 +445,11 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(date2);
 
-        runCheckInToVisit(workflow);
+        runCheckInToVisit(workflow, clinician);
 
         // Add another invoice item.
         Product medication2 = TestHelper.createProduct();
-        VisitChargeItemEditor itemEditor2 = workflow.addVisitInvoiceItem(patient, clinician, medication2);
+        VisitChargeItemEditor itemEditor2 = workflow.addVisitInvoiceItem(patient, medication2);
 
         // close the dialog
         PopupDialog eventDialog = workflow.editVisit();
@@ -495,7 +496,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // edit the charge
         VisitEditorDialog dialog = workflow.getVisitEditorDialog();
         dialog.getEditor().selectCharges(); // make sure the charges tab is selected, to enable the Apply button
-        VisitChargeItemEditor itemEditor = workflow.addVisitInvoiceItem(patient, clinician, product);
+        VisitChargeItemEditor itemEditor = workflow.addVisitInvoiceItem(patient, product);
         itemEditor.setClinician(clinician);
         fireDialogButton(dialog, PopupDialog.APPLY_ID);
 
@@ -515,6 +516,44 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.checkComplete(true, customer, patient, context);
 
         assertTrue(errors.isEmpty());
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set true, the clinician comes from the context
+     * user rather than the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianForClinician() {
+        User clinician2 = TestHelper.createClinician();
+        checkUseLoggedInClinician(true, clinician2, clinician, clinician2);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set true, and the logged in user is not a
+     * clinician, the clinician comes from the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianForNonClinician() {
+        checkUseLoggedInClinician(true, TestHelper.createUser(), clinician, clinician);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set false, the clinician comes from the
+     * appointment, even when the logged in user is a clinician.
+     */
+    @Test
+    public void testUseLoggedInClinicianDisabledForClinician() {
+        User clinician2 = TestHelper.createClinician();
+        checkUseLoggedInClinician(false, clinician2, clinician, clinician);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set false, the clinician comes from the
+     * appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianDisabledForNonClinician() {
+        checkUseLoggedInClinician(false, TestHelper.createUser(), clinician, clinician);
     }
 
     /**
@@ -545,6 +584,35 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
                 errors.add(message);
             }
         });
+    }
+
+    /**
+     * Tests the effects of the practice useLoggedInClinician option during the Check-In workflow.
+     *
+     * @param enabled              if {@code true}, enable the option, otherwise disable it
+     * @param user                 the current user
+     * @param appointmentClinician the appointment clinician
+     * @param expectedClinician    the expected clinician to appear on the event and invoice
+     */
+    private void checkUseLoggedInClinician(boolean enabled, User user, User appointmentClinician,
+                                           User expectedClinician) {
+        IMObjectBean bean = new IMObjectBean(getPractice());
+        bean.setValue("useLoggedInClinician", enabled);
+        Date startTime = TestHelper.getDatetime("2018-01-01 09:00:00");
+        Date arrivalTime = TestHelper.getDatetime("2018-01-01 09:33:00"); // arrived late
+        Act appointment = createAppointment(startTime, customer, patient, appointmentClinician, location);
+        context.setUser(user);
+        context.setClinician(TestHelper.createClinician()); // should not be used, as the appointment has a clinician
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
+        workflow.setArrivalTime(arrivalTime);
+        runCheckInToVisit(workflow, expectedClinician);
+
+        // edit the clinical event
+        PopupDialog eventDialog = workflow.editVisit();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        workflow.checkEvent(patient, expectedClinician, ActStatus.IN_PROGRESS, location);
+        workflow.checkInvoice(expectedClinician, BigDecimal.ZERO, ActStatus.IN_PROGRESS, true);
+        workflow.checkComplete(true, customer, patient, context);
     }
 
     /**
@@ -609,7 +677,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private void checkCancelEditEvent(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
-        runCheckInToVisit(workflow);
+        runCheckInToVisit(workflow, clinician);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
@@ -650,9 +718,10 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     /**
      * Runs the check-in workflow up to the visit editing step.
      *
-     * @param workflow the workflow
+     * @param workflow  the workflow
+     * @param clinician the expected clinician. May be {@code null}
      */
-    private void runCheckInToVisit(CheckInWorkflowRunner workflow) {
+    private void runCheckInToVisit(CheckInWorkflowRunner workflow, User clinician) {
         runCheckInToWeight(workflow);
 
         workflow.addWeight(patient, BigDecimal.valueOf(20), clinician);

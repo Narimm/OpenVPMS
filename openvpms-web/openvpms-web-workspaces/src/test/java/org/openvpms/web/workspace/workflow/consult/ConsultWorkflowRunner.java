@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -27,8 +27,6 @@ import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.workspace.workflow.TestEditVisitTask;
 import org.openvpms.web.workspace.workflow.TestVisitCRUDWindow;
-
-import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,19 +68,6 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistoryWindow();
         assertNotNull(window);
         window.addNote();
-    }
-
-    /**
-     * Verifies that the current task is an EditVisitTask, and adds an invoice item.
-     *
-     * @param patient   the patient
-     * @param clinician the clinician. May be {@code null}
-     * @return the invoice total
-     */
-    public BigDecimal addVisitInvoiceItem(Party patient, User clinician) {
-        BigDecimal amount = BigDecimal.valueOf(20);
-        addVisitInvoiceItem(patient, amount, clinician);
-        return getInvoice().getTotal();
     }
 
     /**
