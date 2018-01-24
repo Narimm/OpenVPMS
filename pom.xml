@@ -331,6 +331,11 @@
             </dependency>
             <dependency>
                 <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-framework-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>

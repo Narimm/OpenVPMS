@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -47,7 +47,6 @@ import org.openvpms.web.component.im.view.IMObjectComponent;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.DefaultValidator;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -61,7 +60,6 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.SortableTableModel;
 import org.openvpms.web.echo.table.TableNavigator;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 
@@ -173,17 +171,9 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
                 idFilter, context.getDefaultNodeFilter());
         context.setNodeFilter(filter);
 
-        componentListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                onComponentChange();
-            }
-        };
+        componentListener = event -> onComponentChange();
 
-        editorListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onCurrentEditorModified();
-            }
-        };
+        editorListener = modifiable -> onCurrentEditorModified();
     }
 
     /**
@@ -427,11 +417,19 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * @return the row of controls
      */
     protected ButtonRow createControls(FocusGroup focus) {
-        String[] range = getCollectionPropertyEditor().getArchetypeRange();
-        range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
-
         buttons = new ButtonRow(focus);
 
+        addButtons(buttons);
+        addArchetypeSelector(buttons, focus);
+        return buttons;
+    }
+
+    /**
+     * Adds add/delete buttons to the button row, and previous/next buttons, if the cardinality is > 1.
+     *
+     * @param buttons the buttons to add to
+     */
+    protected void addButtons(ButtonRow buttons) {
         boolean disableShortcut;
 
         // Only use button shortcuts for the first level of collections
@@ -468,6 +466,17 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             };
             buttons.addButton(NEXT_ID, disableShortcut, next);
         }
+    }
+
+    /***
+     * Adds an archetype selector to the button row, if there is more than one archetype.
+     *
+     * @param buttons the buttons
+     * @param focus   the focus group
+     */
+    protected void addArchetypeSelector(ButtonRow buttons, FocusGroup focus) {
+        String[] range = getCollectionPropertyEditor().getArchetypeRange();
+        range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
         if (range.length == 1) {
             shortName = range[0];
         } else if (range.length > 1) {
@@ -488,7 +497,6 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             buttons.add(archetypeNames);
             focus.add(archetypeNames);
         }
-        return buttons;
     }
 
     /**

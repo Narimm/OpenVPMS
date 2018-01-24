@@ -39,7 +39,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 
-import java.util.List;
+import java.util.Collection;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -106,7 +106,7 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
-                    print(browser.getSelectedList(), context);
+                    print(browser.getSelections(), context);
                 }
 
                 @Override
@@ -200,7 +200,7 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
      * @param browser the browser
      */
     private void enableOK(PatientDocumentTemplateBrowser browser) {
-        dialog.getButtons().setEnabled(PopupDialog.OK_ID, browser.hasSelections());
+        dialog.getButtons().setEnabled(PopupDialog.OK_ID, !browser.getSelections().isEmpty());
     }
 
     /**
@@ -209,7 +209,7 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
      * @param templates the templates
      * @param context   the context
      */
-    private void print(List<Entity> templates, TaskContext context) {
+    private void print(Collection<Entity> templates, TaskContext context) {
         CustomerMailContext mailContext = new CustomerMailContext(context, context.getHelpContext());
         for (Entity template : templates) {
             IMObjectBean templateBean = new IMObjectBean(template);
