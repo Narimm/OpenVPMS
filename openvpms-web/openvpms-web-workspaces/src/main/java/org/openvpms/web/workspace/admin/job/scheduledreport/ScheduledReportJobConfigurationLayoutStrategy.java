@@ -155,13 +155,16 @@ public class ScheduledReportJobConfigurationLayoutStrategy extends AbstractLayou
     @Override
     protected void doComplexLayout(IMObject object, IMObject parent, List<Property> properties, Component container,
                                    LayoutContext context) {
-        IMObjectTabPaneModel model = doTabLayout(object, properties, container, context, false);
-
-        String label = Messages.get("scheduledreport.parameters");
-        model.addTab(label, ColumnFactory.create(Styles.INSET, parameterList));
-        IMObjectTabPane pane = new IMObjectTabPane(model);
-        pane.setSelectedIndex(0);
-        container.add(pane);
+        if (!properties.isEmpty() || parameterList != null) {
+            IMObjectTabPaneModel model = doTabLayout(object, properties, container, context, false);
+            IMObjectTabPane pane = new IMObjectTabPane(model);
+            if (parameterList != null) {
+                String label = Messages.get("scheduledreport.parameters");
+                model.addTab(label, ColumnFactory.create(Styles.INSET, parameterList));
+            }
+            pane.setSelectedIndex(0);
+            container.add(pane);
+        }
     }
 
     /**
@@ -208,11 +211,11 @@ public class ScheduledReportJobConfigurationLayoutStrategy extends AbstractLayou
      * @param properties the properties
      * @param nodes      the nodes
      * @param context    the layout context
-     * @return a new component
+     * @return a new component, or {@code null} if the report has no parameters
      */
     private Component createParameters(IMObject object, PropertySet properties, ArchetypeNodes nodes,
                                        LayoutContext context) {
-        ComponentGrid grid = new ComponentGrid();
+        Component result = null;
         List<Property> parameters = new ArrayList<>();
         int i = 0;
         while (true) {
@@ -246,7 +249,11 @@ public class ScheduledReportJobConfigurationLayoutStrategy extends AbstractLayou
             }
             i++;
         }
-        grid.add(createComponentSet(object, parameters, context), 2);
-        return grid.createGrid();
+        if (!parameters.isEmpty()) {
+            ComponentGrid grid = new ComponentGrid();
+            grid.add(createComponentSet(object, parameters, context), 2);
+            result = grid.createGrid();
+        }
+        return result;
     }
 }
